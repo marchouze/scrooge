@@ -118,8 +118,60 @@ export function makeObligationLifecycleTransitioned(args: {
   });
 }
 
+// ---------------------------------------------------------------------------
+// ProvisionScopeAdopted — the bank marks a provision (or scope of provisions)
+// as applicable to this entity. One event per tick / untick action.
+//
+// Resolution rule: for any leaf provision L, collect every event where
+// scopeId == L or L is a descendant of scopeId in the structured hierarchy,
+// then return the `adopted` value of the most recent (`adoptedAt`) event.
+// Specificity (deeper scope wins) is the tiebreaker for same-timestamp events.
+//
+// `verbatimHash` is a SHA-256 hex of the provision text at tick time — used
+// by the drift recon gate to detect when source text has changed since adoption.
+// ---------------------------------------------------------------------------
+
+export const provisionScopeAdoptedPayloadSchema = z.object({
+  /** Instrument slug, e.g. "banks-act", "bcbs-mar". */
+  instrumentSlug: z.string().min(1),
+  /**
+   * ID of the ticked scope node — chapter.id, section.id, subsection.id, or
+   * the instrument slug itself (for a whole-document tick).
+   */
+  scopeId: z.string().min(1),
+  /** true = tick (adopt), false = untick (unadopt). */
+  adopted: z.boolean(),
+  /** Agent/seat that performed the tick. */
+  adoptedBy: z.string(),
+  /** ISO date of the tick action. */
+  adoptedAt: z.string().min(1),
+  /** SHA-256 hex of the verbatim text under this scope at tick time. Drift anchor. */
+  verbatimHash: z.string(),
+});
+export type ProvisionScopeAdoptedPayload = z.infer<typeof provisionScopeAdoptedPayloadSchema>;
+
+export function makeProvisionScopeAdopted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProvisionScopeAdoptedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProvisionScopeAdopted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: provisionScopeAdoptedPayloadSchema.parse(args.payload),
+  });
+}
+
 export const OBLIGATION_LIFECYCLE_TYPED_EVENT_TYPES = [
   "ObligationAdopted",
   "ObligationLifecycleTransitioned",
+  "ProvisionScopeAdopted",
 ] as const;
 export type ObligationLifecycleEventType = (typeof OBLIGATION_LIFECYCLE_TYPED_EVENT_TYPES)[number];

@@ -166,7 +166,17 @@ import { getActiveFxCounterparties } from "../platform/simulation/fx-counterpart
 import {
   makeObligationAdopted,
   makeObligationLifecycleTransitioned,
+  makeProvisionScopeAdopted,
 } from "../platform/event-store/event-types/obligation-lifecycle";
+import { loadProvisionAdoptionState } from "../platform/obligations/projection";
+import {
+  type RegStructuredDocMinimal,
+  buildProvisionTree,
+  computeScopeVerbatimHash,
+  getLeafDescendants,
+  resolveLeafAdoptionState,
+} from "../platform/regulatory/graph/provision-tree";
+import { tryGenerateNarrative } from "../runtime/claude";
 import {
   currentBankModePolicy,
   syncBankModeToLifecyclePhase,
@@ -1923,6 +1933,262 @@ async function handleObligationUnadopt(req: Request): Promise<Response> {
   return jsonResponse({ ok: true, eventId: evt.event_id, id }, 201);
 }
 
+// ---------------------------------------------------------------------------
+// Provision-scope adoption helpers
+// ---------------------------------------------------------------------------
+
+/** Load and parse a structured regulation JSON for a slug, or return null. */
+function loadStructuredDocForSlug(slug: string): RegStructuredDocMinimal | null {
+  const regsDir = join(REPO_ROOT, "Regulations");
+  if (!existsSync(regsDir)) return null;
+  let dirs: string[];
+  try {
+    dirs = readdirSync(regsDir, { encoding: "utf-8" });
+  } catch {
+    return null;
+  }
+  for (const sub of dirs) {
+    const candidate = join(regsDir, sub, "source-docs", `${slug}-structured.json`);
+    if (existsSync(candidate)) {
+      try {
+        return JSON.parse(readFileSync(candidate, "utf-8")) as RegStructuredDocMinimal;
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * GET /api/regulation-reader/:slug/adoption-state
+ * Returns the ProvisionAdoptionState for the instrument — scope events keyed
+ * by scopeId. Client combines with the provision tree to compute three-state
+ * checkboxes (checked / unchecked / indeterminate).
+ */
+async function handleRegAdoptionState(_req: Request, slug: string): Promise<Response> {
+  const state = loadProvisionAdoptionState(eventStore, slug);
+  return jsonResponse({ slug, scopes: state.scopes });
+}
+
+/**
+ * POST /api/regulation-reader/:slug/adopt
+ * Body: { scopeId: string; adopted: boolean; adoptedBy?: string }
+ * Emits ProvisionScopeAdopted event; returns updated adoption state.
+ */
+async function handleRegAdopt(req: Request, slug: string): Promise<Response> {
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return jsonResponse({ error: "invalid JSON body" }, 400);
+  }
+  if (typeof raw !== "object" || raw === null) {
+    return jsonResponse({ error: "body must be a JSON object" }, 400);
+  }
+  const body = raw as Record<string, unknown>;
+  const scopeId = typeof body.scopeId === "string" ? body.scopeId.trim() : "";
+  const adopted = typeof body.adopted === "boolean" ? body.adopted : null;
+  const adoptedBy =
+    typeof body.adoptedBy === "string" && body.adoptedBy.trim()
+      ? body.adoptedBy.trim()
+      : "marc@tgv.co.za";
+  if (!scopeId || adopted === null) {
+    return jsonResponse({ error: "scopeId (string) and adopted (boolean) are required" }, 400);
+  }
+
+  const doc = loadStructuredDocForSlug(slug);
+  if (!doc) return jsonResponse({ error: `Instrument not found: ${slug}` }, 404);
+
+  const tree = buildProvisionTree(doc);
+  if (!tree.has(scopeId) && scopeId !== slug) {
+    return jsonResponse({ error: `scopeId not found in instrument: ${scopeId}` }, 400);
+  }
+  const verbatimHash = computeScopeVerbatimHash(tree, scopeId);
+
+  const now = nowUtc();
+  const evt = makeProvisionScopeAdopted({
+    asOf: now,
+    entity: "LE-ZA-HOZ-BANK",
+    actor: { type: "human", id: adoptedBy },
+    citations: ["D-REGULATORY-ARCHITECTURE-TWO-PLANE", "P1-EVENTS-AS-TRUTH"],
+    payload: { instrumentSlug: slug, scopeId, adopted, adoptedBy, adoptedAt: now, verbatimHash },
+  });
+  eventStore.append(evt);
+  logger.info({ slug, scopeId, adopted, adoptedBy }, "ProvisionScopeAdopted emitted");
+
+  const state = loadProvisionAdoptionState(eventStore, slug);
+  return jsonResponse({ ok: true, eventId: evt.event_id, scopes: state.scopes }, 201);
+}
+
+// DistillationProposal — the shape returned by /distill for human review.
+interface DistillationProposal {
+  suggestedSlug: string;
+  suggestedUrn: string;
+  suggestedOrgId: string;
+  requirement: string;
+  contributingProvisionIds: string[];
+  verbatimSourceText: Record<string, string>;
+  confidence: number;
+}
+
+const DISTILLATION_SYSTEM_PROMPT = `You are a regulatory compliance specialist helping a South African bank create obligation records from adopted regulation provisions.
+
+Given a list of adopted regulation provisions (each with an ID, heading, and verbatim text), cluster them into 1–5 semantically coherent obligation groups. Each group represents one discrete compliance obligation the bank must meet.
+
+Return ONLY a JSON array of obligation proposals. Each element must have:
+- suggestedSlug: kebab-case identifier (e.g. "minimum-capital-adequacy")
+- suggestedUrn: "urn:obligation:bank:<domain>:<slug>" (infer domain from context)
+- suggestedOrgId: "ORG-<DOMAIN>-<nn>" (e.g. "ORG-CAP-01")
+- requirement: a concise (1–3 sentence) plain-English description of what the bank must do
+- contributingProvisionIds: array of provision IDs that underlie this obligation
+- verbatimSourceText: object mapping each contributing provisionId to a short verbatim quote (max 200 chars per entry)
+- confidence: float 0–1 reflecting how clear the grouping is
+
+Group provisions that address the same compliance topic. If a provision stands alone, give it its own group.
+Return a valid JSON array only — no preamble, no markdown fences.`;
+
+/**
+ * POST /api/regulation-reader/:slug/distill
+ * Body: { scopeId?: string }   (defaults to whole instrument)
+ * Collects adopted leaves under scopeId, calls LLM, returns DistillationProposal[].
+ * No events emitted — proposals are returned for human review.
+ */
+async function handleRegDistill(req: Request, slug: string): Promise<Response> {
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return jsonResponse({ error: "invalid JSON body" }, 400);
+  }
+  const body = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>;
+  const scopeId = typeof body.scopeId === "string" && body.scopeId.trim() ? body.scopeId.trim() : slug;
+
+  const doc = loadStructuredDocForSlug(slug);
+  if (!doc) return jsonResponse({ error: `Instrument not found: ${slug}` }, 404);
+
+  const tree = buildProvisionTree(doc);
+  const state = loadProvisionAdoptionState(eventStore, slug);
+  const scopeEvents = Object.entries(state.scopes).map(([sid, s]) => ({
+    scopeId: sid,
+    adopted: s.adopted,
+    adoptedAt: s.adoptedAt,
+  }));
+
+  const allLeaves = getLeafDescendants(tree, scopeId);
+  const adoptedLeaves = allLeaves.filter((leafId) =>
+    resolveLeafAdoptionState(leafId, tree, scopeEvents),
+  );
+
+  if (adoptedLeaves.length === 0) {
+    return jsonResponse({ proposals: [], message: "No adopted provisions in this scope" });
+  }
+
+  // Build the user prompt listing adopted provision texts
+  const provisionLines = adoptedLeaves
+    .map((leafId) => {
+      const node = tree.get(leafId);
+      const text = (node?.text ?? "").trim();
+      const heading = [node?.number, node?.heading].filter(Boolean).join(" ");
+      return `### ${leafId}${heading ? ` — ${heading}` : ""}\n${text || "(no verbatim text)"}`;
+    })
+    .join("\n\n");
+
+  const userInput = `Instrument: ${slug} (${doc.title ?? slug})
+Scope: ${scopeId}
+Excluded (unadopted): ${allLeaves.filter((l) => !adoptedLeaves.includes(l)).length} provisions
+
+Adopted provisions (${adoptedLeaves.length}):\n\n${provisionLines}`;
+
+  const llmResult = await tryGenerateNarrative({
+    stableSystem: DISTILLATION_SYSTEM_PROMPT,
+    userInput,
+    maxTokens: 4096,
+    effort: "medium",
+    meta: { purpose: "provision-distillation", slug, scopeId },
+  });
+
+  if (!llmResult.ok) {
+    logger.warn({ slug, scopeId, error: llmResult.error }, "LLM distillation failed");
+    return jsonResponse(
+      { error: "LLM distillation failed", detail: llmResult.error, retryable: llmResult.retryable },
+      502,
+    );
+  }
+
+  let proposals: DistillationProposal[] = [];
+  try {
+    const parsed = JSON.parse(llmResult.result.text);
+    proposals = Array.isArray(parsed) ? (parsed as DistillationProposal[]) : [];
+  } catch {
+    logger.warn({ slug, scopeId, text: llmResult.result.text }, "LLM response was not valid JSON");
+    return jsonResponse({ error: "LLM returned invalid JSON", rawText: llmResult.result.text }, 502);
+  }
+
+  return jsonResponse({ slug, scopeId, adoptedCount: adoptedLeaves.length, proposals });
+}
+
+// ApprovedObligation — submitted by the UI after the human reviews LLM proposals.
+interface ApprovedObligation {
+  obligationId: string;
+  urn: string;
+  requirement: string;
+  derivesFrom: string[];
+  owner: string;
+  domain: string;
+}
+
+/**
+ * POST /api/regulation-reader/:slug/adopt-obligations
+ * Body: { obligations: ApprovedObligation[] }
+ * Emits ObligationAdopted per approved obligation. Returns new obligation IDs.
+ */
+async function handleRegAdoptObligations(req: Request, slug: string): Promise<Response> {
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return jsonResponse({ error: "invalid JSON body" }, 400);
+  }
+  if (typeof raw !== "object" || raw === null) {
+    return jsonResponse({ error: "body must be a JSON object" }, 400);
+  }
+  const body = raw as Record<string, unknown>;
+  if (!Array.isArray(body.obligations) || body.obligations.length === 0) {
+    return jsonResponse({ error: "obligations array is required and must be non-empty" }, 400);
+  }
+
+  const now = nowUtc();
+  const emitted: string[] = [];
+
+  for (const ob of body.obligations as ApprovedObligation[]) {
+    if (!ob.obligationId || !ob.requirement) continue;
+    const evt = makeObligationAdopted({
+      asOf: now,
+      entity: "LE-ZA-HOZ-BANK",
+      actor: { type: "human", id: "marc@tgv.co.za" },
+      citations: ["D-REGULATORY-ARCHITECTURE-TWO-PLANE", "P1-EVENTS-AS-TRUTH"],
+      payload: {
+        obligationId: ob.obligationId,
+        urn: ob.urn ?? "",
+        domain: ob.domain ?? "",
+        citation: slug,
+        requirement: ob.requirement,
+        fulfilmentPolicy: "",
+        owner: ob.owner ?? "",
+        status: "active",
+        derivesFrom: ob.derivesFrom ?? [],
+        adoptedAt: now,
+      },
+    });
+    eventStore.append(evt);
+    emitted.push(ob.obligationId);
+  }
+
+  logger.info({ slug, count: emitted.length }, "ObligationAdopted events emitted from tick-flow");
+  return jsonResponse({ ok: true, slug, adopted: emitted }, 201);
+}
+
 async function handleSeedDescope(req: Request): Promise<Response> {
   let raw: unknown;
   try {
@@ -3471,6 +3737,33 @@ const server = Bun.serve({
             "Cache-Control": "public, max-age=31536000, immutable",
           },
         });
+      }
+    }
+
+    // ── Provision-scope adoption routes ────────────────────────────────────
+    // GET  /api/regulation-reader/:slug/adoption-state
+    // POST /api/regulation-reader/:slug/adopt
+    // POST /api/regulation-reader/:slug/distill
+    // POST /api/regulation-reader/:slug/adopt-obligations
+    {
+      const adoptionMatch = url.pathname.match(
+        /^\/api\/regulation-reader\/([a-z0-9-]+)\/(adoption-state|adopt|distill|adopt-obligations)$/,
+      );
+      if (adoptionMatch?.[1] && adoptionMatch?.[2]) {
+        const slugAd = adoptionMatch[1];
+        const action = adoptionMatch[2];
+        if (action === "adoption-state" && req.method === "GET") {
+          return handleRegAdoptionState(req, slugAd);
+        }
+        if (action === "adopt" && req.method === "POST") {
+          return handleRegAdopt(req, slugAd);
+        }
+        if (action === "distill" && req.method === "POST") {
+          return handleRegDistill(req, slugAd);
+        }
+        if (action === "adopt-obligations" && req.method === "POST") {
+          return handleRegAdoptObligations(req, slugAd);
+        }
       }
     }
 

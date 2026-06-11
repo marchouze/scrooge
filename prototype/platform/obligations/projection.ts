@@ -15,6 +15,7 @@
 import type {
   ObligationAdoptedPayload,
   ObligationLifecycleTransitionedPayload,
+  ProvisionScopeAdoptedPayload,
 } from "../event-store/event-types/obligation-lifecycle";
 import type { EventStore } from "../event-store/store";
 import type { Event } from "../event-store/types";
@@ -89,4 +90,54 @@ export function loadBankObligations(store: EventStore): BankObligation[] {
     ...store.replay({ type: "ObligationLifecycleTransitioned" }),
   ];
   return buildBankObligations(events);
+}
+
+// ---------------------------------------------------------------------------
+// Provision adoption state projection
+// ---------------------------------------------------------------------------
+
+/**
+ * The directly-set scope states for an instrument: scopeId → { adopted, adoptedAt }.
+ * Most recent event per scopeId wins (ties resolved by specificity in the UI).
+ * The client uses this together with the provision tree to compute three-state
+ * checkbox rendering (checked / unchecked / indeterminate).
+ */
+export interface ProvisionAdoptionState {
+  readonly scopes: Record<string, { adopted: boolean; adoptedAt: string }>;
+}
+
+/**
+ * Fold `ProvisionScopeAdopted` events for one instrument into the adoption state.
+ * Pure fold — testable without a store.
+ */
+export function buildProvisionAdoptionState(
+  events: Iterable<Event>,
+  instrumentSlug: string,
+): ProvisionAdoptionState {
+  const scopes: Record<string, { adopted: boolean; adoptedAt: string }> = {};
+
+  const relevant = [...events]
+    .filter(
+      (e) =>
+        e.type === "ProvisionScopeAdopted" &&
+        (e.payload as ProvisionScopeAdoptedPayload).instrumentSlug === instrumentSlug,
+    )
+    .sort((a, b) => (a.as_of < b.as_of ? -1 : a.as_of > b.as_of ? 1 : 0));
+
+  for (const ev of relevant) {
+    const p = ev.payload as ProvisionScopeAdoptedPayload;
+    // Most recent event per scopeId — later events overwrite earlier ones.
+    scopes[p.scopeId] = { adopted: p.adopted, adoptedAt: p.adoptedAt };
+  }
+
+  return { scopes };
+}
+
+/** Load the provision adoption state for one instrument from the event store. */
+export function loadProvisionAdoptionState(
+  store: EventStore,
+  instrumentSlug: string,
+): ProvisionAdoptionState {
+  const events = store.replay({ type: "ProvisionScopeAdopted" });
+  return buildProvisionAdoptionState(events, instrumentSlug);
 }
