@@ -15,6 +15,10 @@
   // ── State ────────────────────────────────────────────────────────
   let currentSlug = null;
   let currentDetail = null;
+  // adoptionState: { scopes: { [scopeId]: { adopted, adoptedAt } } }
+  let adoptionState = { scopes: {} };
+  // clientTree: Map<nodeId, { parentId, children, text }>
+  let clientTree = null;
 
   // ── List view state ──────────────────────────────────────────────
   let allInstruments = [];
@@ -68,6 +72,73 @@
     if (s.includes("not-applicable") || s.includes("not_applicable"))
       return "rr-obl-status-not-applicable";
     return "";
+  }
+
+  // ── Client-side provision tree ───────────────────────────────────
+
+  function buildClientTree(detail) {
+    const tree = new Map();
+    tree.set(detail.slug, { parentId: null, children: [], text: "" });
+    for (const chapter of detail.chapters || []) {
+      tree.set(chapter.id, { parentId: detail.slug, children: [], text: "" });
+      tree.get(detail.slug).children.push(chapter.id);
+      for (const section of chapter.sections || []) {
+        tree.set(section.id, { parentId: chapter.id, children: [], text: section.text || "" });
+        tree.get(chapter.id).children.push(section.id);
+        for (const sub of section.subsections || []) {
+          tree.set(sub.id, { parentId: section.id, children: [], text: sub.text || "" });
+          tree.get(section.id).children.push(sub.id);
+        }
+      }
+    }
+    return tree;
+  }
+
+  function getLeafDescendantsC(tree, nodeId) {
+    const node = tree.get(nodeId);
+    if (!node) return [];
+    if (node.children.length === 0) return [nodeId];
+    return node.children.flatMap((c) => getLeafDescendantsC(tree, c));
+  }
+
+  function getAncestorsC(tree, nodeId) {
+    const node = tree.get(nodeId);
+    if (!node || node.parentId === null) return [];
+    return [node.parentId, ...getAncestorsC(tree, node.parentId)];
+  }
+
+  function resolveLeafStateC(leafId, tree, scopes) {
+    const ancestors = getAncestorsC(tree, leafId);
+    const covering = Object.entries(scopes).filter(
+      ([sid]) => sid === leafId || ancestors.includes(sid),
+    );
+    if (covering.length === 0) return false;
+    const depthOf = (id) => {
+      if (id === leafId) return 0;
+      const idx = ancestors.indexOf(id);
+      return idx === -1 ? Number.MAX_SAFE_INTEGER : idx + 1;
+    };
+    covering.sort(([aId, aS], [bId, bS]) => {
+      if (aS.adoptedAt !== bS.adoptedAt) return aS.adoptedAt < bS.adoptedAt ? 1 : -1;
+      return depthOf(aId) - depthOf(bId);
+    });
+    return covering[0][1].adopted;
+  }
+
+  // Returns 'checked' | 'indeterminate' | 'unchecked'
+  function computeNodeStateC(nodeId, tree, scopes) {
+    const leaves = getLeafDescendantsC(tree, nodeId);
+    if (leaves.length === 0) return "unchecked";
+    const n = leaves.filter((l) => resolveLeafStateC(l, tree, scopes)).length;
+    if (n === 0) return "unchecked";
+    if (n === leaves.length) return "checked";
+    return "indeterminate";
+  }
+
+  // Returns count of adopted leaves across entire instrument
+  function countAdoptedLeaves(tree, slug, scopes) {
+    const leaves = getLeafDescendantsC(tree, slug);
+    return leaves.filter((l) => resolveLeafStateC(l, tree, scopes)).length;
   }
 
   // ── Sidebar rendering ────────────────────────────────────────────
@@ -124,12 +195,26 @@
   // ── Detail rendering ─────────────────────────────────────────────
 
   function renderHeader(detail) {
+    const sectionCount = detail.chapters.reduce((n, ch) => n + ch.sections.length, 0);
     headerEl.innerHTML = `
-<h2 class="rr-main-title">${esc(detail.title)}</h2>
-<div class="rr-main-subtitle">
-  ${esc(detail.regulator)} · ${esc(String(detail.year))}
-  · ${detail.totalObligations} obligation${detail.totalObligations !== 1 ? "s" : ""}
-  · ${detail.chapters.reduce((n, ch) => n + ch.sections.length, 0)} sections
+<div style="display:flex;align-items:flex-start;gap:var(--space-3)">
+  <div style="flex:1">
+    <h2 class="rr-main-title">${esc(detail.title)}</h2>
+    <div class="rr-main-subtitle">
+      ${esc(detail.regulator)} · ${esc(String(detail.year))}
+      · ${detail.totalObligations} obligation${detail.totalObligations !== 1 ? "s" : ""}
+      · ${sectionCount} sections
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:var(--space-2);margin-top:4px;flex-shrink:0">
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85em;color:var(--color-text-muted)" title="Adopt/unadopt entire instrument">
+      <input type="checkbox" id="rr-doc-adopt-cb" data-scope-id="${esc(detail.slug)}" style="width:16px;height:16px;accent-color:var(--color-primary,#3b82f6);cursor:pointer">
+      Adopt all
+    </label>
+    <button type="button" id="rr-distill-btn" style="padding:4px 10px;font-size:0.82em;background:var(--color-primary,#3b82f6);color:#fff;border:none;border-radius:4px;cursor:pointer;white-space:nowrap" title="Distill adopted provisions into obligation proposals via LLM">
+      Distill…
+    </button>
+  </div>
 </div>`;
   }
 
@@ -205,8 +290,11 @@
       sub.subsections && sub.subsections.length > 0
         ? sub.subsections.map((child) => renderSubsection(child, depth + 1)).join("")
         : "";
-    return `<div style="margin-top:var(--space-2);padding-left:${indent}px;border-left:2px solid ${borderColor}">
-      <span style="font-weight:600;color:var(--color-text-muted);font-size:0.85em">${esc(sub.number)}</span>
+    return `<div data-section-id="${esc(sub.id)}" style="margin-top:var(--space-2);padding-left:${indent}px;border-left:2px solid ${borderColor}">
+      <span style="display:inline-flex;align-items:center;gap:6px">
+        <input type="checkbox" class="rr-scope-checkbox" data-scope-id="${esc(sub.id)}" style="width:14px;height:14px;accent-color:var(--color-primary,#3b82f6);cursor:pointer;flex-shrink:0" title="Adopt/unadopt this subsection">
+        <span style="font-weight:600;color:var(--color-text-muted);font-size:0.85em">${esc(sub.number)}</span>
+      </span>
       ${bodyHtml}
       ${childrenHtml}
     </div>`;
@@ -276,6 +364,7 @@
             const sHead = section.title || section.heading || "";
             return `<div class="rr-section" id="${esc(section.id)}" data-section-id="${esc(section.id)}" data-obl-count="${oblCount}">
   <div class="rr-section-header">
+    <input type="checkbox" class="rr-scope-checkbox" data-scope-id="${esc(section.id)}" style="width:15px;height:15px;accent-color:var(--color-primary,#3b82f6);cursor:pointer;flex-shrink:0;margin-right:4px" title="Adopt/unadopt this section">
     <span class="rr-section-number">${esc(sNum)}</span>
     <span class="rr-section-heading">${esc(sHead)}</span>
     ${toggleHtml}
@@ -320,6 +409,251 @@
       });
     }
   }
+
+  // ── Provision-scope adoption ──────────────────────────────────────
+
+  function paintCheckboxes(scopes) {
+    if (!clientTree) return;
+    for (const cb of document.querySelectorAll(".rr-scope-checkbox")) {
+      const scopeId = cb.dataset.scopeId;
+      if (!scopeId) continue;
+      const state = computeNodeStateC(scopeId, clientTree, scopes);
+      cb.checked = state === "checked";
+      cb.indeterminate = state === "indeterminate";
+    }
+    // Document-level checkbox
+    const docCb = document.getElementById("rr-doc-adopt-cb");
+    if (docCb && currentDetail) {
+      const state = computeNodeStateC(currentDetail.slug, clientTree, scopes);
+      docCb.checked = state === "checked";
+      docCb.indeterminate = state === "indeterminate";
+    }
+    // Update adopted count badge in distill button label if present
+    const distillBtn = document.getElementById("rr-distill-btn");
+    if (distillBtn && currentDetail) {
+      const n = countAdoptedLeaves(clientTree, currentDetail.slug, scopes);
+      distillBtn.style.display = n > 0 ? "" : "none";
+      if (n > 0) distillBtn.textContent = `Distill ${n} adopted…`;
+    }
+  }
+
+  async function toggleProvisionScope(scopeId, adopted) {
+    if (!currentSlug) return;
+    const resp = await fetch(`/api/regulation-reader/${currentSlug}/adopt`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ scopeId, adopted }),
+    });
+    if (!resp.ok) {
+      console.warn("adopt failed", await resp.text());
+      return;
+    }
+    const data = await resp.json();
+    if (data.scopes) {
+      adoptionState = { scopes: data.scopes };
+      paintCheckboxes(adoptionState.scopes);
+    }
+  }
+
+  function bindScopeCheckboxes() {
+    if (!sectionsEl) return;
+    for (const cb of sectionsEl.querySelectorAll(".rr-scope-checkbox")) {
+      cb.addEventListener("change", async (e) => {
+        e.stopPropagation();
+        const scopeId = cb.dataset.scopeId;
+        if (!scopeId) return;
+        await toggleProvisionScope(scopeId, cb.checked);
+      });
+    }
+    // Document-level checkbox
+    const docCb = document.getElementById("rr-doc-adopt-cb");
+    if (docCb) {
+      docCb.addEventListener("change", async () => {
+        if (!currentDetail) return;
+        await toggleProvisionScope(currentDetail.slug, docCb.checked);
+      });
+    }
+    // Distill button
+    const distillBtn = document.getElementById("rr-distill-btn");
+    if (distillBtn) {
+      distillBtn.addEventListener("click", () => {
+        if (!currentDetail) return;
+        showDistillPanel(currentDetail.slug);
+      });
+    }
+  }
+
+  // ── Distill panel ─────────────────────────────────────────────────
+
+  async function showDistillPanel(scopeId) {
+    if (!currentSlug) return;
+    const overlay = getOrCreateOverlay();
+    overlay.innerHTML = `<div class="rr-modal">
+  <div class="rr-modal-header">
+    <span style="font-weight:600">Distilling obligations…</span>
+    <button type="button" class="rr-modal-close" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:1.2em">✕</button>
+  </div>
+  <div class="rr-modal-body" style="padding:var(--space-4);color:var(--color-text-muted);font-style:italic">
+    Sending ${countAdoptedLeaves(clientTree, currentDetail?.slug ?? currentSlug, adoptionState.scopes)} adopted provisions to LLM…
+  </div>
+</div>`;
+    overlay.style.display = "flex";
+    overlay.querySelector(".rr-modal-close")?.addEventListener("click", closeOverlay);
+
+    const resp = await fetch(`/api/regulation-reader/${currentSlug}/distill`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ scopeId }),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ error: resp.statusText }));
+      renderDistillError(overlay, err.error || "Distillation failed");
+      return;
+    }
+    const data = await resp.json();
+    renderDistillProposals(overlay, data.proposals || []);
+  }
+
+  function renderDistillError(overlay, msg) {
+    const body = overlay.querySelector(".rr-modal-body");
+    if (body) body.innerHTML = `<div style="color:var(--color-error,#ef4444)">${esc(msg)}</div>`;
+  }
+
+  function renderDistillProposals(overlay, proposals) {
+    if (proposals.length === 0) {
+      renderDistillError(
+        overlay,
+        "No obligation proposals generated. Try adopting more provisions.",
+      );
+      return;
+    }
+
+    // Track edits
+    const edited = proposals.map((p) => ({ ...p }));
+
+    const proposalCards = edited
+      .map((p, i) => {
+        const verbatimRows = Object.entries(p.verbatimSourceText || {})
+          .map(
+            ([pid, quote]) =>
+              `<div style="margin-top:6px;font-size:0.8em;color:var(--color-text-muted)"><code>${esc(pid)}</code>: <em>"${esc(String(quote).slice(0, 180))}${String(quote).length > 180 ? "…" : ""}"</em></div>`,
+          )
+          .join("");
+        return `<div class="rr-distill-card" style="border:1px solid var(--color-border);border-radius:6px;padding:var(--space-3);margin-bottom:var(--space-3)">
+  <div style="display:flex;gap:var(--space-2);align-items:flex-start;margin-bottom:var(--space-2)">
+    <input type="text" class="rr-prop-org-id" data-idx="${i}" value="${esc(p.suggestedOrgId)}" style="width:100px;padding:3px 6px;border:1px solid var(--color-border);border-radius:4px;font-size:0.82em;font-family:monospace" placeholder="ORG-ID">
+    <input type="text" class="rr-prop-urn" data-idx="${i}" value="${esc(p.suggestedUrn)}" style="flex:1;padding:3px 6px;border:1px solid var(--color-border);border-radius:4px;font-size:0.82em;font-family:monospace" placeholder="urn:obligation:…">
+    <span style="font-size:0.75em;color:var(--color-text-muted);padding-top:5px">${Math.round((p.confidence || 0) * 100)}% confidence</span>
+  </div>
+  <textarea class="rr-prop-req" data-idx="${i}" rows="3" style="width:100%;padding:6px;border:1px solid var(--color-border);border-radius:4px;font-size:0.88em;resize:vertical;box-sizing:border-box">${esc(p.requirement)}</textarea>
+  <div style="margin-top:6px;font-size:0.8em;color:var(--color-text-muted)">Sources: ${p.contributingProvisionIds?.join(", ") || "—"}</div>
+  ${verbatimRows}
+</div>`;
+      })
+      .join("");
+
+    const header = overlay.querySelector(".rr-modal-header span");
+    if (header)
+      header.textContent = `${proposals.length} obligation proposal${proposals.length !== 1 ? "s" : ""} — review and approve`;
+
+    const body = overlay.querySelector(".rr-modal-body");
+    if (body) {
+      body.style.overflowY = "auto";
+      body.style.maxHeight = "60vh";
+      body.innerHTML = `${proposalCards}
+<div style="display:flex;gap:var(--space-2);justify-content:flex-end;padding-top:var(--space-2);border-top:1px solid var(--color-border)">
+  <button type="button" id="rr-approve-all-btn" style="padding:6px 16px;background:var(--color-primary,#3b82f6);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:0.9em">Approve all &amp; emit events</button>
+  <button type="button" id="rr-cancel-distill-btn" style="padding:6px 12px;background:none;border:1px solid var(--color-border);border-radius:4px;cursor:pointer;font-size:0.9em">Cancel</button>
+</div>`;
+    }
+
+    // Sync edited array on input
+    for (const el of overlay.querySelectorAll(".rr-prop-req")) {
+      el.addEventListener("input", (e) => {
+        const idx = Number(e.target.dataset.idx);
+        edited[idx].requirement = e.target.value;
+      });
+    }
+    for (const el of overlay.querySelectorAll(".rr-prop-org-id")) {
+      el.addEventListener("input", (e) => {
+        const idx = Number(e.target.dataset.idx);
+        edited[idx].suggestedOrgId = e.target.value;
+      });
+    }
+    for (const el of overlay.querySelectorAll(".rr-prop-urn")) {
+      el.addEventListener("input", (e) => {
+        const idx = Number(e.target.dataset.idx);
+        edited[idx].suggestedUrn = e.target.value;
+      });
+    }
+
+    overlay.querySelector("#rr-approve-all-btn")?.addEventListener("click", async () => {
+      await approveObligations(edited, overlay);
+    });
+    overlay.querySelector("#rr-cancel-distill-btn")?.addEventListener("click", closeOverlay);
+  }
+
+  async function approveObligations(proposals, overlay) {
+    const body = overlay.querySelector(".rr-modal-body");
+    if (body)
+      body.innerHTML = `<div style="color:var(--color-text-muted);font-style:italic">Emitting ObligationAdopted events…</div>`;
+
+    const obligations = proposals.map((p) => ({
+      obligationId: p.suggestedOrgId,
+      urn: p.suggestedUrn,
+      requirement: p.requirement,
+      derivesFrom: p.contributingProvisionIds || [],
+      owner: "",
+      domain: "",
+    }));
+
+    const resp = await fetch(`/api/regulation-reader/${currentSlug}/adopt-obligations`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ obligations }),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ error: resp.statusText }));
+      if (body)
+        body.innerHTML = `<div style="color:var(--color-error,#ef4444)">Failed: ${esc(err.error || "unknown error")}</div>`;
+      return;
+    }
+    const data = await resp.json();
+    if (body)
+      body.innerHTML = `<div style="color:var(--color-success,#22c55e)">✓ Adopted ${data.adopted?.length ?? 0} obligations: ${(data.adopted || []).map((id) => `<code>${esc(id)}</code>`).join(", ")}</div>
+<div style="margin-top:var(--space-2)"><button type="button" id="rr-close-after-adopt" style="padding:6px 12px;background:none;border:1px solid var(--color-border);border-radius:4px;cursor:pointer">Close</button></div>`;
+    overlay.querySelector("#rr-close-after-adopt")?.addEventListener("click", closeOverlay);
+  }
+
+  // ── Modal overlay helpers ─────────────────────────────────────────
+
+  function getOrCreateOverlay() {
+    let overlay = document.getElementById("rr-modal-overlay");
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "rr-modal-overlay";
+      overlay.style.cssText =
+        "display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;padding:var(--space-4)";
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) closeOverlay();
+      });
+      const modal = document.createElement("div");
+      modal.className = "rr-modal";
+      modal.style.cssText =
+        "background:var(--color-surface);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.2);width:min(640px,100%);display:flex;flex-direction:column";
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+    }
+    return overlay;
+  }
+
+  function closeOverlay() {
+    const overlay = document.getElementById("rr-modal-overlay");
+    if (overlay) overlay.style.display = "none";
+  }
+
+  // ── Modal header/body structure (rendered into overlay) ──────────
+  // (overlay.innerHTML is replaced on each showDistillPanel call above)
 
   function applyGlobalObligationToggle(show) {
     if (!sectionsEl) return;
@@ -390,6 +724,24 @@
     const wideHtml = renderInstrumentWideObligations(data.instrumentWideObligations);
     sectionsEl.innerHTML = wideHtml + renderSections(data.chapters);
     bindObligationToggles();
+
+    // Build client-side provision tree for three-state checkbox logic
+    clientTree = buildClientTree(data);
+    adoptionState = { scopes: {} };
+
+    // Bind checkbox + distill handlers before painting so initial paint wires correctly
+    bindScopeCheckboxes();
+
+    // Load adoption state and paint checkboxes
+    sf(`/api/regulation-reader/${slug}/adoption-state`).then((st) => {
+      if (st?.scopes) {
+        adoptionState = { scopes: st.scopes };
+        paintCheckboxes(adoptionState.scopes);
+      } else {
+        paintCheckboxes({});
+      }
+    });
+
     // Honour the current global toggle state on freshly-rendered sections.
     if (showOblEl?.checked) {
       applyGlobalObligationToggle(true);

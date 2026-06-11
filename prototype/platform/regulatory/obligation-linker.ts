@@ -148,6 +148,10 @@ const INSTRUMENT_PATTERNS: Array<[RegExp, string]> = [
   [/\bJoint\s+Standard\s+2\s+of\s+2024\b|\bJS\s*2\s*[/of]+\s*2024\b/i, "JS-2-2024"],
   [/\bFAIS\s+General\s+Code\b|\bGeneral\s+Code\s+of\s+Conduct\b|\bGCC\b/i, "FAIS-GCC"],
   [/\bExchange\s+Control\s+Reg|\bExcon\s+Reg|\bECR\b/i, "EXCON"],
+  // Regulations Relating to Banks → RRB (must precede the generic Act pattern;
+  // RRB citations use "Regulation NN" section refs, handled in
+  // normaliseCitationToSectionId below)
+  [/\bRegulations\s+Relating\s+to\s+Banks\b|\bRRB\b/i, "RRB"],
   // General pattern: "{Word} Act {number}/{year}" → "{WORD}-ACT-{number}-{year}"
   [
     /\b([A-Za-z][A-Za-z\s]+?)\s+Act\s+(\d+)[\s/of]*(\d{4})\b/i,
@@ -165,6 +169,18 @@ const INSTRUMENT_PATTERNS: Array<[RegExp, string]> = [
  * Returns null if the name cannot be matched.
  */
 export function normaliseInstrumentId(name: string): string | null {
+  // SARB PA instruments — Directives / Circulars / Guidance Notes issued under
+  // Banks Act 94/1990 s.6(6)(a) / s.6(4). Prefix rules per WS-PA-REMEDIATION
+  // Phase 1 (PR #1235): BANKS-D{n}-{year} / BANKS-C{n}-{year} / BANKS-GN{n}-{year}.
+  const paDirective = name.match(/\b(?:SARB\s+PA\s+)?Directive\s+D(\d+)\s*\/\s*(\d{4})\b/i);
+  if (paDirective) return `BANKS-D${paDirective[1]}-${paDirective[2]}`;
+  const paCircular = name.match(/\b(?:SARB\s+PA\s+)?Circular\s+C(\d+)\s*\/\s*(\d{4})\b/i);
+  if (paCircular) return `BANKS-C${paCircular[1]}-${paCircular[2]}`;
+  const paGuidance = name.match(
+    /\b(?:SARB\s+PA\s+)?Guidance\s+Note\s+(?:G|GN)?(\d+)\s*(?:of|\/)\s*(\d{4})\b/i,
+  );
+  if (paGuidance) return `BANKS-GN${paGuidance[1]}-${paGuidance[2]}`;
+
   // Try fixed mappings first (all except the last generic one)
   for (let i = 0; i < INSTRUMENT_PATTERNS.length - 1; i++) {
     const entry = INSTRUMENT_PATTERNS[i];
@@ -234,11 +250,44 @@ export function normaliseSectionRef(sectionRef: string): string | null {
  * Returns null if the citation does not match a known pattern.
  */
 export function normaliseCitationToSectionId(citation: string): string | null {
+  // ── SARB PA instruments (Directives / Circulars / Guidance Notes) ──
+  // Register citations cite these instruments as a whole, with the enabling
+  // Banks Act provision in parens and the title after an em dash, e.g.
+  //   "SARB PA Directive D1/2008 (Banks Act 94/1990 s.6(6)(a)) — Use of divisional names"
+  // The embedded Banks Act ref is the ENABLING provision, not the obligation
+  // source — the obligation derives from the directive itself. With no
+  // directive-section ref the pseudo-section "doc" anchors the EXPRESSES edge
+  // at whole-instrument level; an explicit "§2.1.3" ref (if present, outside
+  // the parenthetical) maps to that section. (WS-PA-REMEDIATION Phase 3.)
+  const paInstr = citation.match(
+    /\b(?:SARB\s+PA\s+)?(?:Directive\s+D|Circular\s+C)\d+\s*\/\s*\d{4}\b|\b(?:SARB\s+PA\s+)?Guidance\s+Note\s+(?:G|GN)?\d+\s*(?:of|\/)\s*\d{4}\b/i,
+  );
+  if (paInstr?.[0]) {
+    const instrumentId = normaliseInstrumentId(paInstr[0]);
+    if (instrumentId) {
+      // Directive-section ref after the instrument, outside the parenthetical
+      const afterInstr = citation.slice((paInstr.index ?? 0) + paInstr[0].length);
+      const outsideParens = afterInstr.replace(/\([^)]*\)/g, "");
+      const paSect = outsideParens.match(/§\s*(\d+(?:\.\d+)*[A-Za-z]?)/);
+      return paSect?.[1] ? `${instrumentId}:s${paSect[1]}` : `${instrumentId}:doc`;
+    }
+  }
+
+  // ── Regulations Relating to Banks — "Regulation NN" section refs ──
+  //   "Regulations Relating to Banks (RRB) Regulation 39 — Process of corporate governance"
+  const rrbM = citation.match(
+    /\bRegulations\s+Relating\s+to\s+Banks\b.*?\bRegulation\s+(\d+(?:\.\d+)*[A-Za-z]?)/i,
+  );
+  if (rrbM?.[1]) {
+    return `RRB:s${rrbM[1]}`;
+  }
+
   // Match instrument + section in a single regex sweep.
-  // Handles both "s." and "§" section designators.
+  // Handles both "s." and "§" section designators, up to 3-level subsection
+  // nesting ("2.1.3"), and an optional " — title" tail after the section ref.
   // Captures: (instrument name) (section marker) (section number + optional letter) (optional subsections)
   const m = citation.match(
-    /^([\w\s()./,]+?)\s+(?:s\.|§\s*)(\d+(?:\.\d+)?[A-Za-z]?)(\([^)]*\)(?:\([^)]*\))*)?\s*(?:\+.*)?$/,
+    /^([\w\s()./,]+?)\s+(?:s\.|§\s*)(\d+(?:\.\d+)*[A-Za-z]?)(\([^)]*\)(?:\([^)]*\))*)?\s*(?:\+.*|[—–]\s.*)?$/,
   );
 
   if (m) {
