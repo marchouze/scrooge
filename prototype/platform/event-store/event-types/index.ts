@@ -199,6 +199,19 @@ export * from "./liquidity";
 // management.md (PROC-RISK-LLM-01); brief:ravi:liquidity-limit-engine-
 // mirroring-credit-limit-en:2026-05-21.
 export * from "./liquidity-limit";
+// WS-TREASURER-WAVE1-SUBSTRATE — CFP trigger events (LRM Policy v1 §5.2).
+// IntradayStressDetected + CriticalSettlementObligationAtRisk (Tier 1);
+// LcrRatioBreach + FundingConcentrationAlertTriggered +
+// ExternalCreditEventDetected (Tier 2); NsfrRatioBreach +
+// RecoveryEarlyWarningTriggered (Tier 3).
+// Authority: D-TREASURER-WAVE1-SUBSTRATE; LRM Policy v1 §5.2; BCBS 144.
+export * from "./cfp-triggers";
+// WS-TREASURER-WAVE1-SUBSTRATE — BCBS 248 intraday liquidity monitoring.
+// IntradayLiquidityReported (per-tool stream, LRM Policy v1 §4.2) +
+// IntradayLiquidityMetricsComputed (seven-tool run summary; RAS
+// `appetite:liquidity:intraday` measurement binding).
+// Authority: D-TREASURER-WAVE1-SUBSTRATE; BCBS 248; Banks Act Reg 26.
+export * from "./intraday-liquidity";
 // D-TREASURY-GAPS-WAVE1 — ILAAP engine (stress scenarios + survival horizon).
 // ILAAPScenarioRun — per-scenario liquidity stress result (4 scenarios).
 // ILAAPSummaryCompleted — aggregated worst-case ILAAP assessment.
@@ -440,6 +453,8 @@ import { ISDA_SCHEDULE_CSA_TYPED_EVENT_TYPES } from "./isda-schedule-csa";
 import { KYC_TYPED_EVENT_TYPES } from "./kyc";
 import { LEGAL_DOCUMENTATION_TYPED_EVENT_TYPES } from "./legal-documentation";
 import { LEGAL_ENTITY_TYPED_EVENT_TYPES } from "./legal-entity";
+import { CFP_TRIGGER_TYPED_EVENT_TYPES } from "./cfp-triggers";
+import { INTRADAY_LIQUIDITY_TYPED_EVENT_TYPES } from "./intraday-liquidity";
 import { LIQUIDITY_TYPED_EVENT_TYPES } from "./liquidity";
 import { LIQUIDITY_LIMIT_TYPED_EVENT_TYPES } from "./liquidity-limit";
 import { MARKETS_TRADING_EXTENDED_TYPED_EVENT_TYPES } from "./markets-trading-extended";
@@ -560,6 +575,12 @@ export const TYPED_EVENT_TYPES = [
   // LiquidityLimitBreached + LiquidityLimitBreachDisposed.
   // Authority: D-RAS; LRM Policy v1; PROC-RISK-LLM-01.
   ...LIQUIDITY_LIMIT_TYPED_EVENT_TYPES,
+  // WS-TREASURER-WAVE1-SUBSTRATE — CFP trigger events (LRM Policy v1 §5.2).
+  // Authority: D-TREASURER-WAVE1-SUBSTRATE; LRM Policy v1 §5.2; BCBS 144.
+  ...CFP_TRIGGER_TYPED_EVENT_TYPES,
+  // WS-TREASURER-WAVE1-SUBSTRATE — BCBS 248 intraday liquidity monitoring.
+  // Authority: D-TREASURER-WAVE1-SUBSTRATE; BCBS 248; Banks Act Reg 26.
+  ...INTRADAY_LIQUIDITY_TYPED_EVENT_TYPES,
   // D-TREASURY-GAPS-WAVE1 — ILAAP engine event types (stress scenarios + survival horizon).
   // Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 110; PA ILAAP guidance.
   ...ILAAP_TYPED_EVENT_TYPES,
