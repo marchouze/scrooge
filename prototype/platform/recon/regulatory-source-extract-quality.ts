@@ -29,8 +29,8 @@ import { join, resolve } from "node:path";
 
 import { clock } from "../composition";
 import {
-  POOR_TIERS,
   type ExtractQualityTier,
+  POOR_TIERS,
   scoreExtractQuality,
 } from "../regulatory/extract-quality";
 import type { StructuredSourceDocument } from "../regulatory/structured-source-schema";

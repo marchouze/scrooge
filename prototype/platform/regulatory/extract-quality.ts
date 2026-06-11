@@ -27,10 +27,7 @@
 // Authority: D-PA-SOURCE-EXTRACT-QUALITY-REMEDIATION (CEO session-delegation 2026-06-11).
 // Author: Mira (Compliance / RegTech engineer, engineering).
 
-import type {
-  StructuredSection,
-  StructuredSourceDocument,
-} from "./structured-source-schema";
+import type { StructuredSection, StructuredSourceDocument } from "./structured-source-schema";
 
 /**
  * Quality tier for a single structured-source artefact, worst → best in the
@@ -172,9 +169,7 @@ export function scoreExtractQuality(
   doc: StructuredSourceDocument,
   opts: ScoreExtractQualityOptions = {},
 ): ExtractQualityScore {
-  const topSections: StructuredSection[] = (doc.chapters ?? []).flatMap(
-    (ch) => ch.sections ?? [],
-  );
+  const topSections: StructuredSection[] = (doc.chapters ?? []).flatMap((ch) => ch.sections ?? []);
 
   let totalTextChars = 0;
   let subsectionCount = 0;

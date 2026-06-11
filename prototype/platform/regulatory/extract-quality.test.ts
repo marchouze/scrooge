@@ -28,7 +28,7 @@ function doc(
   return {
     slug,
     title: slug,
-    chapters: [{ id: `ch-${slug}-main`, title: slug, sections }],
+    chapters: [{ id: `ch-${slug}-main`, heading: slug, sections }],
   };
 }
 

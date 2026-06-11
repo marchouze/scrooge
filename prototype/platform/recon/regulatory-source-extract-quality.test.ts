@@ -65,9 +65,9 @@ describe("regulatory-source-extract-quality gate", () => {
     const r = run({ rows, allowlist: ALLOW, asOfDate: POST });
     expect(r.ok).toBe(true); // stale is warn, not fail
     expect(r.staleAllowlist).toBe(1);
-    expect(r.violations.some((v) => v.subject.includes("d1-2015") && v.subject.includes("allowlist"))).toBe(
-      true,
-    );
+    expect(
+      r.violations.some((v) => v.subject.includes("d1-2015") && v.subject.includes("allowlist")),
+    ).toBe(true);
   });
 
   it("treats complete/partial as acceptable (not poor)", () => {

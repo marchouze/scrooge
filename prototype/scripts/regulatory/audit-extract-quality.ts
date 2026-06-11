@@ -23,7 +23,7 @@
 // Author: Mira (Compliance / RegTech engineer, engineering).
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { join, relative, resolve as pathResolve } from "node:path";
+import { join, resolve as pathResolve, relative } from "node:path";
 
 import {
   type ExtractQualityScore,
