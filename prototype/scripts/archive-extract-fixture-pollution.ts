@@ -197,32 +197,9 @@ export function runExtraction(
       byEntity: result.byEntity,
     });
 
-    // Post-run verification.
-    const residual = summariseFixturePollution(dbPath);
-    const pStore = new PartitionedEventStore(store);
-    const integrity = pStore.verifyArchiveIntegrity();
-    const newPartitionIntegrity = integrity.find((r) => r.partitionId === result.partitionId);
-    let replayMatching = 0;
-    let replayTotal = 0;
-    for (const e of pStore.replay()) {
-      replayTotal++;
-      if (isFixturePollutionEntity(e.entity)) replayMatching++;
-    }
-    const ok =
-      residual.total === 0 &&
-      newPartitionIntegrity?.ok === true &&
-      replayMatching === result.eventCount + residual.total;
-    log(ok ? "info" : "error", "post-run verification", {
-      residualMatchingHotRows: residual.total,
-      hotTotalAfter: residual.hotTotal,
-      newPartitionHashVerified: newPartitionIntegrity?.ok ?? false,
-      allPartitionsIntegrity: integrity,
-      partitionedReplayTotalEvents: replayTotal,
-      partitionedReplayMatchingEvents: replayMatching,
-      expectedMatchingViaReplay: result.eventCount,
-      verified: ok,
-    });
-    if (!ok) {
+    // Post-run verification (event-id-precise).
+    const verified = verifyExtractedPartition(dbPath, store, result.partitionId);
+    if (!verified) {
       throw new Error(
         "archive-extract-fixture-pollution: post-run verification FAILED — investigate before relying on the extraction (see log line above)",
       );
@@ -236,6 +213,115 @@ export function runExtraction(
   }
 }
 
+/**
+ * Event-id-precise verification of an extracted fixture-pollution
+ * partition:
+ *
+ *   1. Zero matching rows remain hot.
+ *   2. The partition's SHA-256 verifies (and every other partition's
+ *      does too — read-only cold opens must not have mutated anything).
+ *   3. PartitionedEventStore.replay() yields EVERY extracted event_id
+ *      exactly once — nothing destroyed, nothing duplicated.
+ *
+ * The replay-level check is keyed on the partition's own event_ids, NOT
+ * on a pattern count: matching rows may legitimately pre-exist in OLDER
+ * cold partitions (the Phase-5 cutoff-eviction job swept 120 such rows
+ * below the hot floor before this selective extraction existed), so a
+ * pattern count over the full replay would over-count.
+ */
+export function verifyExtractedPartition(
+  dbPath: string,
+  store: InstanceType<typeof EventStore>,
+  partitionId: string,
+): boolean {
+  const partition = store.listArchivePartitions().find((p) => p.partition_id === partitionId);
+  if (!partition) {
+    log("error", `verification: partition ${partitionId} not found in archive_partitions`);
+    return false;
+  }
+
+  // Extracted event-ids straight from the cold file (read-only).
+  const cold = new Database(partition.path, { readonly: true });
+  const extractedIds = new Set(
+    (cold.prepare("SELECT event_id FROM events").all() as Array<{ event_id: string }>).map(
+      (r) => r.event_id,
+    ),
+  );
+  cold.close();
+
+  const residual = summariseFixturePollution(dbPath);
+  const pStore = new PartitionedEventStore(store);
+  const integrity = pStore.verifyArchiveIntegrity();
+  const partitionIntegrity = integrity.find((r) => r.partitionId === partitionId);
+
+  let replayTotal = 0;
+  let replayMatchingByPattern = 0;
+  let extractedSeen = 0;
+  let extractedDuplicates = 0;
+  const seenOnce = new Set<string>();
+  for (const e of pStore.replay()) {
+    replayTotal++;
+    if (isFixturePollutionEntity(e.entity)) replayMatchingByPattern++;
+    if (extractedIds.has(e.event_id)) {
+      if (seenOnce.has(e.event_id)) {
+        extractedDuplicates++;
+      } else {
+        seenOnce.add(e.event_id);
+        extractedSeen++;
+      }
+    }
+  }
+
+  const ok =
+    residual.total === 0 &&
+    partitionIntegrity?.ok === true &&
+    integrity.every((r) => r.ok) &&
+    extractedSeen === partition.event_count &&
+    extractedDuplicates === 0;
+  log(ok ? "info" : "error", "post-run verification", {
+    partitionId,
+    archivePath: partition.path,
+    residualMatchingHotRows: residual.total,
+    hotTotalAfter: residual.hotTotal,
+    partitionHashVerified: partitionIntegrity?.ok ?? false,
+    allPartitionsIntegrity: integrity,
+    partitionedReplayTotalEvents: replayTotal,
+    extractedEventIdsInPartition: partition.event_count,
+    extractedEventIdsSeenInReplay: extractedSeen,
+    extractedEventIdsDuplicated: extractedDuplicates,
+    replayMatchingByPattern,
+    preExistingColdMatchesByPattern: replayMatchingByPattern - extractedSeen - residual.total,
+    verified: ok,
+  });
+  return ok;
+}
+
+/**
+ * --verify-only: re-run the post-run verification for every
+ * `event-fixture-pollution-*` partition already registered (no rows
+ * moved). Exit non-zero when any fails.
+ */
+export function runVerifyOnly(dbPath: string): boolean {
+  const store = new EventStore(dbPath);
+  try {
+    const partitions = store
+      .listArchivePartitions()
+      .filter((p) => p.path.includes("event-fixture-pollution-"));
+    if (partitions.length === 0) {
+      log("warn", "verify-only: no event-fixture-pollution-* partitions registered");
+      return false;
+    }
+    let allOk = true;
+    for (const p of partitions) {
+      const ok = verifyExtractedPartition(dbPath, store, p.partition_id);
+      if (!ok) allOk = false;
+    }
+    return allOk;
+  } finally {
+    store.close();
+  }
+}
+
 if (import.meta.main) {
   const resolved = applyDispatchEventDbResolution();
   const args = parseArgs(process.argv.slice(2));
@@ -245,6 +331,9 @@ if (import.meta.main) {
     shared: resolved.shared,
   });
   try {
+    if (process.argv.slice(2).includes("--verify-only")) {
+      process.exit(runVerifyOnly(resolved.path) ? 0 : 1);
+    }
     runExtraction(resolved.path, args);
     process.exit(0);
   } catch (err) {
