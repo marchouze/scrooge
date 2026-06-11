@@ -1,14 +1,14 @@
 ---
-policy-parent: Sponsor-Bank Operating Policy v0.1 (STUB) · Payments Policy v0.1 (STUB) · Funding Strategy (planned)
-last-reviewed: 2026-05-16
+policy-parent: nostro-correspondent-banking-policy-v1
+last-reviewed: 2026-06-11
 procedureId: PROC-PAY-NM-01
 title: Nostro account management — correspondent balance and settlement feed
-author: Tomas (payments engineer) · Eitan (Treasurer)
+author: Tomas (Operations & payments engineer, engineering) · Eitan (Treasurer, governance)
 date: 2026-05-16
-owner: Tomas (payments engineer) · Eitan (Treasurer)
+owner: Tomas (Operations & payments engineer, engineering) · Eitan (Treasurer, governance)
 status: POPULATED
-policy-cited: Sponsor-Bank Operating Policy v0.1 (STUB) · Payments Policy v0.1 (STUB) · Funding Strategy (planned)
-system-capability: "@platform/payments/nostro (PLANNED)"
+policy-cited: nostro-correspondent-banking-policy-v1 · payments-settlement-policy-v1
+system-capability: "@platform/payments/reconciliation (LIVE — tomas:daily-reconciliation, nostro-leg break classification) · @platform/payments/nostro (PLANNED — balance feed and intraday projection engine)"
 ---
 
 # Procedure — Nostro account management — correspondent balance and settlement feed
@@ -22,17 +22,21 @@ system-capability: "@platform/payments/nostro (PLANNED)"
 
 ## 1. Source policy
 
-- `Owner Inbox/2026-05-07_tomas_payments-policies-bundle-v0.md` § Sponsor-Bank Operating Policy v0.1 §2 (Outbound payment-instruction relay); §3 (Nostro account operating rules); §5 (Limits and cut-offs).
-- `Owner Inbox/2026-05-07_tomas_payments-policies-bundle-v0.md` § Payments Policy v0.1 §5 (Reconciliation discipline); §3 (Indirect-participant posture).
-- Funding Strategy (planned; Eitan, treasury & ALM engineer; to be authored under ALCO governance).
+- [`Policies/nostro-correspondent-banking-policy-v1.md`](../../Policies/nostro-correspondent-banking-policy-v1.md) — Nostro and Correspondent Banking Policy v1 (COMMENCEMENT-BIND; owner: Devon (Chief Operating Officer, governance); Eitan (Treasurer, governance) co-author and consumer — nostro funding + HQLA contribution).
+- [`Policies/payments-settlement-policy-v1.md`](../../Policies/payments-settlement-policy-v1.md) — Payments and Settlement Policy v1 (COMMENCEMENT-BIND; owner: Devon) — reconciliation discipline and indirect-participant posture.
+- [`archive/owner-inbox/2026-05-07_tomas_payments-policies-bundle-v0.md`](../../archive/owner-inbox/2026-05-07_tomas_payments-policies-bundle-v0.md) — historical design input (Sponsor-Bank Operating Policy v0.1 §§2/3/5; Payments Policy v0.1 §§3/5), superseded by the two policies above.
+- Funding-strategy ownership sits with Eitan under [`Policies/asset-liability-management-policy-v1.md`](../../Policies/asset-liability-management-policy-v1.md) §3.1 (funding mix targets, IN FORCE) — the earlier standalone "Funding Strategy (planned)" reference is closed by that policy.
 
-Obligation chain:
+Obligation chain (Principle 2):
 ```
-Regulation (Banks Act Reg 39 — LCR / intraday liquidity → BCBS Intraday Liquidity Monitoring Tools
-  → SARB Guidance Note 2/2021 — Intraday Liquidity Management)
-  → Policy (Sponsor-Bank Operating Policy v0.1 §3 — Nostro operating rules)
+Regulation (Banks Act Reg 26 — LCR / intraday liquidity → BCBS 248 Intraday Liquidity
+  Monitoring Tools → SARB Guidance Note 2/2021 — Intraday Liquidity Management)
+  → Policy: nostro-correspondent-banking-policy-v1 (nostro operating rules)
+    + payments-settlement-policy-v1 (reconciliation discipline)
     → This procedure (PROC-PAY-NM-01 — nostro balance feed and reconciliation)
-      → System capability (@platform/payments/nostro — PLANNED)
+      → @platform/payments/reconciliation (LIVE — tomas:daily-reconciliation)
+      → @platform/payments/nostro (PLANNED — balance feed + intraday projection;
+        builds at the correspondent settlement interface, Wave 2 W2.1)
 ```
 
 > **Named dependency:** PROC-RISK-ILF-01 (intraday-liquidity-funding.md) Step 1 depends on the opening nostro balance feed produced by this procedure. The feed must be available before PROC-RISK-ILF-01's first intraday run each business day.
@@ -136,7 +140,8 @@ This procedure has four sub-functions:
 
 | Capability | Status | Notes |
 |---|---|---|
-| `@platform/payments/nostro` | PLANNED | Opening balance feed parser; intraday projection engine; EoD reconciliation; account maintenance records. |
+| `@platform/payments/reconciliation` | ✓ LIVE | Daily reconciliation engine (`tomas:daily-reconciliation`); classifies timing vs nostro-leg breaks; consumes settlement events. |
+| `@platform/payments/nostro` | PLANNED | Opening balance feed parser; intraday projection engine; EoD statement reconciliation; account maintenance records. Builds with the correspondent settlement interface (Wave 2 W2.1 — correspondent/sponsor-bank selection at licence-application moment). |
 | `@platform/event-store` | In place | All nostro events are first-class typed events (Principle 1). |
 | `@platform/events/alert-dispatcher` | PLANNED | Delivers threshold-breach and break alerts to Tomas and Eitan. |
 | `@platform/payments/reconciliation` | PLANNED | Consumes nostro events for PROC-PAY-RBH-01 nostro-leg checks. |
@@ -180,3 +185,4 @@ Build-phase: nostro substrate reads synthetic balances from `_sponsor-bank-opera
 | Version | Date | Author | Summary |
 |---|---|---|---|
 | v0.1 | 2026-05-16 | Tomas + Eitan (via Scrooge) | Initial population. Four sub-functions: opening balance feed, intraday monitoring, EoD reconciliation, account maintenance. Named dependency from PROC-RISK-ILF-01 Step 1. Indirect-participant posture; correspondent-statement-based. |
+| v0.2 | 2026-06-11 | Ravi (Treasury/ALM engineer, engineering) | Anchor reconciliation under `brief:ravi:treasury-procedure-tail-3-missing-procedures-6-a:2026-06-11` (W1.3): policy-parent STUB-bundle references → `nostro-correspondent-banking-policy-v1` + `payments-settlement-policy-v1` (the 2026-05-07 bundle re-anchored as historical input at its `archive/owner-inbox/` location); "Funding Strategy (planned)" closed by ALM Policy §3.1; live `@platform/payments/reconciliation` (`tomas:daily-reconciliation`) bound alongside the still-PLANNED `@platform/payments/nostro` feed engine (true state — builds with the W2.1 correspondent settlement interface). No substance change. |
