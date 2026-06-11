@@ -226,6 +226,7 @@ import { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 import { CLOSE_MANAGEMENT_EVENT_TYPES_REGISTRY } from "./close-management";
 import { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
 import { CONDUCT_EVENT_TYPES } from "./conduct";
+import { CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY } from "./correspondent-settlement";
 import { COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY } from "./counterparty-credit-risk";
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 import { CREDIT_LIMIT_EVENT_TYPES_REGISTRY } from "./credit-limit";
@@ -289,7 +290,6 @@ import {
 import { SEED_MANAGEMENT_EVENT_TYPES } from "./seed-management";
 import { SETTLEMENT_EVENT_TYPES_REGISTRY } from "./settlement";
 import { SLA_APPROVAL_EVENT_TYPES_REGISTRY } from "./sla-approval";
-import { CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY } from "./correspondent-settlement";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
 import { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
 import { VALUATION_ADJUSTMENT_EVENT_TYPES_REGISTRY } from "./valuation-adjustment";

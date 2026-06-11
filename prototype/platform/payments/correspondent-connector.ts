@@ -302,9 +302,7 @@ export class StubCorrespondentConnector implements CorrespondentConnector {
     };
   }
 
-  async sendFITransfer(
-    msg: Pacs009FinancialInstitutionTransfer,
-  ): Promise<Pacs002StatusReport> {
+  async sendFITransfer(msg: Pacs009FinancialInstitutionTransfer): Promise<Pacs002StatusReport> {
     return {
       originalMsgId: msg.msgId,
       txStatus: "ACSC",

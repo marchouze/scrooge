@@ -173,9 +173,7 @@ export const nostroStatementReceivedPayloadSchema = z.object({
   entryCount: z.number().int().nonnegative(),
 });
 
-export type NostroStatementReceivedPayload = z.infer<
-  typeof nostroStatementReceivedPayloadSchema
->;
+export type NostroStatementReceivedPayload = z.infer<typeof nostroStatementReceivedPayloadSchema>;
 
 export function makeNostroStatementReceived(args: {
   asOf: string;
