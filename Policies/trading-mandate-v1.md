@@ -1,7 +1,7 @@
 ---
 policy-id: trading-mandate
 title: Trading Mandate v1
-version: "1"
+version: "1.1"
 status: IN FORCE
 owner: Saskia (Head of Global Markets)
 effective-from: "2026-05-11"
@@ -14,7 +14,7 @@ citations:
   - D-POLICY-DOCUMENT-HOME
 author: Kai (Structured rates trader, markets) + Helena (Chief Risk Officer, governance) + Devon (COO, governance)
 date: 2026-05-11
-summary: Standalone Trading Mandate defining the bank's permissible trading activities, desk structure, product scope (JSE bonds/equities, OTC IRD, FX spot/forward), client-driven mandate (no proprietary), position limits, booking model, and FX settlement risk framework. RAS B5 deferred pending refinement. Closes obligations ORG-PR-19, ORG-PR-20, ORG-MK-01, ORG-MK-04, ORG-PR-48, ORG-MK-09. LICENCE-BIND.
+summary: Standalone Trading Mandate defining the bank's permissible trading activities, desk structure, product scope (JSE bonds, OTC IRD, FX spot/forward/swap — JSE cash equity REMOVED FROM SCOPE at v1.1 per strategy v2; FX forward tenor cap removed at v1.1), client-driven mandate (no proprietary), position limits, booking model, and FX settlement risk framework. RAS B5 deferred pending refinement. Closes obligations ORG-PR-19, ORG-PR-20, ORG-MK-01, ORG-MK-04, ORG-PR-48 (ORG-MK-09 closure suspended at v1.1 — JSE Equity Desk removed from scope). LICENCE-BIND.
 decision-required: false
 riskTaxonomy:
   - RT-MK
@@ -27,6 +27,11 @@ obligations:
 ---
 
 # Trading Mandate v1
+
+> **AMENDMENT — v1.1 (2026-06-11).** Per CEO in-session instruction 2026-06-11 (Marc, CEO), recorded under `D-BANK-STRATEGY-V2` (decision pending — recording occurs at strategy v2 approval), aligning this mandate with `Policies/bank-strategy-v2.md`:
+> 1. **JSE Equity Desk removed from scope.** All JSE cash-equity trading authority is withdrawn. The §2.2 instrument list, the §4.1 desk row, the §4.3 presumptive trading-book line, and the §5.1/§5.2/§5.3 equity limit rows are struck (marked below with strikethrough; text preserved for audit trail). Reactivation requires the Hoz Securities Limited JSE-membership pathway, an NPA gate pass, and amendment of strategy v2 (`EXCL-LISTED-EQUITY`, strategy §13.4).
+> 2. **FX forward tenor cap removed.** The "≤ 1 year at v1" outright-forward settlement cap in §2.5 is removed; forward/swap tenor is governed by the typed product scope (`prd:bank:fx:otc-vanilla`, T+2 to T+N) and the RAS market-risk appetite lines, not a fixed tenor ceiling.
+> See §11 (Amendment log).
 
 **Authors:** Kai (Structured rates trader, markets) — lead · Helena (Chief Risk Officer, governance) · Devon (COO, governance)  
 **Date:** 2026-05-11  
@@ -57,10 +62,10 @@ This Trading Mandate sets out the permissible trading activities of **Hoz Bank L
 | Markets conduct | Financial Markets Act 19 of 2012 (FMA) | Ch. X: market-abuse prohibitions (insider trading, market manipulation, false reporting); s.5: exchange-licence conditions (JSE) |
 | Capital: market risk | BCBS *Minimum capital requirements for market risk* (FRTB, revised 2019; document d457) | Standardised Approach (SA) for market-risk RWA; trading-book / banking-book boundary (Ch. 2); in-scope instrument taxonomy (Ch. 3) |
 | FX settlement | SARB Prudential Authority **Guidance Note 5 of 2013** — Foreign Exchange Settlement Risk | FX-settlement-risk discipline; Herstatt-risk management; intraday exposure measurement |
-| Exchange rules | JSE Equities Rules and Directives (consolidated; FMA s.5) | Trading-member obligations: order-handling, post-trade, surveillance cooperation |
+| Exchange rules | JSE Equities Rules and Directives (consolidated; FMA s.5) | ~~Trading-member obligations: order-handling, post-trade, surveillance cooperation~~ — **inactive at v1.1**: JSE Equity Desk removed from scope; no trading-member obligations while equity is out of scope (strategy v2 §8.1) |
 | OTC derivatives | ISDA Master Agreement (2002 Form) + Schedule + Credit Support Annex | Governing law for all OTC IRD contracts; close-out netting; collateral |
 
-**Obligation IDs closed by this mandate:** `ORG-PR-19` (FRTB market-risk measurement), `ORG-PR-20` (trading-book / banking-book boundary; no proprietary risk-taking), `ORG-MK-01` (FMA Ch. X market-abuse applicability), `ORG-MK-04` (trading mandate: client-driven and franchise market-making), `ORG-PR-48` (FX-settlement-risk discipline under PA GN 5/2013), `ORG-MK-09` (JSE Equities Rules trading-member obligations).
+**Obligation IDs closed by this mandate:** `ORG-PR-19` (FRTB market-risk measurement), `ORG-PR-20` (trading-book / banking-book boundary; no proprietary risk-taking), `ORG-MK-01` (FMA Ch. X market-abuse applicability), `ORG-MK-04` (trading mandate: client-driven and franchise market-making), `ORG-PR-48` (FX-settlement-risk discipline under PA GN 5/2013). ~~`ORG-MK-09` (JSE Equities Rules trading-member obligations)~~ — closure suspended at v1.1: the JSE Equity Desk is removed from scope and no trading-member obligations attach while equity is out of scope (strategy v2 §8.1).
 
 ### 1.2 Relationship to other policy documents
 
@@ -86,18 +91,17 @@ The bank operates under a **positive-enumeration principle**: only instruments e
 
 `[citation: TBC — Reg 39 sub-clause on product approval; Imani (Legal-as-code engineer) + external counsel ratify at the licence-application gate per ORG-PR-25]`
 
-### 2.2 JSE Equity Desk — permissible instruments
+### 2.2 JSE Equity Desk — ~~permissible instruments~~ REMOVED FROM SCOPE at v1.1
+
+> **REMOVED FROM SCOPE at v1.1 (strategy v2, CEO in-session instruction 2026-06-11).** The JSE Equity Desk holds **no trading authority**. The instrument list below is struck and preserved for audit trail only. No JSE cash-equity instrument is permissible; reactivation requires the Hoz Securities Limited JSE-membership pathway, an NPA gate pass, and amendment of strategy v2 + this mandate (strategy §13.4 `EXCL-LISTED-EQUITY`).
 
 | Instrument | Description | Settlement | Citation |
 |---|---|---|---|
-| JSE-listed equities — cash | Ordinary shares + preference shares listed on the JSE Main Board and AltX | T+3 (Strate equity settlement) | JSE Equities Rules (`ORG-MK-09`); FMA s.5 |
-| JSE-listed equity ETFs | Exchange-traded funds tracking JSE equity indices | T+3 (Strate equity settlement) | JSE Equities Rules (`ORG-MK-09`) |
-| Rights and entitlements | Rights issues, scrip distributions arising from existing equity positions | As per corporate action terms | JSE Equities Rules (`ORG-MK-09`); `ORG-MK-15` (trade-record retention) |
+| ~~JSE-listed equities — cash~~ | ~~Ordinary shares + preference shares listed on the JSE Main Board and AltX~~ | ~~T+3 (Strate equity settlement)~~ | ~~JSE Equities Rules (`ORG-MK-09`); FMA s.5~~ |
+| ~~JSE-listed equity ETFs~~ | ~~Exchange-traded funds tracking JSE equity indices~~ | ~~T+3 (Strate equity settlement)~~ | ~~JSE Equities Rules (`ORG-MK-09`)~~ |
+| ~~Rights and entitlements~~ | ~~Rights issues, scrip distributions arising from existing equity positions~~ | ~~As per corporate action terms~~ | ~~JSE Equities Rules (`ORG-MK-09`); `ORG-MK-15` (trade-record retention)~~ |
 
-**Not permitted on JSE Equity Desk (v1):**
-- Listed equity derivatives (single-stock futures, index futures, equity options) — excluded until NPA gate passed
-- Unlisted equities / private placements
-- Securities lending beyond intraday settlement-fail remediation
+**Not permitted on JSE Equity Desk (v1.1): all instruments.** (The v1 sub-exclusions — listed equity derivatives, unlisted equities / private placements, securities lending beyond intraday settlement-fail remediation — are subsumed by the full desk removal.)
 
 ### 2.3 JSE Bond / Fixed Income Desk — permissible instruments
 
@@ -147,7 +151,7 @@ The bank operates as an **Authorised Dealer** (SARB Exchange Control Manual; Cur
 | Instrument | Pair | Settlement | Citation |
 |---|---|---|---|
 | FX spot | USD/ZAR | T+2 (SWIFT correspondent) | PA GN 5/2013 (`ORG-PR-48`); Currency and Exchanges Act; `D-FX-CORRESPONDENT-PAIR-NAMING` |
-| FX forward (outright forward) | USD/ZAR | Settlement date as per forward contract (≤ 1 year at v1) | PA GN 5/2013 (`ORG-PR-48`); SARB ExCon Manual |
+| FX forward (outright forward) | USD/ZAR | Settlement date as per forward contract — **no tenor cap at v1.1**; tenor risk is governed by the RAS market-risk appetite lines and the typed product scope (`prd:bank:fx:otc-vanilla`, T+2 to T+N) | PA GN 5/2013 (`ORG-PR-48`); SARB ExCon Manual |
 | FX forward (client hedge delivery) | USD/ZAR | Per client instruction, matched to underlying obligation | PA GN 5/2013 (`ORG-PR-48`); SARB ExCon Manual |
 | FX swap (buy/sell or sell/buy) | USD/ZAR | Near leg T+2; far leg per swap term | PA GN 5/2013 (`ORG-PR-48`) |
 
@@ -216,7 +220,7 @@ Helena (CRO, governance) adjudicates disputes on this boundary. Any position Hel
 
 | Desk | Head (governance) | Engineering lead | Permissible instruments |
 |---|---|---|---|
-| JSE Equity Desk | Saskia (Head of Global Markets, governance) | Kai (Structured rates trader, markets) | §2.2 |
+| ~~JSE Equity Desk~~ **REMOVED FROM SCOPE at v1.1** (strategy v2, CEO instruction 2026-06-11) | ~~Saskia (Head of Global Markets, governance)~~ | ~~Kai (Structured rates trader, markets)~~ | ~~§2.2~~ — none |
 | JSE Bond / Fixed Income Desk | Saskia (Head of Global Markets, governance) | Kai (Structured rates trader, markets) | §2.3 |
 | OTC IRD Desk | Saskia (Head of Global Markets, governance) | Kai (Structured rates trader, markets) | §2.4 |
 | FX Desk | Saskia (Head of Global Markets, governance) | Kai (Structured rates trader, markets) | §2.5 |
@@ -236,7 +240,7 @@ Helena (CRO, governance) adjudicates disputes on this boundary. Any position Hel
 **All trades are booked to Hoz Bank Limited.** No trading is booked to Hoz Securities Limited during the build phase or pre-commencement period without a separate mandate amendment and Board approval. Each booking carries:
 
 - the booking-entity identifier (`HOZ-BANK-LTD`);
-- the desk identifier (`DESK-EQUITY`, `DESK-BOND`, `DESK-IRD`, `DESK-FX`);
+- the desk identifier (`DESK-BOND`, `DESK-IRD`, `DESK-FX`; ~~`DESK-EQUITY`~~ retired at v1.1 — no bookings permissible);
 - the FRTB book assignment (`TRADING-BOOK` or `BANKING-BOOK`) as determined at §4.3;
 - the counterparty Party register ID (from `Regulations/_party-register.md`);
 - a citation to the authorising product-fixture in `prototype/platform/markets/products/fixtures.ts`.
@@ -248,7 +252,7 @@ All bookings are typed events per Principle 1. The canonical booking event types
 The bank applies the FRTB boundary as specified in **BCBS d457 Chapter 2** (`ORG-PR-19`). The governing principles:
 
 **Presumptive trading book assignment (FRTB d457 §3.2):** The following instrument types are presumptively assigned to the trading book unless the bank explicitly elects banking-book treatment with supervisory approval:
-- All instruments in §2.2 (JSE-listed equities)
+- ~~All instruments in §2.2 (JSE-listed equities)~~ (struck at v1.1 — JSE Equity Desk removed from scope)
 - All OTC IRD instruments in §2.4
 - All FX instruments in §2.5
 - JSE Bond Desk positions held for market-making or warehousing (§2.3)
@@ -273,7 +277,7 @@ RAS §B4 ("VaR limits per desk, calibrated against franchise size; reviewed mont
 
 | Desk | VaR metric | Calibration input | Review cadence |
 |---|---|---|---|
-| JSE Equity Desk | 1-day 99% VaR (FRTB-SA sensitivity-based equivalent) | Initial franchise flow estimates (Kai/Saskia); calibrated against initial capital allocation | Monthly for first 6 months; quarterly thereafter |
+| ~~JSE Equity Desk~~ **REMOVED FROM SCOPE at v1.1** | ~~1-day 99% VaR (FRTB-SA sensitivity-based equivalent)~~ | ~~Initial franchise flow estimates (Kai/Saskia); calibrated against initial capital allocation~~ — no calibration required | — |
 | JSE Bond Desk | 1-day 99% VaR (FRTB-SA DRC + RRAO as applicable) | SAGB flow estimates; HQLA-designated positions excluded | Monthly for first 6 months; quarterly thereafter |
 | OTC IRD Desk | 1-day 99% delta-equivalent PV01; tenor-bucket sensitivities | Initial IRS / FRA client flow estimates; basis swap residual | Monthly for first 6 months; quarterly thereafter |
 | FX Desk | 1-day 99% VaR; end-of-day delta (USD/ZAR) | Authorised Dealer flow estimates; B-cluster constraint (RAS §B8a) | Monthly for first 6 months; quarterly thereafter |
@@ -286,7 +290,7 @@ The intraday limit framework governs positions **during the trading day** — fr
 
 | Limit type | Scope | Operative threshold | Breach severity | Escalation |
 |---|---|---|---|---|
-| **Intraday gross notional** | Per desk | [TBC — Saskia + Helena to calibrate at BRC; placeholder: JSE Equity ≤ R500m; JSE Bond ≤ R1bn; OTC IRD ≤ R5bn notional; FX ≤ R500m equiv.] | `Soft` at 80%; `Hard` at 100% | Soft: desk head informs Saskia. Hard: Saskia informs Helena immediately |
+| **Intraday gross notional** | Per desk | [TBC — Saskia + Helena to calibrate at BRC; placeholder: ~~JSE Equity ≤ R500m~~ (struck at v1.1 — desk removed from scope); JSE Bond ≤ R1bn; OTC IRD ≤ R5bn notional; FX ≤ R500m equiv.] | `Soft` at 80%; `Hard` at 100% | Soft: desk head informs Saskia. Hard: Saskia informs Helena immediately |
 | **Single-counterparty intraday exposure** | All desks | Per-counterparty credit limit set by Helena under the Credit Risk Policy | `Hard` | Immediate halt on incremental exposure; Helena notified |
 | **Unhedged warehouse residual** | OTC IRD Desk | DV01 residual per tenor bucket `[TBC — Helena to calibrate]` | `Soft` at 70%; `Hard` at 100% | Soft: desk monitors. Hard: Saskia + Helena; hedge offset required within 2 trading hours |
 | **FX intraday net open position** | FX Desk | ExCon Manual limits (Authorised Dealer); RAS §B8a (settlement concentration) | `Hard` | Immediate; Zara notified for ExCon; Helena for market risk |
@@ -299,7 +303,7 @@ End-of-day position limits apply to positions carried **overnight** — after th
 
 | Desk | Instrument class | End-of-day limit | Rationale |
 |---|---|---|---|
-| JSE Equity Desk | Net long / short equity position | [TBC — Helena to calibrate at BRC; v1 placeholder: ≤ R200m net long; zero net short absent a hedging mandate] | Client-driven franchise; overnight inventory should be small absent active hedging programme |
+| ~~JSE Equity Desk~~ **REMOVED FROM SCOPE at v1.1** | ~~Net long / short equity position~~ | ~~[TBC — Helena to calibrate at BRC; v1 placeholder: ≤ R200m net long; zero net short absent a hedging mandate]~~ — zero; no equity position permissible | Desk removed from scope (strategy v2, CEO instruction 2026-06-11) |
 | JSE Bond Desk | SAGBs held for market-making (non-HQLA) | [TBC — Helena calibrate; v1 placeholder: ≤ R500m MtM] | HQLA-designated SAGB excluded; trading-book SAGBs overnight |
 | JSE Bond Desk | Corporate bonds | [TBC — Helena calibrate; v1 placeholder: ≤ R250m MtM investment-grade only] | Concentration risk; illiquidity of secondary market |
 | OTC IRD Desk | Aggregate DV01 (parallel shift) | [TBC — Helena calibrate; v1 placeholder: ≤ ZAR 500k per bp] | Franchise warehouse; ties to client flow run-rate |
@@ -427,7 +431,7 @@ The OTC IRD Desk (§2.4) and the FX Desk's OTC forward activity (§2.5) constitu
 | `ORG-MK-01` | FMA Ch. X — market-abuse prohibitions; FRTB applicability | §1.1 (FMA citation); §4.3 (FRTB applicability note) |
 | `ORG-MK-04` | RAS B5 (deferred) — client-driven and franchise market-making | §3.2 (franchise market-making); §3.3 (proprietary prohibition) |
 | `ORG-PR-48` | SARB PA GN 5/2013 — FX settlement risk discipline | §6 (entire FX settlement risk section) |
-| `ORG-MK-09` | JSE Equities Rules — trading-member obligations | §2.2 (JSE Equity Desk instrument list); §1.1 (authority chain) |
+| ~~`ORG-MK-09`~~ | ~~JSE Equities Rules — trading-member obligations~~ — closure **suspended at v1.1**: JSE Equity Desk removed from scope; obligation inactive while equity is out of scope (strategy v2 §8.1) | ~~§2.2 (JSE Equity Desk instrument list)~~; §1.1 (authority chain) |
 | `ORG-FMA-001` | FMA 19/2012 s.6A — FSCA ODP authorisation before any live OTC-derivative principal-side activity | §7.4 (ODP authorisation gate) |
 
 ---
@@ -461,6 +465,15 @@ The following gaps are surfaced for the roadmap — they do not prevent this man
 
 ---
 
-*End of Trading Mandate v1.*  
+## 11. Amendment Log
+
+| Version | Date | Author / instrument | Authority | Change |
+|---|---|---|---|---|
+| v1 | 2026-05-11 | Kai (Structured rates trader, markets) — lead; Helena (Chief Risk Officer, governance); Devon (COO, governance) | Board (interim: CEO Marc) | Inaugural mandate |
+| v1.1 | 2026-06-11 | Owen (Company Secretary, governance), aligning with `Policies/bank-strategy-v2.md` | CEO in-session instruction 2026-06-11 (Marc, CEO); recorded under `D-BANK-STRATEGY-V2` — decision pending, recording occurs at strategy v2 approval | (1) JSE Equity Desk REMOVED FROM SCOPE — §2.2 instrument list, §4.1 desk row, §4.3 presumptive trading-book line, §5.1 VaR row, §5.2 intraday equity placeholder, §5.3 end-of-day equity row struck (text preserved with strikethrough); `ORG-MK-09` closure suspended; `DESK-EQUITY` identifier retired. (2) FX forward tenor cap removed — §2.5 "≤ 1 year at v1" struck; tenor governed by RAS market-risk lines + typed product scope (T+2 to T+N). Note: the §7.3 `PolicyAmendment` typed event is not yet in the event catalogue (substrate gap §9 #4); this markdown amendment is the interim record |
+
+---
+
+*End of Trading Mandate v1 (as amended at v1.1, 2026-06-11).*  
 *Authors: Kai (Structured rates trader, markets) · Helena (Chief Risk Officer, governance) · Devon (COO, governance)*  
 *Date: 2026-05-11*
