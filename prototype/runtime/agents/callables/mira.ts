@@ -3,6 +3,7 @@
 // To add a handler: add the import and entry here, then add one spread in handler-callables.ts.
 
 import type { AgentRunHandler } from "../../types";
+import miraBa330PeriodClose from "../mira-ba330-period-close";
 import miraCitationGate from "../mira-citation-gate";
 import miraCounterpartyEligibilityCheck from "../mira-counterparty-eligibility-check";
 import miraEventTriage from "../mira-event-triage";
@@ -21,4 +22,5 @@ export const MIRA_CALLABLES: Record<string, AgentRunHandler> = {
   "mira:event-triage": miraEventTriage,
   "mira:sanctions-gateway-check": miraSanctionsGatewayCheck,
   "mira:counterparty-eligibility-check": miraCounterpartyEligibilityCheck,
+  "mira:ba330-period-close": miraBa330PeriodClose,
 };

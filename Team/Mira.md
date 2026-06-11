@@ -132,13 +132,15 @@ Mira drafts STR / CTR filings; Zara as MLRO signs. The drafter / signer split is
 
 ## 16. Substrate gaps (current state)
 
-> Reviewed 2026-05-14.
+> Reviewed 2026-06-11 (Wave 2 treasury returns wiring, D-TREASURER-WAVE2-SUBSTRATE).
 
 - **Case-management substrate** — STR / CTR draft pipeline and MLRO sign-off UI not built. Currently, alert dispositions are simulated through Owner Inbox notes when Mira runs in-session via Scrooge. Owner: Atlas (substrate) + Mira (case-management domain). Target: M1.
 - **Transaction-monitoring typologies** — only the framework exists; no typology pipelines deployed. Owner: Mira. Target: rolling, with first 3 typologies at M1.
 - **PEP + adverse-media feeds** — vendor selection pending. Owner: Mira (selection) + Senna (third-party-risk gating). Target: pre-licence.
 - **Continuous-KYC orchestration** — designed in `Owner Inbox/2026-05-06_client-master-and-continuous-kyc.md` but not deployed. Owner: Mira + Atlas. Target: M1.
 - **Agent-runtime substrate** — scheduler is live (`/prototype/runtime/`); event-trigger bus still pending. Mira's screening / monitoring event-triggered runs still route via Scrooge until the bus lands. Owner: Atlas.
+- **BA 300 NSFR HQLA Level-1 RSF (5%)** — NSFR component wired (Wave 2, D-TREASURER-WAVE2-SUBSTRATE): NSFRRatioProjection emitted on every period close via generateNsfrFromEvents (P1-compliant). Residual deferred: HQLA Level-1 RSF (5% factor, BCBS 295 Table 2) requires unified-position × SecurityMaster fold (Slice-6+). Tracked as GAP-BA300-NSFR-HQLA-LEVEL1-RSF in WIRED_RETURN_COMPONENT_DEFERRALS. **CLOSED (wired)** — residual component gap tracked separately. Target: Slice-6+.
+- **BA 330 IRRBB XSD validation** — BA 330 subscriber wired (Wave 2, D-TREASURER-WAVE2-SUBSTRATE): IRRBBChecked events folded, SarbSubmissionAttempted{formId:"BA330"} emitted via SARB simulator. Residual: SARB BA 330 XSD not yet ingested (Mira WS-INSTRUMENT-ANALYSES, Slice-6+); namespace URI is a placeholder. BA 330 XML is well-formed and structurally complete; XSD validation deferred. **CLOSED (wired)** — XSD gap tracked as substrate gap. Target: Slice-6+.
 
 ## 17. Change log
 
@@ -148,3 +150,4 @@ Mira drafts STR / CTR filings; Zara as MLRO signs. The drafter / signer split is
 | v1.0 | 2026-05-07 | Mira (via Scrooge) | Upgraded to agent operating spec under Principle 6. Reports-to corrected to Zara (CCO) per top-of-house structure. |
 | v1.1 | 2026-05-08 | Mira | Added `mira:m1-regulator-citation-urns` event-driven handler under D-MARKETS-SCHEMA-FOUNDATION. Emits `ObligationRegistered` + `M1CitationTrancheRegistered`. |
 | v1.2 | 2026-05-14 | Mira (via Scrooge) | Mandate review sweep — substrate gaps updated; §16 "Reviewed 2026-05-14" note added; agent-runtime gap language updated to reflect scheduler live + event-trigger bus pending. |
+| v1.3 | 2026-06-11 | Mira (via Scrooge) | Wave 2 treasury returns wiring (D-TREASURER-WAVE2-SUBSTRATE, CEO-approved 2026-06-11): (1) BA 300 NSFR component wired — ba300NsfrPeriodCloseSubscriber added to period-close-subscriber.ts + bea-ba300-lcr-period-close.ts extended; HQLA Level-1 RSF deferral tracked (GAP-BA300-NSFR-HQLA-LEVEL1-RSF). (2) BA 330 IRRBB subscriber created — new ba-330-irrbb.ts generator, ba330/period-close-subscriber.ts, mira-ba330-period-close.ts runtime agent, mira:ba330-period-close handler registered; SarbSubmissionAttempted{formId:"BA330"} emitted per period close. §16 substrate gaps updated to reflect both gaps as closed (wired) with residual component deferrals. completeness:inert-module-detection: 8 watched, 4 known-inert, 0 untracked, 2 component deferrals — GREEN. |

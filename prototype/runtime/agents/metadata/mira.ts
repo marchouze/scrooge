@@ -51,4 +51,13 @@ export const MIRA_HANDLER_METADATA: readonly HandlerMetadata[] = [
       "AlertOpened",
     ],
   }),
+  // BA 330 (IRRBB) period-close return — event-driven on AccountingPeriodClosed.
+  // Folds `IRRBBChecked` events (6 EVE + 4 NII per Ravi ALM daily run) for the
+  // period window, generates the BA 330 IRRBB return, and records a
+  // SarbSubmissionAttempted{formId:"BA330"} via the SARB simulator.
+  // Authority: D-TREASURER-WAVE2-SUBSTRATE (CEO-approved 2026-06-11);
+  //            D-BA-330-REATTRIBUTION-IRRBB; D-BA-RETURN-NUMBERING-EXCEL-CANONICAL.
+  entry("Mira", "ba330-period-close", "event-driven", {
+    subscribesTo: ["AccountingPeriodClosed"],
+  }),
 ];

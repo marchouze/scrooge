@@ -237,6 +237,23 @@ export const WIRED_RETURN_COMPONENT_DEFERRALS: readonly WiredComponentDeferral[]
       "[citation: TBC — BCBS OPE25 (Basic Indicator Approach); Regulations Relating to Banks Reg 33]",
     ],
   },
+  {
+    gapId: "GAP-BA300-NSFR-HQLA-LEVEL1-RSF",
+    formId: "BA300",
+    module: "platform/returns/ba300/period-close-subscriber.ts",
+    title:
+      "NSFR RSF component: HQLA Level-1 RSF (5% factor) held at zero — requires the unified-position × SecurityMaster fold (Slice-6+). The NSFRRatioProjection event carries rsfHqla: 0 in the components breakdown. The zero is a conservative overstatement of the NSFR ratio (excluding a small RSF item makes the ratio appear slightly better than it would be with it). Also deferred: zarFinCorpShortTermFundingZAR = 0 (no dedicated event type pre-Slice-6+). Both are surfaced as substrate gaps in ba-300-nsfr.ts.",
+    owner:
+      "Ravi (ALM / treasury engineer, engineering) + Mira (Compliance / RegTech engineer, engineering)",
+    targetTrigger:
+      "Unified-position × SecurityMaster fold lands (Slice-6+) — at that point the HQLA Level-1 stock is queryable at period-end for the RSF 5% component; zarFinCorpShortTerm requires a dedicated funding-line event subtype.",
+    citations: [
+      "D-TREASURER-WAVE2-SUBSTRATE",
+      "D-BA-RETURN-NUMBERING-EXCEL-CANONICAL",
+      "BCBS 295 §128 Table 2 (HQLA Level-1 RSF 5%)",
+      "Regulations Relating to Banks Reg 26A",
+    ],
+  },
 ];
 
 // ---------------------------------------------------------------------------

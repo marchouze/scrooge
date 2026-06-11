@@ -1,7 +1,16 @@
 // platform/returns/ba300/period-close-subscriber.ts
 //
-// M2 Slice 3 — AccountingPeriodClosed subscriber that triggers BA 110 (LCR)
-// generation when an accounting period closes for a bank-licence entity.
+// M2 Slice 3 — AccountingPeriodClosed subscriber that triggers BA 300 (LCR +
+// NSFR) generation when an accounting period closes for a bank-licence entity.
+//
+// Wave 2 extension (D-TREASURER-WAVE2-SUBSTRATE, CEO-approved 2026-06-11):
+// the NSFR component was previously a named tracked component deferral
+// (GAP-BA300-NSFR-COMPONENT). It is now wired: `ba300NsfrPeriodCloseSubscriber`
+// folds product lifecycle events (DepositTaken, FundingLineDrawn,
+// InterbankLoanPlaced, IrdSwapTradeExecuted) via `generateNsfrFromEvents` and
+// emits an `NSFRRatioProjection` event alongside each period close. The LCR
+// path is unchanged; both components run on every `AccountingPeriodClosed` for
+// `LE-ZA-HOZ-BANK`.
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved
 // 2026-05-10), pack §6 Slice 3.
@@ -76,6 +85,7 @@ import {
   type Ba300LcrOutput,
   generateBa300Lcr,
 } from "../../reporting/ba-300-lcr";
+import { type NsfrProjection, generateNsfrFromEvents } from "../../reporting/ba-300-nsfr";
 import {
   type CashHqlaCustodianAccount,
   type HqlaStockInput,
@@ -170,6 +180,47 @@ export interface Ba300LcrPeriodCloseSubscriberResult {
    * True if the entity was not in `BA_300_LCR_BANK_ENTITIES` and the subscriber
    * skipped generation. The caller can route non-bank-entity closes to other
    * subscribers without raising an error.
+   */
+  readonly skipped: boolean;
+  readonly skipReason?: string;
+}
+
+// ---------------------------------------------------------------------------
+// BA 300 NSFR subscriber — input / output
+// ---------------------------------------------------------------------------
+
+/**
+ * Input to the `AccountingPeriodClosed` → BA 300 NSFR subscriber.
+ */
+export interface Ba300NsfrPeriodCloseSubscriberInput {
+  /** The `AccountingPeriodClosed` event payload that triggered the subscriber. */
+  readonly closedPayload: AccountingPeriodClosedPayload;
+  /** The entity the period was closed for. Must be in `BA_300_LCR_BANK_ENTITIES`. */
+  readonly entity: string;
+  /**
+   * Event store — provides access to product lifecycle events:
+   *   `DepositTaken`, `DepositMatured`, `DepositWithdrawnEarly` (ASF);
+   *   `FundingLineDrawn`, `FundingLineRepaid` (ASF);
+   *   `InterbankLoanPlaced`, `InterbankLoanMatured`,
+   *   `InterbankLoanRecalledEarly` (RSF);
+   *   `IrdSwapTradeExecuted`, `IrdSwapTerminated` (RSF derivatives).
+   */
+  readonly eventStore: EventStore;
+  /** Actor running the subscriber (typically the Bea agent). */
+  readonly actor: Actor;
+  /** ISO 4217 functional currency (default "ZAR"). */
+  readonly functionalCurrency?: string;
+}
+
+/**
+ * Result of the `AccountingPeriodClosed` → BA 300 NSFR subscriber.
+ */
+export interface Ba300NsfrPeriodCloseSubscriberResult {
+  /** The generated NSFR projection. Caller renders + stores this. */
+  readonly nsfrProjection: NsfrProjection;
+  /**
+   * True if the entity was not in `BA_300_LCR_BANK_ENTITIES` and the
+   * subscriber skipped generation.
    */
   readonly skipped: boolean;
   readonly skipReason?: string;
@@ -329,6 +380,71 @@ export function ba300LcrPeriodCloseSubscriber(
   return {
     ba300LcrOutput,
     trialBalanceRows,
+    skipped: false,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// BA 300 NSFR subscriber
+// ---------------------------------------------------------------------------
+
+/**
+ * `AccountingPeriodClosed` subscriber for BA 300 NSFR (Net Stable Funding Ratio)
+ * generation.
+ *
+ * Triggered by `AccountingPeriodClosed` events for bank-licence entities.
+ * Non-bank entities (e.g. `LE-ZA-HOZ-SECURITIES`, `LE-ZA-HOZ-GROUP`) are
+ * silently skipped (`result.skipped = true`).
+ *
+ * **Principle 1 compliance**: NSFR inputs (ASF and RSF) are derived directly
+ * from product lifecycle events (`DepositTaken`, `FundingLineDrawn`,
+ * `InterbankLoanPlaced`, `IrdSwapTradeExecuted`) via `generateNsfrFromEvents`
+ * — not from trial-balance aggregates. The function emits a canonical
+ * `NSFRRatioProjection` event to the store (Principle 1: events as truth).
+ *
+ * The NSFR component was previously a named tracked component deferral
+ * (GAP-BA300-NSFR-COMPONENT). It is now wired as of Wave 2
+ * (D-TREASURER-WAVE2-SUBSTRATE, CEO-approved 2026-06-11).
+ *
+ * Citations:
+ *   Principles/1-events-are-truth.md;
+ *   D-TREASURER-WAVE2-SUBSTRATE (CEO-approved 2026-06-11);
+ *   D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (NSFR = BA 300 series);
+ *   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN;
+ *   Banks Act 94 of 1990 §70; Regulations Relating to Banks Reg 26A;
+ *   BCBS 295 ("Basel III: the net stable funding ratio", Oct 2014).
+ */
+export async function ba300NsfrPeriodCloseSubscriber(
+  input: Ba300NsfrPeriodCloseSubscriberInput,
+): Promise<Ba300NsfrPeriodCloseSubscriberResult> {
+  // Guard: only bank-licence entities generate BA 300 NSFR.
+  if (!BA_300_LCR_BANK_ENTITIES.includes(input.entity)) {
+    return {
+      nsfrProjection: null as unknown as NsfrProjection,
+      skipped: true,
+      skipReason: `entity '${input.entity}' is not in BA_300_LCR_BANK_ENTITIES (${BA_300_LCR_BANK_ENTITIES.join(", ")}); BA 300 NSFR not generated`,
+    };
+  }
+
+  const periodEnd = input.closedPayload.closedAt;
+  const functionalCurrency = input.functionalCurrency ?? FUNCTIONAL_CURRENCY;
+
+  // Generate NSFR by folding product lifecycle events directly (P1-compliant
+  // path). `generateNsfrFromEvents` emits the canonical `NSFRRatioProjection`
+  // event internally before returning — the event is the Principle 1 artefact.
+  // The returned struct is a convenience projection for callers / renderers.
+  //
+  // Authority: D-TREASURER-WAVE2-SUBSTRATE; BCBS 295 §127–§128 Tables 1–2;
+  //            Regulations Relating to Banks Reg 26A.
+  const nsfrProjection = await generateNsfrFromEvents(
+    input.eventStore,
+    periodEnd,
+    input.entity,
+    functionalCurrency,
+  );
+
+  return {
+    nsfrProjection,
     skipped: false,
   };
 }
