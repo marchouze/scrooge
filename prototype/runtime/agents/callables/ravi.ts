@@ -15,6 +15,9 @@ import raviIntradayStress from "../ravi-intraday-stress";
 import raviJibarFixingIngest from "../ravi-jibar-fixing-ingest";
 import raviJibarSwapCurveIngest from "../ravi-jibar-swap-curve-ingest";
 import raviRepoPrimeIngest from "../ravi-repo-rate-ingest";
+// W2.3 FTP feed adapter handlers — Authority: D-TREASURER-WAVE2-SUBSTRATE
+import raviSagbYieldIngest from "../ravi-sagb-yield-ingest";
+import raviZaroniaIngest from "../ravi-zaronia-ingest";
 
 export const RAVI_CALLABLES: Record<string, AgentRunHandler> = {
   "ravi:alm-readiness": raviAlmReadiness,
@@ -29,4 +32,8 @@ export const RAVI_CALLABLES: Record<string, AgentRunHandler> = {
   "ravi:jibar-fixing-ingest": raviJibarFixingIngest,
   "ravi:jibar-swap-curve-ingest": raviJibarSwapCurveIngest,
   "ravi:repo-rate-ingest": raviRepoPrimeIngest,
+  // W2.3 FTP feed adapter handlers — on-demand pending vendor selection.
+  // Authority: D-TREASURER-WAVE2-SUBSTRATE
+  "ravi:zaronia-ingest": raviZaroniaIngest,
+  "ravi:sagb-yield-ingest": raviSagbYieldIngest,
 };

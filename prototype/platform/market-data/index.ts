@@ -9,3 +9,20 @@ export { MarketDataStore, lookupQuoteWithInverse, extractMidRate, invertPair } f
 export type { MarketDataTick, MarketDataQueryOptions, DirectedQuote } from "./store";
 export { MarketDataSources } from "./types";
 export type { FxQuotePayload, SensAnnouncementPayload, NewsPayload } from "./types";
+// W2.3 FTP feed adapter interfaces + stubs + SarbRbond build-phase adapter.
+// Authority: D-TREASURER-WAVE2-SUBSTRATE.
+export type {
+  ZaroniaFeedAdapter,
+  ZaroniaTermRateFeedAdapter,
+  JibarFeedAdapter,
+  OisCurveFeedAdapter,
+  SagbYieldFeedAdapter,
+} from "./feed-adapters";
+export {
+  StubZaroniaFeedAdapter,
+  StubZaroniaTermRateFeedAdapter,
+  StubJibarFeedAdapter,
+  StubOisCurveFeedAdapter,
+  StubSagbYieldFeedAdapter,
+  SarbRbondMarketDataAdapter,
+} from "./feed-adapters";

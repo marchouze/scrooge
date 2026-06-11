@@ -86,6 +86,229 @@ export function makeMarketDataStaleAlert(args: {
 }
 
 // ---------------------------------------------------------------------------
+// ZaroniaRatePublished
+//
+// Emitted by ravi:zaronia-ingest when a ZARONIA overnight rate is ingested
+// from the feed adapter (SARB SarbWebApi or rbond.co.za build-phase source).
+// ZARONIA is the SA RFR; daily publication at 10:00 SAST by SARB.
+//
+// Authority: D-TREASURER-WAVE2-SUBSTRATE
+// ---------------------------------------------------------------------------
+
+export const zaroniaRatePublishedPayloadSchema = z.object({
+  /** ZARONIA overnight rate as decimal (e.g. 0.0818 for 8.18%). */
+  rate: z.number(),
+  /** ISO 8601 date the rate was published (YYYY-MM-DD). */
+  publicationDate: z.string(),
+  /** Data source identifier (e.g. "sarb-sarbwebapi", "rbond-rates-latest"). */
+  source: z.string(),
+});
+
+export type ZaroniaRatePublishedPayload = z.infer<typeof zaroniaRatePublishedPayloadSchema>;
+
+export function makeZaroniaRatePublished(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  eventId?: string;
+  payload: ZaroniaRatePublishedPayload;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ZaroniaRatePublished",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: zaroniaRatePublishedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// ZaroniaTermRatePublished
+//
+// Emitted by ravi:zaronia-ingest when a ZARONIA compounded term rate is
+// ingested. Term rates are backward-looking averages (1W–12M) used as
+// floating-leg inputs for ZARONIA-first FTP curve construction.
+//
+// Authority: D-TREASURER-WAVE2-SUBSTRATE
+// ---------------------------------------------------------------------------
+
+export const zaroniaTermRatePublishedPayloadSchema = z.object({
+  /** ZARONIA compounded term rate as decimal (e.g. 0.0822 for 8.22%). */
+  rate: z.number(),
+  /** Compounding tenor (e.g. "1W", "1M", "3M", "6M", "9M", "12M"). */
+  tenor: z.string(),
+  /** ISO 8601 date the rate was published (YYYY-MM-DD). */
+  publicationDate: z.string(),
+  /** Data source identifier. */
+  source: z.string(),
+});
+
+export type ZaroniaTermRatePublishedPayload = z.infer<typeof zaroniaTermRatePublishedPayloadSchema>;
+
+export function makeZaroniaTermRatePublished(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  eventId?: string;
+  payload: ZaroniaTermRatePublishedPayload;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ZaroniaTermRatePublished",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: zaroniaTermRatePublishedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// JibarFixingPublished
+//
+// LEGACY — emitted only during the JIBAR wind-down transition window.
+// JIBAR new-trade cessation: May 2026. Full cessation: December 2026.
+// Use ZARONIA-first events (ZaroniaRatePublished, ZaroniaTermRatePublished)
+// for all new FTP curve construction.
+//
+// Authority: D-TREASURER-WAVE2-SUBSTRATE
+// ---------------------------------------------------------------------------
+
+export const jibarFixingPublishedPayloadSchema = z.object({
+  /** JIBAR fixing rate as decimal (e.g. 0.0890 for 8.90%). */
+  rate: z.number(),
+  /** Fixing tenor (e.g. "1M", "3M", "6M", "12M"). */
+  tenor: z.string(),
+  /** ISO 8601 date of the JIBAR fixing (YYYY-MM-DD). */
+  fixingDate: z.string(),
+  /** Data source identifier (e.g. "sarb-cpd-rates"). */
+  source: z.string(),
+});
+
+export type JibarFixingPublishedPayload = z.infer<typeof jibarFixingPublishedPayloadSchema>;
+
+/**
+ * @deprecated Legacy calibration anchor only. JIBAR full cessation Dec 2026.
+ *             Do not use for new FTP curve design or new trade structuring.
+ */
+export function makeJibarFixingPublished(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  eventId?: string;
+  payload: JibarFixingPublishedPayload;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "JibarFixingPublished",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: jibarFixingPublishedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// OisCurvePublished
+//
+// Emitted by ravi:sagb-yield-ingest when an OIS curve is ingested from
+// the feed adapter (rbond.co.za build-phase source, JSE YieldX composite).
+// ZARONIA-based OIS rates are the discount curve for collateralised pricing.
+//
+// Authority: D-TREASURER-WAVE2-SUBSTRATE
+// ---------------------------------------------------------------------------
+
+export const oisCurvePublishedPayloadSchema = z.object({
+  /** Ordered pillar array (tenor + rate as decimal). */
+  pillars: z.array(
+    z.object({
+      tenor: z.string(),
+      rate: z.number(),
+    }),
+  ),
+  /** ISO 8601 date of the curve snapshot (YYYY-MM-DD). */
+  curveDate: z.string(),
+  /** Data source identifier (e.g. "rbond-curve"). */
+  source: z.string(),
+});
+
+export type OisCurvePublishedPayload = z.infer<typeof oisCurvePublishedPayloadSchema>;
+
+export function makeOisCurvePublished(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  eventId?: string;
+  payload: OisCurvePublishedPayload;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "OisCurvePublished",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: oisCurvePublishedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// SagbYieldsPublished
+//
+// Emitted by ravi:sagb-yield-ingest when SA Government Bond benchmark yields
+// are ingested from the feed adapter (rbond.co.za generics endpoint,
+// JSE YieldX daily close).
+//
+// Authority: D-TREASURER-WAVE2-SUBSTRATE
+// ---------------------------------------------------------------------------
+
+export const sagbYieldsPublishedPayloadSchema = z.object({
+  /** Benchmark yield array — one entry per standard tenor. */
+  yields: z.array(
+    z.object({
+      /** Standard tenor label (e.g. "1Y", "10Y", "30Y"). */
+      tenor: z.string(),
+      /** Yield as a percentage (e.g. 9.25 for 9.25%). */
+      yieldPct: z.number(),
+      /** ISIN of the benchmark bond at this tenor, if available. */
+      isin: z.string().optional(),
+    }),
+  ),
+  /** ISO 8601 settlement date for the yields (YYYY-MM-DD). */
+  settleDate: z.string(),
+  /** Data source identifier (e.g. "rbond-generics"). */
+  source: z.string(),
+});
+
+export type SagbYieldsPublishedPayload = z.infer<typeof sagbYieldsPublishedPayloadSchema>;
+
+export function makeSagbYieldsPublished(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  eventId?: string;
+  payload: SagbYieldsPublishedPayload;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "SagbYieldsPublished",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: sagbYieldsPublishedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // MARKET_DATA_TYPED_EVENT_TYPES — registry of all market-data domain event types.
 //
 // To add a new market-data event type:
@@ -94,6 +317,15 @@ export function makeMarketDataStaleAlert(args: {
 //   (3) add a spread of MARKET_DATA_TYPED_EVENT_TYPES in event-types/index.ts.
 // ---------------------------------------------------------------------------
 
-export const MARKET_DATA_TYPED_EVENT_TYPES = ["MarketDataStaleAlert"] as const;
+export const MARKET_DATA_TYPED_EVENT_TYPES = [
+  "MarketDataStaleAlert",
+  // W2.3 FTP feed adapter events — Authority: D-TREASURER-WAVE2-SUBSTRATE
+  "ZaroniaRatePublished",
+  "ZaroniaTermRatePublished",
+  /** @deprecated JIBAR legacy calibration anchor — cessation Dec 2026 */
+  "JibarFixingPublished",
+  "OisCurvePublished",
+  "SagbYieldsPublished",
+] as const;
 
 export type MarketDataEventType = (typeof MARKET_DATA_TYPED_EVENT_TYPES)[number];
