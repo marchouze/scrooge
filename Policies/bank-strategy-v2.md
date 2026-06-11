@@ -65,7 +65,7 @@ kind: other
 
 Hoz Bank Limited is a South African bank-in-formation, pursuing a SARB licence under the Banks Act 94 of 1990. It is an AI-native institution designed to operate with a minimal statutory human headcount while deploying autonomous AI agents across all domains of banking operations, risk, compliance, finance, and technology.
 
-The bank's business model is institutional and client-driven: it provides capital-markets access — principally JSE bonds and equities, OTC interest rate derivatives, and OTC vanilla FX (spot, forward, swap) — to institutional counterparties. It does not engage in proprietary trading, does not serve retail clients, and does not hold a direct NPS participant role. All payments route via a correspondent bank.
+The bank's business model is institutional and client-driven: it provides capital-markets access — principally JSE bonds, OTC interest rate derivatives, and OTC vanilla FX (spot, forward, swap) — to institutional counterparties. It does not engage in proprietary trading, does not serve retail clients, and does not hold a direct NPS participant role. All payments route via a correspondent bank.
 
 The bank's structural advantage is its technology model: events-first, cloud-native (Azure), and fully autonomous by design. This lowers marginal cost per trade and per compliance obligation relative to legacy-system peers, enabling a smaller but more efficient balance sheet to achieve returns commensurate with a significantly larger institution.
 
@@ -85,7 +85,7 @@ To be South Africa's first autonomously-operated licensed bank: a precision, AI-
 
 To build, licence, and operate a regulated South African bank that:
 
-1. Serves institutional counterparties with world-class capital-markets execution across JSE bonds, equities, OTC IRD, and FX;
+1. Serves institutional counterparties with world-class capital-markets execution across JSE bonds, OTC IRD, and FX;
 2. Operates its full governance, risk, compliance, finance, and operations stack via autonomous AI agents, supervised by the minimum statutory human complement the law requires;
 3. Holds every financial, legal, and regulatory obligation as a first-class typed artefact in an events-first architecture, making regulatory audit a query rather than a document exercise;
 4. Scales its capabilities through agent-model expansion rather than headcount growth; and
@@ -114,7 +114,7 @@ Hoz Bank Limited operates in the **institutional capital-markets segment** of th
 
 - South African institutional asset managers (pension funds, insurance companies, unit trusts) — `SEG-INST-ASSET-MANAGER` (§13.3);
 - Corporate treasuries managing large balance-sheet FX and interest-rate exposures — `SEG-CORP-TREASURY` (§13.3);
-- Banks and broker-dealers requiring bilateral OTC derivative execution or bond/equity crossing — `SEG-BANK-BROKER-DEALER` (§13.3); and
+- Banks and broker-dealers requiring bilateral OTC derivative execution or bond crossing — `SEG-BANK-BROKER-DEALER` (§13.3); and
 - International institutional counterparties with South African rand or JSE-listed instrument requirements — `SEG-INTL-INSTITUTIONAL` (§13.3).
 
 The bank does **not** serve retail clients, does not hold a retail deposit base, and does not seek a FAIS FSP licence covering advisory services to natural persons. Its FSP and banking licence positioning is institutional throughout. Counterparty eligibility is carried as a typed field on every approved product (`counterpartyEligibility: "institutional"` — see §4.2 and §13.2).
@@ -142,7 +142,7 @@ South Africa is the sole jurisdiction at licence-day (§13.5). A single Johannes
 
 The bank generates revenue from:
 
-1. **Bid-offer spread income** on JSE bond and equity transactions for institutional clients;
+1. **Bid-offer spread income** on JSE bond transactions for institutional clients;
 2. **OTC IRD margin income** (client-driven interest rate swap and FRA intermediation);
 3. **FX spread income** from institutional OTC vanilla FX flow (spot, forward, swap); and
 4. **Balance sheet income** from the treasury investment portfolio and overnight cash management.
@@ -155,7 +155,6 @@ The product set below reflects the typed product register at `prototype/platform
 
 | Desk | Product (canonical id) | Family | NPA lifecycle | Permissible instruments | Settlement |
 |---|---|---|---|---|---|
-| JSE Equity Desk | `prd:bank:equity:jse-equity-cash` | `listed-equity` | conceptualised | JSE listed equities (cash) | T+3 (Strate equity settlement) |
 | JSE Bond / Fixed Income Desk | `prd:bank:bond:sagb-fixed-coupon` | `listed-bond` | conceptualised | SAGB fixed-coupon bonds | T+3 (Strate bond settlement) |
 | JSE Bond / Fixed Income Desk | `prd:bank:treasury:repo-sagb-term` | `repo` | conceptualised | SAGB-backed term repo / reverse repo under GMRA 2011 | Per repo term |
 | OTC IRD Desk | `prd:bank:otc-ird:vanilla-irs-zar` | `otc-ird` | conceptualised | ZAR fixed/floating vanilla IRS (JIBAR/ZARONIA floating leg) under ISDA 2002 Master Agreement + ZAR Schedule; FRAs named in the desk mandate (no typed product fixture yet — see §13.6 STERM-FRA) | Net cash settlement |
@@ -165,7 +164,8 @@ The product set below reflects the typed product register at `prototype/platform
 Notes:
 
 - The OTC vanilla FX umbrella (`prd:bank:fx:otc-vanilla`, D-FX-OTC-NPA-SCOPE-EXPANSION) supersedes the earlier single-pair FX products as the FX desk's scope-bearing product. Its `approved-conditional` lifecycle carries tracked deferred gaps under the "approved with tracked deferred gaps" NPA pattern; the legacy `prd:bank:fx:fx-spot-zar-usd` fixture remains in the register at `conceptualised`.
-- The Trading Mandate (trading-mandate-v1.md) constrains operational execution within the typed product scope (e.g. FX outright forwards ≤ 1 year at mandate v1); where the typed product scope is broader than the mandate, the mandate binds until amended.
+- The Trading Mandate (trading-mandate-v1.md) constrains operational execution within the typed product scope. FX tenor carries **no mandate cap**: outright forward and swap tenor is governed by the typed product scope (T+2 to T+N) and the RAS market-risk appetite lines (§7.1), not by a fixed tenor ceiling (CEO in-session instruction 2026-06-11; Trading Mandate aligned at v1.1).
+- JSE cash equity (`prd:bank:equity:jse-equity-cash`, family `listed-equity`) is **removed from scope at v2** (CEO in-session instruction 2026-06-11). The family is reserved with zero permissions (§13.2); reactivation requires the Hoz Securities Limited JSE-membership pathway (§4.4), an NPA gate pass, and amendment of this strategy (§13.4 `EXCL-LISTED-EQUITY`).
 - `structured` products (M5+) and OTC credit derivatives are reserved families — out of scope at v2 (§13.4).
 
 **All instruments not listed above are impermissible until a New Product Approval gate is passed and this strategy document (and the Trading Mandate) are amended.**
@@ -180,9 +180,11 @@ The bank is **not** a direct participant in the National Payment System (NPS). A
 |---|---|---|
 | Hoz Group Limited | Controlling company | Incorporated (Hoz Group Limited) |
 | Hoz Bank Limited | Licensed banking entity — all trading-franchise risk | SARB licence application pending |
-| Hoz Securities Limited | JSE-member entity — equities execution | Incorporated; JSE member pending |
+| Hoz Securities Limited | JSE-member entity (equities-execution pathway **deferred**) | Incorporated; JSE-membership pathway deferred |
 
-All trading-book risk is booked on the Hoz Bank Limited balance sheet (`LE-BANK-SA` in the typed product register) during the build phase. A separate Hoz Securities Limited trading mandate will be produced when that entity's build phase approaches commencement-of-trading.
+All trading-book risk is booked on the Hoz Bank Limited balance sheet (`LE-BANK-SA` in the typed product register) during the build phase.
+
+**Hoz Securities Limited — pathway deferred.** The entity remains incorporated, but its JSE-membership / equities-execution pathway is **deferred** at v2: JSE cash equity is removed from the strategy's mandated scope (CEO in-session instruction 2026-06-11; §13.4 `EXCL-LISTED-EQUITY`). Reactivation of the pathway requires an NPA gate pass for the equity product and amendment of this strategy. A Hoz Securities Limited trading mandate will be produced only if and when that reactivation is approved.
 
 ---
 
@@ -349,7 +351,7 @@ A full Board (including independent NEDs) is constituted at licence-day. All Boa
 | Information Regulator | POPIA (Act 4 of 2013) | Information Officer designation; POPIA compliance; data subject rights | Objective layer live |
 | BCBS | Basel III/IV consolidated framework (transposed via PA regulations) | Baseline framework layer — Pillar-1 spine catalogued at provision granularity with typed SARB-adoption edges; governs by default where SA is silent | Objective layer live; 14 BCBS standards (BCP, CAP, CRE, DIS, LCR, LEV, LEX, MAR, MGN, NSF, OPE, RBC, SCO, SRP) acquired as transposed active sources |
 | IASB | IFRS (IFRS 9/7/13, IAS 1/21, etc.) | Financial reporting basis for AFS and BA returns | Objective layer live (`Regulations/INTL/IASB/iasb-objective-graph.json`) |
-| JSE | JSE Equities Rules and Directives | Trading-member obligations (through Hoz Securities Limited) | Tracked in `Regulations/_index.md`; not an active library v1 source |
+| JSE | JSE Equities Rules and Directives | **Deferred / inactive at v2** — no trading-member obligations while JSE cash equity is out of scope (§4.4, §13.4 `EXCL-LISTED-EQUITY`); re-activates only on the Hoz Securities Limited membership pathway | Tracked in `Regulations/_index.md`; not an active library v1 source |
 
 **Regulatory library v1 (D-REGULATORY-LIBRARY-V1, CEO-approved 2026-06-11)** is complete: all **15 active sources** (instruments with applicability status `direct` or `transposed` — the FAIS Act plus 14 BCBS standards) are acquired as filed golden-source binaries, and both source-coverage recon gates (`recon:regulatory-source-coverage`, `recon:regulatory-golden-source-integrity`) are ENFORCING from 2026-06-11. Six regulators carry machine-readable **objective layers** (RegulatoryObjective nodes with SERVES/ALIGNS_TO edges): PA, FSCA, FIC, BCBS, IASB, and the Information Regulator — so policies align to regulator *intent*, not just requirement text, with `recon:regulator-mandate-coverage` enforcing coverage.
 
@@ -437,6 +439,7 @@ No Chief Strategy Officer (CSO) is currently on the team roster. This document w
 |---|---|---|---|
 | v1 DRAFT | 2026-05-22 | Chief of Staff (orchestration) | Initial draft — synthesis of governance-seat inputs; submitted for CEO review and approval. Never approved; `D-BANK-STRATEGY-V1` never recorded. Superseded by v2 |
 | v2 DRAFT | 2026-06-11 | Chief of Staff (orchestration); typed-scope appendix by Owen (Company Secretary, governance) | Refresh to 2026-06-11 substrate/governance state: §4.2 product table re-sourced from the typed product register (OTC vanilla FX umbrella `approved-conditional`, spot/forward/swap, option NOT approved); §6.4 milestones refreshed (LCR/NSFR live, RWA engine live via `RwaComputed`, returns wiring in progress, regulatory library v1 complete, Treasurer Wave-1 complete); §7.1 re-sourced from the 17-line structured RAS register; §7.2 Treasurer (Eitan) governance added; §8.1 aligned to regulatory library v1 (15/15 active sources, 6 objective layers); **new §13 machine-extractable typed-scope appendix** (ACT-*, product permissions, SEG-*, exclusions, jurisdictions, STERM-* defined terms). Submitted for CEO approval under `D-BANK-STRATEGY-V2` |
+| v2 DRAFT rev 2 | 2026-06-11 | Owen (Company Secretary, governance), per CEO in-session instruction 2026-06-11 (Marc, CEO) | **JSE cash equity removed from scope**: §1/§2.2/§4.1 operative language; §4.2 JSE Equity Desk row removed; §4.4 Hoz Securities Limited pathway deferred (reactivation requires NPA gate + strategy amendment); §8.1 JSE regulator row deferred/inactive; §13.1 `ACT-TRADE-EQUITY` moved to not-mandated; §13.2 `listed-equity` row → reserved/zero-permission; §13.4 `EXCL-LISTED-EQUITY` added; §13.6 `STERM-JSE-LISTED-EQUITY` resolution marked excluded. **FX forward tenor cap removed**: §4.2 note + §13.2 FX row + §13.6 `STERM-FX-FORWARD` — tenor governed by typed product scope (T+2 to T+N) and RAS market-risk lines, no fixed cap. Trading Mandate aligned at v1.1 (trading-mandate-v1.md). Status remains DRAFT — PENDING CEO APPROVAL under `D-BANK-STRATEGY-V2` |
 
 **Approval required from:** CEO  
 **Approval method:** In-session CEO confirmation triggers `Decision(approved)` event via `recordDecision` with `decisionId: D-BANK-STRATEGY-V2`.  
@@ -456,7 +459,6 @@ Business-facing activities this strategy mandates. (Supporting activities — re
 |---|---|---|---|
 | `ACT-TRADE-FX` | FX dealing | §4.1, §4.2 | OTC vanilla only: spot, forward, swap (deliverable + NDF); option excluded (§13.4) |
 | `ACT-TRADE-BOND` | Bond trading | §4.1, §4.2 | JSE/OTC bond trading incl. repo / reverse repo on eligible bonds (GMRA 2011) — no dedicated repo ACT code exists; repo resolves here + family `repo` (§13.6 STERM-REPO) |
-| `ACT-TRADE-EQUITY` | Equity trading (JSE) | §4.1, §4.2 | JSE listed equity cash, via Hoz Securities Limited membership pathway (§4.4) |
 | `ACT-TRADE-OTC-IRD` | OTC interest rate derivatives | §4.1, §4.2 | Vanilla ZAR IRS (+ FRA per desk mandate); Bermudan/swaption reserved (M3+) |
 | `ACT-CLIENT-ONBOARD` | Client onboarding (KYC/CDD/EDD) | §3.1, §8.3 | Institutional counterparties only |
 | `ACT-CLIENT-CATEGORISE` | Client categorisation & suitability | §3.1 | Categorisation enforces the institutional-only franchise (no retail) |
@@ -464,7 +466,7 @@ Business-facing activities this strategy mandates. (Supporting activities — re
 | `ACT-BANK-PAYMENT` | Payment processing | §4.3 | Correspondent / sponsor-bank channel; indirect NPS participant posture |
 | `ACT-BANK-NOSTRO` | Nostro & correspondent management | §4.3 | Multi-currency nostro estate under the correspondent-bank model |
 
-Activities explicitly **not** mandated at v2 (taxonomy codes reserved or excluded): `ACT-TRADE-OTC-CREDIT` (reserved M5+), `ACT-CLIENT-ADVICE` (no FAIS advisory to natural persons; institutional intermediary scope only — see §13.4).
+Activities explicitly **not** mandated at v2 (taxonomy codes reserved or excluded): `ACT-TRADE-EQUITY` (JSE cash equity removed from scope per CEO in-session instruction 2026-06-11 — see §13.4 `EXCL-LISTED-EQUITY`), `ACT-TRADE-OTC-CREDIT` (reserved M5+), `ACT-CLIENT-ADVICE` (no FAIS advisory to natural persons; institutional intermediary scope only — see §13.4).
 
 ### 13.2 Product permissions per desk
 
@@ -472,13 +474,13 @@ Consistent with §4.2. Family codes are `ProductFamily` enum values. "Mandate ca
 
 | Desk | Family code | Canonical product id | Permitted variants | Currency pairs / currencies | Tenor cap | Underlying classes | Master agreement | Settlement |
 |---|---|---|---|---|---|---|---|---|
-| JSE Equity Desk | `listed-equity` | `prd:bank:equity:jse-equity-cash` | Cash equity | ZAR | n/a (spot) | JSE listed equities | none (listed market rules) | T+3 Strate |
 | JSE Bond / Fixed Income Desk | `listed-bond` | `prd:bank:bond:sagb-fixed-coupon` | Fixed-coupon SAGB | ZAR | Per instrument maturity | RSA Government bonds | none (listed market rules) | T+3 Strate |
 | JSE Bond / Fixed Income Desk | `repo` | `prd:bank:treasury:repo-sagb-term` | Term repo / reverse repo | ZAR | Per repo term | SAGB collateral | GMRA 2011 | Per term |
 | OTC IRD Desk | `otc-ird` | `prd:bank:otc-ird:vanilla-irs-zar` | Vanilla fixed/floating IRS; FRA (desk mandate; no typed fixture yet) | ZAR | Per mandate calibration | ZAR rates (JIBAR/ZARONIA) | ISDA 2002 + ZAR Schedule | Net cash |
-| FX Desk | `fx` | `prd:bank:fx:otc-vanilla` | **spot, forward, swap** (deliverable + NDF); **option NOT permitted** | **any** (typed scope) | Typed scope: T+2 to T+N; mandate cap: outright forwards ≤ 1 year at mandate v1 | Currency pairs vs ZAR and cross | ISDA 2002 | T+2/T+N; PvP via CLS-member correspondent; cash for NDF |
+| FX Desk | `fx` | `prd:bank:fx:otc-vanilla` | **spot, forward, swap** (deliverable + NDF); **option NOT permitted** | **any** (typed scope) | Typed scope: T+2 to T+N; **no tenor cap** — tenor risk governed by RAS market-risk lines (§7.1) | Currency pairs vs ZAR and cross | ISDA 2002 | T+2/T+N; PvP via CLS-member correspondent; cash for NDF |
 | Treasury | `money-market` | `prd:bank:treasury:mmd-deposit`, `prd:bank:treasury:funding-line` | Wholesale MMD; committed funding line | ZAR (multi-ccy capable per Principle 5) | Short-term | Cash funding instruments | none (bilateral) | Per instrument |
 | Treasury | `interbank-loan` | `prd:bank:treasury:ibl-placement` | Interbank placement (bank as lender) | ZAR (multi-ccy capable) | Short-term | Interbank credit | none (bilateral) | Per instrument |
+| — | `listed-equity` | — | **None — reserved family, no permissions at v2** (removed from scope per CEO in-session instruction 2026-06-11; `EXCL-LISTED-EQUITY`, §13.4) | — | — | — | — | — |
 | — | `structured` | — | **None — reserved family, no permissions at v2** | — | — | — | — | — |
 
 All counterparty eligibility is **institutional** across every row (typed `counterpartyEligibility`/`franchiseScope` fields). Execution venue for the FX umbrella is **OTC only** (typed `executionVenue: "otc"`).
@@ -491,7 +493,7 @@ SEG-* codes minted here for the four §3.1 institutional classes; these seed the
 |---|---|
 | `SEG-INST-ASSET-MANAGER` | South African institutional asset managers — pension funds, insurance companies, unit trusts and their management companies |
 | `SEG-CORP-TREASURY` | Corporate treasuries managing large balance-sheet FX and interest-rate exposures |
-| `SEG-BANK-BROKER-DEALER` | Banks and broker-dealers requiring bilateral OTC derivative execution or bond/equity crossing |
+| `SEG-BANK-BROKER-DEALER` | Banks and broker-dealers requiring bilateral OTC derivative execution or bond crossing |
 | `SEG-INTL-INSTITUTIONAL` | International institutional counterparties with South African rand or JSE-listed instrument requirements |
 
 No segment outside these four is in scope at v2. Retail / natural-person clients are not a segment (§13.4).
@@ -506,6 +508,7 @@ No segment outside these four is in scope at v2. Retail / natural-person clients
 | `EXCL-PROP-TRADING` | No proprietary trading — all market risk arises from client franchise activity within Trading Mandate limits | §4.1 |
 | `EXCL-NPS-DIRECT` | No direct NPS participation; no direct NPS settlement account; no direct BankservAfrica membership in the build phase | §4.3 |
 | `EXCL-FX-OPTION` | No FX options — named in the FX umbrella's target scope but not approved; requires the M5 option-pricing substrate, an NPA gate pass, and amendment of this strategy | §4.2 |
+| `EXCL-LISTED-EQUITY` | No JSE cash-equity trading at v2 — removed from scope per CEO in-session instruction 2026-06-11; family `listed-equity` reserved with zero permissions; deferred until the Hoz Securities Limited JSE-membership pathway is reactivated, an NPA gate is passed, and this strategy is amended | §4.2, §4.4 |
 | `EXCL-STRUCTURED` | No structured products — `structured` family reserved, zero permissions | §4.2, §13.2 |
 | `EXCL-OTC-CREDIT` | No OTC credit derivatives — `ACT-TRADE-OTC-CREDIT` reserved (M5+) | §13.1 |
 | `EXCL-NON-ZA-BOOKING` | No booking outside South Africa; ZA is the sole jurisdiction at licence-day | §3.3, §13.5 |
@@ -528,11 +531,11 @@ Every load-bearing scope phrase used in this document, with its definitive resol
 | `STERM-IRS` | Interest rate swap (IRS) | ZAR fixed/floating vanilla swap, JIBAR/ZARONIA floating leg, ISDA 2002 | `ACT-TRADE-OTC-IRD`; family `otc-ird`; product `prd:bank:otc-ird:vanilla-irs-zar` |
 | `STERM-FRA` | Forward rate agreement (FRA) | Single-period forward-starting interest-rate contract, cash-settled against JIBAR/ZARONIA; in the OTC IRD desk mandate; **no typed product fixture yet** (gap noted) | `ACT-TRADE-OTC-IRD`; family `otc-ird`; variant: FRA |
 | `STERM-FX-SPOT` | FX spot | FX exchange for value T+2, any currency pair, OTC, institutional counterparties | `ACT-TRADE-FX`; family `fx`; product `prd:bank:fx:otc-vanilla`; variant `spot` |
-| `STERM-FX-FORWARD` | FX forward (outright forward) | FX exchange for value beyond T+2 (deliverable or NDF); mandate cap ≤ 1 year at Trading Mandate v1 | `ACT-TRADE-FX`; family `fx`; product `prd:bank:fx:otc-vanilla`; variant `forward` |
+| `STERM-FX-FORWARD` | FX forward (outright forward) | FX exchange for value beyond T+2 (deliverable or NDF); **no tenor cap** — tenor risk governed by RAS market-risk lines (§7.1) and the typed product scope | `ACT-TRADE-FX`; family `fx`; product `prd:bank:fx:otc-vanilla`; variant `forward` |
 | `STERM-FX-SWAP` | FX swap | Simultaneous near-leg and far-leg FX exchange (2 cashflow legs) on the same pair | `ACT-TRADE-FX`; family `fx`; product `prd:bank:fx:otc-vanilla`; variant `swap` |
 | `STERM-FX-OPTION` | FX option | Option on an FX pair (Garman-Kohlhagen / vol-surface substrate, M5) — **excluded at v2** (`EXCL-FX-OPTION`) | family `fx`; variant `option` — NOT permitted |
 | `STERM-NDF` | Non-deliverable forward (NDF) | Cash-settled FX forward, no principal exchange; within the FX umbrella's deliverable + non-deliverable scope | `ACT-TRADE-FX`; family `fx`; product `prd:bank:fx:otc-vanilla`; variants `forward`/`swap`, cash settlement |
-| `STERM-JSE-LISTED-EQUITY` | JSE-listed equity | Equity securities admitted to listing on the JSE, traded cash (spot) | `ACT-TRADE-EQUITY`; family `listed-equity`; product `prd:bank:equity:jse-equity-cash` |
+| `STERM-JSE-LISTED-EQUITY` | JSE-listed equity | Equity securities admitted to listing on the JSE, traded cash (spot) — **excluded at v2** (`EXCL-LISTED-EQUITY`) | family `listed-equity`; product `prd:bank:equity:jse-equity-cash` — **NOT permitted** (removed from scope per CEO in-session instruction 2026-06-11) |
 | `STERM-SAGB` | South African Government bond (SAGB) | RSA Government fixed-coupon bond (nominals; ILBs per desk mandate extension) | `ACT-TRADE-BOND`; family `listed-bond`; product `prd:bank:bond:sagb-fixed-coupon` |
 | `STERM-REPO` | Repo / reverse repo | Sale-and-repurchase (and reverse) of eligible bonds under GMRA 2011; booked on the bond / fixed-income desk | `ACT-TRADE-BOND`; family `repo`; product `prd:bank:treasury:repo-sagb-term` |
 | `STERM-MMD` | Money-market deposit (MMD) | Wholesale short-term deposit taken by the bank as a funding instrument (no retail deposits) | `ACT-BANK-DEPOSIT`; family `money-market`; product `prd:bank:treasury:mmd-deposit` |
