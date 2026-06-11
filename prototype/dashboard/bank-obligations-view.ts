@@ -226,6 +226,23 @@ export interface ObligationDetail {
   history: Array<{ kind: string; at: string; detail?: string; status?: string }>;
   headingGroups: ChapterHeadingGroup[];
   sourceTextStatus: SourceTextStatus;
+  /**
+   * Verbatim provision text resolved from the first EXPRESSES-linked Provision
+   * node's metadata.text. Null when no provision resolves or text not extracted.
+   * WS-REGULATORY-LIBRARY-V1 Slice 3 (D-REGULATORY-LIBRARY-V1).
+   */
+  verbatimText: string | null;
+  /**
+   * BLAKE3 content-addressed hash of the source PDF golden source.
+   * Resolved from the first EXPRESSES-linked Provision's metadata.goldenSourceHash.
+   * Null when no provision or hash not stamped. WS-REGULATORY-LIBRARY-V1 Slice 3.
+   */
+  goldenSourceHash: string | null;
+  /**
+   * Page range in the source PDF, e.g. "12–14". Resolved from provision
+   * metadata.sourcePages. Null when not present. WS-REGULATORY-LIBRARY-V1 Slice 3.
+   */
+  sourcePages: string | null;
 }
 
 interface BcbsChapterRow {
@@ -539,6 +556,38 @@ export function getObligationDetail(
     seed,
   );
 
+  // WS-REGULATORY-LIBRARY-V1 Slice 3 (D-REGULATORY-LIBRARY-V1): resolve
+  // verbatimText, goldenSourceHash, and sourcePages from the first EXPRESSES-
+  // linked Provision node's metadata. These power the obligation drill-down
+  // "View golden source (PDF)" link and verbatim provision text block.
+  const db = getDb();
+  const firstProvRow = db
+    .prepare(
+      `SELECT n.id, n.metadata FROM graph_nodes n
+       JOIN graph_edges e ON e.from_id = n.id
+       WHERE e.to_id = ? AND e.edge_type = 'EXPRESSES'
+         AND n.node_type = 'Provision'
+       LIMIT 1`,
+    )
+    .get(`OBL-${id}`) as { id: string; metadata: string | null } | null;
+
+  let verbatimText: string | null = null;
+  let goldenSourceHash: string | null = null;
+  let sourcePages: string | null = null;
+
+  if (firstProvRow?.metadata) {
+    const provMeta = JSON.parse(firstProvRow.metadata) as Record<string, unknown>;
+    verbatimText = typeof provMeta.text === "string" && provMeta.text ? provMeta.text : null;
+    goldenSourceHash =
+      typeof provMeta.goldenSourceHash === "string" && provMeta.goldenSourceHash
+        ? provMeta.goldenSourceHash
+        : null;
+    sourcePages =
+      typeof provMeta.sourcePages === "string" && provMeta.sourcePages
+        ? provMeta.sourcePages
+        : null;
+  }
+
   return {
     id,
     adopted: projection?.adopted ?? false,
@@ -547,5 +596,8 @@ export function getObligationDetail(
     history,
     headingGroups,
     sourceTextStatus,
+    verbatimText,
+    goldenSourceHash,
+    sourcePages,
   };
 }

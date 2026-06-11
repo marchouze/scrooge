@@ -73,6 +73,215 @@ interface EdgeRow {
 }
 
 // ---------------------------------------------------------------------------
+// tracePolicyBackToRegulation
+// D-REGULATORY-LIBRARY-V1 (WS-REGULATORY-LIBRARY-V1 Slice 3)
+// ---------------------------------------------------------------------------
+
+/**
+ * One Policy→Obligation→Provision→Document trace item, produced by
+ * {@link tracePolicyBackToRegulation}. Author: Mira (Compliance / RegTech
+ * engineer, engineering). Authority: D-REGULATORY-LIBRARY-V1.
+ */
+export interface PolicyRegulationTraceItem {
+  policy: GraphNode;
+  obligation: GraphNode;
+  /** The adopted obligation's source Provision (from EXPRESSES inverse). Null if not in graph. */
+  provision: GraphNode | null;
+  /** The Document node for the Provision (from CONTAINS inverse). Null if not in graph. */
+  document: GraphNode | null;
+  /** provision.metadata.text — the verbatim regulatory clause text. */
+  verbatimText: string | null;
+  /** provision.metadata.goldenSourceHash — BLAKE3 hash of the source PDF. */
+  goldenSourceHash: string | null;
+  /** provision.metadata.sourcePages — page range in the source PDF, e.g. "12–14". */
+  sourcePages: string | null;
+  /** obligation.metadata.sourceProvision — the urn:reg:... citation. */
+  sourceProvisionUrn: string | null;
+  /** Present only when opts.includeCrossPlane is true. */
+  crossPlane?: {
+    sourceObligation: GraphNode;
+    sourceProvision: GraphNode | null;
+    sourceDocument: GraphNode | null;
+  };
+}
+
+export interface TracePolicyBackOptions {
+  asOf?: string;
+  /**
+   * If true, follow DERIVES_FROM / EQUIVALENT_TO from the adopted obligation
+   * to its unadopted source obligation (e.g. OBL-BCBS-*) and include its
+   * Provision + Document in the crossPlane field. Default false.
+   */
+  includeCrossPlane?: boolean;
+}
+
+/**
+ * Walk backward from a Policy through its CLOSES → Obligation → ←EXPRESSES←
+ * Provision → ←CONTAINS← Document chain, returning one trace item per
+ * (policy, obligation, provision) triplet.
+ *
+ * Traversal:
+ *   1. Find POL-<policyId> — returns [] when not found.
+ *   2. Walk CLOSES edges Policy → Obligation nodes.
+ *   3. For each Obligation: walk ←EXPRESSES edge → Provision node.
+ *   4. For each Provision: walk ←CONTAINS edge → Document node.
+ *   5. Extract verbatimText, goldenSourceHash, sourcePages from provision
+ *      metadata; extract sourceProvisionUrn from obligation metadata.
+ *   6. If opts.includeCrossPlane: from each Obligation, walk DERIVES_FROM /
+ *      EQUIVALENT_TO → source Obligation, then its Provision + Document.
+ *
+ * D-REGULATORY-LIBRARY-V1 (WS-REGULATORY-LIBRARY-V1 Slice 3).
+ * Author: Mira (Compliance / RegTech engineer, engineering).
+ */
+export function tracePolicyBackToRegulation(
+  policyId: string,
+  opts?: TracePolicyBackOptions,
+): PolicyRegulationTraceItem[] {
+  const db = getDb();
+  const policyNodeId = `POL-${policyId}`;
+
+  const policyRow = db
+    .prepare("SELECT * FROM graph_nodes WHERE id = ?")
+    .get(policyNodeId) as NodeRow | null;
+  if (!policyRow) return [];
+  const policy = rowToNode(policyRow);
+
+  const temporalFilter = opts?.asOf ? `AND ${temporalClause("n", opts.asOf)}` : "";
+
+  // Walk CLOSES edges from the Policy → Obligation nodes
+  const obligationRows = db
+    .prepare(
+      `SELECT n.* FROM graph_nodes n
+       JOIN graph_edges e ON e.to_id = n.id
+       WHERE e.from_id = ? AND e.edge_type = 'CLOSES'
+         AND n.node_type = 'Obligation' ${temporalFilter}`,
+    )
+    .all(policyNodeId) as NodeRow[];
+
+  const items: PolicyRegulationTraceItem[] = [];
+
+  for (const oblRow of obligationRows) {
+    const obligation = rowToNode(oblRow);
+
+    // sourceProvisionUrn from obligation metadata
+    const oblMeta = obligation.metadata as Record<string, unknown> | undefined;
+    const sourceProvisionUrn =
+      typeof oblMeta?.sourceProvision === "string" ? oblMeta.sourceProvision : null;
+
+    // Walk ←EXPRESSES edge → Provision node(s)
+    const provisionRows = db
+      .prepare(
+        `SELECT n.* FROM graph_nodes n
+         JOIN graph_edges e ON e.from_id = n.id
+         WHERE e.to_id = ? AND e.edge_type = 'EXPRESSES'
+           AND n.node_type = 'Provision' ${temporalFilter}`,
+      )
+      .all(obligation.id) as NodeRow[];
+
+    if (provisionRows.length === 0) {
+      // No provision resolved — emit a partial trace item
+      items.push({
+        policy,
+        obligation,
+        provision: null,
+        document: null,
+        verbatimText: null,
+        goldenSourceHash: null,
+        sourcePages: null,
+        sourceProvisionUrn,
+      });
+      continue;
+    }
+
+    for (const provRow of provisionRows) {
+      const provision = rowToNode(provRow);
+      const provMeta = provision.metadata as Record<string, unknown> | undefined;
+
+      const verbatimText =
+        typeof provMeta?.text === "string" && provMeta.text ? provMeta.text : null;
+      const goldenSourceHash =
+        typeof provMeta?.goldenSourceHash === "string" && provMeta.goldenSourceHash
+          ? provMeta.goldenSourceHash
+          : null;
+      const sourcePages =
+        typeof provMeta?.sourcePages === "string" && provMeta.sourcePages
+          ? provMeta.sourcePages
+          : null;
+
+      // Walk ←CONTAINS edge → Document node
+      const docRow = db
+        .prepare(
+          `SELECT n.* FROM graph_nodes n
+           JOIN graph_edges e ON e.from_id = n.id
+           WHERE e.to_id = ? AND e.edge_type = 'CONTAINS'
+             AND n.node_type = 'Document' ${temporalFilter}
+           LIMIT 1`,
+        )
+        .get(provision.id) as NodeRow | null;
+      const document = docRow ? rowToNode(docRow) : null;
+
+      const item: PolicyRegulationTraceItem = {
+        policy,
+        obligation,
+        provision,
+        document,
+        verbatimText,
+        goldenSourceHash,
+        sourcePages,
+        sourceProvisionUrn,
+      };
+
+      // Cross-plane: follow DERIVES_FROM / EQUIVALENT_TO from the adopted
+      // obligation to its unadopted source obligation, then its Provision + Document.
+      if (opts?.includeCrossPlane) {
+        const srcOblRows = db
+          .prepare(
+            `SELECT n.* FROM graph_nodes n
+             JOIN graph_edges e ON e.to_id = n.id
+             WHERE e.from_id = ? AND e.edge_type IN ('DERIVES_FROM', 'EQUIVALENT_TO')
+               AND n.node_type = 'Obligation' ${temporalFilter}`,
+          )
+          .all(obligation.id) as NodeRow[];
+        const firstSrcOblRow = srcOblRows[0];
+        if (srcOblRows.length > 0 && firstSrcOblRow) {
+          const sourceObligation = rowToNode(firstSrcOblRow);
+          // Provision for the source obligation
+          const srcProvRow = db
+            .prepare(
+              `SELECT n.* FROM graph_nodes n
+               JOIN graph_edges e ON e.from_id = n.id
+               WHERE e.to_id = ? AND e.edge_type = 'EXPRESSES'
+                 AND n.node_type = 'Provision' ${temporalFilter}
+               LIMIT 1`,
+            )
+            .get(sourceObligation.id) as NodeRow | null;
+          const sourceProvision = srcProvRow ? rowToNode(srcProvRow) : null;
+          // Document for the source provision
+          let sourceDocument: GraphNode | null = null;
+          if (sourceProvision) {
+            const srcDocRow = db
+              .prepare(
+                `SELECT n.* FROM graph_nodes n
+                 JOIN graph_edges e ON e.from_id = n.id
+                 WHERE e.to_id = ? AND e.edge_type = 'CONTAINS'
+                   AND n.node_type = 'Document' ${temporalFilter}
+                 LIMIT 1`,
+              )
+              .get(sourceProvision.id) as NodeRow | null;
+            sourceDocument = srcDocRow ? rowToNode(srcDocRow) : null;
+          }
+          item.crossPlane = { sourceObligation, sourceProvision, sourceDocument };
+        }
+      }
+
+      items.push(item);
+    }
+  }
+
+  return items;
+}
+
+// ---------------------------------------------------------------------------
 // ObligationChain
 // ---------------------------------------------------------------------------
 
