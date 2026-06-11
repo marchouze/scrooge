@@ -122,8 +122,10 @@ export interface SeedStats {
 const INSTRUMENT_APPLICABILITY_EXACT: Record<string, DocumentApplicabilityStatus> = {
   // Direct-binding SA primary legislation
   "BANKS-ACT-94-1990": "direct",
+  "BANKS-ACT": "direct",   // slug-based lookup for banks-act-structured.json
   "REGS-RELATING-TO-BANKS": "direct",
   "REGULATIONS-RELATING-TO-BANKS": "direct",
+  "RRB": "direct",         // slug-based lookup for rrb-structured.json
   "FAIS-ACT-37-2002": "direct",
   "FIC-ACT-38-2001": "direct",
   "POPIA-4-2013": "direct",
@@ -148,6 +150,13 @@ const INSTRUMENT_APPLICABILITY_PREFIXES: Array<{
   prefix: string;
   status: DocumentApplicabilityStatus;
 }> = [
+  // SA Banks Act instruments — direct (issued under ss.6(4)/6(6) of the Banks Act 1990)
+  { prefix: "BANKS-D",  status: "direct" as const },   // PA Directives
+  { prefix: "BANKS-C",  status: "direct" as const },   // PA Circulars
+  { prefix: "BANKS-GN", status: "direct" as const },   // PA Guidance Notes
+  // Joint Standards (PA + FSCA, issued under FSR Act s.106)
+  { prefix: "JN-",      status: "direct" as const },
+  { prefix: "JS-",      status: "direct" as const },
   // SA prudential / SARB directives — direct
   { prefix: "PA-D", status: "direct" },
   { prefix: "SARB-D", status: "direct" },
