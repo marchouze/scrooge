@@ -1,6 +1,6 @@
 {
   "slug": "banks-d2-2025",
-  "title": "Banks Act Directive D2/2025 \u2014 Matters related to the capital treatment of significant investments in insurance entities",
+  "title": "Banks Act Directive D2/2025 — Matters related to the capital treatment of significant investments in insurance entities",
   "shortTitle": "Directive D2/2025",
   "regulator": "Prudential Authority",
   "year": 2025,
@@ -34,7 +34,7 @@
             {
               "id": "s1-1",
               "number": "1.1",
-              "text": "Regulation 36(10)(b)(ii) of the Regulations relating to Banks (the \u201cRegulations\u201d) requires every Bank, when calculating its consolidated amount of qualifying capital 1 and reserve funds, to deduct from its consolidated amount of qualifying capital and reserves any equity or other regulatory amounts held in an insurance entity and remove from its balance sheet any relevant assets, liabilities or third-party investments relating to such insurance subsidiary or entity that conducts insurance business, or an insurance entity in which the Bank holds a significant minority interest (the \u201cDeduction\u201d). Regulation 36(10)(b)(ii)(A) of the Regulations further provides that the Deduction must be made in accordance with the relevant requirements specified in regulation 38(5) of the Regulations.",
+              "text": "Regulation 36(10)(b)(ii) of the Regulations relating to Banks (the “Regulations”) requires every Bank, when calculating its consolidated amount of qualifying capital 1 and reserve funds, to deduct from its consolidated amount of qualifying capital and reserves any equity or other regulatory amounts held in an insurance entity and remove from its balance sheet any relevant assets, liabilities or third-party investments relating to such insurance subsidiary or entity that conducts insurance business, or an insurance entity in which the Bank holds a significant minority interest (the “Deduction”). Regulation 36(10)(b)(ii)(A) of the Regulations further provides that the Deduction must be made in accordance with the relevant requirements specified in regulation 38(5) of the Regulations.",
               "verbatim": true,
               "subsections": []
             },
@@ -55,7 +55,7 @@
             {
               "id": "s1-4",
               "number": "1.4",
-              "text": "Regulation 38(5)(b) of the Regulations read with Banks Act Circular 4 of 2013 provide for the use of the threshold deduction treatment by banks or controlling companies with respect to their significant investments in financial entities, including insurance entities. Notwithstanding this, this treatment must only be applied by banks after obtaining the prior written approval of the Prudential Authority (the \u201cPA\u201d) in respect of significant investments.",
+              "text": "Regulation 38(5)(b) of the Regulations read with Banks Act Circular 4 of 2013 provide for the use of the threshold deduction treatment by banks or controlling companies with respect to their significant investments in financial entities, including insurance entities. Notwithstanding this, this treatment must only be applied by banks after obtaining the prior written approval of the Prudential Authority (the “PA”) in respect of significant investments.",
               "verbatim": true,
               "subsections": []
             },
@@ -69,14 +69,14 @@
             {
               "id": "s1-6",
               "number": "1.6",
-              "text": "To preserve the integrity of the qualifying regulatory capital and reserve funds of banking groups, the potential contagion between the banking and insurance sectors must be prevented. To achieve this, banks and banking groups are required to completely remove from their balance sheets all amounts that relate to investments in licensed insurance businesses and subsidiaries. When banks invest in insurance businesses, risks and adverse financial performance within such insurance entities can affect the financial performance of the investing Bank, and vice versa. The required deconsolidation of insurance businesses\u2019 balance sheets aims to address this problem.",
+              "text": "To preserve the integrity of the qualifying regulatory capital and reserve funds of banking groups, the potential contagion between the banking and insurance sectors must be prevented. To achieve this, banks and banking groups are required to completely remove from their balance sheets all amounts that relate to investments in licensed insurance businesses and subsidiaries. When banks invest in insurance businesses, risks and adverse financial performance within such insurance entities can affect the financial performance of the investing Bank, and vice versa. The required deconsolidation of insurance businesses’ balance sheets aims to address this problem.",
               "verbatim": true,
               "subsections": []
             },
             {
               "id": "s1-7",
               "number": "1.7",
-              "text": "The Regulations prescribe the treatment of investments in entities that are outside the scope of regulatory consolidation. Regulation 38(5)(b) of the Regulations requires that, instead of full deduction as provided for in regulation 38(5)(a)(i)(M) of the Regulations, specified items shall each receive limited recognition when a Bank calculates its common equity tier 1 (CET1) capital and reserve funds, with recognition being capped at 10% of the Bank\u2019s equity or CET1 capital and reserve funds. These items are: 2",
+              "text": "The Regulations prescribe the treatment of investments in entities that are outside the scope of regulatory consolidation. Regulation 38(5)(b) of the Regulations requires that, instead of full deduction as provided for in regulation 38(5)(a)(i)(M) of the Regulations, specified items shall each receive limited recognition when a Bank calculates its common equity tier 1 (CET1) capital and reserve funds, with recognition being capped at 10% of the Bank’s equity or CET1 capital and reserve funds. These items are: 2",
               "verbatim": true,
               "subsections": [
                 {
@@ -148,7 +148,7 @@
                 {
                   "id": "s2-1-2",
                   "number": "2.1.2",
-                  "text": "A Bank shall not include any post-acquisition reserves related to significant investments in insurance entities or insurance related businesses in either the Bank\u2019s solo or group consolidated capital. That is, post-acquisition reserves from significant investments in insurance entities or businesses shall not be included in the consolidated capital of banks and banking groups that have investments in such entities or businesses.",
+                  "text": "A Bank shall not include any post-acquisition reserves related to significant investments in insurance entities or insurance related businesses in either the Bank’s solo or group consolidated capital. That is, post-acquisition reserves from significant investments in insurance entities or businesses shall not be included in the consolidated capital of banks and banking groups that have investments in such entities or businesses.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -169,7 +169,7 @@
                 {
                   "id": "s2-1-5",
                   "number": "2.1.5",
-                  "text": "A Bank shall report variations to the value of the initial investment to the PA biannually using the template attached hereto as \u201cAnnexure A\u201d. The template must be submitted by no later than 30 business days following the June and December reporting periods, respectively. The completed templates must be approved and signed off by the Group Treasurer or a senior Bank official having the equivalent signing authority.",
+                  "text": "A Bank shall report variations to the value of the initial investment to the PA biannually using the template attached hereto as “Annexure A”. The template must be submitted by no later than 30 business days following the June and December reporting periods, respectively. The completed templates must be approved and signed off by the Group Treasurer or a senior Bank official having the equivalent signing authority.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -202,14 +202,14 @@
           "id": "s-banks-d2-2025-3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
-          "text": "3.1       Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n          external auditors. The attached acknowledgement of receipt duly completed and\n          signed by both the chief executive officer of the institution and the said auditors\n          should be returned to the PA at the earliest convenience of the aforementioned\n          signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:     06/06/25\nEncl. 1\n\nThe previous Directive issued was Directive 1/2025, dated 29 January 2025.\n\n\n\n\n                                                                                            4",
+          "text": "3.1       Kindly ensure that a copy of this Directive is made available to your institution’s\n          external auditors. The attached acknowledgement of receipt duly completed and\n          signed by both the chief executive officer of the institution and the said auditors\n          should be returned to the PA at the earliest convenience of the aforementioned\n          signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:     06/06/25\nEncl. 1\n\nThe previous Directive issued was Directive 1/2025, dated 29 January 2025.\n\n\n\n\n                                                                                            4",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d2-2025-3-1",
               "number": "3.1",
-              "heading": "Kindly ensure that a copy of this Directive is made available to your institution\u2019s",
-              "text": "3.1       Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n          external auditors. The attached acknowledgement of receipt duly completed and\n          signed by both the chief executive officer of the institution and the said auditors\n          should be returned to the PA at the earliest convenience of the aforementioned\n          signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:     06/06/25\nEncl. 1\n\nThe previous Directive issued was Directive 1/2025, dated 29 January 2025.\n\n\n\n\n                                                                                            4",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
+              "text": "3.1       Kindly ensure that a copy of this Directive is made available to your institution’s\n          external auditors. The attached acknowledgement of receipt duly completed and\n          signed by both the chief executive officer of the institution and the said auditors\n          should be returned to the PA at the earliest convenience of the aforementioned\n          signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:     06/06/25\nEncl. 1\n\nThe previous Directive issued was Directive 1/2025, dated 29 January 2025.\n\n\n\n\n                                                                                            4",
               "verbatim": true,
               "subsections": []
             }
@@ -217,5 +217,6 @@
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:605460e7d2e5b0c48b01b1ab420d5dbdc7a6e7d5b71c03c6943fddb7f29e6c59"
 }

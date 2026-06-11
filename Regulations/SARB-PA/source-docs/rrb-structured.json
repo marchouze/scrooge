@@ -1,5 +1,6 @@
 {
   "slug": "rrb",
+  "instrumentId": "REGS-RELATING-TO-BANKS",
   "title": "Regulations Relating to Banks (under Banks Act 94 of 1990)",
   "shortTitle": "RRB",
   "regulator": "SARB Prudential Authority",
@@ -1183,5 +1184,6 @@
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:79ef3954e9d63c53a758a817700019bd7b2100693da6f338ac5d02d78d502162"
 }

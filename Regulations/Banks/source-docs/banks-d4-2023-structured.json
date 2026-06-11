@@ -1,6 +1,6 @@
 {
   "slug": "banks-d4-2023",
-  "title": "Banks Act Directive D4/2023 \u2014 Directive on operational resilience",
+  "title": "Banks Act Directive D4/2023 — Directive on operational resilience",
   "shortTitle": "Directive D4/2023",
   "regulator": "Prudential Authority",
   "year": 2023,
@@ -98,7 +98,7 @@
             {
               "id": "s1-3",
               "number": "1.3",
-              "text": "The principles are required to be applied on a consolidated basis and also form an integral part of a bank\u2019s forward-looking operational resilience approach in line with its operational risk appetite and tolerance for disruption.",
+              "text": "The principles are required to be applied on a consolidated basis and also form an integral part of a bank’s forward-looking operational resilience approach in line with its operational risk appetite and tolerance for disruption.",
               "verbatim": true,
               "subsections": []
             },
@@ -126,7 +126,7 @@
             {
               "id": "s1-7",
               "number": "1.7",
-              "text": "Regulation 38(4) of the Regulations states that when the PA is of the opinion that a bank\u2019s policies, processes and procedures relating to operational resilience are inadequate, the PA, among other things, may require the said bank to:",
+              "text": "Regulation 38(4) of the Regulations states that when the PA is of the opinion that a bank’s policies, processes and procedures relating to operational resilience are inadequate, the PA, among other things, may require the said bank to:",
               "verbatim": true,
               "subsections": [
                 {
@@ -139,7 +139,7 @@
                 {
                   "id": "s1-7-2",
                   "number": "1.7.2",
-                  "text": "duly align the bank\u2019s operational resilience policies, processes, or procedures with the bank\u2019s relevant exposure to risk.",
+                  "text": "duly align the bank’s operational resilience policies, processes, or procedures with the bank’s relevant exposure to risk.",
                   "verbatim": true,
                   "subsections": []
                 }
@@ -224,11 +224,12 @@
           "id": "s-banks-d4-2023-3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
-          "text": "Acknowledgement of receipt 3. Acknowledgement of receipt 3. Acknowledgement of receipt 3. Acknowledgement of receipt 3. Acknowledgement of receipt 3. Acknowledgement of receipt Kindly ensure that a copy of this Directive is made available to your institution\u2019s external auditors. In addition, the attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, should be returned to the PA at the earliest convenience of the signatories. Fundi Tshazibana Chief Executive Officer Date: 01/06/23 The previous Directive issued was Directive 3/2023, dated 17 May 2023 CONFIDENTIAL",
+          "text": "Acknowledgement of receipt 3. Acknowledgement of receipt 3. Acknowledgement of receipt 3. Acknowledgement of receipt 3. Acknowledgement of receipt 3. Acknowledgement of receipt Kindly ensure that a copy of this Directive is made available to your institution’s external auditors. In addition, the attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, should be returned to the PA at the earliest convenience of the signatories. Fundi Tshazibana Chief Executive Officer Date: 01/06/23 The previous Directive issued was Directive 3/2023, dated 17 May 2023 CONFIDENTIAL",
           "verbatim": true,
           "subsections": []
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:fed901147b8ddbfc20bdd606abfce3969a08da71ab48b68afdd294a82869f772"
 }

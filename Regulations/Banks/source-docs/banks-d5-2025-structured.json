@@ -1,6 +1,6 @@
 {
   "slug": "banks-d5-2025",
-  "title": "Banks Act Directive D5/2025 \u2014 Returns to be submitted to the Prudential Authority",
+  "title": "Banks Act Directive D5/2025 — Returns to be submitted to the Prudential Authority",
   "shortTitle": "Directive D5/2025",
   "regulator": "Prudential Authority",
   "year": 2025,
@@ -353,14 +353,14 @@
           "id": "s-banks-d5-2025-4",
           "number": "4",
           "heading": "Acknowledgement of receipt",
-          "text": "4.1          Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n             external auditors. The attached acknowledgement of receipt duly completed and\n             signed by both the chief executive officer of the institution and the said auditors\n             should be returned to the PA at the earliest convenience of the aforementioned\n             signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 30-Jun-2025\n\nEncl.: 50\n\nThe previous Directive issued was Directive 4/2025, dated 30 June 2025.\n\n\n\n\n                                                                                              5",
+          "text": "4.1          Kindly ensure that a copy of this Directive is made available to your institution’s\n             external auditors. The attached acknowledgement of receipt duly completed and\n             signed by both the chief executive officer of the institution and the said auditors\n             should be returned to the PA at the earliest convenience of the aforementioned\n             signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 30-Jun-2025\n\nEncl.: 50\n\nThe previous Directive issued was Directive 4/2025, dated 30 June 2025.\n\n\n\n\n                                                                                              5",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d5-2025-4-1",
               "number": "4.1",
-              "heading": "Kindly ensure that a copy of this Directive is made available to your institution\u2019s",
-              "text": "4.1          Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n             external auditors. The attached acknowledgement of receipt duly completed and\n             signed by both the chief executive officer of the institution and the said auditors\n             should be returned to the PA at the earliest convenience of the aforementioned\n             signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 30-Jun-2025\n\nEncl.: 50\n\nThe previous Directive issued was Directive 4/2025, dated 30 June 2025.\n\n\n\n\n                                                                                              5",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
+              "text": "4.1          Kindly ensure that a copy of this Directive is made available to your institution’s\n             external auditors. The attached acknowledgement of receipt duly completed and\n             signed by both the chief executive officer of the institution and the said auditors\n             should be returned to the PA at the earliest convenience of the aforementioned\n             signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate: 30-Jun-2025\n\nEncl.: 50\n\nThe previous Directive issued was Directive 4/2025, dated 30 June 2025.\n\n\n\n\n                                                                                              5",
               "verbatim": true,
               "subsections": []
             }
@@ -368,5 +368,6 @@
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:f351eba6503537bba9ac6265c09f4ed7aef295aa11844043be932c3325cb57c4"
 }

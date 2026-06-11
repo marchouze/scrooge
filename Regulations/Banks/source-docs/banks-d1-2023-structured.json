@@ -1,6 +1,6 @@
 {
   "slug": "banks-d1-2023",
-  "title": "Banks Act Directive D1/2023 \u2014 Matters related to the net stable funding ratio",
+  "title": "Banks Act Directive D1/2023 — Matters related to the net stable funding ratio",
   "shortTitle": "Directive D1/2023",
   "regulator": "Prudential Authority",
   "year": 2023,
@@ -28,7 +28,7 @@
           "id": "s-banks-d1-2023-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.1                On 12 December 2012, the amended Regulations were published in Government\n                   Gazette No. 35950, following which they became effective on 1 January 2013.\n\n1.2                Subsequently, the Basel Committee on Banking Supervision (BCBS) issued an\n                   updated framework for calculating and implementing the NSFR1.\n\n1.3                The BCBS issued a press release2 providing for additional national discretion in\n                   specified cases.\n\n1.4                Directive 8 of 2017, relating to \u201cMatters related to the net stable funding ratio\u201d,\n                   was issued on 13 December 2017.\n\n1.5                On 18 December 2020, the amended Regulations were published in Government\n                   Gazette No. 44003, following which it became effective on 1 January 2021.",
+          "text": "1.1                On 12 December 2012, the amended Regulations were published in Government\n                   Gazette No. 35950, following which they became effective on 1 January 2013.\n\n1.2                Subsequently, the Basel Committee on Banking Supervision (BCBS) issued an\n                   updated framework for calculating and implementing the NSFR1.\n\n1.3                The BCBS issued a press release2 providing for additional national discretion in\n                   specified cases.\n\n1.4                Directive 8 of 2017, relating to “Matters related to the net stable funding ratio”,\n                   was issued on 13 December 2017.\n\n1.5                On 18 December 2020, the amended Regulations were published in Government\n                   Gazette No. 44003, following which it became effective on 1 January 2021.",
           "verbatim": true,
           "subsections": [
             {
@@ -58,8 +58,8 @@
             {
               "id": "s-banks-d1-2023-1-4",
               "number": "1.4",
-              "heading": "Directive 8 of 2017, relating to \u201cMatters related to the net stable funding ratio\u201d,",
-              "text": "1.4                Directive 8 of 2017, relating to \u201cMatters related to the net stable funding ratio\u201d,\n                   was issued on 13 December 2017.",
+              "heading": "Directive 8 of 2017, relating to “Matters related to the net stable funding ratio”,",
+              "text": "1.4                Directive 8 of 2017, relating to “Matters related to the net stable funding ratio”,\n                   was issued on 13 December 2017.",
               "verbatim": true,
               "subsections": []
             },
@@ -111,7 +111,7 @@
                 {
                   "id": "s2-2-1",
                   "number": "2.2.1",
-                  "text": "The amount of ASF is measured based on the broad characteristics of the relative stability of an institution\u2019s funding sources, including the contractual maturity of its liabilities and the differences in the propensity of different types of funding providers to withdraw their funding3.",
+                  "text": "The amount of ASF is measured based on the broad characteristics of the relative stability of an institution’s funding sources, including the contractual maturity of its liabilities and the differences in the propensity of different types of funding providers to withdraw their funding3.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -154,14 +154,14 @@
                 {
                   "id": "s2-3-1",
                   "number": "2.3.1",
-                  "text": "The amount of RSF is measured based on the broad characteristics of the liquidity risk profile of an institution\u2019s assets and off-balance sheet (OBS) exposures3.",
+                  "text": "The amount of RSF is measured based on the broad characteristics of the liquidity risk profile of an institution’s assets and off-balance sheet (OBS) exposures3.",
                   "verbatim": true,
                   "subsections": []
                 },
                 {
                   "id": "s2-3-2",
                   "number": "2.3.2",
-                  "text": "The RSF considers the need for resilient credit extension, bank behaviour, liquidity value, asset tenor and asset quality. Accordingly, the PA\u2019s assessment that the RSF factors set out in the NSFR framework is appropriate and shall be implemented accordingly by banks. Basel III: the net stable funding ratio, available at http://www.bis.org/bcbs/publ/d295.pdf 2",
+                  "text": "The RSF considers the need for resilient credit extension, bank behaviour, liquidity value, asset tenor and asset quality. Accordingly, the PA’s assessment that the RSF factors set out in the NSFR framework is appropriate and shall be implemented accordingly by banks. Basel III: the net stable funding ratio, available at http://www.bis.org/bcbs/publ/d295.pdf 2",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -174,7 +174,7 @@
                     {
                       "id": "s2-3-3-1",
                       "number": "2.3.3.1",
-                      "text": "The RSF assigned to a bank\u2019s minimum required cash reserves shall be 5 per cent. Any excess cash reserve balances held at the South African Reserve Bank in the relevant reserve account shall be assigned an RSF factor of 0 per cent.",
+                      "text": "The RSF assigned to a bank’s minimum required cash reserves shall be 5 per cent. Any excess cash reserve balances held at the South African Reserve Bank in the relevant reserve account shall be assigned an RSF factor of 0 per cent.",
                       "verbatim": true,
                       "subsections": []
                     }
@@ -255,7 +255,7 @@
                     {
                       "id": "s2-3-7-4",
                       "number": "2.3.7.4",
-                      "text": "Non-contractual obligations such as: 2.3.7.4.1 potential requests for debt repurchases of the bank\u2019s own debt or that of related conduits, securities investment vehicles and other such financing facilities, 2.3.7.4.2 structured products where customers anticipate ready marketability, such as adjustable rate notes and variable rate demand notes, and 2.3.7.4.3 managed funds marketed to maintain a stable value shall all be assigned an RSF factor of 0 per cent. 3",
+                      "text": "Non-contractual obligations such as: 2.3.7.4.1 potential requests for debt repurchases of the bank’s own debt or that of related conduits, securities investment vehicles and other such financing facilities, 2.3.7.4.2 structured products where customers anticipate ready marketability, such as adjustable rate notes and variable rate demand notes, and 2.3.7.4.3 managed funds marketed to maintain a stable value shall all be assigned an RSF factor of 0 per cent. 3",
                       "verbatim": true,
                       "subsections": []
                     }
@@ -269,14 +269,14 @@
           "id": "s-banks-d1-2023-3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
-          "text": "3.1.               Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n                   external auditors. In addition, the attached acknowledgement of receipt duly\n                   completed and signed by both the chief executive officer of the institution and the\n                   said auditors should be returned to the PA at the earliest convenience of the\n                   aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:\n\nThe previous Directive issued was Directive 11/2022, dated 14 December 2022.\n\n\n\n\n3   Basel III: the net stable funding ratio, available at http://www.bis.org/bcbs/publ/d295.pdf\n                                                                                                    4",
+          "text": "3.1.               Kindly ensure that a copy of this Directive is made available to your institution’s\n                   external auditors. In addition, the attached acknowledgement of receipt duly\n                   completed and signed by both the chief executive officer of the institution and the\n                   said auditors should be returned to the PA at the earliest convenience of the\n                   aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:\n\nThe previous Directive issued was Directive 11/2022, dated 14 December 2022.\n\n\n\n\n3   Basel III: the net stable funding ratio, available at http://www.bis.org/bcbs/publ/d295.pdf\n                                                                                                    4",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d1-2023-3-1",
               "number": "3.1",
-              "heading": "Kindly ensure that a copy of this Directive is made available to your institution\u2019s",
-              "text": "3.1.               Kindly ensure that a copy of this Directive is made available to your institution\u2019s\n                   external auditors. In addition, the attached acknowledgement of receipt duly\n                   completed and signed by both the chief executive officer of the institution and the\n                   said auditors should be returned to the PA at the earliest convenience of the\n                   aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:\n\nThe previous Directive issued was Directive 11/2022, dated 14 December 2022.\n\n\n\n\n3   Basel III: the net stable funding ratio, available at http://www.bis.org/bcbs/publ/d295.pdf\n                                                                                                    4",
+              "heading": "Kindly ensure that a copy of this Directive is made available to your institution’s",
+              "text": "3.1.               Kindly ensure that a copy of this Directive is made available to your institution’s\n                   external auditors. In addition, the attached acknowledgement of receipt duly\n                   completed and signed by both the chief executive officer of the institution and the\n                   said auditors should be returned to the PA at the earliest convenience of the\n                   aforementioned signatories.\n\n\n\n\nFundi Tshazibana\nChief Executive Officer\n\nDate:\n\nThe previous Directive issued was Directive 11/2022, dated 14 December 2022.\n\n\n\n\n3   Basel III: the net stable funding ratio, available at http://www.bis.org/bcbs/publ/d295.pdf\n                                                                                                    4",
               "verbatim": true,
               "subsections": []
             }
@@ -284,5 +284,6 @@
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:a7eae03423a4b6a43bdff1175912e90cb1819ac8c005e6b45012616650c0ea66"
 }

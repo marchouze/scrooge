@@ -1,6 +1,6 @@
 {
   "slug": "banks-d9-2021",
-  "title": "Banks Act Directive D9/2021 \u2014 Principles for the sound management of operational risk",
+  "title": "Banks Act Directive D9/2021 — Principles for the sound management of operational risk",
   "shortTitle": "Directive D9/2021",
   "regulator": "Prudential Authority",
   "year": 2021,
@@ -28,14 +28,14 @@
           "id": "s-banks-d9-2021-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.1.         In March 2021, the Basel Committee on Banking Supervision (BCBS) published a\n             document relating to operational risk, namely \u201cRevisions to the Principles for the\n             Sound Management of Operational Risk\u201d. 1 This document replaces the document\n             initially released by the BCBS in June 2011. The principles and related information\n             contained in the aforesaid document establish sound practices applicable to all\n             banks.",
+          "text": "1.1.         In March 2021, the Basel Committee on Banking Supervision (BCBS) published a\n             document relating to operational risk, namely “Revisions to the Principles for the\n             Sound Management of Operational Risk”. 1 This document replaces the document\n             initially released by the BCBS in June 2011. The principles and related information\n             contained in the aforesaid document establish sound practices applicable to all\n             banks.",
           "verbatim": true,
           "subsections": [
             {
               "id": "s-banks-d9-2021-1-1",
               "number": "1.1",
               "heading": "In March 2021, the Basel Committee on Banking Supervision (BCBS) published a",
-              "text": "1.1.         In March 2021, the Basel Committee on Banking Supervision (BCBS) published a\n             document relating to operational risk, namely \u201cRevisions to the Principles for the\n             Sound Management of Operational Risk\u201d. 1 This document replaces the document\n             initially released by the BCBS in June 2011. The principles and related information\n             contained in the aforesaid document establish sound practices applicable to all\n             banks.",
+              "text": "1.1.         In March 2021, the Basel Committee on Banking Supervision (BCBS) published a\n             document relating to operational risk, namely “Revisions to the Principles for the\n             Sound Management of Operational Risk”. 1 This document replaces the document\n             initially released by the BCBS in June 2011. The principles and related information\n             contained in the aforesaid document establish sound practices applicable to all\n             banks.",
               "verbatim": true,
               "subsections": []
             }
@@ -72,7 +72,7 @@
             {
               "id": "s2-4",
               "number": "2.4",
-              "text": "As an integral part of its supervisory processes, the PA will be reviewing banks\u2019, branches of foreign institutions\u2019, controlling companies\u2019, subsidiaries of banks and subsidiaries of controlling companies\u2019, excluding any subsidiary that conducts insurance business, operational risk policies, processes and practices on a continual basis in order to assess their appropriateness, in line with the principles contained in the aforementioned document issued by the BCBS. In accordance with regulation 38(4) of the Regulations, if the PA is of the opinion that a bank\u2019s policies, processes and procedures relating to operational risk are inadequate, the PA, among other things, may require the said bank:",
+              "text": "As an integral part of its supervisory processes, the PA will be reviewing banks’, branches of foreign institutions’, controlling companies’, subsidiaries of banks and subsidiaries of controlling companies’, excluding any subsidiary that conducts insurance business, operational risk policies, processes and practices on a continual basis in order to assess their appropriateness, in line with the principles contained in the aforementioned document issued by the BCBS. In accordance with regulation 38(4) of the Regulations, if the PA is of the opinion that a bank’s policies, processes and procedures relating to operational risk are inadequate, the PA, among other things, may require the said bank:",
               "verbatim": true,
               "subsections": [
                 {
@@ -85,7 +85,7 @@
                 {
                   "id": "s2-4-2",
                   "number": "2.4.2",
-                  "text": "to duly align the bank\u2019s operational risk policies, processes, or procedures with the bank\u2019s relevant exposure to the risk.",
+                  "text": "to duly align the bank’s operational risk policies, processes, or procedures with the bank’s relevant exposure to the risk.",
                   "verbatim": true,
                   "subsections": []
                 }
@@ -104,11 +104,12 @@
           "id": "s-banks-d9-2021-3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
-          "text": "Acknowledgement of receipt 3. Acknowledgement of receipt 3. Acknowledgement of receipt 3. Acknowledgement of receipt 3. Acknowledgement of receipt 3. Acknowledgement of receipt Kindly ensure that a copy of this Directive is made available to your institution\u2019s external auditors. The attached acknowledgement of receipt duly completed and signed by both the chief executive officer of the institution and the said auditors should be returned to the PA at the earliest convenience of the aforementioned signatories. Kuben Naidoo Deputy Governor and CEO: Prudential Authority Date: 2021-11-12 The previous Directive issued was Directive 8/2021, dated 29 October 2021 3",
+          "text": "Acknowledgement of receipt 3. Acknowledgement of receipt 3. Acknowledgement of receipt 3. Acknowledgement of receipt 3. Acknowledgement of receipt 3. Acknowledgement of receipt Kindly ensure that a copy of this Directive is made available to your institution’s external auditors. The attached acknowledgement of receipt duly completed and signed by both the chief executive officer of the institution and the said auditors should be returned to the PA at the earliest convenience of the aforementioned signatories. Kuben Naidoo Deputy Governor and CEO: Prudential Authority Date: 2021-11-12 The previous Directive issued was Directive 8/2021, dated 29 October 2021 3",
           "verbatim": true,
           "subsections": []
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:3eb62097af8759d930ee7cd36b34dfe948734339128f31063126fa2651b378ca"
 }

@@ -333,5 +333,6 @@
         }
       ]
     }
-  ]
+  ],
+  "goldenSourceHash": "blake3:43afb07d9dddd54fde9497a016e10b2a350c450ff9c52172d65eb9dce0f6b6eb"
 }
