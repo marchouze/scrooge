@@ -5,6 +5,7 @@
 import type { AgentRunHandler } from "../../types";
 import raviAlmReadiness from "../ravi-alm-readiness";
 import raviAlmRun from "../ravi-alm-run";
+import raviBalanceSheetProjector from "../ravi-balance-sheet-projector";
 import raviCfpEwiMonitor from "../ravi-cfp-ewi-monitor";
 import raviEventTriage from "../ravi-event-triage";
 import raviFtpAttribution from "../ravi-ftp-attribution";
@@ -22,6 +23,7 @@ import raviZaroniaIngest from "../ravi-zaronia-ingest";
 export const RAVI_CALLABLES: Record<string, AgentRunHandler> = {
   "ravi:alm-readiness": raviAlmReadiness,
   "ravi:alm-run": raviAlmRun,
+  "ravi:balance-sheet-projector": raviBalanceSheetProjector,
   "ravi:cfp-ewi-monitor": raviCfpEwiMonitor,
   "ravi:ftp-curve-publish": raviFtpCurvePublish,
   "ravi:ftp-attribution": raviFtpAttribution,

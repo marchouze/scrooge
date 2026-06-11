@@ -1,0 +1,53 @@
+# Ravi — daily balance-sheet projector (W2.4, D-TREASURER-WAVE2-SUBSTRATE)
+#
+# Emits one BalanceSheetProjected event per business day, supplying the
+# supplemental BA 120 line items the NSFR ASF/RSF engine needs that are not
+# covered by individual trade events: Tier 2 capital, issued unsecured
+# wholesale funding > 1 year, covered bonds, retail loans, encumbered assets,
+# off-balance-sheet commitments.
+#
+# Runs at 06:05 UTC — after ravi:alm-run (05:50) so the same-day ALM run
+# completes before the balance-sheet snapshot is projected. The NSFR engine
+# reads the latest BalanceSheetProjected event in each period close.
+#
+# Authority: D-TREASURER-WAVE2-SUBSTRATE (CEO-approved 2026-06-11);
+#   BA 120; BCBS D295/D396; Banks Act 94 of 1990 Reg 26A.
+
+name: Ravi balance-sheet projector
+
+on:
+  schedule:
+    - cron: "5 6 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - working-directory: prototype
+        run: bun install --frozen-lockfile
+      - working-directory: prototype
+        env:
+          BANK_EVENT_DB_URL: ${{ secrets.BANK_EVENT_DB_URL }}
+        run: bun run event-store:sync
+      - working-directory: prototype
+        run: bun run agent:ravi-balance-sheet-projector
+      - working-directory: prototype
+        env:
+          BANK_EVENT_DB_URL: ${{ secrets.BANK_EVENT_DB_URL }}
+        run: bun run event-store:sync

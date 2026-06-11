@@ -97,3 +97,16 @@ export type {
   ExternalCreditEventObservation,
   RecoveryEwiObservation,
 } from "./cfp-ewi";
+
+// D-TREASURER-WAVE2-SUBSTRATE — EWI live-feed adapter interfaces.
+// StubExternalCreditFeedAdapter + StubRecoveryPlanFeedAdapter are the
+// build-phase implementations; replace at licence-day.
+export {
+  StubExternalCreditFeedAdapter,
+  StubRecoveryPlanFeedAdapter,
+} from "./cfp-feed-adapters";
+
+export type {
+  ExternalCreditFeedAdapter,
+  RecoveryPlanFeedAdapter,
+} from "./cfp-feed-adapters";
