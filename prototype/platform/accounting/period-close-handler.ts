@@ -35,7 +35,7 @@ import type { DocumentStore } from "../document-store";
 import type { TrialBalanceSnapshottedPayload } from "../event-store/event-types";
 import { makeTrialBalanceSnapshotted } from "../event-store/event-types";
 import type { EventStore } from "../event-store/store";
-import type { Actor, Event, ProvenanceTag } from "../event-store/types";
+import type { Actor, Event } from "../event-store/types";
 import {
   type ClosePeriodArgs,
   type ClosePeriodResult,
@@ -85,7 +85,6 @@ export interface SnapshotTrialBalanceArgs {
   readonly actor: Actor;
   readonly citations: readonly string[];
   readonly documentStore?: DocumentStore;
-  readonly provenance?: ProvenanceTag;
 }
 
 export interface SnapshotTrialBalanceResult {
@@ -166,7 +165,6 @@ export function snapshotTrialBalance(args: SnapshotTrialBalanceArgs): SnapshotTr
     actor: args.actor,
     citations: [...args.citations],
     payload: tbPayload,
-    ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 
   args.eventStore.append(snapshotEvent);

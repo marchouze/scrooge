@@ -96,7 +96,6 @@ export function makeSlaRulePublished(args: {
   citations: string[];
   payload: SlaRulePublishedPayload;
   eventId?: string;
-  provenance?: Event["provenance"];
 }): Event {
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
@@ -106,7 +105,6 @@ export function makeSlaRulePublished(args: {
     actor: args.actor,
     citations: args.citations,
     payload: slaRulePublishedPayloadSchema.parse(args.payload),
-    ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
 
@@ -152,7 +150,6 @@ export function makeSlaRuleApproved(args: {
   citations: string[];
   payload: SlaRuleApprovedPayload;
   eventId?: string;
-  provenance?: Event["provenance"];
 }): Event {
   const payload = slaRuleApprovedPayloadSchema.parse(args.payload);
   return eventSchema.parse({
@@ -163,7 +160,6 @@ export function makeSlaRuleApproved(args: {
     actor: args.actor,
     citations: args.citations,
     payload,
-    ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
 
@@ -188,7 +184,6 @@ export function makeSlaRuleWithheld(args: {
   citations: string[];
   payload: SlaRuleWithheldPayload;
   eventId?: string;
-  provenance?: Event["provenance"];
 }): Event {
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
@@ -198,6 +193,5 @@ export function makeSlaRuleWithheld(args: {
     actor: args.actor,
     citations: args.citations,
     payload: slaRuleWithheldPayloadSchema.parse(args.payload),
-    ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }

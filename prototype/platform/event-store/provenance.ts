@@ -303,6 +303,88 @@ export function defaultProvenanceFor(eventType: string): ProvenanceTag {
 }
 
 // ---------------------------------------------------------------------------
+// provenanceForEmit — the single sanctioned way for an emitter to obtain a
+// provenance tag (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE, PR6 incremental-
+// adoption tail).
+//
+// An emitter that needs a `ProvenanceTag` calls this instead of hand-rolling
+// `productionTag(...)` / `simulatedTag(...)` / `PRODUCTION_CARVE_OUTS.X`.
+// The provenance KIND is never chosen by the call-site: it is derived from
+// the active per-category policy (`BankModePolicySet` → bank-mode projection
+// → `setActiveCategoryPolicy`, falling back to `DEFAULT_CATEGORY_POLICY`).
+// The call-site supplies only the axes the policy cannot know:
+//
+//   - `sourceLineage` — the originating system. Optional when the event type
+//     carries a production carve-out (its registered lineage is used) and the
+//     policy resolves production; otherwise `category:<category>` /
+//     `category:uncategorised` (matching `defaultProvenanceFor`).
+//   - `scenario`      — REQUIRED when the policy resolves the event's
+//     category to `simulated` (every simulated event must declare its
+//     scenario); ignored-with-error otherwise (production tags must not be
+//     scenario-bound, so a caller passing a scenario into a production
+//     resolution is a category-policy mismatch — fail loud, never drop it).
+//   - `variant`/`tags` — optional pass-through on both kinds.
+//
+// Explicit tags (the legacy constructors) remain available ONLY for genuinely
+// legitimate carve-outs — emitters whose kind is fixed by construction, not by
+// bank mode (simulators, fixture ingesters, `build-phase-fixture` authors,
+// one-shot backfill scripts, scenarios, tests). The static recon
+// `recon:provenance-emit-discipline` allowlists exactly those; any NEW
+// explicit-provenance call-site in production code is a finding.
+// ---------------------------------------------------------------------------
+
+export interface ProvenanceForEmitOpts {
+  /** Originating system (e.g. "bank-mode-policy", "decision-record"). */
+  readonly sourceLineage?: string;
+  /** Scenario id — required iff the active policy resolves to `simulated`. */
+  readonly scenario?: string;
+  readonly variant?: string;
+  readonly tags?: ReadonlyArray<string>;
+}
+
+/**
+ * Resolve the provenance tag an emitter should attach to an event of
+ * `eventType`, routing the production/simulated decision through the active
+ * per-category policy. See the block comment above for the contract.
+ */
+export function provenanceForEmit(
+  eventType: string,
+  opts: ProvenanceForEmitOpts = {},
+): ProvenanceTag {
+  const category = categoryForEventType(eventType);
+  const provenanceKind = category ? activeCategoryPolicy()[category] : "simulated";
+
+  if (provenanceKind === "production") {
+    if (opts.scenario !== undefined) {
+      throw new Error(
+        `provenanceForEmit: event type "${eventType}" resolves to 'production' under the active category policy (category: ${category ?? "uncategorised"}) — a scenario must not be supplied (production is not scenario-bound). If this emitter is genuinely scenario-bound, it is a carve-out: construct the tag explicitly and allowlist it in recon:provenance-emit-discipline.`,
+      );
+    }
+    const lineage =
+      opts.sourceLineage ??
+      PRODUCTION_CARVE_OUTS[eventType]?.sourceLineage ??
+      `category:${category ?? "uncategorised"}`;
+    return productionTag({
+      sourceLineage: lineage,
+      ...(opts.variant !== undefined ? { variant: opts.variant } : {}),
+      ...(opts.tags !== undefined ? { tags: opts.tags } : {}),
+    });
+  }
+
+  if (opts.scenario === undefined) {
+    throw new Error(
+      `provenanceForEmit: event type "${eventType}" resolves to 'simulated' under the active category policy (category: ${category ?? "uncategorised"}) — a scenario is required (every simulated event must declare its scenario).`,
+    );
+  }
+  return simulatedTag({
+    scenario: opts.scenario,
+    sourceLineage: opts.sourceLineage ?? `category:${category ?? "uncategorised"}`,
+    ...(opts.variant !== undefined ? { variant: opts.variant } : {}),
+    ...(opts.tags !== undefined ? { tags: opts.tags } : {}),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Substrate-active flag (§7 ordering note + dispatch brief).
 //
 // Slice 1's hard-rejection of untagged events would brick the local event

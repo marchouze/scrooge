@@ -214,7 +214,6 @@ export function makeRasLineCalibrated(args: {
   citations: string[];
   payload: RasLineCalibratedPayload;
   eventId?: string;
-  provenance?: Event["provenance"];
 }): Event {
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
@@ -224,7 +223,6 @@ export function makeRasLineCalibrated(args: {
     actor: args.actor,
     citations: args.citations,
     payload: rasLineCalibratedPayloadSchema.parse(args.payload),
-    ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
 
