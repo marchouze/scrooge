@@ -206,6 +206,13 @@ export const recordFiledPayloadSchema = z.object({
       slug: z.string().optional(),
       sourceUrl: z.string().optional(),
       contentType: z.string().optional(),
+      // Regulatory-excerpt filing fields (D-REGULATORY-LIBRARY-V1, Slice 4).
+      // Present when `category === "regulatory-excerpt"`. All optional — back-compat.
+      sectionId: z.string().optional(),
+      excerptId: z.string().optional(),
+      kind: z.string().optional(),
+      pages: z.string().optional(),
+      caption: z.string().optional(),
     })
     .optional(),
 });
