@@ -16,7 +16,12 @@
 //     - `CapitalEvent` / cash balances (build-phase cash treated as L1 ZAR).
 //   Funding:
 //     - `DepositTaken` (retail / wholesale classification; live via WS1-PR1a).
-//     - `SettlementInstructionIssued` (contractual outflows; not yet a typed event).
+//     - `SettlementInstructionIssued` (non-trade contractual outflows; typed event
+//       at `platform/event-store/event-types/settlement.ts`; consumed in
+//       `buildSettlementOutflows` below). Non-trade emitters (loan repayments,
+//       coupon settlements) should emit `SettlementInstructionIssued` from the
+//       originating handler; trade-side settlement is folded via `TradeBooked`
+//       buy-side events with explicit `settlementDate`.
 //     - `FundingLineDrawn` (live via WS1-PR1a).
 //     - `InterbankLoanPlaced` (interbank cash placements; live via WS1-PR1a).
 //   ASF / RSF:
@@ -24,8 +29,8 @@
 //     - DepositTaken → ASF by category + maturity.
 //     - InterbankLoanPlaced → RSF by residual maturity.
 //     - HQLA positions → RSF by tier.
-//     - BalanceSheetProjected (Bea + Ravi substrate; gap still outstanding for
-//       full BA 120 scope).
+//     - BalanceSheetProjected (Ravi substrate; emitted daily by
+//       `ravi:balance-sheet-projector`; W2.4, D-TREASURER-WAVE2-SUBSTRATE).
 //
 // Build-phase posture (CLAUDE.md "build phase vs licence-day"):
 //   Funding / ASF / RSF are now partially wired via WS1-PR1a events. HQLA is
@@ -819,8 +824,13 @@ function buildRSFItems(
  *   - Funding: DepositTaken + FundingLineDrawn + InterbankLoanPlaced (WS1-PR1a).
  *   - ASF: CapitalEvent (via computeCapitalMetrics) + DepositTaken.
  *   - RSF: HQLA positions (via readHQLAFromEventStore) + InterbankLoanPlaced.
- *   - SettlementInstructionIssued: gap still outstanding.
- *   - BalanceSheetProjected: gap partially wired; full BA 120 scope pending.
+ *   - SettlementInstructionIssued: wired — consumed in `buildSettlementOutflows`
+ *     for non-trade contractual LCR outflows (BA 110 §23). TradeBooked buy-side
+ *     with explicit `settlementDate` is folded alongside it. Originating handlers
+ *     for loan repayments / coupon settlements should emit this event class.
+ *   - BalanceSheetProjected: wired — consumed in buildASFItems + buildRSFItems
+ *     for supplemental NSFR scope (BA 120). Emitted daily by
+ *     `ravi:balance-sheet-projector` (W2.4, D-TREASURER-WAVE2-SUBSTRATE).
  *
  * @param eventStore  - the event store to fold against (caller passes the
  *                      composition singleton in production; tests pass an
@@ -983,7 +993,7 @@ export function getALMPositionSnapshot(
   // BalanceSheetProjected gap: conditional on event existence
   if (!hasAnyEventOfType(eventStore, ALM_POSITION_SOURCE_EVENTS.asfBalanceSheet)) {
     gaps.push(
-      `${ALM_POSITION_SOURCE_EVENTS.asfBalanceSheet}: partially wired via CapitalEvent + DepositTaken + InterbankLoanPlaced; BalanceSheetProjected event pending for complete BA 120 scope (Bea + Ravi substrate).`,
+      `${ALM_POSITION_SOURCE_EVENTS.asfBalanceSheet}: wired — buildASFItems + buildRSFItems fold BalanceSheetProjected (latest snapshot). No BalanceSheetProjected event found yet; ravi:balance-sheet-projector (W2.4) will emit one on its next daily run.`,
     );
   }
 

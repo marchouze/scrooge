@@ -104,4 +104,12 @@ export const RAVI_HANDLER_METADATA: readonly HandlerMetadata[] = [
       "HedgeIneffective",
     ],
   }),
+  // Ravi: balance-sheet projector — emits BalanceSheetProjected for NSFR ASF/RSF
+  // full-scope feed (W2.4). Runs scheduled daily after alm-run (06:05) so the
+  // NSFR engine sees a same-day projection. Also callable on-request.
+  // Authority: D-TREASURER-WAVE2-SUBSTRATE; BA 120; BCBS D295/D396; Reg 26A.
+  entry("Ravi", "balance-sheet-projector", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "5 6 * * *",
+  }),
 ];
