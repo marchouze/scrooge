@@ -49,6 +49,7 @@ import type { AgentRunContext, AgentRunOutput } from "../types";
 import {
   type GoalLoopBriefDispatchConfig,
   dispatchBriefBoundRun,
+  dispatchCadenceRun,
   openBriefsListForAgent,
 } from "./goal-loop-brief-dispatch";
 // Import the underlying security-substrate-state handler directly to avoid the
@@ -536,11 +537,25 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     };
   }
 
+  if (shouldRunHandler && !ctx.dryRun) {
+    const cadence = await dispatchCadenceRun(ctx, iterationId, SENNA_BRIEF_DISPATCH);
+    logger.info(
+      { agent: ctx.agent, iterationId },
+      "senna:goal-loop — cohort-3 run complete (cadence, instrumented)",
+    );
+    return {
+      eventsEmitted: cadence.eventsEmitted + goalEventsEmitted,
+      ok: cadence.handlerOutput.ok,
+      summary: `goal-loop cohort-3: iteration=${iterationId} outcome=${goalOutcome?.kind ?? "deferred"} handler=${cadence.handlerOutput.summary}`,
+      ...(cadence.handlerOutput.deliverable
+        ? { deliverable: cadence.handlerOutput.deliverable }
+        : {}),
+    };
+  }
+
   const handlerCtx: AgentRunContext = {
     ...ctx,
-    // In shadow mode (cohort-3 first ticks), always dry-run the handler
-    // so we observe the trace without side-effects.
-    dryRun: ctx.dryRun || !shouldRunHandler,
+    dryRun: true,
   };
 
   const handlerOutput = await sennaSecuritySubstrateState(handlerCtx);
@@ -554,7 +569,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       handlerEventsEmitted: handlerOutput.eventsEmitted,
       ok: handlerOutput.ok,
     },
-    "senna:goal-loop — cohort-3 run complete",
+    "senna:goal-loop — cohort-3 run complete (deferred)",
   );
 
   return {

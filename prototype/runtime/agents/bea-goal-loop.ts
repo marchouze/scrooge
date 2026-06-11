@@ -71,6 +71,7 @@ import beaAccountingReadiness from "./bea-accounting-readiness";
 import {
   type GoalLoopBriefDispatchConfig,
   dispatchBriefBoundRun,
+  dispatchCadenceRun,
   isSelfExecutableBrief,
   openBriefsListForAgent,
 } from "./goal-loop-brief-dispatch";
@@ -476,11 +477,27 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     };
   }
 
-  // Cadence path: no open brief — run the readiness attestation live when the
-  // loop selected a decision; dry-run only when it deferred or --dry-run was set.
+  // Cadence path: no open brief — wrap with run-lifecycle when the loop selected
+  // a decision; dry-run only when deferred (no lifecycle events on deferred).
+  if (shouldRunHandler && !ctx.dryRun) {
+    const cadence = await dispatchCadenceRun(ctx, iterationId, BEA_BRIEF_DISPATCH);
+    logger.info(
+      { agent: ctx.agent, iterationId },
+      "bea:goal-loop — cohort-2 run complete (cadence, instrumented)",
+    );
+    return {
+      eventsEmitted: cadence.eventsEmitted + goalEventsEmitted,
+      ok: cadence.handlerOutput.ok,
+      summary: `goal-loop cohort-2: iteration=${iterationId} outcome=${goalOutcome?.kind ?? "deferred"} handler=${cadence.handlerOutput.summary}`,
+      ...(cadence.handlerOutput.deliverable
+        ? { deliverable: cadence.handlerOutput.deliverable }
+        : {}),
+    };
+  }
+
   const handlerCtx: AgentRunContext = {
     ...ctx,
-    dryRun: ctx.dryRun || !shouldRunHandler,
+    dryRun: true,
   };
 
   const handlerOutput = await beaAccountingReadiness(handlerCtx);
@@ -494,7 +511,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       handlerEventsEmitted: handlerOutput.eventsEmitted,
       ok: handlerOutput.ok,
     },
-    "bea:goal-loop — cohort-2 run complete (cadence)",
+    "bea:goal-loop — cohort-2 run complete (deferred)",
   );
 
   return {

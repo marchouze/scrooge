@@ -712,13 +712,62 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     };
   }
 
-  // Cadence path: no open brief — run the substrate-state handler (live when the
-  // loop selected a decision; dry-run when it deferred or --dry-run was set).
+  // Cadence path: no open brief — wrap the handler call with AgentRunStarted →
+  // AgentRunCompleted when the loop selected a decision so the cadence iteration
+  // is visible in the autonomy run-feed (same principle as brief-bound dispatch).
+  // On the deferred path, run the handler dry-run only — no lifecycle events
+  // (deferred iterations are not run-lifecycle events per
+  // D-AUTONOMY-RUN-LIFECYCLE-INSTRUMENTATION).
+  if (shouldRunHandler && !ctx.dryRun) {
+    const cadenceRunId = `run:atlas:goal-loop:cadence:${iterationId}`;
+    const cadenceBriefId = `cadence:${cadenceRunId}`;
+    const cadenceAgent = { name: "atlas", position: "agent:atlas" } as const;
+    recordAgentRunStarted(
+      {
+        runId: cadenceRunId,
+        briefId: cadenceBriefId,
+        agent: cadenceAgent,
+        startedAt: ctx.asOf,
+        substrate: "agent-runtime",
+        citations: [AUTONOMY_RUN_LIFECYCLE_AUTHORITY],
+        actor: ATLAS_GOAL_LOOP_ACTOR,
+      },
+      ctx.asOf,
+    );
+    const cadenceOutput = await atlasSubstrateState({ ...ctx, dryRun: false });
+    recordAgentRunCompleted(
+      {
+        runId: cadenceRunId,
+        briefId: cadenceBriefId,
+        agent: cadenceAgent,
+        completedAt: ctx.asOf,
+        outcome: "delivered",
+        deliverableBodies: [
+          `Atlas goal-loop cadence run delivered substrate-state attestation. ${cadenceOutput.summary}`,
+        ],
+        substrateGapsSurfaced: [],
+        deliverableCitations: [AUTONOMY_RUN_LIFECYCLE_AUTHORITY],
+        followOnRoutes: [],
+        citations: [AUTONOMY_RUN_LIFECYCLE_AUTHORITY],
+        actor: ATLAS_GOAL_LOOP_ACTOR,
+      },
+      ctx.asOf,
+    );
+    logger.info(
+      { agent: ctx.agent, iterationId, cadenceRunId },
+      "atlas:goal-loop — dogfood run complete (cadence, instrumented)",
+    );
+    return {
+      eventsEmitted: cadenceOutput.eventsEmitted + goalEventsEmitted + 2,
+      ok: cadenceOutput.ok,
+      summary: `goal-loop dogfood: iteration=${iterationId} outcome=${goalOutcome?.kind ?? "deferred"} handler=${cadenceOutput.summary}`,
+      ...(cadenceOutput.deliverable ? { deliverable: cadenceOutput.deliverable } : {}),
+    };
+  }
+
   const handlerCtx: AgentRunContext = {
     ...ctx,
-    // In shadow mode (first cohort ticks), always dry-run the handler
-    // so we observe the trace without side-effects.
-    dryRun: ctx.dryRun || !shouldRunHandler,
+    dryRun: true,
   };
 
   const handlerOutput = await atlasSubstrateState(handlerCtx);
@@ -732,7 +781,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       handlerEventsEmitted: handlerOutput.eventsEmitted,
       ok: handlerOutput.ok,
     },
-    "atlas:goal-loop — dogfood run complete",
+    "atlas:goal-loop — dogfood run complete (deferred)",
   );
 
   return {

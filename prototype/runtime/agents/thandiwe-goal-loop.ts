@@ -48,6 +48,7 @@ import type { AgentRunContext, AgentRunOutput } from "../types";
 import {
   type GoalLoopBriefDispatchConfig,
   dispatchBriefBoundRun,
+  dispatchCadenceRun,
   openBriefsListForAgent,
 } from "./goal-loop-brief-dispatch";
 // Import Thandiwe's underlying handler directly to avoid circular dependency
@@ -503,6 +504,22 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   // Shadow mode (cohort-3): always dry-run the underlying handler so we
   // observe the trace without side-effects, regardless of goal outcome.
   // The handler will be promoted to live once cohort validation passes.
+  if (selectedDecision && !ctx.dryRun) {
+    const cadence = await dispatchCadenceRun(ctx, iterationId, THANDIWE_BRIEF_DISPATCH);
+    logger.info(
+      { agent: ctx.agent, iterationId },
+      "thandiwe:goal-loop — cohort-3 shadow run complete (cadence, instrumented)",
+    );
+    return {
+      eventsEmitted: cadence.eventsEmitted + goalEventsEmitted,
+      ok: cadence.handlerOutput.ok,
+      summary: `goal-loop cohort-3 shadow: iteration=${iterationId} outcome=${goalOutcome?.kind ?? "deferred"} handler=${cadence.handlerOutput.summary}`,
+      ...(cadence.handlerOutput.deliverable
+        ? { deliverable: cadence.handlerOutput.deliverable }
+        : {}),
+    };
+  }
+
   const handlerCtx: AgentRunContext = {
     ...ctx,
     dryRun: true, // shadowMode: true until cohort-3 validation passes
@@ -519,7 +536,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       handlerEventsEmitted: handlerOutput.eventsEmitted,
       ok: handlerOutput.ok,
     },
-    "thandiwe:goal-loop — cohort-3 shadow run complete",
+    "thandiwe:goal-loop — cohort-3 shadow run complete (deferred)",
   );
 
   return {
