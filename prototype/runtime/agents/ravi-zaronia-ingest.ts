@@ -23,9 +23,15 @@
 // Author: Ravi (Treasury / ALM engineer, engineering)
 
 import { eventStore, logger } from "../../platform/composition";
-import { makeZaroniaRatePublished, makeZaroniaTermRatePublished } from "../../platform/event-store/event-types/market-data";
+import {
+  makeZaroniaRatePublished,
+  makeZaroniaTermRatePublished,
+} from "../../platform/event-store/event-types/market-data";
 import { SarbRbondMarketDataAdapter } from "../../platform/market-data/feed-adapters";
-import type { ZaroniaFeedAdapter, ZaroniaTermRateFeedAdapter } from "../../platform/market-data/feed-adapters";
+import type {
+  ZaroniaFeedAdapter,
+  ZaroniaTermRateFeedAdapter,
+} from "../../platform/market-data/feed-adapters";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const BANK_ENTITY = "LE-ZA-HOZ-BANK";
@@ -67,7 +73,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     }
   } catch (err) {
     logger.error({ pipeline: "zaronia-ingest" }, `fetchRate error: ${String(err)}`);
-    notes.push(`zaronia-on=error`);
+    notes.push("zaronia-on=error");
   }
 
   // ---- ZARONIA compounded term rates -----------------------------------------
@@ -97,7 +103,10 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   const summary = `zaronia-ingest: date=${date} eventsEmitted=${eventsEmitted} ${notes.join(", ")}`;
 
   if (!ok) {
-    logger.warn({ pipeline: "zaronia-ingest" }, `${summary} — all adapters returned null; fixture fallback active`);
+    logger.warn(
+      { pipeline: "zaronia-ingest" },
+      `${summary} — all adapters returned null; fixture fallback active`,
+    );
   } else {
     logger.info({ pipeline: "zaronia-ingest" }, summary);
   }

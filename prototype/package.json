@@ -268,6 +268,8 @@
     "agent:ravi-jibar-fixing-ingest": "bun run runtime/run.ts --agent Ravi --trigger jibar-fixing-ingest",
     "agent:ravi-jibar-swap-curve-ingest": "bun run runtime/run.ts --agent Ravi --trigger jibar-swap-curve-ingest",
     "agent:ravi-repo-rate-ingest": "bun run runtime/run.ts --agent Ravi --trigger repo-rate-ingest",
+    "agent:ravi-zaronia-ingest": "bun run runtime/run.ts --agent Ravi --trigger zaronia-ingest",
+    "agent:ravi-sagb-yield-ingest": "bun run runtime/run.ts --agent Ravi --trigger sagb-yield-ingest",
     "agent:sade-agentops-readiness": "bun run runtime/run.ts --agent Sade --trigger agentops-readiness",
     "agent:sade-token-usage-analysis": "bun run runtime/run.ts --agent Sade --trigger token-usage-analysis",
     "agent:sade-efficiency-advisory": "bun run runtime/run.ts --agent Sade --trigger efficiency-advisory",

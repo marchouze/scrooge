@@ -139,7 +139,9 @@ export interface SagbYieldFeedAdapter {
  */
 export class StubZaroniaFeedAdapter implements ZaroniaFeedAdapter {
   // Injection contract: Bloomberg "ZARONIA Index" → override-daily field value
-  async fetchRate(_asOf: string): Promise<{ rate: number; publicationDate: string; source: string } | null> {
+  async fetchRate(
+    _asOf: string,
+  ): Promise<{ rate: number; publicationDate: string; source: string } | null> {
     return null;
   }
 }
@@ -395,9 +397,9 @@ function extractSarbZaronia(data: unknown): number | null {
     for (const item of data) {
       if (typeof item !== "object" || item === null) continue;
       const obj = item as Record<string, unknown>;
-      const desc = String(obj["Description"] ?? obj["Name"] ?? "").toUpperCase();
+      const desc = String(obj.Description ?? obj.Name ?? "").toUpperCase();
       if (desc.includes("ZARONIA")) {
-        const raw = obj["Value"] ?? obj["Rate"] ?? obj["CurrentValue"];
+        const raw = obj.Value ?? obj.Rate ?? obj.CurrentValue;
         const n = Number(raw);
         if (!Number.isNaN(n) && n > 0) return n / 100; // API returns percentage
       }
@@ -462,9 +464,9 @@ function extractSarbJibar(data: unknown, tenor: string): number | null {
     for (const item of data) {
       if (typeof item !== "object" || item === null) continue;
       const obj = item as Record<string, unknown>;
-      const desc = String(obj["Description"] ?? obj["Name"] ?? "").toUpperCase();
+      const desc = String(obj.Description ?? obj.Name ?? "").toUpperCase();
       if (desc.includes("JIBAR") && desc.includes(tenorUpper)) {
-        const raw = obj["Value"] ?? obj["Rate"] ?? obj["CurrentValue"];
+        const raw = obj.Value ?? obj.Rate ?? obj.CurrentValue;
         const n = Number(raw);
         if (!Number.isNaN(n) && n > 0) return n / 100;
       }
@@ -484,7 +486,7 @@ function extractRbondOisPillars(data: unknown): Array<{ tenor: string; rate: num
     if (typeof data !== "object" || data === null) return null;
     const obj = data as Record<string, unknown>;
     // Try "ois" section first, then "swaps", then top-level array
-    const section = obj["ois"] ?? obj["swaps"] ?? obj["oisSwaps"];
+    const section = obj.ois ?? obj.swaps ?? obj.oisSwaps;
     if (Array.isArray(section)) {
       return parsePillarArray(section);
     }
@@ -519,7 +521,7 @@ function extractRbondSagbYields(
     if (typeof data !== "object" || data === null) return null;
     const obj = data as Record<string, unknown>;
     // Try "generics" or "sagb" section
-    const section = obj["generics"] ?? obj["sagb"] ?? obj["bonds"];
+    const section = obj.generics ?? obj.sagb ?? obj.bonds;
     if (Array.isArray(section)) {
       return parseSagbArray(section);
     }
@@ -544,8 +546,8 @@ function parsePillarArray(arr: unknown[]): Array<{ tenor: string; rate: number }
   for (const item of arr) {
     if (typeof item !== "object" || item === null) continue;
     const obj = item as Record<string, unknown>;
-    const tenor = String(obj["tenor"] ?? obj["term"] ?? obj["Tenor"] ?? "");
-    const raw = obj["rate"] ?? obj["value"] ?? obj["Rate"];
+    const tenor = String(obj.tenor ?? obj.term ?? obj.Tenor ?? "");
+    const raw = obj.rate ?? obj.value ?? obj.Rate;
     const n = Number(raw);
     if (tenor && !Number.isNaN(n) && n > 0) {
       out.push({ tenor, rate: n > 1 ? n / 100 : n });
@@ -559,10 +561,10 @@ function parseSagbArray(arr: unknown[]): Array<{ tenor: string; yieldPct: number
   for (const item of arr) {
     if (typeof item !== "object" || item === null) continue;
     const obj = item as Record<string, unknown>;
-    const tenor = String(obj["tenor"] ?? obj["term"] ?? obj["maturity"] ?? "");
-    const raw = obj["yield"] ?? obj["yieldPct"] ?? obj["rate"] ?? obj["Rate"];
+    const tenor = String(obj.tenor ?? obj.term ?? obj.maturity ?? "");
+    const raw = obj.yield ?? obj.yieldPct ?? obj.rate ?? obj.Rate;
     const n = Number(raw);
-    const isin = obj["isin"] != null ? String(obj["isin"]) : undefined;
+    const isin = obj.isin != null ? String(obj.isin) : undefined;
     if (tenor && !Number.isNaN(n) && n > 0) {
       out.push({ tenor, yieldPct: n > 1 ? n : n * 100, isin });
     }

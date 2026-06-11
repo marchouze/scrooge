@@ -23,7 +23,10 @@ import {
   makeSagbYieldsPublished,
 } from "../../platform/event-store/event-types/market-data";
 import { SarbRbondMarketDataAdapter } from "../../platform/market-data/feed-adapters";
-import type { OisCurveFeedAdapter, SagbYieldFeedAdapter } from "../../platform/market-data/feed-adapters";
+import type {
+  OisCurveFeedAdapter,
+  SagbYieldFeedAdapter,
+} from "../../platform/market-data/feed-adapters";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const BANK_ENTITY = "LE-ZA-HOZ-BANK";
