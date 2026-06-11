@@ -183,13 +183,81 @@ function discoverSlugPaths(repoRoot: string): Map<string, string> {
       continue;
     }
     for (const file of files) {
-      const slug = file.replace(/-structured\.json$/, "");
-      map.set(slug, resolve(sourceDocsDir, file));
+      const absPath = resolve(sourceDocsDir, file);
+      // Use the internal slug field from the JSON as the map key — it may
+      // differ from the filename (e.g. file=mar-structured.json but slug=bcbs-mar).
+      let slug = file.replace(/-structured\.json$/, "");
+      try {
+        const raw = JSON.parse(readFileSync(absPath, "utf-8")) as { slug?: string };
+        if (raw.slug) slug = raw.slug;
+      } catch {
+        // fallback to filename-derived slug
+      }
+      map.set(slug, absPath);
     }
   }
 
   _slugPathCache = map;
   return map;
+}
+
+// ---------------------------------------------------------------------------
+// BCBS chapter-text enrichment
+//
+// BCBS *-structured.json files carry section metadata (number, heading) but
+// empty `text` fields. The actual paragraph text lives in chapter-text.json,
+// keyed as <INSTRUMENT_PREFIX><section_number> (e.g. MAR10, MAR11…).
+// This function fills the gap at load time so the reader renders real content.
+// ---------------------------------------------------------------------------
+
+interface ChapterTextEntry {
+  paragraph: string;
+  heading: string;
+  text: string;
+}
+
+let _bcbsChapterTextCache: Record<string, ChapterTextEntry[]> | null = null;
+
+function loadBcbsChapterText(repoRoot: string): Record<string, ChapterTextEntry[]> {
+  if (_bcbsChapterTextCache) return _bcbsChapterTextCache;
+  const path = resolve(repoRoot, "Regulations", "BCBS", "chapter-text.json");
+  if (!existsSync(path)) {
+    _bcbsChapterTextCache = {};
+    return _bcbsChapterTextCache;
+  }
+  try {
+    const raw = JSON.parse(readFileSync(path, "utf-8")) as {
+      chapters: Record<string, ChapterTextEntry[]>;
+    };
+    _bcbsChapterTextCache = raw.chapters ?? {};
+  } catch {
+    _bcbsChapterTextCache = {};
+  }
+  return _bcbsChapterTextCache;
+}
+
+function enrichBcbsDocSections(repoRoot: string, doc: RegStructuredDoc): void {
+  if (!doc.slug.startsWith("bcbs-")) return;
+
+  const chapterText = loadBcbsChapterText(repoRoot);
+  // slug "bcbs-mar" → prefix "MAR"; "bcbs-cre" → "CRE"
+  const prefix = doc.slug.replace(/^bcbs-/, "").toUpperCase();
+
+  for (const chapter of doc.chapters) {
+    for (const section of chapter.sections) {
+      if (section.text) continue; // already populated
+      const num = section.number?.trim();
+      if (!num) continue;
+
+      const key = `${prefix}${num}`; // e.g. "MAR10"
+      const paras = chapterText[key];
+      if (!paras || paras.length === 0) continue;
+
+      section.text = paras.map((p) => `${p.paragraph}  ${p.text}`).join("\n\n");
+      section.verbatim = true;
+      if (!section.id) section.id = `${doc.slug}-${num}`;
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -201,7 +269,9 @@ function loadStructuredDoc(repoRoot: string, slug: string): RegStructuredDoc | n
   if (!absPath || !existsSync(absPath)) return null;
 
   try {
-    return JSON.parse(readFileSync(absPath, "utf-8")) as RegStructuredDoc;
+    const doc = JSON.parse(readFileSync(absPath, "utf-8")) as RegStructuredDoc;
+    enrichBcbsDocSections(repoRoot, doc);
+    return doc;
   } catch {
     return null;
   }
