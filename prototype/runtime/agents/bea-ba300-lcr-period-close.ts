@@ -1,27 +1,30 @@
 // runtime/agents/bea-ba300-lcr-period-close.ts
 //
-// Bea's BA 300 (LCR — Liquidity Coverage Ratio) period-close return handler.
+// Bea's BA 300 (LCR + NSFR) period-close return handler.
 //
-// Event-driven on `AccountingPeriodClosed`: generates the consolidated
-// functional-currency LCR from the live event flow (cash flows folded from
-// FxSettlementInstructed / TradeMatured, HQLA from SecurityMaster × unified
-// positions + custodian-derived cash), renders it to the SARB XML envelope, and
-// records a `SarbSubmissionAttempted{formId:"BA300", mode:"simulator"}` via the
-// local SARB prudential portal simulator.
+// Event-driven on `AccountingPeriodClosed`:
+//   1. LCR — generates the consolidated functional-currency LCR from the live
+//      event flow (cash flows from FxSettlementInstructed / TradeMatured, HQLA
+//      from SecurityMaster × unified positions + custodian-derived cash), renders
+//      it to the SARB XML envelope, and records a
+//      `SarbSubmissionAttempted{formId:"BA300", mode:"simulator"}` via the local
+//      SARB prudential portal simulator.
+//   2. NSFR — folds product lifecycle events (DepositTaken, FundingLineDrawn,
+//      InterbankLoanPlaced, IrdSwapTradeExecuted) via `ba300NsfrPeriodCloseSubscriber`
+//      and emits an `NSFRRatioProjection` event of record for the period.
 //
 // This wiring is what de-allowlists `platform/returns/ba300/period-close-
 // subscriber.ts` from `recon:inert-module-detection` (WS-RETURNS-SUBMISSION-
-// WIRING Wave A). It is unblocked by the FX-rate enrichment
-// (D-BA300-LCR-FX-ENRICHMENT): foreign-currency settlement legs are now
-// FX-converted into the consolidated denominator, so the submitted LCR is no
-// longer hollow (formVersion v0.2-fx-enriched). Per-currency LCR (Reg 26(13))
-// remains a separate licence-day schedule.
-//
-// Structurally mirrors `bea-ba310-period-close.ts` (the proven BA 320 wiring).
+// WIRING Wave A for LCR; Wave 2 NSFR component now wired per
+// D-TREASURER-WAVE2-SUBSTRATE, CEO-approved 2026-06-11). The LCR was unblocked
+// by D-BA300-LCR-FX-ENRICHMENT. Per-currency LCR (Reg 26(13)) and the NSFR
+// HQLA Level-1 RSF (5%) remain named tracked substrate gaps (Slice-6+).
 //
 // Authority: D-RETURNS-SUBMISSION-WIRING-WORKSTREAM; D-BA300-LCR-FX-ENRICHMENT;
-//   D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (LCR = BA 300); BCBS 238 (LCR).
-// Author: Bea (Accounting & financial reporting engineer, engineering).
+//   D-TREASURER-WAVE2-SUBSTRATE; D-BA-RETURN-NUMBERING-EXCEL-CANONICAL
+//   (LCR + NSFR = BA 300 series); BCBS 238 (LCR); BCBS 295 (NSFR).
+// Author: Bea (Accounting & financial reporting engineer, engineering);
+//   Mira (Compliance / RegTech engineer, engineering — Wave 2 NSFR wiring).
 
 import { eventStore, logger } from "../../platform/composition";
 import type { AccountingPeriodClosedPayload } from "../../platform/event-store/event-types";
@@ -29,7 +32,10 @@ import type { EventStore } from "../../platform/event-store/store";
 import type { Actor, Event } from "../../platform/event-store/types";
 import { BA_300_LCR_BANK_ENTITIES } from "../../platform/reporting/ba-300-lcr";
 import { ba300LcrToXmlPayload } from "../../platform/reporting/ba-300-lcr-xml-adapter";
-import { ba300LcrPeriodCloseSubscriber } from "../../platform/returns/ba300/period-close-subscriber";
+import {
+  ba300LcrPeriodCloseSubscriber,
+  ba300NsfrPeriodCloseSubscriber,
+} from "../../platform/returns/ba300/period-close-subscriber";
 import { submitToSarbPortal } from "../../simulators/sarb-prudential";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
@@ -72,6 +78,10 @@ export interface Ba300LcrRunResult {
   readonly accepted?: boolean;
   readonly referenceNumber?: string;
   readonly lcrRatio?: number;
+  /** NSFR ratio for the period (dimensionless; 1.0 = 100% threshold). */
+  readonly nsfrRatio?: number;
+  /** True when the NSFR was generated and emitted for the period. */
+  readonly nsfrEmitted?: boolean;
   readonly status: string;
 }
 
@@ -121,12 +131,35 @@ export async function generateAndRecordBa300LcrForPeriod(args: {
   const payload = ba300LcrToXmlPayload(result.ba300LcrOutput);
   const submission = await submitToSarbPortal(payload, store);
 
+  // Generate NSFR for the same period (Wave 2 wiring, D-TREASURER-WAVE2-SUBSTRATE).
+  // The NSFR subscriber emits a canonical `NSFRRatioProjection` event internally.
+  // This is a best-effort emit: NSFR failure does not block the LCR submission.
+  let nsfrRatio: number | undefined;
+  let nsfrEmitted = false;
+  try {
+    const nsfrResult = await ba300NsfrPeriodCloseSubscriber({
+      closedPayload,
+      entity,
+      eventStore: store,
+      actor: ACTOR,
+    });
+    if (!nsfrResult.skipped) {
+      nsfrRatio = nsfrResult.nsfrProjection.nsfrRatio;
+      nsfrEmitted = true;
+    }
+  } catch {
+    // NSFR generation failure is non-blocking — the LCR result is already
+    // recorded. The failure will surface on the next run or via Vera recon.
+  }
+
   return {
     submitted: true,
     periodId,
     accepted: submission.ok,
     ...(submission.referenceNumber ? { referenceNumber: submission.referenceNumber } : {}),
     lcrRatio: result.ba300LcrOutput.lcrRatio,
+    ...(nsfrRatio !== undefined ? { nsfrRatio } : {}),
+    nsfrEmitted,
     status: submission.ok ? "submitted-accepted" : "submitted-rejected",
   };
 }
@@ -169,15 +202,17 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         accepted: result.accepted,
         referenceNumber: result.referenceNumber,
         lcrRatio: result.lcrRatio,
+        nsfrRatio: result.nsfrRatio,
+        nsfrEmitted: result.nsfrEmitted,
       },
-      "bea:ba300-lcr-period-close — BA 300 LCR generation/submission",
+      "bea:ba300-lcr-period-close — BA 300 LCR+NSFR generation/submission",
     );
     summaries.push(`${result.periodId}: ${result.status}`);
   }
 
   return {
     eventsEmitted,
-    summary: `bea:ba300-lcr-period-close — ${eventsEmitted} BA 300 LCR submission(s) recorded · ${summaries.join("; ")}`,
+    summary: `bea:ba300-lcr-period-close — ${eventsEmitted} BA 300 LCR+NSFR submission(s) recorded · ${summaries.join("; ")}`,
     ok: true,
   };
 };
