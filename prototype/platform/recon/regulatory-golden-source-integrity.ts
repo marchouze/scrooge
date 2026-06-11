@@ -41,9 +41,10 @@
 //     (Slice-1 advisory window; the linkage is still being populated).
 //   - Blob missing everywhere, ON OR AFTER the enforcement date → `fail`.
 //
-// SHIP POSTURE: ADVISORY (warn) for Slice 1 — the enforcement date is in the
-// future so every miss warns, never fails, while the source-filing primitive
-// soaks. The `regulatory-` prefix is deliberate: `recon-golden-source-*`
+// SHIP POSTURE: ENFORCING (Slice 6) — enforcement date bumped to 2026-06-11.
+// All 16 active sources acquired; document store populated. A dangling
+// goldenSourceHash (Document node with no blob) is now a hard failure.
+// The `regulatory-` prefix is deliberate: `recon-golden-source-*`
 // names are already taken by an unrelated golden-source family.
 //
 // Authority: D-REGULATORY-LIBRARY-V1 (CEO-approved 2026-06-11).
@@ -63,11 +64,10 @@ const PIPELINE = "regulatory-golden-source-integrity";
 
 /**
  * ISO date (YYYY-MM-DD) from which a golden-source blob missing from every
- * store is a hard `fail`. Set in the future for Slice 1 — the gate ships
- * ADVISORY while the source-filing primitive soaks. Bumping this into the
- * past (a later slice's decision) flips the gate to enforcing.
+ * store is a hard `fail`. Bumped to 2026-06-11 (Slice 6) once all 16 active
+ * sources were acquired and the shared document store was populated.
  */
-export const ENFORCEMENT_DATE = "2026-09-01";
+export const ENFORCEMENT_DATE = "2026-06-11";
 
 /** A graph node, reduced to the fields this gate reads. */
 export interface GoldenSourceNode {
