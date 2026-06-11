@@ -13,6 +13,7 @@ import { eventStore } from "../../composition";
 import { nowUtc } from "../../core/types";
 import type { ObligationEquivalenceClassifiedPayload } from "../../event-store/event-types/obligation-equivalence";
 import type { RegulatoryInstrumentRegisteredPayload } from "../../event-store/event-types/regulatory";
+import type { RecordFiledPayload } from "../../event-store/event-types/rms";
 import {
   type ExtractionProvenance,
   type ProvenancedEdge,
@@ -1189,6 +1190,44 @@ export async function runSeed(): Promise<SeedStats> {
 
   // ── Step 4: Document nodes from event store ──────────────────────────────
 
+  // Golden-source linkage (D-REGULATORY-LIBRARY-V1, WS-REGULATORY-LIBRARY-V1
+  // Slice 1). Replay the regulatory-source filings — `RecordFiled` events with
+  // `metadata.category === "regulatory-source"` — and index them by
+  // instrumentId AND slug so a Document node built from EITHER axis (Step 4
+  // keys on instrumentId, Step 5b keys on slug) can attach the
+  // content-addressed hash of the regulator's published binary. Re-derivable:
+  // the seed is a truncate-and-rebuild projection (Principle 1) and reads the
+  // filing back out of the event store on every run; nothing is hardcoded.
+  interface GoldenSource {
+    readonly hash: string;
+    readonly contentType?: string;
+  }
+  const goldenSourceByKey = new Map<string, GoldenSource>();
+  for (const event of eventStore.replay({ type: "RecordFiled" })) {
+    const p = event.payload as RecordFiledPayload;
+    const meta = p.metadata;
+    if (!meta || meta.category !== "regulatory-source") continue;
+    const golden: GoldenSource = {
+      hash: p.documentHash,
+      ...(meta.contentType ? { contentType: meta.contentType } : {}),
+    };
+    // Last-write-wins per key — the event store is append-only and replays in
+    // sequence order, so a re-filing of the same instrument supersedes.
+    if (meta.instrumentId) goldenSourceByKey.set(meta.instrumentId.toUpperCase(), golden);
+    if (meta.slug) goldenSourceByKey.set(meta.slug.toUpperCase(), golden);
+  }
+
+  /** Flatten a golden source into the FLAT-primitive metadata keys the schema permits. */
+  function goldenSourceMeta(key: string | undefined): GraphNodeMetadata {
+    if (!key) return {};
+    const g = goldenSourceByKey.get(key.toUpperCase());
+    if (!g) return {};
+    return {
+      goldenSourceHash: g.hash,
+      ...(g.contentType ? { goldenSourceContentType: g.contentType } : {}),
+    };
+  }
+
   // Map issuingBody strings → regulator node IDs
   const issuingBodyToReg: Record<string, string> = {
     Parliament: "REG-SARB-PA",
@@ -1228,6 +1267,7 @@ export async function runSeed(): Promise<SeedStats> {
         gazetteRef: p.gazetteRef ?? null,
         sourceUrl: p.sourceUrl ?? null,
         applicabilityStatus,
+        ...goldenSourceMeta(p.instrumentId),
       },
     };
     upsertNode(node);
@@ -1373,6 +1413,9 @@ export async function runSeed(): Promise<SeedStats> {
         regulator: doc.regulator ?? null,
         year: doc.year ?? null,
         applicabilityStatus: getApplicabilityStatus(slugUpper),
+        // Prefer slug-keyed golden source; fall back to the instrumentId axis
+        // for instruments registered under the FAIS-ACT-37-2002-style id.
+        ...goldenSourceMeta(slug),
       },
     });
 
