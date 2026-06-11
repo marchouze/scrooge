@@ -114,6 +114,21 @@ export const BEA_HANDLER_METADATA: readonly HandlerMetadata[] = [
   entry("Bea", "ba700-period-close", "event-driven", {
     subscribesTo: ["AccountingPeriodClosed"],
   }),
+  // BA 400 (Operational Risk, BIA) period-close return — event-driven on
+  // AccountingPeriodClosed. Generates the BA 400 return using the Basic
+  // Indicator Approach (empty gross-income rows pre-commencement; zero IS the
+  // correct BIA value for a bank that has not yet commenced trading) and records
+  // a SarbSubmissionAttempted{formId:"BA400"} via the SARB simulator.
+  // Gross-income source is a named tracked component deferral
+  // (GAP-RETURNS-BA400-GROSS-INCOME — re-opens at commencement-of-trading when
+  // RevenueRecognitionEmitted events start accruing).
+  // Authority: D-TREASURER-WAVE2-SUBSTRATE (CEO session-delegation 2026-06-11);
+  //            D-RETURNS-SUBMISSION-WIRING-WORKSTREAM;
+  //            D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (op-risk = BA 400).
+  // Brief: brief:bea:w2-2-wire-ba-400-operational-risk-return-bia-gro:2026-06-11.
+  entry("Bea", "ba400-period-close", "event-driven", {
+    subscribesTo: ["AccountingPeriodClosed"],
+  }),
   // Daily product-control run — wires the three product-control engines
   // (daily P&L, P&L attribution; valuation-adjustment via Rohan's MTM) into a
   // live daily cadence. Cron: 19:00 UTC weekdays = after Rohan's 18:00 UTC MTM
