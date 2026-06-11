@@ -17,6 +17,7 @@
 // Author: Kai (Trading systems engineer, engineering — reports to
 //         Saskia, Head of Global Markets)
 
+import { lookupFaisCategory } from "../platform/conduct/fx-trade-conduct-evaluation";
 import { minor } from "../platform/core/money";
 import { type Currency, newEventId } from "../platform/core/types";
 import {
@@ -71,8 +72,12 @@ const GATEWAY_CITATIONS = ["D-FX-SALES-TRADING-FRONTEND", "D-MARKETS-SCHEMA-FOUN
 const CHECK_KINDS = [
   "identity",
   "sanctions",
-  "suitability",
   "counterparty-eligibility",
+  // suitability runs AFTER counterparty-eligibility: a counterparty that is not
+  // even eligible to trade with the bank should reject at eligibility, not be
+  // evaluated for product suitability. FAIS §8D suitability presupposes an
+  // eligible relationship (D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH).
+  "suitability",
   "credit-limit",
   "capital-impact",
   "funding",
@@ -242,6 +247,32 @@ export function routeOrderToGateway(args: {
       if (!isCounterpartyEligible(store, rfqInput.counterpartyId)) {
         outcome = "reject";
         checkRejectionReason = "counterparty not in eligibility-passing set";
+      }
+    }
+
+    // suitability — FAIS §8D product-suitability gate. CCO posture
+    // (Zara, Chief Compliance Officer, governance; D-FX-CONDUCT-SURVEILLANCE-
+    // REMEDIATION-DISPATCH 2026-06-11): this bank is an institutional /
+    // professional-only venue (D-FAIS-SCOPE; D-FX-COUNTERPARTY-SCOPE-
+    // INSTITUTIONAL), so appropriateness is lighter than retail — a market-
+    // counterparty / professional-client can transact every in-scope FX
+    // product. But the check is ENFORCED, not approve-always: a retail-client
+    // counterparty (which must never appear here) is rejected as a conduct
+    // finding, and an UNCLASSIFIED counterparty is rejected fail-closed so a
+    // trade cannot pass suitability without a FAIS category of record. The
+    // positive post-trade FaisClassificationSuitabilityChecked event-of-record
+    // (rohan:conduct-surveillance-sweep) is the durable discharge.
+    if (checkKind === "suitability") {
+      const faisCategory = lookupFaisCategory(store, rfqInput.counterpartyId);
+      if (faisCategory === null) {
+        outcome = "reject";
+        checkRejectionReason =
+          "suitability: counterparty has no FAIS classification of record (FAIS Act 37/2002 §8D); " +
+          "classify via CounterpartyFaisClassified before trading (fail-closed, D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH)";
+      } else if (faisCategory === "retail-client") {
+        outcome = "reject";
+        checkRejectionReason =
+          "suitability: retail-client counterparty at an institutional-only venue (D-FAIS-SCOPE; FAIS Act 37/2002 §8D) — conduct finding";
       }
     }
 
