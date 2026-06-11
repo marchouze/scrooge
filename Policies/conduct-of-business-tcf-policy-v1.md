@@ -15,7 +15,7 @@ citations:
   - "FSCA Conduct Standard 2 of 2018 (ODP): §5 (appropriateness), §6 (client disclosure), §§13-17 (intermediaries, communications, senior-management approval, confidentiality, waivers)"
 author: Zara (Chief Compliance Officer, governance)
 date: 2026-05-13
-summary: Establishes the bank's conduct of business standards and Treating Customers Fairly framework, covering fair dealing, client suitability, pricing transparency, and conduct governance for an institutional-only client base.
+summary: Establishes the bank's conduct of business standards and Treating Customers Fairly framework, covering fair dealing, client suitability, pricing transparency, and conduct governance for an institutional-only client base. Closes FSCA OTC-Derivative-Provider conduct obligations ORG-MK-02 (best execution), ORG-MK-14 (CS 3/2018 §§3-9 conduct dimension), ORG-ODP-COND-001 (honest, fair, due-skill conduct), ORG-ODP-COND-002 (counterparty/client categorisation), ORG-ODP-COND-003 (client suitability information), ORG-ODP-COND-004 (fair, plain-language client representations), ORG-ODP-COND-010 (utmost good faith on client collateral), ORG-ODP-COND-011 (intermediary FAIS-licensing and disclosure), and ORG-ODP-COND-012 (client confidentiality).
 decision-required: false
 riskTaxonomy:
   - COND-001

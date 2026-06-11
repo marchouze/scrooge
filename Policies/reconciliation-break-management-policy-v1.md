@@ -13,7 +13,7 @@ citations:
   - Regulations Relating to Banks 2012 (as amended) reg.32 (CCR — portfolio reconciliation reduces disputes)
 author: Tomas (Operations & payments engineer, engineering) + Bea (Accounting & financial reporting engineer, engineering)
 date: 2026-05-22
-summary: Reconciliation and Break Management Policy covering five reconciliation scopes (position, nostro, GL, margin, OTC portfolio), a three-tier break classification (P1 cash >ZAR 100k/>USD 10k, P2 position any size, P3 static), aging thresholds with same-day/T+3/T+5 resolution deadlines, escalation matrix, root-cause analysis for aged breaks, and reconciliation dashboard. Typed events ReconciliationBreakIdentified, ReconciliationBreakResolved. COMMENCEMENT-BIND.
+summary: Reconciliation and Break Management Policy covering five reconciliation scopes (position, nostro, GL, margin, OTC portfolio), a three-tier break classification (P1 cash >ZAR 100k/>USD 10k, P2 position any size, P3 static), aging thresholds with same-day/T+3/T+5 resolution deadlines, escalation matrix, root-cause analysis for aged breaks, and reconciliation dashboard. Typed events ReconciliationBreakIdentified, ReconciliationBreakResolved. COMMENCEMENT-BIND. Closes OTC-derivative obligations ORG-CS3-003 (portfolio reconciliation), ORG-ODP-COND-007 (written portfolio-reconciliation arrangements), and ORG-ODP-COND-009 (portfolio-compression analysis).
 decision-required: false
 riskTaxonomy:
   - RT-OR
