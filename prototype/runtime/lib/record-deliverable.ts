@@ -45,8 +45,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
 
-import { logger } from "../../platform/observability/logger";
 import type { Event } from "../../platform/event-store/types";
+import { logger } from "../../platform/observability/logger";
 import { defaultRetentionForRegister, recordFiled } from "../../platform/records";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
