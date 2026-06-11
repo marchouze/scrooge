@@ -151,6 +151,7 @@ import {
 import { runObligationPolicyCoverageRecon } from "../platform/recon/obligation-policy-coverage";
 import { runObligationReviewStatusRecon } from "../platform/recon/obligation-review-status";
 import { seatForBcbsObligationId } from "../platform/regulatory/basel-family-seat";
+import { tracePolicyBackToRegulation } from "../platform/regulatory/graph/query";
 import { getActiveBondCounterparties } from "../platform/simulation/bond-counterparty-registry";
 import { BondSimEngine } from "../platform/simulation/bond-sim-engine";
 import { getActiveFxCounterparties } from "../platform/simulation/fx-counterparty-registry";
@@ -2891,6 +2892,92 @@ const server = Bun.serve({
     }
     if (url.pathname === "/api/obligations/unadopt" && req.method === "POST") {
       return handleObligationUnadopt(req);
+    }
+
+    // ---------------------------------------------------------------------------
+    // GET /api/reg/policy/:policyId/trace-to-regulation
+    //
+    // Walk Policy → CLOSES → Obligation → ←EXPRESSES← Provision → ←CONTAINS←
+    // Document, returning verbatimText, goldenSourceHash, sourcePages and
+    // sourceProvisionUrn per item. Optional ?includeCrossPlane=true follows
+    // DERIVES_FROM / EQUIVALENT_TO to unadopted source obligations.
+    //
+    // Authority: D-REGULATORY-LIBRARY-V1 (WS-REGULATORY-LIBRARY-V1 Slice 3).
+    // Author: Mira (Compliance / RegTech engineer, engineering).
+    // ---------------------------------------------------------------------------
+    if (
+      url.pathname.startsWith("/api/reg/policy/") &&
+      url.pathname.endsWith("/trace-to-regulation") &&
+      req.method === "GET"
+    ) {
+      // pathname: /api/reg/policy/<policyId>/trace-to-regulation
+      const segments = url.pathname.split("/");
+      // segments: ["", "api", "reg", "policy", "<policyId>", "trace-to-regulation"]
+      const policyId = segments[4] ?? "";
+      if (!policyId) return jsonResponse({ error: "policyId is required" }, 400);
+      const includeCrossPlane = url.searchParams.get("includeCrossPlane") === "true";
+      const asOf = url.searchParams.get("asOf") ?? undefined;
+      const items = tracePolicyBackToRegulation(policyId, { includeCrossPlane, asOf });
+      return jsonResponse({
+        policyId,
+        items: items.map((item) => ({
+          obligationId: item.obligation.id,
+          provisionId: item.provision?.id ?? null,
+          documentId: item.document?.id ?? null,
+          verbatimText: item.verbatimText,
+          goldenSourceHash: item.goldenSourceHash,
+          sourcePages: item.sourcePages,
+          sourceProvisionUrn: item.sourceProvisionUrn,
+          ...(item.crossPlane
+            ? {
+                crossPlane: {
+                  sourceObligationId: item.crossPlane.sourceObligation.id,
+                  sourceProvisionId: item.crossPlane.sourceProvision?.id ?? null,
+                  sourceDocumentId: item.crossPlane.sourceDocument?.id ?? null,
+                },
+              }
+            : {}),
+        })),
+      });
+    }
+
+    // ---------------------------------------------------------------------------
+    // GET /api/reg/golden-source/:hash
+    //
+    // Resolves the BLAKE3 content-addressed hash in the document store and
+    // streams the bytes as application/pdf. Security: validates hash format
+    // (blake3:[a-f0-9]{64}) — no path traversal since lookup is content-addressed.
+    // Returns 404 when not found; never 500 on missing document.
+    //
+    // Authority: D-REGULATORY-LIBRARY-V1 (WS-REGULATORY-LIBRARY-V1 Slice 3).
+    // Author: Mira (Compliance / RegTech engineer, engineering).
+    // ---------------------------------------------------------------------------
+    if (url.pathname.startsWith("/api/reg/golden-source/") && req.method === "GET") {
+      const hash = url.pathname.slice("/api/reg/golden-source/".length);
+      if (!BLAKE3_HASH_RE.test(hash)) {
+        return new Response("Bad request: hash must match blake3:[a-f0-9]{64}", { status: 400 });
+      }
+      let bytes: Uint8Array;
+      try {
+        bytes = defaultDocumentStore.get(hash as import("../platform/document-store").DocumentHash);
+      } catch (e) {
+        const msg = (e as Error).message ?? String(e);
+        if (msg.includes("not found") || msg.includes("DocumentStoreMiss")) {
+          return new Response("Document not found", { status: 404 });
+        }
+        // Never 500 on a missing document — treat unexpected errors as 404 too
+        // but log for diagnostics.
+        logger.warn(`golden-source lookup error for ${hash}: ${msg}`);
+        return new Response("Document not found", { status: 404 });
+      }
+      return new Response(bytes, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `inline; filename="${hash.slice(7, 15)}.pdf"`,
+          "Cache-Control": "public, max-age=31536000, immutable",
+        },
+      });
     }
     if (url.pathname === "/api/procedures" && req.method === "GET") {
       // Procedures index — every row of `Procedures/_index.md` grouped by

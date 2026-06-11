@@ -53,6 +53,17 @@
     .od-fn-marker { font-family:var(--font-mono); font-weight:600; color:var(--color-accent); }
     .od-fn-text { word-break:break-word; }
     .od-image-only { color:var(--color-text-secondary); font-style:italic; border-style:dashed; }
+    .od-verbatim { font:var(--text-body); line-height:1.7; background:var(--color-surface);
+      border-left:4px solid var(--color-accent); border-radius:0 var(--radius-lg) var(--radius-lg) 0;
+      padding:var(--space-4) var(--space-5); margin:0; white-space:pre-wrap; word-break:break-word; }
+    .od-source-link { display:inline-flex; align-items:center; gap:var(--space-2);
+      color:var(--color-accent); text-decoration:none; font-weight:600;
+      border:1px solid var(--color-accent); border-radius:var(--radius-md);
+      padding:var(--space-2) var(--space-4); font-size:0.9em; }
+    .od-source-link:hover { background:var(--color-accent); color:#fff; }
+    .od-source-meta { display:flex; align-items:center; gap:var(--space-4); flex-wrap:wrap;
+      margin-top:var(--space-3); }
+    .od-source-pages { font:var(--text-caption); color:var(--color-text-secondary); }
   </style>
 </head>
 <body>
@@ -198,6 +209,15 @@
                 <ul class="od-para-list">${paras}</ul>
               </li>`;
             }).join('')}</ul>
+          </div>` : ''}
+          ${(d.verbatimText || d.goldenSourceHash) ? `
+          <div class="od-section">
+            <h3>Golden source</h3>
+            ${d.verbatimText ? `<blockquote class="od-verbatim">${SC.esc(d.verbatimText)}</blockquote>` : ''}
+            <div class="od-source-meta">
+              ${d.goldenSourceHash ? `<a class="od-source-link" href="/api/reg/golden-source/${SC.esc(d.goldenSourceHash)}" target="_blank" rel="noopener">View golden source (PDF)</a>` : ''}
+              ${d.sourcePages ? `<span class="od-source-pages">Pages ${SC.esc(d.sourcePages)}</span>` : ''}
+            </div>
           </div>` : ''}
           <div class="od-section"><h3>Lifecycle</h3>${histHtml}</div>
         `;
