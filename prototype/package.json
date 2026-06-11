@@ -206,6 +206,7 @@
     "graph:seed": "bun run platform/regulatory/graph/run-seed.ts",
     "acquire:source": "bun run scripts/regulatory/acquire-source.ts",
     "extract:structured": "bun run scripts/regulatory/extract-structured.ts",
+    "audit:extract-quality": "bun run scripts/regulatory/audit-extract-quality.ts",
     "identity:issue": "bun run scripts/identity-issue.ts",
     "publish:sub-agent-policies": "bun run scripts/publish-sub-agent-permission-policies.ts",
     "register-fleet": "bun run scripts/register-fleet.ts",
