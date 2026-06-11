@@ -35,6 +35,14 @@ interface RegSubsection {
   verbatim: boolean;
 }
 
+interface RegExcerpt {
+  id: string;
+  kind: "table" | "diagram" | "formula" | "full-page";
+  hash?: string;
+  pages?: string;
+  caption?: string;
+}
+
 interface RegSection {
   id: string;
   /**
@@ -50,6 +58,11 @@ interface RegSection {
   text: string;
   verbatim: boolean;
   subsections?: RegSubsection[];
+  /**
+   * Rasterised page excerpts filed by extract:structured --excerpts.
+   * Slice 4, WS-REGULATORY-LIBRARY-V1 (D-REGULATORY-LIBRARY-V1).
+   */
+  excerpts?: RegExcerpt[];
 }
 
 interface RegChapter {

@@ -26,7 +26,7 @@ export interface StructuredSection {
   subsections?: StructuredSection[];
   excerpts?: Array<{
     id: string;
-    kind: "table" | "diagram" | "formula";
+    kind: "table" | "diagram" | "formula" | "full-page";
     hash?: string;
     pages?: string;
     caption?: string;

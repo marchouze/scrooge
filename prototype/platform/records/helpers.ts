@@ -718,6 +718,93 @@ export function recordRegulatorySource(
 }
 
 // ---------------------------------------------------------------------------
+// recordRegulatoryExcerpt — WS-REGULATORY-LIBRARY-V1 Slice 4
+// ---------------------------------------------------------------------------
+
+export interface RecordRegulatoryExcerptInput {
+  /**
+   * PNG bytes of the rasterised page excerpt. Stored verbatim; the
+   * BLAKE3 hash is the content-addressed key the excerpt route reads.
+   */
+  readonly body: Uint8Array;
+  /** Instrument ID (e.g. `FAIS-GCC-2003`). */
+  readonly instrumentId: string;
+  /** Structured-document slug (e.g. `fais-gcc`). */
+  readonly slug: string;
+  /** Section ID the excerpt belongs to (e.g. `fais-gcc:s-schedule`). */
+  readonly sectionId: string;
+  /** Stable ID unique within the instrument, used in the API route. */
+  readonly excerptId: string;
+  readonly kind: "table" | "diagram" | "formula" | "full-page";
+  /** PDF page range, e.g. "17" or "17-18". */
+  readonly pages: string;
+  readonly caption?: string;
+  /** Optional provenance URL (regulator's published source). */
+  readonly sourceUrl?: string;
+}
+
+/**
+ * File a rasterised page excerpt (PNG) into the content-addressed document
+ * store via a `RecordFiled{registerKey:"documents"}` event.
+ *
+ * Thin wrapper over {@link recordFiled} with a fixed regulatory-excerpt
+ * envelope: `classification:"public-disclosure"`,
+ * `retention.citationRef:"D-REGULATORY-LIBRARY-V1"`, and
+ * `metadata.category:"regulatory-excerpt"` so downstream projections can
+ * distinguish excerpt blobs from source-PDF blobs.
+ *
+ * Authority: D-REGULATORY-LIBRARY-V1 (CEO-approved 2026-06-11).
+ * Author: Mira (Compliance / RegTech engineer, engineering).
+ */
+export function recordRegulatoryExcerpt(
+  input: RecordRegulatoryExcerptInput,
+  asOf?: string,
+  deps?: RecordHelperDeps,
+): RecordHelperResult {
+  requireNonEmpty("instrumentId", input.instrumentId);
+  requireNonEmpty("slug", input.slug);
+  requireNonEmpty("sectionId", input.sectionId);
+  requireNonEmpty("excerptId", input.excerptId);
+  requireNonEmpty("pages", input.pages);
+
+  const resolvedAsOf = asOf ?? new Date().toISOString();
+
+  return recordFiled(
+    {
+      recordId: `reg-excerpt:${input.instrumentId}:${input.excerptId}`,
+      registerKey: "documents",
+      body: input.body,
+      classification: "public-disclosure",
+      retention: {
+        citationRef: "D-REGULATORY-LIBRARY-V1",
+        minimumYears: 7,
+        archivalTier: "cool",
+      },
+      metadata: {
+        // `title` and `path` are required by the RecordFiled metadata schema.
+        // Use the excerptId as title and slug as path (both are stable identifiers).
+        title: input.excerptId,
+        path: `Regulations/${input.slug}/excerpts/${input.excerptId}.png`,
+        category: "regulatory-excerpt",
+        instrumentId: input.instrumentId,
+        slug: input.slug,
+        sectionId: input.sectionId,
+        excerptId: input.excerptId,
+        kind: input.kind,
+        pages: input.pages,
+        contentType: "image/png",
+        ...(input.caption ? { caption: input.caption } : {}),
+        ...(input.sourceUrl ? { sourceUrl: input.sourceUrl } : {}),
+      },
+      citations: ["D-REGULATORY-LIBRARY-V1"],
+      actor: { type: "system", id: "agent:mira" },
+    },
+    resolvedAsOf,
+    deps,
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Default retention for a register key — RMS Phase 2 Block B.
 //
 // Maps each of the seven RMS register keys to its default retention

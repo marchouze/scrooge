@@ -47,7 +47,14 @@
 // Author: Atlas · Anya (derivation)
 
 import { execSync } from "node:child_process";
-import { type FSWatcher, existsSync, watch as fsWatch, mkdirSync, readFileSync } from "node:fs";
+import {
+  type FSWatcher,
+  existsSync,
+  watch as fsWatch,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+} from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
 // Must precede any import of platform/composition — sets BANK_EVENT_DB to the
@@ -3368,6 +3375,106 @@ const server = Bun.serve({
         return jsonResponse({
           ...detail,
           pageProvenance: proseAuthoredPageProvenance(),
+        });
+      }
+    }
+
+    // GET /api/regulation-reader/:slug/excerpt/:id — serve excerpt PNG blob
+    // WS-REGULATORY-LIBRARY-V1 Slice 4 (D-REGULATORY-LIBRARY-V1).
+    // Author: Mira (Compliance / RegTech engineer, engineering).
+    {
+      const excerptMatch = url.pathname.match(
+        /^\/api\/regulation-reader\/([a-z0-9-]+)\/excerpt\/([a-z0-9-]+)$/,
+      );
+      if (excerptMatch?.[1] && excerptMatch[2] && req.method === "GET") {
+        const slug = excerptMatch[1];
+        const excerptId = excerptMatch[2];
+
+        // 1. Load structured JSON for this slug — scan Regulations/*/source-docs/
+        let regulatorDirs: string[];
+        try {
+          regulatorDirs = readdirSync(resolve(REPO_ROOT, "Regulations"), { encoding: "utf-8" });
+        } catch {
+          regulatorDirs = [];
+        }
+        const slugPaths = regulatorDirs.flatMap((sub) => {
+          const dir = resolve(REPO_ROOT, "Regulations", sub, "source-docs");
+          const candidate = resolve(dir, `${slug}-structured.json`);
+          if (existsSync(candidate)) return [candidate];
+          // Also scan for any structured JSON whose internal slug field matches
+          try {
+            const files = readdirSync(dir, { encoding: "utf-8" }).filter((f) =>
+              f.endsWith("-structured.json"),
+            );
+            return files
+              .map((f) => resolve(dir, f))
+              .filter((p) => {
+                try {
+                  const raw = JSON.parse(readFileSync(p, "utf-8")) as { slug?: string };
+                  return raw.slug === slug;
+                } catch {
+                  return false;
+                }
+              });
+          } catch {
+            return [] as string[];
+          }
+        });
+
+        if (slugPaths.length === 0) {
+          return jsonResponse({ error: `Instrument not found: ${slug}` }, 404);
+        }
+
+        let structuredDoc: {
+          chapters: Array<{
+            sections: Array<{
+              excerpts?: Array<{ id: string; hash?: string }>;
+            }>;
+          }>;
+        };
+        try {
+          structuredDoc = JSON.parse(readFileSync(slugPaths[0] as string, "utf-8")) as typeof structuredDoc;
+        } catch {
+          return jsonResponse({ error: "Failed to load instrument" }, 404);
+        }
+
+        // 2. Find excerpt by id across all sections
+        let foundHash: string | undefined;
+        outer: for (const chapter of structuredDoc.chapters ?? []) {
+          for (const section of chapter.sections ?? []) {
+            for (const exc of section.excerpts ?? []) {
+              if (exc.id === excerptId) {
+                foundHash = exc.hash;
+                break outer;
+              }
+            }
+          }
+        }
+
+        if (foundHash === undefined) {
+          return jsonResponse({ error: `Excerpt not found: ${excerptId}` }, 404);
+        }
+        if (!foundHash) {
+          return jsonResponse({ error: "excerpt not yet filed" }, 404);
+        }
+
+        // 3. Fetch bytes from document store
+        let pngBytes: Uint8Array;
+        try {
+          pngBytes = defaultDocumentStore.get(
+            foundHash as import("../platform/document-store").DocumentHash,
+          );
+        } catch {
+          return jsonResponse({ error: `Excerpt blob not found: ${foundHash}` }, 404);
+        }
+
+        return new Response(pngBytes, {
+          status: 200,
+          headers: {
+            "Content-Type": "image/png",
+            "Cache-Control": "public, max-age=31536000",
+            "Content-Length": String(pngBytes.byteLength),
+          },
         });
       }
     }

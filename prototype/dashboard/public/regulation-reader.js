@@ -212,6 +212,34 @@
     </div>`;
   }
 
+  // ── Excerpt rendering (WS-REGULATORY-LIBRARY-V1 Slice 4) ───────────────────
+
+  function capitalise(str) {
+    if (!str) return "";
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  function renderExcerpts(excerpts, slug) {
+    if (!excerpts || excerpts.length === 0) return "";
+    return excerpts
+      .map((exc) => {
+        const src = `/api/regulation-reader/${esc(slug)}/excerpt/${esc(exc.id)}`;
+        const alt = esc(exc.caption || exc.kind);
+        const cap = esc(
+          exc.caption || `${capitalise(exc.kind)} (p. ${exc.pages || "?"})`,
+        );
+        return `<figure class="reg-excerpt" style="margin:var(--space-4) 0;padding:0">
+  <img src="${src}"
+       alt="${alt}"
+       loading="lazy"
+       style="max-width:100%;border:1px solid var(--color-border);border-radius:4px"
+       onerror="this.parentElement.style.display='none'">
+  <figcaption style="font-size:0.82em;color:var(--color-text-muted);margin-top:var(--space-1)">${cap}</figcaption>
+</figure>`;
+      })
+      .join("");
+  }
+
   function renderSections(chapters) {
     return chapters
       .map((chapter) => {
@@ -240,6 +268,9 @@
                 ? section.subsections.map((sub) => renderSubsection(sub, 1)).join("")
                 : "";
 
+            // Render excerpts (WS-REGULATORY-LIBRARY-V1 Slice 4, D-REGULATORY-LIBRARY-V1)
+            const excerptsHtml = renderExcerpts(section.excerpts, currentSlug);
+
             const obligationsHtml = renderObligations(section.obligations);
             const oblCount = section.obligations?.length || 0;
             const toggleHtml =
@@ -260,6 +291,7 @@
   </div>
   ${bodyHtml}
   ${subsectionsHtml}
+  ${excerptsHtml}
   ${obligationsHtml}
 </div>`;
           })

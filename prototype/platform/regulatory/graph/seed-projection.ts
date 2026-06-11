@@ -249,6 +249,14 @@ interface StructuredSection {
   pages?: string;
   footnotes?: Array<{ marker: string; text: string }>;
   subsections?: StructuredSection[];
+  /** Rasterised page excerpts (WS-REGULATORY-LIBRARY-V1 Slice 4, D-REGULATORY-LIBRARY-V1). */
+  excerpts?: Array<{
+    id: string;
+    kind: "table" | "diagram" | "formula" | "full-page";
+    hash?: string;
+    pages?: string;
+    caption?: string;
+  }>;
 }
 
 /**
@@ -1478,6 +1486,17 @@ export async function runSeed(): Promise<SeedStats> {
             ...(section.pages ? { sourcePages: section.pages } : {}),
             ...(section.footnotes?.length
               ? { footnotesJson: JSON.stringify(section.footnotes) }
+              : {}),
+            // Excerpt linkage — WS-REGULATORY-LIBRARY-V1 Slice 4
+            // (D-REGULATORY-LIBRARY-V1). The hashes enable direct resolution
+            // from Provision nodes back to rasterised excerpt blobs.
+            ...(section.excerpts?.length
+              ? {
+                  excerptCount: section.excerpts.length,
+                  excerptHashesJson: JSON.stringify(
+                    section.excerpts.map((e) => e.hash).filter(Boolean),
+                  ),
+                }
               : {}),
           },
         };

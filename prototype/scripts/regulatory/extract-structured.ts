@@ -37,9 +37,11 @@ import type {
   StructuredSection,
   StructuredSourceDocument,
 } from "../../platform/regulatory/structured-source-schema";
+import { recordRegulatoryExcerpt } from "../../platform/records";
 import { die, emitOk, optionalString, parseArgs, requireString } from "../dispatch/args";
 
 const PDFTOTEXT_BIN = "/opt/homebrew/bin/pdftotext";
+const PDFTOPPM_BIN = "/opt/homebrew/bin/pdftoppm";
 
 // ---------------------------------------------------------------------------
 // Path resolution
@@ -283,11 +285,191 @@ function mergeExtracted(
   });
 }
 
+// ---------------------------------------------------------------------------
+// Excerpt generation (--excerpts flag)
+// ---------------------------------------------------------------------------
+
+export interface GeneratedExcerpt {
+  id: string;
+  kind: "table" | "full-page";
+  hash: string;
+  pages: string;
+  caption?: string;
+}
+
+/**
+ * Detect pages to rasterise as excerpts:
+ *  1. Image-only pages: pdftotext output ≤20 non-whitespace chars.
+ *  2. Table-heuristic pages: ≥3 lines with ≥3 consecutive-space runs AND
+ *     a schedule/table/annex keyword anywhere on the page.
+ * If neither is found, force-rasterises page 1 as kind:"full-page" to
+ * demonstrate the pipeline end-to-end.
+ */
+function detectExcerptPages(
+  pages: ParsedPage[],
+): Array<{ pageNum: number; kind: "table" | "full-page"; caption: string }> {
+  const results: Array<{ pageNum: number; kind: "table" | "full-page"; caption: string }> = [];
+
+  // Pass 1 — image-only
+  for (const page of pages) {
+    const nonWs = page.lines.join("").replace(/\s/g, "").length;
+    if (nonWs <= 20) {
+      results.push({ pageNum: page.pageNum, kind: "full-page", caption: `Page ${page.pageNum}` });
+    }
+  }
+
+  // Pass 2 — table heuristic (only if we haven't already captured this page)
+  const capturedPages = new Set(results.map((r) => r.pageNum));
+  for (const page of pages) {
+    if (capturedPages.has(page.pageNum)) continue;
+    const pageText = page.lines.join("\n").toLowerCase();
+    const hasKeyword = ["schedule", "table", "annex", "formula"].some((kw) =>
+      pageText.includes(kw),
+    );
+    if (!hasKeyword) continue;
+    const tableLineCount = page.lines.filter((l) => {
+      const spaceMults = l.match(/\s{2,}/g);
+      return spaceMults && spaceMults.length >= 3;
+    }).length;
+    if (tableLineCount >= 3) {
+      results.push({
+        pageNum: page.pageNum,
+        kind: "table",
+        caption: `Table/Schedule — Page ${page.pageNum}`,
+      });
+    }
+  }
+
+  // Force-rasterise page 1 if nothing found (demonstrates end-to-end pipeline)
+  if (results.length === 0 && pages.length > 0) {
+    results.push({ pageNum: 1, kind: "full-page", caption: "Cover page" });
+  }
+
+  return results;
+}
+
+/**
+ * Rasterise one page of a PDF to PNG using pdftoppm, then file it via
+ * `recordRegulatoryExcerpt`. Returns a `GeneratedExcerpt` with the
+ * document hash and excerpt metadata.
+ */
+function rasteriseAndFileExcerpt(
+  slug: string,
+  fromPdf: string,
+  pageNum: number,
+  kind: "table" | "full-page",
+  caption: string,
+  instrumentId: string,
+  sourceUrl: string | undefined,
+  asOf: string,
+): GeneratedExcerpt | null {
+  const prefix = `/tmp/${slug}-p${pageNum}`;
+  try {
+    execSync(
+      `${PDFTOPPM_BIN} -r 150 -png -f ${pageNum} -l ${pageNum} "${fromPdf}" "${prefix}"`,
+      { encoding: "utf-8" },
+    );
+  } catch (e) {
+    console.error(`pdftoppm failed for page ${pageNum}: ${e instanceof Error ? e.message : String(e)}`);
+    return null;
+  }
+
+  // pdftoppm produces <prefix>-000001.png (zero-padded)
+  const paddedNum = String(pageNum).padStart(6, "0");
+  const pngPath = `${prefix}-${paddedNum}.png`;
+  if (!existsSync(pngPath)) {
+    // Try single-digit variant
+    const altPngPath = `${prefix}-1.png`;
+    if (!existsSync(altPngPath)) {
+      console.error(`PNG not found at ${pngPath}`);
+      return null;
+    }
+  }
+
+  const actualPngPath = existsSync(pngPath) ? pngPath : `${prefix}-1.png`;
+  const pngBytes = new Uint8Array(readFileSync(actualPngPath));
+
+  const excerptId = `${slug}-p${pageNum}`;
+  const sectionId = `${slug}:p${pageNum}`;
+
+  const result = recordRegulatoryExcerpt(
+    {
+      body: pngBytes,
+      instrumentId,
+      slug,
+      sectionId,
+      excerptId,
+      kind,
+      pages: String(pageNum),
+      caption,
+      ...(sourceUrl ? { sourceUrl } : {}),
+    },
+    asOf,
+  );
+
+  return {
+    id: excerptId,
+    kind,
+    hash: result.documentHash as string,
+    pages: String(pageNum),
+    caption,
+  };
+}
+
+/**
+ * Attach generated excerpts to the matching section in the doc's chapters.
+ * Match by page-range overlap (section.pages contains the page number), or
+ * fall back to the first section in the document.
+ */
+function attachExcerptsToSections(
+  doc: StructuredSourceDocument,
+  excerpts: GeneratedExcerpt[],
+): void {
+  if (excerpts.length === 0) return;
+
+  for (const excerpt of excerpts) {
+    const excerptPage = Number(excerpt.pages);
+    let attached = false;
+
+    for (const chapter of doc.chapters) {
+      for (const section of chapter.sections ?? []) {
+        const secPages = section.pages;
+        if (secPages) {
+          // Parse page range "12" or "12–14" (em-dash) or "12-14" (hyphen)
+          const parts = secPages.split(/[–-]/);
+          const start = Number(parts[0]);
+          const end = parts[1] ? Number(parts[1]) : start;
+          if (!Number.isNaN(start) && !Number.isNaN(end) && excerptPage >= start && excerptPage <= end) {
+            if (!section.excerpts) section.excerpts = [];
+            section.excerpts.push(excerpt);
+            attached = true;
+            break;
+          }
+        }
+      }
+      if (attached) break;
+    }
+
+    // Fallback: attach to the first section
+    if (!attached && doc.chapters.length > 0) {
+      const firstChapter = doc.chapters[0];
+      if (firstChapter?.sections?.length) {
+        const firstSection = firstChapter.sections[0];
+        if (!firstSection.excerpts) firstSection.excerpts = [];
+        firstSection.excerpts.push(excerpt);
+      }
+    }
+  }
+}
+
 function fullExtractionMode(
   slug: string,
   fromPdf: string,
   outPath: string | undefined,
   goldenHash: string | undefined,
+  excerpts: boolean,
+  instrumentId: string | undefined,
+  sourceUrl: string | undefined,
 ): void {
   if (!existsSync(fromPdf)) die(`--from path not found: ${fromPdf}`);
   if (!existsSync(PDFTOTEXT_BIN)) {
@@ -358,6 +540,35 @@ function fullExtractionMode(
     }
   }
 
+  // ── Excerpt generation (--excerpts flag) ──────────────────────────────────
+  const generatedExcerpts: GeneratedExcerpt[] = [];
+  if (excerpts) {
+    if (!existsSync(PDFTOPPM_BIN)) {
+      console.error(`pdftoppm not found at ${PDFTOPPM_BIN}; skipping excerpt generation.`);
+    } else {
+      const asOf = new Date().toISOString();
+      const effectiveInstrumentId = instrumentId ?? slug.toUpperCase();
+      const excerptPages = detectExcerptPages(pages);
+
+      for (const ep of excerptPages) {
+        const generated = rasteriseAndFileExcerpt(
+          slug,
+          fromPdf,
+          ep.pageNum,
+          ep.kind,
+          ep.caption,
+          effectiveInstrumentId,
+          sourceUrl,
+          asOf,
+        );
+        if (generated) generatedExcerpts.push(generated);
+      }
+
+      // Attach excerpts to section nodes in the structured doc
+      attachExcerptsToSections(doc, generatedExcerpts);
+    }
+  }
+
   const writePath = outPath ?? jsonPath ?? `${slug}-structured.json`;
   writeFileSync(writePath, `${JSON.stringify(doc, null, 2)}\n`, "utf-8");
 
@@ -372,6 +583,10 @@ function fullExtractionMode(
     sectionsEnriched,
     pagesAdded,
     footnotesAdded,
+    excerptCount: generatedExcerpts.length,
+    ...(generatedExcerpts.length > 0
+      ? { hashes: generatedExcerpts.map((e) => e.hash) }
+      : {}),
     path: writePath,
   });
 }
@@ -381,12 +596,19 @@ function fullExtractionMode(
 // ---------------------------------------------------------------------------
 
 function main(): void {
-  const args = parseArgs(process.argv.slice(2), new Set<string>());
+  // Check for bare --excerpts flag before parseArgs (which rejects bare flags).
+  const rawArgv = process.argv.slice(2);
+  const excerpts = rawArgv.includes("--excerpts");
+  const filteredArgv = rawArgv.filter((a) => a !== "--excerpts");
+
+  const args = parseArgs(filteredArgv, new Set<string>());
 
   const slug = requireString(args, "slug");
   const hashFlag = optionalString(args, "hash");
   const fromPdf = optionalString(args, "from");
   const outPath = optionalString(args, "out");
+  const instrumentId = optionalString(args, "instrument-id");
+  const sourceUrl = optionalString(args, "source-url");
 
   if (!hashFlag && !fromPdf) {
     die("One of --hash <blake3:...> or --from <local-pdf> is required.");
@@ -396,8 +618,8 @@ function main(): void {
     // Hash-stamp mode — no extraction, just stamp the goldenSourceHash
     hashStampMode(slug, hashFlag, outPath);
   } else if (fromPdf) {
-    // Full-extraction mode — pdftotext + merge + optionally stamp hash
-    fullExtractionMode(slug, fromPdf, outPath, hashFlag);
+    // Full-extraction mode — pdftotext + merge + optionally stamp hash + optional excerpts
+    fullExtractionMode(slug, fromPdf, outPath, hashFlag, excerpts, instrumentId, sourceUrl);
   }
 }
 
