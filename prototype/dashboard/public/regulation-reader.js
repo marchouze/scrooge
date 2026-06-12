@@ -511,7 +511,10 @@
       return;
     }
     const data = await resp.json();
-    renderDistillProposals(overlay, data.proposals || []);
+    renderDistillProposals(overlay, data.proposals || [], {
+      provider: data.provider || "anthropic",
+      model: data.model || "",
+    });
   }
 
   function renderDistillError(overlay, msg) {
@@ -519,7 +522,7 @@
     if (body) body.innerHTML = `<div style="color:var(--color-error,#ef4444)">${esc(msg)}</div>`;
   }
 
-  function renderDistillProposals(overlay, proposals) {
+  function renderDistillProposals(overlay, proposals, engine) {
     if (proposals.length === 0) {
       renderDistillError(
         overlay,
@@ -554,7 +557,7 @@
 
     const header = overlay.querySelector(".rr-modal-header span");
     if (header)
-      header.textContent = `${proposals.length} obligation proposal${proposals.length !== 1 ? "s" : ""} — review and approve`;
+      header.textContent = `${proposals.length} obligation proposal${proposals.length !== 1 ? "s" : ""} — review and approve${engine?.provider ? ` · ${engine.provider}${engine.model ? ` (${engine.model})` : ""}` : ""}`;
 
     const body = overlay.querySelector(".rr-modal-body");
     if (body) {

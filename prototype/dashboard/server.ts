@@ -200,6 +200,7 @@ import {
   recordDecision,
   recordDecisionComment,
 } from "../runtime/decisions/record";
+import { tryGenerateNarrativeGemini } from "../runtime/gemini";
 import { runAgent } from "../runtime/run";
 import { getSeedManifestEntry } from "../seeds/manifest";
 import { buildSeedsView } from "../seeds/seeds-view";
@@ -2085,11 +2086,22 @@ async function handleRegDistill(req: Request, slug: string): Promise<Response> {
     return jsonResponse({ proposals: [], message: "No adopted provisions in this scope" });
   }
 
-  // ── Stub mode (BANK_DISTILL_STUB=1) — deterministic heuristic proposals ──
+  // ── Provider selection ──
+  // BANK_DISTILL_PROVIDER ∈ { "anthropic" (default) | "gemini" | "stub" }.
+  // BANK_DISTILL_STUB=1 is kept as a back-compat alias for "stub".
+  // Gemini scope: distillation only — all other narrative paths stay on
+  // Claude (runtime/claude.ts). Distillation sends only published regulation
+  // text (Plane A), so the cheaper provider carries no data-protection cost.
+  const distillProvider =
+    process.env.BANK_DISTILL_STUB === "1"
+      ? "stub"
+      : (process.env.BANK_DISTILL_PROVIDER ?? "anthropic");
+
+  // ── Stub mode — deterministic heuristic proposals ──
   // Lets the full tick → distill → review → approve flow be exercised with no
-  // ANTHROPIC_API_KEY. Proposals are clearly labelled: ORG-STUB-* ids,
+  // API key at all. Proposals are clearly labelled: ORG-STUB-* ids,
   // confidence 0, requirement prefixed "[STUB]". Never enabled by default.
-  if (process.env.BANK_DISTILL_STUB === "1") {
+  if (distillProvider === "stub") {
     const groups = new Map<string, string[]>();
     for (const leafId of adoptedLeaves) {
       const parentId = tree.get(leafId)?.parentId ?? scopeId;
@@ -2127,13 +2139,14 @@ async function handleRegDistill(req: Request, slug: string): Promise<Response> {
     );
     logger.info(
       { slug, scopeId, groups: stubProposals.length },
-      "distill served by STUB mode (BANK_DISTILL_STUB=1)",
+      "distill served by STUB mode (BANK_DISTILL_PROVIDER=stub)",
     );
     return jsonResponse({
       slug,
       scopeId,
       adoptedCount: adoptedLeaves.length,
       stub: true,
+      provider: "stub",
       proposals: stubProposals,
     });
   }
@@ -2154,18 +2167,31 @@ Excluded (unadopted): ${allLeaves.filter((l) => !adoptedLeaves.includes(l)).leng
 
 Adopted provisions (${adoptedLeaves.length}):\n\n${provisionLines}`;
 
-  const llmResult = await tryGenerateNarrative({
+  // No `meta` — there is no agent run to record token usage against
+  // (interactive dashboard request; the request is logged below either way).
+  const narrativeReq = {
     stableSystem: DISTILLATION_SYSTEM_PROMPT,
     userInput,
     maxTokens: 4096,
-    effort: "medium",
-    meta: { purpose: "provision-distillation", slug, scopeId },
-  });
+    effort: "medium" as const,
+  };
+  const llmResult =
+    distillProvider === "gemini"
+      ? await tryGenerateNarrativeGemini(narrativeReq)
+      : await tryGenerateNarrative(narrativeReq);
 
   if (!llmResult.ok) {
-    logger.warn({ slug, scopeId, error: llmResult.error }, "LLM distillation failed");
+    logger.warn(
+      { slug, scopeId, provider: distillProvider, error: llmResult.error },
+      "LLM distillation failed",
+    );
     return jsonResponse(
-      { error: "LLM distillation failed", detail: llmResult.error, retryable: llmResult.retryable },
+      {
+        error: "LLM distillation failed",
+        provider: distillProvider,
+        detail: llmResult.error,
+        retryable: llmResult.retryable,
+      },
       502,
     );
   }
@@ -2182,7 +2208,14 @@ Adopted provisions (${adoptedLeaves.length}):\n\n${provisionLines}`;
     );
   }
 
-  return jsonResponse({ slug, scopeId, adoptedCount: adoptedLeaves.length, proposals });
+  return jsonResponse({
+    slug,
+    scopeId,
+    adoptedCount: adoptedLeaves.length,
+    provider: distillProvider,
+    model: llmResult.result.model,
+    proposals,
+  });
 }
 
 // ApprovedObligation — submitted by the UI after the human reviews LLM proposals.
