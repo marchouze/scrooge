@@ -52,6 +52,7 @@
 export * from "./agent";
 export * from "./audit";
 export * from "./decision";
+export * from "./decision-distillation";
 export * from "./decision-request";
 export * from "./governance";
 export * from "./platform";
@@ -442,6 +443,7 @@ import { COUNTERPARTY_EXPOSURE_TYPED_EVENT_TYPES } from "./counterparty-exposure
 import { CREDIT_LIMIT_TYPED_EVENT_TYPES } from "./credit-limit";
 import { CUSTOMER_TYPED_EVENT_TYPES } from "./customer";
 import { DECISION_TYPED_EVENT_TYPES } from "./decision";
+import { DECISION_DISTILLATION_TYPED_EVENT_TYPES } from "./decision-distillation";
 import { DECISION_REQUEST_TYPED_EVENT_TYPES } from "./decision-request";
 import { ENTITY_RECLASSIFIED_EVENT_TYPES } from "./entity-reclassified";
 import { EQUITY_ACCOUNTING_EVENT_TYPES } from "./equity-accounting";
@@ -514,6 +516,10 @@ export const TYPED_EVENT_TYPES = [
   ...AUDIT_TYPED_EVENT_TYPES,
   ...DECISION_REQUEST_TYPED_EVENT_TYPES,
   ...DECISION_TYPED_EVENT_TYPES,
+  // WS-V2-BBAAS W1 — DecisionDistilled (foundational/directional/obsolete
+  // classification of existing Decisions). Authority:
+  // D-V2-BBAAS-W1-DECISION-DISTILLATION (CEO session-delegation 2026-06-12).
+  ...DECISION_DISTILLATION_TYPED_EVENT_TYPES,
   ...AGENT_OPS_TYPED_EVENT_TYPES,
   ...INTRANET_EVENT_TYPES,
   ...FTP_TYPED_EVENT_TYPES,

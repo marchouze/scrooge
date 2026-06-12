@@ -149,6 +149,7 @@ export { OBLIGATION_LIFECYCLE_EVENT_TYPES_REGISTRY } from "./obligation-lifecycl
 // WS-OBLIGATIONS-CLEANUP (P5) — SA↔BCBS same-outcome / divergent model.
 // Authority: D-OBLIGATIONS-REGISTER-CLEANUP; P2-SINGLE-GRAPH-DISCIPLINE.
 export { OBLIGATION_EQUIVALENCE_EVENT_TYPES_REGISTRY } from "./obligation-equivalence";
+export { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillation";
 // D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
 // events (Defined / Classified / Decomposed / Reconstituted).
 // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
@@ -271,6 +272,7 @@ import { MISSING_EVENT_TYPES } from "./missing-types";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
 import { MTM_EVENT_TYPES_REGISTRY } from "./mtm";
 import { OBLIGATION_EQUIVALENCE_EVENT_TYPES_REGISTRY } from "./obligation-equivalence";
+import { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillation";
 import { OBLIGATION_LIFECYCLE_EVENT_TYPES_REGISTRY } from "./obligation-lifecycle";
 import { OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY } from "./obligation-review";
 import { ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY } from "./odp-collateral-segregation";
@@ -434,6 +436,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // ObligationEquivalenceClassified. Authority: D-OBLIGATIONS-REGISTER-CLEANUP;
   //   P2-SINGLE-GRAPH-DISCIPLINE.
   ...OBLIGATION_EQUIVALENCE_EVENT_TYPES_REGISTRY,
+  // WS-V2-BBAAS W1 — DecisionDistilled core-knowledge-base classification.
+  // Authority: D-V2-BBAAS-W1-DECISION-DISTILLATION (2026-06-12).
+  ...DECISION_DISTILLATION_EVENT_TYPES_REGISTRY,
   // D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
   // events (Defined / Classified / Decomposed / Reconstituted).
   // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
