@@ -88,6 +88,15 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   AgentEscalation: "governance",
   AgentEscalationDecided: "governance",
   ProductApproved: "governance",
+  // WS-V2-BBAAS S3 (W8 Slice 1) — agent operating-posture register. A posture
+  // is real governance configuration (a typed risk-appetite stance / procedure
+  // variant / jurisdictional toggle), not simulated market activity: structured-
+  // first, weights propose but only a typed event disposes. Authority:
+  // D-W8-POSTURE-REGISTER-SLICE-1; Principle 1.
+  PostureRegistered: "governance",
+  PostureActivated: "governance",
+  PostureDeactivated: "governance",
+  PostureRevised: "governance",
   // CCO-published best-execution tolerance schedule — a conduct-committee
   // governance record (real seat decision, not simulated market activity).
   // Authority: D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH; FAIS §16.
