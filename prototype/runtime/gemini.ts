@@ -65,17 +65,42 @@ export function buildGeminiRequestBody(req: NarrativeRequest): Record<string, un
   };
 }
 
+/** Backoff schedule for retryable failures (503 demand spikes, 429, network). */
+const RETRY_DELAYS_MS = [2_000, 5_000];
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
 /**
  * Generate a narrative via Gemini. Same result envelope as
  * `tryGenerateNarrative` in runtime/claude.ts:
  *   { ok: true, result } | { ok: false, error, retryable }
  *
  * 401/403/400-API_KEY_INVALID → retryable:false (key problem);
- * 429/5xx/network → retryable:true.
+ * 429/5xx/network → retryable:true, retried in-call with backoff
+ * (AI Studio free tier sheds load with transient 503 "high demand"
+ * responses — observed clearing within seconds).
  */
 export async function tryGenerateNarrativeGemini(
   req: NarrativeRequest,
   fetchImpl: FetchLike = fetch,
+  retryDelaysMs: readonly number[] = RETRY_DELAYS_MS,
+): Promise<
+  { ok: true; result: NarrativeResponse } | { ok: false; error: string; retryable: boolean }
+> {
+  let last = await tryGenerateNarrativeGeminiOnce(req, fetchImpl);
+  for (const delay of retryDelaysMs) {
+    if (last.ok || !last.retryable) return last;
+    await sleep(delay);
+    last = await tryGenerateNarrativeGeminiOnce(req, fetchImpl);
+  }
+  return last;
+}
+
+async function tryGenerateNarrativeGeminiOnce(
+  req: NarrativeRequest,
+  fetchImpl: FetchLike,
 ): Promise<
   { ok: true; result: NarrativeResponse } | { ok: false; error: string; retryable: boolean }
 > {

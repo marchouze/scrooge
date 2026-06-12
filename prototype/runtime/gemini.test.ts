@@ -141,6 +141,7 @@ describe("tryGenerateNarrativeGemini", () => {
     const r429 = await tryGenerateNarrativeGemini(
       REQ,
       async () => new Response("rate limited", { status: 429 }),
+      [], // no in-call retries in tests
     );
     expect(r429.ok).toBe(false);
     if (!r429.ok) expect(r429.retryable).toBe(true);
@@ -148,9 +149,44 @@ describe("tryGenerateNarrativeGemini", () => {
     const r503 = await tryGenerateNarrativeGemini(
       REQ,
       async () => new Response("overloaded", { status: 503 }),
+      [],
     );
     expect(r503.ok).toBe(false);
     if (!r503.ok) expect(r503.retryable).toBe(true);
+  });
+
+  it("retries transient 503s in-call and succeeds when the spike clears", async () => {
+    process.env.GEMINI_API_KEY = "AIza-test-key";
+    let calls = 0;
+    const r = await tryGenerateNarrativeGemini(
+      REQ,
+      async () => {
+        calls++;
+        if (calls < 3) return new Response("high demand", { status: 503 });
+        return jsonResponse({
+          candidates: [{ content: { parts: [{ text: "[1]" }] }, finishReason: "STOP" }],
+          usageMetadata: { promptTokenCount: 5, candidatesTokenCount: 2 },
+        });
+      },
+      [0, 0], // immediate retries in tests
+    );
+    expect(calls).toBe(3);
+    expect(r.ok).toBe(true);
+  });
+
+  it("does NOT retry non-retryable auth failures", async () => {
+    process.env.GEMINI_API_KEY = "AIza-bad";
+    let calls = 0;
+    const r = await tryGenerateNarrativeGemini(
+      REQ,
+      async () => {
+        calls++;
+        return new Response("forbidden", { status: 403 });
+      },
+      [0, 0],
+    );
+    expect(calls).toBe(1);
+    expect(r.ok).toBe(false);
   });
 
   it("fails non-retryable when the model returns no text (e.g. SAFETY stop)", async () => {
