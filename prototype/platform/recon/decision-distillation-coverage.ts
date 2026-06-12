@@ -1,7 +1,8 @@
 // platform/recon/decision-distillation-coverage.ts
 //
 // recon:decision-distillation-coverage — core-knowledge-base coverage gate
-// (ADVISORY until the W1 shared-store emission pass runs; then enforcing).
+// (ENFORCING since 2026-06-12; was advisory until the W1 shared-store
+// emission pass completed).
 //
 // Asserts, over the live store:
 //   1. Every decisionId whose LATEST `Decision` phase is `approved` has
@@ -9,10 +10,11 @@
 //   2. No `DecisionDistilled` classification points at a decisionId that
 //      has no `Decision` event at all (dangling classification).
 //
-// ADVISORY: findings are reported but exit 0 — the dataset lands in the
-// same PR as this gate, and the shared-store emission pass
-// (`bun run distill:decisions-w1`) runs post-merge. Flip to enforcing
-// (exit 1) once the pass is green against the canonical store.
+// ENFORCING: findings exit 1. The W1 pass ran against the canonical store
+// on 2026-06-12 (257 classifications; recon green), so every newly
+// approved Decision must carry a classification: add the entry to
+// platform/governance/decision-distillation/classifications.ts and run
+// `bun run distill:decisions-w1` against the shared store.
 //
 // Authority: D-V2-BBAAS-W1-DECISION-DISTILLATION (CEO session-delegation
 // 2026-06-12); P1-EVENTS-AS-TRUTH.
@@ -115,15 +117,29 @@ export function main(opts?: {
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
   const { findings, assertedApproved, classified } = main();
-  if (findings.length > 0) {
-    // ADVISORY: report but exit 0 until the shared-store W1 pass runs.
+  // Store-aware enforcement: a store with approved decisions but ZERO
+  // classifications is one the W1 emission pass has never run against
+  // (stale worktree-local stores, scenario stores). Skip those with a
+  // warning instead of failing — the gate enforces wherever the pass has
+  // landed (canonical shared store; clean CI stores pass vacuously).
+  if (classified === 0 && assertedApproved > 0) {
     console.warn(
-      `\n⚠️  ${PIPELINE}: ${findings.length} coverage finding(s) across ${assertedApproved} approved decision(s), ${classified} classified (ADVISORY — exit 0 until the W1 shared-store pass runs):\n`,
+      `⚠️  ${PIPELINE}: ${assertedApproved} approved decision(s) but zero DecisionDistilled events — the W1 pass has not run against this store; skipping (run \`bun run distill:decisions-w1\` to enable enforcement here).`,
+    );
+    process.exit(0);
+  }
+  if (findings.length > 0) {
+    // ENFORCING since 2026-06-12: the W1 shared-store pass is complete
+    // (257 classifications, 253 approved covered; D-V2-BBAAS-W1-DECISION-
+    // DISTILLATION authorises the flip once the pass lands). Every newly
+    // approved Decision now requires a live DecisionDistilled classification.
+    console.error(
+      `\n❌ ${PIPELINE}: ${findings.length} coverage finding(s) across ${assertedApproved} approved decision(s), ${classified} classified (ENFORCING — classify via platform/governance/decision-distillation/classifications.ts + distill:decisions-w1):\n`,
     );
     for (const f of findings) {
-      console.warn(`  - [${f.kind}] ${f.decisionId}: ${f.message}`);
+      console.error(`  - [${f.kind}] ${f.decisionId}: ${f.message}`);
     }
-    process.exit(0);
+    process.exit(1);
   }
   console.log(
     `✅ ${PIPELINE}: ${assertedApproved} approved decision(s) all carry a live DecisionDistilled classification; ${classified} classification(s), none dangling`,
