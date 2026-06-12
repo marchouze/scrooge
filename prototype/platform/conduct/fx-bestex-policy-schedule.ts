@@ -40,6 +40,7 @@ import {
   type BestExecutionPolicySchedulePayload,
   makeBestExecutionPolicySchedule,
 } from "../event-store/event-types/conduct";
+import { provenanceForEmit } from "../event-store/provenance";
 import type { EventStore } from "../event-store/store";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
@@ -115,7 +116,16 @@ export function publishFxBestExecutionPolicySchedule(
     citations: [...BESTEX_SCHEDULE_CITATIONS],
     payload: BESTEX_SCHEDULE_2026_001,
   });
-  store.append(event);
+  store.append({
+    ...event,
+    // Sanctioned category-policy derivation (governance → production): a
+    // CCO-published tolerance schedule is a real conduct-committee
+    // commitment, not simulated market activity. Attached explicitly so the
+    // tag never depends on a soft-tagger pass racing an older code version.
+    provenance: provenanceForEmit("BestExecutionPolicySchedule", {
+      sourceLineage: "cco:bestex-policy-schedule",
+    }),
+  });
 
   return { published: true, skipped: false, scheduleEventId: event.event_id };
 }
