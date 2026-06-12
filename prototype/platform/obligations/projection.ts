@@ -31,6 +31,8 @@ export interface BankObligation {
   readonly status: string;
   /** Source-obligation URN(s) this bank obligation derives from (DERIVES_FROM). */
   readonly derivesFrom: readonly string[];
+  /** Immutable verbatim snapshot at adoption (provision id → quote), when carried. */
+  readonly verbatimSourceText?: Readonly<Record<string, string>>;
   readonly adoptedAt: string;
   /** True while the bank is currently bound by the obligation; false once un-adopted/retired/superseded. */
   readonly adopted: boolean;
@@ -64,6 +66,7 @@ export function buildBankObligations(events: Iterable<Event>): BankObligation[] 
         owner: p.owner,
         status: p.status,
         derivesFrom: p.derivesFrom ?? [],
+        ...(p.verbatimSourceText ? { verbatimSourceText: p.verbatimSourceText } : {}),
         adoptedAt: p.adoptedAt,
         adopted: true,
       });

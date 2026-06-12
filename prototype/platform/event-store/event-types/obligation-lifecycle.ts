@@ -45,6 +45,14 @@ export const obligationAdoptedPayloadSchema = z.object({
   status: z.string(),
   /** Source-obligation URN(s) this bank obligation derives from (DERIVES_FROM). */
   derivesFrom: z.array(z.string().min(1)).optional(),
+  /**
+   * Immutable verbatim snapshot at adoption: provision id → quoted source
+   * text. Captured by the tick-to-obligation distill flow so the obligation
+   * record carries the exact text in force when the bank adopted it,
+   * regardless of later source updates (drift is recon's job, not the
+   * record's). Optional — register-era adoptions predate it.
+   */
+  verbatimSourceText: z.record(z.string()).optional(),
   /** ISO date the bank adopted / recognised the obligation. */
   adoptedAt: z.string().min(1),
 });

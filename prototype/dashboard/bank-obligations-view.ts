@@ -23,7 +23,9 @@ import {
 } from "../platform/obligations/knowledge-base";
 import { type BankObligation, loadBankObligations } from "../platform/obligations/projection";
 import { getDb } from "../platform/regulatory/graph/db";
+import { buildProvisionTree } from "../platform/regulatory/graph/provision-tree";
 import { extractSectionIdsFromCitation } from "../platform/regulatory/obligation-linker";
+import { loadStructuredDocBySlug } from "../platform/regulatory/structured-doc-loader";
 
 /** A reference row from the committed obligations seed (the authored origin). */
 export interface ObligationSeedRow {
@@ -498,6 +500,38 @@ export function provisionGroupsForObligation(
 }
 
 /** Full detail for one obligation: reference (seed) + projection state + lifecycle history. */
+/**
+ * Source-text groups for tick-flow obligations (no graph EXPRESSES edges).
+ * Prefers the immutable verbatimSourceText snapshot in the ObligationAdopted
+ * event; falls back to live resolution from the structured doc (`citation`
+ * carries the instrument slug, `derivesFrom` the provision ids) for
+ * adoptions that predate the snapshot field.
+ */
+function tickFlowProvisionGroups(projection: BankObligation): ChapterHeadingGroup[] {
+  // Live tree for headings (and fallback text). `citation` is only a slug for
+  // tick-flow obligations; loadStructuredDocBySlug returns null otherwise.
+  const doc = loadStructuredDocBySlug(projection.citation);
+  const tree = doc
+    ? buildProvisionTree(doc as unknown as Parameters<typeof buildProvisionTree>[0])
+    : null;
+
+  const groups: ChapterHeadingGroup[] = [];
+  for (const provId of projection.derivesFrom) {
+    const node = tree?.get(provId);
+    const snapshot = projection.verbatimSourceText?.[provId];
+    const text = snapshot || node?.text?.trim() || "";
+    if (!text) continue;
+    const label = [node?.number, node?.heading].filter(Boolean).join(" ") || provId;
+    groups.push({
+      heading: label,
+      fromPara: node?.number ?? "",
+      toPara: node?.number ?? "",
+      paragraphs: [{ id: provId, paragraph: node?.number ?? "", text }],
+    });
+  }
+  return groups;
+}
+
 export function getObligationDetail(
   store: EventStore,
   repoRoot: string,
@@ -550,11 +584,25 @@ export function getObligationDetail(
   // BCBS chapters resolve from the clean PDF text (chapter-text.json) with a
   // graph-Provision fallback; SA (`ORG-*`) and other obligations resolve from
   // graph Provision nodes via the EXPRESSES edge — see provisionGroupsForObligation.
-  const { groups: headingGroups, status: sourceTextStatus } = provisionGroupsForObligation(
+  let { groups: headingGroups, status: sourceTextStatus } = provisionGroupsForObligation(
     id,
     repoRoot,
     seed,
   );
+
+  // Tick-flow obligations (regulation-reader distill → adopt) have no graph
+  // EXPRESSES edges or seed rows; their source text comes from the event:
+  //   1. the immutable verbatimSourceText snapshot stored at adoption, or
+  //   2. (pre-snapshot adoptions) live resolution — `citation` carries the
+  //      instrument slug and `derivesFrom` the provision ids, so the current
+  //      structured doc supplies the text.
+  if (headingGroups.length === 0 && projection && projection.derivesFrom.length > 0) {
+    const tickGroups = tickFlowProvisionGroups(projection);
+    if (tickGroups.length > 0) {
+      headingGroups = tickGroups;
+      sourceTextStatus = "extracted";
+    }
+  }
 
   // WS-REGULATORY-LIBRARY-V1 Slice 3 (D-REGULATORY-LIBRARY-V1): resolve
   // verbatimText, goldenSourceHash, and sourcePages from the first EXPRESSES-
