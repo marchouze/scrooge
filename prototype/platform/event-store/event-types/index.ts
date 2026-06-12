@@ -351,6 +351,12 @@ export * from "./odp-umoja-uti";
 //   ifrs-v1 §3.3; valuation-policy-v1 §7; CRR Art 105 / SA-Basel prudent-valuation;
 //   D-TRUSTED-FIGURES-PROGRAM-V1. Author: Rohan (Risk engineer, engineering).
 export * from "./valuation-adjustment";
+// WS-V2-BBAAS S4 — V2 anchor-bank standing-data factories.
+// V2ProductRegistered, V2ProductDeprecated, V2AccountTypeRegistered,
+//   V2RiskAppetiteSet.
+// Authority: D-V2-BBAAS-BLUEPRINT-SYNTHESIS; D-MODEL-BINDING-CONTRACT-V1.
+// Author: Bea (Financial Controller, accounting).
+export * from "./v2-banking";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -491,6 +497,7 @@ import { SECURITY_DEVOPS_EXTENDED_TYPED_EVENT_TYPES } from "./security-devops-ex
 import { SETTLEMENT_TYPED_EVENT_TYPES } from "./settlement";
 import { TRADE_MATURED_EVENT_TYPES } from "./trade-matured";
 import { TRADING_TYPED_EVENT_TYPES } from "./trading";
+import { V2_BANKING_TYPED_EVENT_TYPES } from "./v2-banking";
 import { VALUATION_TYPED_EVENT_TYPES } from "./valuation";
 import { VALUATION_ADJUSTMENT_TYPED_EVENT_TYPES } from "./valuation-adjustment";
 
@@ -681,6 +688,11 @@ export const TYPED_EVENT_TYPES = [
   // stays gross-income-blocked, revenue-start). Authority: D-FX-HELD-DIMS-SEAT-
   // SWEEP; Basel II Annex 9 / BCBS D196 §644; Reg 33.
   ...OPERATIONAL_RISK_TYPED_EVENT_TYPES,
+  // WS-V2-BBAAS S4 — V2 anchor-bank standing-data typed event types.
+  // V2ProductRegistered, V2ProductDeprecated, V2AccountTypeRegistered,
+  //   V2RiskAppetiteSet.
+  // Authority: D-V2-BBAAS-BLUEPRINT-SYNTHESIS; D-MODEL-BINDING-CONTRACT-V1.
+  ...V2_BANKING_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

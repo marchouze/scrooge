@@ -305,9 +305,9 @@ import { SEED_MANAGEMENT_EVENT_TYPES } from "./seed-management";
 import { SETTLEMENT_EVENT_TYPES_REGISTRY } from "./settlement";
 import { SLA_APPROVAL_EVENT_TYPES_REGISTRY } from "./sla-approval";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
+import { V2_BANKING_EVENT_TYPES_REGISTRY } from "./v2-banking";
 import { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
 import { VALUATION_ADJUSTMENT_EVENT_TYPES_REGISTRY } from "./valuation-adjustment";
-import { V2_BANKING_EVENT_TYPES_REGISTRY } from "./v2-banking";
 
 /**
  * Full registry — flat list. Keep RUNTIME / GOVERNANCE / AUDIT split

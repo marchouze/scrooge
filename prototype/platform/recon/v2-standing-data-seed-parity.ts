@@ -106,21 +106,21 @@ export function run(): ReconResult {
       v2ProductCount =
         v2Db
           .query<{ count: number }, [string]>(
-            `SELECT COUNT(*) as count FROM v2_events WHERE type = ?`,
+            "SELECT COUNT(*) as count FROM v2_events WHERE type = ?",
           )
           .get("V2ProductRegistered")?.count ?? 0;
 
       v2CoaCount =
         v2Db
           .query<{ count: number }, [string]>(
-            `SELECT COUNT(*) as count FROM v2_events WHERE type = ?`,
+            "SELECT COUNT(*) as count FROM v2_events WHERE type = ?",
           )
           .get("V2AccountTypeRegistered")?.count ?? 0;
 
       v2RasCount =
         v2Db
           .query<{ count: number }, [string]>(
-            `SELECT COUNT(*) as count FROM v2_events WHERE type = ?`,
+            "SELECT COUNT(*) as count FROM v2_events WHERE type = ?",
           )
           .get("V2RiskAppetiteSet")?.count ?? 0;
     }
@@ -159,15 +159,13 @@ export function run(): ReconResult {
   if (v2ProductCount === 0) {
     violations.push({
       subject: "V2ProductRegistered",
-      message: `No V2ProductRegistered events in v2 anchor store — seed has not been run.`,
+      message: "No V2ProductRegistered events in v2 anchor store — seed has not been run.",
       severity: "warn",
     });
   } else if (v1ProductCount > 0 && v2ProductCount < v1ProductCount) {
     violations.push({
       subject: "V2ProductRegistered",
-      message:
-        `v2 product count (${v2ProductCount}) < v1 active product count (${v1ProductCount}); ` +
-        `run 'bun run seed:v2-anchor-bank-standing-data' to close the gap.`,
+      message: `v2 product count (${v2ProductCount}) < v1 active product count (${v1ProductCount}); run 'bun run seed:v2-anchor-bank-standing-data' to close the gap.`,
       severity: "warn",
     });
   }
@@ -176,7 +174,7 @@ export function run(): ReconResult {
   if (v2CoaCount === 0) {
     violations.push({
       subject: "V2AccountTypeRegistered",
-      message: `No V2AccountTypeRegistered events — CoA seed missing.`,
+      message: "No V2AccountTypeRegistered events — CoA seed missing.",
       severity: "warn",
     });
   }
@@ -186,18 +184,14 @@ export function run(): ReconResult {
   if (v2RasCount < EXPECTED_RAS_LINES) {
     violations.push({
       subject: "V2RiskAppetiteSet",
-      message:
-        `v2 RAS line count (${v2RasCount}) < expected (${EXPECTED_RAS_LINES}); ` +
-        `run 'bun run seed:v2-anchor-bank-standing-data' to close the gap.`,
+      message: `v2 RAS line count (${v2RasCount}) < expected (${EXPECTED_RAS_LINES}); run 'bun run seed:v2-anchor-bank-standing-data' to close the gap.`,
       severity: "warn",
     });
   }
 
   result.violations = violations;
   result.ok = true; // ADVISORY — CI never fails on this gate alone
-  result.asOf =
-    `v2-products=${v2ProductCount} v2-coa=${v2CoaCount} v2-ras=${v2RasCount}` +
-    (v1ProductCount > 0 ? ` v1-active-products=${v1ProductCount}` : "");
+  result.asOf = `v2-products=${v2ProductCount} v2-coa=${v2CoaCount} v2-ras=${v2RasCount}${v1ProductCount > 0 ? ` v1-active-products=${v1ProductCount}` : ""}`;
 
   return result;
 }

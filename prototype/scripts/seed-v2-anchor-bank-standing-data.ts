@@ -34,20 +34,20 @@
 // brief: brief:bea:v2-s4-products-coa-ras-as-typed-v2-events-anchor:2026-06-12
 // Author: Bea (Financial Controller, accounting).
 
+import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
-import { randomUUID } from "node:crypto";
 
 import { Database } from "bun:sqlite";
 
+import { RAS_APPETITE_LINES } from "../platform/risk/ras-appetite-register";
 import type {
   V2AccountTypeRegistered,
   V2ProductDeprecated,
   V2ProductRegistered,
   V2RiskAppetiteSet,
 } from "../v2-core/banking/events";
-import { RAS_APPETITE_LINES } from "../platform/risk/ras-appetite-register";
 
 // ---------------------------------------------------------------------------
 // Resolve the v2 anchor store path — NEVER the v1 store
@@ -104,9 +104,7 @@ const CITATIONS = [
 
 function alreadySeeded(type: string, naturalKey: string): boolean {
   const row = db
-    .query<{ payload: string }, [string]>(
-      `SELECT payload FROM v2_events WHERE type = ? LIMIT 100`,
-    )
+    .query<{ payload: string }, [string]>("SELECT payload FROM v2_events WHERE type = ? LIMIT 100")
     .all(type);
   for (const r of row) {
     try {
@@ -130,22 +128,20 @@ function alreadySeeded(type: string, naturalKey: string): boolean {
 
 function append(type: string, payload: Record<string, unknown>): void {
   const eventId = randomUUID();
-  db
-    .query(
-      `INSERT OR IGNORE INTO v2_events
+  db.query(
+    `INSERT OR IGNORE INTO v2_events
        (event_id, type, as_of, entity, actor_type, actor_id, citations, payload)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .run(
-      eventId,
-      type,
-      AS_OF,
-      ENTITY,
-      ACTOR.type,
-      ACTOR.id,
-      JSON.stringify(CITATIONS),
-      JSON.stringify(payload),
-    );
+  ).run(
+    eventId,
+    type,
+    AS_OF,
+    ENTITY,
+    ACTOR.type,
+    ACTOR.id,
+    JSON.stringify(CITATIONS),
+    JSON.stringify(payload),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -232,10 +228,7 @@ const PRODUCTS: V2ProductRegistered[] = [
     legalEntityIds: ["LE-ZA-HOZ-BANK"],
     jurisdictions: ["ZA"],
     franchiseScope: "treasury-own-book",
-    citations: [
-      "D-V2-BBAAS-BLUEPRINT-SYNTHESIS",
-      "D-MARKETS-SCHEMA-FOUNDATION",
-    ],
+    citations: ["D-V2-BBAAS-BLUEPRINT-SYNTHESIS", "D-MARKETS-SCHEMA-FOUNDATION"],
   },
   {
     kind: "V2ProductRegistered",
@@ -248,10 +241,7 @@ const PRODUCTS: V2ProductRegistered[] = [
     legalEntityIds: ["LE-ZA-HOZ-BANK"],
     jurisdictions: ["ZA"],
     franchiseScope: "treasury-own-book",
-    citations: [
-      "D-V2-BBAAS-BLUEPRINT-SYNTHESIS",
-      "D-MARKETS-SCHEMA-FOUNDATION",
-    ],
+    citations: ["D-V2-BBAAS-BLUEPRINT-SYNTHESIS", "D-MARKETS-SCHEMA-FOUNDATION"],
   },
   {
     kind: "V2ProductRegistered",
@@ -264,10 +254,7 @@ const PRODUCTS: V2ProductRegistered[] = [
     legalEntityIds: ["LE-ZA-HOZ-BANK"],
     jurisdictions: ["ZA"],
     franchiseScope: "treasury-own-book",
-    citations: [
-      "D-V2-BBAAS-BLUEPRINT-SYNTHESIS",
-      "D-MARKETS-SCHEMA-FOUNDATION",
-    ],
+    citations: ["D-V2-BBAAS-BLUEPRINT-SYNTHESIS", "D-MARKETS-SCHEMA-FOUNDATION"],
   },
   {
     kind: "V2ProductRegistered",
@@ -280,10 +267,7 @@ const PRODUCTS: V2ProductRegistered[] = [
     legalEntityIds: ["LE-ZA-HOZ-BANK"],
     jurisdictions: ["ZA"],
     franchiseScope: "treasury-own-book",
-    citations: [
-      "D-V2-BBAAS-BLUEPRINT-SYNTHESIS",
-      "D-MARKETS-SCHEMA-FOUNDATION",
-    ],
+    citations: ["D-V2-BBAAS-BLUEPRINT-SYNTHESIS", "D-MARKETS-SCHEMA-FOUNDATION"],
   },
 ];
 
@@ -294,10 +278,7 @@ const DEPRECATED_PRODUCTS: V2ProductDeprecated[] = [
     productId: "v2:prd:bank:fx:fx-spot-zar-usd",
     reason: "superseded",
     supersededBy: "v2:prd:bank:fx:otc-vanilla",
-    citations: [
-      "D-V2-BBAAS-BLUEPRINT-SYNTHESIS",
-      "D-FX-OTC-NPA-SCOPE-EXPANSION",
-    ],
+    citations: ["D-V2-BBAAS-BLUEPRINT-SYNTHESIS", "D-FX-OTC-NPA-SCOPE-EXPANSION"],
   },
 ];
 
@@ -316,10 +297,7 @@ const FX_SPOT_ZAR_USD_DEPRECATED: V2ProductRegistered = {
   legalEntityIds: ["LE-ZA-HOZ-BANK"],
   jurisdictions: ["ZA"],
   franchiseScope: "institutional",
-  citations: [
-    "D-V2-BBAAS-BLUEPRINT-SYNTHESIS",
-    "D-FX-OTC-NPA-SCOPE-EXPANSION",
-  ],
+  citations: ["D-V2-BBAAS-BLUEPRINT-SYNTHESIS", "D-FX-OTC-NPA-SCOPE-EXPANSION"],
 };
 
 let productsSeeded = 0;
@@ -345,7 +323,7 @@ for (const d of DEPRECATED_PRODUCTS) {
   // Check by both productId and kind=V2ProductDeprecated
   const existing = db
     .query<{ payload: string }, [string, string]>(
-      `SELECT payload FROM v2_events WHERE type = ? AND payload LIKE ? LIMIT 1`,
+      "SELECT payload FROM v2_events WHERE type = ? AND payload LIKE ? LIMIT 1",
     )
     .all("V2ProductDeprecated", `%"${d.productId}"%`);
   if (existing.length > 0) {
@@ -569,12 +547,7 @@ const COA_TYPES: V2AccountTypeRegistered[] = [
     category: "liability",
     normalSide: "credit",
     currency: "ZAR",
-    v1AccountIds: [
-      "ACC-6100-001",
-      "ACC-6100-002",
-      "ACC-6100-003",
-      "ACC-6100-004",
-    ],
+    v1AccountIds: ["ACC-6100-001", "ACC-6100-002", "ACC-6100-003", "ACC-6100-004"],
     filTypeScopes: ["fil:type:funding:deposit.money-market:*"],
     citations: ["D-V2-BBAAS-BLUEPRINT-SYNTHESIS", "D-TREASURY-GAPS-WAVE1"],
   },
@@ -599,10 +572,7 @@ const COA_TYPES: V2AccountTypeRegistered[] = [
     normalSide: "debit",
     v1AccountIds: ["ACC-9000-001", "ACC-9000-002"],
     filTypeScopes: ["fil:type:fx:*"],
-    citations: [
-      "D-V2-BBAAS-BLUEPRINT-SYNTHESIS",
-      "D-VAR-EXPOSURE-INCLUDES-STANDING-NOP",
-    ],
+    citations: ["D-V2-BBAAS-BLUEPRINT-SYNTHESIS", "D-VAR-EXPOSURE-INCLUDES-STANDING-NOP"],
   },
 ];
 
@@ -673,10 +643,12 @@ console.log(`\nRAS lines: ${rasSeeded} seeded, ${rasSkipped} skipped.`);
 
 const totalEvents = db
   .query<{ count: number }, []>("SELECT COUNT(*) as count FROM v2_events")
-  .get()!.count;
+  .get()?.count;
 
-console.log(`\n=== Seed complete ===`);
-console.log(`  Products:    ${productsSeeded + deprecationsSeeded} events (${PRODUCTS.length + 1} products + 1 deprecation)`);
+console.log("\n=== Seed complete ===");
+console.log(
+  `  Products:    ${productsSeeded + deprecationsSeeded} events (${PRODUCTS.length + 1} products + 1 deprecation)`,
+);
 console.log(`  CoA types:   ${coaSeeded} events (${COA_TYPES.length} account types)`);
 console.log(`  RAS lines:   ${rasSeeded} events (${RAS_APPETITE_LINES.length} appetite lines)`);
 console.log(`  Store total: ${totalEvents} v2 events`);
