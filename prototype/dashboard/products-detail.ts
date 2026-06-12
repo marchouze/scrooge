@@ -19,13 +19,13 @@ import { resolve as resolvePath } from "node:path";
 import type { EventStore } from "../platform/event-store/store";
 import type { Product } from "../platform/markets/products";
 
+import { normaliseDimensionKey } from "../platform/markets/products/dimension-key-alias";
 import {
   type DimensionPolicyChain,
   type ProductDeclaredFunction,
   resolveDimensionChain,
   resolveProductChain,
 } from "./products-policy-chain";
-import { normaliseDimensionKey } from "../platform/markets/products/dimension-key-alias";
 
 import { NPA_DIMENSIONS, type NpaDimension, resolveProduct } from "./products-view";
 

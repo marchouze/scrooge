@@ -28,6 +28,7 @@ import {
 } from "../platform/event-store/event-types/product";
 import type { EventStore } from "../platform/event-store/store";
 import type { Product } from "../platform/markets/products";
+import { normaliseDimensionKey } from "../platform/markets/products/dimension-key-alias";
 import {
   M1_JSE_EQUITY_CASH_FIXTURE,
   M2_SAGB_FIXED_COUPON_FIXTURE,
@@ -38,7 +39,6 @@ import {
   M7_FUNDING_LINE_FIXTURE,
   M8_IBL_FIXTURE,
 } from "../platform/markets/products/fixtures";
-import { normaliseDimensionKey } from "../platform/markets/products/dimension-key-alias";
 import { validateNpaGate } from "../platform/markets/products/npa-gate";
 import {
   ALL_NPA_DIMENSION_KEYS,
@@ -205,7 +205,11 @@ export function buildProductListView(
         approvals.set(productId, { status: "approved", asOf: ev.as_of });
       } else {
         const reason = typeof p.reason === "string" ? p.reason : undefined;
-        approvals.set(productId, { status: "withheld", asOf: ev.as_of, reason });
+        approvals.set(productId, {
+          status: "withheld",
+          asOf: ev.as_of,
+          ...(reason !== undefined ? { reason } : {}),
+        });
       }
       continue;
     }
