@@ -38,6 +38,7 @@ import {
   M7_FUNDING_LINE_FIXTURE,
   M8_IBL_FIXTURE,
 } from "../platform/markets/products/fixtures";
+import { normaliseDimensionKey } from "../platform/markets/products/dimension-key-alias";
 import { validateNpaGate } from "../platform/markets/products/npa-gate";
 import {
   ALL_NPA_DIMENSION_KEYS,
@@ -45,22 +46,32 @@ import {
 } from "../platform/projections/products/product-register";
 
 // ---------------------------------------------------------------------------
-// The 14 NPA dimensions — source of truth: NPA Policy v1.0 §5.
+// The 14 NPA dimensions — CANONICAL SHORT keys, identical to the
+// `ProductDimensionAttested` event-of-record and `ALL_NPA_DIMENSION_KEYS`
+// (the product-register projection, sourced from `PRODUCT_DIMENSION_VALUES`
+// in semantic.ts). NPA Policy v1.0 §5.
+//
+// History: this set previously carried LONG display keys (e.g.
+// `liquidity-funding`, `conduct-suitability`), which silently dropped the
+// short-key attestation events (`liquidity-risk`, `conduct`, ...) at the fold
+// below. The keys are now the canonical short keys; every event dimension is
+// normalised via `normaliseDimensionKey` before it is matched here, so a
+// legacy long-key payload would also resolve correctly.
 // ---------------------------------------------------------------------------
 
 export const NPA_DIMENSIONS = [
   "market-risk",
   "credit-risk",
-  "liquidity-funding",
+  "liquidity-risk",
   "operational-risk",
   "operational-readiness",
   "accounting",
   "capital",
-  "conduct-suitability",
-  "aml-sanctions-pep",
+  "conduct",
+  "aml",
   "model-risk",
-  "legal-documentation",
-  "information-security",
+  "legal",
+  "infosec",
   "privacy",
   "tax",
 ] as const;
@@ -201,7 +212,10 @@ export function buildProductListView(
     if (ev.type === "ProductDimensionAttested") {
       const p = ev.payload as Record<string, unknown>;
       const productId = String(p.productId ?? "");
-      const dimension = String(p.dimension ?? "") as NpaDimension;
+      // Normalise the event's dimension key to the canonical SHORT key before
+      // matching — short-key events (`conduct`, `legal`, ...) and any legacy
+      // long-key payloads both resolve here. See dimension-key-alias.ts.
+      const dimension = normaliseDimensionKey(String(p.dimension ?? "")) as NpaDimension;
       const result = String(p.result ?? "") as DimensionStatus;
       if (!productId || !NPA_DIMENSIONS.includes(dimension)) continue;
       let perProduct = dimensionFolds.get(productId);
