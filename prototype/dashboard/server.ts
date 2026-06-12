@@ -180,6 +180,7 @@ import {
   getLeafDescendants,
   resolveLeafAdoptionState,
 } from "../platform/regulatory/graph/provision-tree";
+import { loadStructuredDocBySlug } from "../platform/regulatory/structured-doc-loader";
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 import { buildDefaultHub } from "../platform/simulation/hub/register-defaults";
 import { settleMaturedTrades } from "../platform/simulation/settle-matured-trades";
@@ -1938,27 +1939,16 @@ async function handleObligationUnadopt(req: Request): Promise<Response> {
 // Provision-scope adoption helpers
 // ---------------------------------------------------------------------------
 
-/** Load and parse a structured regulation JSON for a slug, or return null. */
+/**
+ * Load the structured doc for a slug via the shared slug-resolving, enriching
+ * loader (platform/regulatory/structured-doc-loader.ts). Resolves by the
+ * JSON's internal `slug` field (BCBS files are named by bare standard, e.g.
+ * mar-structured.json → slug bcbs-mar), fills BCBS section text from
+ * chapter-text.json, and assigns the same deterministic provision ids the
+ * reader view renders — so client scopeIds always resolve here.
+ */
 function loadStructuredDocForSlug(slug: string): RegStructuredDocMinimal | null {
-  const regsDir = join(REPO_ROOT, "Regulations");
-  if (!existsSync(regsDir)) return null;
-  let dirs: string[];
-  try {
-    dirs = readdirSync(regsDir, { encoding: "utf-8" });
-  } catch {
-    return null;
-  }
-  for (const sub of dirs) {
-    const candidate = join(regsDir, sub, "source-docs", `${slug}-structured.json`);
-    if (existsSync(candidate)) {
-      try {
-        return JSON.parse(readFileSync(candidate, "utf-8")) as RegStructuredDocMinimal;
-      } catch {
-        return null;
-      }
-    }
-  }
-  return null;
+  return loadStructuredDocBySlug(slug, REPO_ROOT) as RegStructuredDocMinimal | null;
 }
 
 /**
