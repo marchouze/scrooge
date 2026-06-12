@@ -1606,6 +1606,13 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
     citations: ["D-V2-BBAAS-W1-DECISION-DISTILLATION"],
   },
   {
+    decisionId: "D-V2-BBAAS-W4-W7-DISPATCH",
+    class: "foundational",
+    rationale:
+      "Dispatches the final four analysis workstreams (model library, platform research, commercial, vendor perimeter), completing the chartered backbone-analysis map. Meta-decision about the backbone-as-product itself.",
+    citations: ["D-V2-BBAAS-W1-DECISION-DISTILLATION"],
+  },
+  {
     decisionId: "D-V2-BBAAS-W8-AGENT-LEARNING",
     class: "foundational",
     rationale:
@@ -1627,10 +1634,10 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
 ];
 
 /** Snapshot count of approved decisionIds covered at authoring time. */
-export const DECISION_CLASSIFICATION_COUNT = 259;
+export const DECISION_CLASSIFICATION_COUNT = 260;
 
 export const DECISION_CLASSIFICATION_COUNTS = {
-  foundational: 93,
+  foundational: 94,
   directional: 141,
   obsolete: 25,
 } as const;
