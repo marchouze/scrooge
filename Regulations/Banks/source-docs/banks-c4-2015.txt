@@ -1,11 +1,171 @@
+=== Preamble ===
 --- Page 1 ---
-P O Box 427 Pretoria 0001 South Africa 370 Helen Joseph Street Pretoria 0002 +27 12 313 3911 / 0861 12 7272 www.resbank.co.za Ref.: 15/8/1/2 C4/2015 To: All banks, branches of foreign institutions, controlling companies and auditors of banks or controlling companies Circular issued in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990) Matters related to banks' compliance with the prescribed requirements related to the liquidity coverage ratio (LCR) and high-quality liquid assets (HQLA)
-
+{:
+South African Reserve Bank
+From the Office of
+the Registrar of Banks
+Ref: 15/8/1
+C4/2015
+2015-04-10
+To banks, branches of foreign institutions, controlling companies, eligible
+institutions and auditors of banks or controlling companies
+Circular 4/2015 issued in terms of section 6(4) of the Banks Act 94 of 1990
+Matters related to banks’ compliance with the prescribed requirements related to
+the liquidity coverage ratio (LCR) and high-quality liquid assets (HQLA)
+Executive summary
+On 1 October 2014, the Office of the Registrar of Banks (this Office) issued
+Directive 6/2014, informing all relevant persons, including banks, branches of
+foreign institutions and controlling companies (hereinafter collectively referred to
+as banks), of the commencement of the formal process to amend the regulatory
+and supervisory framework in accordance with the latest internationally agreed
+regulatory and supervisory standards.
+On 18 March 2015, this Office issued a proposed directive to all relevant persons
+inviting comments in respect of the proposed amended Regulations relating to
+Banks (the Regulations) that incorporated the requirements of the revised
+Basel Ill LCR framework issued by the Basel Committee on Banking Supervision
+(BCBS).
+N Subsequently, on 9 April 2015, this Office issued Directive 6/2015, informing all
+relevant persons that this Office has duly considered the relevant comments that
+have been received in respect of the proposed amended Regulations and that the
+proposed amended Regulations have subsequently been considered and
+approved by the Minister of Finance.
+In the meantime, it has come to the attention of this Office that uncertainty exists
+regarding the application and calculation of the limits specified in the Regulations
+in respect of a bank’s investments in HQLA.
+This Banks Act Circular 4/2015 seeks to remove any uncertainty that may exist
+regarding the correct application and calculation of the limits specified in the
+Regulations in respect of a bank’s investments in HQLA.
 --- Page 2 ---
-1. Introduction 1.1 This circular is issued by the Prudential Authority in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Matters related to banks' compliance with the prescribed requirements related to the liquidity coverage ratio (LCR) and high-quality liquid assets (HQLA). 1.3 This circular remains effective as confirmed in Banks Act Circular 1 of the relevant year.
+2
 
+=== Introduction ===
+1.1 On 1 October 2014, this Office issued Directive 6/2014, informing all relevant
+persons of the commencement of the formal process to amend the regulatory
+and supervisory framework in accordance with the latest internationally agreed
+regulatory and supervisory standards.
+1.2 On 18 March 2015, this Office issued a proposed directive to all relevant
+persons inviting comments in respect of the proposed amended Regulations.
+1.3 Subsequently, on 9 April 2015, this Office issued Directive 6/2015, informing
+all relevant persons that the requirements of the revised Basel lll LCR
+framework issued by the BCBS, together with the relevant comments that
+have been received in respect of the proposed amended Regulations, have
+been incorporated into the proposed amended Regulations that have
+subsequently been considered and approved by the Minister of Finance.
+1.4 In the meantime, it has come to the attention of this Office that uncertainty
+exists regarding the correct application and calculation of the limits specified in
+the Regulations in respect of a bank's investments in HQLA.
+
+=== Minimum requirements relating to the application and calculation of ===
+limits specified in the Regulations in respect of banks’ investments in
+HQLA
+21 Regulation 26(12)(a)(viii) of the Regulations states that-
+2.1.1 a bank has to manage its business in such a manner that a least sixty per cent
+of the bank’s portfolio of qualifying HQLA consists of level one HQLA, that is,
+the bank's portfolio of qualifying HQLA may consist of between sixty and one
+hundred per cent of level one HQLA, but the aggregate amount of level two
+HQLA shall in no case exceed forty per cent of the bank's aggregate amount
+of level one and level two HQLA; and
+21.2 the aforesaid limits have to be adhered to and maintained after all relevant
+haircuts have been applied.
+2.2 Furthermore, regulation 26(12)(a)(x) of the Regulations requires that a bank
+has to have in place sufficiently robust policies, processes and procedures to
+ensure that-
+2.21 the bank manages all relevant mismatches within the said 30-day stress
+period;
+222 the bank has sufficient level one and level two HQLA available to meet any
+potential cash flow mismatches throughout the said 30-day stress period; and
+223 the assets that the bank includes in each relevant category of HQLA are only
+those assets that the bank is holding on the first day of the relevant 30-day
+stress period, irrespective of the residual maturity of the said assets.
 --- Page 3 ---
-2. Application 2.1 This circular applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.
-
+3
+23 In addition, regulation 26(12)(b)(ii) of the Regulations states that-
+2.31 a bank may include in its level two HQLA, the assets or instruments specified
+or envisaged in sub-regulation (12)(b)(iii), which assets or instruments are
+referred to as the bank's level 2B portfolio of HQLA, provided that such
+level 2B HQLA or instruments-
+2.3.1.1 shall not comprise more than fifteen per cent of the bank's total amount of
+HQLA,;
+2.3.1.2 shall be included within the bank's overall forty per cent limit relating to the
+aggregate amount of level two HQLA envisaged in subregulation (12)(a)(viii);
+and
+232 the aforesaid overall forty per cent limit related to level two HQLA and the
+fifteen per cent limit in respect of the level 2B HQLA shall be determined after
+the application of any relevant required or specified haircut, and after taking
+into account any relevant unwind of short-term securities financing
+transactions and collateral swap transactions maturing within 30 calendar days
+that involve the exchange of HQLA.
+2.4 The purpose of this Banks Act Circular is to ensure the correct application and
+calculation of the specified limits imposed on level two HQLA, particularly with
+regard to short-term securities financing transactions.
+2.5 Essentially the limit on the adjusted amount of level two HQLA in the stock of
+HQLA is equal to two-thirds of the adjusted amount of level one HQLA after
+the application of any relevant haircuts. However, the bank's calculation of the
+forty per cent limit on level two HQLA has to also take into account any
+relevant reduction in eligible level 2B HQLA relating to the relevant specified
+limit of fifteen per cent on level 2B HOLA.
+2.6 Furthermore, the banks calculation of the fifteen per cent limit on level
+2B HQLA has to take into account the impact on the stock of HQLA of the
+amounts of HQLA assets arising from secured funding, secured lending and
+collateral swap transactions maturing within the relevant specified 30 calendar
+days.
+2.7 Based on the aforesaid, the maximum amount of adjusted level 2B HQLA in
+the stock of HQLA is equal to 15/85 of the sum of the adjusted amounts of
+level one HQLA and level two HQLA, or, in cases where the forty per cent limit
+is also binding, up to a maximum of 1/4 of the adjusted amount of level one
+HQLA, both after the relevant haircuts have been applied.
+2.8 The adjusted amount-
+2.81 of level one HQLA means the amount of level one HQLA that would result
+after unwinding those short-term secured funding, secured lending and
+collateral swap transactions involving the exchange of any HQLA for any level
+one HQLA (including cash) that meet, or would meet if held unencumbered,
+the relevant operational requirements for HQLA specified in regulations
+26(12)(a) and 26(12)(b) of the Regulations; and
 --- Page 4 ---
-3. Acknowledgement of receipt 3.1 Kindly ensure that a copy of this circular is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.
+4
+2.82 of level 2A HQLA means the amount of level 2A HQLA that would result after
+unwinding those short-term secured funding, secured lending and collateral
+swap transactions involving the exchange of any HQLA for any level 2A HQLA
+that meet, or would meet if held unencumbered, the relevant operational
+requirements for HQLA specified in regulations 26(12)(a) and 26(12)(b) of the
+Regulations; and
+2.83 of level 2B HQLA means the amount of level 2B HQLA that would result after
+unwinding those short-term secured funding, secured lending and collateral
+swap transactions involving the exchange of any HQLA for any level 2B HQLA
+that meet, or would meet if held unencumbered, the relevant operational
+requirements for HQLA specified in regulations 26(12)(a) and 26(12)(b) of the
+Regulations.
+29 In all relevant cases-
+2.91 short-term transactions mean transactions with a maturity date up to and
+including 30 calendar days; and
+29.2 the bank has to apply any relevant specified haircut prior to the calculation of
+the respective specified limits.
+2.10 Based on the aforesaid, the formula for the calculation of a bank's stock of
+HQLA may be expressed as:
+2.10.1 stock of HQLA = level one HQLA plus level 2A HQLA plus level 2B HQLA
+} minus adjustment for fifteen per cent limit minus adjustment for forty per cent
+limit,
+where:
+adjustment for fifteen per cent limit = max(adjusted level 2B HQLA minus
+15/85* (adjusted level one HQLA plus adjusted level 2A HQLA), adjusted level
+2B HQLA minus 15/60*adjusted level one HQLA, 0);
+adjustment for forty per cent limit = max((adjusted level 2A HQLA plus
+adjusted level 2B HQLA minus adjustment for fifteen per cent limit) minus
+2/3*adjusted level one HQLA, 0);
+or
+2.10.2 stock of HQLA = level one HQLA plus level 2A HQLA plus level 2B HQLA
+minus max((adjusted level 2A HQLA plus adjusted level 2B HQLA) minus
+2/3*adjusted level one HQLA, adjusted level 2B HQLA minus 15/85*(adjusted
+level one HQLA plus adjusted level 2A HQLA), 0).
+--- Page 5 ---
+5
+
+=== Acknowledgement of receipt ===
+3.1 Two additional copies of this circular are enclosed for the use of your
+institution’s independent auditors. The attached acknowledgement of receipt,
+duly completed and signed by both the chief executive officer and the said
+auditors, must be returned to this Office at the earliest convenience of the
+aforementioned signatories.
+N hiya
+Registrar of Banks
+The previous circular issued was Banks Act Circular 3/2015, dated 26 March 2015.

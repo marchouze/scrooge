@@ -28,20 +28,17 @@
 // checks emit warn (advisory), never fail -- they surface technical debt for the
 // next re-extraction pass.
 //
-// GAP-PA-SOURCE-EXTRACT-THIN-SOURCE: 31 instruments have no resolvable public PDF
+// GAP-PA-SOURCE-EXTRACT-THIN-SOURCE: 9 instruments have no resolvable public PDF
 // URL; the only text available is a synthetic boilerplate skeleton. These are
 // allowlisted in POOR_QUALITY_ALLOWLIST (reason: "no-public-url"). A future OCR
 // pass or PA URL discovery should target these slugs:
-//   banks-c2-2014, banks-c2-2020, banks-c3-2013, banks-c3-2025, banks-c4-2013,
-//   banks-c4-2015, banks-c5-2013, banks-c5-2015, banks-c5-2016, banks-c7-2014,
-//   banks-c7-2016, banks-c8-2015, banks-d1-2008, banks-d1-2012, banks-d1-2017,
-//   banks-d1-2024, banks-d1-2026, banks-d10-2013, banks-d13-2013, banks-d2-2008,
-//   banks-d2-2011, banks-d2-2017, banks-d3-2008, banks-d3-2018, banks-d4-2008,
-//   banks-d4-2025, banks-d6-2008, banks-d6-2025, banks-d7-2025, banks-d8-2025,
-//   banks-d9-2022.
-// Until OCR / URL discovery resolves these, do NOT attempt to improve their extracts
-// via heuristics -- the underlying PDF simply has no embedded text layer or is not
-// publicly accessible. Authority: GAP-PA-SOURCE-OCR (identified 2026-06-11).
+//   banks-d1-2008, banks-d1-2012, banks-d2-2008, banks-d2-2011, banks-d3-2008,
+//   banks-d4-2008, banks-d6-2008, banks-d10-2013, banks-d13-2013.
+// The remaining 22 slugs previously allowlisted here were resolved on 2026-06-12
+// when their PDFs were confirmed live on the SARB DAM and re-extracted.
+// Until OCR / URL discovery resolves the remaining 9, do NOT attempt to improve
+// their extracts via heuristics -- the underlying PDF simply has no embedded text
+// layer or is not publicly accessible. Authority: GAP-PA-SOURCE-OCR (2026-06-11).
 //
 // Input: walks `Regulations/{Banks,SARB-PA}/source-docs/*-structured.json`
 // relative to the monorepo root. No network, no LLM.
@@ -98,37 +95,16 @@ export interface AllowlistEntry {
  */
 export const POOR_QUALITY_ALLOWLIST: Record<string, AllowlistEntry> = {
   // --- no resolvable public URL (override stale + discovery exhausted) -------
-  "banks-c2-2014": { reason: "no-public-url", note: "interpretation circular; no public PDF" },
-  "banks-c2-2020": { reason: "no-public-url", note: "no public PDF" },
-  "banks-c3-2013": { reason: "no-public-url", note: "no public PDF" },
-  "banks-c3-2025": { reason: "no-public-url", note: "override URL 404; not yet on dam path" },
-  "banks-c4-2013": { reason: "no-public-url", note: "no public PDF" },
-  "banks-c4-2015": { reason: "no-public-url", note: "no public PDF" },
-  "banks-c5-2013": { reason: "no-public-url", note: "no public PDF" },
-  "banks-c5-2015": { reason: "no-public-url", note: "no public PDF" },
-  "banks-c5-2016": { reason: "no-public-url", note: "no public PDF" },
-  "banks-c7-2014": { reason: "no-public-url", note: "no public PDF" },
-  "banks-c7-2016": { reason: "no-public-url", note: "no public PDF" },
-  "banks-c8-2015": { reason: "no-public-url", note: "no public PDF" },
+  // Pre-2014 / superseded instruments with no publicly accessible PDF.
   "banks-d1-2008": { reason: "no-public-url", note: "pre-2014; superseded/unpublished" },
   "banks-d1-2012": { reason: "no-public-url", note: "pre-2014; superseded/unpublished" },
-  "banks-d1-2017": { reason: "no-public-url", note: "no public PDF" },
-  "banks-d1-2024": { reason: "no-public-url", note: "no resolving PDF URL" },
-  "banks-d1-2026": { reason: "no-public-url", note: "no resolving PDF URL" },
   "banks-d10-2013": { reason: "no-public-url", note: "pre-2014; superseded/unpublished" },
   "banks-d13-2013": { reason: "no-public-url", note: "pre-2014; superseded/unpublished" },
   "banks-d2-2008": { reason: "no-public-url", note: "pre-2014; superseded/unpublished" },
   "banks-d2-2011": { reason: "no-public-url", note: "pre-2014; superseded/unpublished" },
-  "banks-d2-2017": { reason: "no-public-url", note: "no public PDF" },
   "banks-d3-2008": { reason: "no-public-url", note: "pre-2014; superseded/unpublished" },
-  "banks-d3-2018": { reason: "no-public-url", note: "no public PDF" },
   "banks-d4-2008": { reason: "no-public-url", note: "pre-2014; superseded/unpublished" },
-  "banks-d4-2025": { reason: "no-public-url", note: "no resolving PDF URL" },
   "banks-d6-2008": { reason: "no-public-url", note: "pre-2014; superseded/unpublished" },
-  "banks-d6-2025": { reason: "no-public-url", note: "no resolving PDF URL" },
-  "banks-d7-2025": { reason: "no-public-url", note: "no resolving PDF URL" },
-  "banks-d8-2025": { reason: "no-public-url", note: "no resolving PDF URL" },
-  "banks-d9-2022": { reason: "no-public-url", note: "no public PDF" },
   // --- genuinely short -------------------------------------------------------
   "banks-c3-2020": { reason: "genuinely-short", note: "one-page disclosure circular (~970 chars)" },
 };

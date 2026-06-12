@@ -25,67 +25,28 @@
       "title": "Full Text",
       "sections": [
         {
+          "id": "s-banks-d1-2024-0",
+          "number": "0",
+          "heading": "Preamble",
+          "text": "Ref.: 15/8/1/3\nD1/2024\nTo: All banks, branches of foreign institutions, controlling companies, eligible\ninstitutions and auditors of banks or controlling companies\nDirective issued in terms of section 6(6) of the Banks Act 94 of 1990\nPillar 3 disclosure requirements for interest rate risk in the banking book (IRRBB)\nExecutive summary\nIn terms of regulation 43(1) of the Regulations relating to Banks (Regulations), ‘a bank\nshall disclose in its annual financial statements and other disclosures to the public,\nreliable, relevant and timely qualitative and quantitative information that enables\nusers of that information, among other things, to make an accurate assessment of\nthe bank’s financial condition, including, but not limited to, its capital adequacy\nposition, its liquidity position, financial performance, leverage ratio, ownership,\ngovernance, business activities, risk profile and risk management practices’.\nThe Pillar 3 disclosure requirements aim to promote market discipline by providing\nusers with key information relating to, for example, a bank’s regulatory capital and\nrisk exposures. A key goal of Pillar 3 disclosure requirements is to improve\ntransparency and confidence in a bank’s exposure to risk as well as the overall\nadequacy of its regulatory capital.\nThe purpose of this Directive is to direct banks, controlling companies and branches\nof foreign institutions (hereinafter collectively referred to as ‘banks’) to comply with\nspecified Pillar 3 disclosure requirements related to IRRBB."
+        },
+        {
           "id": "s-banks-d1-2024-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Pillar 3 disclosure requirements for interest rate risk in the banking book. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-1-1",
-              "number": "1.1",
-              "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
-            },
-            {
-              "id": "sub-1-2",
-              "number": "1.2",
-              "text": "Pillar 3 disclosure requirements for interest rate risk in the banking book.",
-              "verbatim": true
-            },
-            {
-              "id": "sub-1-3",
-              "number": "1.3",
-              "text": "This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-              "verbatim": true
-            }
-          ]
+          "text": "1.1         The Basel Committee on Banking Supervision (BCBS) has consolidated the\ndisclosure requirements in the Disclosure Requirements (DIS)-themed chapter of\nthe Basel framework. The disclosure requirements related to IRRBB are contained\nin DIS 70.\n1.2         This Directive sets out the specific disclosure requirements related to IRRBB and\nmust be read with D1/2019 and regulation 43(1) of the Regulations for the general\nprinciples related to Pillar 3 disclosure requirements.\n1"
         },
         {
           "id": "s-banks-d1-2024-2",
           "number": "2",
-          "heading": "Application",
-          "text": "2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-2-1",
-              "number": "2.1",
-              "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
-            },
-            {
-              "id": "sub-2-2",
-              "number": "2.2",
-              "text": "Institutions are required to ensure compliance with the requirements set out herein.",
-              "verbatim": true
-            }
-          ]
+          "heading": "Directive",
+          "text": "In accordance with the provisions of section 6(6) of the Banks Act 94 of 1990, banks\nare hereby directed to adhere to the following requirements in disclosing the\ninformation related to IRRBB to the public:\n2.1        The Pillar 3 disclosure requirements related to IRRBB, attached hereto as Annexure\nA, shall as a minimum apply to the banks reporting at solo level until such time that\nthe Prudential Authority (PA) directs otherwise. These disclosure requirements are\napplicable to branches of foreign institutions conducting the business of a bank in\nSouth Africa, unless the PA has directed otherwise.\n2.2        With regard to templates that require the disclosure of data points for current and\nprevious reporting periods, the disclosure of data points for previous periods is not\nrequired when metrics for new standards are reported on for the first time.\n2.3        Banks shall disclose the relevant required information set out in table IRRBBA\n(‘IRRBB risk management objectives and policies’) as well as template IRRBB1\n(‘quantitative information on IRRBB’) according to the formats and frequencies\nspecified in DIS 70, hereby attached as Annexure A. The data points in table\nIRRBB1 shall be disclosed on a behavioural basis. Should a bank not apply\nbehaviouralisation, it shall report on a contractual basis.\n2.4        As stated in paragraph 2.2.1.1 of Directive 2 of 2023 (D2/2023), banks must disclose\nthe relevant required information related to IRRBB for the years ending on or after\n1 January 2024."
         },
         {
           "id": "s-banks-d1-2024-3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
-          "text": "3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-3-1",
-              "number": "3.1",
-              "text": "Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-              "verbatim": true
-            }
-          ]
+          "text": "3.1        Kindly ensure that a copy of this Directive is made available to your institution’s\nexternal auditors. The attached acknowledgement of receipt duly completed and\nsigned by both the chief executive officer of the institution and the said auditors\nshould be returned to the PA at the earliest convenience of the aforementioned\nsignatories.\nFundi Tshazibana\nChief Executive Officer\nDate: 05/03/24\nEncl.: 1\nThe previous directive issued was Directive 8/2023 dated 28 September 2023.\n2"
         }
       ]
     }

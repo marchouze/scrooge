@@ -1,11 +1,106 @@
+=== Preamble ===
 --- Page 1 ---
-P O Box 427 Pretoria 0001 South Africa 370 Helen Joseph Street Pretoria 0002 +27 12 313 3911 / 0861 12 7272 www.resbank.co.za Ref.: 15/8/1/2 C5/2013 To: All banks, branches of foreign institutions, controlling companies and auditors of banks or controlling companies Circular issued in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990) Reporting of items subject to thresholds that do not constitute a full deduction from qualifying capital and reserve funds
+5
+S| ES
+South African Reserve Bank
+From the Office of
+the Registrar of Banks
+C5/2013
+2013-06-25
+To: All banks, controlling companies, branches of foreign institutions, eligible
+institutions and auditors of banks or controlling companies
+Circular 5/2013 issued in terms of section 6(4) of the Banks Act, 1990
+Reporting of items subject to thresholds that do not constitute a full deduction
+from qualifying capital and reserve funds
+Executive summary
+The Office of the Registrar of Banks (this Office) hereby informs all relevant
+persons of the prescribed reporting of risk-weighted exposures arising from
+threshold items not deducted in full from qualifying capital and reserve funds in
+accordance with regulations 23(6)(j), 23(11)(q), 38(5)(a)(i)(L), 38(5)(a)(i)(M) and
+38(5)(b) of the Regulations relating to Banks (the Regulations).
 
+=== Introduction ===
+1.1 In light of the Regulations that came into effect on 1 January 2013 and the recently
+issued Circular 4 of 2013, it has come to this Office’s attention that uncertainty
+exists as to the appropriate statutory return in which to report risk-weighted
+exposures arising from items that are subject to thresholds that are not fully
+deducted from qualifying capital and reserve funds as specified in regulations
+23(6)(j), 23(11)(q), 38(5)(a)(i)(L), 38(5)(a)(i)(M) and 38(5)(b) of the Regulations.
+This circular accordingly provides clarity with regard to the appropriate statutory
+return in which to report the said items.
+
+=== Investments in the capital of banking, financial and insurance entities that ===
+are outside the scope of regulatory consolidation and where the bank does
+not own more than 10 per cent of the issued common share capital
+2.1 Regulation 38(5)(a)(i)(L)(vi) of the Regulations prescribes that any relevant
+amount below the specified threshold (that is, 10 per cent of common equity tier 1
+capital after specified deductions) shall be appropriately risk weighted in
+accordance with the relevant requirements specified in the Regulations depending
+on whether the investments are held in the trading book or the banking book. For
+investments held in the trading book, the amounts equal to or below the above-
+mentioned threshold shall be risk weighted in accordance with the Regulations for
+market risk. For investments held in the banking book, the amounts equal to or
+below the said 10 per cent threshold shall be risk weighted in accordance with the
+Regulations for credit risk, which also includes equity risk in the banking book.
+PO Box 8432 Pretoria 0001 ” 370 Helen Joseph Street Pretoria 0002 * South Africa . Tel +27 12 3133911/0861 12 7272 » Fax +27 12 3133758 * www.reservebank.co.za
 --- Page 2 ---
-1. Introduction 1.1 This circular is issued by the Prudential Authority in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Reporting of items subject to thresholds that do not constitute a full deduction from qualifying capital and reserve funds. 1.3 This circular remains effective as confirmed in Banks Act Circular 1 of the relevant year.
+2
+2.2 The risk-weighted exposure amount shall be calculated net of the deduction
+against capital. This amount shall be reported in the appropriate risk return to
+which the relevant investment pertains. For example, investments held in the
+trading book shall be reported on the market risk return (forms BA 320 and
+BA 325) and investments held in the banking book shall be reported on the equity
+risk return (form BA 340).
 
+=== Investments in the capital of banking, financial and insurance entities that ===
+are outside the scope of regulatory consolidation and where the bank owns
+more than 10 per cent of the issued common share capital or where the
+entity is an affiliate
+3.1 Regulation 38(5)(a)(i)(M), read with regulation 38(5)(b)(D) of the Regulations
+prescribes that significant investments in (a) the common shares or common
+equity tier 1 capital instruments of any unconsolidated financial institution,
+(b) mortgage servicing rights, and (c) deferred tax assets arising from temporary
+differences that are individually below 10 per cent of the reporting bank’s common
+equity tier 1 capital after specified deductions, and in aggregate below 15 per cent
+of the reporting bank's common equity tier 1 capital shall be risk weighted at
+250 per cent.
+3.2 The amount to which the aforementioned risk weighting of 250 per cent shall be
+applied shall be reported on the form BA 700 in (a) line 225, column 1 for
+significant investments in the common shares or common equity tier 1 capital
+instruments of any unconsolidated financial institution, (b) line 226, column 1 for
+mortgage servicing rights, and (c) line 227, column 1 for deferred tax assets due to
+temporary differences.
+3.3 The risk-weighted exposure amount arising from the three above-mentioned line
+items shall be reported on the form BA 700, line 3, column 6 and on the form
+BA 610, line 1568, column 6 (where applicable).
+3.4 Notwithstanding any provision contained in the Regulations, there shall be no
+further reporting of these amounts on either the credit risk, market risk or equity
+risk returns, except where these are reported as memorandum items.
+
+=== Investments in commercial entities ===
+4.1 In the case of investments in commercial entities where such entities are subject
+to a risk weighting of 1250 per cent or risk-weighted exposure equivalent as
+envisaged in regulations 23(6)(j) and 23(11)(q) of the Regulations’, the amounts
+above the specified thresholds shall be reported on the form BA 700, line 229,
+column 1.
+4.2 The risk-weighted exposure relating to these amounts shall be reported on the
+form BA 700, line 3, column 6 and on the form BA 610 line 158 column 3 (where
+applicable).
+! That is, investments that are either individually above 15 per cent of the reporting bank's total issued
+capital and reserve funds, or in aggregate above 60 per cent of the reporting bank’s total issued capital
+and reserve funds.
 --- Page 3 ---
-2. Application 2.1 This circular applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.
+3
+4.3 Notwithstanding any provision contained in the Regulations, there shall be no
+further reporting of these amounts on either the credit risk, market risk or equity
+risk returns, except where these are reported as memorandum items.
 
---- Page 4 ---
-3. Acknowledgement of receipt 3.1 Kindly ensure that a copy of this circular is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.
+=== Acknowledgement of receipt ===
+5.1 Two additional copies of this circular are enclosed for the use of your institution's
+independent auditors. The attached acknowledgement of receipt, duly completed
+and signed by both the chief executive officer and the said auditors, must be
+returned to this Office at the earliest convenience of the aforementioned
+signatories.
+René van Wyk
+Registrar of Banks
+The previous circular issued was Banks Act Circular 4/2013, dated 20 May 2013.

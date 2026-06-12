@@ -25,67 +25,28 @@
       "title": "Full Text",
       "sections": [
         {
+          "id": "s-banks-c3-2013-0",
+          "number": "0",
+          "heading": "Preamble",
+          "text": "--- Page 1 ---\nSouth African Reserve Bank\nFrom the Office of\nthe Registrar of Banks\nC3/2013\n2013-02-12\nTo banks, branches of foreign institutions, controlling companies, eligible\ninstitutions and auditors of banks or controlling companies\nCircular 3/2013 issued in terms of section 6(4) of the Banks Act, 1990:\nInterpretation and application of criteria relating to effective maturity\nExecutive summary\nThe Office of the Registrar of Banks (this Office) hereby informs all relevant\npersons of the interpretation and application of the criteria relating to effective\nmaturity, as outlined in regulations 23(13)(d)(ii)(B) and 23(15)(f)(i) of the\nRegulations relating to Banks (the Regulations)."
+        },
+        {
           "id": "s-banks-c3-2013-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.1 This circular is issued by the Prudential Authority in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Interpretation and application of criteria relating to effective maturity. 1.3 This circular remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-1-1",
-              "number": "1.1",
-              "text": "This circular is issued by the Prudential Authority in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
-            },
-            {
-              "id": "sub-1-2",
-              "number": "1.2",
-              "text": "Interpretation and application of criteria relating to effective maturity.",
-              "verbatim": true
-            },
-            {
-              "id": "sub-1-3",
-              "number": "1.3",
-              "text": "This circular remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-              "verbatim": true
-            }
-          ]
+          "text": "1.1 It has come to the attention of this Office that banks have interpreted the\nprovisions of regulations 23(13)(d)(ii)}(B) and 23(15)(f)(i) of the Regulations in\nrespect of effective maturity differently. These differences in interpretation have\nresulted in inconsistent capital calculations and reporting by banks with regard to\nregulations 23(13)(d)(ii)(B) and 23(15)(f)(i) of the Regulations.\n1.2 The purpose of this Banks Act Circular is to provide clarity on the interpretation\nand application of the criteria relating to effective maturity, as outlined in\nregulations 23(13)(d)(ii)(B) and 23(15)(f)(i) of the Regulations."
         },
         {
           "id": "s-banks-c3-2013-2",
           "number": "2",
-          "heading": "Application",
-          "text": "2.1 This circular applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-2-1",
-              "number": "2.1",
-              "text": "This circular applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
-            },
-            {
-              "id": "sub-2-2",
-              "number": "2.2",
-              "text": "Institutions are required to ensure compliance with the requirements set out herein.",
-              "verbatim": true
-            }
-          ]
+          "heading": "Interpretation and application of criteria relating to effective maturity",
+          "text": "calculated for credit risk and counterparty credit risk\n2.1 For the purposes of regulation 23(13)(d)(ii}(B)(i), the one-year floor and five-year\ncap are applicable to all exposures with an original maturity of greater than one\nyear, irrespective of whether or not the exposure is collateralised.\n2.2 For the purposes of regulation 23(13)(d)(ii)(B)(ii), the following criteria relating to\nthe one-day floor are applicable:\n2.2.1 The floor will only be applicable provided that the relevant documentation of the\nsaid exposure or transaction shall make provision for daily remargining; shall\nrequire daily revaluation; and shall make provision for the prompt liquidation or\nset-off of collateral in the event of default or failure to remargin.\nPO Box 8432 Pretoria 0001 . 370 Helen Joseph Street Pretoria (002 - South Africa . Tel +27 12 3133911/0861 127272 . Fax +27 12 3133758 - www.reservebank.co.za\n--- Page 2 ---\n2\n2.2.2 The floor is applicable for exposures which relate to:\ni. an issued or confirmed short-term self-liquidating letter of credit;\nii a fully collateralised capital market transaction such as an over-the-counter\nderivative transaction or a margin lending agreement; or\niii a repo-style transaction, such as a repurchase or resale agreement or a\nsecurities lending or borrowing transaction.\n2.2.3 The floor is not applicable to exposures in terms of which an obligor obtains\nongoing finance from the relevant bank. For these exposures a floor of one year\nand a cap of five years are applicable.\n2.3 For the purposes of regulation 23(13)(d)(ii)(B)(iii), a floor of one year and a cap of\nfive years will be applicable for derivative instruments subject to a master netting\nagreement.\n2.4 For the purposes of regulation 23(13)(d)(ii)(B)(iv), all exposures in the master\nnetting agreement need to comply with the provisions/satisfy fully the\nrequirements of regulation 23(13)(d)(ii)(B)(ii).\n2.5 With regard to regulation 23(15)(f)(i), with specific reference to a bank that\napplies the standardised approach for the calculation of the required amount of\ncapital and reserve funds for credit valuation adjustment (CVA) risk, effective\nmaturity for CVA purposes shall be subject to a floor of one year whilst the cap of\nfive years will not be applicable.\n2.6 In the case of a bank that obtained the approval of the Registrar to adopt the\nInternal Model Method for the measurement of the bank's exposure to\ncounterparty risk, effective maturity for CVA purposes shall be subject to a floor\nof one year, except for short-term exposures as envisaged in regulation\n23(19)(c)(iii)."
         },
         {
           "id": "s-banks-c3-2013-3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
-          "text": "3.1 Kindly ensure that a copy of this circular is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-3-1",
-              "number": "3.1",
-              "text": "Kindly ensure that a copy of this circular is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-              "verbatim": true
-            }
-          ]
+          "text": "3.1 Two additional copies of this circular are enclosed for the use of your institution's\nindependent auditors. The attached acknowledgement of receipt, duly completed\nand signed by both the chief executive officer and the said auditors, must be\nreturned to this Office at the earliest convenience of the aforementioned\nVa\nRené van Wyk\nRegistrar of Banks\nThe previous circular issued was Banks Act Circular 2/2013, dated 28 January 2013."
         }
       ]
     }

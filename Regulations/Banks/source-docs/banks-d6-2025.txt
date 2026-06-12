@@ -1,11 +1,89 @@
---- Page 1 ---
-P O Box 427 Pretoria 0001 South Africa 370 Helen Joseph Street Pretoria 0002 +27 12 313 3911 / 0861 12 7272 www.resbank.co.za Ref.: 15/8/1/2 D6/2025 To: All banks, branches of foreign institutions, controlling companies and auditors of banks or controlling companies Directive issued in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990) Returns to be submitted to the Prudential Authority with effect from 1 July 2025
+=== Preamble ===
+Ref.: 15/8/1/3
+D6/2025
+To: All banks, controlling companies, branches of foreign institutions, eligible
+institutions and auditors of banks or controlling companies
+Directive issued in terms of section 6(6) of the Banks Act, 1990 (Act No. 94 of 1990)
+Returns to be submitted to the Prudential Authority with effect from 1 July 2025
+Executive summary
+On 11 September 2024, the Prudential Authority (PA) issued Directive 4 of 2024 to all
+banks, controlling companies, branches of foreign institutions, eligible institutions
+and auditors of banks or controlling companies, informing all interested persons that,
+to facilitate and support the work related to the Umoja System Implementation
+Project, the PA had decided to propose, among other things, the deletion of all Banks
+Act returns (BA returns) and related instructions for the completion of the BA returns
+from the Regulations relating to Banks (Regulations).
+Accordingly, on 31 January 2025, the Minister of Finance amended the Regulations
+by deleting from the Regulations all BA returns and related instructions for the
+completion of the BA returns, with effect from 1 February 2025.
+Simultaneously, on 31 January 2025, the PA issued Directive 1 of 2025, directing
+banks, controlling companies and branches of foreign institutions (hereinafter
+collectively referred to as ‘banks’) to complete and submit specified financial, risk-
+based and other related returns to the PA in accordance with the requirements
+specified in Directive 1 of 2025, with effect from 1 February 2025.
+This Directive directs banks to complete and submit specified financial, risk-based
+and other related returns to the PA in accordance with the requirements specified in
+this Directive, with effect from 1 July 2025.
 
---- Page 2 ---
-1. Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Returns to be submitted to the Prudential Authority with effect from 1 July 2025. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.
+=== Introduction ===
+1.1             Towards the end of 2023, as an integral part of the Umoja System Implementation
+Project,1 the Umoja team commenced engagements with various key interested
+persons in respect of regulatory return developments and the future submission
+of returns to the PA.
+1.2             On 11 September 2024, the PA issued Directive 4 of 20242 informing all
+interested persons that, to facilitate and support the ongoing work related to the
+1 The Umoja System is a digital interface between the PA and regulated institutions aimed at providing a more
+integrated, efficient and transparent operating model.
+2 Available online at Directive 4 of 2024
+1
+Umoja System Implementation Project, the PA had decided to:
+1.2.1        recommend to the Minister of Finance and National Treasury that all BA returns
+and related instructions for the completion of the BA returns be deleted from the
+Regulations; and
+1.2.2        issue all BA returns and related instructions for the completion of the BA returns
+in the form of directives issued in terms of the Banks Act, 1990 (Act No. 94 of
+1990) (Banks Act) and/or determinations issued under prudential standards in
+terms of the Financial Sector Regulation Act, 2017 (Act No.17 of 2017) (FSRA).
+1.3          On 31 January 2025, the Minister of Finance amended the Regulations by
+deleting from the Regulations all BA returns and the related instructions for the
+completion of the BA returns, with effect from 1 February 2025.
+1.4          Simultaneously, on 31 January 2025, the PA issued Directive 1 of 2025,3 directing
+banks to complete and submit specified financial, risk-based and other related
+returns to the PA in accordance with the requirements specified in
+Directive 1 of 2025, with effect from 1 February 2025.
 
---- Page 3 ---
-2. Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.
+=== Directive ===
+2.1          Based on the aforesaid, and in accordance with the provisions of section 6(6) of
+the Banks Act, banks are hereby directed as follows:
+2.1.1        Submit to the PA the respective financial, risk-based and other returns specified
+in the link below, in accordance with the respective requirements specified in the
+link below, read with the relevant requirements specified in the Regulations:
+https://www.resbank.co.za/en/home/what-we-do/Prudentialregulation/banks-
+returns-umoja
+2.1.2        As specified in regulation 4 of the Regulations, read with the relevant
+requirements specified in the link included in paragraph 2.1.1 of this Directive,
+every set of returns submitted to the PA must be accompanied by a duly
+completed, signed and certified:
+2.1.2.1      form BA 099, attached to this Directive as Annexure 1A, in the case of returns
+submitted to the PA by a bank or controlling company; and
+2.1.2.2      form BA 099A, attached to this Directive as Annexure 1B, in the case of a return
+submitted to the PA in respect of any relevant foreign operation.
 
---- Page 4 ---
-3. Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.
+=== Implementation date ===
+3.1          Banks must comply with the respective requirements specified in this Directive,
+with effect from 1 July 2025.
+3 Available online at Directive 1 of 2025
+2
+
+=== Acknowledgement of receipt ===
+4.1          Kindly ensure that a copy of this Directive is made available to your institution’s
+external auditors. The attached acknowledgement of receipt duly completed and
+signed by both the chief executive officer of the institution and the said auditors
+should be returned to the PA at the earliest convenience of the aforementioned
+signatories.
+Fundi Tshazibana
+Chief Executive Officer
+Date: 30-Jun-2025
+Encl.: 2
+The previous Directive issued was Directive 5/2025, dated 30 June 2025.
+3

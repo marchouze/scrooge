@@ -1,11 +1,118 @@
---- Page 1 ---
-P O Box 427 Pretoria 0001 South Africa 370 Helen Joseph Street Pretoria 0002 +27 12 313 3911 / 0861 12 7272 www.resbank.co.za Ref.: 15/8/1/2 C3/2025 To: All banks, branches of foreign institutions, controlling companies and auditors of banks or controlling companies Circular issued in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990) Interpretation and application of criteria relating to the granularity for retail exposures
+=== Preamble ===
+Ref.: 15/8/1/1
+C3/2025
+To: All banks, branches of foreign institutions, controlling companies, eligible
+institutions and auditors of banks or controlling companies
+Circular issued in terms of section 6(4) of the Banks Act 94 of 1990
+Interpretation and application of criteria relating to the granularity for retail exposures
+Executive summary
+The purpose of this Circular is to provide clarity on the interpretation and application
+of the granularity criteria for retail exposures as specified in regulation 23(8)(b) read
+with regulation 23(6)(b) of the Regulations relating to Banks (Regulations). This
+Circular also serves to provide clarity regarding the reporting of the retail asset class
+on the standardised (STA) approach for credit risk which impacts the calculation of
+the minimum required amount of capital and reserve funds, and the related reporting
+requirements.
+This Circular replaces Circular 5 of 2020 (dated 7 December 2020) and Circular 2 of
+2025 (dated 22 May 2025).
 
---- Page 2 ---
-1. Introduction 1.1 This circular is issued by the Prudential Authority in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Interpretation and application of criteria relating to the granularity for retail exposures. 1.3 This circular remains effective as confirmed in Banks Act Circular 1 of the relevant year.
+=== Introduction ===
+1.1           Regulation 23(8)(b), read with regulation 23(6)(b), of the Regulations specifies,
+among others, criteria relating to the granularity of retail exposures1.
+1.2           For an exposure to be included in the retail portfolio and consequently risk-
+weighted at the preferential risk weight of 75 per cent, it has to meet all five criteria
+specified in regulation 23(6)(b) of the Regulations.
+1.2.1         For example, the Regulations require that the retail portfolios must be sufficiently
+diversified to warrant a 75 per cent risk weight. In this regard, for inclusion in the
+retail portfolio, banks, controlling companies and branches of foreign institutions
+(hereinafter collectively referred to as ‘banks’) are required, among other things, to
+ensure that no aggregate exposure to a person exceeds 0.2 per cent of the
+aggregate amount relating to the bank’s retail portfolio (i.e. the granularity criteria
+for retail exposures).
+1 Requirements contemplated in regulations 23(6)(b)(i) to 23(6)(b)(iv) of the Regulations.
+1
+1.3             Furthermore:
+1.3.1           the aggregate exposure to a person2 referred to in regulations 23(6)(b)(iii) and
+23(6)(b)(iv) of the Regulations must be calculated after the application of the
+relevant specified credit conversion factors (CCFs).
+1.3.2           regulation 23(6)(b)(ii) of the Regulations specifically excludes exposures to retail
+products such as securities (listed and unlisted, bonds and equities), derivative
+instruments and residential mortgage loans, from the category of retail exposures
+to which a risk weight of 75 per cent is applied.
+1.3.3           regulation 23(6)(b)(v) of the Regulations provides information on the treatment of
+other retail exposures and how these should be risk-weighted (i.e. the regulatory
+retail exposures that arise from exposures to transactors).
+1.3.4           If the aggregate exposure3 to a person is in excess of R12.5 million, the person
+must be excluded from the retail portfolio.
+1.4             The purpose of this Circular is to provide clarity regarding the interpretation and
+application of the granularity criteria for retail exposures as specified in regulation
+23(8)(b), read with regulation 23(6)(b), of the Regulations.
 
---- Page 3 ---
-2. Application 2.1 This circular applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.
+=== Clarification of the application of the granularity criteria ===
+2.1             The Prudential Authority’s application and interpretation of regulation 23(8)(b),
+read with regulation 23(6)(b) of the Regulations is set out below:
+2.1.1           To ensure that the retail portfolio is sufficiently diversified, the granularity criteria is
+applied to the remainder of the retail portfolio, after taking the relevant
+requirements envisaged in paragraphs 1.2 and 1.3 into consideration. In cases
+where the aggregate exposure to a person exceeds the 0.2 per cent threshold,
+excluding past due loans, as calculated by the bank at each reporting date, the
+exposure shall remain in the retail portfolio for regulatory reporting purposes and
+be risk-weighted at 100 per cent.
+2.1.2           The granularity criteria should be applied to the total retail exposure of the banking
+group to a person, that is, on a bank consolidated basis. This means that
+exposures classified as retail exposures to the same counterparty across multiple
+banking group entities should be aggregated for the purposes of meeting the
+granularity criteria. This approach ensures that the banking group's total retail
+exposure to a single counterparty is fully captured, regardless of how these
+exposures are distributed among the various banking group entities.
 
---- Page 4 ---
-3. Acknowledgement of receipt 3.1 Kindly ensure that a copy of this circular is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.
+=== As defined in regulation 67 of the Regulations. ===
+3   Aggregate exposure means the gross amount of all forms of debt included in the retail portfolio, before any form of credit risk mitigation
+is taken into consideration, excluding residential real estate exposures (refer to regulation 23(6)(b)(iv) of the Regulations).
+2
+2.2     The impact of the above interpretations on the classification of retail exposures
+can be summarised as follows:
+2.2.1   The above interpretation can be further explained by way of the following example:
+Information of Bank A
+Total retail portfolio, excluding any exposures that   are        R1.35 billion
+overdue, after the application of the specified CCFs
+Mortgage loans that are included in the category of claims
+secured by residential property                                    R0.30 billion
+Aggregate exposures, excluding residential mortgage loans,
+to persons that individually exceeded the threshold of             R0.05 billion
+R12.5 million
+Calculation of threshold for Bank A
+Step 1: Exclude residential mortgages
+Total retail portfolio, excluding any exposures that are
+overdue, after the application of the specified CCFs                R1.35 billion
+Less: Mortgage loans that are included in the category of
+claims secured by residential property                             (R0.30 billion)
+R1.05 billion
+Step 2: Exclude exposures to a person in excess of R12.5 million
+Retail portfolio, excluding residential mortgage loans              R1.05 billion
+Less: Exposures to persons that individually exceeded the
+threshold of R12.5 million                                         (R0.05 billion)
+R1 billion
+3
+Step 3: Calculate the 0.2 per cent threshold
+Threshold (R1 billion x 0.2 per cent)                                    R2 million
+Step 4: Apply risk weights
+Step 4a: Aggregate exposures to a person that meets the relevant other
+requirements relating to retail exposures and are less than, or equal to,
+R2 million shall be risk weighted at 75 per cent.
+Step 4b: Aggregate exposures to a person that meets the relevant other
+requirements relating to retail exposures1 and are greater than R2 million shall
+be risk weighted at 100 per cent and included in the retail portfolio for regulatory
+reporting purposes.
+
+=== Acknowledgement of receipt ===
+3.1         Kindly ensure that a copy of this Circular is made available to your institution’s
+independent auditors. The attached acknowledgement of receipt duly completed
+and signed by both the chief executive officer of the institution and the said auditors
+should be returned to the PA at the earliest convenience of the aforementioned
+signatories.
+Fundi Tshazibana
+Chief Executive Officer
+Date: 26/06/25
+The previous circular issued was Banks Act Circular C2/2025, dated 22 May 2025.
+4
