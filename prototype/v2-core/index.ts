@@ -65,3 +65,8 @@ export * from "./control-plane/tenant";
 
 /** @tier R — V2 event envelope: V2Envelope, createV2Envelope (dark, not yet enforced) */
 export * from "./control-plane/envelope";
+
+// --- Banking (S4: anchor-bank standing-data events) ------------------------
+
+/** @tier K — anchor-bank standing-data events (product catalogue, CoA, RAS) */
+export * from "./banking/events";

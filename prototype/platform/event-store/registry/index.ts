@@ -216,6 +216,11 @@ export { ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY } from "./odp-umoja-uti";
 // Authority: D-TREASURER-WAVE2-SUBSTRATE (CEO-approved 2026-06-11);
 //   NPS-ACT-78-1998; SARB-NPSD; ISO-20022; PROC-PAY-RBH-01.
 export { CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY } from "./correspondent-settlement";
+// WS-V2-BBAAS S4 — anchor-bank standing-data events (products / CoA / RAS).
+// V2ProductRegistered, V2ProductDeprecated, V2AccountTypeRegistered, V2RiskAppetiteSet.
+// Emitted ONLY into `BANK_V2_ANCHOR_DB`; never touch the v1 canonical store.
+// Authority: D-V2-BBAAS-BLUEPRINT-SYNTHESIS; D-MODEL-BINDING-CONTRACT-V1.
+export { V2_BANKING_EVENT_TYPES_REGISTRY } from "./v2-banking";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -302,6 +307,7 @@ import { SLA_APPROVAL_EVENT_TYPES_REGISTRY } from "./sla-approval";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
 import { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
 import { VALUATION_ADJUSTMENT_EVENT_TYPES_REGISTRY } from "./valuation-adjustment";
+import { V2_BANKING_EVENT_TYPES_REGISTRY } from "./v2-banking";
 
 /**
  * Full registry — flat list. Keep RUNTIME / GOVERNANCE / AUDIT split
@@ -509,6 +515,11 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   //   placeholder rows from missing-types.ts.
   // Authority: D-TREASURER-WAVE2-SUBSTRATE (CEO-approved 2026-06-11).
   ...CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY,
+  // WS-V2-BBAAS S4 — anchor-bank standing-data events (products / CoA / RAS).
+  // V2ProductRegistered, V2ProductDeprecated, V2AccountTypeRegistered, V2RiskAppetiteSet.
+  // Emitted ONLY into BANK_V2_ANCHOR_DB; never touch the v1 canonical store.
+  // Authority: D-V2-BBAAS-BLUEPRINT-SYNTHESIS; D-MODEL-BINDING-CONTRACT-V1.
+  ...V2_BANKING_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

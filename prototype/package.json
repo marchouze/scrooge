@@ -197,6 +197,8 @@
     "recon:madge-circular-deps": "bun run platform/recon/madge-circular-deps.ts",
     "recon:v2-no-v1-import": "bun run platform/recon/v2-no-v1-import.ts",
     "recon:v2-released-surface-clean-core": "bun run platform/recon/v2-released-surface-gate.ts",
+    "recon:v2-standing-data-seed-parity": "bun run platform/recon/v2-standing-data-seed-parity.ts",
+    "seed:v2-anchor-bank-standing-data": "bun run scripts/seed-v2-anchor-bank-standing-data.ts",
     "recon:fil-conformance": "bun run platform/recon/fil-conformance.ts",
     "recon:graph-ontology": "bun run platform/recon/graph-ontology-coverage.ts",
     "recon:orphan-capability": "bun run platform/recon/orphan-capability.ts",
