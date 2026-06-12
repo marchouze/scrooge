@@ -71,6 +71,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:v2-no-v1-import",
     "recon:v2-tenant-axis-present",
     "recon:v2-released-surface-clean-core",
+    "recon:v2-posture-register-integrity",
     "recon:dashboard",
     "recon:wall-clock-callsite-coverage",
     "recon:decisions-events-only",
