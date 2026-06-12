@@ -36,8 +36,8 @@
 
 import { eventStore } from "../platform/composition";
 import {
-  makeObligationLifecycleTransitioned,
   type ObligationLifecycleTransitionedPayload,
+  makeObligationLifecycleTransitioned,
 } from "../platform/event-store/event-types/obligation-lifecycle";
 import type { Actor } from "../platform/event-store/types";
 
@@ -116,7 +116,9 @@ function main(): void {
       payload,
     });
     eventStore.append(event);
-    console.log(`  emit  ${r.obligationId} → SUPERSEDED (supersededBy ${r.supersededBy}) [${event.event_id}].`);
+    console.log(
+      `  emit  ${r.obligationId} → SUPERSEDED (supersededBy ${r.supersededBy}) [${event.event_id}].`,
+    );
     emitted++;
   }
   console.log(
