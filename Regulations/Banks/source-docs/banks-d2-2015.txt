@@ -1,11 +1,63 @@
---- Page 1 ---
-P O Box 427 Pretoria 0001 South Africa 370 Helen Joseph Street Pretoria 0002 +27 12 313 3911 / 0861 12 7272 www.resbank.co.za Ref.: 15/8/1/2 D2/2015 To: All banks, branches of foreign institutions, controlling companies and auditors of banks or controlling companies Directive issued in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990) Effective risk data aggregation and risk reporting
+Executive summary
+Regulation 39 of the Regulations relating to Banks (the Regulations) requires
+banks, controlling companies and branches of foreign institutions (hereinafter
+collectively referred to as ‘banks’) to establish and maintain a robust process of
+corporate governance. This process includes the maintenance of effective risk
+management and capital by a bank. In order to achieve the objective relating to
+the maintenance of effective risk management and capital, every bank is required
+to have in place comprehensive risk management processes, practices and
+procedures, and board-approved policies.
+The purpose of this directive is to require banks to implement robust risk
+management practices that include specified matters related to risk data
+aggregation and risk reporting.
+1. Introduction
+1.1 The Principles for Effective Risk Data Aggregation and Risk Reporting’ (the
+Principles) were issued by the Basel Committee on Banking Supervision (BCBS)
+in January 2013. The Principles aim to strengthen banks’ risk management
+practices by improving their risk data aggregation and risk reporting. It is
+anticipated that complying with the Principles will improve banks’ ability to
+provide rapid and comprehensive risk data by legal entity and business line,
+which will ultimately enhance banks’ decision-making processes and improve
+their resolvability.
+' See http://www. bis.org/publ/bcbs239. pdf.
+PO Box 8432 Pretoria 0001 + 370 Helen Joseph Street Pretoria 0002 . South Africa ‘ Tel #27 12 3133911/0861 12 7272 . Fax +27 12 3133758 . www.reservebank.co.za
 
---- Page 2 ---
-1. Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Effective risk data aggregation and risk reporting. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.
+2
 
---- Page 3 ---
-2. Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.
+1.2 The Principles were specifically addressed to global systemically important banks
+(G-SIBs) and apply not only at a group level, but also to all material business
+units or entities within the G-SIB group. National supervisors may nevertheless
+choose to apply the Principles to all banks in their jurisdiction.
 
---- Page 4 ---
-3. Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.
+1.3 Following the issuance of guidance note 3 of 2014 and the completion of the seif-
+assessment against the Principles by banks, this Office has decided to adopt the
+Principles as an integral part of its regulatory and supervisory framework.
+
+2. Directive
+Based on the aforesaid, and in accordance with the provisions of section 6(6) of
+the Banks Act, 1990:
+
+2.1 domestic systemically important banks (D-SIBs) are hereby directed to comply
+with the Principles from 1 January 2017 onwards;
+
+2.2 banks that fall under a controlling company or bank that has been designated as
+a G-SIB are directed to comply with the due date specified by the BCBS for G-
+SIBs; and
+
+2.3 the effective due date for compliance with the high-level Principles and any
+specified detailed requirements by non-D-SIBs shall be considered on a case-by-
+case basis and shall be agreed and confirmed in writing by this Office with each
+relevant non-D-SIB individually.
+
+3. Acknowledgement of receipt
+Two additional copies of this directive are enclosed for the use of your
+institution's independent auditors. The attached acknowledgement of receipt,
+duly completed and signed by both the chief executive officer of the institution
+and the said auditors, should be returned to this Office at the earliest
+convenience of the aforementioned signatories.
+
+René van Wyk
+
+Registrar of Banks
+
+The previous directive issued was Directive 1/2015, dated 04 February 2015.

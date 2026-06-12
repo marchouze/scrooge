@@ -1,11 +1,245 @@
---- Page 1 ---
-P O Box 427 Pretoria 0001 South Africa 370 Helen Joseph Street Pretoria 0002 +27 12 313 3911 / 0861 12 7272 www.resbank.co.za Ref.: 15/8/1/2 D2/2014 To: All banks, branches of foreign institutions, controlling companies and auditors of banks or controlling companies Directive issued in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990) Matters related to changes to internal rating systems used to calculate the minimum required capital for credit risk
+Executive summary
+The use of internal rating systems, including statistical models and mechanical
+methods, for the calculation of banks’ and controlling companies’ (hereinafter
+referred to as ‘banks’) minimum required capital for credit risk is subject to the
+prior written approval of the Registrar of Banks (the Registrar). In turn, such
+approval imposes specific duties on the Office of the Registrar (this Office),
+including the duty to:
+° develop a set of review procedures for ensuring that banks’ systems and
+controls are adequate to serve as the basis for capital calculations; and
+° focus on compliance with minimum regulatory requirements as a means
+of ensuring the overall integrity of a bank’s ability to provide prudential
+inputs to the capital calculator.
+Among other things, the Regulations relating to Banks (the Regulations) set
+out the minimum capital requirements for banks that have adopted the internal
+ratings-based (IRB) approach (hereinafter referred to as ‘IRB banks’) for the
+measurement of their exposure to credit risk, specifically with respect to rating
+systems used for the calculation of minimum required capital.
+To enable this Office to discharge its supervisory responsibilities effectively
+with respect to the aforesaid rating systems, this directive contains revised
+requirements in terms of the approval of material changes to IRB banks’ credit
+risk rating systems.
+This directive replaces Directive 6/2013 dated 23 May 2013.
 
---- Page 2 ---
-1. Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Matters related to changes to internal rating systems used to calculate the minimum required capital for credit risk. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.
+2
 
---- Page 3 ---
-2. Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.
+1. Introduction
 
---- Page 4 ---
-3. Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.
+14 The approval originally granted to banks to use the IRB approach to calculate
+the minimum required capital for credit risk relates only to those internal
+rating systems, including statistical models and mechanical methods,
+included in the original applications submitted by banks. Any material rating
+system changes or developments that fall outside the scope of the approval
+granted by this Office are subject to a formal approval process prior to being
+implemented.
+
+1.2 This Office issued Directive 6/2013 concerning matters related to changes to
+rating systems used for the calculation of minimum required capital for credit
+risk. Based on areas of improvement identified during the review process
+followed by this Office and feedback received from IRB banks, this Office
+decided to refine the requirements of Directive 6/2013 in order to discharge
+its supervisory responsibilities more effectively.
+
+1:8 This directive therefore serves to inform banks of these revised requirements,
+specifically with regard to cases where the prior written approval of this Office
+will be required before a bank may implement changes to its credit risk rating
+system.
+
+2. Directive
+
+2.1 IRB banks are required to obtain prior written approval from this Office in
+terms of the qualitative and quantitative provisions of paragraphs 2.1.1 to
+2.1.3 of this directive that cause a rating system change to be regarded as
+material.
+
+2.1.1 The assessment of materiality shall consist of a qualitative base, which shall
+include, but not be limited to, the following:
+
+2.1.1.1 the development of a new rating system that is introduced to cater for
+instances where no rating system existed previously, for example for new
+jurisdictions and portfolios or mergers and acquisitions:
+
+2.1.1.2 migration between approaches, for example from the foundation IRB
+approach to the advanced IRB approach;
+
+2.1.1.3 the removal of conservative overlays;'
+
+2.1.1.4 instances where the Regulations require explicit approval, for example for the
+assignment of a higher weighting to more recent data in the calculation of the
+central tendency;
+
+2.1.1.5 the implementation of a new methodology, for example the development of a
+downturn methodology to replace the United States Federal Reserve's
+formula in the calculation of the downturn loss given default (LGD);
+
+2.1.1.6 enhancements to the existing methodology, for example the inclusion of
+multiple defaults in the LGD calculation; and
+
+2.1.1.7 a change in the definition of default.
+
+' This refers to cases where conservatism was explicitly incorporated as part of the rating system
+
+development due to a lack of reliable historical default and loss experience or weaknesses identified in
+
+the rating system.
+
+3
+
+2.1.2 In addition to the above-listed qualitative factors that may trigger changes to
+be classified as material, the following quantitative factors should also be
+taken into account when assessing the materiality of the proposed change:
+
+2.1.2.1 a rating system change that results in an absolute? change equal to or
+greater than 1 per cent of the total banking group risk-weighted assets
+(RWA) relating to credit risk;
+
+2.1.2.2 a rating system change that results in an absolute change equal to or greater
+than 10 per cent of the RWA relating to credit risk, for the portfolio(s) covered
+by the relevant rating system;
+
+2.1.2.3 the quantitative measure defined in 2.1.2.1 and 2.1.2.2 above shall exclude
+all rating system changes where the absolute RWA change is less than
+R500 million; and
+
+2.1.2.4 the quantitative measures stipulated in 2.1.2.1 to 2.1.2.3 above shall be
+evaluated based on a comparison between the current rating system and the
+proposed rating system. Should the changes to the rating system apply to
+more than one risk parameter (that is, for probability of default (PD), LGD
+and/or exposure at default (EAD)), the evaluation shall be performed
+individually for each risk parameter to ascertain whether the proposed
+change is material.
+
+21.3 In the event that an IRB bank introduces changes that affect multiple
+portfolios, for example a change to the definition of default, instead of
+submitting separate applications for each affected portfolio, the IRB bank
+shall be required to submit a document outlining the proposed changes as
+well as any other relevant information related to the proposed changes. The
+information shall include, but not be limited to, the impact on parameter
+estimates and regulatory capital for each of the proposed changes for all
+affected portfolios.
+
+2.1.4 This Office will assess the changes deemed to be material and will notify the
+IRB bank of any objections and/or conditions it may have regarding their
+implementation.
+
+2.2 Non-material rating system changes
+
+221 An IRB bank may implement changes deemed to be non-material (not
+considered material as per the qualitative and quantitative provisions of
+paragraphs 2.1.1 to 2.1.2 above) once this Office has received and
+acknowledged the completed Annexure A. However, to afford this Office the
+opportunity to raise any objections to and/or to impose any conditions on the
+implementation of the proposed non-material changes, IRB banks are
+required to submit for regulatory reporting purposes the information outlined
+in Annexure A at least ten working days prior to the reporting month in which
+the proposed changes will be implemented. In the event that this Office does
+not raise any objections and following acknowledgement of the proposed
+changes, the IRB bank may implement the proposed changes.?
+
+? An increase or a decrease.
+
+® The ten-day period will commence only after receipt of the notification.
+
+4
+
+2.3 Communication
+
+2.3.1 All proposed changes, irrespective of whether they are material or non-
+material, shall be communicated in writing to this Office in the format
+specified in Annexure A, and shall be signed by the Chief Risk Officer of the
+IRB bank.
+
+2.3.2 For changes that are deemed to be material, the additional information as
+specified in item 12 of Table 1 of Annexure A shall be appended to the
+completed Annexure A and communicated to this Office for its consideration
+and approval prior to implementation.
+
+2.3.3 In order to ensure a consistent application of the definition of the materiality
+of rating system changes by all IRB banks, banks are required to have in
+place a duly documented communication policy with this Office, approved by
+the relevant designated committee.* The communication policy shall, among
+other things, outline the criteria used by each IRB bank for classifying all
+rating system changes as either material or non-material.
+
+2.34 To enable this Office to set aside sufficient time to duly consider and review
+all material changes and any other material aspects related to credit risk
+rating systems, the aforementioned communication policy shall also contain
+the explicit requirement for a biannual written communication update to be
+submitted to this Office on all material developments in relation to each IRB
+bank’s credit risk rating system. However, IRB banks shall communicate
+immediately, in writing, any matters that may require the urgent attention of
+this Office prior to the biannual communication updates. These
+communication updates shall include, among other things, planned rating
+system developments, recalibrations, material rating system changes, the
+Credit Risk Rating System Register (refer to http://www.reservebank.co.za>
+Regulation and supervision> Bank Supervision> International standards>
+Internal ratings-based approaches: Application process and Self-assessment
+and long form review templates) and any other noteworthy events with
+respect to the IRB bank's credit risk rating systems. This should be
+submitted, at the very least, on a biannual basis by 28 February and
+31 August based on information as at 31 December and
+30 June respectively.
+
+2.4 Documentation
+
+2.41 The minimum documentation standards specified in paragraphs 2.4.2 to
+2.4.4 below shall apply to all additional information as specified in item 12 of
+Table 1 of Annexure A, when submitting a material rating system change to
+this Office.
+
+2.42 The documentation provided shall allow for a full, independent re-
+performance of the proposed rating system.
+
+* This refers to the designated committee as defined in regulation 39(7) of the Regulations.
+
+5
+
+2.4.3 All submitted documentation shall be the final, signed-off version thereof, and
+shall comply with the documentation standards as per regulation
+23(11)(b)(v)(l) of the Regulations.
+
+2.44 In addition to the minimum documentation standards as per regulation
+23(11)(b)(v)(l) of the Regulations, this Office also requires that the following
+information be included in the documentation provided:
+
+2.4.4.1 an overview of the portfolio(s) rated by the rating system;
+
+2.4.4.2 examples of the types of transactions rated by the rating system;
+
+2.4.4.3 detailed information regarding data used for development, out-of-sample and
+out-of-time testing, which should include the observation period, performance
+period, sample size and stability (the IRB bank shall also demonstrate that
+the data used in the rating system development are representative of the
+population of the bank's actual borrowers or facilities);
+
+2.4.4.4 changes made from the current to the proposed rating system with reasoning
+behind the proposed changes;
+
+2.4.4.5 segmentation applied in the rating system, including the final risk parameter
+estimates and exposure at default (EAD) per segment;
+
+2.4.4.6 a detailed explanation of the proposed methodology to be adopted;
+
+2.4.4.7 any weaknesses or shortcomings of the proposed rating system;
+
+2.4.4.8 RWA and capital impact, including the most granular impact possible for
+example the RWA and capital impact per change where there are various
+rating system changes; and
+
+2.4.4.9 in cases where human judgement was used, the IRB bank should clearly
+document the process for determining and reviewing estimates, which should
+include all relevant and material information considered other than by the
+rating system as well as the parties involved.
+
+3. Acknowledgement of receipt
+
+3.1 Two additional copies of this directive are enclosed for the use of your
+institution’s independent auditors. The attached acknowledgement of receipt,
+duly completed and signed by both the chief executive officer of the
+institution and the said auditors, should be returned to this Office at the
+earliest convenience of the aforementioned signatories.
+
+René van Wyk
+
+Registrar of Banks
+The previous directive issued was Directive 1/2014, dated 09 June 2014.
