@@ -20,6 +20,7 @@ import { basename, resolve } from "node:path";
 
 import { getDb } from "../platform/regulatory/graph/db";
 import { getObligationCountForDocument } from "../platform/regulatory/graph/query";
+import { ensureProvisionIds } from "../platform/regulatory/structured-doc-loader";
 
 /** Normalise a section reference: lowercase + dots stripped. */
 const normSectionRef = (raw: string) => raw.toLowerCase().replace(/\./g, "");
@@ -283,6 +284,10 @@ function loadStructuredDoc(repoRoot: string, slug: string): RegStructuredDoc | n
   try {
     const doc = JSON.parse(readFileSync(absPath, "utf-8")) as RegStructuredDoc;
     enrichBcbsDocSections(repoRoot, doc);
+    // Same deterministic id assignment as the adopt/distill routes and the
+    // drift recon (platform/regulatory/structured-doc-loader.ts) — the
+    // client-rendered scopeIds MUST match the server-resolved provision tree.
+    ensureProvisionIds(doc as unknown as Parameters<typeof ensureProvisionIds>[0]);
     return doc;
   } catch {
     return null;

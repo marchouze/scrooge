@@ -22,8 +22,6 @@
 // Plan: tick-to-obligation workflow Phase 6 (PR #1242 follow-on).
 // Author: Mira (Compliance / RegTech engineer, engineering).
 
-import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { eventStore } from "../composition.ts";
@@ -34,6 +32,7 @@ import {
   buildProvisionTree,
   computeScopeVerbatimHash,
 } from "../regulatory/graph/provision-tree.ts";
+import { loadStructuredDocBySlug } from "../regulatory/structured-doc-loader.ts";
 
 const PIPELINE = "recon:provision-tick-drift";
 
@@ -49,32 +48,13 @@ export interface DriftFinding {
 /** Loader signature — injectable for tests. */
 export type StructuredDocLoader = (slug: string) => RegStructuredDocMinimal | null;
 
-function defaultRepoRoot(): string {
-  // import.meta.dir = <worktree>/prototype/platform/recon
-  return resolve(import.meta.dir, "..", "..", "..");
-}
-
-/** Load `Regulations/<regulator>/source-docs/<slug>-structured.json` for a slug. */
+/**
+ * Load the structured doc for a slug — delegates to the shared slug-resolving,
+ * BCBS-enriching, id-assigning loader so the recomputed hash is built from the
+ * SAME tree shape the adopt route hashed at tick time.
+ */
 export function loadStructuredDoc(slug: string, repoRoot?: string): RegStructuredDocMinimal | null {
-  const regsDir = join(repoRoot ?? defaultRepoRoot(), "Regulations");
-  if (!existsSync(regsDir)) return null;
-  let dirs: string[];
-  try {
-    dirs = readdirSync(regsDir, { encoding: "utf-8" });
-  } catch {
-    return null;
-  }
-  for (const sub of dirs) {
-    const candidate = join(regsDir, sub, "source-docs", `${slug}-structured.json`);
-    if (existsSync(candidate)) {
-      try {
-        return JSON.parse(readFileSync(candidate, "utf-8")) as RegStructuredDocMinimal;
-      } catch {
-        return null;
-      }
-    }
-  }
-  return null;
+  return loadStructuredDocBySlug(slug, repoRoot) as RegStructuredDocMinimal | null;
 }
 
 /**
