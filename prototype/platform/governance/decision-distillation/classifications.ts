@@ -1640,6 +1640,12 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
     citations: ["D-V2-BBAAS-ANALYSIS-LAUNCH", "D-V2-BBAAS-BLUEPRINT-SYNTHESIS"],
   },
   {
+    decisionId: "D-VAR-EXPOSURE-INCLUDES-STANDING-NOP",
+    class: "directional",
+    rationale:
+      "Sets this bank's market-risk VaR exposure basis to the standing settlement-retained FX NOP, aligned to RAS line B3. Tenant risk-measurement calibration; the exposure-basis-as-decision pattern generalises.",
+  },
+  {
     decisionId: "D-VERA-IFRS-THRESHOLD-CURRENCY-RECONS-POST-ICAAP",
     class: "directional",
     rationale:
@@ -1654,10 +1660,10 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
 ];
 
 /** Snapshot count of approved decisionIds covered at authoring time. */
-export const DECISION_CLASSIFICATION_COUNT = 263;
+export const DECISION_CLASSIFICATION_COUNT = 264;
 
 export const DECISION_CLASSIFICATION_COUNTS = {
   foundational: 96,
-  directional: 142,
+  directional: 143,
   obsolete: 25,
 } as const;
