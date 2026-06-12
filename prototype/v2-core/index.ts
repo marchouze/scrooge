@@ -30,3 +30,9 @@ export * from "./fil-facets/facets";
 // --- FIL-Models (registry scaffold) ----------------------------------------
 export * from "./fil-models/declaration";
 export * from "./fil-models/registry";
+
+// --- Control-plane (Wave 1) ------------------------------------------------
+// S2: tenant axis (dark — not yet enforced). ANCHOR_TENANT_ID, TenantId,
+// tenantIdSchema, isAnchorTenantEvent, V2Envelope, createV2Envelope.
+export * from "./control-plane/tenant";
+export * from "./control-plane/envelope";
