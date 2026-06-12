@@ -1640,6 +1640,13 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
     citations: ["D-V2-BBAAS-ANALYSIS-LAUNCH", "D-V2-BBAAS-BLUEPRINT-SYNTHESIS"],
   },
   {
+    decisionId: "D-V2-REPO-STRATEGY-REEXAMINATION",
+    class: "foundational",
+    rationale:
+      "Re-opens the repo-strategy verdict under platform-correctness-dominant weights plus intra-tenant multi-LE and FIL-mediated-access requirements. Meta-decision about the backbone's own structure.",
+    citations: ["D-V2-BBAAS-BLUEPRINT-SYNTHESIS", "D-V2-BBAAS-W9-FIL"],
+  },
+  {
     decisionId: "D-VAR-EXPOSURE-INCLUDES-STANDING-NOP",
     class: "directional",
     rationale:
@@ -1660,10 +1667,10 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
 ];
 
 /** Snapshot count of approved decisionIds covered at authoring time. */
-export const DECISION_CLASSIFICATION_COUNT = 264;
+export const DECISION_CLASSIFICATION_COUNT = 265;
 
 export const DECISION_CLASSIFICATION_COUNTS = {
-  foundational: 96,
+  foundational: 97,
   directional: 143,
   obsolete: 25,
 } as const;

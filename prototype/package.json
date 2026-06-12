@@ -25,6 +25,8 @@
     "file:rohan-v2-bbaas-w4-model-library": "bun run scripts/file-rohan-v2-bbaas-w4-model-library.ts",
     "file:atlas-v2-bbaas-blueprint": "bun run scripts/file-atlas-v2-bbaas-blueprint.ts",
     "file:atlas-v2-bbaas-w9-fil": "bun run scripts/file-atlas-v2-bbaas-w9-fil.ts",
+    "file:atlas-v2-repo-strategy-reexamination": "bun run scripts/file-atlas-v2-repo-strategy-reexamination.ts",
+    "record:d-v2-repo-strategy-reexamination": "bun run scripts/record-d-v2-repo-strategy-reexamination.ts",
     "record:d-v2-bbaas-w9-fil": "bun run scripts/record-d-v2-bbaas-w9-fil.ts",
     "record:d-v2-bbaas-blueprint-synthesis": "bun run scripts/record-d-v2-bbaas-blueprint-synthesis.ts",
     "record:d-v2-bbaas-w8-agent-learning": "bun run scripts/record-d-v2-bbaas-w8-agent-learning.ts",
