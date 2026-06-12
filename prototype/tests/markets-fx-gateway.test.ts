@@ -4,9 +4,9 @@
 //
 // Scope:
 //   1. Happy path: approved order emits the correct event sequence
-//      (OrderProposed, 7×GatewayCheckRequested, 7×GatewayCheckCompleted,
+//      (OrderProposed, 8×GatewayCheckRequested, 8×GatewayCheckCompleted,
 //      OrderApprovedAtGateway).
-//   2. All seven checks appear in the result with outcome "approve".
+//   2. All eight checks appear in the result with outcome "approve".
 //   3. Check latency values are non-negative numbers.
 //   4. OrderProposed payload is well-formed (orderId, counterpartyLei 20-char,
 //      instrument, side, quantity, price, priceCurrency, bookingEntity).
@@ -16,13 +16,13 @@
 //   8. Rejection path: ineligible counterparty → counterparty-eligibility check
 //      rejects, OrderRejectedAtGateway emitted, result status "rejected".
 //   9. Rejection early-stop: event count stops after the rejecting check
-//      (remaining check events are still emitted — all 7 checks run,
+//      (remaining check events are still emitted — all 8 checks run,
 //      but the terminal event is Rejected).
 //  10. GatewayOrderResult.rejectingCheck is "counterparty-eligibility" for
 //      an ineligible counterparty.
 //  11. rejectionReason is "counterparty not in eligibility-passing set" for
 //      an ineligible counterparty.
-//  12. Approved result.checks has exactly 7 entries.
+//  12. Approved result.checks has exactly 8 entries.
 //  13. Rejected result.status is "rejected" and has no "approved" events.
 //  14. Idempotency: calling getExistingGatewayResult after an
 //      OrderApprovedAtGateway event is present returns the approved result
@@ -56,6 +56,7 @@ import {
   makeCreditLimitApproved,
   makeCreditLimitLoaded,
 } from "../platform/event-store/event-types/credit-limit";
+import { makeLegalDocumentationSigned } from "../platform/event-store/event-types/legal-documentation";
 import { EventStore } from "../platform/event-store/store";
 import type { Actor } from "../platform/event-store/types";
 
@@ -188,15 +189,44 @@ function seedLoadedCreditLimit(store: EventStore, counterpartyId: string): void 
   );
 }
 
+/**
+ * Seed a signed trading master agreement so the FAIL-CLOSED documentation
+ * gateway check (ORG-CS3-001; D-FX-HELD-DIMS-SEAT-SWEEP) admits the order —
+ * the legal analogue of seedLoadedCreditLimit.
+ */
+function seedLegalDocumentation(
+  store: EventStore,
+  counterpartyId: string,
+  agreementType: "isda-2002" | "isda-2025" | "fx-bilateral" | "none-listed" = "isda-2002",
+): void {
+  store.append(
+    makeLegalDocumentationSigned({
+      asOf: T_2026,
+      entity: ENTITY,
+      actor: { type: "service", id: "test:imani:legal" },
+      citations: ["D-FX-HELD-DIMS-SEAT-SWEEP", "ORG-CS3-001"],
+      payload: {
+        counterpartyId,
+        agreementType,
+        version: "2002-MA + SA Schedule (test fixture)",
+        signedDate: "2026-05-09",
+        csaPresent: false,
+        nettingEnforceable: true,
+      },
+    }),
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
 describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
-  it("case 1: approved order emits OrderProposed + 14 check events + OrderApprovedAtGateway", () => {
+  it("case 1: approved order emits OrderProposed + 16 check events + OrderApprovedAtGateway", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
     seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId);
 
     const quote = quoteRfq(VALID_RFQ);
     routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
@@ -208,22 +238,23 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
     const rejected = replayToArray(store, "OrderRejectedAtGateway");
 
     expect(proposed).toHaveLength(1);
-    expect(checkRequested).toHaveLength(7);
-    expect(checkCompleted).toHaveLength(7);
+    expect(checkRequested).toHaveLength(8);
+    expect(checkCompleted).toHaveLength(8);
     expect(approved).toHaveLength(1);
     expect(rejected).toHaveLength(0);
   });
 
-  it("case 2: result has 7 checks all with outcome 'approve'", () => {
+  it("case 2: result has 8 checks all with outcome 'approve'", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
     seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId);
 
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
 
     expect(result.status).toBe("approved");
-    expect(result.checks).toHaveLength(7);
+    expect(result.checks).toHaveLength(8);
     for (const check of result.checks) {
       expect(check.outcome).toBe("approve");
     }
@@ -233,6 +264,7 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
     seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId);
 
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
@@ -247,6 +279,7 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
     seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId);
 
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
@@ -276,18 +309,20 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
     seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId);
 
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
 
     const checkRequested = replayToArray(store, "GatewayCheckRequested");
-    expect(checkRequested).toHaveLength(7);
+    expect(checkRequested).toHaveLength(8);
 
     const EXPECTED_KINDS = [
       "identity",
       "sanctions",
       "suitability",
       "counterparty-eligibility",
+      "documentation",
       "credit-limit",
       "capital-impact",
       "funding",
@@ -308,12 +343,13 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
     seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId);
 
     const quote = quoteRfq(VALID_RFQ);
     routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
 
     const checkCompleted = replayToArray(store, "GatewayCheckCompleted");
-    expect(checkCompleted).toHaveLength(7);
+    expect(checkCompleted).toHaveLength(8);
 
     for (const event of checkCompleted) {
       const p = event.payload as Record<string, unknown>;
@@ -328,6 +364,7 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
     seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId);
 
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
@@ -343,15 +380,16 @@ describe("FX Slice 4 — routeOrderToGateway (happy path)", () => {
     expect((p.approvalCitations as string[]).length).toBeGreaterThan(0);
   });
 
-  it("case 12: approved result.checks has exactly 7 entries", () => {
+  it("case 12: approved result.checks has exactly 8 entries", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
     seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId);
 
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
 
-    expect(result.checks).toHaveLength(7);
+    expect(result.checks).toHaveLength(8);
   });
 });
 
@@ -375,7 +413,7 @@ describe("FX Slice 4 — routeOrderToGateway (rejection path)", () => {
     expect(approved).toHaveLength(0);
   });
 
-  it("case 9: all 7 check events are emitted even on rejection, terminal event is Rejected", () => {
+  it("case 9: all 8 check events are emitted even on rejection, terminal event is Rejected", () => {
     const store = freshStore();
 
     const quote = quoteRfq(INELIGIBLE_RFQ);
@@ -385,8 +423,8 @@ describe("FX Slice 4 — routeOrderToGateway (rejection path)", () => {
     const checkCompleted = replayToArray(store, "GatewayCheckCompleted");
     const rejected = replayToArray(store, "OrderRejectedAtGateway");
 
-    expect(checkRequested).toHaveLength(7);
-    expect(checkCompleted).toHaveLength(7);
+    expect(checkRequested).toHaveLength(8);
+    expect(checkCompleted).toHaveLength(8);
     expect(rejected).toHaveLength(1);
   });
 
@@ -507,6 +545,7 @@ describe("FX gateway — sanctions screening enforcement", () => {
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
     seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId);
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
 
@@ -519,9 +558,11 @@ describe("FX gateway — sanctions screening enforcement", () => {
 describe("FX gateway — credit-limit FAIL-CLOSED enforcement (D-FX-GATEWAY-CREDIT-LIMIT-FAIL-CLOSED)", () => {
   it("rejects an eligible, clean-sanctions counterparty that has NO loaded credit limit", () => {
     const store = freshStore();
-    // Eligible + clean sanctions, but NO loaded credit limit → fail-closed at
-    // the credit-limit check (a bank must not trade without an approved limit).
+    // Eligible + clean sanctions + signed legal docs, but NO loaded credit
+    // limit → fail-closed at the credit-limit check (a bank must not trade
+    // without an approved limit).
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId);
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
 
@@ -538,6 +579,7 @@ describe("FX gateway — credit-limit FAIL-CLOSED enforcement (D-FX-GATEWAY-CRED
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
     seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId);
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
 
@@ -565,6 +607,7 @@ describe("FX gateway — capital-impact + funding enforcement (D-FX-GATEWAY-CAPI
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
     seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId);
 
     // 2bn USD: at any plausible USD/ZAR rate (>R10) the ZAR notional exceeds
     // R20bn → proposed RWA > R4bn at weight 0.2, far above the R1.667bn
@@ -586,6 +629,7 @@ describe("FX gateway — capital-impact + funding enforcement (D-FX-GATEWAY-CAPI
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
     seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId);
 
     // 10m USD: ZAR notional R100m–R300m at plausible rates → 50–150pp LCR
     // outflow → post-trade LCR well below the 110% floor, while proposed RWA
@@ -607,6 +651,7 @@ describe("FX gateway — capital-impact + funding enforcement (D-FX-GATEWAY-CAPI
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
     seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId);
 
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
@@ -621,6 +666,7 @@ describe("FX gateway — capital-impact + funding enforcement (D-FX-GATEWAY-CAPI
     const store = freshStore();
     seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
     seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId);
 
     // Seed a live RWA event-of-record AT the ceiling: even VALID_RFQ's small
     // order must now reject at capital-impact (proves the event-of-record
@@ -655,6 +701,93 @@ describe("FX gateway — capital-impact + funding enforcement (D-FX-GATEWAY-CAPI
 
     expect(result.status).toBe("rejected");
     expect(result.rejectingCheck).toBe("capital-impact");
+    store.close();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Legal-documentation FAIL-CLOSED enforcement (ORG-CS3-001;
+// D-FX-HELD-DIMS-SEAT-SWEEP). A written trading-relationship agreement
+// (LegalDocumentationSigned: ISDA Master or fx-bilateral) must exist BEFORE
+// any OTC derivative transaction; a counterparty without one is rejected at
+// the "documentation" check even when eligible, FAIS-classified, clean on
+// sanctions, and credit-seeded. "none-listed" does NOT admit.
+// ---------------------------------------------------------------------------
+
+describe("FX gateway — legal-documentation FAIL-CLOSED enforcement (ORG-CS3-001, D-FX-HELD-DIMS-SEAT-SWEEP)", () => {
+  it("rejects an eligible, credit-seeded counterparty with NO LegalDocumentationSigned of record", () => {
+    const store = freshStore();
+    seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    // No seedLegalDocumentation — the missing written agreement must reject.
+
+    const quote = quoteRfq(VALID_RFQ);
+    const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
+
+    expect(result.status).toBe("rejected");
+    expect(result.rejectingCheck).toBe("documentation");
+    const docCheck = result.checks.find((c) => c.checkKind === "documentation");
+    expect(docCheck?.outcome).toBe("reject");
+    expect(docCheck?.rejectionReason).toContain("ORG-CS3-001");
+    expect(docCheck?.rejectionReason).toContain("no signed trading master");
+    expect(replayToArray(store, "OrderApprovedAtGateway")).toHaveLength(0);
+    expect(replayToArray(store, "OrderRejectedAtGateway")).toHaveLength(1);
+    store.close();
+  });
+
+  it("approves once an ISDA 2002 Master is signed (enforcement, not reject-always)", () => {
+    const store = freshStore();
+    seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId, "isda-2002");
+
+    const quote = quoteRfq(VALID_RFQ);
+    const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
+
+    expect(result.status).toBe("approved");
+    expect(result.checks.find((c) => c.checkKind === "documentation")?.outcome).toBe("approve");
+    store.close();
+  });
+
+  it("admits an fx-bilateral master form (schema-representable trading agreement)", () => {
+    const store = freshStore();
+    seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId, "fx-bilateral");
+
+    const quote = quoteRfq(VALID_RFQ);
+    const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
+
+    expect(result.status).toBe("approved");
+    expect(result.checks.find((c) => c.checkKind === "documentation")?.outcome).toBe("approve");
+    store.close();
+  });
+
+  it("does NOT admit a 'none-listed' record (account-mandate/SLA is not a trading agreement)", () => {
+    const store = freshStore();
+    seedEligibleCounterparty(store, VALID_RFQ.counterpartyId);
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId, "none-listed");
+
+    const quote = quoteRfq(VALID_RFQ);
+    const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
+
+    expect(result.status).toBe("rejected");
+    expect(result.rejectingCheck).toBe("documentation");
+    store.close();
+  });
+
+  it("documentation rejection still runs after counterparty-eligibility (first-rejection-wins order)", () => {
+    const store = freshStore();
+    // Nothing seeded at all: eligibility (3rd check) rejects first; the
+    // documentation check (5th) also rejects, but rejectingCheck must be the
+    // FIRST rejecting check in order.
+    const quote = quoteRfq(VALID_RFQ);
+    const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
+
+    expect(result.status).toBe("rejected");
+    expect(result.rejectingCheck).toBe("counterparty-eligibility");
+    expect(result.checks.find((c) => c.checkKind === "documentation")?.outcome).toBe("reject");
     store.close();
   });
 });
