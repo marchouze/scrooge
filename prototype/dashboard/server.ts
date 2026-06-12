@@ -2214,6 +2214,8 @@ interface ApprovedObligation {
   urn: string;
   requirement: string;
   derivesFrom: string[];
+  /** Provision id → verbatim quote, snapshotted at adoption time. */
+  verbatimSourceText?: Record<string, string>;
   owner: string;
   domain: string;
 }
@@ -2241,8 +2243,21 @@ async function handleRegAdoptObligations(req: Request, slug: string): Promise<Re
   const now = nowUtc();
   const emitted: string[] = [];
 
+  // Snapshot FULL verbatim text per contributing provision from the source
+  // doc at approval time — authoritative, not the LLM's truncated quotes.
+  // Client-sent quotes are a fallback for provisions that no longer resolve.
+  const approvalDoc = loadStructuredDocForSlug(slug);
+  const approvalTree = approvalDoc ? buildProvisionTree(approvalDoc) : null;
+
   for (const ob of body.obligations as ApprovedObligation[]) {
     if (!ob.obligationId || !ob.requirement) continue;
+    const verbatim: Record<string, string> = {};
+    for (const provId of ob.derivesFrom ?? []) {
+      const fullText = approvalTree?.get(provId)?.text?.trim();
+      const fallback = ob.verbatimSourceText?.[provId];
+      if (fullText) verbatim[provId] = fullText;
+      else if (fallback) verbatim[provId] = fallback;
+    }
     const evt = makeObligationAdopted({
       asOf: now,
       entity: "LE-ZA-HOZ-BANK",
@@ -2258,6 +2273,7 @@ async function handleRegAdoptObligations(req: Request, slug: string): Promise<Re
         owner: ob.owner ?? "",
         status: "active",
         derivesFrom: ob.derivesFrom ?? [],
+        ...(Object.keys(verbatim).length > 0 ? { verbatimSourceText: verbatim } : {}),
         adoptedAt: now,
       },
     });

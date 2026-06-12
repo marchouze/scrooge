@@ -606,6 +606,9 @@
       urn: p.suggestedUrn,
       requirement: p.requirement,
       derivesFrom: p.contributingProvisionIds || [],
+      // LLM quotes as fallback only — the server snapshots FULL provision
+      // text from the source doc at approval time.
+      verbatimSourceText: p.verbatimSourceText || {},
       owner: "",
       domain: "",
     }));
