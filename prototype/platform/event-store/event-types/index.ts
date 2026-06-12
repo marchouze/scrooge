@@ -357,6 +357,10 @@ export * from "./valuation-adjustment";
 // Authority: D-V2-BBAAS-BLUEPRINT-SYNTHESIS; D-MODEL-BINDING-CONTRACT-V1.
 // Author: Bea (Financial Controller, accounting).
 export * from "./v2-banking";
+// WS-V2-BBAAS S1 — V2 control-plane event types (v1-side factories + payload
+// schemas for the 4 cross-tenant fleet event types).
+// Authority: D-V2-TENANCY-ARCHITECTURE (Option C); D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
+export * from "./v2-control-plane";
 
 // ---------------------------------------------------------------------------
 // Party domain — re-exported from domains/party (per D-PARTY-REGISTER
@@ -498,6 +502,7 @@ import { SETTLEMENT_TYPED_EVENT_TYPES } from "./settlement";
 import { TRADE_MATURED_EVENT_TYPES } from "./trade-matured";
 import { TRADING_TYPED_EVENT_TYPES } from "./trading";
 import { V2_BANKING_TYPED_EVENT_TYPES } from "./v2-banking";
+import { V2_CONTROL_PLANE_TYPED_EVENT_TYPES } from "./v2-control-plane";
 import { VALUATION_TYPED_EVENT_TYPES } from "./valuation";
 import { VALUATION_ADJUSTMENT_TYPED_EVENT_TYPES } from "./valuation-adjustment";
 
@@ -693,6 +698,11 @@ export const TYPED_EVENT_TYPES = [
   //   V2RiskAppetiteSet.
   // Authority: D-V2-BBAAS-BLUEPRINT-SYNTHESIS; D-MODEL-BINDING-CONTRACT-V1.
   ...V2_BANKING_TYPED_EVENT_TYPES,
+  // WS-V2-BBAAS S1 — control-plane fleet event types (tenant registry + metering
+  // + upgrade ledger). TenantRegistered, TenantSurfaceGranted,
+  //   TenantUpgradeLedgerEntry, TenantMeterEvent.
+  // Authority: D-V2-TENANCY-ARCHITECTURE (Option C); D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
+  ...V2_CONTROL_PLANE_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];

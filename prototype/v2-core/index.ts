@@ -76,3 +76,14 @@ export * from "./banking/events";
 /** @tier R — PostureRegistered / Activated / Deactivated / Revised event types; APPLIES_WHEN
  * predicate; PostureRegister projection. Authority: D-W8-POSTURE-REGISTER-SLICE-1. */
 export * from "./posture";
+
+// --- Control-plane (Wave 1, S1) — fleet store --------------------------------
+
+/** @tier K — control-plane event shapes (TenantRegistered, TenantSurfaceGranted, TenantUpgradeLedgerEntry, TenantMeterEvent); anchor-bank only */
+export * from "./control-plane/events";
+
+/** @tier K — control-plane SQLite store factory (openControlPlaneStore, ControlPlaneStore); anchor-bank only */
+export * from "./control-plane/store";
+
+/** @tier K — control-plane in-memory projection (ControlPlaneProjection, Tenant, listTenants, getTenant, getMeteringWindow); anchor-bank only */
+export * from "./control-plane/projection";

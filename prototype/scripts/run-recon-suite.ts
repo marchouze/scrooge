@@ -72,6 +72,8 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:v2-tenant-axis-present",
     "recon:v2-released-surface-clean-core",
     "recon:v2-posture-register-integrity",
+    // WS-V2-BBAAS S1 — control-plane tenant registry (advisory in S1).
+    "recon:v2-control-plane-tenant-registry",
     "recon:dashboard",
     "recon:wall-clock-callsite-coverage",
     "recon:decisions-events-only",
