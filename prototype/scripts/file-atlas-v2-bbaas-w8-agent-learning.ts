@@ -168,6 +168,18 @@ the working estimate is **~60–120 distinct PostureDimensions at full SA-corpus
 comfortably inside the ratified 50–200 band** — small enough for a controlled vocabulary
 with human-gated minting, large enough that hand-designing it up front would fail.
 
+**A recall caveat the sample exposed.** The PA-side scan ran over the structured extracts,
+and several pre-2018 PA directives are skeleton-tier (headings present, body text thin —
+the known GAP-PA-SOURCE-OCR deferral: SARB serves image-only scans for older instruments,
+and \`recon:regulatory-source-extract-quality\` allowlists 48 such extracts). Directive
+D7/2015, for instance, *titles* its §5 "IRB approach" and §6 "Standardised approach" but
+carries almost no body text, so clause-level extraction there would find the conditioning
+only in headings. Posture-dimension extraction recall is therefore bounded by extract
+quality, and the §2.6 coverage gate must treat skeleton-tier instruments as
+awaiting-fact-class items (extraction pending better source), not as unconditional — a
+silent "no conditioning clause found" over a skeleton extract would be exactly the wrong
+default. The BCBS corpus has no such gap; the pilot family (§9) deliberately leans on it.
+
 ### 2.2 Extraction-driven discovery (schema discovered, not designed)
 
 Mechanism: extend the existing tick-to-obligation distillation pass. The \`/distill\` route
