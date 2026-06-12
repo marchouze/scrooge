@@ -26,6 +26,38 @@ interface SeedRow {
   fulfilmentPolicy?: string;
   owner?: string;
   reviewStatus?: string;
+  section?: string;
+  domain?: string;
+}
+
+/**
+ * Assert section -> domain is a function (1:1): every row that shares a section
+ * header must carry the same `domain` letter. A register section header is a
+ * single-domain grouping; a section spanning multiple domain letters defeats
+ * per-domain coverage rollups. (WS-OBLIGATION-CLEANUP Phase-1a,
+ * D-OBLIGATIONS-REGISTER-CLEANUP — two such breaks reconciled: the OTC-Derivative
+ * "Domain M" and "Thin human layer Domain O" sections were each split per domain.)
+ */
+function sectionDomainViolations(seed: SeedRow[]): ReconViolation[] {
+  const bySection = new Map<string, Set<string>>();
+  for (const row of seed) {
+    const section = (row.section ?? "").trim();
+    if (!section) continue;
+    const domain = (row.domain ?? "").trim();
+    if (!bySection.has(section)) bySection.set(section, new Set());
+    bySection.get(section)?.add(domain);
+  }
+  const out: ReconViolation[] = [];
+  for (const [section, domains] of bySection) {
+    if (domains.size > 1) {
+      out.push({
+        subject: section,
+        message: `section spans multiple domains [${[...domains].sort().join(", ")}] — a section header must map to exactly one domain letter; split the section so each row's domain agrees with its header`,
+        severity: "fail",
+      });
+    }
+  }
+  return out;
 }
 
 function findRepoRoot(start: string): string {
@@ -79,10 +111,16 @@ export function run(opts: RunOpts = {}): ReconResult {
   result.asserted = seed.length;
   const seedById = new Map(seed.map((r) => [r.id, r]));
 
+  // Section -> domain must be a function (1:1). Asserted against the seed (the
+  // authored origin), independent of the markdown render's presence.
+  violations.push(...sectionDomainViolations(seed));
+
   // If the markdown render still exists, assert parity. If it has been removed
-  // (full cut), the seed alone is canonical and there is nothing to compare.
+  // (full cut), the seed alone is canonical and there is no render to compare —
+  // but the seed-only section->domain assertion above still stands.
   if (!existsSync(mdPath)) {
-    result.ok = true;
+    result.ok = violations.filter((v) => v.severity === "fail").length === 0;
+    result.violations = violations;
     return result;
   }
 

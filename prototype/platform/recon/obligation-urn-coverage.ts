@@ -211,36 +211,31 @@ const URN_TBD_ALLOWLIST: ReadonlySet<string> = new Set<string>([
   "ORG-ODP-RPT-003",
   "ORG-ODP-RPT-004",
   "ORG-ODP-RPT-005",
-  // PR(IV) family (2)
-  "ORG-PR(IV)-16",
+  // PR(IV) family (1) — PR(IV)-16 minted to urn:reg:za:paia-2-2000:s51
+  // (WS-OBLIGATION-CLEANUP Phase-1a). PR(IV)-17 stays [TBD]: citation is the
+  // bare instrument "PAIA" with no enumerable section (no-fabrication rule).
   "ORG-PR(IV)-17",
-  // PR family (26)
-  "ORG-PR-01",
-  "ORG-PR-02",
-  "ORG-PR-03",
-  "ORG-PR-04",
-  "ORG-PR-05",
-  "ORG-PR-06",
-  "ORG-PR-07",
-  "ORG-PR-08",
-  "ORG-PR-09",
-  "ORG-PR-10",
-  "ORG-PR-11",
-  "ORG-PR-12",
-  "ORG-PR-13",
-  "ORG-PR-14",
-  "ORG-PR-15",
-  "ORG-PR-16",
-  "ORG-PR-17",
-  "ORG-PR-18",
-  "ORG-PR-19",
-  "ORG-PR-20",
-  "ORG-PR-21",
-  "ORG-PR-22",
-  "ORG-PR-23",
-  "ORG-PR-24",
-  "ORG-PR-25",
-  "ORG-PR-26",
+  // PR family (15) — 11 PR-family rows minted in WS-OBLIGATION-CLEANUP Phase-1a
+  // (PR-01/02/03/05 -> rrb:reg38; PR-06/07 -> rrb:reg26; PR-19 -> rrb:reg28;
+  // PR-24/25 -> rrb:reg39; PR-22 -> pa-guidance-note:gn1-2024 doc-level). The
+  // rows below remain [TBD] by design — internal-RAS / BCBS-framework-only
+  // citations with no enumerable SA provision, or counsel/OCR-gated section refs:
+  "ORG-PR-04", // internal RAS / RAF — no enumerable SA section
+  "ORG-PR-08", // BCBS 248 framework only
+  "ORG-PR-09", // BCBS Large Exposures framework — no SA Reg section in citation
+  "ORG-PR-10", // internal RAS
+  "ORG-PR-11", // BCBS d368 framework only
+  "ORG-PR-12", // "Banks Act + PA stress-testing guidance" — no enumerable section
+  "ORG-PR-13", // ICAAP — Banks Act family, no enumerable section in citation
+  "ORG-PR-14", // ILAAP — Banks Act family, no enumerable section in citation
+  "ORG-PR-15", // BCBS 144 framework only
+  "ORG-PR-16", // BCBS op-risk/resilience framework only
+  "ORG-PR-17", // BCBS op-risk/resilience framework only
+  "ORG-PR-18", // BCBS op-risk/resilience framework only
+  "ORG-PR-20", // internal RAS
+  "ORG-PR-21", // internal RAS
+  "ORG-PR-23", // internal RAS §B8a + BCBS principles (TBC, counsel-gated)
+  "ORG-PR-26", // BCBS op-risk framework only
   // TX family (9)
   "ORG-TX-01",
   "ORG-TX-02",

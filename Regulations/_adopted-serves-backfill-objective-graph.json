@@ -1309,7 +1309,7 @@
       "extractionMethod": "rule-based",
       "confidenceScore": 0.85,
       "extractedAt": "2026-06-10T00:00:00Z",
-      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)",
+      "sourceProvision": "urn:reg:za:rrb:reg38",
       "metadata": {
         "derivationRule": "pa-banks-act"
       }
@@ -1322,7 +1322,7 @@
       "extractionMethod": "rule-based",
       "confidenceScore": 0.85,
       "extractedAt": "2026-06-10T00:00:00Z",
-      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)",
+      "sourceProvision": "urn:reg:za:rrb:reg38",
       "metadata": {
         "derivationRule": "pa-banks-act"
       }
@@ -1452,7 +1452,7 @@
       "extractionMethod": "rule-based",
       "confidenceScore": 0.85,
       "extractedAt": "2026-06-10T00:00:00Z",
-      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)",
+      "sourceProvision": "urn:reg:za:rrb:reg28",
       "metadata": {
         "derivationRule": "pa-banks-act"
       }
@@ -1465,7 +1465,7 @@
       "extractionMethod": "rule-based",
       "confidenceScore": 0.9,
       "extractedAt": "2026-06-10T00:00:00Z",
-      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)",
+      "sourceProvision": "urn:reg:za:pa-guidance-note:gn1-2024",
       "metadata": {
         "derivationRule": "pa-directive"
       }
@@ -1478,7 +1478,7 @@
       "extractionMethod": "rule-based",
       "confidenceScore": 0.85,
       "extractedAt": "2026-06-10T00:00:00Z",
-      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)",
+      "sourceProvision": "urn:reg:za:rrb:reg39",
       "metadata": {
         "derivationRule": "pa-banks-act"
       }
@@ -1491,7 +1491,7 @@
       "extractionMethod": "rule-based",
       "confidenceScore": 0.85,
       "extractedAt": "2026-06-10T00:00:00Z",
-      "sourceProvision": "urn:reg:za:fsr-act-9-2017:s.33(a)",
+      "sourceProvision": "urn:reg:za:rrb:reg39",
       "metadata": {
         "derivationRule": "pa-banks-act"
       }
