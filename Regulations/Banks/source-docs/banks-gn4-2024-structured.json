@@ -28,7 +28,7 @@
           "id": "s1",
           "number": "1",
           "heading": "Introduction",
-          "text": "Introduction",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -58,7 +58,7 @@
           "id": "s2",
           "number": "2",
           "heading": "Background",
-          "text": "Background",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -96,7 +96,7 @@
           "id": "s3",
           "number": "3",
           "heading": "Legislation in South Africa",
-          "text": "Legislation in South Africa",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -126,7 +126,7 @@
           "id": "s4",
           "number": "4",
           "heading": "Identification and assessment criteria",
-          "text": "Identification and assessment criteria",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -178,7 +178,7 @@
           "id": "s5",
           "number": "5",
           "heading": "Acknowledgement of receipt",
-          "text": "Acknowledgement of receipt",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {

@@ -36,7 +36,7 @@
               "id": "s1-1",
               "number": "1.1",
               "heading": "Introduction",
-              "text": "Introduction. Stress testing is a key aspect of the new capital regime as outlined in the Regulations and will be an important input into this Office's Supervisory Review and Evaluation Process (SREP). Banks and controlling companies are required to undertake a wide range of stress tests, including single-factor stresses, stress tests on individual risk parameters and scenario stress tests across the bank. This guidance note is directed at all banks, although IRB credit-risk stress testing is of relevance only for banks that adopted the IRB approach for calculating their minimum required capital related to credit risk.",
+              "text": "Stress testing is a key aspect of the new capital regime as outlined in the Regulations and will be an important input into this Office's Supervisory Review and Evaluation Process (SREP). Banks and controlling companies are required to undertake a wide range of stress tests, including single-factor stresses, stress tests on individual risk parameters and scenario stress tests across the bank. This guidance note is directed at all banks, although IRB credit-risk stress testing is of relevance only for banks that adopted the IRB approach for calculating their minimum required capital related to credit risk.",
               "verbatim": true,
               "subsections": []
             },
@@ -59,7 +59,7 @@
                   "id": "s1-2-2",
                   "number": "1.2.2",
                   "heading": "Component 2",
-                  "text": "Component 2 — The appropriate severity of a relevant stress scenario. Banks and controlling companies are hereafter referred to as banks.",
+                  "text": "— The appropriate severity of a relevant stress scenario. Banks and controlling companies are hereafter referred to as banks.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -67,7 +67,7 @@
                   "id": "s1-2-3",
                   "number": "1.2.3",
                   "heading": "Component 3",
-                  "text": "Component 3 — The role of senior management in the stress-testing process. This guidance note does not purport to contain information on all aspects of stress testing and banks' stress-testing activities should not be limited to the areas covered in this guidance note. Additional guidance or directives regarding stress testing may be issued at a later stage.",
+                  "text": "— The role of senior management in the stress-testing process. This guidance note does not purport to contain information on all aspects of stress testing and banks' stress-testing activities should not be limited to the areas covered in this guidance note. Additional guidance or directives regarding stress testing may be issued at a later stage.",
                   "verbatim": true,
                   "subsections": []
                 }
@@ -117,7 +117,7 @@
                   "id": "s2-3-1",
                   "number": "2.3.1",
                   "heading": "Regulation 39(6)",
-                  "text": "Regulation 39(6), which states: (e) Banks shall, on a periodic basis, conduct relevant stress tests, particularly in respect of the bank's main risk exposures, in order to identify events or changes in market conditions that may have an adverse impact on the bank.",
+                  "text": ", which states: (e) Banks shall, on a periodic basis, conduct relevant stress tests, particularly in respect of the bank's main risk exposures, in order to identify events or changes in market conditions that may have an adverse impact on the bank.",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -125,7 +125,7 @@
                   "id": "s2-3-2",
                   "number": "2.3.2",
                   "heading": "Regulation 39(8)",
-                  "text": "Regulation 39(8), which states: stress — shall have in place a routine and rigorous process or programme of stress testing; (i) the results of which stress-testing — (A) shall periodically be reviewed by the senior management of the bank; (B) shall be used in the bank's internal assessment of capital adequacy; (C) shall be compared against the bank's measure of expected positive exposure and the related impact on the bank's capital adequacy; (D) shall be duly reflected in the bank's policies and counterparty limits set by management and the bank's board of directors.",
+                  "text": ", which states: stress — shall have in place a routine and rigorous process or programme of stress testing; (i) the results of which stress-testing — (A) shall periodically be reviewed by the senior management of the bank; (B) shall be used in the bank's internal assessment of capital adequacy; (C) shall be compared against the bank's measure of expected positive exposure and the related impact on the bank's capital adequacy; (D) shall be duly reflected in the bank's policies and counterparty limits set by management and the bank's board of directors.",
                   "verbatim": true,
                   "subsections": []
                 }
@@ -266,7 +266,7 @@
                   "id": "s5-1-3",
                   "number": "5.1.3",
                   "heading": "Objectives",
-                  "text": "Objectives",
+                  "text": "",
                   "verbatim": true,
                   "subsections": [
                     {
@@ -340,7 +340,7 @@
                   "id": "s5-1-4",
                   "number": "5.1.4",
                   "heading": "Impact analysis",
-                  "text": "Impact analysis",
+                  "text": "",
                   "verbatim": true,
                   "subsections": [
                     {
@@ -381,7 +381,7 @@
                   "id": "s5-1-5",
                   "number": "5.1.5",
                   "heading": "Severity",
-                  "text": "Severity",
+                  "text": "",
                   "verbatim": true,
                   "subsections": [
                     {
@@ -414,7 +414,7 @@
                   "id": "s5-1-6",
                   "number": "5.1.6",
                   "heading": "Time horizon",
-                  "text": "Time horizon",
+                  "text": "",
                   "verbatim": true,
                   "subsections": [
                     {
@@ -447,7 +447,7 @@
                   "id": "s5-1-7",
                   "number": "5.1.7",
                   "heading": "Management actions",
-                  "text": "Management actions",
+                  "text": "",
                   "verbatim": true,
                   "subsections": [
                     {
@@ -488,7 +488,7 @@
                   "id": "s5-1-8",
                   "number": "5.1.8",
                   "heading": "Single factor or economic scenario stress tests",
-                  "text": "Single factor or economic scenario stress tests",
+                  "text": "",
                   "verbatim": true,
                   "subsections": [
                     {
@@ -521,7 +521,7 @@
                   "id": "s5-1-9",
                   "number": "5.1.9",
                   "heading": "The process for submission",
-                  "text": "The process for submission",
+                  "text": "",
                   "verbatim": true,
                   "subsections": [
                     {
@@ -548,14 +548,14 @@
               "id": "s5-2",
               "number": "5.2",
               "heading": "Component 2 — Severity and detail",
-              "text": "Component 2 — Severity and detail.",
+              "text": "",
               "verbatim": true,
               "subsections": [
                 {
                   "id": "s5-2-1",
                   "number": "5.2.1",
                   "heading": "Severity",
-                  "text": "Severity",
+                  "text": "",
                   "verbatim": true,
                   "subsections": [
                     {
@@ -604,7 +604,7 @@
                   "id": "s5-2-2",
                   "number": "5.2.2",
                   "heading": "Macro economic scenario detail",
-                  "text": "Macro economic scenario detail",
+                  "text": "",
                   "verbatim": true,
                   "subsections": [
                     {

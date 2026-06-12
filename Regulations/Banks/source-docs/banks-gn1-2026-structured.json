@@ -28,7 +28,7 @@
           "id": "s1",
           "number": "1",
           "heading": "Introduction",
-          "text": "Introduction",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -227,7 +227,7 @@
           "id": "s3",
           "number": "3",
           "heading": "Acknowledgement of receipt",
-          "text": "Acknowledgement of receipt",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {

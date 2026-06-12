@@ -28,7 +28,7 @@
           "id": "s1",
           "number": "1",
           "heading": "Introduction",
-          "text": "Introduction",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -117,7 +117,7 @@
           "id": "s2",
           "number": "2",
           "heading": "Legislation in South Africa",
-          "text": "Legislation in South Africa",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -168,7 +168,7 @@
           "id": "s3",
           "number": "3",
           "heading": "Identification and assessment of TF risk",
-          "text": "Identification and assessment of TF risk",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -247,7 +247,7 @@
           "id": "s4",
           "number": "4",
           "heading": "Mitigation of TF Risks",
-          "text": "Mitigation of TF Risks",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -480,7 +480,7 @@
           "id": "s5",
           "number": "5",
           "heading": "Mitigation of TFS Risks",
-          "text": "Mitigation of TFS Risks",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -742,7 +742,7 @@
           "id": "s6",
           "number": "6",
           "heading": "Group wide implementation",
-          "text": "Group wide implementation",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -786,7 +786,7 @@
           "id": "s7",
           "number": "7",
           "heading": "TF General Concepts",
-          "text": "TF General Concepts",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -838,7 +838,7 @@
           "id": "s8",
           "number": "8",
           "heading": "Trends and Typologies",
-          "text": "Trends and Typologies",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -996,7 +996,7 @@
           "id": "s9",
           "number": "9",
           "heading": "Acknowledgement of Receipt",
-          "text": "Acknowledgement of Receipt",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
