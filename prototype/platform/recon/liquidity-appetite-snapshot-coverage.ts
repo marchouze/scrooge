@@ -9,6 +9,19 @@
 // note is acceptable — the requirement is that the status is *computed*,
 // not absent.
 //
+// EXTENDED 2026-06-12 (D-IRRBB-DELTA-EVE-OUTLIER-MEASUREMENT): the pipeline
+// also asserts the `appetite:irrbb:delta-eve-outlier` line (RAS §B4). The
+// §B4 measurement shares the SAME source substrate as the §B3 lines — Ravi
+// (Treasury and ALM engineer, engineering)'s ALM run — folded by
+// `platform/projections/irrbb-delta-eve.ts` from `IRRBBChecked` (metric=EVE)
+// events of record. Extending this gate (rather than adding a fourth
+// near-identical pipeline alongside ras-b6 / ras-b7 coverage) keeps the
+// ALM-substrate-measured appetite lines under one assertion walk. A
+// wiring-cutover grace applies to the §B4 line ONLY: a latest snapshot
+// emitted BEFORE the wiring landed (as_of < B4_WIRING_CUTOVER_ISO)
+// legitimately carries `unmeasured` for §B4 — that softens to `info`; any
+// snapshot at/after the cutover hard-fails on `unmeasured`.
+//
 // Why this pipeline exists:
 //
 //   Before the Ravi (Treasury and ALM engineer, engineering) wiring, the
@@ -58,8 +71,18 @@ const PIPELINE = "liquidity-appetite-snapshot-coverage";
 // Line identities read from the canonical register (single source of truth).
 const LCR_LINE_ID = requireRasAppetiteLine("appetite:liquidity:lcr").id;
 const NSFR_LINE_ID = requireRasAppetiteLine("appetite:liquidity:nsfr").id;
+const B4_DELTA_EVE_LINE_ID = requireRasAppetiteLine("appetite:irrbb:delta-eve-outlier").id;
 
-const REQUIRED_LINE_IDS: readonly string[] = [LCR_LINE_ID, NSFR_LINE_ID];
+const REQUIRED_LINE_IDS: readonly string[] = [LCR_LINE_ID, NSFR_LINE_ID, B4_DELTA_EVE_LINE_ID];
+
+/**
+ * Wiring-cutover for the §B4 ΔEVE line (D-IRRBB-DELTA-EVE-OUTLIER-MEASUREMENT,
+ * CEO-approved 2026-06-12). Snapshots emitted before this instant were
+ * produced by the pre-wiring handler and legitimately carry `unmeasured` for
+ * the §B4 line — they soften to `info` until Helena's next run re-emits.
+ * LCR/NSFR have no grace (their wiring predates every retained snapshot).
+ */
+const B4_WIRING_CUTOVER_ISO = "2026-06-13T00:00:00.000Z";
 
 /**
  * Statuses that count as "measured" — RAG plus the build-phase `n/a-build-phase`
@@ -184,17 +207,33 @@ export function run(opts: RunOpts = {}): ReconResult {
     return result;
   }
 
-  // Assertion 3: each required appetite line (LCR + NSFR) is present and
-  // carries a measured status (green / amber / red / n/a-build-phase).
-  // The `unmeasured` value is the failure mode the gate catches.
+  // Assertion 3: each required appetite line (LCR + NSFR + §B4 ΔEVE) is
+  // present and carries a measured status (green / amber / red /
+  // n/a-build-phase). The `unmeasured` value is the failure mode the gate
+  // catches. §B4 carries a wiring-cutover grace (see B4_WIRING_CUTOVER_ISO).
   const map = lineStatuses as Record<string, unknown>;
   for (const lineId of REQUIRED_LINE_IDS) {
     result.asserted++;
     const status = map[lineId];
+    const isB4 = lineId === B4_DELTA_EVE_LINE_ID;
+    const authorityNote = isB4
+      ? "RAS §B4 and D-IRRBB-DELTA-EVE-OUTLIER-MEASUREMENT (CEO-approved 2026-06-12)"
+      : "RAS §B3 and brief:ravi:alm-position-substrate-and-helena-liquidity-line:2026-05-21";
     if (status === undefined) {
+      // §B4 grace: snapshots emitted before the wiring landed predate the
+      // line entirely on very old snapshots — soften the same way as the
+      // unmeasured case below.
+      if (isB4 && latest.as_of < B4_WIRING_CUTOVER_ISO) {
+        violations.push({
+          subject: `RiskAppetiteSnapshot:${latest.event_id}:${lineId}`,
+          message: `Appetite line \`${lineId}\` is missing from the latest snapshot (as_of ${latest.as_of}), which predates the §B4 wiring cutover ${B4_WIRING_CUTOVER_ISO}. Helena's next run will assert. Authority: ${authorityNote}.`,
+          severity: "info",
+        });
+        continue;
+      }
       violations.push({
         subject: `RiskAppetiteSnapshot:${latest.event_id}:${lineId}`,
-        message: `Appetite line \`${lineId}\` is missing from the latest snapshot's \`lineStatuses\` map. Helena's handler must include every APPETITE_LINES entry; this line is required by RAS §B3 and brief:ravi:alm-position-substrate-and-helena-liquidity-line:2026-05-21.`,
+        message: `Appetite line \`${lineId}\` is missing from the latest snapshot's \`lineStatuses\` map. Helena's handler must include every APPETITE_LINES entry; this line is required by ${authorityNote}.`,
         severity: "fail",
       });
       continue;
@@ -208,9 +247,20 @@ export function run(opts: RunOpts = {}): ReconResult {
       continue;
     }
     if (!MEASURED_STATUSES.has(status)) {
+      if (isB4 && latest.as_of < B4_WIRING_CUTOVER_ISO) {
+        violations.push({
+          subject: `RiskAppetiteSnapshot:${latest.event_id}:${lineId}`,
+          message: `Appetite line \`${lineId}\` has status="${status}" in a snapshot (as_of ${latest.as_of}) that predates the §B4 wiring cutover ${B4_WIRING_CUTOVER_ISO} — pre-wiring snapshot tolerated as info. Helena's next run must report a measured status (source: platform/projections/irrbb-delta-eve.ts folding Ravi's IRRBBChecked EVE events). Authority: ${authorityNote}.`,
+          severity: "info",
+        });
+        continue;
+      }
+      const sourceNote = isB4
+        ? "RAS §B4 thresholds: green <10% Tier-1 / amber 10-15% Tier-1 / red ≥15% Tier-1 (BCBS d365 §A-3.4). Source projection: platform/projections/irrbb-delta-eve.ts (IRRBBChecked EVE events of record from Ravi's ALM run)."
+        : "RAS §B3 thresholds: LCR green ≥120% / amber 110-120% / red <110% / critical <105%; NSFR green ≥115% / amber 108-115% / red <108% / critical <103%. Source projection: platform/projections/alm-positions.ts.";
       violations.push({
         subject: `RiskAppetiteSnapshot:${latest.event_id}:${lineId}`,
-        message: `Appetite line \`${lineId}\` has status="${status}" — the Ravi wiring PR requires a measured status (green/amber/red/n/a-build-phase), not unmeasured. RAS §B3 thresholds: LCR green ≥120% / amber 110-120% / red <110% / critical <105%; NSFR green ≥115% / amber 108-115% / red <108% / critical <103%. Source projection: platform/projections/alm-positions.ts.`,
+        message: `Appetite line \`${lineId}\` has status="${status}" — the wiring requires a measured status (green/amber/red/n/a-build-phase), not unmeasured. ${sourceNote}`,
         severity: "fail",
       });
     }
@@ -233,7 +283,7 @@ if (import.meta.main) {
       violations: r.violations.length,
       ok: r.ok,
       msg: r.ok
-        ? "Liquidity appetite snapshot coverage passed (LCR + NSFR lines measured in latest snapshot)."
+        ? "Liquidity appetite snapshot coverage passed (LCR + NSFR + RAS §B4 ΔEVE lines measured in latest snapshot)."
         : "Liquidity appetite snapshot coverage FAILED — see violations.",
       detail: r.violations,
     }),

@@ -54,6 +54,7 @@ import { getALMPositionSnapshot } from "../../platform/projections/alm-positions
 import { computeCapitalMetrics } from "../../platform/projections/capital-metrics";
 import { getClimateRiskMetric } from "../../platform/projections/climate-risk-projection";
 import { computeCyberSeverityPosture } from "../../platform/projections/cyber-incident-severity";
+import { getIrrbbDeltaEveMetric } from "../../platform/projections/irrbb-delta-eve";
 import { computeLeverageRatioMetrics } from "../../platform/projections/leverage-ratio-metrics";
 import { getModelTierDisciplineMetric } from "../../platform/projections/model-tier-discipline";
 import { computeRwaFromPositions } from "../../platform/projections/rwa-from-positions";
@@ -108,6 +109,32 @@ interface LineState {
   readonly line: AppetiteLine;
   readonly status: MetricStatus;
   readonly note: string;
+}
+
+/**
+ * Derive the unmeasured-lines escalation `options` + `blockedBy` from the
+ * LIVE unmeasured-line list — one dispatch option per unmeasured line (line
+ * id, RAS section, measurement owner) plus a defer option. NEVER hardcoded:
+ * before D-IRRBB-DELTA-EVE-OUTLIER-MEASUREMENT (2026-06-12) these strings
+ * were frozen on RAS §B6 (cyber, Senna) and §B7 (model-tier) — lines that
+ * had long since been measured — while the escalation `question` derived
+ * live. Same split-brain defect class as
+ * D-CRO-GAP-SECTION-DERIVE-FROM-STORE (PR #1087).
+ */
+export function buildUnmeasuredEscalationContent(
+  unmeasuredLines: readonly { line: AppetiteLine }[],
+): { options: string[]; blockedBy: string } {
+  const options = [
+    ...unmeasuredLines.map(
+      (s) =>
+        `Dispatch ${s.line.measurementOwner} to build the ${s.line.id} measurement substrate (${s.line.rasSection})`,
+    ),
+    "Defer to M1 milestone (accept substrate gap; record in §16)",
+  ];
+  const blockedBy = `Engineering build work required. Scrooge to dispatch: ${unmeasuredLines
+    .map((s) => `${s.line.measurementOwner} for ${s.line.rasSection} (${s.line.id})`)
+    .join("; ")}.`;
+  return { options, blockedBy };
 }
 
 interface BreachCounts {
@@ -251,6 +278,7 @@ function statusForLine(
   liquidityMetric?: ReturnType<typeof buildLiquidityMetric>,
   modelTierMetric?: ReturnType<typeof getModelTierDisciplineMetric>,
   cyberPosture?: ReturnType<typeof computeCyberSeverityPosture>,
+  irrbbDeltaEveMetric?: ReturnType<typeof getIrrbbDeltaEveMetric>,
 ): LineState {
   // In build phase, every metric is structurally unmeasurable: there
   // are no positions, no customers, no capital. The exception is
@@ -414,6 +442,35 @@ function statusForLine(
     };
   }
 
+  // appetite:irrbb:delta-eve-outlier — measured by the IRRBB ΔEVE projection
+  // (platform/projections/irrbb-delta-eve.ts), which folds the IRRBBChecked
+  // (metric=EVE) events of record emitted by Ravi's daily ALM run into the
+  // BCBS d365 §A-3.4 supervisory-outlier headline: max(|deltaPct|) across the
+  // six shock scenarios, classified under the register's higher-is-worse
+  // ladder (green <10% / amber 10-15% / red ≥15% of Tier-1). NOT a parallel
+  // calculator — the ALM run computes ΔEVE (bonds folded; IRS DV01 per
+  // PR #1121); this only reads its events of record. Build-phase posture:
+  // zero IRRBBChecked EVE events → `no-checks` → n/a-build-phase (mirrors the
+  // climate line's no-data posture — an empty check stream means the ALM run
+  // has not ticked, which is NOT zero-risk-by-construction).
+  // Authority: D-IRRBB-DELTA-EVE-OUTLIER-MEASUREMENT (CEO-approved
+  //   2026-06-12); D-BOND-RAS-APPETITE; RAS §B4; BCBS d365 §A-3.4;
+  //   escalation:helena:unmeasured-lines-2026-06-12.
+  if (line.id === "appetite:irrbb:delta-eve-outlier" && irrbbDeltaEveMetric !== undefined) {
+    if (irrbbDeltaEveMetric.status === "no-checks") {
+      return {
+        line,
+        status: "n/a-build-phase",
+        note: irrbbDeltaEveMetric.note,
+      };
+    }
+    return {
+      line,
+      status: irrbbDeltaEveMetric.status,
+      note: irrbbDeltaEveMetric.note,
+    };
+  }
+
   // Everything else: unmeasured pending Rohan / Bea / Ravi measurement
   // substrate. Build-phase n/a is *not* the same as unmeasured — n/a
   // means structurally not applicable yet (no book, no portfolio); we
@@ -515,6 +572,15 @@ function buildSnapshot(asOfIso: string): AppetiteSnapshot {
   //   brief:senna:build-cyber-incident-severity-measurement-substr:2026-06-01.
   const cyberPosture = computeCyberSeverityPosture(eventStore, asOfIso);
 
+  // Compute the IRRBB ΔEVE supervisory-outlier metric (Rohan projection —
+  // closes the appetite:irrbb:delta-eve-outlier unmeasured gap). Folds the
+  // IRRBBChecked (metric=EVE) events of record from Ravi's daily ALM run;
+  // no parallel calculator. Build-phase posture: zero EVE checks →
+  // `no-checks` → n/a-build-phase.
+  // Authority: D-IRRBB-DELTA-EVE-OUTLIER-MEASUREMENT (CEO-approved
+  //   2026-06-12); D-BOND-RAS-APPETITE; RAS §B4; BCBS d365 §A-3.4.
+  const irrbbDeltaEveMetric = getIrrbbDeltaEveMetric(eventStore);
+
   const lineStates = APPETITE_LINES.map((line) =>
     statusForLine(
       line,
@@ -524,6 +590,7 @@ function buildSnapshot(asOfIso: string): AppetiteSnapshot {
       liquidityMetric,
       modelTierMetric,
       cyberPosture,
+      irrbbDeltaEveMetric,
     ),
   );
   const measuredCount = lineStates.filter(
@@ -856,18 +923,22 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     // De-duplicated: only emits if no unmeasured-lines escalation was
     // raised in the last 24h (prevents flood on every goal-loop tick).
     //
-    // Unmeasured lines today (from lineStatuses above):
-    //   - appetite:operational:cyber-severity-tiers (RAS §B6)
-    //     Owner: Senna (CISO, engineering) + Atlas (platform substrate)
-    //   - appetite:model:tier-discipline (RAS §B7)
-    //     Owner: Independent Validation function + Atlas (platform substrate)
+    // The escalation's `options` and `blockedBy` are DERIVED from the live
+    // unmeasured-line list (one dispatch option per unmeasured line, plus a
+    // defer option), never hardcoded. Before this fix the options/blockedBy
+    // prose was frozen on RAS §B6 (cyber, Senna) and §B7 (model-tier) — lines
+    // that had long since been measured — while the `question` derived live:
+    // the same split-brain defect class D-CRO-GAP-SECTION-DERIVE-FROM-STORE
+    // fixed in the substrate-gap section (PR #1087). Authority:
+    // D-IRRBB-DELTA-EVE-OUTLIER-MEASUREMENT (CEO-approved 2026-06-12).
     if (snap.unmeasuredCount > 0 && !hasRecentUnmeasuredEscalation()) {
       const consecutiveCount = consecutiveUnmeasuredSnapshotCount();
       if (consecutiveCount >= UNMEASURED_ESCALATION_THRESHOLD) {
-        const unmeasuredLineIds = snap.lineStates
-          .filter((s) => s.status === "unmeasured")
+        const unmeasuredLines = snap.lineStates.filter((s) => s.status === "unmeasured");
+        const unmeasuredLineIds = unmeasuredLines
           .map((s) => `${s.line.id} (${s.line.rasSection}, owner: ${s.line.measurementOwner})`)
           .join("; ");
+        const { options, blockedBy } = buildUnmeasuredEscalationContent(unmeasuredLines);
         eventStore.append(
           makeAgentEscalation({
             asOf: ctx.asOf,
@@ -878,13 +949,8 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
               escalationId: `escalation:helena:unmeasured-lines-${fmtDateUTC(ctx.asOf)}`,
               raisedBy: "Helena",
               question: `${snap.unmeasuredCount} appetite line(s) have been unmeasured for ${consecutiveCount} consecutive runs. Helena cannot build the measurement substrate (§3); engineering dispatch required. Lines: ${unmeasuredLineIds}.`,
-              options: [
-                "Dispatch Senna + Atlas to build cyber-incident severity measurement substrate (RAS §B6)",
-                "Dispatch independent validation function + Atlas to build model-tier discipline measurement substrate (RAS §B7)",
-                "Defer to M1 milestone (accept substrate gap; record in §16)",
-              ],
-              blockedBy:
-                "Engineering build work required. Scrooge to dispatch Senna (CISO eng) + Atlas for RAS §B6; Atlas + model-validation substrate owner for RAS §B7.",
+              options,
+              blockedBy,
               severity: "medium",
               routedTo: "agent:scrooge",
             },

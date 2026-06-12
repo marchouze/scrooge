@@ -564,8 +564,13 @@ export const RAS_APPETITE_LINES: readonly RasAppetiteLine[] = [
         { band: "red", formatted: "red ≥15% Tier-1", comparator: "gte", lowerPct: 15 },
       ],
     },
+    // Wired 2026-06-12 per D-IRRBB-DELTA-EVE-OUTLIER-MEASUREMENT: the
+    // projection folds Ravi's ALM-run IRRBBChecked (metric=EVE) events of
+    // record; deltaPct is ALREADY ΔEVE as % of Tier-1 (the former binding
+    // text named deltaEveMinor/tier1CapitalTargetMinor — fields the
+    // IRRBBChecked event never carried).
     measurementBinding:
-      "IRRBBChecked: max(abs(deltaEveMinor)) / tier1CapitalTargetMinor × 100 across all BCBS d365 shock scenarios",
+      "getIrrbbDeltaEveMetric (platform/projections/irrbb-delta-eve.ts): max(abs(IRRBBChecked.deltaPct)) across the latest ALM run's BCBS d365 EVE shock scenarios — deltaPct = ΔEVE as % of Tier-1 capital, computed by Ravi's ALM run (runtime/agents/ravi-alm-run.ts)",
     measurementOwner: "Rohan (eng) → Helena (CRO, governance)",
     citations: [D_RAS, "D-BOND-RAS-APPETITE", "BCBS-D365-IRRBB", "BANKS-REG-26"],
     summary:

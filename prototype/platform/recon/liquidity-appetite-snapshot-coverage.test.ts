@@ -171,4 +171,60 @@ describe("recon:liquidity-appetite-snapshot-coverage", () => {
     const r = run({ events });
     expect(r.ok).toBe(true);
   });
+
+  // -------------------------------------------------------------------------
+  // 8. RAS §B4 ΔEVE line (D-IRRBB-DELTA-EVE-OUTLIER-MEASUREMENT, 2026-06-12).
+  //    Post-cutover snapshots must report a measured §B4 status; pre-cutover
+  //    snapshots soften to info (they predate the wiring).
+  // -------------------------------------------------------------------------
+
+  const POST_CUTOVER = "2026-06-13T05:00:00.000Z";
+  const MEASURED_B3 = {
+    "appetite:liquidity:lcr": "green",
+    "appetite:liquidity:nsfr": "green",
+  };
+
+  it("passes when a post-cutover snapshot carries a measured §B4 ΔEVE status", () => {
+    const events = [
+      snap(POST_CUTOVER, { ...MEASURED_B3, "appetite:irrbb:delta-eve-outlier": "green" }),
+    ];
+    const r = run({ events });
+    expect(r.ok).toBe(true);
+    expect(r.violations.filter((v) => v.severity === "fail").length).toBe(0);
+  });
+
+  it("fails when a post-cutover snapshot reports §B4 ΔEVE as unmeasured (regression gate)", () => {
+    const events = [
+      snap(POST_CUTOVER, { ...MEASURED_B3, "appetite:irrbb:delta-eve-outlier": "unmeasured" }),
+    ];
+    const r = run({ events });
+    expect(r.ok).toBe(false);
+    const fail = r.violations.find(
+      (v) => v.severity === "fail" && v.subject.includes("appetite:irrbb:delta-eve-outlier"),
+    );
+    expect(fail).toBeDefined();
+    expect(fail?.message).toContain("irrbb-delta-eve");
+  });
+
+  it("fails when a post-cutover snapshot omits the §B4 ΔEVE line entirely", () => {
+    const events = [snap(POST_CUTOVER, { ...MEASURED_B3 })];
+    const r = run({ events });
+    expect(r.ok).toBe(false);
+    const fail = r.violations.find(
+      (v) => v.severity === "fail" && v.subject.includes("appetite:irrbb:delta-eve-outlier"),
+    );
+    expect(fail).toBeDefined();
+  });
+
+  it("softens to info (still ok) when the latest snapshot predates the §B4 wiring cutover", () => {
+    const events = [
+      snap(NOW, { ...MEASURED_B3, "appetite:irrbb:delta-eve-outlier": "unmeasured" }),
+    ];
+    const r = run({ events });
+    expect(r.ok).toBe(true);
+    const info = r.violations.find(
+      (v) => v.severity === "info" && v.subject.includes("appetite:irrbb:delta-eve-outlier"),
+    );
+    expect(info).toBeDefined();
+  });
 });
