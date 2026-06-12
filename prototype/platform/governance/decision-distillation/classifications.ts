@@ -1633,6 +1633,13 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
     citations: ["D-V2-BBAAS-W1-DECISION-DISTILLATION"],
   },
   {
+    decisionId: "D-V2-BBAAS-W9-FIL",
+    class: "foundational",
+    rationale:
+      "Charters the Financial Instrument Language: one versioned instrument type system every layer binds to — the keystone contract under the domain map, model library, and posture register.",
+    citations: ["D-V2-BBAAS-ANALYSIS-LAUNCH", "D-V2-BBAAS-BLUEPRINT-SYNTHESIS"],
+  },
+  {
     decisionId: "D-VERA-IFRS-THRESHOLD-CURRENCY-RECONS-POST-ICAAP",
     class: "directional",
     rationale:
@@ -1647,10 +1654,10 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
 ];
 
 /** Snapshot count of approved decisionIds covered at authoring time. */
-export const DECISION_CLASSIFICATION_COUNT = 262;
+export const DECISION_CLASSIFICATION_COUNT = 263;
 
 export const DECISION_CLASSIFICATION_COUNTS = {
-  foundational: 95,
+  foundational: 96,
   directional: 142,
   obsolete: 25,
 } as const;
