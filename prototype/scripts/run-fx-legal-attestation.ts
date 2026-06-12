@@ -41,6 +41,7 @@ import { clock, eventStore } from "../platform/composition";
 import {
   makeCounterpartyEligibilityScreened,
   makeCounterpartyFaisClassified,
+  makeSanctionsClearancePassed,
 } from "../platform/event-store/event-types";
 import {
   makeCreditLimitApproved,
@@ -87,6 +88,24 @@ function seedAdmittableCounterparty(store: EventStore, counterpartyId: string): 
         faisCategory: "market-counterparty",
         classifiedAt: T_SEED,
         classifiedBy: "agent:imani:legal-gate-probe",
+      },
+    }),
+  );
+  // KYC acceptance of record — required for the FAIL-CLOSED identity gateway
+  // check (runs first; D-FX-HELD-DIMS-SEAT-SWEEP) so the probe reaches the
+  // documentation check it is testing.
+  store.append(
+    makeSanctionsClearancePassed({
+      asOf: T_SEED,
+      entity: ENTITY,
+      actor,
+      citations,
+      payload: {
+        counterpartyId,
+        screeningProvider: "legal-gate-probe",
+        screeningRef: `sanctions-clearance:${counterpartyId}:2026-06-12`,
+        clearedAt: T_SEED,
+        screenedBy: "agent:imani:legal-gate-probe",
       },
     }),
   );

@@ -230,6 +230,11 @@ export * from "./product-control";
 // Authority: D-MARKETS-SCHEMA-FOUNDATION; D-FX-SALES-TRADING-FRONTEND; IFRS-9-§5.7.1.
 // Author: Rohan (Market risk engineer, engineering)
 export * from "./mtm";
+// Operational-risk loss-event CAPTURE — OperationalLossEvent.
+// Internal loss-data set; capture-only (op-RWA capital stays gross-income-blocked).
+// Authority: D-FX-HELD-DIMS-SEAT-SWEEP; Basel II Annex 9 / BCBS D196 §644; Reg 33.
+// Author: Tomas (Operations & payments engineer, engineering)
+export * from "./operational-risk";
 // D-EVENT-VIEW-BOUNDARY-WIRE Slice A — PolicyVersionActivated.
 // Generic umbrella covering valuation / accounting-IFRS / fx-translation
 // policy-in-force activations. Slice B (OfficialMarkAdopted) and Slice C
@@ -464,6 +469,7 @@ import { OBLIGATION_EQUIVALENCE_TYPED_EVENT_TYPES } from "./obligation-equivalen
 import { OBLIGATION_LIFECYCLE_TYPED_EVENT_TYPES } from "./obligation-lifecycle";
 import { OBLIGATION_REVIEW_TYPED_EVENT_TYPES } from "./obligation-review";
 import { ODP_PORTFOLIO_RECON_TYPED_EVENT_TYPES } from "./odp-portfolio-recon";
+import { OPERATIONAL_RISK_TYPED_EVENT_TYPES } from "./operational-risk";
 import { ODP_UMOJA_UTI_TYPED_EVENT_TYPES } from "./odp-umoja-uti";
 import { OTC_CONFIRMATIONS_TYPED_EVENT_TYPES } from "./otc-confirmations";
 import { PAYMENTS_TYPED_EVENT_TYPES } from "./payments";
@@ -664,6 +670,11 @@ export const TYPED_EVENT_TYPES = [
   // Authority: Camille (CFO) recommendation R2; IFRS 13; accounting-policies-ifrs-v1 §3.3;
   //   valuation-policy-v1 §7; CRR Art 105 / SA-Basel prudent-valuation; D-TRUSTED-FIGURES-PROGRAM-V1.
   ...VALUATION_ADJUSTMENT_TYPED_EVENT_TYPES,
+  // WS-FX-OTC-OPRISK — operational-risk loss-event CAPTURE family.
+  // OperationalLossEvent. Capture-only internal loss-data set (op-RWA capital
+  // stays gross-income-blocked, revenue-start). Authority: D-FX-HELD-DIMS-SEAT-
+  // SWEEP; Basel II Annex 9 / BCBS D196 §644; Reg 33.
+  ...OPERATIONAL_RISK_TYPED_EVENT_TYPES,
 ] as const;
 
 export type TypedEventType = (typeof TYPED_EVENT_TYPES)[number];
