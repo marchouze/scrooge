@@ -965,6 +965,12 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
       "Re-extracts poor-quality SARB PA directives and stands up an enforcing quality gate. SA-jurisdiction source work; the quality-gate pattern generalises.",
   },
   {
+    decisionId: "D-PA-SOURCE-EXTRACT-RECOVERY-WAVE-2",
+    class: "directional",
+    rationale:
+      "Wave-2 re-extraction of mangled/thin SARB PA instruments plus quality-gate tightening. SA-jurisdiction source work, sibling of wave 1; the extract-quality pattern generalises.",
+  },
+  {
     decisionId: "D-PARTY-REGISTER",
     class: "foundational",
     rationale:
@@ -1634,10 +1640,10 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
 ];
 
 /** Snapshot count of approved decisionIds covered at authoring time. */
-export const DECISION_CLASSIFICATION_COUNT = 260;
+export const DECISION_CLASSIFICATION_COUNT = 261;
 
 export const DECISION_CLASSIFICATION_COUNTS = {
   foundational: 94,
-  directional: 141,
+  directional: 142,
   obsolete: 25,
 } as const;
