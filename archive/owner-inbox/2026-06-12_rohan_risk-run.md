@@ -1,7 +1,7 @@
 ---
 agent: Rohan
 trigger: risk-run
-asOf: 2026-06-12T03:43:17.249Z
+asOf: 2026-06-12T06:17:13.467Z
 decision-required: false
 ---
 
@@ -13,7 +13,7 @@ Autonomous run of Rohan's daily risk run per `Team/Rohan.md` operating spec § 6
 
 ## Helena's latest snapshot
 
-Latest `RiskAppetiteSnapshot` event: 2026-06-11T06:50:41.710Z
+Latest `RiskAppetiteSnapshot` event: 2026-06-12T04:59:36.404Z
 
 Rohan's daily run pairs with Helena's daily run: Helena reports the appetite side; Rohan reports the engineer side. Together they close the read-side ↔ build-side loop on the RAS measurement substrate.
 
@@ -57,7 +57,7 @@ _No `RiskRaised` events in the last 7 days._
 
 ## Rohan's narrative
 
-_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011Cbxg85iwwLdtxE1mfQSpv"})._
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CbxsscjjYkvJUd9DdYEjd"})._
 
 ## Provenance
 
