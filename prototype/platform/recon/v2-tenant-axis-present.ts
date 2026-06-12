@@ -79,7 +79,8 @@ export function run(): ReconResult {
   if (!envelopeSrc) {
     violations.push({
       subject: "v2-core/control-plane/envelope.ts",
-      message: "file does not exist — V2Envelope type + createV2Envelope factory missing (S2 missing)",
+      message:
+        "file does not exist — V2Envelope type + createV2Envelope factory missing (S2 missing)",
       severity: "warn",
     });
   } else {

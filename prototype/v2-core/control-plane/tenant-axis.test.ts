@@ -6,13 +6,9 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { describe, expect, it } from "bun:test";
-import {
-  ANCHOR_TENANT_ID,
-  type TenantId,
-  isAnchorTenantEvent,
-  tenantIdSchema,
-} from "./tenant";
+import type { Instant } from "../fil-core/primitives";
 import { createV2Envelope, v2EnvelopeSchema } from "./envelope";
+import { ANCHOR_TENANT_ID, isAnchorTenantEvent, tenantIdSchema } from "./tenant";
 
 // ---------------------------------------------------------------------------
 // tenantIdSchema
@@ -22,7 +18,7 @@ describe("tenantIdSchema", () => {
   it("parses a valid tenant ID", () => {
     const result = tenantIdSchema.safeParse("tenant:za-bank");
     expect(result.success).toBe(true);
-    if (result.success) expect(result.data).toBe("tenant:za-bank");
+    if (result.success) expect(result.data as string).toBe("tenant:za-bank");
   });
 
   it("parses an alternative tenant ID", () => {
@@ -61,7 +57,7 @@ describe("ANCHOR_TENANT_ID", () => {
 
 describe("isAnchorTenantEvent", () => {
   it("returns true for the anchor tenant", () => {
-    const id = ANCHOR_TENANT_ID as TenantId;
+    const id = tenantIdSchema.parse(ANCHOR_TENANT_ID);
     expect(isAnchorTenantEvent(id)).toBe(true);
   });
 
@@ -75,7 +71,7 @@ describe("isAnchorTenantEvent", () => {
 // createV2Envelope
 // ---------------------------------------------------------------------------
 
-const FAKE_INSTANT = "2026-06-12T10:00:00.000Z" as ReturnType<typeof import("../fil-core/primitives").instantSchema.parse>;
+const FAKE_INSTANT = "2026-06-12T10:00:00.000Z" as Instant;
 
 describe("createV2Envelope", () => {
   it("defaults tenantId to ANCHOR_TENANT_ID when omitted", () => {
@@ -84,7 +80,7 @@ describe("createV2Envelope", () => {
       issuedAt: FAKE_INSTANT,
       payload: { type: "TestEvent" },
     });
-    expect(env.tenantId).toBe(ANCHOR_TENANT_ID);
+    expect(env.tenantId as string).toBe(ANCHOR_TENANT_ID);
   });
 
   it("accepts an explicit tenantId", () => {
@@ -93,7 +89,7 @@ describe("createV2Envelope", () => {
       { eventId: "evt-002", issuedAt: FAKE_INSTANT, payload: {} },
       tenantId,
     );
-    expect(env.tenantId).toBe("tenant:other-bank");
+    expect(env.tenantId as string).toBe("tenant:other-bank");
   });
 
   it("preserves all base fields", () => {

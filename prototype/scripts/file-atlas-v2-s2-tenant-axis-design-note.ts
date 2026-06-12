@@ -47,11 +47,7 @@ const result = recordFiled(
       minimumYears: 7,
       archivalTier: "hot" as const,
     },
-    citations: [
-      "D-RMS-PHASE-3",
-      "D-V2-TENANCY-ARCHITECTURE",
-      "D-V2-BBAAS-BLUEPRINT-SYNTHESIS",
-    ],
+    citations: ["D-RMS-PHASE-3", "D-V2-TENANCY-ARCHITECTURE", "D-V2-BBAAS-BLUEPRINT-SYNTHESIS"],
     actor: {
       type: "service",
       id: "agent:atlas:engineering",
