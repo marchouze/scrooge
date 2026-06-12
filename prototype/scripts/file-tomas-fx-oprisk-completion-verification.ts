@@ -123,7 +123,8 @@ const result = recordFiled(
     },
     entity: "LE-ZA-HOZ-BANK",
     metadata: {
-      title: "FX OTC-vanilla operational-risk dimension COMPLETION verification (recover + finish dead run)",
+      title:
+        "FX OTC-vanilla operational-risk dimension COMPLETION verification (recover + finish dead run)",
       path: "2026-06-12_tomas_fx-oprisk-completion-verification.md",
       category: "npa-dimension-verification",
       author: "Tomas (Operations & payments engineer, engineering)",

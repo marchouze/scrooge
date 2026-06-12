@@ -469,8 +469,8 @@ import { OBLIGATION_EQUIVALENCE_TYPED_EVENT_TYPES } from "./obligation-equivalen
 import { OBLIGATION_LIFECYCLE_TYPED_EVENT_TYPES } from "./obligation-lifecycle";
 import { OBLIGATION_REVIEW_TYPED_EVENT_TYPES } from "./obligation-review";
 import { ODP_PORTFOLIO_RECON_TYPED_EVENT_TYPES } from "./odp-portfolio-recon";
-import { OPERATIONAL_RISK_TYPED_EVENT_TYPES } from "./operational-risk";
 import { ODP_UMOJA_UTI_TYPED_EVENT_TYPES } from "./odp-umoja-uti";
+import { OPERATIONAL_RISK_TYPED_EVENT_TYPES } from "./operational-risk";
 import { OTC_CONFIRMATIONS_TYPED_EVENT_TYPES } from "./otc-confirmations";
 import { PAYMENTS_TYPED_EVENT_TYPES } from "./payments";
 import { PERFORMANCE_TYPED_EVENT_TYPES } from "./performance";

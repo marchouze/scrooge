@@ -44,7 +44,10 @@ import {
 } from "../../event-store/event-types/product";
 import { buildPhaseFixtureTag } from "../../event-store/provenance";
 import type { EventStore } from "../../event-store/store";
-import { isOperationalLossEventRegistered, probeIdentityEnforcement } from "./oprisk-attestation-gates";
+import {
+  isOperationalLossEventRegistered,
+  probeIdentityEnforcement,
+} from "./oprisk-attestation-gates";
 
 export const OPRISK_PRODUCT_ID = "prd:bank:fx:otc-vanilla";
 

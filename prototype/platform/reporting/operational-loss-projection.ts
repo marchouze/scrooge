@@ -26,8 +26,9 @@ import type {
   OperationalLossEventTypeCategory,
   OperationalLossStatus,
 } from "../event-store/event-types/operational-risk";
-import type { BaselBusinessLine } from "./ba-400-op-risk";
 import type { EventStore } from "../event-store/store";
+import { utcNow } from "../types/time";
+import type { BaselBusinessLine } from "./ba-400-op-risk";
 
 /** A loss is "closed" when terminal; otherwise it is "open" (still live). */
 const CLOSED_STATUSES: ReadonlySet<OperationalLossStatus> = new Set<OperationalLossStatus>([
@@ -223,6 +224,6 @@ export function buildOperationalLossProjection(
     byBusinessLine,
     byEventTypeCategory,
     totals,
-    asOf: asOf ?? new Date().toISOString(),
+    asOf: asOf ?? utcNow(),
   };
 }

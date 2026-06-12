@@ -14,16 +14,16 @@ import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 
 import { makeProductDimensionAttested } from "../platform/event-store/event-types/product";
 import { EventStore } from "../platform/event-store/store";
-import {
-  isOperationalLossEventRegistered,
-  probeIdentityEnforcement,
-} from "../platform/markets/products/oprisk-attestation-gates";
 import { runFxInfosecGapClosure } from "../platform/markets/products/npa-fx-infosec-gap-closure";
 import {
   OPRISK_AS_OF,
   OPRISK_PRODUCT_ID,
   runFxOpRiskAttestation,
 } from "../platform/markets/products/npa-fx-oprisk-attestation";
+import {
+  isOperationalLossEventRegistered,
+  probeIdentityEnforcement,
+} from "../platform/markets/products/oprisk-attestation-gates";
 
 let tmpDir: string;
 
@@ -63,7 +63,7 @@ describe("runFxOpRiskAttestation", () => {
       return p.dimension === "operational-risk";
     });
     expect(events).toHaveLength(1);
-    const p = events[0]!.payload as {
+    const p = events[0]?.payload as {
       result?: string;
       deferredGaps?: { gapId: string; owner: string; targetTrigger: string; citations: string[] }[];
     };
@@ -144,7 +144,7 @@ describe("runFxInfosecGapClosure", () => {
     const infosecEvents = [...store.replay({ type: "ProductDimensionAttested" })]
       .filter((e) => (e.payload as { dimension?: string }).dimension === "infosec")
       .sort((a, b) => a.as_of.localeCompare(b.as_of));
-    const latest = infosecEvents[infosecEvents.length - 1]!.payload as {
+    const latest = infosecEvents[infosecEvents.length - 1]?.payload as {
       deferredGaps?: { gapId: string }[];
     };
     const ids = (latest.deferredGaps ?? []).map((g) => g.gapId);

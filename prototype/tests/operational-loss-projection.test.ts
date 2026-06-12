@@ -63,7 +63,7 @@ describe("OperationalLossEvent — type + schema", () => {
     });
     const events = [...store.replay({ type: "OperationalLossEvent" })];
     expect(events).toHaveLength(1);
-    const p = events[0]!.payload as Record<string, unknown>;
+    const p = events[0]?.payload as Record<string, unknown>;
     expect(p.lossEventId).toBe("loss:fx:settlement-fail-001");
     expect(p.grossLossMinor).toBe(250_000_00);
     expect(p.businessLine).toBe("trading-and-sales");
@@ -109,8 +109,8 @@ describe("OperationalLossEvent — type + schema", () => {
       description: "card-not-present fraud loss",
     });
     const proj = buildOperationalLossProjection(store);
-    expect(proj.records[0]!.recoveryMinor).toBe(0);
-    expect(proj.records[0]!.netLossMinor).toBe(100_00);
+    expect(proj.records[0]?.recoveryMinor).toBe(0);
+    expect(proj.records[0]?.netLossMinor).toBe(100_00);
     store.close();
   });
 });
@@ -197,11 +197,11 @@ describe("operational-loss-projection — open/closed by business line", () => {
     );
     const proj = buildOperationalLossProjection(store);
     expect(proj.records).toHaveLength(1);
-    expect(proj.records[0]!.status).toBe("closed");
-    expect(proj.records[0]!.open).toBe(false);
+    expect(proj.records[0]?.status).toBe("closed");
+    expect(proj.records[0]?.open).toBe(false);
     expect(proj.totals.openCount).toBe(0);
     expect(proj.totals.closedCount).toBe(1);
-    expect(proj.records[0]!.netLossMinor).toBe(0);
+    expect(proj.records[0]?.netLossMinor).toBe(0);
     store.close();
   });
 

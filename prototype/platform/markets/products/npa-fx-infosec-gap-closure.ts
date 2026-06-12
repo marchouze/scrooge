@@ -139,7 +139,11 @@ export function runFxInfosecGapClosure(store: EventStore): InfosecGapClosureResu
       asOf: INFOSEC_CLOSURE_AS_OF,
       entity: "LE-ZA-HOZ-BANK",
       actor: ACTOR,
-      citations: [...CLOSURE_CITATIONS, "dimension:infosec", "gap-closed:fx-gateway-identity-check-enforcement"],
+      citations: [
+        ...CLOSURE_CITATIONS,
+        "dimension:infosec",
+        "gap-closed:fx-gateway-identity-check-enforcement",
+      ],
       payload: {
         productId: INFOSEC_PRODUCT_ID,
         dimension: "infosec",

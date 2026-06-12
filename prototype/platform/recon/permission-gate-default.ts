@@ -189,6 +189,14 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Citation: D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 8, D-NEW-PRODUCT-APPROVAL-POLICY,
   // P4-SECURITY-DESIGNED-IN.
   "platform/recon/product-approval-attestation-integrity.ts",
+  // FX operational-risk attestation gates — genuine-enforcement probes that
+  // build mkdtempSync-isolated throwaway stores to red-team the gateway identity
+  // check and round-trip the OperationalLossEvent in isolation (same carve-out
+  // rationale as tests/ and as Imani's legal Gate-A in scripts/run-fx-legal-
+  // attestation.ts, which is dir-carved under scripts/). No production access
+  // path: every probe store is created in a tmpdir and rmSync'd in finally.
+  // Citation: D-FX-HELD-DIMS-SEAT-SWEEP, T-01, P4-SECURITY-DESIGNED-IN, F-031.
+  "platform/markets/products/oprisk-attestation-gates.ts",
   // ras-register-parity — read-only replay of RiskAppetiteSnapshot events +
   // read-only scan of runtime handler source files; no appends; gate is a
   // no-op on the read path. Citation: D-RAS-STRUCTURED-REGISTER,
