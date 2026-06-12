@@ -18,6 +18,8 @@
     "file:atlas-v2-bbaas-w3-tenancy-architecture": "bun run scripts/file-atlas-v2-bbaas-w3-tenancy-architecture.ts",
     "file:atlas-v2-bbaas-w2-domain-map": "bun run scripts/file-atlas-v2-bbaas-w2-domain-map.ts",
     "record:d-v2-bbaas-w2-w3-dispatch": "bun run scripts/record-d-v2-bbaas-w2-w3-dispatch.ts",
+    "file:atlas-v2-bbaas-w8-agent-learning": "bun run scripts/file-atlas-v2-bbaas-w8-agent-learning.ts",
+    "record:d-v2-bbaas-w8-agent-learning": "bun run scripts/record-d-v2-bbaas-w8-agent-learning.ts",
     "recon:sla-codegen-drift": "bun run platform/recon/sla-codegen-drift.ts",
     "recon:sla-rule-versioning": "bun run platform/recon/sla-rule-versioning.ts",
     "recon:sla-approval-workflow": "bun run platform/recon/sla-approval-workflow.ts",
