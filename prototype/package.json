@@ -16,6 +16,7 @@
     "file:scrooge-lra-66-1995-hr-source-map": "bun run scripts/file-scrooge-lra-66-1995-hr-source-map.ts",
     "file:atlas-v2-bbaas-initial-ideas-paper": "bun run scripts/file-atlas-v2-bbaas-initial-ideas-paper.ts",
     "file:atlas-v2-bbaas-w3-tenancy-architecture": "bun run scripts/file-atlas-v2-bbaas-w3-tenancy-architecture.ts",
+    "file:pax-v2-bbaas-w6-commercial": "bun run scripts/file-pax-v2-bbaas-w6-commercial.ts",
     "file:atlas-v2-bbaas-w2-domain-map": "bun run scripts/file-atlas-v2-bbaas-w2-domain-map.ts",
     "file:pax-v2-bbaas-w5-platform-research": "bun run scripts/file-pax-v2-bbaas-w5-platform-research.ts",
     "record:d-v2-bbaas-w2-w3-dispatch": "bun run scripts/record-d-v2-bbaas-w2-w3-dispatch.ts",
