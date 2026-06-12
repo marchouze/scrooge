@@ -12,9 +12,11 @@ import {
   type ExtractQualityRow,
   type StructuralCheckRow,
   type StructuralIssueEntry,
+  bodyCharCount,
   hasContentLoss,
   hasHeadingInBody,
   hasProseHeadings,
+  hasTableCellAsHeading,
   isSingleBlob,
   run,
 } from "./regulatory-source-extract-quality";
@@ -288,6 +290,149 @@ describe("hasProseHeadings", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Wave-2 FAILING detector helper unit tests
+// ---------------------------------------------------------------------------
+
+const mkHeading = (heading: string) => ({
+  slug: "test",
+  title: "Test",
+  chapters: [{ sections: [{ id: "s1", heading, text: "body", subsections: [] }] }],
+});
+
+describe("hasTableCellAsHeading", () => {
+  it("returns true for a heading containing a pipe delimiter", () => {
+    expect(hasTableCellAsHeading(mkHeading("Bank name | Submission date | Type") as never)).toBe(
+      true,
+    );
+  });
+
+  it("returns true for a short single cell label ending in a colon", () => {
+    expect(hasTableCellAsHeading(mkHeading("Rating system Name:") as never)).toBe(true);
+  });
+
+  it("returns true for >= 3 short colon-terminated cell fragments", () => {
+    expect(hasTableCellAsHeading(mkHeading("Name: Date: Type:") as never)).toBe(true);
+  });
+
+  it("returns false for a normal prose heading containing one colon", () => {
+    expect(
+      hasTableCellAsHeading(
+        mkHeading("Guidance on electronic communication: new e-mail address") as never,
+      ),
+    ).toBe(false);
+  });
+
+  it("returns false for a plain short heading without colon or pipe", () => {
+    expect(hasTableCellAsHeading(mkHeading("Acknowledgement of receipt") as never)).toBe(false);
+  });
+});
+
+describe("bodyCharCount", () => {
+  it("sums recursive section + subsection text length", () => {
+    const doc = {
+      slug: "t",
+      title: "T",
+      chapters: [
+        {
+          sections: [
+            {
+              id: "s1",
+              text: "x".repeat(100),
+              subsections: [{ id: "s1-1", text: "y".repeat(50), subsections: [] }],
+            },
+          ],
+        },
+      ],
+    };
+    expect(bodyCharCount(doc as never)).toBe(150);
+  });
+});
+
+describe("regulatory-source-extract-quality gate — Wave-2 FAILING detectors", () => {
+  const NONE = {
+    contentLoss: false,
+    singleBlob: false,
+    headingInBody: false,
+    proseHeading: false,
+    tableCellHeading: false,
+  };
+
+  it("FAILS post-advisory on a table-cell-as-heading defect (no allowlist)", () => {
+    const r = run({
+      rows: [],
+      allowlist: {},
+      shortFormAllowlist: {},
+      structuralAllowlist: {},
+      structuralRows: [{ slug: "banks-form", ...NONE, tableCellHeading: true, bodyChars: 9000 }],
+      asOfDate: POST,
+    });
+    expect(r.ok).toBe(false);
+    expect(
+      r.violations.some(
+        (v) => v.severity === "fail" && v.subject.includes("banks-form (table-cell-as-heading)"),
+      ),
+    ).toBe(true);
+  });
+
+  it("FAILS post-advisory on a thin-form extract not allowlisted", () => {
+    const r = run({
+      rows: [],
+      allowlist: {},
+      shortFormAllowlist: {},
+      structuralAllowlist: {},
+      structuralRows: [{ slug: "banks-thin", ...NONE, bodyChars: 1500 }],
+      asOfDate: POST,
+    });
+    expect(r.ok).toBe(false);
+    expect(
+      r.violations.some(
+        (v) => v.severity === "fail" && v.subject.includes("banks-thin (thin-form)"),
+      ),
+    ).toBe(true);
+  });
+
+  it("does NOT fail thin-form when the slug is in the short-form allowlist", () => {
+    const r = run({
+      rows: [],
+      allowlist: {},
+      shortFormAllowlist: { "banks-gn1-2008": { reason: "genuinely-short", note: "one-pager" } },
+      structuralAllowlist: {},
+      structuralRows: [{ slug: "banks-gn1-2008", ...NONE, bodyChars: 1857 }],
+      asOfDate: POST,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.violations.some((v) => v.subject.includes("thin-form"))).toBe(false);
+  });
+
+  it("does NOT fail thin-form when the slug is a genuinely-short POOR_QUALITY entry", () => {
+    const r = run({
+      rows: [],
+      allowlist: { "banks-c3-2020": { reason: "genuinely-short", note: "one-pager" } },
+      shortFormAllowlist: {},
+      structuralAllowlist: {},
+      structuralRows: [{ slug: "banks-c3-2020", ...NONE, bodyChars: 908 }],
+      asOfDate: POST,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.violations.some((v) => v.subject.includes("thin-form"))).toBe(false);
+  });
+
+  it("only warns pre-advisory on a thin-form / table-cell defect", () => {
+    const r = run({
+      rows: [],
+      allowlist: {},
+      shortFormAllowlist: {},
+      structuralAllowlist: {},
+      structuralRows: [{ slug: "banks-x", ...NONE, tableCellHeading: true, bodyChars: 1000 }],
+      advisoryUntil: "2026-06-30",
+      asOfDate: "2026-06-12T00:00:00.000Z",
+    });
+    expect(r.ok).toBe(true);
+    expect(r.violations.every((v) => v.severity === "warn")).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Structural check integration tests (via run() with injected structuralRows)
 // ---------------------------------------------------------------------------
 
@@ -300,6 +445,8 @@ describe("regulatory-source-extract-quality gate — structural checks", () => {
         singleBlob: true,
         headingInBody: false,
         proseHeading: false,
+        tableCellHeading: false,
+        bodyChars: 9000,
       },
     ];
     const r = run({
@@ -329,6 +476,8 @@ describe("regulatory-source-extract-quality gate — structural checks", () => {
         singleBlob: true,
         headingInBody: false,
         proseHeading: false,
+        tableCellHeading: false,
+        bodyChars: 9000,
       },
     ];
     const r = run({
@@ -352,6 +501,8 @@ describe("regulatory-source-extract-quality gate — structural checks", () => {
         singleBlob: false,
         headingInBody: false,
         proseHeading: false,
+        tableCellHeading: false,
+        bodyChars: 9000,
       },
     ];
     const r = run({
@@ -378,6 +529,8 @@ describe("regulatory-source-extract-quality gate — structural checks", () => {
         singleBlob: false,
         headingInBody: true,
         proseHeading: false,
+        tableCellHeading: false,
+        bodyChars: 9000,
       },
     ];
     const r = run({
@@ -404,6 +557,8 @@ describe("regulatory-source-extract-quality gate — structural checks", () => {
         singleBlob: false,
         headingInBody: false,
         proseHeading: true,
+        tableCellHeading: false,
+        bodyChars: 9000,
       },
     ];
     const r = run({
@@ -430,6 +585,8 @@ describe("regulatory-source-extract-quality gate — structural checks", () => {
         singleBlob: true,
         headingInBody: true,
         proseHeading: true,
+        tableCellHeading: false,
+        bodyChars: 9000,
       },
     ];
     const r = run({

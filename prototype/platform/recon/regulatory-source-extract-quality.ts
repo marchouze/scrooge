@@ -18,15 +18,35 @@
 // previously-good file went thin, or a new acquisition landed as a skeleton)
 // and fails the gate post-advisory.
 //
-// Structural checks (Slice 3, 2026-06-12): four additional advisory dimensions
+// Structural checks (Slice 3, 2026-06-12): four advisory dimensions
 // that flag structural defects independent of the quality-tier scorer:
 //   - content-loss:    same-slug .txt exists AND body/txt ratio < 0.15
 //   - single-blob:     <=1 top-level section with no subsections AND text > 500 chars
 //   - heading-in-body: any section.text.trimStart() starts with section.title's first 30 chars
 //   - prose-heading:   average top-level section title length > 80 chars
-// Known violations are governed in STRUCTURAL_ISSUE_ALLOWLIST. All structural
-// checks emit warn (advisory), never fail -- they surface technical debt for the
-// next re-extraction pass.
+// Known violations are governed in STRUCTURAL_ISSUE_ALLOWLIST. These four
+// structural checks emit warn (advisory), never fail -- they surface technical
+// debt for the next re-extraction pass.
+//
+// FAILING detectors (Wave-2, 2026-06-12, D-PA-SOURCE-EXTRACT-RECOVERY-WAVE-2):
+// two additional dimensions that catch the class of broken extract that slipped
+// past the quality-tier scorer. Unlike the advisory checks above, these FAIL the
+// gate (post-advisory) unless the instrument is governed-allowlisted:
+//   - table-cell-as-heading: a top-level section heading that carries a table
+//       delimiter (`|` pipe) or has a bare form-field-label shape (a short
+//       label-like fragment ending in a colon, or several `:`-terminated cells).
+//       Signals that the extractor flattened a form/annexure into heading
+//       fragments rather than extracting operative prose. No allowlist -- a
+//       table-cell heading is always a defect to re-extract.
+//   - thin-form: total recursive body-text char count below THIN_FORM_CHARS
+//       (2,100) AND the slug is NOT in POOR_QUALITY_ALLOWLIST. Catches synthetic
+//       skeletons / truncated extracts that score `partial` on char count alone.
+//       Genuinely-short one-pagers are exempted by a `genuinely-short` entry in
+//       POOR_QUALITY_ALLOWLIST (the same governed list used by the tier check).
+// Calibration: the 8 Wave-2 re-extracts land at 2,178..13,899 body chars; the
+// synthetic no-public-url skeletons top out at ~2,047 chars; the genuinely-short
+// circulars (c3-2020 ~908, gn1-2008 ~1,857) are allowlisted. THIN_FORM_CHARS sits
+// in the gap so real extracts pass and broken ones fail.
 //
 // GAP-PA-SOURCE-EXTRACT-THIN-SOURCE: 9 instruments have no resolvable public PDF
 // URL; the only text available is a synthetic boilerplate skeleton. These are
@@ -70,6 +90,15 @@ const PIPELINE = "regulatory-source-extract-quality";
  */
 export const ADVISORY_UNTIL = "2026-06-11";
 
+/**
+ * thin-form threshold (Wave-2). An extract with fewer than this many recursive
+ * body-text chars that is NOT in POOR_QUALITY_ALLOWLIST fails the gate. Calibrated
+ * to sit in the gap between the synthetic skeletons (<=2,047 chars) and the
+ * Wave-2 re-extracts (>=2,178 chars). Genuinely-short one-pagers are exempted via
+ * a `genuinely-short` POOR_QUALITY_ALLOWLIST entry.
+ */
+export const THIN_FORM_CHARS = 2_100;
+
 export type BlockReason = "no-public-url" | "genuinely-short";
 
 export interface AllowlistEntry {
@@ -107,6 +136,29 @@ export const POOR_QUALITY_ALLOWLIST: Record<string, AllowlistEntry> = {
   "banks-d6-2008": { reason: "no-public-url", note: "pre-2014; superseded/unpublished" },
   // --- genuinely short -------------------------------------------------------
   "banks-c3-2020": { reason: "genuinely-short", note: "one-page disclosure circular (~970 chars)" },
+};
+
+/**
+ * Governed allowlist for the Wave-2 thin-form FAILING detector: instruments whose
+ * extract is legitimately below THIN_FORM_CHARS because the published instrument
+ * really is a brief one-pager (not a synthetic skeleton or truncated extract).
+ * These score `partial`/`complete` on the tier scorer (so they are NOT in
+ * POOR_QUALITY_ALLOWLIST and would trip the stale-allowlist self-clean if added
+ * there) but fall below the thin-form char floor. Each entry is justified.
+ *
+ * POOR_QUALITY_ALLOWLIST `genuinely-short` entries (e.g. c3-2020) are ALSO exempt
+ * from thin-form -- the run loop checks both lists.
+ */
+export const SHORT_FORM_ALLOWLIST: Record<string, AllowlistEntry> = {
+  // gn1-2008 ("Status of Previously Issued Guidance Notes") re-extracted via OCR
+  // in Wave-2 (D-PA-SOURCE-EXTRACT-RECOVERY-WAVE-2): the prior mangled "Process
+  // Process …" repetition is gone; the clean text is a genuinely brief one-page
+  // GN (~1,857 chars). It scores `partial`, so it lives here (not in
+  // POOR_QUALITY_ALLOWLIST) to exempt it from the thin-form floor.
+  "banks-gn1-2008": {
+    reason: "genuinely-short",
+    note: "one-page status GN (~1,857 chars, OCR-clean)",
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -159,10 +211,9 @@ export const STRUCTURAL_ISSUE_ALLOWLIST: Record<string, StructuralIssueEntry> = 
     reason: "pdf-extractor-artefact",
     note: "Annexure heading duplicated in body text",
   },
-  "banks-gn1-2008": {
-    reason: "pdf-extractor-artefact",
-    note: "older GN; PDF extractor emitted heading into body text",
-  },
+  // banks-gn1-2008 retired from this allowlist 2026-06-12: re-extracted via OCR
+  // (Wave-2); the heading-in-body / prose-heading artefacts are gone. It is now
+  // a clean genuinely-short GN, governed by POOR_QUALITY_ALLOWLIST instead.
   "banks-gn12-2022": {
     reason: "pdf-extractor-artefact",
     note: "PDF extractor emitted typology headings into body text (prose-heading instrument)",
@@ -312,6 +363,52 @@ export function hasProseHeadings(doc: StructuredSourceDocument): boolean {
   return avg > 80;
 }
 
+/**
+ * table-cell-as-heading (Wave-2, FAILING): any top-level section whose heading
+ * carries a table delimiter (`|` pipe) or has a bare form-field-label shape.
+ * Signals that the extractor flattened a form/annexure (reporting template) into
+ * heading fragments instead of extracting operative prose.
+ *
+ * Form-field-label shape heuristics (heading, trimmed). Tuned to fire on flattened
+ * form/annexure cells but NOT on legitimate prose headings that contain a colon
+ * (e.g. "Guidance on electronic communication: new e-mail address"):
+ *   - contains a `|` pipe (raw table-row delimiter), OR
+ *   - is a short (<= 40 chars) single cell label ending in a colon AND not a
+ *     normal prose phrase — i.e. the colon is the only one and the label is at
+ *     most 5 words (e.g. "Submission date:", "Rating system Name:"), OR
+ *   - contains >= 3 short colon-terminated cell fragments (each <= 18 chars before
+ *     the colon) — several form cells concatenated into one heading. The high
+ *     count + short-fragment constraint avoids prose headings (which carry at most
+ *     one or two long colon phrases).
+ */
+export function hasTableCellAsHeading(doc: StructuredSourceDocument): boolean {
+  const tops = topSectionsOf(doc);
+  for (const s of tops) {
+    const heading = (s.heading ?? (s as { title?: string }).title ?? "").trim();
+    if (!heading) continue;
+    if (heading.includes("|")) return true;
+    // single short cell label: <= 40 chars, ends in colon, only one colon, <= 5 words
+    const colons = (heading.match(/:/g) ?? []).length;
+    if (
+      heading.length <= 40 &&
+      heading.endsWith(":") &&
+      colons === 1 &&
+      heading.split(/\s+/).length <= 5
+    ) {
+      return true;
+    }
+    // multiple short cell fragments (<= 18 chars before each colon)
+    const shortCells = heading.match(/\b[A-Za-z][A-Za-z ()/]{0,16}:/g) ?? [];
+    if (shortCells.length >= 3) return true;
+  }
+  return false;
+}
+
+/** Recursive body-text char count for one document (top-level + nested). */
+export function bodyCharCount(doc: StructuredSourceDocument): number {
+  return countTextCharsRecursive(topSectionsOf(doc));
+}
+
 // ---------------------------------------------------------------------------
 // Disk-scan helpers
 // ---------------------------------------------------------------------------
@@ -323,6 +420,10 @@ export interface StructuralCheckRow {
   singleBlob: boolean;
   headingInBody: boolean;
   proseHeading: boolean;
+  /** Wave-2 FAILING detector: a top-level heading is a table cell / form label. */
+  tableCellHeading: boolean;
+  /** Recursive body-text char count (drives the thin-form FAILING detector). */
+  bodyChars: number;
 }
 
 export interface ExtractQualityDeps {
@@ -330,6 +431,8 @@ export interface ExtractQualityDeps {
   readonly rows?: readonly ExtractQualityRow[];
   /** Override the allowlist (tests). Default `POOR_QUALITY_ALLOWLIST`. */
   readonly allowlist?: Record<string, AllowlistEntry>;
+  /** Override the thin-form short-form allowlist (tests). Default `SHORT_FORM_ALLOWLIST`. */
+  readonly shortFormAllowlist?: Record<string, AllowlistEntry>;
   /** Override the structural issue allowlist (tests). Default `STRUCTURAL_ISSUE_ALLOWLIST`. */
   readonly structuralAllowlist?: Record<string, StructuralIssueEntry>;
   /** Override advisory boundary (tests). */
@@ -400,6 +503,8 @@ function structuralRowsFromDisk(): StructuralCheckRow[] {
         singleBlob: isSingleBlob(doc),
         headingInBody: hasHeadingInBody(doc),
         proseHeading: hasProseHeadings(doc),
+        tableCellHeading: hasTableCellAsHeading(doc),
+        bodyChars: bodyCharCount(doc),
       });
     }
   }
@@ -418,6 +523,7 @@ export function run(deps: ExtractQualityDeps = {}): ReconResult & {
   const violations: ReconViolation[] = [];
 
   const allowlist = deps.allowlist ?? POOR_QUALITY_ALLOWLIST;
+  const shortFormAllowlist = deps.shortFormAllowlist ?? SHORT_FORM_ALLOWLIST;
   const structuralAllowlist = deps.structuralAllowlist ?? STRUCTURAL_ISSUE_ALLOWLIST;
   const advisoryUntil = deps.advisoryUntil ?? ADVISORY_UNTIL;
   const asOfDate = (deps.asOfDate ?? clock.now()).slice(0, 10);
@@ -538,6 +644,28 @@ export function run(deps: ExtractQualityDeps = {}): ReconResult & {
           severity: "warn",
         });
       }
+    }
+
+    // --- Wave-2 FAILING detectors -----------------------------------------
+    // table-cell-as-heading: always a defect (no allowlist). FAILs post-advisory.
+    if (sr.tableCellHeading) {
+      structuralFindings++;
+      violations.push({
+        subject: `${sr.slug} (table-cell-as-heading)`,
+        message: `\`${sr.slug}\` has a top-level section heading carrying a table delimiter or form-field label — the extractor flattened a form/annexure into heading fragments instead of extracting operative prose. Re-extract (truncate the annexure template / OCR the form). Citation: D-PA-SOURCE-EXTRACT-RECOVERY-WAVE-2.`,
+        severity: postAdvisory ? "fail" : "warn",
+      });
+    }
+
+    // thin-form: body chars below threshold AND not governed-allowlisted in
+    // either the tier `genuinely-short` list or the dedicated short-form list.
+    if (sr.bodyChars < THIN_FORM_CHARS && !allowlist[sr.slug] && !shortFormAllowlist[sr.slug]) {
+      structuralFindings++;
+      violations.push({
+        subject: `${sr.slug} (thin-form)`,
+        message: `\`${sr.slug}\` has only ${sr.bodyChars} body-text chars (< ${THIN_FORM_CHARS}) and is not allowlisted — synthetic skeleton or truncated extract. Re-extract from the source PDF, or add a governed \`genuinely-short\` POOR_QUALITY_ALLOWLIST entry with justification. Citation: D-PA-SOURCE-EXTRACT-RECOVERY-WAVE-2.`,
+        severity: postAdvisory ? "fail" : "warn",
+      });
     }
   }
 
