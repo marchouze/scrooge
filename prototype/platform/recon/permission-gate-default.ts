@@ -177,6 +177,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // ("approved with tracked deferred gaps"). Gate is a no-op on replay. Citation:
   // D-FX-OTC-NPA-SCOPE-EXPANSION, P4-SECURITY-DESIGNED-IN.
   "platform/recon/npa-deferred-gap-tracking.ts",
+  // DSAR SLA recon (D-FX-HELD-DIMS-SEAT-SWEEP) — read-only replay of the
+  // DSARReceived / DSARExtended / DSARClosed lifecycle to inventory open
+  // data-subject access requests against the POPIA s.23 / PAIA s.25 30-day
+  // response window. Gate is a no-op on replay. Citation: ORG-PR(IV)-08,
+  // P4-SECURITY-DESIGNED-IN.
+  "platform/recon/dsar-sla.ts",
   // Counterparty Basel-classification coverage recon (D-FX-COUNTERPARTY-BASEL-
   // CLASSIFICATION) — read-only replay of CcrEadComputed + CounterpartyBaselClassAssigned
   // to inventory which SA-CCR-exposed counterparties are authoritatively classified vs

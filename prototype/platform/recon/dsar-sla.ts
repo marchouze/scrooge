@@ -31,6 +31,7 @@ import { resolve } from "node:path";
 
 import { EventStore } from "@platform/event-store/store";
 import { foldDsarRegister } from "../privacy/dsar-register";
+import { utcNow } from "../types/time";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "dsar-sla";
@@ -61,7 +62,7 @@ export function run(opts: RunOpts = {}): ReconResult {
   }
 
   const store = new EventStore(dbPath);
-  const asOf = opts.asOf ?? new Date().toISOString(); // wall-clock: SLA clocks are real statutory clocks
+  const asOf = opts.asOf ?? utcNow(); // SLA clocks are real statutory clocks
   const register = foldDsarRegister(store, asOf);
 
   result.asserted = register.length;
