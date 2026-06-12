@@ -1,11 +1,420 @@
---- Page 1 ---
-P O Box 427 Pretoria 0001 South Africa 370 Helen Joseph Street Pretoria 0002 +27 12 313 3911 / 0861 12 7272 www.resbank.co.za Ref.: 15/8/1/2 D1/2026 To: All banks, branches of foreign institutions, controlling companies and auditors of banks or controlling companies Directive issued in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990) Matters related to the promotion of sound corporate governance, particularly in relation to the appointment of directors and executive officers
+=== Preamble ===
+Ref.: 15/8/1/3
+D1/2026
+To: All banks, controlling companies, branches of foreign institutions and auditors of
+banks or controlling companies
+Directive issued in terms of section 6(6) of the Banks Act, 1990 (Act No. 94 of 1990)
+Matters related to the promotion of sound corporate governance, particularly in
+relation to the appointment of directors and executive officers
+Executive summary
+Section 1(1A) of the Banks Act, 1990 (Act No. 94 of 1990) (Banks Act), as amended by
+the Financial Sector Regulation Act, 2017 (Act No. 9 of 2017) (FSR Act), states that,
+for the purposes of the Banks Act, in order to determine whether a particular person
+is fit and proper to hold the office of director or executive officer of a bank or
+controlling company, the Prudential Authority (PA) must consider specific qualities,
+in so far as they are reasonably determinable, of the person concerned.
+Effective corporate governance in banks and controlling companies is critical to the
+proper functioning of the banking sector and the economy as a whole.
+Internationally and locally, various standards or codes that address matters related
+to corporate governance, cooling-off periods and the independence of directors have
+been developed or further updated in recent years.
+In this regard, the PA issued Directive 4 of 2018 to address the aforementioned
+matters and promote effective corporate governance in banks and controlling
+companies.
+Taking feedback from banks and controlling companies into consideration as well as
+supervisory observations made since the implementation of Directive 4 of 2018, the
+PA has revised specific requirements relating to the tenure of independent
+non-executive directors.
+This Directive serves to direct banks and controlling companies to have in place and
+implement a sufficiently robust board of directors (board)-approved policy that
+appropriately deals with the matters specified herein.
+This Directive replaces Directive 4 of 2018.
 
---- Page 2 ---
-1. Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Matters related to the promotion of sound corporate governance, particularly in relation to the appointment of directors and executive officers. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.
+=== Introduction ===
+1
+1.1         A key objective of prudential regulation and the supervision of financial
+institutions is to achieve a stable financial system that serves the interests of
+financial customers and supports balanced and sustainable economic growth.
+1.2         In this regard, effective corporate governance in banks and controlling companies
+is critical to the proper functioning of the banking sector and the economy as a
+whole.
+1.3         As stated in the revised principles on corporate governance for banks,1 issued by
+the Basel Committee on Banking Supervision (Basel Committee)-
+1.3.1       supervisors have a keen interest in sound corporate governance as it is an
+essential element in the safe and sound functioning of a bank and may adversely
+affect the bank’s risk profile if not operating effectively; and
+1.3.2       well-governed banks contribute to the maintenance of an efficient and
+cost-effective supervisory process, as there is less need for supervisory
+intervention.
+1.4         Internationally and locally, various standards or codes that address matters
+related to corporate governance, cooling-off periods and independence of
+directors have been developed or further updated in recent years.
+1.5         In this regard, the PA issued Directive 4 of 2018, dealing with several of the
+aforementioned matters to promote effective corporate governance in banks and
+controlling companies.
+1.6         Taking feedback from banks and controlling companies into consideration as well
+as supervisory observations made since the implementation of Directive 4 of
+2018, the PA has revised or updated specific requirements relating to the tenure
+of independent non-executive directors.
+1.7         It should be noted that the PA and the Financial Sector Conduct Authority (FSCA)
+are developing a Joint Governance Standard for all regulated entities. Once
+made and published, this Joint Standard will encompass all elements covered in
+this Directive and align governance requirements across all supervised financial
+institutions.
 
---- Page 3 ---
-2. Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.
+=== Banks Act ===
+2.1         Section 1(1A) of the Banks Act, as amended by the FSR Act, states that, for the
+purposes of the Banks Act, in order to determine whether a particular person is
+fit and proper to hold the office of director or executive officer of a bank or
+controlling company, the PA must have consider the following qualities, in so far
+as they are reasonably determinable, of the person concerned-
+2.1.1       the general probity of that person;
+1 Available online at Principles on corporate governance.
+2
+2.1.2   the competence and soundness of judgement of that person for the fulfilment of
+the responsibilities of the office in question; and
+2.1.3   the diligence with which the person concerned is likely to fulfil those
+responsibilities.
+2.2     Furthermore, sections 60, 60B, 64, 64A, 64B and 64C of the Banks Act, among
+others-
+2.2.1   specify various responsibilities or functions of the board or specified
+board-appointed committees of the bank or controlling company; and/or
+2.2.2   impose specific restrictions on the composition of the board or board-appointed
+committees of the bank or controlling company.
+2.3     For ease of reference, the respective requirements specified in the
+aforementioned sections of the Banks Act are set out in Annexure A to this
+Directive.
 
---- Page 4 ---
-3. Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.
+=== Regulations relating to Banks ===
+3.1     Regulation 41 of the Regulations relating to Banks (Regulations) also sets out
+requirements related to the composition of the board of the bank or controlling
+company.
+3.2     For ease of reference, the relevant requirements specified in regulation 41 of the
+Regulations are set out in Annexure B to this Directive.
+3.3     In order to duly discharge the responsibilities related to the appointment of
+suitably qualified persons, as assigned to the PA in terms of the Banks Act,
+regulation 42 of the Regulations requires that a duly completed statement and
+declaration in the form of a form BA 020, as prescribed in regulation 53 of the
+Regulations, must be submitted to the PA by the chairperson of the board, the
+chairperson’s duly-appointed representative or, in the case of a new bank, by the
+auditor, in respect of-
+3.3.1   every person accepting an appointment as a director or an executive officer of a
+bank or a controlling company for the first time, at least 30 days prior to the
+appointment becoming effective;
+3.3.2   every person who previously served as a director or an executive officer of a bank
+or controlling company but subsequently resigned and is being reappointed as a
+director or an executive officer of a bank or controlling company after a period of
+more than 12 months since the date of resignation, at least 30 days prior to the
+appointment becoming effective; and
+3.3.3   any serving director or executive officer of a bank or controlling company, at the
+request of the PA, in terms of section 1(1A)(c) of the Banks Act.
+3
+
+=== Core principles for effective banking supervision and principles for ===
+corporate governance
+4.1         On 14 September 2012, the Basel Committee issued enhancements to the Core
+Principles for Effective Banking Supervision (Core Principles).2 The Core
+Principles serve as the de facto minimum standard for sound prudential
+regulation and supervision of banks and banking systems.
+4.2         In April 2024, the Basel Committee published further revisions to the
+Core Principles.3 Given the fundamental deficiencies in banks' corporate
+governance that were exposed during the global financial crisis, a new Core
+Principle on corporate governance (Core Principle 14) was added to the set of
+Core Principles.
+4.3         For ease of reference, some of the relevant key requirements specified in the
+revised Core Principle 14 are set out in Annexure C to this Directive. In addition,
+Annexure D to this Directive sets out some of the relevant key matters or
+requirements specified in the general principles for corporate governance for
+banks.4
+
+=== Comparable corporate governance report issued by the Organisation for ===
+Economic Co-operation and Development
+5.1         The Group of Twenty (G20)/Organisation for Economic Co-operation and
+Development (OECD) Principles of Corporate Governance (Principles) was
+revised in 2023.5 The OECD Corporate Governance Factbook, published in
+September 2023, is a resource for understanding the global implementation of
+the G20/OECD Principles by providing comparable information as well as
+evidence and examples from 49 jurisdictions worldwide.6
+5.2         For ease of reference, some of the relevant key findings contained in the 2023
+OECD Corporate Governance Factbook are set out in Annexure E to this
+Directive.
+
+=== Corporate governance codes, principles and practices in South Africa ===
+6.1         The King V™ Report on Corporate Governance for South Africa, 2025 (King V™)
+was issued in 20167 and sets out 13 overarching governance principles, including
+matters related to the composition of the board and non-executive and
+independent non-executive directors.
+6.2         For ease of reference, some of the relevant key governance-related principles
+contained in King V™ are set out in Annexure F to this Directive.
+2 Available online at Enhanced Core Principles.
+3 Available online at Revised Core Principles – 2024.
+4.Available online at Principles on corporate governance.
+5 Available online at G20/OECD Principles for Corporate Governance.
+6 Available online at OECD Corporate Governance Factbook 2023.
+7 Available online at King IV™.
+4
+
+=== Directive ===
+7.1       Based on the aforesaid and in accordance with the provisions of section 6(6) of
+the Banks Act, banks and controlling companies are hereby directed to have in
+place and to implement a sufficiently robust board-approved policy that, at a
+minimum-
+7.1.1     satisfactorily protects and promotes the principle of board independence.
+In particular, the policy must clearly specify-
+7.1.1.1   that the chairperson of the board must be an independent non-executive director,
+provided that-
+a)   the policy shall also make adequate provision for cases when the
+chairperson may, for some reason, become non-independent for a period
+of time or is conflicted on a specific matter, such as, for example, by
+providing for the appointment of a lead independent director;
+b)   only in exceptional cases, and at the sole discretion of the PA, and after due
+consideration of factors such as the adequacy of mechanisms in place to
+strengthen the independence of the board and adequate provision for an
+additional channel of communication for board members when the
+chairperson may be conflicted, and/or the appointment of a lead
+independent director, and such other factors regarded as material by the
+PA, the PA may approve in writing, subject to such conditions as may be
+specified in writing by the PA, the appointment of a non-independent
+non-executive director to serve as the chairperson of the board for such a
+period of time as may be specified in writing by the PA;
+7.1.1.2   that the respective chairpersons of all the relevant board sub-committees of the
+bank or controlling company required to be established in terms of the relevant
+provisions of the Banks Act and the Companies Act, 2008 (Act No. 71 of 2008)
+must be independent non-executive directors, provided that-
+a)   the policy shall also make adequate provision for cases when the
+chairperson of the relevant board sub-committee may, for some reason,
+become non-independent for a period of time or is conflicted on a specific
+matter, such as, for example, by providing for the appointment of a lead
+independent director;
+b)   only in exceptional cases, and at the sole discretion of the PA, and after due
+consideration of factors such as the adequacy of mechanisms in place to
+strengthen the independence of the board sub-committee and adequate
+provision for an additional channel of communication for board members
+when the chairperson of the relevant board sub-committee may be
+conflicted, and/ or the appointment of a lead independent director, and such
+other factors regarded as material by the PA, the PA may approve in writing,
+subject to such conditions as may be specified in writing by the PA, the
+appointment of a non-independent non-executive director to serve as the
+chairperson of the board sub-committee for such a period of time as may
+be specified in writing by the PA;
+5
+7.1.1.3   that no person who-
+a)    has been an executive director;
+b)    has been the Chief Executive Officer (CEO);
+c)    has been an executive officer, as defined in the Banks Act;
+d)    has been the designated external auditor directly or indirectly responsible
+for performing the statutory audit, or a key member of the external audit
+team directly or indirectly responsible for performing the statutory audit; or
+e)    has been the curator,
+of the bank or controlling company at any time during the preceding 12 months
+can be appointed as a non-executive director of the bank or controlling company,
+provided that-
+i)    in exceptional cases, and at the sole discretion of the PA, and after due
+consideration of factors such as proportionality, the systemic importance or
+interconnectedness of the relevant bank or controlling company within the
+domestic financial system, or such other factors regarded as material in
+relation to the person or institution under consideration, the PA may approve
+the appointment of any of the aforementioned persons to serve as a non-
+executive director of the bank or controlling company, after such a period
+shorter than 12 months as may be specified in writing by the PA;
+ii)   for the purposes of this Directive, unless specifically otherwise stated,
+executive manager, executive management or senior executive
+management shall have the same meaning as executive officer, as defined
+in the Banks Act;
+7.1.2     includes objective and baseline tests setting out circumstances that deem a
+director not to be independent.
+In this regard, as a minimum, a director is deemed not to be independent if the
+director, among other factors-
+7.1.2.1   is a substantial shareholder of the bank or controlling company or an executive
+officer of, or otherwise associated directly with, a substantial shareholder of the
+bank or controlling company;
+For the purposes of this Directive, a substantial shareholder of the bank or
+controlling company means any person with a shareholding of which the total
+nominal value together with the total nominal value of shares already held by
+such person and by the associate or associates of such person, or the voting
+rights in respect of the issued shares of such bank or controlling company that
+are exercisable by such person together with the voting rights attached to the
+shares of such bank or controlling company that are already held and exercisable
+by such person and by the associate or associates of such person – amount to
+more than 5% of the total nominal value or the total voting rights in respect of all
+the issued shares of the bank or controlling company, as the case may be.
+6
+7.1.2.2   has within the last three years been a principal of a material professional adviser
+or a material consultant to the bank or controlling company or another member
+of the banking group, such that a reasonable and informed third party would
+conclude in the circumstances that the integrity, impartiality or objectivity of that
+director is compromised by that relationship;
+7.1.2.3   is a significant provider of equity or other sources of capital, or a material provider
+of funding to the bank or controlling company;
+For the purposes of this Directive-
+a)   a significant provider of equity or other sources of capital means any person
+directly or indirectly providing equity or other sources of capital to the bank
+or controlling company, as the case may be, which in aggregate is equal to
+or exceeds 5% of the aggregate amount of total qualifying capital and
+reserve funds of the bank or controlling company, as the case may be, as
+reported in the latest form BA 700 submitted to the PA; and
+b)   a material provider of funding means any person directly or indirectly
+providing funding to the bank or controlling company, as the case may be,
+which in aggregate is equal to or exceeds 5% of the aggregate amount of
+total liabilities of the bank or controlling company, as the case may be, as
+reported in the bank or controlling company’s latest set of audited financial
+statements.
+7.1.2.4   is the recipient of a form of remuneration other than-
+a)   directors’ fees; or
+b)   directors’ remuneration,
+such as by means of a share-based incentive scheme, which is contingent on the
+performance of the bank or controlling company.
+That is, any person who receives any form of fees or remuneration that is linked
+to the performance of the bank or controlling company, such as a share-based
+incentive scheme, or that is contingent on the performance of the bank or
+controlling company is deemed not to be independent.
+7.1.2.5   is or has within the past three years been a significant or ongoing professional
+adviser to, or an internal auditor of the bank or controlling company, where a
+reasonable and informed third party would conclude in the circumstances that the
+integrity, impartiality or objectivity of that person is compromised by that
+relationship;
+7.1.2.6   is a member of the immediate family of an individual who falls within any of the
+aforementioned categories of persons;
+7.1.2.7   has been an executive director, the CEO or an executive officer of the bank or
+controlling company at any time during the preceding three years;
+7
+7.1.2.8    has served as an independent non-executive director of the bank or controlling
+company for a period of nine years, provided that-
+a)   should the bank or controlling company decide to reappoint a person who
+has already served as an independent non-executive director of the bank
+or controlling company for a period of nine years or longer, to remain a
+member of the board after the aforementioned period of nine years, that
+person shall, for the purposes of this Directive and any other relevant
+requirements related to board composition as specified in the Banks Act or
+the Regulations, be regarded as a non-executive director of the bank or
+controlling company concerned, but not as an independent non-executive
+director of that bank or controlling company;
+In exceptional cases, at the sole discretion of the PA, and after considering
+factors such as the adequacy of mechanisms in place to strengthen board
+independence, the board’s relevant skills, experience, composition and any
+other material factors identified by the PA, the PA may approve the
+extension of the nine-year period. Such approval by the PA shall be granted
+in writing. Any approval may be subject to specified conditions as deemed
+necessary by the PA. The extension to remain as an independent non-
+executive director may be granted for a period up to a maximum of
+24 months.
+b)   for the purposes of this Directive-
+i)     should an independent non-executive director resign before
+completing the tenure stated in paragraph 7.1.2.8 above and is
+subsequently reappointed by the bank or controlling company within
+a period of three years, the remaining years of the tenure stated in
+paragraph 7.1.2.8 above will apply from the date of reappointment.
+In other words, the tenure of the independence of the non-executive
+director will be counted from the remaining tenure years at the date
+of resignation until the completion of the original nine-year term; and
+ii)    an independent non-executive director of a subsidiary of a bank or
+controlling company will be permitted to reset the board tenure when
+appointed as an independent non-executive director at the bank or
+controlling company level, as the new role encompasses a broader
+scope and variance in senior management. The resetting of the
+tenure will become effective upon application for ascension to the
+higher board, provided that no material conflicts are identified by the
+PA. In addition, the PA may impose specified conditions as deemed
+necessary.
+7.1.2.9    has been the designated auditor directly or indirectly responsible for performing
+the statutory audit for the bank or controlling company, or a key member of the
+audit team directly or indirectly responsible for performing the statutory audit for
+the bank or controlling company, at any time during the preceding three financial
+years; or
+7.1.2.10   has been the curator of the bank or controlling company at any time during the
+preceding three years; or
+8
+7.1.2.11   has been reappointed to the board of a bank or controlling company within a
+period of less than three years, after serving the tenure stated in paragraph
+7.1.2.8 above.
+7.1.3      ensures-
+7.1.3.1    the board has in place a clear and rigorous process for identifying, assessing and
+selecting board candidates;
+7.1.3.2    the board has in place sufficiently robust measures to promote continuity in
+appointing independent non-executive directors and other non-executive
+directors;
+7.1.3.3    the bank or controlling company’s selection process includes reviewing whether
+the board candidate possesses the required knowledge, proportionate skills,
+experience and, particularly in the case of non-executive directors, independence
+of mind given his/her responsibilities on the board and in the light of the bank or
+controlling company’s business and risk profile;
+7.1.3.4    the board includes a sufficient number of independent directors, that is, as stated
+hereinbefore, persons who are independent in conduct, character and
+judgement, and have no relationship with the bank or controlling company, their
+related entities, substantial shareholders or officers that could interfere, or be
+reasonably perceived to interfere, with the exercise of the directors’ independent
+business judgement in the best interests of the bank or controlling company;
+7.1.3.5    the composition of the board facilitates effective oversight on an ongoing basis;
+7.1.3.6    appropriate and ongoing training for directors;
+7.1.3.7    ongoing assessment of the effectiveness of individual board members;
+7.1.3.8    that during any relevant required cooling-off period the relevant person does not
+hold any position or is not associated with the bank or controlling company in a
+manner that would cause bias in decision-making, when judged from the
+perspective of a reasonable and informed third party;
+7.1.4      clearly specifies-
+7.1.4.1    the maximum number and/or type of boards on which a non-executive director
+may serve, based on and duly taking into consideration each relevant director’s
+circumstances, and the nature, scale and complexity of the respective
+directorships, to ensure the person is able to devote sufficient time to duly
+discharge his/her responsibilities as a director of the bank or controlling company;
+7.1.4.2    that-
+a)      every independent director has to, at the first meeting of the board in which
+he/she participates as a director and thereafter at the first meeting of the
+board in every financial year or whenever there is any change in the
+circumstances which may affect his/her status as an independent director,
+give a declaration that he/she meets the board-specified criteria of
+independence; and
+9
+b)   the relevant contents of the aforementioned declaration made by the
+director must be duly assessed and appropriately verified by the bank or
+controlling company, as the case may be, as part of its own internal
+governance process.
+7.1.4.3   sufficiently robust criteria to ensure that the bank or controlling company appoints
+only ‘fit-and-proper’ persons-
+a)   to serve as directors or executive officers of the bank or controlling company
+concerned; and
+b)   with the necessary knowledge, proportionate skills, experience and
+soundness of judgement to establish and maintain an adequate and
+effective process of corporate governance that is consistent with the nature,
+complexity and risks inherent in the activities and the business of the bank
+or controlling company concerned.
+7.1.4.4   an appropriate minimum required cooling-off period for other types of
+appointment of persons to serve as directors or executive officers of the bank or
+controlling company concerned, such as, for example, the appointment of a
+person who currently or previously served as
+a)   an executive director;
+b)   the CEO;
+c)   the chairperson of the board; or
+d)   the curator,
+of any other bank or controlling company; and
+7.1.5     prevents any potential conflict of interest between the business interests of the
+bank or controlling company and the personal interests of directors or executive
+officers of the bank or controlling company.
+7.2       The PA shall, as part of its supervisory review and evaluation processes, assess
+a bank and controlling company’s corporate governance policies, processes and
+practices, and their implementation, to ensure that-
+7.2.1     the bank or controlling company has in place sufficiently robust corporate
+governance policies, processes and practices, commensurate with its risk profile
+and systemic importance; and
+7.2.2     the board-approved policy of the bank or controlling company, the composition of
+the board and the positions held by members of the board fully comply with the
+relevant requirements set out in this Directive.
+7.3       The PA shall require banks and controlling companies to correct any identified
+deficiencies within such period as may be directed in writing by the PA.
+10
+7.4              The provisions of this Directive do not apply to the board of a foreign institution
+conducting the business of a bank in the Republic of South Africa under an
+authorisation envisaged in section 18A of the Banks Act.
+
+=== Acknowledgement of receipt ===
+8.1              Kindly ensure that a copy of this Directive is made available to your institution’s
+external auditors. The attached acknowledgement of receipt, duly completed and
+signed by both the Chief Executive Officer of the institution and the said auditors,
+should be returned to the PA at the earliest convenience of the aforementioned
+signatories.
+Fundi Tshazibana
+Chief Executive Officer
+Date: 25/02/26
+Encl.: 6
+The previous Directive issued was Directive 14/2025, dated 1 December 2025.
+11

@@ -25,67 +25,58 @@
       "title": "Full Text",
       "sections": [
         {
+          "id": "s-banks-d9-2022-0",
+          "number": "0",
+          "heading": "Preamble",
+          "text": "Ref.: 15/8/1/3\nD9/2022\nTo: All banks, controlling companies, branches of foreign institutions, eligible\ninstitutions and auditors of banks or controlling companies\nDirective issued in terms of section 6(6) of the Banks Act 94 of 1990\nMatters relating to domestic money or value transfer services\nExecutive summary\nThe purpose of this Directive is to direct banks, controlling companies and\nbranches of foreign institutions (hereinafter collectively referred to as ‘banks’) to\n(1) register all existing and future domestic money or value transfer service\n(MVTS) agency arrangements with the Prudential Authority (PA), to (2) maintain\nan up-to-date schedule of all MVTS agency arrangements and (3) submit MVTS\nagency returns, attached hereto as Annexure A, to the PA.\nThe Financial Action Task Force (FATF) Recommendation 14 requires countries,\namong others, to take measures to ensure that natural or legal persons that\nprovide MVTS are licensed or registered, and subject to effective systems for\nmonitoring and ensuring compliance with the measures specified in the\nrespective FATF Recommendations.\nFurthermore, any natural or legal person acting as an agent must also be licensed\nor registered by a competent authority, or the MVTS provider must maintain a\ncurrent list of its agents accessible by competent authorities in the countries in\nwhich the MVTS provider and its agents conduct business. Countries must also\nimplement measures to ensure that MVTS providers that use agents include them\nin their anti-money laundering and counter terrorism financing (AML/CFT)\nprogrammes and monitor them for compliance with these programmes.\nRegulation 36(17) of the Regulations relating to Banks (Regulations) requires,\namong others, that the policies, processes and procedures of banks and\ncontrolling companies must be sufficiently robust and ensure that the bank or\ncontrolling company inter alia continuously receives relevant information relating\nto risk exposure incurred by any foreign operation; that every relevant foreign\nbranch, subsidiary or operation of the bank or controlling company implements\nand applies AML/CFT measures consistent with the relevant FATF\nRecommendations issued from time to time; and the higher of AML/CFT\nstandards issued in the Republic of South Africa or the relevant host country are\napplied by the bank or controlling company.\n1"
+        },
+        {
           "id": "s-banks-d9-2022-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Matters relating to domestic money or value transfer services. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-1-1",
-              "number": "1.1",
-              "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
-            },
-            {
-              "id": "sub-1-2",
-              "number": "1.2",
-              "text": "Matters relating to domestic money or value transfer services.",
-              "verbatim": true
-            },
-            {
-              "id": "sub-1-3",
-              "number": "1.3",
-              "text": "This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-              "verbatim": true
-            }
-          ]
+          "text": "1.1         As a member of the FATF, South Africa has committed to conform to the FATF’s\n40 Recommendations against money laundering and terrorism financing. FATF\nRecommendation 14 requires countries to implement measures to ensure that\nnatural or legal persons that provide MVTS1 are licensed or registered, and\nsubject to effective systems for monitoring and ensuring compliance with the\nrelevant measures specified in the respective FATF Recommendations.\n1.2         Furthermore, FATF Recommendation 14 also requires that any natural or legal\nperson acting as an agent must also be licensed or registered by a competent\nauthority, or the MVTS provider must maintain a current list of its agents\naccessible by competent authorities in the countries in which the MVTS provider\nand its agents conduct business. Countries must also implement measures to\nensure that MVTS providers that use agents include them in their AML/CFT\nprogrammes and monitor them for compliance with these programmes.\n1.3         Within South Africa, registered banks, being licensed deposit taking institutions\nin terms of the Banks Act 94 of 1990 (Banks Act, 1990) may engage in and\nprovide MVTS activities and are regarded as domestic MVTS providers.\n1.4         Regulation 36(17) of the Regulations requires, among others, that the policies,\nprocesses and procedures of banks and controlling companies must be\nsufficiently robust to ensure that the bank or controlling company inter alia\ncontinuously receives relevant information relating to risk exposure incurred by\nany foreign operation and that every relevant foreign branch, subsidiary or\noperation of the bank or controlling company implements and applies AML/CFT\nmeasures consistent with the relevant FATF Recommendations issued from\ntime to time; and the higher of AML/CFT standards issued in the Republic of\nSouth Africa or the relevant host country are applied by the bank or controlling\ncompany.\n1.5         Furthermore, in terms of regulation 38(4)(c) of the Regulations, if the PA is of\nthe opinion that the policies, processes and procedures of banks, controlling\ncompanies or branches of foreign institutions relating to its risk assessments\nare inadequate, the PA may require the said institution to strengthen its risk\nmanagement policies, processes or procedures."
         },
         {
           "id": "s-banks-d9-2022-2",
           "number": "2",
-          "heading": "Application",
-          "text": "2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-2-1",
-              "number": "2.1",
-              "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
-            },
-            {
-              "id": "sub-2-2",
-              "number": "2.2",
-              "text": "Institutions are required to ensure compliance with the requirements set out herein.",
-              "verbatim": true
-            }
-          ]
+          "heading": "Directive",
+          "text": "2.1         Based on the aforesaid and in accordance with the provisions of section 6(6) of\nthe Banks Act, 1990 banks are hereby directed to comply with the respective\nrequirements specified in paragraphs 3 to 7 below:\n1 The Financial Action Task Force definition of MVTS refers to financial services that involve the acceptance of cash, cheques, other\nmonetary instruments or other stores of value and the payment of a corresponding sum in cash or other form to a beneficiary by\nmeans of a communication, message, transfer or through a clearing network to which the MVTS provider belongs. Transactions\nperformed by such services can involve one or more intermediaries and a final payment to a third party and may include any new\npayment methods. Sometimes these services have ties to particular geographic regions and are described using a variety of specific\nterms, such as hawala, hundi and fei-chen.\n2"
         },
         {
           "id": "s-banks-d9-2022-3",
           "number": "3",
+          "heading": "Maintenance of schedules by banks engaging in domestic MVTS",
+          "text": "3.1         As licensed deposit-taking institutions, banks may offer or engage in domestic\nMVTS.\n3.2         All banks that actively engage in domestic MVTS are directed to maintain an\nup-to-date schedule of all MVTS agency arrangements and to submit the\nschedule in writing to the PA upon written request. The schedule must at least\nprovide the detailed information specified in items (a) to (k) of paragraph 4.1,\naccompanied by item (l) below. This requirement must be implemented with\neffect from 1 November 2022."
+        },
+        {
+          "id": "s-banks-d9-2022-4",
+          "number": "4",
+          "heading": "Registration of domestic MVTS agency relationships",
+          "text": "4.1         Banks that have appointed or wish to appoint third parties to act as domestic\nMVTS agents on their behalf are directed to register such arrangements with\nthe PA and to provide the PA with the following information:\na.  name of the bank;\nb.  full name of the agent/s together with details of any trading names;\nc.  company registration number of the agent or identity number of the\nagent if the agent is a natural person;\nd.   business address of the agent;\ne.   confirmation that domestic MVTS services will be provided by that agent\non behalf of the bank;\nf.   a list of MVTS products and services to be provided by the agent on\nbehalf of the bank;\ng.   transaction threshold(s) per product/service offering;\nh.   name(s), domicile(s) and identity numbers or passport numbers of the\nbeneficial owner(s)2 of the agent;\ni.   names, domicile, identity numbers or passport numbers of relevant\nsenior management3 of the agent;\nj.   roles and responsibilities of the agent regarding the AML/CFT related\nobligations in terms of the Financial Intelligence Centre Act 38 of 2001\n(FIC Act). For example, record keeping arrangements, client transaction\nmonitoring, adequate risk management practices in line with that of the\napplicant bank’s risk appetite and risk mitigation practices as is\nappropriate given that these are ultimately the clients of the bank;\nk.    details as to the oversight role performed by the bank. For example,\ndegree of integration of systems, client transaction monitoring\n2 As per the definition of a beneficial owner, as recognised by the FATF, beneficial owner refers to those persons who exercise\nultimate effective control over a legal person or arrangement. Thus, an essential element of the FATF definition of beneficial owner\nis that it extends beyond legal ownership and control to consider the notion of ultimate (actual) ownership and control. In other\nwords, the Financial Action Task Force definition focuses on the natural (not legal) persons who actually own and take advantage\nof capital or assets of the legal person; as well as on those who really exert effective control over it (whether or not they occupy\nformal positions within that legal person), rather than just the (natural or legal) persons who are legally (on paper) entitled to do so.\nhttps://www.fatf-gafi.org/media/fatf/documents/reports/Guidance-transparency-beneficial-ownership.pdf\n3 relevant senior management means (a) a member of the governing body of the institution; (b) the chief executive officer or other\nperson in charge of the institution; (c) a person other than a member of the governing body of the institution who makes or\nparticipates in making decisions that – (i) affect the whole or a substantial part of the business of the institution; or (ii) have the\ncapacity to affect significantly the financial standing of the institution; (d) a person other than a member of the governing body of the\ninstitution who oversees the enforcement of policies and the implementation of strategies approved or adopted by the governing\nbody of the institution; and (e) the head of a control function of the institution (equivalent of the definition of a key person in terms\nof the Financial Sector Regulation Act 9 of 2017)\n3\nresponsibilities, onboarding of clients as well as the risk assessment by\nthe bank and the risk assessment of the agent in terms of sections\n42(2)(a)(i) and (ii) of the FIC Act;\nl.   a copy of the signed contractual agreement between the bank and the\nagent. The agreement must make provision for the AML/CFT roles and\nresponsibilities of the two parties, including a provision that the PA may\nengage directly with the agent on matters of an AML/CFT nature; and\nm.   ease of access by the bank to AML/CFT related information maintained by\nthe agent to enable the bank to discharge its AML/CFT obligations in terms\nof, among others, the FIC Act.\n4.2   In addition to the above required information, banks must confirm in writing that\nthey are satisfied with the fitness and propriety of the executives or senior\nmanagers and beneficial owner(s) of existing and prospective domestic MVTS\nagent arrangements. This confirmation must include detail as to whether any of\nthe aforementioned persons hold criminal records.\n4.3   Changes to beneficial owners or relevant senior management of the domestic\nMVTS agent must be communicated to the PA in writing within 20 business days\nof such changes taking place.\n4.4   A bank’s risk management and compliance programme implemented in terms\nof, among others, the FIC Act and the Money Laundering and Terrorist\nFinancing Control Regulations, 2002, as amended must include details\npertaining to the management and monitoring of MVTS agency arrangements."
+        },
+        {
+          "id": "s-banks-d9-2022-5",
+          "number": "5",
+          "heading": "Registration of existing domestic MVTS agency relationships",
+          "text": "5.1   Banks with existing domestic MVTS arrangements with an agent(s), must\nregister such arrangement(s) with the PA by no later than 30 November 2022\nvia email submission of the information specified in paragraphs 4.1 and 4.2 of\nthis Directive to SARB-PA@resbank.co.za.\n5.2   Furthermore, details of all new MVTS arrangements with an agent must be\nregistered with the PA via email to SARB-PA@resbank.co.za within 30 days of\nfinalising the formal arrangement between the bank and the MVTS agent."
+        },
+        {
+          "id": "s-banks-d9-2022-6",
+          "number": "6",
+          "heading": "MVTS agent return submissions",
+          "text": "6.1   On a bi-annual basis, i.e., the six-month period from January to June and from\nJuly to December, respectively, banks must submit specified information\nrelating to domestic MVTS agency arrangements to the PA at\nSARB-PA@resbank.co.za, as set out in the MVTS agent return attached hereto\nas Annexure A. Where banks have entered into more than one domestic MVTS\nagency arrangement, a separate return for each of their MVTS agency\narrangements must be completed and submitted to the PA.\n6.2   MVTS agency returns must be submitted to the PA within 30 business days post\nthe preceding six-month period.\n4"
+        },
+        {
+          "id": "s-banks-d9-2022-7",
+          "number": "7",
+          "heading": "Effective date",
+          "text": "7.1       Unless specifically otherwise stated hereinbefore, the respective requirements\nspecified in this Directive must be implemented and complied with, with effect\nfrom 1 October 2022."
+        },
+        {
+          "id": "s-banks-d9-2022-8",
+          "number": "8",
           "heading": "Acknowledgement of receipt",
-          "text": "3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-3-1",
-              "number": "3.1",
-              "text": "Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-              "verbatim": true
-            }
-          ]
+          "text": "8.1       Kindly ensure that a copy of this Directive is made available to your institution’s\nindependent auditors. In addition, the attached acknowledgement of receipt duly\ncompleted and signed by both the chief executive officer of the institution and\nthe said auditors should be returned to the PA at the earliest convenience of the\naforementioned signatories.\nFundi Tshazibana\nChief Executive Officer\nDate:     28/09/22\nEncl.:1\nThe previous Banks Directive issued was Directive 8/2022, dated 23 August 2022\n5"
         }
       ]
     }

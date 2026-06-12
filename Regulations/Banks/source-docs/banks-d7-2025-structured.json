@@ -25,67 +25,34 @@
       "title": "Full Text",
       "sections": [
         {
+          "id": "s-banks-d7-2025-0",
+          "number": "0",
+          "heading": "Preamble",
+          "text": "Ref.: 15/8/1/3\nD7/2025\nTo: All banks, branches of foreign institutions, controlling companies, eligible\ninstitutions and auditors of banks or controlling companies\nDirective issued in terms of section 6(6) of the Banks Act, 1990 (Act No. 94 of 1990)\nSouth African domestic systemically important banks to submit consolidated\ninformation\nExecutive summary\nThis Directive serves to inform all banks, branches of foreign institutions,\ncontrolling companies, eligible institutions and auditors of banks or controlling\ncompanies of further requirements applicable to South African domestic\nsystemically important banks (D-SIBs). These additional requirements relate to the\nsubmission of credit-related statutory Banks Act returns (BA returns), based on\nconsolidated information and specified assurance requirements.\nThis Directive replaces Directive 6 of 2023 dated 28 July 2023."
+        },
+        {
           "id": "s-banks-d7-2025-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 South African domestic systemically important banks to submit consolidated information. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-1-1",
-              "number": "1.1",
-              "text": "This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
-            },
-            {
-              "id": "sub-1-2",
-              "number": "1.2",
-              "text": "South African domestic systemically important banks to submit consolidated information.",
-              "verbatim": true
-            },
-            {
-              "id": "sub-1-3",
-              "number": "1.3",
-              "text": "This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-              "verbatim": true
-            }
-          ]
+          "text": "1.1.           Globally, the overall scope of the Basel framework is applied to internationally\nactive banks at every tier within the banking group on a consolidated basis.\nConsequently, all information required for international reviews and analysis in\nrespect of the South African banking sector relates to consolidated information.\nTherefore, the Prudential Authority (PA) requires banks designated as D-SIBs\nto report credit-related information on a consolidated basis at bank and\ncontrolling company level.\n1.2.           The amendments to the Regulations relating to Banks (Regulations),\nincorporating the Basel III post-crisis reforms, resulted in the requirement for the\ncompletion of forms BA 200 and BA 210 being revised to incorporate the related\namendments accordingly."
         },
         {
           "id": "s-banks-d7-2025-2",
           "number": "2",
-          "heading": "Application",
-          "text": "2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-2-1",
-              "number": "2.1",
-              "text": "This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
-            },
-            {
-              "id": "sub-2-2",
-              "number": "2.2",
-              "text": "Institutions are required to ensure compliance with the requirements set out herein.",
-              "verbatim": true
-            }
-          ]
+          "heading": "Directive",
+          "text": "2.1.           Based on the aforesaid information, and in accordance with section 6(6) of the\nBanks Act, 1990 (Act No. 94 of 1990) (Banks Act), D-SIBs are hereby directed,\nas follows:\n2.1.1.         Credit-related statutory BA 200 and BA 210 returns must be submitted semi-\nannually, based on consolidated information, at bank and controlling company\nlevel.\n2.1.2.      The required BA returns must be submitted six-monthly,1 based on a calendar\nyear (i.e. end-June and end-December data of each year, using a six-month\ncomparative period) within 30 business days immediately following the period\nto which the return relates.\n2.1.3.      D-SIBs with year-ends other than June or December must submit additional\nstatutory BA 200 and BA 210 returns based on consolidated information at bank\nand controlling company level as at the D-SIB’s year-end.\n2.1.3.1.    For D-SIBs with year-ends other than June or December, the comparative\nperiod to be used in respect of the additional statutory BA 200 and BA 210\nreturns, based on consolidated information at bank and controlling company\nlevel as at the D-SIB’s year-end, must be the preceding six-month return\nsubmitted (i.e. June or December, whichever precedes the D-SIB’s year-end).\n2.2.        The respective requirements for the completion of forms BA 200 and BA 210\nare specified in regulation 23 and regulation 24 of the Regulations, which must\nbe read with Directive 5 of 2025 and Directive 6 of 2025, or any Directive\nsubsequently replacing the aforementioned Directive(s), for the completion of\nform BA 200 and form BA 210 respectively.\n2.3.        The certification and rendition of the required returns must comply with the\nrequirements specified in regulation 4 of the Regulations.\n2.4.        In line with regulation 6 of the Regulations, the required returns must be\nsubmitted electronically and must include forms BA 200 and BA 210 at a\nconsolidated controlling company level and a consolidated bank level\nrespectively.\n2.5.        Not all line items on the consolidated forms BA 200 and BA 210 are\nmandatory. The following table outlines the line items that are not mandatory in\nthe submission of the required consolidated BA returns:\nStatutory BA returns       Row numbers that are not mandatory by sheet name\nBA 200                     Sheet BA200_STA: R1250 to R1400, and R1470\nSheet BA200_IRB: R1110 to R1670, and R1970\nBA 210                     Sheet BA210_STA: R0010 to R0250, and R0510 to\nR0850\nSheet BA210_STA_LEX: All rows\nSheet BA210_STA_WL: All rows\nSheet BA210_IRB: R0010 to R0280, R0570 to R0910,\nand R1660 to R3120\nSheet BA210_IRB_LEX: All rows\nSheet BA210_IRB_WL: All rows\n2.6.        All D-SIBs must comply with the respective requirements specified in this\nDirective for reporting periods ending on or after 31 December 2025.\n1 D-SIBs with year-ends other than June or December must submit the required additional BA returns as\nindicated within 30 business days immediately following their year-ends."
         },
         {
           "id": "s-banks-d7-2025-3",
           "number": "3",
-          "heading": "Acknowledgement of receipt",
-          "text": "3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-3-1",
-              "number": "3.1",
-              "text": "Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-              "verbatim": true
-            }
-          ]
+          "heading": "Audit reports",
+          "text": "3.1.      The reports on forms BA 200 and BA 210 at a bank and controlling company\nconsolidated level must be based on procedures included in the Regulation 46\nIndependent Regulatory Board for Auditors template report. These procedures,\nwhich have been agreed upon by the PA, external auditors and D-SIBs, must\nbe performed in accordance with the requirements specified in regulation\n46(2)(b) of the Regulations.\n3.2.      When forms BA 200 and BA 210 at a bank and controlling company\nconsolidated level submitted in terms of this Directive coincide with the period\nending as at the reporting D-SIB’s year-end, the said BA returns must instead\nbe audited, reviewed or concluded under a limited assurance framework in line\nwith the requirements specified in regulation 46(6) of the Regulations, read with\nany relevant Directive issued in terms of section 6(6) of the Banks Act."
+        },
+        {
+          "id": "s-banks-d7-2025-4",
+          "number": "4",
+          "heading": "Acknowledgment of receipt",
+          "text": "4.1.      Kindly ensure that a copy of this Directive is made available to your institution’s\nexternal auditors. In addition, the attached acknowledgement of receipt, duly\ncompleted and signed by both the Chief Executive Officer of the institution and\nthe said auditors, should be returned to the PA at the earliest convenience of\nthe signatories.\nFundi Tshazibana\nChief Executive Officer\nDate: 30/06/25\nThe previous Directive issued was Directive 6/2025, dated 30 June 2025."
         }
       ]
     }

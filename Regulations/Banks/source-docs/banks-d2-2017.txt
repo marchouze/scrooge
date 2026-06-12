@@ -1,11 +1,75 @@
---- Page 1 ---
-P O Box 427 Pretoria 0001 South Africa 370 Helen Joseph Street Pretoria 0002 +27 12 313 3911 / 0861 12 7272 www.resbank.co.za Ref.: 15/8/1/2 D2/2017 To: All banks, branches of foreign institutions, controlling companies and auditors of banks or controlling companies Directive issued in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990) Matters relating to the communication of key audit matters in the independent auditor's report
+=== Preamble ===
+South African Reserve Bank
+From the Office of
+the Registrar of Banks
+Ref: 15/8/3
+02/2017
+2017-07-20
+To: Banks, controlling companies, and auditors of banks or controlling
+companies
+Directive issued in terms of section 6(6) of the Banks Act 94 of 1990
+Matters related to the communication of key audit matters in the independent
+auditor's report
+Executive summary
+The International Auditing and Assurance Standards Board (IAASB) issued
+International Standard on Auditing (ISA) 701 - Communicating Key Audit
+Matters in the Independent Auditor's Report, effective for audits of financial
+statements for periods ending on or after 15 December 2016. This directive
+serves to inform banks, controlling companies, branches of foreign institutions
+(hereinafter collectively referred to as 'banks') and auditors of banks of further
+considerations and requirements pertaining to the communication of key audit
+matters (KAM) as far as audit reports relating to the audits of financial
+statements of banks and controlling companies are concerned.
 
---- Page 2 ---
-1. Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Matters relating to the communication of key audit matters in the independent auditor's report. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.
+=== Introduction ===
+ISA 701 was issued with the intention to address both the auditor's judgment
+as to what to communicate in the auditor's report and the form and content of
+such communication, in order to enhance the communicative value of the
+auditor's report by providing greater transparency about the audit that was
+performed.
+In terms of paragraph 5 of ISA 701, the ISA is applicable to audits of
+complete sets of general purpose financial statements of listed entities and
+circumstances when the auditor otherwise decides to communicate KAM in
+the auditor's report. The ISA also applies when the auditor is required by law
+or regulation to communicate KAM in the auditor's report.
+The Office of the Registrar of Banks (this Office) would like to inform all
+relevant interested persons that it is not aware of any amendment to the
+scope of application of the ISA, insofar as the audit of banks or controlling
+companies is concerned, by any law or regulation and shall therefore apply to
+audits of listed entities as stated in the ISA. Auditors of unlisted banks and
+controlling companies may, as provided for in the ISA, decide to report KAM
+PO Box 8432 Pretoria 0001   •    370 Helen Joseph Street Pretoria 0002   •    South Africa   Tel +2712 3133911/08611 2 7272   Fax +27 12 3133758   •   www reservebank co.za
+2
+under such circumstances as the auditors deem it fit to do so. Auditors'
+attention, however, is drawn to paragraph 14 of the ISA which provides that
+under circumstances where public disclosure is precluded by law or
+regulation, the auditor may not communicate a KAM in the auditor's report.
 
---- Page 3 ---
-2. Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.
+=== Directive ===
+Auditors of banks or controlling companies are hereby directed, effective for
+audits of financial statements for periods ending on or after 15 July 2017,
+where the auditor has to report KAM, to share the KAM reflected in the
+auditor's report with this Office prior to the finalisation of the audit opinion.
+This would enable this Office to assess whether, in this Office's opinion, as
+per paragraph 14(b) read with paragraph A55 of the ISA, the possible
+adverse consequences of communicating the KAM could reasonably be
+expected to outweigh the public interest benefit of such communication and
+as such advise the auditor of said adverse consequences and that the
+auditor should consider this advisement in deciding on whether or not to
+communicate the KAM.
+The ultimate responsibility for reporting a KAM remains with the auditor.
+This Office will during its annual bi-lateral prudential engagements with the
+auditor agree on the actual submission arrangements of such KAM,
+acknowledging the requirements for auditors to communicate a report of
+proposed KAM also with those charged with governance at the banks.
 
---- Page 4 ---
-3. Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.
+=== Acknowledgement of receipt ===
+Two additional copies of this directive are enclosed for the use of your
+institution's independent auditors. The attached acknowledgement of receipt,
+duly completed and signed by both the chief executive officer of the said
+institution and the said auditors, should be returned to this Office at the
+earliest convenience of the aforementioned signatories.
+K~
+Deputy Governor and Registrar of Banks
+Date:   2-..lf- { 07 ( ~ 17
+The previous directive issued was Directive 1/2017 dated 3 February 2017.

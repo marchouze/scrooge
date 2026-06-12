@@ -1,11 +1,80 @@
+=== Preamble ===
 --- Page 1 ---
-P O Box 427 Pretoria 0001 South Africa 370 Helen Joseph Street Pretoria 0002 +27 12 313 3911 / 0861 12 7272 www.resbank.co.za Ref.: 15/8/1/2 C5/2015 To: All banks, branches of foreign institutions, controlling companies and auditors of banks or controlling companies Circular issued in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990) Matters related to the use of support in a bank's credit risk rating process
+i3
+qi>
+South African Reserve Bank
+From the Office of
+the Registrar of Banks
+Ref: 15/8/1
+C5/2015
+2015-05-20
+To banks, branches of foreign institutions, controlling companies, eligible
+institutions and auditors of banks or controlling companies
+Circular 5/2015 issued in terms of section 6(4) of the Banks Act 94 of 1990
+Matters related to the use of support in a bank’s credit risk rating process
+Executive summary
+It has come to the attention of the Office of the Registrar of Banks (this Office)
+that uncertainty exists in some banks regarding the appropriate use of explicit
+and implicit support in the calculation of minimum required capital and reserve
+funds. This Office hereby informs all relevant persons that the use of credit risk
+support not specifically provided for in regulations 23(7), 23(9), 23(12) or 23(14) of
+the Regulations relating to Banks (the Regulations) is prohibited in a bank’s
+credit risk rating process and in the calculation of minimum required capital and
+reserve funds.
 
+=== Introduction ===
+1.1 Regulations 23(7), 23(9), 23(12) and 23(14) of the Regulations specify minimum
+requirements regarding support, such as guarantees, that have to be considered
+by a bank in its credit risk rating process (hereafter referred to as ‘rating process’)
+for the calculation of minimum required capital and reserve funds. Regulations
+23(12) and 23(14) of the Regulations relate specifically to banks that have been
+approved to use the internal ratings-based (IRB) approach to measure their
+minimum credit risk capital requirement (hereafter referred to as ‘IRB banks’),
+and this circular provides clarity specifically for these IRB banks.
+1.2 The support provided for in the Regulations is termed ‘explicit support’ as the
+supporting entity is required to explicitly state (and document as such) the level of
+support it will provide for a specific transaction or entity. However, this Office,
+through its supervisory review process, has determined that certain banks also
+take into consideration what is termed ‘implicit support’ in the rating process.
+Implicit support refers to situations where a bank, in its rating process, takes into
+consideration support (either parental, governmental or otherwise) that was not
+explicitly provided and which is not legally enforceable.
+PO Box 8432 Pretoria 0001 + 370 Helen Joseph Street Pretoria 0002 - South Africa . Tel +27 12 3133911/0861 127272 - Fax +27 12 3133758 . www.reservebank.co.za
 --- Page 2 ---
-1. Introduction 1.1 This circular is issued by the Prudential Authority in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Matters related to the use of support in a bank's credit risk rating process. 1.3 This circular remains effective as confirmed in Banks Act Circular 1 of the relevant year.
+2
+1.3 The purpose of this Banks Act Circular is to provide clarity on the correct use
+of support in a bank's credit risk rating process.
 
---- Page 3 ---
-2. Application 2.1 This circular applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.
+=== Clarity regarding the correct use of support in a bank’s rating process ===
+2.1 This Office, through its supervisory review process, has determined that IRB
+banks use a varying degree of implicit support in the rating process. It was
+further determined that the level of implicit support used is based entirely on a
+bank's expert judgment.
+2.2 Since neither the Basel capital framework nor the Regulations make provision
+for the use of implicit support, this Office is unable to permit banks to use
+implicit support in the rating process used for the calculation of minimum
+required capital and reserve funds. Furthermore, the use of implicit support is
+based purely on expert judgment and this Office does not consider it prudent
+for banks to retain lower amounts of capital and reserve funds by altering the
+rating of an entity based on assumptions.
+2.3 However, the effects of support to a troubled entity, which was not explicitly
+provided for by a parent entity or the government, may be evident in a bank's
+data history. This circular does not require a bank to alter its data history for its
+exposures to an entity that received non-contractual support by a parent entity
+or the government.
+2.4 This circular does not supersede, but reinforces, the requirements of
+regulations 23(7), 23(9), 23(12) and 23(14) of the Regulations relating to the
+use of explicit support in the rating process.
+2.5 A bank is required to contact this Office, and provide the necessary details,
+should it be unable to meet the requirements of the Regulations read with this
+circular.
 
---- Page 4 ---
-3. Acknowledgement of receipt 3.1 Kindly ensure that a copy of this circular is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.
+=== Acknowledgement of receipt ===
+3.1 Two additional copies of this circular are enclosed for the use of your
+institution’s independent auditors. The attached acknowledgement of receipt,
+duly completed and signed by both the chief executive officer and the said
+auditors, must be returned to this Office at the earliest convenience of the
+aforementioned signatories.
+N Maree
+Acting Deputy Head
+The previous circular issued was Banks Act Circular 4/2015, dated 10 April 2015.

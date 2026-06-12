@@ -1,11 +1,87 @@
+=== Preamble ===
 --- Page 1 ---
-P O Box 427 Pretoria 0001 South Africa 370 Helen Joseph Street Pretoria 0002 +27 12 313 3911 / 0861 12 7272 www.resbank.co.za Ref.: 15/8/1/2 C2/2014 To: All banks, branches of foreign institutions, controlling companies and auditors of banks or controlling companies Circular issued in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990) Interpretation of definition of default as outlined in regulation 67 of the Regulations relating to Banks
-
+South African Reserve Bank
+From the Office of
+the Registrar of Banks
+C2/2014
+2014-02-12
+To: All banks, controlling companies, eligible institutions and auditors of banks
+or controlling companies
+Circular 2/2014 issued in terms of section 6(4) of the Banks Act, 1990:
+Interpretation of definition of default as outlined in regulation 67 of the
+Regulations relating to Banks
+Executive summary
+“Default”, as defined in regulation 67 of the Regulations relating to Banks (the
+Regulations), in relation to the internal rating-based (IRB) approach for the
+measurement of a bank’s exposure to credit risk is aligned with the International
+Convergence of Capital Measurement and Capital Standards, A Revised
+Framework (Basel Il).
+Default relating to instalment-based products appears to be inconsistently
+interpreted across the banking industry. For many portfolios the product systems
+implemented by banks use a day-count approach to define defaulted assets and
+accordingly these are in full compliance with the prescribed definition of default,
+that is, more than 90 days past due. However, this Office is aware that for certain
+portfolios, such as instalment-based products, the product systems implemented
+by banks are based on a missed monthly instalments approach.
+The purpose of this circular is to inform all banks, controlling companies and
+branches of foreign institutions (hereafter referred to as “banks”) of the
+interpretation to be applied when monitoring defaulted exposures in relation to
+the IRB approach for the measurement of a bank’s exposure to credit risk.
+1: Introduction
+14 During this Office’s implementation of Basel Il on 1 January 2008, it had been
+adopted in its letter and spirit as an absolute minimum. The definition of default
+is extensively dealt with in Basel Il, paragraphs 452 to 459. The Regulations are
+duly aligned to Basel Il and therefore default, as defined in regulation 67 of the
+Regulations, require no amendment.
 --- Page 2 ---
-1. Introduction 1.1 This circular is issued by the Prudential Authority in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Interpretation of definition of default as outlined in regulation 67 of the Regulations relating to Banks. 1.3 This circular remains effective as confirmed in Banks Act Circular 1 of the relevant year.
+2
+1.2 Furthermore, the strict day-count approach to define defaulted assets is in full
+compliance with the prescribed definition of default in accordance with Basel Il,
+the Regulations and most other supervisory authorities.
+1.3 However, default relating to instalment-based products appears to be
+inconsistently interpreted across the banking industry and this Office is aware
+that for certain instalment-based products, the product systems implemented by
+banks track missed monthly instalments.
 
+=== Interpretation of the definition of default ===
+2.1 After due consideration of banks’ system development plans, read with the
+provisions of regulation 1 of the Regulations, this Office has concluded that the
+use of a three missed monthly instalments approach to determine whether a
+default has occurred approximates a similar outcome as the use of the
+day-count approach.
+2.2 Therefore, banks that adopted the IRB approach for the measurement of their
+exposure to credit risk may use a three missed monthly instalments approach to
+determine whether a default has occurred, as opposed to using the strict
+day-count approach, for those exposures where the product systems
+implemented are based on a missed monthly instalments approach, provided
+that the bank shall formally, in writing
+2.2.1 inform this Office of its intention to use the three missed monthly instalments
+approach instead of the strict day-count approach;
+2.2.2 specify the portfolios in respect of which this approach will be applied;
+2.2.3 quantify the portfolios affected as a percentage of total credit exposure;
+2.2.4 demonstrate that their approach is consistent over time and across and within
+impacted portfolios;
+2.2.5 demonstrate that their approach is used as a basis for internal management-
+and external reporting; and
+2.2.6 provide an action plan, if any, to move towards the strict day-count approach.
+2.3 Banks that choose not to use the three missed monthly instalments approach,
+shall comply with the strict day count definition of default (that is, more than
+90 days past due) for every relevant credit portfolio.
+2.4 Failure to do so will result in non-compliance with the Regulations and will be
+subject to a formal submission to this Office stating the reasons for
+non-compliance and indicating the measures that are being taken to comply
+with either of the above-mentioned two approaches, including the timeframe for
+rectification and compliance.
 --- Page 3 ---
-2. Application 2.1 This circular applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.
+3
 
---- Page 4 ---
-3. Acknowledgement of receipt 3.1 Kindly ensure that a copy of this circular is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.
+=== Acknowledgement of receipt ===
+3.1 Two additional copies of this circular are enclosed for the use of your
+institution’s independent auditors. The attached acknowledgement of receipt,
+duly completed and signed by both the chief executive officer and the said
+auditors, must be returned to this Office at the earliest convenience of the
+0 signatories.
+René van Wyk
+Registrar of Banks
+The previous circular issued was Banks Act Circular 1/2014 dated 4 February 2014.
+This circular replaces Banks Act Circular 2/2010, dated 2 June 2010.

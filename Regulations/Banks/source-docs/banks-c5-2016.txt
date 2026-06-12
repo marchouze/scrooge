@@ -1,11 +1,123 @@
+=== Preamble ===
 --- Page 1 ---
-P O Box 427 Pretoria 0001 South Africa 370 Helen Joseph Street Pretoria 0002 +27 12 313 3911 / 0861 12 7272 www.resbank.co.za Ref.: 15/8/1/2 C5/2016 To: All banks, branches of foreign institutions, controlling companies and auditors of banks or controlling companies Circular issued in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990) Matters of interpretation relating to the liquidity coverage ratio
+South African Reserve Bank
+From the Office of
+the Registrar of Banks
+Ref: 15/8/1
+C5/2016
+2016-05-30
+To banks, branches of foreign institutions, controlling companies, eligible
+institutions and auditors of banks or controlling companies
+Circular 5/2016 issued in terms of section 6(4) of the Banks Act, 1990
+Matters of interpretation relating to the Liquidity Coverage Ratio
+Executive summary
+It has come to the attention of the Office of the Registrar of Banks (this Office),
+that uncertainty exists in respect of the interpretation and application of issues
+relating to the Liquidity Coverage Ratio (LCR).
+The purpose of this circular is to provide clarity in respect of such matters of
+uncertainty.
+This circular replaces Circular 2/2016 dated 9 February 2016.
 
+=== Introduction ===
+11 The LCR was introduced as a minimum liquidity requirement from
+1 January 2015, onwards. Due to the recent implementation of the LCR a
+number of interpretive related matters appear to have arisen. Clarification in
+respect of these matters is set out below.
+2, Matters of interpretation
+2.1 Directive 7/2014 - National discretion related to the LCR, published on
+28 October 2014.
+The above-mentioned directive, among other things, addresses liquid assets
+denominated in foreign currency, stating in paragraph 2.5 that banks are
+allowed to hold high quality liquid assets (HQLA) in a currency that does not
+match the currency of the associated liquidity risk.
+The directive states that investment in foreign-currency denominated level
+1 HQLA to cover expected domestic currency net cash outflows will be limited
+to 5 per cent of the total South African Rand based HQLA requirement of the
+relevant bank, subject to an 8 per cent haircut.
+PO Box 8432 Pretoria 0001 © 370 Helen Joseph Street Pretoria 0002 - South Africa - Tel +27 12 3133811/0861 127272 . Fax +27 12 3133758 . www.reservebank.co.z
 --- Page 2 ---
-1. Introduction 1.1 This circular is issued by the Prudential Authority in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Matters of interpretation relating to the liquidity coverage ratio. 1.3 This circular remains effective as confirmed in Banks Act Circular 1 of the relevant year.
-
+2
+Cognisance should also be taken of the requirements set out in regulation
+26(12)(a)(ix) and regulation 26(12)(f)(vi) of the Regulations relating to Banks
+(Regulations). Banks are required to invest in foreign currency denominated
+HQLA in line with their liquidity needs in that currency.
+The allowance in Directive 7/2014 is in addition to the aforesaid requirements
+specified in the Regulations.
+Furthermore, for purposes of consolidated reporting, this Office has decided,
+that it would allow the inclusion of net foreign denominated inflows provided
+that the bank has a framework to attest the fungibility and transferability of the
+currency flows. The framework should define the criteria used to determine the
+fungibility and transferability of the currency during stress and its inclusion
+within the LCR. The framework should be sufficiently agile and dynamic to
+respond timeously to any new developments within the global economy. The
+framework should be monitored on an ongoing basis, at a minimum monthly,
+and is subject to all the appropriate governance processes as applicable.
+Furthermore, currencies will be limited to the top ten most liquid currencies as
+determined in the Triennial Central Banks Survey on Foreign Exchange
+Turnover, as published by the Bank of International Settlements from time to
+time.
+2.2 Directive 8/2014 — Matters related to compliance with the LCR, published on
+29 October 2014.
+The above-mentioned directive addresses compliance with the LCR on a daily
+basis in paragraph 3.1.1. Paragraph 3.1.2 requires the daily LCR to be
+reported to this Office on the form BA 325. This Office accepts that the daily
+LCR as reported on the form BA 325 on the last day of the month may differ
+from the LCR as reported on the form BA 300, as the form BA 325 is a daily
+return whilst the form BA 300 is submitted on the twentieth working day post
+month-end. Provided that the difference is immaterial, the form BA 325 does
+not have to be resubmitted to this Office.
+2.3 Directive 11/2014 — LCR: Scope of application and related disclosure
+requirements, published on 12 December 2014.
+The above-mentioned directive addresses, among other things, the calculation
+of average balances for disclosure in paragraph 4.1.5. The directive uses the
+term daily data which this Office interprets in terms of the provisions of
+regulation 8 of the Regulations, which specifies how average balances should
+be calculated.
+Paragraph 4.1.3.5 of the aforesaid directive states that an aggregation of the
+relevant individual net cash outflows and the individual HQLA portfolios of all
+the relevant banking and/ or deposit-taking entities shall be performed in order
+fo calculate the relevant required consolidated LCR. In this regard the HQLA
+of the relevant banking and/ or deposit-taking entities shall be restricted to
+100 per cent of the minimum LCR requirement in each relevant jurisdiction in
+the aggregation process, unless the excess HQLA of a particular entity is such
+that it will qualify as HQLA within the home jurisdiction, and it shall be
+demonstrated to the satisfaction of this Office that the HQLA are easily
+transferable across jurisdictions.
 --- Page 3 ---
-2. Application 2.1 This circular applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.
+3
+Furthermore, during the phase-in period, the above-mentioned restriction of
+100 per cent of the minimum LCR requirement, shall be limited to the
+minimum LCR requirement for that year, as set out in regulation 26(12)(f)(ii) of
+the Regulations, until the LCR has been fully phased in. For 2016, this
+requirement is 70 per cent, therefore banks need to evaluate all HQLA in
+excess of the minimum requirement for transferability and fungibility.
+2.4 Amended Regulations relating to Banks, published on 20 May 2016.
+This Office wishes to confirm that the amended form BA 300 included in the
+amended Regulations does not include a template for the completion of the
+information related to the net stable funding ratio (NSFR). A proposed directive
+relating to the NSFR was published on 18 November 2015. Due to the final
+amended NSFR framework being adopted by this Office, this Office proposes
+to exclude the NSFR from the scope of current regulatory audits until a final
+directive that includes a reporting form for the NSFR has been published by
+this Office.
+2,5 Directive 1/2016 — Matters related to the exposure limits imposed in the
+classification of deposits and credit exposures to small and medium
+enterprises (SMEs).
+This Office confirms that the R12.5 million threshold as referred to in the
+abovementioned directive should be applied to each small business customer
+independently for deposits and credit exposures. Furthermore, the
+classification of said customers within the threshold should be re-evaluated at
+least on a quarterly basis.
+2.6 Regulation 26(12)(d)(xxv) states that any relevant outflow related to operating
+costs shall be excluded from the provisions of the LCR. Operating costs for
+LCR purposes include operating leases as well as capital expenditure.
 
---- Page 4 ---
-3. Acknowledgement of receipt 3.1 Kindly ensure that a copy of this circular is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.
+=== Acknowledgement of Receipt ===
+3.1 Two additional copies of this circular are enclosed for the use of your
+institution's independent auditors. The attached acknowledgement of receipt,
+duly completed and signed by both the chief executive officer and the said
+auditors, must be returned to this Office at the earliest convenience of the
+aforementioned signatories.
+i \ A
+{ Reg of @
+The previous circular issued was Banks Act Circular 4/2016, dated 6 April 20186.

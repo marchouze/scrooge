@@ -25,67 +25,34 @@
       "title": "Full Text",
       "sections": [
         {
+          "id": "s-banks-c8-2015-0",
+          "number": "0",
+          "heading": "Preamble",
+          "text": "From the Office of\nthe Registrar of Banks\nRef: 15/8/1\nC8/2015\n2015-12-08\nTo banks, branches of foreign institutions, controlling companies, eligible\ninstitutions and auditors of banks or controlling companies\nCircular 8/2015 issued in terms of section 6(4) of the Banks Act, No. 94 of 1990\nCountercyclical capital buffer for South Africa based on the Basel III framework\nExecutive summary\nThe purpose of this circular is to provide clarity in respect of matters related to\nthe implementation of a countercyclical capital buffer to help protect the banking\nsector from periods of excess aggregate credit growth that have often been\nassociated with the build-up of systemic risk."
+        },
+        {
           "id": "s-banks-c8-2015-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "1.1 This circular is issued by the Prudential Authority in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Countercyclical capital buffer for South Africa based on the Basel III framework. 1.3 This circular remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-1-1",
-              "number": "1.1",
-              "text": "This circular is issued by the Prudential Authority in terms of Section 6(4) of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
-            },
-            {
-              "id": "sub-1-2",
-              "number": "1.2",
-              "text": "Countercyclical capital buffer for South Africa based on the Basel III framework.",
-              "verbatim": true
-            },
-            {
-              "id": "sub-1-3",
-              "number": "1.3",
-              "text": "This circular remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
-              "verbatim": true
-            }
-          ]
+          "text": "1.1      The countercyclical capital buffer (CCB) forms an integral part of the\ninternationally agreed standards for risk-based capital requirements.\nImplementation in South Africa begins in 2016, as set out in Directive 5/2013\nissued in April 2013.1 The Basel Committee on Banking Supervision (Basel\nCommittee) has provided details of the regulatory framework in Basel III: A\nglobal regulatory framework for more resilient banks and banking systems,2 and\nfurther information on operating the countercyclical capital buffer regime in\nGuidance for national authorities operating the countercyclical capital buffer.3\n1.2      The main macroprudential objective of the CCB is to increase the resilience of\nthe banking sector during periods of excess aggregate credit growth that are\nassociated with the build-up of systemic risk. The countercyclical capital buffer\nmay also help to lean against the build-up phase of the credit cycle.\n1.3      The purpose of this circular is to provide clarity in respect of the phased-in\nimplementation of the countercyclical capital buffer to help protect the banking\nsector from periods of excess aggregate credit growth that have often been\nassociated with the build-up of systemic risk.\n1\nAvailable online at:\nhttp://www.resbank.co.za/publications/detail-item-view/pages/publications.aspx?sarbweb=3b6aa07d-92ab-\n441f-b7bf-bb7dfb1bedb4&sarblist=21b5222e-7125-4e55-bb65-56fd3333371e&sarbitem=5686\n2\nAvailable online at: https://www.bis.org/publ/bcbs189.htm\n3\nAvailable online at: https://www.bis.org/publ/bcbs187.htm\n2"
         },
         {
           "id": "s-banks-c8-2015-2",
           "number": "2",
-          "heading": "Application",
-          "text": "2.1 This circular applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-2-1",
-              "number": "2.1",
-              "text": "This circular applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990).",
-              "verbatim": true
-            },
-            {
-              "id": "sub-2-2",
-              "number": "2.2",
-              "text": "Institutions are required to ensure compliance with the requirements set out herein.",
-              "verbatim": true
-            }
-          ]
+          "heading": "Matters related to the calculation and implementation of the CCB",
+          "text": "2.1       In accordance with the provisions of regulations 38(8)(e)(v) and 38(8)(g) of the\nRegulations relating to Banks, the CCB add-on rate will be set in a range of\nbetween 0 per cent and 2,5 per cent of risk-weighted assets (RWA).\n2.2       Furthermore the CCB add-on rate:\n2.2.1     shall be calculated as the weighted average of the buffers in effect in the\njurisdictions to which banks have private sector credit exposures;4 and\n2.2.2     shall apply to bank-wide total RWA (including credit, market, and operational\nrisk) as used in the calculation of all risk-based capital ratios, consistent with it\nbeing an extension of the capital conservation buffer.\n2.3       National authorities may implement a buffer of more than 2,5 per cent, if this is\ndeemed appropriate. However, there will be no requirement for other countries\nto apply buffers above 2,5 per cent (or the relevant thresholds during the\ntransition period), or a pre-announced lead time that is shorter than 12 months,\nwhen implementing reciprocity.\n2.4       Prompt communication of the application of the CCB will be done directly to\nbanks, branches of foreign institutions and controlling companies (hereinafter\ncollectively referred to as banks) and to the Secretariat of the Basel Committee,\nby this Office, but regular updates on the assessment of the macro financial\nconditions and the prospects for the potential implementation of or any change\nin buffer requirements will also be communicated through the Reserve Bank’s\nsix-monthly Financial Stability Review.\n2.5       The credit-to-GDP gap as set out in the Basel Committee’s Guidance for\nnational authorities operating the countercyclical capital buffer5 will be the main\nindicator informing the activation of the countercyclical capital buffer in South\nAfrica. However, it shall not be the only indicator and the Reserve Bank may at\nits discretion use other indicators together with the credit-to-GDP gap.\n2.6       A decision to release of the countercyclical buffer may be informed by a\ndifferent set of indicator variables. Banks will be allowed to use the released\nportion of the countercyclical capital buffer that has been built up as soon as the\nreduction in the buffer rate is announced. This also applies to reciprocity.\n2.7       A sectoral CCB may be set if this is deemed appropriate, although the\nmandatory reciprocity provisions will only apply to the countercyclical capital\nbuffer that excludes the sectoral CCB.\n2.8       In order to assist with the identification of the geographic location of private\nsector credit exposures, based on the concept of ultimate risk, the Basel\nCommittee issued: Frequently asked questions on the Basel III Countercyclical\nCapital Buffer during October 2015.6\n4\nReciprocity is mandatory for all Basel Committee member jurisdictions.\n5\nAvailable online at: https://www.bis.org/publ/bcbs187.htm\n6\nAvailable online at: https://www.bis.org/bcbs/publ/d339.htm\n3\n2.9         Banks should also note that, for purposes of the CCB, private sector credit\nexposures mean exposures to private sector counterparties which attract a\ncredit risk capital requirement in the banking book, and the risk-weighted\nequivalent trading book capital requirement for specific risk, the incremental risk\nrequirement, and securitisation. In this regard, interbank exposures and\nexposures to the public sector are excluded, but non-bank financial sector\nexposures are included.\n2.10        Banks are also informed that the Basel Committee is maintaining a dedicated\nwebpage containing the pre-announced CCB decisions and the actual CCBs in\nplace for all Basel Committee member jurisdictions.7"
         },
         {
           "id": "s-banks-c8-2015-3",
           "number": "3",
+          "heading": "Reporting and disclosure requirements",
+          "text": "3.1         The CCB shall be reported on the form BA 700. Furthermore, a different\npercentage should be reported in the form BA 610, which is based on that\nparticular entity’s weighted average of the CCB rates that apply in the\njurisdiction where the relevant private sector credit exposures are located. The\nCCB must therefore be applied on a consolidated, bank-solo and foreign entity\nlevel.\n3.2         Banks have to disclose the CCB in line item 66 of the composition of capital\ndisclosure template, as well as a geographic breakdown of their private sector\ncredit exposures used in the calculation of the CCB.\n3.3         In order to assist this Office in its supervisory review process, banks are\nrequired to maintain a list of the location of all their credit exposures, setting out\nCCBs in place in the various jurisdictions and private sector credit exposures to\nthose jurisdictions that do not operate and publish buffer add-ons.\n3.4         Finally, in the event that further clarity is provided by the Basel Committee, the\naforementioned treatment would be revised accordingly."
+        },
+        {
+          "id": "s-banks-c8-2015-4",
+          "number": "4",
           "heading": "Acknowledgement of receipt",
-          "text": "3.1 Kindly ensure that a copy of this circular is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-          "verbatim": true,
-          "subsections": [
-            {
-              "id": "sub-3-1",
-              "number": "3.1",
-              "text": "Kindly ensure that a copy of this circular is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
-              "verbatim": true
-            }
-          ]
+          "text": "Two additional copies of this circular are enclosed for the use of your\ninstitution’s independent auditors. The attached acknowledgement of receipt,\nduly completed and signed by both the chief executive officer and the said\nauditors, must be returned to this Office at the earliest convenience of the\naforementioned signatories.\nRené van Wyk\nRegistrar of Banks\nThe previous circular issued was Banks Act Circular 7/2015, dated 5 November 2015.\n7\nAvailable online at: https://www.bis.org/bcbs/ccyb/index.htm"
         }
       ]
     }

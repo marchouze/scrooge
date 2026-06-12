@@ -1,11 +1,104 @@
+=== Preamble ===
 --- Page 1 ---
-P O Box 427 Pretoria 0001 South Africa 370 Helen Joseph Street Pretoria 0002 +27 12 313 3911 / 0861 12 7272 www.resbank.co.za Ref.: 15/8/1/2 D1/2017 To: All banks, branches of foreign institutions, controlling companies and auditors of banks or controlling companies Directive issued in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990) Matters related to qualifying capital instruments issued by subsidiaries of banks or controlling companies
+{
+South African Reserve Bank
+From the Office of
+the Registrar of Banks
+Ref: 15/8/3
+D1/2017
+2017-02-03
+To: Banks, controlling companies, and auditors of banks or controlling
+companies
+Directive issued in terms of section 6(6) of the Banks Act 94 of 1990
+Matters related to qualifying capital instruments issued by subsidiaries of
+banks or controlling companies
+Executive summary
+The amended Regulations relating to Banks (Regulations), which set out,
+among other things, the qualifying criteria for common equity tier 1 capital
+instruments, additional tier 1 capital instruments and tier 2 capital instruments
+were implemented with effect from 1 January 2013.
+This directive serves to inform banks, controlling companies and auditors of
+banks or controlling companies (hereinafter collectively referred to as ‘banks’)
+of further considerations and requirements pertaining to the approval of
+qualifying additional tier 1 capital instruments and qualifying tier 2 capital
+instruments issued out of subsidiaries for inclusion into the consolidated
+amount of qualifying capital and reserve funds.
+This directive replaces Directive 1/2013, issued in February 2013,
 
+=== Introduction ===
+1.1 In terms of the provisions of regulation 38(14) of the Regulations, no bank
+may include in its consolidated amount of qualifying capital and reserve funds
+any minority interest arising from the issuance of shares or instruments by a
+fully consolidated subsidiary of the reporting bank or controlling company in
+respect of third-party investors, unless such shares or instruments adhere to
+specific conditions set out in regulations 38(14)(a), 38(14)(b) and 38(14)(c) of
+the Regulations.
+1.2 Furthermore, the relevant proceeds from the issuances of shares or
+instruments may be included in the total consolidated amount of qualifying
+common equity tier 1, additional tier 1 or tier 2 capital only when the relevant
+instruments would, if issued by the bank or controlling company, comply with
+all the relevant criteria or requirements specified in regulations 38(11)(a),
+38(11)(b) or 38(12) respectively of the Regulations, provided that the amount
 --- Page 2 ---
-1. Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Matters related to qualifying capital instruments issued by subsidiaries of banks or controlling companies. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.
+2
+of capital to be included in the relevant category of capital shall be
+determined in accordance with the relevant requirements specified in
+regulation 38(14) of the Regulations.
 
+=== Directive ===
+21 Based on the aforesaid and in accordance with the provisions of section 6(6)
+of the Banks Act 94 of 1990 banks are hereby directed to furnish the Office of
+the Registrar of Banks (this Office) with the information specified below, prior
+to the inclusion of any relevant amount related to shares or instruments in the
+consolidated amount of qualifying capital and reserve funds, in terms of the
+provisions of regulation 38 of the Regulations:
+2.1.1 A prior written approval of the applicant bank's host-country authority (in the
+case of a foreign subsidiary) for the issuance of the shares or instruments
+(except in the case of ordinary shares).
+2.1.2 The applicant bank's duly motivated arguments on whether the instruments
+meet the qualifying criteria specified in the Regulations, specifically regulation
+38(11)(a) for the proceeds of instruments to qualify as common equity tier 1
+capital, regulation 38(11)(b) for the proceeds of instruments to qualify as
+additional tier 1 capital, and regulation 38(12)(a) for the proceeds of
+instruments to qualify as tier 2 capital.
+2.2 Furthermore, in respect of all instruments issued and included in the total
+consolidated amount of qualifying capital, banks shall provide this Office with
+prior notification in respect of the following:
+2.2.1 If the shares or instruments are called, a notification to this effect shall be
+submitted to this Office, together with a copy of a prior written approval of the
+applicant bank's host-country authority.
+2.2.2 The aforementioned notification of redemption shall also demonstrate that
+the applicant bank adhered to the relevant requirements specified in
+regulations 38(11)(b)(iv)(D), 38(12)(a)(iv)(H) and 38(16) of the Regulations.
+2.3 Notifications shall include an updated capital plan of the consolidated bank
+controlling company and shall be submitted timeously ahead of the proposed
+issuances and / or redemptions, to enable this Office to review the nature,
+extent and structure of the capital of the consolidated bank controlling
+company and all other applicable documentation. Provided, that the
+notification is complete and to the satisfaction of this Office, a response will
+be provided within six weeks from the date of submission.
+24 With regard to shares or instruments that were issued and included in banks’
+total consolidated amount of qualifying capital prior to 1 January 2013, but
+which do not comply with the criteria set out in regulations 38(11)(a),
+38(11)(b) or 38(12)(a) of the Regulations, such shares or instruments shall
+be phased out from 1 January 2013 in accordance with the relevant
+requirements specified in regulations 38(11)(c) and 38(11)(d) for tier 1 capital
+instruments, and regulations 38(12)(b) and 38(12)(c) for tier 2 capital
+instruments.
 --- Page 3 ---
-2. Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.
+3
+2.5 Finally, this Office reserves the right to impose restrictions in respect of the
+proceeds from the issuance of shares or instruments that may be included in
+the consolidated amount of qualifying capital and reserve funds of the
+applicant bank.
 
---- Page 4 ---
-3. Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.
+=== Acknowledgement of receipt ===
+3.1 Two additional copies of this directive are enclosed for the use of your
+institution's independent auditors. The attached acknowledgement of receipt,
+duly completed and signed by both the chief executive officer of the
+institution and the said auditors, should be returned to this Office at the
+earliest convenience of the aforementioned signatories.
+Kuben Naidoo
+Deputy Governor and Registrar of Banks
+Date: 2 (s [20
+The previous directive issued was Directive 8/2016, dated 13 December 2016.

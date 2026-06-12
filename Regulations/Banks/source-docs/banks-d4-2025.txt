@@ -1,11 +1,57 @@
---- Page 1 ---
-P O Box 427 Pretoria 0001 South Africa 370 Helen Joseph Street Pretoria 0002 +27 12 313 3911 / 0861 12 7272 www.resbank.co.za Ref.: 15/8/1/2 D4/2025 To: All banks, branches of foreign institutions, controlling companies and auditors of banks or controlling companies Directive issued in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990) Completion of regulatory return: form BA 701
+=== Preamble ===
+South Africa    370 Helen
+Joseph Street Pretoria 0002
+Ref.:15/8/1/3
+D4/2025
+To: All banks, branches of foreign institutions, controlling companies, eligible
+institutions and auditors of banks or controlling companies
+Directive issued in terms of section 6(6) of the Banks Act, 1990 (Act No. 94 of
+1990)
+Completion of regulatory return: BA 701 form
+Executive Summary
+The amendments to the Regulations relating to Banks (the amended Regulations)
+provide the Prudential Authority (PA) with enabling provisions to specify
+instructions or requirements for the completion of various Banks Act (BA) forms.
+The purpose of this Directive is to direct domestic systemically important banks
+(D-SIBs) in respect of specified matters regarding the completion and submission
+of the BA 701 form relating to regulatory and economic capital information.
+This Directive replaces Directive 7 of 2017, to ensure the regulatory and economic
+capital data is based on the amended Regulations.
 
---- Page 2 ---
-1. Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Completion of regulatory return: form BA 701. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.
+=== Introduction ===
+1.1         The purpose of the BA 701 form is to obtain selected information in respect of,
+among other things, total credit risk, counterparty credit risk, credit valuation
+adjustment, market risk and operational risk. This information aims to compare
+regulatory and economic capital.
+1.2         The Directive provides specifications in respect of the submission of the BA 701
+form.
 
---- Page 3 ---
-2. Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.
+=== Directive ===
+2.1         In accordance with the provisions of section 6(6) of the Banks Act, 1990 D-SIBs
+are hereby directed to:
+2.1.1       complete the BA 701 form at a bank controlling company consolidated level; and
+1
+2.1.2   submit the BA 701 form on a six-monthly basis, based on a calendar year (i.e.
+30 June and 31 December of each relevant year), by no later than the 60th
+business day immediately following the relevant required reporting date.
+2.2     In the case of a financial year ending on a date other than 30 June or
+31 December, the forecasted data contained in the BA 701 form may be the
+latest available data closest to the relevant financial year end, while the actual
+data will be the data as at 30 June or 31 December, as the case may be.
 
---- Page 4 ---
-3. Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.
+=== Implementation date ===
+3.1.    The respective requirements and conditions specified in this Directive become
+effective from the implementation date of the amended Regulations, that is, from
+1 July 2025 onwards.
+
+=== Acknowledgement of receipt ===
+4.1     Kindly ensure that a copy of this Directive is made available to your institution’s
+external auditors. In addition, the attached acknowledgement of receipt, duly
+completed and signed by both the chief executive officer of the institution and
+the said auditors, should be returned to the PA at the earliest convenience of
+the aforementioned signatories.
+Fundi Tshazibana
+Chief Executive Officer
+Date:   30/06/25
+The previous Directive issued was Directive 3/2025, dated 19 June 2025.
+2
