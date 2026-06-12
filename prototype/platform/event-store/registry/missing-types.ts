@@ -56,6 +56,8 @@ import {
   consentWithdrawnPayloadSchema,
   counterpartyEventPayloadSchema,
   crossBorderTransferRequestedPayloadSchema,
+  dsarClosedPayloadSchema,
+  dsarExtendedPayloadSchema,
   dsarReceivedPayloadSchema,
   faisConductBreachSuspectedPayloadSchema,
   informationRegulatorInquiryPayloadSchema,
@@ -1272,6 +1274,38 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/iris.ts",
+  },
+  {
+    // DSAR disposition of record — closes the DSARReceived pair (POPIA ss.23–25;
+    // refusal grounds via s.23(4)(a) → PAIA Ch.4). Previously planned by the
+    // Iris goal-loop and counted by the POPIA controls snapshot WITHOUT a
+    // registered type (F-032 gap) — registered 2026-06-12 by Iris (Information
+    // Officer, governance) under D-FX-HELD-DIMS-SEAT-SWEEP.
+    type: "DSARClosed",
+    class: "governance",
+    payloadSchema: dsarClosedPayloadSchema,
+    issuer: "Iris",
+    subscribers: ["Iris"],
+    replay: "pair-coupled",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source: "platform/event-store/event-types/aml-popia-extended.ts",
+    citationsHint: ["urn:reg:za:popia:s23", "urn:reg:za:popia:s25", "ORG-PR(IV)-08"],
+  },
+  {
+    // One-time DSAR response-window extension (POPIA s.25 → PAIA ss.25–26:
+    // 30-day decision window, extensible once by up to 30 further days on a
+    // recorded s.26 ground). The DSAR SLA watchdog grades the open request
+    // against the extended deadline. Registered 2026-06-12 by Iris (Information
+    // Officer, governance) under D-FX-HELD-DIMS-SEAT-SWEEP.
+    type: "DSARExtended",
+    class: "governance",
+    payloadSchema: dsarExtendedPayloadSchema,
+    issuer: "Iris",
+    subscribers: ["Iris"],
+    replay: "append-only-audit",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source: "platform/event-store/event-types/aml-popia-extended.ts",
+    citationsHint: ["urn:reg:za:popia:s25", "ORG-PR(IV)-08"],
   },
   {
     // Emitted when a new processing purpose is proposed for personal information.
