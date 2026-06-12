@@ -166,6 +166,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:obligation-policy-coverage",
     "recon:npa-coverage",
     "recon:npa-deferred-gap-tracking",
+    "recon:dsar-sla",
     "recon:counterparty-basel-classification-coverage",
     "recon:calc-no-silent-zero",
     "recon:pnl-attribution-reconciles",

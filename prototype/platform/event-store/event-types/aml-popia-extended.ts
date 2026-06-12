@@ -5,7 +5,7 @@
 // Covers: SanctionsHit, SanctionsHoldRaised, SanctionsListPublished,
 //   PEPMatchExceedsThreshold, PepListPublished, AdverseMediaPublished,
 //   STRCandidate, FAISConductBreachSuspected, CounterpartyEvent,
-//   DSARReceived, PAIARequest, POPIAControlsSnapshot,
+//   DSARReceived, DSARClosed, DSARExtended, PAIARequest, POPIAControlsSnapshot,
 //   PersonalInformationCompromiseSuspected, ConsentWithdrawn,
 //   InformationRegulatorInquiry, NewProcessingPurposeProposed,
 //   SuspiciousAuthEvent, CrossBorderTransferRequested,
@@ -375,6 +375,124 @@ export function makeDSARReceived(args: {
     actor: args.actor,
     citations: args.citations,
     payload: dsarReceivedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// DSARClosed
+//
+// Closes the DSARReceived pair: the recorded disposition of a data-subject
+// access request (POPIA s.23 access / s.24 correction-deletion). The Iris
+// goal-loop (runtime/agents/iris-goal-loop.ts) and the weekly POPIA controls
+// snapshot already replayed/planned this type WITHOUT a schema or registry row
+// (recurring F-032 shape) — this definition closes that gap rather than forking
+// a parallel event family.
+//
+// Outcome semantics (Iris — Information Officer, governance — seat judgement):
+//   - "fulfilled"            — record/description provided in full (s.23(1)).
+//   - "partially-fulfilled"  — part refused on a PAIA Ch.4 ground, every other
+//                              part disclosed (s.23(5) severability).
+//   - "refused"              — disclosure refused on the PAIA grounds imported
+//                              by s.23(4)(a); `refusalGrounds` is then required.
+//
+// Authority: POPIA 4/2013 ss.23–25; ORG-PR(IV)-08; ORG-PR(IV)-09;
+//   D-FX-HELD-DIMS-SEAT-SWEEP (CEO session-delegation 2026-06-11).
+// Author: Iris (Information Officer, governance).
+// ---------------------------------------------------------------------------
+
+export const dsarClosedPayloadSchema = z
+  .object({
+    /** Business key — matches DSARReceived.payload.dsarId. */
+    dsarId: z.string().min(1),
+    /** event_id of the DSARReceived being closed (the goal-loop pairs on this). */
+    dsarEventId: z.string().min(1).optional(),
+    outcome: z.enum(["fulfilled", "partially-fulfilled", "refused"]),
+    closedAt: z.string().min(1), // ISO timestamp
+    /** Agent URN or Party URN of the responder (the IO or delegate). */
+    closedBy: z.string().min(1),
+    /**
+     * PAIA Chapter-4 refusal ground(s) as imported by POPIA s.23(4)(a).
+     * Required when outcome is "refused" or "partially-fulfilled".
+     */
+    refusalGrounds: z.string().min(1).optional(),
+  })
+  .superRefine((p, ctx) => {
+    if ((p.outcome === "refused" || p.outcome === "partially-fulfilled") && !p.refusalGrounds) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `outcome "${p.outcome}" requires refusalGrounds (PAIA Ch.4 ground via POPIA s.23(4)(a)) — a refusal without recorded grounds is not a lawful disposition`,
+        path: ["refusalGrounds"],
+      });
+    }
+  });
+
+export type DSARClosedPayload = z.infer<typeof dsarClosedPayloadSchema>;
+
+export function makeDSARClosed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: DSARClosedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "DSARClosed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: dsarClosedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// DSARExtended
+//
+// One-time extension of the DSAR response window. POPIA s.25 applies PAIA
+// ss.18 + 53 to the request manner; the response clock itself is the PAIA s.25
+// 30-day decision window, extensible ONCE by up to 30 further days on the
+// PAIA s.26 grounds (volume, search across multiple offices, consultation).
+// The extension must be recorded with its ground and the new deadline; the
+// DSAR SLA watchdog grades the open request against the EXTENDED deadline.
+//
+// Authority: POPIA 4/2013 s.25 → PAIA 2/2000 ss.25–26; ORG-PR(IV)-08.
+// Author: Iris (Information Officer, governance).
+// ---------------------------------------------------------------------------
+
+export const dsarExtendedPayloadSchema = z.object({
+  /** Business key — matches DSARReceived.payload.dsarId. */
+  dsarId: z.string().min(1),
+  /** event_id of the DSARReceived being extended. */
+  dsarEventId: z.string().min(1).optional(),
+  extendedAt: z.string().min(1), // ISO timestamp
+  /** New response deadline (ISO timestamp); supersedes DSARReceived.responseDeadline. */
+  newResponseDeadline: z.string().min(1),
+  /** PAIA s.26(1) ground for the extension. */
+  extensionGrounds: z.string().min(1),
+  /** Agent URN or Party URN recording the extension (the IO or delegate). */
+  extendedBy: z.string().min(1),
+});
+
+export type DSARExtendedPayload = z.infer<typeof dsarExtendedPayloadSchema>;
+
+export function makeDSARExtended(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: DSARExtendedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "DSARExtended",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: dsarExtendedPayloadSchema.parse(args.payload),
   });
 }
 
