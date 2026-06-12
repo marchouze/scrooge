@@ -360,6 +360,14 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // production access path. T-01 carve-out.
   // Citation: D-BRC-INTERIM-MR-1-FX, P4-SECURITY-DESIGNED-IN.
   "runtime/agents/rohan-market-risk-measure.test.ts",
+  // Daily SA-CCR EOD cadence unit tests (tracked deferred gap
+  // fx-sa-ccr-daily-cadence — schedule the SA-CCR EAD run). Co-located
+  // per-module test convention. Raw EventStore(":memory:") is a build-phase
+  // fixture for the same-day double-run idempotency + per-netting-set
+  // staleness-watchdog assertions against an isolated store, not a production
+  // access path. T-01 carve-out.
+  // Citation: D-FX-SA-CCR-BUILD-PHASE-ACTIVATION, P4-SECURITY-DESIGNED-IN.
+  "runtime/agents/rohan-sa-ccr-eod.test.ts",
   // CVA engine unit tests (D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 5) — co-located
   // per-module test convention. Raw EventStore(":memory:") is a build-phase fixture
   // for the loud-status / computed-CVA assertions, not a production access path.
