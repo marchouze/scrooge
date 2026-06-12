@@ -19,12 +19,14 @@ import { resolve as resolvePath } from "node:path";
 import type { EventStore } from "../platform/event-store/store";
 import type { Product } from "../platform/markets/products";
 
+import { normaliseDimensionKey } from "../platform/markets/products/dimension-key-alias";
 import {
   type DimensionPolicyChain,
   type ProductDeclaredFunction,
   resolveDimensionChain,
   resolveProductChain,
 } from "./products-policy-chain";
+
 import { NPA_DIMENSIONS, type NpaDimension, resolveProduct } from "./products-view";
 
 // ---------------------------------------------------------------------------
@@ -35,7 +37,16 @@ import { NPA_DIMENSIONS, type NpaDimension, resolveProduct } from "./products-vi
 // ---------------------------------------------------------------------------
 
 export interface DimensionMetadata {
-  dimension: NpaDimension;
+  /**
+   * Display key for this dimension. NOTE: this table historically uses the
+   * LONG display keys (e.g. `conduct-suitability`, `legal-documentation`) and
+   * the frontend `switch (dim.dimension)` in products.js depends on them, so
+   * they are retained here as display aliases. They are normalised to the
+   * canonical SHORT key via `normaliseDimensionKey` when matched against the
+   * `ProductDimensionAttested` event-of-record. Typed `string` (not the
+   * SHORT-key `NpaDimension` union) because the values are the long aliases.
+   */
+  dimension: string;
   label: string;
   owner: { name: string; position: string };
   artefactRequired: string;
@@ -500,7 +511,8 @@ const POSTING_RULE_INDEX: Record<string, PostingRuleSummary> = {
 // ---------------------------------------------------------------------------
 
 export interface DimensionCard {
-  dimension: NpaDimension;
+  /** Display key (LONG alias form) — see `DimensionMetadata.dimension`. */
+  dimension: string;
   label: string;
   owner: { name: string; position: string };
   artefactRequired: string;
@@ -598,7 +610,8 @@ export function buildProductDetailView(
     if (ev.type === "ProductDimensionAttested") {
       const p = ev.payload as Record<string, unknown>;
       if (String(p.productId ?? "") !== productId) continue;
-      const dimension = String(p.dimension ?? "") as NpaDimension;
+      // Normalise to the canonical SHORT key so short-key events surface.
+      const dimension = normaliseDimensionKey(String(p.dimension ?? "")) as NpaDimension;
       if (!NPA_DIMENSIONS.includes(dimension)) continue;
       const prev = attestationFold.get(dimension);
       if (prev && prev.asOf >= ev.as_of) continue;
@@ -613,7 +626,7 @@ export function buildProductDetailView(
     if (ev.type === "ProductDimensionNarrativeRecorded") {
       const p = ev.payload as Record<string, unknown>;
       if (String(p.productId ?? "") !== productId) continue;
-      const dimension = String(p.dimension ?? "") as NpaDimension;
+      const dimension = normaliseDimensionKey(String(p.dimension ?? "")) as NpaDimension;
       if (!NPA_DIMENSIONS.includes(dimension)) continue;
       const prev = narrativeFold.get(dimension);
       if (prev && prev.asOf >= ev.as_of) continue;
@@ -629,7 +642,7 @@ export function buildProductDetailView(
     if (ev.type === "ProductDimensionNarrativeRequested") {
       const p = ev.payload as Record<string, unknown>;
       if (String(p.productId ?? "") !== productId) continue;
-      const dimension = String(p.dimension ?? "") as NpaDimension;
+      const dimension = normaliseDimensionKey(String(p.dimension ?? "")) as NpaDimension;
       if (!NPA_DIMENSIONS.includes(dimension)) continue;
       const prev = narrativeRequestFold.get(dimension);
       if (prev && prev.asOf >= ev.as_of) continue;
@@ -639,9 +652,13 @@ export function buildProductDetailView(
 
   const repoRoot = resolvePath(import.meta.dir, "..", "..");
   const dimensions: DimensionCard[] = DIMENSION_METADATA.map((meta) => {
-    const att = attestationFold.get(meta.dimension);
-    const nar = narrativeFold.get(meta.dimension);
-    const req = narrativeRequestFold.get(meta.dimension);
+    // The metadata table keys on the LONG display key (the frontend `switch`
+    // in products.js depends on it); the attestation folds key on the
+    // canonical SHORT key. Normalise the metadata key to look up the fold.
+    const shortKey = normaliseDimensionKey(meta.dimension) as NpaDimension;
+    const att = attestationFold.get(shortKey);
+    const nar = narrativeFold.get(shortKey);
+    const req = narrativeRequestFold.get(shortKey);
     const chain = resolveDimensionChain({
       repoRoot,
       policyHints: meta.policyHints,
