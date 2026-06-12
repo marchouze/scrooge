@@ -32,7 +32,10 @@
 
 import type { EventStore } from "../event-store/store";
 import type { Event } from "../event-store/types";
-import { evaluateFxTradeConduct } from "./fx-trade-conduct-evaluation";
+import {
+  evaluateFxTradeConduct,
+  resolveBestExecutionSchedule,
+} from "./fx-trade-conduct-evaluation";
 
 export interface ConductSweepResult {
   readonly tradesScanned: number;
@@ -42,6 +45,13 @@ export interface ConductSweepResult {
   /** Trade IDs whose FAIS-suitability check could not fire (counterparty
    *  unclassified). Surfaced so the residual is visible, never hidden. */
   readonly faisUnclassifiedTradeIds: readonly string[];
+  /**
+   * event_id of the in-force BestExecutionPolicySchedule applied to the
+   * best-execution checks, or null when no schedule is in force and the
+   * build-phase constant fallback applied (callers log a warning on null —
+   * the fallback is never silent).
+   */
+  readonly bestExScheduleEventId: string | null;
 }
 
 export interface SweepOptions {
@@ -67,6 +77,11 @@ export function sweepFxConductSurveillance(
     if (opts.limit !== undefined && trades.length >= opts.limit) break;
   }
 
+  // Resolve the in-force CCO tolerance schedule ONCE for the whole sweep
+  // (latest-effective-wins at the sweep's asOf); every trade in this pass is
+  // evaluated under the same schedule.
+  const bestExSchedule = resolveBestExecutionSchedule(store, opts.asOf);
+
   let tradesProcessed = 0;
   let tradesAlreadyCovered = 0;
   let eventsEmitted = 0;
@@ -76,6 +91,7 @@ export function sweepFxConductSurveillance(
     const result = evaluateFxTradeConduct(store, trade, {
       asOf: opts.asOf,
       dryRun: opts.dryRun,
+      bestExSchedule,
     });
     eventsEmitted += result.eventsEmitted;
     if (result.eventsEmitted > 0) {
@@ -94,5 +110,6 @@ export function sweepFxConductSurveillance(
     tradesAlreadyCovered,
     eventsEmitted,
     faisUnclassifiedTradeIds,
+    bestExScheduleEventId: bestExSchedule?.scheduleEventId ?? null,
   };
 }

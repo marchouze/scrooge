@@ -40,6 +40,13 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     dryRun: ctx.dryRun,
   });
 
+  if (result.bestExScheduleEventId === null) {
+    logger.warn(
+      {},
+      "rohan:conduct-surveillance-sweep — no BestExecutionPolicySchedule in force; best-execution tolerances fell back to build-phase constants (publish the CCO schedule: scripts/publish-fx-bestex-policy-schedule.ts)",
+    );
+  }
+
   if (result.faisUnclassifiedTradeIds.length > 0) {
     logger.warn(
       { count: result.faisUnclassifiedTradeIds.length },
@@ -54,6 +61,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       tradesAlreadyCovered: result.tradesAlreadyCovered,
       eventsEmitted: result.eventsEmitted,
       faisUnclassified: result.faisUnclassifiedTradeIds.length,
+      bestExScheduleEventId: result.bestExScheduleEventId,
       dryRun: ctx.dryRun,
     },
     "rohan:conduct-surveillance-sweep — done",
