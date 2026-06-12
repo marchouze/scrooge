@@ -4,9 +4,9 @@
 //
 // Implements:
 //   1. OrderProposed emission
-//   2. Seven sequential pre-trade gateway checks
-//      (identity, sanctions, suitability, counterparty-eligibility,
-//       credit-limit, capital-impact, funding)
+//   2. Eight sequential pre-trade gateway checks
+//      (identity, sanctions, counterparty-eligibility, suitability,
+//       documentation, credit-limit, capital-impact, funding)
 //   3. OrderApprovedAtGateway / OrderRejectedAtGateway emission
 //   4. Idempotency guard: if a terminal gateway event already exists for
 //      this orderId, returns the cached result without re-emitting
@@ -29,6 +29,7 @@ import {
 } from "../platform/event-store/event-types/trading";
 import { simulatedTag } from "../platform/event-store/provenance";
 import type { EventStore } from "../platform/event-store/store";
+import { checkLegalDocumentationOfRecord } from "../platform/markets/legal/legal-documentation-gate";
 import { screenCounterpartySanctions } from "../platform/markets/regulatory/sanctions-screen";
 import { checkHeadroom } from "../platform/risk/credit-limit-engine";
 import {
@@ -68,7 +69,7 @@ const GATEWAY_ENTITY = "LE-ZA-HOZ-BANK";
 const GATEWAY_ACTOR = { type: "service" as const, id: "agent:kai:fx-gateway" };
 const GATEWAY_CITATIONS = ["D-FX-SALES-TRADING-FRONTEND", "D-MARKETS-SCHEMA-FOUNDATION"] as const;
 
-/** The seven pre-trade gateway check kinds run for every order. */
+/** The eight pre-trade gateway check kinds run for every order. */
 const CHECK_KINDS = [
   "identity",
   "sanctions",
@@ -78,6 +79,12 @@ const CHECK_KINDS = [
   // evaluated for product suitability. FAIS §8D suitability presupposes an
   // eligible relationship (D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH).
   "suitability",
+  // documentation runs after counterparty-eligibility/suitability and before
+  // credit-limit: a written trading-relationship agreement must exist BEFORE
+  // any OTC derivative transaction (ORG-CS3-001, FSCA Conduct Standard 3/2018
+  // §3). FAIL-CLOSED — see checkLegalDocumentationOfRecord
+  // (D-FX-HELD-DIMS-SEAT-SWEEP).
+  "documentation",
   "credit-limit",
   "capital-impact",
   "funding",
@@ -219,7 +226,7 @@ export function routeOrderToGateway(args: {
   let rejectingCheck: CheckKind | null = null;
   let rejectionReason: string | undefined;
 
-  // Run all 7 checks sequentially
+  // Run all 8 checks sequentially
   for (const checkKind of CHECK_KINDS) {
     const requestedAt = asOf;
 
@@ -273,6 +280,23 @@ export function routeOrderToGateway(args: {
         outcome = "reject";
         checkRejectionReason =
           "suitability: retail-client counterparty at an institutional-only venue (D-FAIS-SCOPE; FAIS Act 37/2002 §8D) — conduct finding";
+      }
+    }
+
+    // documentation — FAIL-CLOSED legal-documentation gate (ORG-CS3-001, FSCA
+    // Conduct Standard 3/2018 §3; D-FX-HELD-DIMS-SEAT-SWEEP). A bank must NOT
+    // transact an OTC derivative with a counterparty that has no signed
+    // trading master agreement of record (ISDA Master 2002/2025 or an
+    // FX-bilateral master, via LegalDocumentationSigned). Mirrors the
+    // credit-limit (#1177) and suitability (#1221) fail-closed posture. The
+    // annual jurisdictional-opinion refresh SLA is a separate MONITORING
+    // control (opinion-refresh-watchdog), never an order-path block. Reads the
+    // SAME store the gateway writes to (threaded), not the composition global.
+    if (checkKind === "documentation") {
+      const legalDoc = checkLegalDocumentationOfRecord(store, rfqInput.counterpartyId);
+      if (!legalDoc.ok) {
+        outcome = "reject";
+        checkRejectionReason = legalDoc.rejectionReason;
       }
     }
 
@@ -355,7 +379,8 @@ export function routeOrderToGateway(args: {
     const completedAt = asOf;
 
     // Emit GatewayCheckCompleted. capital-impact + funding completions also
-    // cite the CRO threshold-ratification decision they enforce.
+    // cite the CRO threshold-ratification decision they enforce; documentation
+    // completions cite the obligation the gate enforces (ORG-CS3-001).
     const checkCompletedEvent = makeGatewayCheckCompleted({
       asOf,
       entity: GATEWAY_ENTITY,
@@ -363,7 +388,9 @@ export function routeOrderToGateway(args: {
       citations:
         checkKind === "capital-impact" || checkKind === "funding"
           ? [...GATEWAY_CITATIONS, "D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS"]
-          : [...GATEWAY_CITATIONS],
+          : checkKind === "documentation"
+            ? [...GATEWAY_CITATIONS, "ORG-CS3-001", "D-FX-HELD-DIMS-SEAT-SWEEP"]
+            : [...GATEWAY_CITATIONS],
       payload: {
         orderId,
         checkKind,

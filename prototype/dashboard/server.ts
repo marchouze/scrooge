@@ -120,6 +120,7 @@ import { ingestSarbRepoPrimeFixtureFromFile } from "../platform/market-data/sarb
 import { ingestZaroniaFixtureFromFile } from "../platform/market-data/sarb-zaronia-ingester";
 import { MarketDataStore, lookupQuoteWithInverse } from "../platform/market-data/store";
 import type { FxTradeExecutedPayload } from "../platform/markets/cdm/fx";
+import { emitOpinionRefreshGapAlerts } from "../platform/markets/legal/opinion-refresh-watchdog";
 import { seedCalcModels } from "../platform/model-registry/calc-model-definitions";
 import { emitAllCalculationProvenance } from "../platform/model-registry/calculation-provenance";
 import { buildDataFailuresView } from "../platform/model-registry/data-failures-view";
@@ -964,6 +965,21 @@ function bootDerive(): DashboardState {
       }
     } catch (wErr) {
       logger.warn({ err: (wErr as Error).message }, "expected-event-watchdog: check skipped");
+    }
+    // Legal dimension — ISDA jurisdictional-opinion annual-refresh watchdog
+    // (D-FX-HELD-DIMS-SEAT-SWEEP; #1102 pattern). Missing/stale opinion for a
+    // counterparty-with-ISDA emits a MEDIUM SubstrateAlert{integrity} — a
+    // monitoring finding, never an order-path block. Idempotent by alertId.
+    try {
+      const opinionWatchdog = emitOpinionRefreshGapAlerts(eventStore, nowUtc());
+      if (opinionWatchdog.emitted.length > 0) {
+        logger.warn(
+          { alerts: opinionWatchdog.emitted },
+          "opinion-refresh-watchdog: ISDA netting-opinion refresh SLA findings — SubstrateAlert(integrity, medium) emitted",
+        );
+      }
+    } catch (owErr) {
+      logger.warn({ err: (owErr as Error).message }, "opinion-refresh-watchdog: check skipped");
     }
     const s = deriveState({
       sources: SOURCES,
