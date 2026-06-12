@@ -150,6 +150,23 @@
         const requirement = proj.requirement || ref.requirement || "—";
         const derives = (proj.derivesFrom || []);
 
+        // Succinct page title: the obligation's NAME, not its requirement.
+        // Tick-flow obligations: humanise the bank-URN's last segment
+        // (urn:obligation:bank:capital:derivative-exposure-calculation →
+        // "Derivative exposure calculation"). Register-era obligations: the
+        // citation's em-dash tail is the instrument's own short title
+        // ("… — Use of divisional names"). Never the requirement prose.
+        const urn = proj.urn || ref.urn || "";
+        let title = "";
+        if (urn.startsWith("urn:obligation:bank:")) {
+          const seg = urn.split(":").pop() || "";
+          title = seg.replace(/-/g, " ").replace(/^\w/, c => c.toUpperCase());
+        }
+        if (!title && citation.includes("—")) {
+          title = citation.split("—").pop().trim();
+        }
+        if (!title) title = citation.length > 0 && citation.length <= 90 ? citation : id;
+
         const histHtml = (d.history || []).length
           ? `<ul class="od-hist">${d.history.map(h =>
               `<li><code>${SC.esc(h.kind)}</code><span style="color:var(--color-text-secondary)">${SC.esc((h.at||"").slice(0,19).replace("T"," "))}</span>${h.status?` → ${SC.esc(h.status)}`:""}${h.detail?` · ${SC.esc(h.detail)}`:""}</li>`
@@ -159,7 +176,7 @@
         body.innerHTML = `
           <div class="od-head">
             <div class="od-id">${SC.esc(id)}</div>
-            <h1 class="od-title">${SC.esc((requirement).slice(0,120))}${requirement.length>120?"…":""}</h1>
+            <h1 class="od-title">${SC.esc(title)}</h1>
             <div class="od-pills">
               <span class="od-state ${adopted?"adopted":"unadopted"}">${adopted?"ADOPTED":"NOT ADOPTED"}</span>
               ${status?SC.renderBadge(status):""}
