@@ -43,7 +43,13 @@ import {
 } from "./registry";
 import { type Event, eventSchema } from "./types";
 
-const DDL = `
+/**
+ * Canonical event-store DDL. Exported so operator recovery scripts (e.g. the
+ * 2026-06-12 archive-gap recovery) can build cold partition files whose schema
+ * is byte-identical to those produced by `archiveEventsOlderThan` /
+ * `extractToArchivePartition`.
+ */
+export const DDL = `
 CREATE TABLE IF NOT EXISTS events (
   sequence    INTEGER PRIMARY KEY AUTOINCREMENT,
   event_id    TEXT    UNIQUE NOT NULL,
