@@ -84,6 +84,10 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   AgentEscalation: "governance",
   AgentEscalationDecided: "governance",
   ProductApproved: "governance",
+  // CCO-published best-execution tolerance schedule — a conduct-committee
+  // governance record (real seat decision, not simulated market activity).
+  // Authority: D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH; FAIS §16.
+  BestExecutionPolicySchedule: "governance",
   // Counterparty / party register.
   PartyRegistered: "counterparty",
   PartyClassified: "counterparty",

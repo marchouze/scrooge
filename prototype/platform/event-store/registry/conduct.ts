@@ -20,6 +20,7 @@
 import {
   bestExecutionAnalysisCompletedPayloadSchema,
   bestExecutionBreachedPayloadSchema,
+  bestExecutionPolicySchedulePayloadSchema,
   bestExecutionVerifiedPayloadSchema,
   conductComplaintFiledPayloadSchema,
   conductComplaintResolvedPayloadSchema,
@@ -230,6 +231,43 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
       "D-MARKET-CONDUCT",
       "D-FX-SALES-TRADING-FRONTEND",
       "PROC-PAY-RBH-01",
+    ],
+  },
+  // ---------------------------------------------------------------------------
+  // BestExecutionPolicySchedule — CCO-published best-execution tolerance
+  // schedule (conduct-committee governance record).
+  //
+  // Emitted by Zara (Chief Compliance Officer, governance) — the conduct
+  // committee's per-instrument-class tolerance bands the FX conduct
+  // surveillance applies (FAIS §16). Latest-effective-wins: the in-force
+  // schedule at evaluation time is the one with the greatest effectiveFrom
+  // ≤ asOf. Closes deferred gap fx-best-execution-policy-schedule on
+  // prd:bank:fx:otc-vanilla. The reference-rate basis stays executed-rate
+  // until the SEPARATE gap fx-best-execution-reference-benchmark (Rohan,
+  // Markets risk/quant engineer, engineering) closes.
+  //
+  // Citations:
+  //   FAIS-ACT-37-2002-S16 (best execution); FAIS-ACT-37-2002-S8D;
+  //   CS-3-2018 (FSCA Conduct Standard 3/2018); FSB-TCF-2012;
+  //   D-MARKET-CONDUCT; D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH.
+  // Author: Zara (Chief Compliance Officer, governance).
+  // ---------------------------------------------------------------------------
+  {
+    type: "BestExecutionPolicySchedule",
+    class: "governance",
+    issuer: "Zara",
+    subscribers: ["Zara", "Mira", "Rohan", "Helena", "Devon"],
+    replay: "latest-wins-per-key",
+    retention: RETENTION_GOVERNANCE_7Y,
+    payloadSchema: bestExecutionPolicySchedulePayloadSchema,
+    source: "platform/event-store/event-types/conduct.ts",
+    citationsHint: [
+      "FAIS-ACT-37-2002-S16",
+      "FAIS-ACT-37-2002-S8D",
+      "CS-3-2018",
+      "FSB-TCF-2012",
+      "D-MARKET-CONDUCT",
+      "D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH",
     ],
   },
 ];

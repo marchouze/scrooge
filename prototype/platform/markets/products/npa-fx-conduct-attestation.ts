@@ -34,9 +34,11 @@
 //   D-NEW-PRODUCT-APPROVAL-POLICY §5; FAIS Act 37/2002 §§16–17, §8D.
 // Author: Zara (Chief Compliance Officer, governance).
 
+import { resolveBestExecutionSchedule } from "../../conduct/fx-trade-conduct-evaluation";
 import {
   type ProductDeferredGap,
   makeProductDimensionAttested,
+  productDeferredGapSchema,
 } from "../../event-store/event-types/product";
 import { buildPhaseFixtureTag } from "../../event-store/provenance";
 import type { EventStore } from "../../event-store/store";
@@ -145,4 +147,140 @@ export function runFxConductAttestation(store: EventStore): ConductAttestationRe
   });
 
   return { promoted: true, skipped: false };
+}
+
+// ---------------------------------------------------------------------------
+// fx-best-execution-policy-schedule gap closure (2026-06-12)
+//
+// The gap's targetTrigger — "conduct committee publishes a
+// BestExecutionPolicySchedule event of record" — is satisfied once the CCO
+// schedule (platform/event-store/event-types/conduct.ts →
+// BestExecutionPolicySchedule; published by scripts/publish-fx-bestex-policy-
+// schedule.ts) is on the store AND the surveillance read-path consumes it
+// (platform/conduct/fx-trade-conduct-evaluation.ts resolveBestExecutionSchedule,
+// latest-effective-wins). This re-emits the conduct ProductDimensionAttested
+// (latest-wins) with that gap REMOVED and every other gap on the latest
+// attestation carried forward UNCHANGED (read from the store, not from the
+// constants above — the store is the source of truth, Principle 1).
+//
+// Over-closure is the failure mode, so the closure GATES on the schedule
+// actually being in force at the closure asOf: no schedule → no re-attestation.
+//
+// Authority: D-FX-HELD-DIMS-SEAT-SWEEP (CEO session-delegation 2026-06-11);
+//   D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH; D-NEW-PRODUCT-APPROVAL-
+//   POLICY §5.
+// Author: Zara (Chief Compliance Officer, governance).
+// ---------------------------------------------------------------------------
+
+export const SCHEDULE_GAP_ID = "fx-best-execution-policy-schedule";
+
+// Later than CONDUCT_AS_OF (2026-06-11T20:00) so latest-wins folds pick up the
+// closure.
+export const CONDUCT_SCHEDULE_GAP_CLOSED_AS_OF = "2026-06-12T07:00:00.000Z";
+
+export interface ScheduleGapClosureResult {
+  readonly closed: boolean;
+  readonly skipped: boolean;
+  /** Why nothing was emitted, when skipped/blocked. */
+  readonly reason?: string;
+  /** Gap ids on the attestation emitted (or already current), for reporting. */
+  readonly remainingGapIds: readonly string[];
+}
+
+/**
+ * Re-emit the conduct dimension attestation with the
+ * fx-best-execution-policy-schedule deferred gap removed. Reads the LATEST
+ * conduct ProductDimensionAttested for the product first; all other gaps are
+ * carried forward unchanged. Gated on a BestExecutionPolicySchedule being in
+ * force; idempotent (skips when the latest attestation already lacks the gap).
+ */
+export function runFxConductScheduleGapClosure(store: EventStore): ScheduleGapClosureResult {
+  // 1. Latest conduct attestation for the product (latest as_of wins).
+  let latest: { asOf: string; payload: Record<string, unknown> } | null = null;
+  for (const ev of store.replay({ type: "ProductDimensionAttested" })) {
+    const p = ev.payload as Record<string, unknown>;
+    if (p.productId !== CONDUCT_PRODUCT_ID || p.dimension !== "conduct") continue;
+    if (latest === null || ev.as_of >= latest.asOf) {
+      latest = { asOf: ev.as_of, payload: p };
+    }
+  }
+
+  if (latest === null) {
+    return {
+      closed: false,
+      skipped: true,
+      reason:
+        "no conduct ProductDimensionAttested exists for the product — run the conduct attestation first (scripts/run-fx-conduct-attestation.ts)",
+      remainingGapIds: [],
+    };
+  }
+
+  const currentGaps = Array.isArray(latest.payload.deferredGaps)
+    ? latest.payload.deferredGaps.map((g) => productDeferredGapSchema.parse(g))
+    : [];
+
+  // 2. Idempotency: latest attestation already lacks the gap → nothing to do.
+  if (!currentGaps.some((g) => g.gapId === SCHEDULE_GAP_ID)) {
+    return {
+      closed: false,
+      skipped: true,
+      reason: `latest conduct attestation (as_of ${latest.asOf}) already lacks ${SCHEDULE_GAP_ID}`,
+      remainingGapIds: currentGaps.map((g) => g.gapId),
+    };
+  }
+
+  // 3. GATE: the schedule must genuinely be in force — over-closure is the
+  //    failure mode.
+  const schedule = resolveBestExecutionSchedule(store, CONDUCT_SCHEDULE_GAP_CLOSED_AS_OF);
+  if (schedule === null) {
+    return {
+      closed: false,
+      skipped: false,
+      reason:
+        "GATE failed — no BestExecutionPolicySchedule in force; publish the CCO schedule first (scripts/publish-fx-bestex-policy-schedule.ts); NOT closing the gap",
+      remainingGapIds: currentGaps.map((g) => g.gapId),
+    };
+  }
+
+  // 4. Re-emit with the gap removed; all other gaps carried forward UNCHANGED.
+  const remaining: ProductDeferredGap[] = currentGaps.filter((g) => g.gapId !== SCHEDULE_GAP_ID);
+
+  const priorChain = Array.isArray(latest.payload.citationChain)
+    ? latest.payload.citationChain.filter((c): c is string => typeof c === "string")
+    : [...CONDUCT_CITATION_CHAIN];
+
+  const provenance = buildPhaseFixtureTag({
+    sourceLineage: "platform:npa-attestation-runner",
+    variant: `npa-dimension-upgrade:${CONDUCT_PRODUCT_ID}:conduct:bestex-schedule-gap-closure`,
+    tags: ["npa-gate", "deferred-gap-closure", "conduct", CONDUCT_PRODUCT_ID],
+  });
+
+  store.append({
+    ...makeProductDimensionAttested({
+      asOf: CONDUCT_SCHEDULE_GAP_CLOSED_AS_OF,
+      entity: "LE-ZA-HOZ-BANK",
+      actor: CONDUCT_ACTOR,
+      citations: [...CONDUCT_CITATIONS, "D-FX-HELD-DIMS-SEAT-SWEEP", "dimension:conduct"],
+      payload: {
+        productId: CONDUCT_PRODUCT_ID,
+        dimension: "conduct",
+        result: "implementation-attested",
+        citationChain: [
+          ...new Set([
+            ...priorChain,
+            `bestex-schedule:${schedule.scheduleId}`,
+            "scripts/publish-fx-bestex-policy-schedule.ts",
+          ]),
+        ],
+        deferredGaps: remaining,
+      },
+    }),
+    provenance,
+  });
+
+  return {
+    closed: true,
+    skipped: false,
+    remainingGapIds: remaining.map((g) => g.gapId),
+  };
 }

@@ -20,10 +20,14 @@
 // means a trade processed by one path is a no-op for the other.
 //
 // Build-phase limitations (see the evaluation core):
-//   - Best-execution tolerance values are fixed constants; production drives
-//     them from a published BestExecutionPolicySchedule event.
+//   - Best-execution tolerances come from the latest-effective
+//     BestExecutionPolicySchedule event published by Zara (Chief Compliance
+//     Officer, governance); when no schedule is in force the build-phase
+//     constants apply with a logged warning (never silently).
 //   - Reference rates default to the FX leg rate when no external benchmark is
-//     available (spread = 0 bps when only one price source exists).
+//     available (spread = 0 bps when only one price source exists) — tracked
+//     gap fx-best-execution-reference-benchmark (the schedule owns TOLERANCE;
+//     the benchmark gap owns REFERENCE).
 //   - FAIS suitability fires only for classified counterparties
 //     (CounterpartyFaisClassified); an unclassified counterparty is logged.
 //
@@ -40,7 +44,10 @@
 //   extracted + sweep added by Zara (Chief Compliance Officer, governance).
 
 import { eventStore, logger } from "../../platform/composition";
-import { evaluateFxTradeConduct } from "../../platform/conduct/fx-trade-conduct-evaluation";
+import {
+  evaluateFxTradeConduct,
+  resolveBestExecutionSchedule,
+} from "../../platform/conduct/fx-trade-conduct-evaluation";
 import type { Event } from "../../platform/event-store/types";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
@@ -57,6 +64,15 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     };
   }
 
+  // In-force CCO tolerance schedule, resolved once for the run.
+  const bestExSchedule = resolveBestExecutionSchedule(eventStore, ctx.asOf);
+  if (bestExSchedule === null) {
+    logger.warn(
+      {},
+      "rohan:conduct-risk-events — no BestExecutionPolicySchedule in force; best-execution tolerances fell back to build-phase constants (publish the CCO schedule: scripts/publish-fx-bestex-policy-schedule.ts)",
+    );
+  }
+
   let totalEventsEmitted = 0;
   let processed = 0;
   let skipped = 0;
@@ -68,6 +84,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
       const result = evaluateFxTradeConduct(eventStore, trade, {
         asOf: ctx.asOf,
         dryRun: ctx.dryRun,
+        bestExSchedule,
       });
       totalEventsEmitted += result.eventsEmitted;
       if (result.eventsEmitted > 0 || ctx.dryRun) {

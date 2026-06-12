@@ -1034,6 +1034,146 @@ export function makeFeeDisclosureEvent(args: {
 }
 
 // ---------------------------------------------------------------------------
+// BestExecutionPolicySchedule
+//
+// The conduct committee's (CCO-published) best-execution tolerance schedule —
+// the event of record that OWNS the per-instrument-class tolerance bands the
+// FX conduct surveillance applies (FAIS §16 best-execution duty). Closes the
+// tracked deferred gap `fx-best-execution-policy-schedule` on
+// prd:bank:fx:otc-vanilla (conduct dimension): before this event existed, the
+// tolerance values were fixed build-phase engineering constants
+// (BE_TOLERANCE_BY_ASSET_CLASS in platform/conduct/fx-trade-conduct-
+// evaluation.ts); production conduct posture requires the conduct committee
+// to publish and own them as a governance record.
+//
+// SCOPE SEPARATION (do not conflate): this schedule sets the TOLERANCE the
+// surveillance applies. The REFERENCE rate the spread is measured against is
+// the SEPARATE tracked gap `fx-best-execution-reference-benchmark` (Rohan,
+// Markets risk/quant engineer, engineering) — until an independent benchmark
+// feed lands, the reference basis stays `executed-rate` (single price source,
+// spread structurally 0 bps unless the trade carries an explicit
+// referenceRate). The `referenceRateBasis` field records that posture
+// explicitly so the residual is visible on the event of record itself.
+//
+// Replay-fold: latest-effective-wins — at evaluation time the in-force
+// schedule is the one with the greatest `effectiveFrom` ≤ asOf (ties broken
+// by append order). Back-dated supersessions form an explicit chain via
+// `supersedes`.
+//
+// Modelled on the published-threshold ratification events
+// (SicrThresholdApproved / MaterialityBenchmarkApproved in
+// ifrs-policy-thresholds.ts): named legs, effective-from, supersession chain,
+// review cadence.
+//
+// Citations:
+//   FAIS Act 37/2002 §16 (best execution duty) + §8D (suitability frame);
+//   FSCA Conduct Standard 3 of 2018 (OTC Derivative Provider conduct);
+//   FSB Treating Customers Fairly 2012 (outcomes 4–5);
+//   D-MARKET-CONDUCT; D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH.
+// Author: Zara (Chief Compliance Officer, governance).
+// ---------------------------------------------------------------------------
+
+/**
+ * A per-instrument-class best-execution tolerance band: the maximum adverse
+ * spread (in bps, absolute value) between executed rate and reference rate
+ * that the surveillance treats as in-tolerance for the class.
+ */
+export const bestExecutionToleranceBandSchema = z.object({
+  /**
+   * Instrument class as carried on the trade's `productTaxonomy`
+   * (e.g. "FX-spot", "FX-forward", "FX-swap", "NDF").
+   */
+  instrumentClass: z.string().min(1),
+  /**
+   * Maximum adverse spread in basis points vs the reference rate.
+   * |spreadBps| > maxAdverseSpreadBps ⇒ BestExecutionBreached.
+   */
+  maxAdverseSpreadBps: z.number().positive(),
+});
+
+export type BestExecutionToleranceBand = z.infer<typeof bestExecutionToleranceBandSchema>;
+
+export const bestExecutionPolicySchedulePayloadSchema = z.object({
+  /**
+   * Stable schedule identifier. Convention: `BESTEX-SCHED-<YYYY>-<seq>`.
+   * The supersession chain links schedules; the id names this version.
+   */
+  scheduleId: z.string().min(1),
+
+  /**
+   * Product scope the schedule binds (e.g. "prd:bank:fx:otc-vanilla").
+   * A schedule applies to trades surveilled under that product's conduct
+   * dimension.
+   */
+  productScope: z.string().min(1),
+
+  /** Per-instrument-class tolerance bands. At least one band required. */
+  toleranceBands: z.array(bestExecutionToleranceBandSchema).min(1),
+
+  /**
+   * Fallback tolerance (bps) for an instrument class with no explicit band.
+   * Keeps the surveillance total: no trade escapes evaluation because its
+   * taxonomy is unmapped.
+   */
+  defaultToleranceBps: z.number().positive(),
+
+  /**
+   * Reference-rate basis the spread is measured against.
+   *   "executed-rate"         — build-phase: the trade's own executed rate is
+   *                             the reference unless the trade carries an
+   *                             explicit referenceRate (tracked gap
+   *                             fx-best-execution-reference-benchmark, Rohan).
+   *   "independent-benchmark" — an independent mid/benchmark feed is the
+   *                             reference (set when that gap closes).
+   */
+  referenceRateBasis: z.enum(["executed-rate", "independent-benchmark"]),
+
+  /** ISO 8601 — the moment from which this schedule is in force. */
+  effectiveFrom: z.string().min(1),
+
+  /**
+   * Review cadence, in agent-time (e.g. "annual conduct-committee review;
+   * earlier on RAS-B2 breach or benchmark-feed landing").
+   */
+  reviewCadence: z.string().min(1),
+
+  /**
+   * The `event_id` of the prior BestExecutionPolicySchedule this one
+   * supersedes, or null for the founding schedule.
+   */
+  supersedes: z.string().min(1).nullable(),
+
+  /** Publishing seat — name + position (identity discipline). */
+  publishedBy: z.string().min(1),
+
+  /** Optional rationale / notes (plain text, bounded). */
+  notes: z.string().max(2000).optional(),
+});
+
+export type BestExecutionPolicySchedulePayload = z.infer<
+  typeof bestExecutionPolicySchedulePayloadSchema
+>;
+
+export function makeBestExecutionPolicySchedule(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: BestExecutionPolicySchedulePayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "BestExecutionPolicySchedule",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: bestExecutionPolicySchedulePayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // CONDUCT_TYPED_EVENT_TYPES — registry of all conduct domain event types.
 //
 // To add a new conduct event type:
@@ -1060,4 +1200,7 @@ export const CONDUCT_TYPED_EVENT_TYPES = [
   "ConductEventRecorded",
   // Fee/spread transparency disclosure per FAIS Act §8(1)(d)(i) + GCC §7
   "FeeDisclosureEvent",
+  // CCO-published best-execution tolerance schedule (FAIS §16; closes the
+  // fx-best-execution-policy-schedule deferred gap on prd:bank:fx:otc-vanilla)
+  "BestExecutionPolicySchedule",
 ] as const;

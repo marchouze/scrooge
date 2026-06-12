@@ -83,11 +83,18 @@ export const CONDUCT_CITATIONS: readonly string[] = [
 const ENTITY = "LE-ZA-HOZ-BANK";
 
 // ---------------------------------------------------------------------------
-// Best-execution tolerance schedule (build-phase stub)
+// Best-execution tolerance schedule
 //
-// Tolerance in basis points (bps) per asset class. Production: derive from a
-// published BestExecutionPolicySchedule event (tracked deferred gap
-// fx-best-execution-policy-schedule).
+// Production source of truth: the latest-effective BestExecutionPolicySchedule
+// event published by the conduct committee (Zara, Chief Compliance Officer,
+// governance) — see resolveBestExecutionSchedule below. The constants here are
+// the FALLBACK applied only when no schedule event exists in the store
+// (callers log a warning on that path so the fallback is never silent).
+//
+// NOTE the scope separation: the schedule owns the TOLERANCE; the REFERENCE
+// rate stays executed-rate until the separate tracked gap
+// fx-best-execution-reference-benchmark (Rohan, Markets risk/quant engineer,
+// engineering) lands an independent benchmark feed.
 // ---------------------------------------------------------------------------
 
 const BE_TOLERANCE_BY_ASSET_CLASS: Record<string, number> = {
@@ -101,8 +108,96 @@ const BE_TOLERANCE_BY_ASSET_CLASS: Record<string, number> = {
   default: 20,
 };
 
-function getToleranceBps(assetClass: string): number {
+function fallbackToleranceBps(assetClass: string): number {
   return BE_TOLERANCE_BY_ASSET_CLASS[assetClass] ?? BE_TOLERANCE_BY_ASSET_CLASS.default ?? 20;
+}
+
+/** The in-force best-execution tolerance schedule resolved from the store. */
+export interface BestExecutionScheduleResolution {
+  /** event_id of the schedule event applied (provenance for the verdicts). */
+  readonly scheduleEventId: string;
+  readonly scheduleId: string;
+  readonly effectiveFrom: string;
+  /** instrumentClass → maxAdverseSpreadBps. */
+  readonly toleranceBpsByClass: ReadonlyMap<string, number>;
+  readonly defaultToleranceBps: number;
+  readonly referenceRateBasis: "executed-rate" | "independent-benchmark";
+}
+
+interface BestExecutionSchedulePayloadShape {
+  scheduleId?: unknown;
+  toleranceBands?: unknown;
+  defaultToleranceBps?: unknown;
+  referenceRateBasis?: unknown;
+  effectiveFrom?: unknown;
+}
+
+/**
+ * Resolve the in-force BestExecutionPolicySchedule at `asOf`:
+ * latest-effective-wins — among schedule events with effectiveFrom ≤ asOf the
+ * one with the greatest effectiveFrom applies (append order breaks ties).
+ * Returns null when no schedule is in force (callers fall back to the
+ * build-phase constants and MUST log a warning — never silently).
+ */
+export function resolveBestExecutionSchedule(
+  store: Pick<EventStore, "replay">,
+  asOf: string,
+): BestExecutionScheduleResolution | null {
+  let best: { effectiveFrom: string; resolution: BestExecutionScheduleResolution } | null = null;
+
+  for (const e of store.replay({ type: "BestExecutionPolicySchedule" })) {
+    const p = e.payload as BestExecutionSchedulePayloadShape;
+    const effectiveFrom = typeof p.effectiveFrom === "string" ? p.effectiveFrom : null;
+    const defaultToleranceBps =
+      typeof p.defaultToleranceBps === "number" ? p.defaultToleranceBps : null;
+    if (effectiveFrom === null || defaultToleranceBps === null) continue;
+    if (effectiveFrom > asOf) continue; // not yet in force
+    // Replay is sequence-ordered: >= keeps the later append on an
+    // effectiveFrom tie (explicit supersession of a same-moment schedule).
+    if (best !== null && effectiveFrom < best.effectiveFrom) continue;
+
+    const toleranceBpsByClass = new Map<string, number>();
+    if (Array.isArray(p.toleranceBands)) {
+      for (const band of p.toleranceBands as Array<{
+        instrumentClass?: unknown;
+        maxAdverseSpreadBps?: unknown;
+      }>) {
+        if (
+          typeof band.instrumentClass === "string" &&
+          typeof band.maxAdverseSpreadBps === "number"
+        ) {
+          toleranceBpsByClass.set(band.instrumentClass, band.maxAdverseSpreadBps);
+        }
+      }
+    }
+
+    best = {
+      effectiveFrom,
+      resolution: {
+        scheduleEventId: e.event_id,
+        scheduleId: typeof p.scheduleId === "string" ? p.scheduleId : "(unknown)",
+        effectiveFrom,
+        toleranceBpsByClass,
+        defaultToleranceBps,
+        referenceRateBasis:
+          p.referenceRateBasis === "independent-benchmark"
+            ? "independent-benchmark"
+            : "executed-rate",
+      },
+    };
+  }
+
+  return best?.resolution ?? null;
+}
+
+function getToleranceBps(
+  assetClass: string,
+  schedule: BestExecutionScheduleResolution | null,
+): number {
+  if (schedule !== null) {
+    return schedule.toleranceBpsByClass.get(assetClass) ?? schedule.defaultToleranceBps;
+  }
+  return fallbackToleranceBps(assetClass);
 }
 
 // ---------------------------------------------------------------------------
@@ -197,6 +292,14 @@ export interface EvaluateOptions {
   readonly asOf: string;
   /** When true, compute but do not append. */
   readonly dryRun: boolean;
+  /**
+   * The in-force best-execution tolerance schedule. Pass the result of
+   * `resolveBestExecutionSchedule(store, asOf)` (callers that process many
+   * trades resolve once and share it). `null` = no schedule in force →
+   * build-phase constant fallback (caller logs the warning). `undefined`
+   * (omitted) = resolve from the store per trade.
+   */
+  readonly bestExSchedule?: BestExecutionScheduleResolution | null;
 }
 
 /**
@@ -238,6 +341,9 @@ export function evaluateFxTradeConduct(
     outputExistsForTrade(store, "BestExecutionBreached", tradeId);
 
   if (!beAlreadyDone && executedRate !== null) {
+    // Reference basis: executed-rate (build phase). The trade's own explicit
+    // referenceRate field is honoured when present; an independent benchmark
+    // is the separate tracked gap fx-best-execution-reference-benchmark.
     const refRateField = (trade.payload as Record<string, unknown>).referenceRate;
     const referenceRate = typeof refRateField === "number" ? refRateField : executedRate;
 
@@ -246,7 +352,13 @@ export function evaluateFxTradeConduct(
         ? Math.round(((executedRate - referenceRate) / referenceRate) * 10000 * 100) / 100
         : 0;
 
-    const toleranceBps = getToleranceBps(productTaxonomy);
+    // Tolerance: from the CCO-published BestExecutionPolicySchedule when one
+    // is in force; build-phase constants otherwise (callers warn on fallback).
+    const schedule =
+      opts.bestExSchedule !== undefined
+        ? opts.bestExSchedule
+        : resolveBestExecutionSchedule(store, opts.asOf);
+    const toleranceBps = getToleranceBps(productTaxonomy, schedule);
     const isBreached = Math.abs(spreadBps) > toleranceBps;
 
     if (!opts.dryRun) {
