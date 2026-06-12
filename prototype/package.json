@@ -195,6 +195,7 @@
     "recon:agent-perf-eval-staleness": "bun run platform/recon/agent-perf-eval-staleness.ts",
     "recon:madge-circular-deps": "bun run platform/recon/madge-circular-deps.ts",
     "recon:v2-no-v1-import": "bun run platform/recon/v2-no-v1-import.ts",
+    "recon:v2-released-surface-clean-core": "bun run platform/recon/v2-released-surface-gate.ts",
     "recon:fil-conformance": "bun run platform/recon/fil-conformance.ts",
     "recon:graph-ontology": "bun run platform/recon/graph-ontology-coverage.ts",
     "recon:orphan-capability": "bun run platform/recon/orphan-capability.ts",
