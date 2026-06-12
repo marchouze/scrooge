@@ -31,5 +31,12 @@
       "@simulators/*": ["simulators/*"]
     }
   },
-  "include": ["platform/**/*", "domains/**/*", "simulators/**/*", "scenarios/**/*", "tests/**/*"]
+  "include": [
+    "platform/**/*",
+    "domains/**/*",
+    "simulators/**/*",
+    "scenarios/**/*",
+    "tests/**/*",
+    "v2-core/**/*"
+  ]
 }
