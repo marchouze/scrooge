@@ -51,6 +51,108 @@ import { type MarketDataStore, lookupQuoteWithInverse } from "../../market-data/
 import { eventInOperatingBook } from "../filter";
 
 // ---------------------------------------------------------------------------
+// Shared net-FX-position-per-currency basis (the B3 / NOP basis)
+// ---------------------------------------------------------------------------
+//
+// SINGLE SOURCE OF TRUTH for "what FX position does the bank carry?", consumed
+// by BOTH the B3 limit-utilisation fold (below) and the market-risk VaR / SVaR
+// / ES engine (`platform/market-risk/var-engine.ts`). Before
+// D-VAR-EXPOSURE-INCLUDES-STANDING-NOP (CEO-approved 2026-06-12) the VaR engine
+// kept its OWN parallel fold that *excluded settled trades*; that drifted from
+// this B3 basis (which retains the position on settlement, because the bank
+// still holds the foreign currency in its nostro). The two folds are now ONE.
+//
+// Semantics (mirrors the inline B3 fold this helper replaces):
+//   - Signed net position per ISO 4217 currency code, in MAJOR units.
+//     Buy EUR/USD near leg → +EUR (counter-notional received), −USD (notional
+//     paid). Netting across trades is automatic.
+//   - Settlement-RETAINED: a SettlementConfirmed / TradeMatured does NOT drop
+//     the position. The bank holds the foreign currency after T+2, so the
+//     market risk (and the NOP) persists. This is the defining difference from
+//     a pre-settlement credit (B1), which DOES drop on settlement.
+//   - Cancellation-EXCLUDED: a cancelled trade is genuinely not a position
+//     (canonical lifecycle resolver — D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE).
+//   - Operating-book only: production + operational-simulated; build-phase
+//     fixtures + sandbox held out.
+//
+// Authority: D-VAR-EXPOSURE-INCLUDES-STANDING-NOP (CEO-approved 2026-06-12,
+//   methodology owner Helena (Chief Risk Officer, governance)); D-MARKETS-
+//   SCHEMA-FOUNDATION Slice 5. Authors: Rohan (Risk engineer) + Helena.
+
+interface NearLegLike {
+  legKind?: unknown;
+  receiveCurrency?: unknown;
+  payCurrency?: unknown;
+  counterNotional?: { amountMinor?: unknown } | undefined;
+  notional?: { amountMinor?: unknown } | undefined;
+}
+
+/**
+ * Fold a single operating-book, non-cancelled FxTradeExecuted event's near leg
+ * into a signed-net-position-per-currency map (major units). The receive
+ * currency is added (the bank is long it), the pay currency subtracted (short).
+ * Returns the same map for chaining. Settlement state is intentionally NOT
+ * consulted — the position is retained on settlement.
+ */
+function foldNearLegIntoNetPosition(
+  net: Map<string, number>,
+  payload: Record<string, unknown>,
+): Map<string, number> {
+  const legs = Array.isArray(payload.legs) ? (payload.legs as NearLegLike[]) : [];
+  const nearLeg = legs.find((l) => l.legKind === "near") ?? legs[0];
+  if (!nearLeg) return net;
+
+  const receiveCcy =
+    typeof nearLeg.receiveCurrency === "string" ? nearLeg.receiveCurrency : null;
+  const payCcy = typeof nearLeg.payCurrency === "string" ? nearLeg.payCurrency : null;
+  const rcvMinor =
+    typeof nearLeg.counterNotional?.amountMinor === "number" ? nearLeg.counterNotional.amountMinor : 0;
+  const payMinor =
+    typeof nearLeg.notional?.amountMinor === "number" ? nearLeg.notional.amountMinor : 0;
+
+  if (receiveCcy) net.set(receiveCcy, (net.get(receiveCcy) ?? 0) + rcvMinor / 100);
+  if (payCcy) net.set(payCcy, (net.get(payCcy) ?? 0) - Math.abs(payMinor) / 100);
+  return net;
+}
+
+/**
+ * Derive the bank's standing signed net FX position per ISO 4217 currency code
+ * (major units) from the event stream — the canonical B3 / NOP basis.
+ *
+ * This is the ONE fold both the B3 limit-utilisation projection and the VaR
+ * engine consume (D-VAR-EXPOSURE-INCLUDES-STANDING-NOP). Pure over the supplied
+ * events: cancelled trades excluded (lifecycle resolver), settled trades
+ * RETAINED, non-operating-book events held out. ZAR may appear as the home-
+ * currency residual leg; callers exclude it from NOP per BA 310 / reg 29(3).
+ */
+export function deriveNetFxPositionByCurrency(
+  events: Iterable<Event>,
+): Map<string, number> {
+  // Materialise once: `events` may be a single-shot generator (e.g.
+  // `eventStore.replay({ asOf })`), and we iterate it twice — once for the
+  // lifecycle index, once for the fold. A spent generator would silently yield
+  // zero positions on the second pass.
+  const materialised = Array.isArray(events) ? events : [...events];
+  const lifecycleIdx = resolveTradeLifecycle(materialised);
+  const net = new Map<string, number>();
+  for (const e of materialised) {
+    if (e.type !== "FxTradeExecuted") continue;
+    if (!eventInOperatingBook(e)) continue;
+    const p = e.payload as Record<string, unknown>;
+    const tradeIdRaw = p.tradeId as Record<string, unknown> | string | undefined;
+    const tradeIdValue =
+      typeof tradeIdRaw === "string"
+        ? tradeIdRaw
+        : typeof tradeIdRaw?.value === "string"
+          ? tradeIdRaw.value
+          : null;
+    if (tradeIdValue && isCancelledInstance(lifecycleIdx.get(tradeIdValue))) continue;
+    foldNearLegIntoNetPosition(net, p);
+  }
+  return net;
+}
+
+// ---------------------------------------------------------------------------
 // Row type (public API)
 // ---------------------------------------------------------------------------
 
@@ -407,32 +509,16 @@ export function rebuildLimitUtilisation(events: readonly Event[]): void {
 
       const asOf = e.as_of;
 
-      // B3 — signed net position per currency (near leg).
+      // B3 — signed net position per currency (near leg), via the shared
+      // canonical fold `foldNearLegIntoNetPosition` (the SAME basis the VaR
+      // engine consumes — D-VAR-EXPOSURE-INCLUDES-STANDING-NOP).
       // Buy EUR/USD: +EUR, −USD. Netting is automatic.
       // Settlement does NOT remove this: the bank holds the foreign currency
       // in its nostro after T+2, so market risk persists.
-      const legs = Array.isArray(p.legs) ? (p.legs as Record<string, unknown>[]) : [];
-      const nearLeg = legs.find((l) => l.legKind === "near") ?? legs[0];
-      if (nearLeg) {
-        const receiveCcy =
-          typeof nearLeg.receiveCurrency === "string" ? nearLeg.receiveCurrency : null;
-        const payCcy = typeof nearLeg.payCurrency === "string" ? nearLeg.payCurrency : null;
-        const rcvNotional = nearLeg.counterNotional as Record<string, unknown> | undefined;
-        const payNotional = nearLeg.notional as Record<string, unknown> | undefined;
-        const rcvMinor = typeof rcvNotional?.amountMinor === "number" ? rcvNotional.amountMinor : 0;
-        const payMinor = typeof payNotional?.amountMinor === "number" ? payNotional.amountMinor : 0;
+      const next = foldNearLegIntoNetPosition(new Map(_state.fxNetPosition), p);
+      _state = { ..._state, fxNetPosition: next, asOf };
 
-        if (receiveCcy) {
-          const next = new Map(_state.fxNetPosition);
-          next.set(receiveCcy, (next.get(receiveCcy) ?? 0) + rcvMinor / 100);
-          _state = { ..._state, fxNetPosition: next, asOf };
-        }
-        if (payCcy) {
-          const next = new Map(_state.fxNetPosition);
-          next.set(payCcy, (next.get(payCcy) ?? 0) - Math.abs(payMinor) / 100);
-          _state = { ..._state, fxNetPosition: next, asOf };
-        }
-      }
+      const legs = Array.isArray(p.legs) ? (p.legs as Record<string, unknown>[]) : [];
 
       // Resolve the pay leg (currency the bank delivers). Used for both B1
       // (10% credit add-on) and the B2 failed-one-leg-delivered synthesis.
