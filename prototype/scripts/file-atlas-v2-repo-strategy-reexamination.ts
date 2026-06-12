@@ -30,9 +30,7 @@ const alreadyFiled = [...eventStore.replay({ type: "RecordFiled" })].some(
 );
 
 if (alreadyFiled) {
-  console.log(
-    `[file-atlas-v2-repo-strategy-reexamination] ${RECORD_ID} already filed — skipping.`,
-  );
+  console.log(`[file-atlas-v2-repo-strategy-reexamination] ${RECORD_ID} already filed — skipping.`);
   process.exit(0);
 }
 
