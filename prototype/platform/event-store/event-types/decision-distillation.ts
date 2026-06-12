@@ -27,11 +27,7 @@ import { type Actor, type Event, eventSchema } from "../types";
 import { decisionIdSchema } from "./decision";
 
 /** The three distillation classes — the BBaaS shared-core seam. */
-export const DECISION_DISTILLATION_CLASSES = [
-  "foundational",
-  "directional",
-  "obsolete",
-] as const;
+export const DECISION_DISTILLATION_CLASSES = ["foundational", "directional", "obsolete"] as const;
 export type DecisionDistillationClass = (typeof DECISION_DISTILLATION_CLASSES)[number];
 
 export const decisionDistilledPayloadSchema = z.object({
@@ -71,4 +67,5 @@ export function makeDecisionDistilled(args: {
 }
 
 export const DECISION_DISTILLATION_TYPED_EVENT_TYPES = ["DecisionDistilled"] as const;
-export type DecisionDistillationEventType = (typeof DECISION_DISTILLATION_TYPED_EVENT_TYPES)[number];
+export type DecisionDistillationEventType =
+  (typeof DECISION_DISTILLATION_TYPED_EVENT_TYPES)[number];
