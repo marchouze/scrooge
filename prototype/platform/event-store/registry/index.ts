@@ -233,6 +233,7 @@ import { CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY } from "./correspondent-s
 import { COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY } from "./counterparty-credit-risk";
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 import { CREDIT_LIMIT_EVENT_TYPES_REGISTRY } from "./credit-limit";
+import { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillation";
 import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
 import { FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY } from "./financial-instrument";
 import {
@@ -272,7 +273,6 @@ import { MISSING_EVENT_TYPES } from "./missing-types";
 import { MODEL_REGISTRY_EVENT_TYPES } from "./model-risk";
 import { MTM_EVENT_TYPES_REGISTRY } from "./mtm";
 import { OBLIGATION_EQUIVALENCE_EVENT_TYPES_REGISTRY } from "./obligation-equivalence";
-import { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillation";
 import { OBLIGATION_LIFECYCLE_EVENT_TYPES_REGISTRY } from "./obligation-lifecycle";
 import { OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY } from "./obligation-review";
 import { ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY } from "./odp-collateral-segregation";
