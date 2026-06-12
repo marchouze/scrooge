@@ -10,6 +10,7 @@
 
 import { randomUUID } from "node:crypto";
 
+import { nowUtc } from "../core/types";
 import { type MarketDataStore, lookupQuoteWithInverse } from "../market-data/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import type { SimCounterparty } from "./fx-sim-counterparties";
@@ -155,7 +156,11 @@ export function generateSimTrade(
   options?: SimTradeOptions,
 ): FxTradeExecutedPayload {
   const rng = options?.rng ?? Math.random;
-  const nowMs = Date.now();
+  // Wall-clock sourced via the approved boundary helper `nowUtc()` (platform/
+  // core/types.ts) rather than a direct `Date.now()` read, so the simulator
+  // stays inside the clock-abstraction boundary (recon:wall-clock-callsite-
+  // coverage; F-003). `Date.parse` of an ISO string is not a wall-clock read.
+  const nowMs = Date.parse(nowUtc());
 
   // 1. Determine the pair pool.
   //    When `availablePairs` is provided (hub sim loop) we pick from those.
@@ -269,7 +274,7 @@ export function generateSimTrade(
     side === "buy" ? Math.round(notionalMinor / legRate) : Math.round(notionalMinor * legRate);
 
   // 7. Trade ID.
-  const tradeId = `SIM-${Date.now()}-${randomUUID().slice(0, 8).toUpperCase()}`;
+  const tradeId = `SIM-${nowMs}-${randomUUID().slice(0, 8).toUpperCase()}`;
 
   const settlement = settlementDateT2(nowMs);
   const tradeDate = todayIso(nowMs);

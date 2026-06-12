@@ -24,17 +24,27 @@
 //     magnitude of tail losses.
 //
 // RISK FACTORS (build phase): the FX desk is the populated trading book, so the
-// risk factors are the net open ZAR positions per FX currency pair. Bonds, IRS
-// and equity legs map to their own risk factors as their price-history feeds
-// land; the engine is risk-factor-agnostic (it consumes a position vector + a
-// per-factor return matrix), so adding a factor is data, not code.
+// risk factors are the bank's STANDING net open positions per ISO 4217 currency
+// (each currency C mapped to its C/ZAR return window) — the SAME settlement-
+// retained net-open-position (NOP) basis the B3 limit-utilisation projection
+// measures, computed via the ONE shared fold `deriveNetFxPositionByCurrency`.
+// A settled spot trade STAYS a risk factor (the bank still holds the foreign
+// currency); only a cancelled trade is removed. Authority: D-VAR-EXPOSURE-
+// INCLUDES-STANDING-NOP (CEO-approved 2026-06-12, methodology owner Helena
+// (Chief Risk Officer, governance)). Methodology rationale: VaR on the standing
+// NOP incl. settled cash is consistent with the regulatory NOP attested on
+// BA 310 (market risk) / BA 110 (reg 29(3)). Bonds, IRS and equity legs map to
+// their own risk factors as their price-history feeds land; the engine is
+// risk-factor-agnostic (it consumes a position vector + a per-factor return
+// matrix), so adding a factor is data, not code.
 //
 // NO SILENT ZEROS (objective 4 of D-TRUSTED-FIGURES-PROGRAM-V1): a VaR/SVaR/ES
 // figure is surfaced ONLY when there are live trading positions AND a sufficient
 // historical-return window for every risk factor in the book. Otherwise the
 // report carries a loud, reasoned `status`:
-//   - `no-positions`        — the trading book is flat (no open risk-factor
-//                             exposure). VaR is 0 by absence of risk, surfaced
+//   - `no-positions`        — the bank carries no standing net FX position per
+//                             currency (the B3 / NOP basis is zero — a genuinely
+//                             flat book). VaR is 0 by absence of risk, surfaced
 //                             loudly, never an unexplained 0.
 //   - `insufficient-history`— there ARE live positions but the market-data store
 //                             holds fewer than the minimum return observations
@@ -61,13 +71,10 @@
 //   market-data return window supplied by Ravi (market-data infrastructure
 //   engineer).
 
-import { fxPositionCalculator } from "../accounting/fx-calculators";
 import type { EventStore } from "../event-store/store";
-import { isCancelledInstance, resolveTradeLifecycle } from "../lifecycle/trade-lifecycle-state";
 import type { MarketDataStore } from "../market-data/store";
 import { extractMidRate, lookupQuoteWithInverse } from "../market-data/store";
-import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
-import { eventInOperatingBook } from "../projections/filter";
+import { deriveNetFxPositionByCurrency } from "../projections/markets/limit-utilisation";
 import { type FinancialInput, absent, present, requireWeight } from "../types/financial-input";
 
 // ---------------------------------------------------------------------------
@@ -209,74 +216,73 @@ export function deriveZarRatesFromMarketData(
  * histories. This is the market-risk P&L / sensitivity model
  * (model:market-risk-pnl-sensitivity-v1): it maps the live book to a signed
  * ZAR-exposure-per-risk-factor vector and attaches each factor's return window.
+ *
+ * EXPOSURE BASIS — STANDING NET OPEN POSITION (NOP), B3-ALIGNED, SETTLEMENT-
+ * RETAINED (D-VAR-EXPOSURE-INCLUDES-STANDING-NOP, CEO-approved 2026-06-12;
+ * methodology owner Helena (Chief Risk Officer, governance)):
+ *   The risk factors are the bank's standing signed net FX position per ISO
+ *   4217 currency code — the SAME basis the B3 limit-utilisation projection
+ *   measures, via the ONE shared fold `deriveNetFxPositionByCurrency`. A
+ *   settled spot trade STAYS in the exposure: the bank still holds the foreign
+ *   currency in its nostro after T+2 and bears FX risk on it. Only a CANCELLED
+ *   trade is removed (it is genuinely not a position). This replaces the prior
+ *   basis, which excluded settled trades and so reported `no-positions` for a
+ *   fully-settled-but-still-open book — understating market risk.
+ *
+ *   Methodology rationale (Helena, CRO — folded into this engineering
+ *   deliverable as the CRO sign-off): measuring VaR / SVaR / ES on the standing
+ *   NOP including settled cash is consistent with the regulatory net-open-
+ *   position attested on BA 310 (market risk; daily NOP on BA 110 / reg 29(3)).
+ *   VaR and the BA-310 NOP must see the same book.
+ *
+ * Each foreign currency C is one risk factor, keyed by its `C/ZAR` pair:
+ *   exposureZar = netPosition(C, major) × rate(C/ZAR)
+ *   returns     = fxReturnSeries(C/ZAR)
+ * ZAR (home-currency residual leg) is excluded — it is not an FX risk factor.
  */
 export function deriveRiskFactorExposures(args: {
   readonly eventStore: EventStore;
   readonly marketData: MarketDataStore;
   readonly asOf: string;
-  /** currency → ZAR rate, for translating net base positions to ZAR. Derived
-   *  from the MarketDataStore when omitted. */
+  /** currency → ZAR rate, for translating net positions to ZAR. Derived from
+   *  the MarketDataStore when omitted. */
   readonly zarRates?: ReadonlyMap<string, number>;
 }): { exposures: RiskFactorExposure[]; returnsByFactor: Map<string, number[]> } {
   const { eventStore, marketData, asOf } = args;
 
-  // ---- Live FX positions (the populated build-phase trading book) ----------
-  // Two exclusions, both mirroring the B3 limit-utilisation projection so VaR
-  // and the NOP limit see the same book:
-  //   1. Operating-book inclusion (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE):
-  //      only production + operational-simulated trades; build-phase-fixture +
-  //      sandbox held out.
-  //   2. Cancellation: a cancelled trade is not a live position. The canonical
-  //      lifecycle resolver excludes FxTradeCancelled — without this a cancelled
-  //      (e.g. mis-scaled) trade is still counted, inflating VaR by orders of
-  //      magnitude.
-  const lifecycleIdx = resolveTradeLifecycle(eventStore.replay());
-  const trades: FxTradeExecutedPayload[] = [];
-  for (const ev of eventStore.replay({ type: "FxTradeExecuted", asOf })) {
-    if (!eventInOperatingBook(ev)) continue;
-    const payload = ev.payload as unknown as FxTradeExecutedPayload;
-    const idRaw = payload.tradeId as unknown;
-    const tradeIdValue =
-      typeof idRaw === "string"
-        ? idRaw
-        : typeof (idRaw as { value?: unknown })?.value === "string"
-          ? (idRaw as { value: string }).value
-          : null;
-    if (tradeIdValue && isCancelledInstance(lifecycleIdx.get(tradeIdValue))) continue;
-    trades.push(payload);
-  }
-
-  const settledTradeIds = new Set<string>();
-  for (const ev of eventStore.replay({ type: "SettlementConfirmed", asOf })) {
-    const p = ev.payload as { tradeId?: unknown };
-    if (typeof p.tradeId === "string") settledTradeIds.add(p.tradeId);
-  }
-  for (const ev of eventStore.replay({ type: "TradeMatured", asOf })) {
-    const p = ev.payload as { tradeId?: unknown };
-    if (typeof p.tradeId === "string") settledTradeIds.add(p.tradeId);
-  }
+  // ---- Standing net FX position per currency (the B3 / NOP basis) ----------
+  // ONE shared fold with the B3 limit-utilisation projection
+  // (`deriveNetFxPositionByCurrency`): operating-book only, cancelled trades
+  // excluded, SETTLED trades RETAINED. The settlement exclusion that previously
+  // lived here is gone — see the docstring above (D-VAR-EXPOSURE-INCLUDES-
+  // STANDING-NOP).
+  const netByCurrency = deriveNetFxPositionByCurrency(eventStore.replay({ asOf }));
 
   // Build (or accept) the ZAR-rate map across every currency the book touches.
-  const currencies = new Set<string>();
-  for (const t of trades) {
-    currencies.add(t.currencyPair.base);
-    currencies.add(t.currencyPair.quote);
-  }
-  const zarRates = args.zarRates ?? deriveZarRatesFromMarketData(marketData, currencies);
-
-  const fxPositions = fxPositionCalculator({ trades, settledTradeIds, zarRates, asOf });
+  const zarRates = args.zarRates ?? deriveZarRatesFromMarketData(marketData, netByCurrency.keys());
 
   const exposures: RiskFactorExposure[] = [];
   const returnsByFactor = new Map<string, number[]>();
 
-  for (const pos of fxPositions) {
-    // Skip a flat pair (net zero) — it carries no risk-factor exposure.
-    if (pos.netPositionZarMinor === 0) continue;
-    const exposureZar = pos.netPositionZarMinor / 100; // minor → major ZAR
-    const returns = fxReturnSeries(marketData, pos.currencyPair, asOf);
-    returnsByFactor.set(pos.currencyPair, returns);
+  for (const [ccy, positionMajor] of netByCurrency) {
+    // ZAR is the home currency — excluded from NOP (BA 310 / reg 29(3)). It is
+    // not an FX risk factor; a flat (net-zero) currency carries no exposure.
+    if (ccy === "ZAR") continue;
+    if (positionMajor === 0) continue;
+
+    // ZAR rate: units of ZAR per 1 major unit of currency. deriveZarRates...
+    // returns ZAR per 1 (minor==major factor coincide for the per-unit rate),
+    // defaulting to 1 for an unquoted currency (degraded translation the
+    // history-sufficiency gate catches downstream — never a silent wrong VaR).
+    const zarRate = zarRates.get(ccy) ?? 1;
+    const exposureZar = positionMajor * zarRate;
+
+    // Each currency's risk factor is its C/ZAR pair return window.
+    const factor = `${ccy}/ZAR`;
+    const returns = fxReturnSeries(marketData, factor, asOf);
+    returnsByFactor.set(factor, returns);
     exposures.push({
-      factor: pos.currencyPair,
+      factor,
       exposureZar,
       returnObservations: returns.length,
     });
@@ -385,8 +391,10 @@ export function computeMarketRisk(args: {
 
   // ---- No live positions: VaR is 0 by absence of risk, surfaced loudly. ----
   if (exposures.length === 0) {
-    const reason = "trading book is flat — no open risk-factor exposure (FX/bond/IRS/equity)";
-    const exp = "live FX positions (fxPositionCalculator over FxTradeExecuted)";
+    const reason =
+      "trading book is flat — the bank carries no standing net FX position per currency (the B3 / NOP basis is zero across all currencies)";
+    const exp =
+      "standing net FX position per currency (deriveNetFxPositionByCurrency — the shared B3 / NOP basis, settlement-retained)";
     return {
       asOf,
       currency: "ZAR",
