@@ -1,11 +1,94 @@
---- Page 1 ---
-P O Box 427 Pretoria 0001 South Africa 370 Helen Joseph Street Pretoria 0002 +27 12 313 3911 / 0861 12 7272 www.resbank.co.za Ref.: 15/8/1/2 D8/2016 To: All banks, branches of foreign institutions, controlling companies and auditors of banks or controlling companies Directive issued in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990) Reporting requirements relating to material outsourced service providers and critical third-party service providers
+Executive summary
+The outsourcing of functions or activities that were traditionally executed within
+banks, controlling companies or branches of foreign institutions (hereinafter
+collectively referred to as banks) has increased substantially in recent years. This
+increasing trend in outsourcing arrangements may be due to a variety of reasons,
+which may include matters related to a reduction in cost or the achievement of
+specific strategic objectives.
+Ultimately the board of directors of a bank is responsible for setting the bank's
+tolerance for risk and the senior management of the bank has to ensure that all
+relevant risk exposures are managed within the risk tolerance level set by the
+bank's board of directors, which will, of course, include risks that may arise from
+or be related to the outsourcing of specific functions or activities.
+Supervisors have to continuously assess and evaluate, among other things, how
+well banks are managing and mitigating their respective exposures to risk,
+including risks that may arise from outsourcing. For this purpose, supervisors
+often require banks to submit specified information within time intervals.
+The purpose of this directive is to direct all banks to submit specified information
+in respect of their outsourcing arrangements within timelines.
+This directive replaces Directive 8/2015 issued on 23 June 2015.
+1. Introduction
+1.1 This Office previously issued Banks Act Guidance Note 5/2014, titled
+Outsourcing of functions within banks'-
+1.1.1 to remind banks of the potential risks that may arise from the use of service
+providers; and
+PO Box 8432 Pretoria 0001 + 370 Helen Joseph Street Pretoria 0002 . South Africa . Tel +27 12 3133911/0861 12 7272 . Fax +27 12 3133758 . www.reservebank.co.z
 
---- Page 2 ---
-1. Introduction 1.1 This directive is issued by the Prudential Authority in terms of Section 6(6)(a) of the Banks Act, 1990 (Act No. 94 of 1990). 1.2 Reporting requirements relating to material outsourced service providers and critical third-party service providers. 1.3 This directive remains effective as confirmed in Banks Act Circular 1 of the relevant year.
+2
 
---- Page 3 ---
-2. Application 2.1 This directive applies to all banks, branches of foreign institutions and controlling companies registered or operating in South Africa in terms of the Banks Act, 1990 (Act No. 94 of 1990). 2.2 Institutions are required to ensure compliance with the requirements set out herein.
+1.1.2 to provide guidelines to banks in respect of the assessment and management of
+risks pertaining to outsourcing relationships.
 
---- Page 4 ---
-3. Acknowledgement of receipt 3.1 Kindly ensure that a copy of this directive is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.
+1.2 To this end, the definitions as contained in paragraph 2 of GN5/2014 refer.
+
+1.3 In order-
+
+1.3.1 to obtain a better understanding of banks' exposures to risks arising from their
+outsourcing arrangements; and
+
+1.3.2 to identify any mutual or common exposure to operational risk or potential
+vulnerability within the banking sector, this Office has decided to require banks to
+submit specified information in respect of top material outsourced service
+providers.
+
+1.4 Despite the fact that banks have no control over critical third-party service
+providers, such as Eskom and Telkom, and banks are unable to produce their
+own electricity and telecoms lines, this Office still requires specified information in
+respect of these critical third party service providers, in order to measure
+concentration, exposure and vulnerability. Banks are also required to include
+specified information in respect of banking industry service providers, such as
+SBV and Bankserv.
+
+2. Directive related to required information
+
+2.1 Based on the aforesaid, and in accordance with the provisions of section 6(6) of
+the Banks Act, 1990, banks are hereby directed to submit to this Office the
+information specified in Annexure A and Annexure B-
+
+2.1.1 in respect of the twelve-month period that ends on 31 December of each relevant
+year, that is, from 31 December 2016, onwards;
+
+2.1.2 which information shall be submitted within 30 business days following the
+relevant reporting date to which the information relates; and
+
+2.1.3 which information shall be submitted in respect of the relevant bank on a
+consolidated basis, regardless of the level where the contract/s might have been
+signed. In the case of a branch of a foreign institution, the information shall
+relate only to the relevant branch of the foreign institution conducting business in
+the Republic.
+
+2.2 Banks shall use the Excel format of Annexure A and Annexure B, which is
+necessary for capturing and submission purposes.
+
+3. Sign-off
+
+3.1 Annexure A and Annexure B shall be signed-off by the chief risk officer of the
+bank, and attested by the chief executive officer of the bank.
+
+3
+
+4. Acknowledgement of receipt
+
+4.1 Two additional copies of this directive are enclosed for the use of your
+institution's independent auditors. The attached acknowledgement of receipt,
+duly completed and signed by both the chief executive officer of the institution
+and the said auditors, should be returned to this Office at the earliest
+convenience of the aforementioned signatories.
+
+Unathi Kamlana
+
+Deputy Registrar of Banks
+
+Encl. 2
+
+The previous directive issued was Directive 7/2016, dated 24 November 2016.
