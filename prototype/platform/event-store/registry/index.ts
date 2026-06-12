@@ -150,6 +150,9 @@ export { OBLIGATION_LIFECYCLE_EVENT_TYPES_REGISTRY } from "./obligation-lifecycl
 // Authority: D-OBLIGATIONS-REGISTER-CLEANUP; P2-SINGLE-GRAPH-DISCIPLINE.
 export { OBLIGATION_EQUIVALENCE_EVENT_TYPES_REGISTRY } from "./obligation-equivalence";
 export { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillation";
+// WS-V2-BBAAS S0 — FilModelImplementationDeclared (FIL-Models registry).
+// Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1.
+export { FIL_MODELS_EVENT_TYPES_REGISTRY } from "./fil-models";
 // D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
 // events (Defined / Classified / Decomposed / Reconstituted).
 // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
@@ -235,6 +238,7 @@ import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 import { CREDIT_LIMIT_EVENT_TYPES_REGISTRY } from "./credit-limit";
 import { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillation";
 import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
+import { FIL_MODELS_EVENT_TYPES_REGISTRY } from "./fil-models";
 import { FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY } from "./financial-instrument";
 import {
   ANALYTICS_EVENT_TYPES,
@@ -439,6 +443,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // WS-V2-BBAAS W1 — DecisionDistilled core-knowledge-base classification.
   // Authority: D-V2-BBAAS-W1-DECISION-DISTILLATION (2026-06-12).
   ...DECISION_DISTILLATION_EVENT_TYPES_REGISTRY,
+  // WS-V2-BBAAS S0 — FilModelImplementationDeclared (FIL-Models registry scaffold).
+  // Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1.
+  ...FIL_MODELS_EVENT_TYPES_REGISTRY,
   // D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
   // events (Defined / Classified / Decomposed / Reconstituted).
   // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);

@@ -23,13 +23,13 @@
 // D-MODEL-BINDING-CONTRACT-V1 (absorbed) — facets are the sole data-access path.
 // Author: Atlas (Core banking platform architect, engineering).
 
-import type { CitationRef, Instant, Money } from "../fil-core/primitives";
-import type { FilFacetName } from "../fil-core/type-definition";
 import type {
   FilEventRef,
   FilLifecycleDeclaration,
   FilLifecycleStage,
 } from "../fil-core/lifecycle";
+import type { CitationRef, Instant, Money } from "../fil-core/primitives";
+import type { FilFacetName } from "../fil-core/type-definition";
 
 // ---------------------------------------------------------------------------
 // Supporting v2-native types (no v1 imports)

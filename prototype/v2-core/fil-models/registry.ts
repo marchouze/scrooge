@@ -16,8 +16,8 @@
 import { formatVersion } from "../fil-core/urn";
 import {
   type FilModelImplementationDeclared,
-  filModelImplementationDeclaredSchema,
   type FilModelRegistryKey,
+  filModelImplementationDeclaredSchema,
   registryKeyString,
 } from "./declaration";
 
@@ -79,9 +79,7 @@ function rowFrom(decl: FilModelImplementationDeclared): FilModelRegistryRow[] {
  * (facet, version) across DIFFERENT models is surfaced as a conflict (§3) —
  * the OO rule that a class has one implementation per interface method.
  */
-export function foldFilModelsRegister(
-  payloads: Iterable<unknown>,
-): FilModelsRegister {
+export function foldFilModelsRegister(payloads: Iterable<unknown>): FilModelsRegister {
   const byKey = new Map<string, FilModelRegistryRow>();
   const ownersByFacetVersion = new Map<string, Map<string, Set<string>>>();
 

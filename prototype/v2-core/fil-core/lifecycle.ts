@@ -19,7 +19,12 @@
 
 import { z } from "zod";
 import type { Instant } from "./primitives";
-import { type FilInstanceUrn, filInstanceUrnSchema, type FilTypeUrn, filTypeUrnSchema } from "./urn";
+import {
+  type FilInstanceUrn,
+  type FilTypeUrn,
+  filInstanceUrnSchema,
+  filTypeUrnSchema,
+} from "./urn";
 
 /**
  * The canonical lifecycle stages (W9 §3.3). A FIL type's lifecycle is a state

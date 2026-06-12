@@ -25,9 +25,9 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { z } from "zod";
-import { filFacetNameSchema } from "../fil-core/type-definition";
 import { filEventRefSchema } from "../fil-core/lifecycle";
 import { citationRefSchema, methodologyHashSchema } from "../fil-core/primitives";
+import { filFacetNameSchema } from "../fil-core/type-definition";
 import { filScopePatternSchema, filVersionSchema } from "../fil-core/urn";
 
 /** The "requires" clause (FIL Framework §2): facets + reference data + posture. */

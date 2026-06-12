@@ -30,11 +30,11 @@
 
 import { z } from "zod";
 import {
+  FIL_ASSET_CLASSES,
   type FamilyPath,
   type FilAssetClass,
-  FIL_ASSET_CLASSES,
-  familyPathSchema,
   type TypeSlug,
+  familyPathSchema,
   typeSlugSchema,
 } from "./taxonomy";
 
@@ -84,7 +84,7 @@ const ASSET_CLASS_ALT = FIL_ASSET_CLASSES.join("|");
 // segment before `@` is the type slug, the segment(s) between asset class and
 // type slug are the family path.
 const TYPE_URN_RE = new RegExp(
-  `^fil:type:(${ASSET_CLASS_ALT}):([a-z0-9][a-z0-9.-]*):([a-z0-9](?:-[a-z0-9]+)*)@(\\d+)\\.(\\d+)$`,
+  `^fil:type:(${ASSET_CLASS_ALT}):([a-z0-9][a-z0-9.-]*):([a-z0-9]+(?:-[a-z0-9]+)*)@(\\d+)\\.(\\d+)$`,
 );
 
 export function parseTypeUrn(urn: string): FilTypeUrnParts {
