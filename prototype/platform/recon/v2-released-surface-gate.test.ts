@@ -58,12 +58,7 @@ const CLEAN_MANIFEST: SurfaceManifest = {
     ],
   },
   C: {
-    exports: [
-      "fil-core/primitives",
-      "fil-core/taxonomy",
-      "fil-core/urn",
-      "fil-facets/facets",
-    ],
+    exports: ["fil-core/primitives", "fil-core/taxonomy", "fil-core/urn", "fil-facets/facets"],
   },
 };
 
@@ -74,7 +69,11 @@ const CLEAN_MANIFEST: SurfaceManifest = {
 describe("parseIndexExports", () => {
   it("parses @tier C annotation and token correctly", () => {
     const src = `/** @tier C — available to all tiers */\nexport * from "./fil-core/primitives";\n`;
-    const [entry] = parseIndexExports(src);
+    const entries = parseIndexExports(src);
+    expect(entries).toHaveLength(1);
+    const entry = entries[0];
+    expect(entry).toBeDefined();
+    if (!entry) return;
     expect(entry.relPath).toBe("./fil-core/primitives");
     expect(entry.token).toBe("fil-core/primitives");
     expect(entry.tier).toBe("C");
@@ -82,14 +81,20 @@ describe("parseIndexExports", () => {
 
   it("parses @tier K annotation correctly", () => {
     const src = `/** @tier K — anchor-bank-internal only */\nexport * from "./control-plane/internal";\n`;
-    const [entry] = parseIndexExports(src);
+    const entries = parseIndexExports(src);
+    const entry = entries[0];
+    expect(entry).toBeDefined();
+    if (!entry) return;
     expect(entry.tier).toBe("K");
     expect(entry.token).toBe("control-plane/internal");
   });
 
   it("parses @tier R annotation correctly", () => {
     const src = `/** @tier R — regulated-tenant surface */\nexport * from "./fil-core/composition";\n`;
-    const [entry] = parseIndexExports(src);
+    const entries = parseIndexExports(src);
+    const entry = entries[0];
+    expect(entry).toBeDefined();
+    if (!entry) return;
     expect(entry.tier).toBe("R");
     expect(entry.token).toBe("fil-core/composition");
   });
@@ -97,7 +102,10 @@ describe("parseIndexExports", () => {
   it("produces token 'fil-facets/facets' for ./fil-facets/facets export", () => {
     // Token is simply relPath with "./" stripped — no further normalisation.
     const src = `/** @tier C */\nexport * from "./fil-facets/facets";\n`;
-    const [entry] = parseIndexExports(src);
+    const entries = parseIndexExports(src);
+    const entry = entries[0];
+    expect(entry).toBeDefined();
+    if (!entry) return;
     expect(entry.token).toBe("fil-facets/facets");
   });
 
@@ -107,12 +115,17 @@ describe("parseIndexExports", () => {
     const src = `/** @tier C */\nexport * from "./fil-core/primitives";\n\nexport * from "./fil-core/taxonomy";\n`;
     const entries = parseIndexExports(src);
     expect(entries).toHaveLength(2);
-    expect(entries[0].tier).toBe("C");
-    expect(entries[1].tier).toBeNull(); // no annotation on the second export
+    const first = entries[0];
+    const second = entries[1];
+    expect(first).toBeDefined();
+    expect(second).toBeDefined();
+    if (!first || !second) return;
+    expect(first.tier).toBe("C");
+    expect(second.tier).toBeNull(); // no annotation on the second export
   });
 
   it("ignores non-export lines", () => {
-    const src = `// just a comment\nconst x = 1;\n`;
+    const src = "// just a comment\nconst x = 1;\n";
     const entries = parseIndexExports(src);
     expect(entries).toHaveLength(0);
   });
@@ -151,9 +164,9 @@ describe("runGate — synthetic violation: K-internal export in R surface", () =
     const { violations } = runGate(exports, violatingManifest);
     const tierLeak = violations.filter((v) => v.message.includes("K-internal"));
     expect(tierLeak.length).toBeGreaterThan(0);
-    expect(tierLeak[0].severity).toBe("fail");
-    expect(tierLeak[0].message).toContain("control-plane/internal");
-    expect(tierLeak[0].message).toContain("R-tier surface");
+    expect(tierLeak[0]?.severity).toBe("fail");
+    expect(tierLeak[0]?.message).toContain("control-plane/internal");
+    expect(tierLeak[0]?.message).toContain("R-tier surface");
   });
 
   it("FAILS when a @tier K export appears in the C-tier manifest", () => {
@@ -183,8 +196,8 @@ describe("runGate — unannotated export", () => {
     const { violations } = runGate(exports, CLEAN_MANIFEST);
     const unannotated = violations.filter((v) => v.message.includes("no @tier annotation"));
     expect(unannotated.length).toBeGreaterThan(0);
-    expect(unannotated[0].severity).toBe("fail");
-    expect(unannotated[0].message).toContain("fil-core/taxonomy");
+    expect(unannotated[0]?.severity).toBe("fail");
+    expect(unannotated[0]?.message).toContain("fil-core/taxonomy");
   });
 });
 

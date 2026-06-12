@@ -19,7 +19,7 @@
 // test (`v2-released-surface-gate.test.ts`) constructs both a clean and a
 // violating manifest to prove the gate works.
 //
-// Token convention: tokens in RELEASED_SURFACE match the relative path in
+// TOKEN CONVENTION: tokens in RELEASED_SURFACE match the relative path in
 // `v2-core/index.ts` after stripping the leading `./`.
 //   "./fil-core/primitives"    → "fil-core/primitives"
 //   "./fil-facets/facets"      → "fil-facets/facets"
@@ -79,60 +79,54 @@ export function parseIndexExports(src: string): ParsedExport[] {
   const result: ParsedExport[] = [];
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+    const line = lines[i] ?? "";
     // Match: `export * from "./some/path";` (with optional semicolon)
     const exportMatch = line.match(/^\s*export\s+\*\s+from\s+["'](\.[^"']+)["']/);
     if (!exportMatch) continue;
 
-    const relPath = exportMatch[1];
+    const relPath = exportMatch[1] ?? "";
+    if (!relPath) continue;
+
     // Token: strip the leading "./" from the relative path.
     const token = relPath.replace(/^\.\//, "");
 
     // Scan backwards for a `@tier` tag in the JSDoc immediately above.
-    // Rules: scan up to 8 lines back; stop if we hit a non-comment non-blank
-    // line that is not part of the JSDoc block (e.g. another export statement
-    // or a non-comment code line), but continue through blank lines ONLY if
-    // we have not yet left the comment block.
+    // Rules:
+    //   - Skip one blank separator line (the gap between comment and export).
+    //   - Once inside a comment block, an empty line ends the block.
+    //   - Stop if we hit an export line (we've gone past the owning JSDoc).
+    //   - Stop if we hit a non-comment, non-blank line.
     let tier: TierLabel | null = null;
     let inCommentBlock = false;
     for (let j = i - 1; j >= 0 && j >= i - 8; j--) {
-      const prev = lines[j].trim();
+      const prev = (lines[j] ?? "").trim();
 
-      // A line that starts an export means we've gone past the JSDoc.
+      // An export line means we've scanned past this export's owning JSDoc.
       if (prev.startsWith("export ") || prev.startsWith("export*")) break;
 
-      // Empty line: if we haven't entered a comment block yet, it's the gap
-      // between this export and any comment above — skip it. If we're inside
-      // a comment block that ends with `*/`, we'd have broken already.
       if (prev === "") {
-        // If we already found we're inside a JSDoc block, an empty line ends it.
+        // If we're already inside a comment block, empty line ends the block.
         if (inCommentBlock) break;
-        // Otherwise skip the blank separator line and keep looking.
+        // Otherwise it's the blank separator — skip and keep looking.
         continue;
       }
 
-      // Detect JSDoc comment lines.
-      if (
-        prev.startsWith("/**") ||
-        prev.startsWith("*") ||
-        prev.startsWith("//")
-      ) {
+      // Comment lines: /** ... */, * ..., // ...
+      if (prev.startsWith("/**") || prev.startsWith("*") || prev.startsWith("//")) {
         inCommentBlock = true;
         const tierMatch = prev.match(/@tier\s+([KRC](?:\s*\|\s*[KRC])*)/);
         if (tierMatch) {
           // Take the first tier listed as the authoritative annotation.
-          const tiers = tierMatch[1].split(/\s*\|\s*/) as TierLabel[];
-          tier = tiers[0] as TierLabel;
+          const rawTier = (tierMatch[1] ?? "").split(/\s*\|\s*/)[0];
+          if (rawTier === "K" || rawTier === "R" || rawTier === "C") {
+            tier = rawTier;
+          }
           break;
-        }
-        // End of JSDoc block (`/**` on a single line opens it, `*/` closes it).
-        if (prev.endsWith("*/")) {
-          // Keep scanning into the block.
         }
         continue;
       }
 
-      // Any other non-blank, non-comment line means we've left the comment context.
+      // Non-blank, non-comment, non-export line: outside comment context.
       break;
     }
 

@@ -51,7 +51,8 @@ export const RELEASED_SURFACE = {
     kOnlyExports: [] as string[],
   },
   R: {
-    description: "Regulated tenant — FIL-mediated surface + control-plane subscription + posture-read",
+    description:
+      "Regulated tenant — FIL-mediated surface + control-plane subscription + posture-read",
     // Tokens: relPath with leading "./" stripped (see token convention above).
     exports: [
       // FIL-Core kernel (full kernel access for regulated tenants)
