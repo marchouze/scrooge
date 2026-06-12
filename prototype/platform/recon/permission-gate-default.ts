@@ -278,6 +278,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // access path. T-01 carve-out.
   // Citation: D-CRO-GAP-SECTION-DERIVE-FROM-STORE, P4-SECURITY-DESIGNED-IN.
   "runtime/agents/helena-risk-appetite-watch.test.ts",
+  // IRRBB ΔEVE projection unit test — co-located per-module test convention.
+  // Raw EventStore(":memory:") is a build-phase fixture seeding IRRBBChecked
+  // events for the RAS §B4 supervisory-outlier fold, not a production access
+  // path. T-01 carve-out.
+  // Citation: D-IRRBB-DELTA-EVE-OUTLIER-MEASUREMENT, P4-SECURITY-DESIGNED-IN.
+  "platform/projections/irrbb-delta-eve.test.ts",
   // Bank-obligation projection unit test — co-located per-module test
   // convention. Raw EventStore is a build-phase test fixture for the
   // obligation-lifecycle fold, not a production access path. T-01 carve-out.

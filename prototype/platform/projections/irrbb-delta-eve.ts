@@ -123,10 +123,11 @@ export function getIrrbbDeltaEveMetric(store: EventStore): IrrbbDeltaEveMetric {
   if (latestAsOf === null) {
     return {
       status: "no-checks",
-      note:
-        "No IRRBBChecked EVE events in the store — Ravi (Treasury and ALM engineer, engineering)'s ALM run has not ticked on this bench. " +
-        "First run seeds the BCBS d365 §A-3.4 supervisory-outlier measurement. " +
+      note: [
+        "No IRRBBChecked EVE events in the store — Ravi (Treasury and ALM engineer, engineering)'s ALM run has not ticked on this bench.",
+        "First run seeds the BCBS d365 §A-3.4 supervisory-outlier measurement.",
         `RAS §B4 thresholds: ${thresholdsPrinted}.`,
+      ].join(" "),
     };
   }
 
@@ -139,10 +140,11 @@ export function getIrrbbDeltaEveMetric(store: EventStore): IrrbbDeltaEveMetric {
     worstShockLabel,
     latestCheckAsOf: latestAsOf,
     scenarioCount,
-    note:
-      `IRRBB ΔEVE supervisory-outlier test: worst-case |ΔEVE| = ${maxAbsDeltaPct.toFixed(2)}% of Tier-1 ` +
-      `(worst shock: ${worstShockLabel}; ${scenarioCount} BCBS d365 scenario(s); latest ALM run as-of ${latestAsOf}). ` +
-      `RAS §B4 thresholds: ${thresholdsPrinted}. ` +
+    note: [
+      `IRRBB ΔEVE supervisory-outlier test: worst-case |ΔEVE| = ${maxAbsDeltaPct.toFixed(2)}% of Tier-1`,
+      `(worst shock: ${worstShockLabel}; ${scenarioCount} BCBS d365 scenario(s); latest ALM run as-of ${latestAsOf}).`,
+      `RAS §B4 thresholds: ${thresholdsPrinted}.`,
       "Source: Ravi (Treasury and ALM engineer, engineering)'s ALM run IRRBBChecked events of record (BCBS d365 §A-3.4).",
+    ].join(" "),
   };
 }

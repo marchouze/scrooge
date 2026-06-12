@@ -35,7 +35,11 @@ import {
   formatThresholds,
   requireRasAppetiteLine,
 } from "../../platform/risk/ras-appetite-register";
-import { type AppetiteSnapshot, buildSubstrateGapLines } from "./helena-risk-appetite-watch";
+import {
+  type AppetiteSnapshot,
+  buildSubstrateGapLines,
+  buildUnmeasuredEscalationContent,
+} from "./helena-risk-appetite-watch";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const ASOF = "2026-06-08T08:00:00.000Z";
@@ -152,6 +156,52 @@ describe("helena-risk-appetite-watch — substrate gaps derived from store (D-CR
     const gaps = buildSubstrateGapLines(store, ASOF, measuredSnap).join("\n");
 
     expect(gaps).not.toContain("**Measurement substrate**");
+  });
+});
+
+// The unmeasured-lines escalation derives its options/blockedBy from the
+// LIVE unmeasured-line list — never hardcoded prose. Before
+// D-IRRBB-DELTA-EVE-OUTLIER-MEASUREMENT (CEO-approved 2026-06-12) the
+// options were frozen on RAS §B6 (cyber, Senna) and §B7 (model-tier) — both
+// long since measured — while the `question` derived live: the same
+// split-brain defect class as D-CRO-GAP-SECTION-DERIVE-FROM-STORE (PR #1087).
+describe("helena-risk-appetite-watch — escalation options derived from live unmeasured lines (D-IRRBB-DELTA-EVE-OUTLIER-MEASUREMENT)", () => {
+  it("one dispatch option per actual unmeasured line (id + RAS section + owner) plus a defer option", () => {
+    const b4 = requireRasAppetiteLine("appetite:irrbb:delta-eve-outlier");
+    const tcf = requireRasAppetiteLine("appetite:conduct:tcf");
+    const { options, blockedBy } = buildUnmeasuredEscalationContent([{ line: b4 }, { line: tcf }]);
+
+    expect(options).toHaveLength(3); // 2 dispatch options + 1 defer
+    expect(options[0]).toContain("appetite:irrbb:delta-eve-outlier");
+    expect(options[0]).toContain("RAS §B4");
+    expect(options[0]).toContain(b4.measurementOwner);
+    expect(options[1]).toContain("appetite:conduct:tcf");
+    expect(options[2]).toContain("Defer to M1 milestone");
+
+    expect(blockedBy).toContain("appetite:irrbb:delta-eve-outlier");
+    expect(blockedBy).toContain("appetite:conduct:tcf");
+    expect(blockedBy).toContain(b4.measurementOwner);
+  });
+
+  it("no stale §B6/§B7 prose: options never mention lines that are not in the unmeasured list", () => {
+    const b4 = requireRasAppetiteLine("appetite:irrbb:delta-eve-outlier");
+    const { options, blockedBy } = buildUnmeasuredEscalationContent([{ line: b4 }]);
+    const all = [...options, blockedBy].join("\n");
+    // The pre-fix hardcoded options referenced cyber (§B6) and model-tier (§B7).
+    expect(all).not.toContain("cyber");
+    expect(all).not.toContain("model-tier");
+    expect(all).not.toContain("RAS §B6");
+    expect(all).not.toContain("RAS §B7");
+  });
+
+  it("the handler source no longer hardcodes the stale §B6/§B7 dispatch options", () => {
+    const src = readFileSync(new URL("./helena-risk-appetite-watch.ts", import.meta.url), "utf8");
+    expect(src).not.toContain(
+      "Dispatch Senna + Atlas to build cyber-incident severity measurement substrate",
+    );
+    expect(src).not.toContain(
+      "Dispatch independent validation function + Atlas to build model-tier discipline measurement substrate",
+    );
   });
 });
 

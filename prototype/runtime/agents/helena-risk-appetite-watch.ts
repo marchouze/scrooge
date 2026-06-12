@@ -111,6 +111,32 @@ interface LineState {
   readonly note: string;
 }
 
+/**
+ * Derive the unmeasured-lines escalation `options` + `blockedBy` from the
+ * LIVE unmeasured-line list — one dispatch option per unmeasured line (line
+ * id, RAS section, measurement owner) plus a defer option. NEVER hardcoded:
+ * before D-IRRBB-DELTA-EVE-OUTLIER-MEASUREMENT (2026-06-12) these strings
+ * were frozen on RAS §B6 (cyber, Senna) and §B7 (model-tier) — lines that
+ * had long since been measured — while the escalation `question` derived
+ * live. Same split-brain defect class as
+ * D-CRO-GAP-SECTION-DERIVE-FROM-STORE (PR #1087).
+ */
+export function buildUnmeasuredEscalationContent(
+  unmeasuredLines: readonly { line: AppetiteLine }[],
+): { options: string[]; blockedBy: string } {
+  const options = [
+    ...unmeasuredLines.map(
+      (s) =>
+        `Dispatch ${s.line.measurementOwner} to build the ${s.line.id} measurement substrate (${s.line.rasSection})`,
+    ),
+    "Defer to M1 milestone (accept substrate gap; record in §16)",
+  ];
+  const blockedBy = `Engineering build work required. Scrooge to dispatch: ${unmeasuredLines
+    .map((s) => `${s.line.measurementOwner} for ${s.line.rasSection} (${s.line.id})`)
+    .join("; ")}.`;
+  return { options, blockedBy };
+}
+
 interface BreachCounts {
   readonly openBreaches: number;
   readonly disposedBreaches: number;
@@ -912,16 +938,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
         const unmeasuredLineIds = unmeasuredLines
           .map((s) => `${s.line.id} (${s.line.rasSection}, owner: ${s.line.measurementOwner})`)
           .join("; ");
-        const options = [
-          ...unmeasuredLines.map(
-            (s) =>
-              `Dispatch ${s.line.measurementOwner} to build the ${s.line.id} measurement substrate (${s.line.rasSection})`,
-          ),
-          "Defer to M1 milestone (accept substrate gap; record in §16)",
-        ];
-        const blockedBy = `Engineering build work required. Scrooge to dispatch: ${unmeasuredLines
-          .map((s) => `${s.line.measurementOwner} for ${s.line.rasSection} (${s.line.id})`)
-          .join("; ")}.`;
+        const { options, blockedBy } = buildUnmeasuredEscalationContent(unmeasuredLines);
         eventStore.append(
           makeAgentEscalation({
             asOf: ctx.asOf,
