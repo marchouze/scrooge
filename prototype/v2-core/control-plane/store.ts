@@ -21,10 +21,10 @@
 // Brief: brief:atlas:v2-s1-control-plane-store-tenant-registry-fleet-:2026-06-12
 // Author: Atlas (Substrate Architect, engineering).
 
+import { randomUUID } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
-import { randomUUID } from "node:crypto";
 
 import { Database } from "bun:sqlite";
 

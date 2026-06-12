@@ -61,9 +61,12 @@ export interface TenantRegisteredPayload {
 
 export const tenantRegisteredPayloadSchema = z
   .object({
-    tenantId: z.string().min(1).regex(/^tenant:/, {
-      message: "tenantId must start with 'tenant:' (e.g. 'tenant:za-bank')",
-    }),
+    tenantId: z
+      .string()
+      .min(1)
+      .regex(/^tenant:/, {
+        message: "tenantId must start with 'tenant:' (e.g. 'tenant:za-bank')",
+      }),
     tier: tenantTierSchema,
     displayName: z.string().min(1),
     legalEntityRef: z.string().min(1),

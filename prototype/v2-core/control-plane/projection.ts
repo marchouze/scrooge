@@ -159,7 +159,7 @@ export class ControlPlaneProjection {
   private applyEvent(event: CpEvent): void {
     switch (event.type) {
       case TENANT_REGISTERED: {
-        const p = event.payload as TenantRegisteredPayload;
+        const p = event.payload as unknown as TenantRegisteredPayload;
         this.tenants.set(p.tenantId, {
           tenantId: p.tenantId,
           tier: p.tier,
@@ -173,7 +173,7 @@ export class ControlPlaneProjection {
       }
 
       case TENANT_SURFACE_GRANTED: {
-        const p = event.payload as TenantSurfaceGrantedPayload;
+        const p = event.payload as unknown as TenantSurfaceGrantedPayload;
         const state = this.tenants.get(p.tenantId);
         if (state) {
           state.surfaceVersion = p.surfaceVersion;
@@ -182,7 +182,7 @@ export class ControlPlaneProjection {
       }
 
       case TENANT_UPGRADE_LEDGER_ENTRY: {
-        const p = event.payload as TenantUpgradeLedgerEntryPayload;
+        const p = event.payload as unknown as TenantUpgradeLedgerEntryPayload;
         const state = this.tenants.get(p.tenantId);
         if (state) {
           state.platformVersion = p.toVersion;
@@ -191,7 +191,7 @@ export class ControlPlaneProjection {
       }
 
       case TENANT_METER_EVENT: {
-        const p = event.payload as TenantMeterEventPayload;
+        const p = event.payload as unknown as TenantMeterEventPayload;
         const key = meterKey(p.tenantId, p.metricKey, p.windowStart, p.windowEnd);
         const existing = this.metering.get(key);
         if (existing) {

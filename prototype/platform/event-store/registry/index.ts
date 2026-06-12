@@ -225,6 +225,10 @@ export { CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY } from "./correspondent-s
 // Emitted ONLY into `BANK_V2_ANCHOR_DB`; never touch the v1 canonical store.
 // Authority: D-V2-BBAAS-BLUEPRINT-SYNTHESIS; D-MODEL-BINDING-CONTRACT-V1.
 export { V2_BANKING_EVENT_TYPES_REGISTRY } from "./v2-banking";
+// WS-V2-BBAAS S1 — control-plane fleet metadata events.
+// TenantRegistered, TenantSurfaceGranted, TenantUpgradeLedgerEntry, TenantMeterEvent.
+// Authority: D-V2-TENANCY-ARCHITECTURE (Option C); D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
+export { V2_CONTROL_PLANE_EVENT_TYPES } from "./v2-control-plane";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -311,6 +315,7 @@ import { SETTLEMENT_EVENT_TYPES_REGISTRY } from "./settlement";
 import { SLA_APPROVAL_EVENT_TYPES_REGISTRY } from "./sla-approval";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
 import { V2_BANKING_EVENT_TYPES_REGISTRY } from "./v2-banking";
+import { V2_CONTROL_PLANE_EVENT_TYPES } from "./v2-control-plane";
 import { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
 import { VALUATION_ADJUSTMENT_EVENT_TYPES_REGISTRY } from "./valuation-adjustment";
 
@@ -529,6 +534,10 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Emitted ONLY into BANK_V2_ANCHOR_DB; never touch the v1 canonical store.
   // Authority: D-V2-BBAAS-BLUEPRINT-SYNTHESIS; D-MODEL-BINDING-CONTRACT-V1.
   ...V2_BANKING_EVENT_TYPES_REGISTRY,
+  // WS-V2-BBAAS S1 — control-plane fleet metadata events.
+  // TenantRegistered, TenantSurfaceGranted, TenantUpgradeLedgerEntry, TenantMeterEvent.
+  // Authority: D-V2-TENANCY-ARCHITECTURE (Option C); D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
+  ...V2_CONTROL_PLANE_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(
