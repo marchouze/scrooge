@@ -1598,6 +1598,13 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
       "Launches the multi-session BBaaS structural analysis. Meta-decision about the backbone-as-product itself.",
   },
   {
+    decisionId: "D-V2-BBAAS-BLUEPRINT-SYNTHESIS",
+    class: "foundational",
+    rationale:
+      "Capstone synthesis decision folding the eight analysis workstreams into the v2 backbone blueprint and build plan. Meta-decision about the backbone-as-product itself.",
+    citations: ["D-V2-BBAAS-ANALYSIS-LAUNCH"],
+  },
+  {
     decisionId: "D-V2-BBAAS-W1-DECISION-DISTILLATION",
     class: "foundational",
     rationale:
@@ -1640,10 +1647,10 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
 ];
 
 /** Snapshot count of approved decisionIds covered at authoring time. */
-export const DECISION_CLASSIFICATION_COUNT = 261;
+export const DECISION_CLASSIFICATION_COUNT = 262;
 
 export const DECISION_CLASSIFICATION_COUNTS = {
-  foundational: 94,
+  foundational: 95,
   directional: 142,
   obsolete: 25,
 } as const;
