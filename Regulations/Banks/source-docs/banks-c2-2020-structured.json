@@ -49,6 +49,21 @@
               "text": "This circular remains effective as confirmed in Banks Act Circular 1 of the relevant year.",
               "verbatim": true
             }
+          ],
+          "pages": "1–2",
+          "footnotes": [
+            {
+              "marker": "1",
+              "text": "Available online at Guidance Note 4 of 2016"
+            },
+            {
+              "marker": "2",
+              "text": "Available online at Guidance for Supervisors on Market-Based Indicators of Liquidity"
+            },
+            {
+              "marker": "3",
+              "text": "Available online at Basel III Liquidity Coverage Ratio framework"
+            }
           ]
         },
         {
@@ -70,7 +85,8 @@
               "text": "Institutions are required to ensure compliance with the requirements set out herein.",
               "verbatim": true
             }
-          ]
+          ],
+          "pages": "2"
         },
         {
           "id": "s-banks-c2-2020-3",
@@ -85,7 +101,8 @@
               "text": "Kindly ensure that a copy of this circular is made available to your institution's auditors. The attached acknowledgement of receipt, duly completed and signed by both the Chief Executive Officer of the institution and the said auditors, must be returned to the PA at the earliest convenience of the aforementioned signatories.",
               "verbatim": true
             }
-          ]
+          ],
+          "pages": "2–3"
         }
       ]
     }
