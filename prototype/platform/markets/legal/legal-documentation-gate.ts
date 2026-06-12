@@ -75,12 +75,13 @@ export function checkLegalDocumentationOfRecord(
   if (latest === null) {
     return {
       ok: false,
-      rejectionReason:
-        `legal-documentation: counterparty ${counterpartyId} has no signed trading master ` +
-        "agreement of record (ISDA Master or FX-bilateral; LegalDocumentationSigned) — " +
-        "a written trading-relationship agreement is required BEFORE any OTC derivative " +
-        "transaction (ORG-CS3-001, FSCA Conduct Standard 3/2018 §3; fail-closed, " +
+      rejectionReason: [
+        `legal-documentation: counterparty ${counterpartyId} has no signed trading master`,
+        "agreement of record (ISDA Master or FX-bilateral; LegalDocumentationSigned) —",
+        "a written trading-relationship agreement is required BEFORE any OTC derivative",
+        "transaction (ORG-CS3-001, FSCA Conduct Standard 3/2018 §3; fail-closed,",
         "D-FX-HELD-DIMS-SEAT-SWEEP)",
+      ].join(" "),
     };
   }
   return { ok: true, agreementType: latest.agreementType, signedDate: latest.signedDate };
