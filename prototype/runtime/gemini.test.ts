@@ -24,9 +24,9 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  if (savedKey === undefined) delete process.env.GEMINI_API_KEY;
+  if (savedKey === undefined) process.env.GEMINI_API_KEY = "";
   else process.env.GEMINI_API_KEY = savedKey;
-  if (savedModel === undefined) delete process.env.BANK_GEMINI_MODEL;
+  if (savedModel === undefined) process.env.BANK_GEMINI_MODEL = "";
   else process.env.BANK_GEMINI_MODEL = savedModel;
 });
 
@@ -39,7 +39,7 @@ function jsonResponse(body: unknown, status = 200): Response {
 
 describe("geminiAvailable", () => {
   it("reflects GEMINI_API_KEY presence", () => {
-    delete process.env.GEMINI_API_KEY;
+    process.env.GEMINI_API_KEY = "";
     expect(geminiAvailable()).toBe(false);
     process.env.GEMINI_API_KEY = "AIza-test";
     expect(geminiAvailable()).toBe(true);
@@ -63,7 +63,7 @@ describe("buildGeminiRequestBody", () => {
 
 describe("tryGenerateNarrativeGemini", () => {
   it("fails non-retryable when no key is set", async () => {
-    delete process.env.GEMINI_API_KEY;
+    process.env.GEMINI_API_KEY = "";
     const r = await tryGenerateNarrativeGemini(REQ);
     expect(r.ok).toBe(false);
     if (!r.ok) {
