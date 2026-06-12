@@ -15,6 +15,7 @@
     "file:atlas-dashboard-consolidation-proposal": "bun run scripts/file-atlas-dashboard-consolidation-proposal.ts",
     "file:scrooge-lra-66-1995-hr-source-map": "bun run scripts/file-scrooge-lra-66-1995-hr-source-map.ts",
     "file:atlas-v2-bbaas-initial-ideas-paper": "bun run scripts/file-atlas-v2-bbaas-initial-ideas-paper.ts",
+    "file:atlas-v2-bbaas-w3-tenancy-architecture": "bun run scripts/file-atlas-v2-bbaas-w3-tenancy-architecture.ts",
     "recon:sla-codegen-drift": "bun run platform/recon/sla-codegen-drift.ts",
     "recon:sla-rule-versioning": "bun run platform/recon/sla-rule-versioning.ts",
     "recon:sla-approval-workflow": "bun run platform/recon/sla-approval-workflow.ts",
