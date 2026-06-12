@@ -37,63 +37,171 @@
   "findings": [
     {
       "dimension": "grouping-coherence",
-      "obligationIds": ["ORG-PR(IV)-01","ORG-PR(IV)-02","ORG-PR(IV)-03","ORG-PR(IV)-04","ORG-PR(IV)-05","ORG-PR(IV)-06","ORG-PR(IV)-07","ORG-PR(IV)-08","ORG-PR(IV)-09","ORG-PR(IV)-10","ORG-PR(IV)-11","ORG-PR(IV)-12","ORG-PR(IV)-13","ORG-PR(IV)-13-GLOSS-DEPUTY-IO","ORG-PR(IV)-14","ORG-PR(IV)-15","ORG-PR(IV)-16","ORG-PR(IV)-17"],
+      "obligationIds": [
+        "ORG-PR(IV)-01",
+        "ORG-PR(IV)-02",
+        "ORG-PR(IV)-03",
+        "ORG-PR(IV)-04",
+        "ORG-PR(IV)-05",
+        "ORG-PR(IV)-06",
+        "ORG-PR(IV)-07",
+        "ORG-PR(IV)-08",
+        "ORG-PR(IV)-09",
+        "ORG-PR(IV)-10",
+        "ORG-PR(IV)-11",
+        "ORG-PR(IV)-12",
+        "ORG-PR(IV)-13",
+        "ORG-PR(IV)-13-GLOSS-DEPUTY-IO",
+        "ORG-PR(IV)-14",
+        "ORG-PR(IV)-15",
+        "ORG-PR(IV)-16",
+        "ORG-PR(IV)-17"
+      ],
       "verdict": "defect",
       "proposedAction": "Re-key the POPIA/PAIA privacy obligations off the PR (prudential) ID-scheme. They are data-protection obligations (Information Officer, lawful processing, DSAR, cross-border transfer, PAIA manual) and should sit under a privacy ID-scheme (e.g. ORG-PRIV-* or ORG-PI-*) consistent with deriveDomainLetter, which has no PR(IV) case and would default these to domain J. They are currently filed domain F. Either way the PR-prefix overloads the prudential family. Re-key in Phase 1 with replay-safe ObligationAdopted re-issue; do not break existing citation edges (linkage-safe approach: keep provision URNs, re-mint the obligation id).",
       "reason": "Heterogeneous ID-scheme: 18 privacy obligations nested inside the prudential PR family. deriveDomainLetter(platform/regulatory/obligation-linker.ts) has no PR(IV) branch, so these fall to the default domain bucket — a grouping break, not just cosmetic."
     },
     {
       "dimension": "grouping-coherence",
-      "obligationIds": ["__section__:Domain M — OTC Derivative Provider (FMA / FSCA / Joint Standards)","__section__:Domain O — Thin human layer obligations (D-THIN-HUMAN-LAYER-MINIMUM)"],
+      "obligationIds": [
+        "__section__:Domain M — OTC Derivative Provider (FMA / FSCA / Joint Standards)",
+        "__section__:Domain O — Thin human layer obligations (D-THIN-HUMAN-LAYER-MINIMUM)"
+      ],
       "verdict": "defect",
       "proposedAction": "Two register section-headers each span more than one domain letter (Domain M rows carry domain D, C and J; Domain O rows carry E, B and F). Reconcile the section-header to a single domain, or split the section so each row's `domain` field agrees with its section header. Phase 1: assert section→domain is a function (1:1) via a new recon check.",
       "reason": "Grouping incoherence: a section header is meant to be a single domain grouping, but rows under these two headers carry up to three different domain letters. Section-vs-domain disagreement defeats per-domain coverage rollups."
     },
     {
       "dimension": "grouping-coherence",
-      "obligationIds": ["ORG-BNK-CGPS-CONS","ORG-BNK-CYBER-CONS","ORG-BNK-ICAAP-CONS","ORG-BNK-ILAAP-CONS","ORG-BNK-RECOVERY-CONS"],
+      "obligationIds": [
+        "ORG-BNK-CGPS-CONS",
+        "ORG-BNK-CYBER-CONS",
+        "ORG-BNK-ICAAP-CONS",
+        "ORG-BNK-ILAAP-CONS",
+        "ORG-BNK-RECOVERY-CONS"
+      ],
       "verdict": "by-design",
       "proposedAction": "No action. Retain the -CONS suffix scheme for consolidated-basis meta-obligations.",
       "reason": "The ORG-*-CONS scheme deliberately distinguishes solo-basis obligations (ORG-PR-13 ICAAP) from their consolidated-basis counterpart (ORG-BNK-ICAAP-CONS, group perimeter). This is legitimate scope decomposition, not an ID-scheme defect."
     },
     {
       "dimension": "grouping-coherence",
-      "obligationIds": ["ORG-PA-049","ORG-PA-003","ORG-PA-033","ORG-PA-105","ORG-PA-133"],
+      "obligationIds": ["ORG-PA-049", "ORG-PA-003", "ORG-PA-033", "ORG-PA-105", "ORG-PA-133"],
       "verdict": "by-design",
       "proposedAction": "No action on the PA/PR domain split itself. PA-family (150 rows, directive-sourced) and PR-family (164 rows, framework/RAS-sourced) legitimately co-occupy domains A & F because they cite different source layers for related subject-matter. Textual overlap across the two families is low (single strong candidate: ORG-PA-049/ORG-PR-66, captured under duplication-fragmentation).",
       "reason": "PA vs PR domain assignment in Domains A & F is correct: the two families are complementary source layers (SARB PA directives vs Basel/RAS frameworks), not a mis-grouping. Verified by pairwise requirement-text comparison — only one true cross-family duplicate exists."
     },
     {
       "dimension": "source-referencing",
-      "obligationIds": ["ORG-PR(IV)-16","ORG-PR(IV)-17","ORG-PR-01","ORG-PR-02","ORG-PR-03","ORG-PR-05","ORG-PR-06","ORG-PR-07","ORG-PR-09","ORG-PR-12","ORG-PR-19","ORG-PR-22","ORG-PR-23","ORG-PR-24","ORG-PR-25"],
+      "obligationIds": [
+        "ORG-PR(IV)-16",
+        "ORG-PR(IV)-17",
+        "ORG-PR-01",
+        "ORG-PR-02",
+        "ORG-PR-03",
+        "ORG-PR-05",
+        "ORG-PR-06",
+        "ORG-PR-07",
+        "ORG-PR-09",
+        "ORG-PR-12",
+        "ORG-PR-19",
+        "ORG-PR-22",
+        "ORG-PR-23",
+        "ORG-PR-24",
+        "ORG-PR-25"
+      ],
       "verdict": "defect",
       "proposedAction": "Mint URNs in Phase 1 — each carries an enumerable SA provision. Proposed mints: ORG-PR(IV)-16/-17 → urn:reg:za:paia-2-2000:s51 / :requests; ORG-PR-02 → urn:reg:za:regs-relating-to-banks:reg38 (Pillar-2A); ORG-PR-06/-07 → urn:reg:za:regs-relating-to-banks:reg26 (LCR/NSFR); ORG-PR-12/-13/-14 → urn:reg:za:banks-act-94-1990 family (stress-testing / ICAAP / ILAAP); ORG-PR-22 → urn:reg:za:pa-guidance-note:gn1-2024; ORG-PR-24/-25 → urn:reg:za:regs-relating-to-banks:reg39 (op-risk / NPA). Reuse obligation-linker.normaliseCitationToSectionId + urn.ts schemas to derive the section; honour the no-fabrication rule (if the section number is not extractable, route to the deferred set, do not invent it).",
       "reason": "These 15 PR-family rows carry urn:'[TBD]' yet their citation already names a concrete SA instrument + section (Reg 26/38/39, PAIA s.51, Banks Act, PA Guidance Note). The provision exists and is mintable; leaving it [TBD] is a source-referencing gap, not an honest deferral."
     },
     {
       "dimension": "source-referencing",
-      "obligationIds": ["ORG-PR-04","ORG-PR-08","ORG-PR-10","ORG-PR-11","ORG-PR-15","ORG-PR-16","ORG-PR-17","ORG-PR-18","ORG-PR-20","ORG-PR-21","ORG-PR-26"],
+      "obligationIds": [
+        "ORG-PR-04",
+        "ORG-PR-08",
+        "ORG-PR-10",
+        "ORG-PR-11",
+        "ORG-PR-15",
+        "ORG-PR-16",
+        "ORG-PR-17",
+        "ORG-PR-18",
+        "ORG-PR-20",
+        "ORG-PR-21",
+        "ORG-PR-26"
+      ],
       "verdict": "by-design",
       "proposedAction": "Keep [TBD] / route to documented URN_TBD_ALLOWLIST. These cite only internal RAS/RAF (PR-04/-10/-20/-21) or a BCBS framework with no enumerable SA section (PR-08 BCBS 248, PR-11 BCBS d368, PR-15 BCBS 144, PR-16/-17/-18/-26 BCBS op-risk/resilience). No enumerable SA provision exists to mint against. Do NOT fabricate a provision — honest deferral is the chosen policy.",
       "reason": "These 11 of the 28 PR-family [TBD] rows have no citable SA provision (internal-policy or Basel-framework-only source). Deferral is correct."
     },
     {
       "dimension": "source-referencing",
-      "obligationIds": ["ORG-FX-FIN-01","ORG-FX-FIN-02","ORG-FX-FIN-03","ORG-FX-FIN-04","ORG-FX-FIN-05","ORG-FX-FIN-06","ORG-FX-FIN-07","ORG-FX-FIN-08","ORG-FX-FIN-09","ORG-FX-FIN-10","ORG-FX-FIN-11","ORG-FX-FIN-12","ORG-FX-FIN-13","ORG-FX-FIN-14","ORG-MK-09","ORG-MK-10","ORG-MK-11","ORG-MK-12","ORG-MK-13","ORG-MK-15","ORG-MK-16","ORG-PR-30","ORG-PR-35","ORG-PR-53"],
+      "obligationIds": [
+        "ORG-FX-FIN-01",
+        "ORG-FX-FIN-02",
+        "ORG-FX-FIN-03",
+        "ORG-FX-FIN-04",
+        "ORG-FX-FIN-05",
+        "ORG-FX-FIN-06",
+        "ORG-FX-FIN-07",
+        "ORG-FX-FIN-08",
+        "ORG-FX-FIN-09",
+        "ORG-FX-FIN-10",
+        "ORG-FX-FIN-11",
+        "ORG-FX-FIN-12",
+        "ORG-FX-FIN-13",
+        "ORG-FX-FIN-14",
+        "ORG-MK-09",
+        "ORG-MK-10",
+        "ORG-MK-11",
+        "ORG-MK-12",
+        "ORG-MK-13",
+        "ORG-MK-15",
+        "ORG-MK-16",
+        "ORG-PR-30",
+        "ORG-PR-35",
+        "ORG-PR-53"
+      ],
       "verdict": "by-design",
       "proposedAction": "Keep TBC. These TBC citations are gated on (a) GAP-SARB-PDF-OCR — the backing SARB directive PDFs are image-only scans (e.g. D1/2015 recovery plan, 4-page scanned doc) so precise § references are not extractable from repo source docs; or (b) external-counsel ratification at the licence-application gate. Resolve when OCR or counsel input lands; until then TBC is honest.",
       "reason": "OCR/counsel-gated. The TBC marker correctly records that the precise section cannot be cited from current repo source docs. Not a defect — a tracked, reasoned deferral."
     },
     {
       "dimension": "source-referencing",
-      "obligationIds": ["ORG-PR-27","ORG-PR-48","ORG-PR-51","ORG-PR-52","ORG-PR-54","ORG-PR-55","ORG-PR-56","ORG-PR-57","ORG-PR-58","ORG-PR-59","ORG-PR-60","ORG-PR-61","ORG-PR-62","ORG-PR-63","ORG-PR-64","ORG-PR-65","ORG-PR-66","ORG-FC-MLRO-ALTERNATE","ORG-FC-SANCTIONS-SCREENING","ORG-BNK-CGPS-CONS","ORG-BNK-CYBER-CONS","ORG-BNK-ICAAP-CONS","ORG-BNK-ILAAP-CONS","ORG-BNK-RECOVERY-CONS","ORG-GRP-PA-PARENT","ORG-EXCON-ODP-001"],
+      "obligationIds": [
+        "ORG-PR-27",
+        "ORG-PR-48",
+        "ORG-PR-51",
+        "ORG-PR-52",
+        "ORG-PR-54",
+        "ORG-PR-55",
+        "ORG-PR-56",
+        "ORG-PR-57",
+        "ORG-PR-58",
+        "ORG-PR-59",
+        "ORG-PR-60",
+        "ORG-PR-61",
+        "ORG-PR-62",
+        "ORG-PR-63",
+        "ORG-PR-64",
+        "ORG-PR-65",
+        "ORG-PR-66",
+        "ORG-FC-MLRO-ALTERNATE",
+        "ORG-FC-SANCTIONS-SCREENING",
+        "ORG-BNK-CGPS-CONS",
+        "ORG-BNK-CYBER-CONS",
+        "ORG-BNK-ICAAP-CONS",
+        "ORG-BNK-ILAAP-CONS",
+        "ORG-BNK-RECOVERY-CONS",
+        "ORG-GRP-PA-PARENT",
+        "ORG-EXCON-ODP-001"
+      ],
       "verdict": "by-design",
       "proposedAction": "Phase-1 triage each TBC against the GAP-SARB-PDF-OCR / counsel-gate criteria; resolve any that have since gained an extractable provision (the PR family showed a 1-row TBC drift since the grounded snapshot). Otherwise retain TBC. Do not fabricate.",
       "reason": "Remaining TBC rows across PR/FC/BNK/GRP/EXCON families: each is either OCR-gated or counsel-gated. Honest deferral; revisit when the gate clears."
     },
     {
       "dimension": "description-correctness",
-      "obligationIds": ["ORG-CS1-004","ORG-CS3-008","ORG-CS3-009"],
+      "obligationIds": ["ORG-CS1-004", "ORG-CS3-008", "ORG-CS3-009"],
       "verdict": "by-design",
       "proposedAction": "No action. These terse requirement strings ('IT and operational capacity demonstration.', 'Complaints handling.', 'Record-keeping ≥ 5 years; tamper-evident.') are intentional concise summaries, each backed by a populated urn:reg:za:cs-*-2018 URN — not truncation or pollution.",
       "reason": "Spot-check confirmed the terse internal-policy/conduct-standard rows are deliberate summaries with valid source URNs; description is correct, just concise."
@@ -107,28 +215,37 @@
     },
     {
       "dimension": "duplication-fragmentation",
-      "obligationIds": ["ORG-PR-30","ORG-PR-35","ORG-PR-53"],
+      "obligationIds": ["ORG-PR-30", "ORG-PR-35", "ORG-PR-53"],
       "verdict": "defect",
       "proposedAction": "Consolidate to a single D1/2015 solo-basis recovery-plan obligation. All three cite SARB PA Directive 1 of 2015 (recovery plan minimum requirements) with near-identical requirement text (board-approved recovery plan: trigger indicators, recovery options, resolution information pack). Keep one canonical row (recommend ORG-PR-53, broadest playbook framing), retire ORG-PR-35 as resolved-by-duplicate, and re-scope ORG-PR-30 to the consolidated/group dimension OR fold it into ORG-BNK-RECOVERY-CONS (which already holds the consolidated-basis recovery obligation). Linkage-safe: redirect any policy/edge citations from the retired ids to the survivor before retiring.",
       "reason": "Three rows are records of the same obligation. ORG-PR-35 and ORG-PR-53 are near-verbatim (same D1/2015, same board-approved recovery-plan requirement); ORG-PR-30 adds a consolidated-basis clause that ORG-BNK-RECOVERY-CONS already covers. Fragmentation, not legitimate atomic decomposition."
     },
     {
       "dimension": "duplication-fragmentation",
-      "obligationIds": ["ORG-PA-049","ORG-PR-66"],
+      "obligationIds": ["ORG-PA-049", "ORG-PR-66"],
       "verdict": "defect",
       "proposedAction": "Deduplicate. Both describe the same obligation — calculate the derivative exposure amount for the leverage ratio using SA-CCR (replacing CEM), per SARB PA Directive D7/2020 (Banks Act s.6(6)(a)). ORG-PA-049 carries the correct hard URN (urn:reg:za:banks-act-94-1990:s6.6a+directive:d7-2020); ORG-PR-66 carries only an internal urn:obligation:bank:prudential:* synthetic. Keep ORG-PA-049 (PA-family, properly sourced), retire ORG-PR-66 as resolved-by-duplicate, and redirect any ORG-PR-66 citation edges to ORG-PA-049 first.",
       "reason": "True cross-family duplicate (the single jaccard>=0.45 hit in the Domain A/F PA-vs-PR sweep): same Directive D7/2020 SA-CCR leverage obligation expressed twice. The PA-family row is the better-sourced survivor."
     },
     {
       "dimension": "duplication-fragmentation",
-      "obligationIds": ["ORG-PR-01","ORG-PR-03","ORG-PR-04"],
+      "obligationIds": ["ORG-PR-01", "ORG-PR-03", "ORG-PR-04"],
       "verdict": "by-design",
       "proposedAction": "No merge. ORG-PR-01 (maintain regulatory-minimum capital adequacy), ORG-PR-03 (hold conservation + countercyclical buffer), and ORG-PR-04 (internal CET1 management buffer +1.5pp above PA minima) are distinct, layered capital obligations (minimum / regulatory buffer / internal buffer). They look related but are legitimate atomic decomposition, evidenced by their separate equivalence-pair verdicts (PR-01↔rbc:20.2 equivalent; PR-01↔rbc:30.2 gold-plates; PR-03↔both).",
       "reason": "Related-but-distinct capital obligations. The equivalence-verdict spine treats them as separate nodes; collapsing them would lose the minimum-vs-buffer distinction. Not duplication."
     },
     {
       "dimension": "duplication-fragmentation",
-      "obligationIds": ["ORG-PR-01","ORG-PR-03","ORG-PR-RETURNS-007","ORG-PR-19","ORG-PR-06","ORG-PR-36","ORG-PR-07","ORG-PR-40"],
+      "obligationIds": [
+        "ORG-PR-01",
+        "ORG-PR-03",
+        "ORG-PR-RETURNS-007",
+        "ORG-PR-19",
+        "ORG-PR-06",
+        "ORG-PR-36",
+        "ORG-PR-07",
+        "ORG-PR-40"
+      ],
       "verdict": "by-design",
       "proposedAction": "Classify the 21 unclassified SA↔BCBS equivalence pairs using the verdicts already authored in scripts/author-obligation-equivalence-verdicts.ts (one ObligationEquivalenceClassified event per pair). Proposed verdicts (from that script): RBC capital minima (PR-01/PR-03 ↔ rbc:20.2) = equivalent; conservation buffer (PR-01/PR-03 ↔ rbc:30.2) = sa-stricter-gold-plates; CRE pairs (PR-RETURNS-007 ↔ cre:20.8/20.32/22.67) = equivalent; market risk (PR-19 ↔ mar:20.1) = materially-divergent, (PR-19 ↔ mar:33.1/32.18) = equivalent; LCR (PR-06/PR-36 ↔ lcr:20.5/30.43/40.1/40.77) = equivalent; NSFR (PR-07 ↔ nsf:20.2/30.1) = equivalent; large exposures (PR-40 ↔ lex:10.8) = equivalent. Run the one-off author script against the SHARED store (BANK_EVENT_DB=$HOME/.local/share/bank/event.db) in Phase 1; recon:obligation-divergence drives the unclassified count to zero.",
       "reason": "21 SA↔BCBS pairs are unclassified (22 already classified). Each already has a merits-based proposed verdict (priored on the basel-adoption.ts ADOPTION_EDGES adoptionType). Resolvable now — these are not duplicates but unclassified-equivalence gaps; classification is the Phase-1 action."
