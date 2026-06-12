@@ -24,40 +24,13 @@
 // `runtime/`, `domains/`, or the v1 alias prefixes. The v1-side registry wiring
 // (`platform/event-store/registry/v2-banking.ts`) imports FROM here, not vice-versa.
 //
-// AppliesToScope note: S3 (posture register) has not yet landed. Per the brief,
-// a minimal placeholder `AppliesToScope` is defined inline here; S3 will supersede
-// it. A substrate gap is noted below.
 //
 // Authority: D-V2-BBAAS-BLUEPRINT-SYNTHESIS; D-MODEL-BINDING-CONTRACT-V1.
 // Author: Bea (Financial Controller, accounting).
 
 import { z } from "zod";
 import { filScopePatternSchema } from "../fil-core/urn";
-
-// ---------------------------------------------------------------------------
-// AppliesToScope — placeholder until S3 (posture register) lands
-// ---------------------------------------------------------------------------
-
-/**
- * A scope selector that says which posture dimensions / product families / legal
- * entities a RAS line applies to. S3 will supply the production-grade shape;
- * this placeholder keeps S4 self-contained while maintaining the correct import
- * in the seed script.
- *
- * SUBSTRATE GAP: `AppliesToScope` will be superseded by the S3 posture-register
- * shape when that dispatch merges. Until then consumers should treat this as an
- * opaque tag.
- */
-export const appliesToScopeSchema = z.object({
-  /** e.g. "fil:type:fx:*", "fil:type:*", etc. */
-  filScope: filScopePatternSchema.optional(),
-  /** e.g. "LE-BANK-SA" — omit for bank-wide lines */
-  legalEntityId: z.string().min(1).optional(),
-  /** free-form note */
-  note: z.string().optional(),
-});
-
-export type AppliesToScope = z.infer<typeof appliesToScopeSchema>;
+import { appliesToScopeSchema } from "../posture/applies-when";
 
 // ---------------------------------------------------------------------------
 // V2ProductRegistered
@@ -189,7 +162,7 @@ export type V2AccountTypeRegistered = z.infer<typeof v2AccountTypeRegisteredSche
  * the v2 event is an anchor, not a re-derivation.
  *
  * `appliesToScope` links the line to the FIL taxonomy / posture dimensions it
- * governs (placeholder shape until S3 lands — see `AppliesToScope` note above).
+ * governs. Uses the production `AppliesToScope` discriminated union from S3 posture module.
  */
 export const v2RasThresholdSchema = z.discriminatedUnion("kind", [
   z.object({

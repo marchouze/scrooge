@@ -70,3 +70,9 @@ export * from "./control-plane/envelope";
 
 /** @tier K — anchor-bank standing-data events (product catalogue, CoA, RAS) */
 export * from "./banking/events";
+
+// --- Posture register (W8 Slice 1) -----------------------------------------
+
+/** @tier R — PostureRegistered / Activated / Deactivated / Revised event types; APPLIES_WHEN
+ * predicate; PostureRegister projection. Authority: D-W8-POSTURE-REGISTER-SLICE-1. */
+export * from "./posture";

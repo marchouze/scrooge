@@ -620,7 +620,7 @@ for (const line of RAS_APPETITE_LINES) {
     category: line.category,
     tier: line.tier,
     thresholds,
-    appliesToScope: { note: "bank-wide" },
+    appliesToScope: { kind: "always" },
     floorZarMinor: line.floorZar !== undefined ? line.floorZar * 100 : undefined,
     citations: [
       "D-V2-BBAAS-BLUEPRINT-SYNTHESIS",

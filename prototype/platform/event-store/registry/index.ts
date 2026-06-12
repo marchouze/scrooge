@@ -153,6 +153,10 @@ export { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillat
 // WS-V2-BBAAS S0 — FilModelImplementationDeclared (FIL-Models registry).
 // Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1.
 export { FIL_MODELS_EVENT_TYPES_REGISTRY } from "./fil-models";
+// WS-V2-BBAAS S3 — PostureRegistered/Activated/Deactivated/Revised.
+// Posture register event family (W8 Slice 1, structured-first).
+// Authority: D-W8-POSTURE-REGISTER-SLICE-1; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
+export { POSTURE_EVENT_TYPES_REGISTRY } from "./posture";
 // D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
 // events (Defined / Classified / Decomposed / Reconstituted).
 // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
@@ -290,6 +294,7 @@ import { ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY } from "./odp-umoja-uti";
 import { OPERATIONAL_RISK_EVENT_TYPES_REGISTRY } from "./operational-risk";
 import { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
 import { POLICY_ACTIVATION_EVENT_TYPES_REGISTRY } from "./policy-activation";
+import { POSTURE_EVENT_TYPES_REGISTRY } from "./posture";
 import { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
 import { REGULATORY_EVENT_TYPES } from "./regulatory";
 import { REGULATORY_PA_EVENT_TYPES_REGISTRY } from "./regulatory-pa";
@@ -452,6 +457,10 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // WS-V2-BBAAS S0 — FilModelImplementationDeclared (FIL-Models registry scaffold).
   // Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1.
   ...FIL_MODELS_EVENT_TYPES_REGISTRY,
+  // WS-V2-BBAAS S3 — PostureRegistered/Activated/Deactivated/Revised.
+  // Posture register (W8 Slice 1, structured-first).
+  // Authority: D-W8-POSTURE-REGISTER-SLICE-1; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
+  ...POSTURE_EVENT_TYPES_REGISTRY,
   // D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
   // events (Defined / Classified / Decomposed / Reconstituted).
   // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
