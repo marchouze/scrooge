@@ -263,6 +263,13 @@ export function saCcrExpectationId(nettingSetId: string): string {
  * is surfaced by the run summary, not falsely flagged as stale here; a flat
  * book raises no expectation at all — no live trades, no EAD required).
  *
+ * First-trade-today grace: a netting set with NO CcrEadComputed history whose
+ * trades all landed today (not yet live at today's 00:00 UTC) raises no
+ * expectation — the 19:00 UTC EOD run has not yet had a scheduled chance to
+ * compute it, so an intraday "absent" would be a false-positive high alert.
+ * From the next day on (or as soon as the first EAD lands) the netting set is
+ * fully covered.
+ *
  * Unlike the static manifest, this set is derived from the store at check
  * time, so a newly-traded counterparty is covered with no code change.
  * Closes tracked deferred gap `fx-sa-ccr-daily-cadence` (credit-risk
@@ -279,9 +286,24 @@ export function saCcrFxNettingSetExpectations(store: EventStore, asOf: string): 
   }
   if (registered.size === 0) return [];
 
+  // Netting sets with any EAD history — once computed at least once, the
+  // freshness window governs and no grace period applies.
+  const hasEadHistory = new Set<string>();
+  for (const ev of store.replay({ type: "CcrEadComputed", asOf })) {
+    const p = ev.payload as { nettingSetId?: string };
+    if (p.nettingSetId) hasEadHistory.add(p.nettingSetId);
+  }
+
+  // Netting sets already live at today's 00:00 UTC — these had a scheduled
+  // EOD chance before `asOf`, so an absent EAD is a genuine gap, not a
+  // first-trade-today grace case.
+  const dayStart = `${asOf.slice(0, 10)}T00:00:00.000Z`;
+  const liveAtDayStart = new Set(buildFxSaCcrTradeSummaries(store, dayStart).keys());
+
   const out: ExpectedEvent[] = [];
   for (const nettingSetId of buildFxSaCcrTradeSummaries(store, asOf).keys()) {
     if (!registered.has(nettingSetId)) continue;
+    if (!hasEadHistory.has(nettingSetId) && !liveAtDayStart.has(nettingSetId)) continue;
     out.push({
       id: saCcrExpectationId(nettingSetId),
       eventType: "CcrEadComputed",

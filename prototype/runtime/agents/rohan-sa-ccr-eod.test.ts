@@ -41,6 +41,9 @@ const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR = { type: "service" as const, id: "agent:test:sa-ccr-eod" };
 const CITES = ["D-FX-SA-CCR-BUILD-PHASE-ACTIVATION"];
 const AS_OF = "2026-06-12T19:00:00.000Z"; // Friday, post-MTM cadence slot
+// Booked the prior business day — live at AS_OF's 00:00 UTC, so the watchdog's
+// first-trade-today grace does NOT apply and an absent EAD is a genuine gap.
+const BOOKED_YESTERDAY = "2026-06-11T10:00:00.000Z";
 
 beforeEach(() => setDefaultProvenanceModeOverride("combined"));
 afterEach(() => setDefaultProvenanceModeOverride(undefined));
@@ -48,10 +51,10 @@ afterEach(() => setDefaultProvenanceModeOverride(undefined));
 /** SubstrateAlert alertId slug shape (mirror of substrateAlertPayloadSchema). */
 const ALERT_ID_RE = /^alert:[a-z]+:[a-z0-9-]+$/;
 
-function appendFxTrade(store: EventStore, tradeId: string, cp: string): void {
+function appendFxTrade(store: EventStore, tradeId: string, cp: string, asOf = AS_OF): void {
   store.append(
     makeFxTradeExecuted({
-      asOf: AS_OF,
+      asOf,
       entity: ENTITY,
       actor: ACTOR,
       citations: CITES,
@@ -176,9 +179,9 @@ describe("rohan:sa-ccr-eod — same-day double-run idempotency", () => {
 describe("sa-ccr staleness watchdog — per live netting set", () => {
   it("derives one freshness expectation per LIVE + REGISTERED netting set", () => {
     const store = new EventStore(":memory:");
-    appendFxTrade(store, "T-W-1", "CP-A"); // live + registered → expectation
+    appendFxTrade(store, "T-W-1", "CP-A", BOOKED_YESTERDAY); // live + registered → expectation
     registerNettingSet(store, "CP-A");
-    appendFxTrade(store, "T-W-2", "CP-B"); // live but UNregistered → none
+    appendFxTrade(store, "T-W-2", "CP-B", BOOKED_YESTERDAY); // live but UNregistered → none
     registerNettingSet(store, "CP-FLAT"); // registered but flat book → none
 
     const exps = saCcrFxNettingSetExpectations(store, AS_OF);
@@ -190,7 +193,7 @@ describe("sa-ccr staleness watchdog — per live netting set", () => {
 
   it("flags a missing EAD as an absent gap and a stale EAD as a stale gap; fresh is clean", () => {
     const store = new EventStore(":memory:");
-    appendFxTrade(store, "T-W-3", "CP-A");
+    appendFxTrade(store, "T-W-3", "CP-A", BOOKED_YESTERDAY);
     registerNettingSet(store, "CP-A");
     const expectationId = saCcrExpectationId("NS-CP-A-ZAR");
 
@@ -212,8 +215,8 @@ describe("sa-ccr staleness watchdog — per live netting set", () => {
 
   it("is scoped per netting set — one fresh EAD does not mask another set's staleness", () => {
     const store = new EventStore(":memory:");
-    appendFxTrade(store, "T-W-4", "CP-A");
-    appendFxTrade(store, "T-W-5", "CP-B");
+    appendFxTrade(store, "T-W-4", "CP-A", BOOKED_YESTERDAY);
+    appendFxTrade(store, "T-W-5", "CP-B", BOOKED_YESTERDAY);
     registerNettingSet(store, "CP-A");
     registerNettingSet(store, "CP-B");
     appendEad(store, "NS-CP-A-ZAR", "CP-A", AS_OF); // fresh
@@ -222,6 +225,28 @@ describe("sa-ccr staleness watchdog — per live netting set", () => {
     const gaps = checkExpectedEvents(store, AS_OF);
     expect(gaps.some((g) => g.id === saCcrExpectationId("NS-CP-B-ZAR"))).toBe(true);
     expect(gaps.some((g) => g.id === saCcrExpectationId("NS-CP-A-ZAR"))).toBe(false);
+    store.close();
+  });
+
+  it("grants a first-trade-today grace — no expectation before the EOD run has had a chance", () => {
+    const store = new EventStore(":memory:");
+    // First trade lands TODAY (intraday, before the 19:00 EOD slot) and the
+    // netting set has no EAD history → no expectation yet (an intraday
+    // "absent" would be a false-positive high alert).
+    appendFxTrade(store, "T-W-7", "CP-NEW", "2026-06-12T10:00:00.000Z");
+    registerNettingSet(store, "CP-NEW");
+    expect(saCcrFxNettingSetExpectations(store, "2026-06-12T12:00:00.000Z")).toEqual([]);
+
+    // The NEXT business day the grace has lapsed: the set was live at 00:00,
+    // so a still-missing EAD is a genuine absent gap.
+    const nextDay = saCcrFxNettingSetExpectations(store, "2026-06-15T12:00:00.000Z");
+    expect(nextDay.map((e) => e.id)).toEqual([saCcrExpectationId("NS-CP-NEW-ZAR")]);
+
+    // And once ANY EAD history exists, the freshness window governs even on
+    // the first day (no grace needed).
+    appendEad(store, "NS-CP-NEW-ZAR", "CP-NEW", "2026-06-12T11:00:00.000Z");
+    const withHistory = saCcrFxNettingSetExpectations(store, "2026-06-12T12:00:00.000Z");
+    expect(withHistory.map((e) => e.id)).toEqual([saCcrExpectationId("NS-CP-NEW-ZAR")]);
     store.close();
   });
 
