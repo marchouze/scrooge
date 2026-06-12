@@ -12,6 +12,7 @@ import rohanGoalLoop from "../rohan-goal-loop";
 import rohanMarketRiskLimitCheck from "../rohan-market-risk-limit-check";
 import rohanMarketRiskMeasure from "../rohan-market-risk-measure";
 import rohanRiskRun from "../rohan-risk-run";
+import rohanSaCcrEod from "../rohan-sa-ccr-eod";
 
 export const ROHAN_CALLABLES: Record<string, AgentRunHandler> = {
   "rohan:risk-run": rohanRiskRun,
@@ -23,4 +24,5 @@ export const ROHAN_CALLABLES: Record<string, AgentRunHandler> = {
   "rohan:conduct-surveillance-sweep": rohanConductSurveillanceSweep,
   "rohan:daily-mtm": rohanDailyMtm,
   "rohan:market-risk-measure": rohanMarketRiskMeasure,
+  "rohan:sa-ccr-eod": rohanSaCcrEod,
 };

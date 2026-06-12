@@ -35,6 +35,23 @@ export const ROHAN_HANDLER_METADATA: readonly HandlerMetadata[] = [
     cadenceHours: 24,
     cronExpression: "30 18 * * 1-5",
   }),
+  // Daily SA-CCR EOD (CcrEadComputed per live FX netting set).
+  // Cron: 19:00 UTC weekdays = AFTER the daily MTM (18:00 UTC) so resolveMtm
+  // reads today's FxPositionRevalued marks for replacement cost. Closes tracked
+  // deferred gap `fx-sa-ccr-daily-cadence` (credit-risk dimension of
+  // prd:bank:fx:otc-vanilla): the SA-CCR production driver ran only via the
+  // one-shot scripts/run-sa-ccr-fx-eod.ts and the EAD feeding CreditRWA could
+  // go stale. The staleness watchdog (per-netting-set `sa-ccr-fx-ead-*`
+  // expectations, maxAgeBusinessDays 1) raises a SubstrateAlert if a live
+  // netting set's EAD is older than one business day. Idempotent: one
+  // CcrEadComputed per (nettingSetId, computationDate).
+  // Authority: D-FX-HELD-DIMS-SEAT-SWEEP; D-FX-SA-CCR-BUILD-PHASE-ACTIVATION;
+  //            BCBS-SA-CCR-CRE52; D-CREDIT-LIMIT-ENGINE-BUILD Phase 5.
+  // Brief: brief:rohan:close-fx-sa-ccr-daily-cadence-sa-ccr-eod-schedul:2026-06-12.
+  entry("Rohan", "sa-ccr-eod", "scheduled", {
+    cadenceHours: 24,
+    cronExpression: "0 19 * * 1-5",
+  }),
   // rohan:goal-loop — daily 06:17 UTC; autonomous promotion (risk/treasury pilot),
   // placed after rohan:risk-run (03:43) so a same-day RiskRunCompleted exists.
   // Authority: D-AGENT-AUTONOMY-OPERATIONAL Slice 3; D-AGENT-AUTONOMY-RISK-TREASURY-PILOT.

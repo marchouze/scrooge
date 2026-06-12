@@ -28,6 +28,8 @@
 import { makeSubstrateAlert } from "../event-store/event-types/platform";
 import type { EventStore } from "../event-store/store";
 import type { Actor } from "../event-store/types";
+import { nettingSetIdFor } from "../markets/netting-sets";
+import { buildFxSaCcrTradeSummaries } from "../risk/sa-ccr/positions-to-summaries";
 import { CALC_BINDINGS } from "./calculation-binding";
 
 const PROGRAM = "D-TRUSTED-FIGURES-PROGRAM-V1";
@@ -233,6 +235,67 @@ export function expectedEvents(): ExpectedEvent[] {
   return [...calcBoundExpectations(), ...STANDALONE_EXPECTATIONS];
 }
 
+/**
+ * Stable, alertId-safe expectation id for a per-netting-set SA-CCR EAD
+ * expectation. Netting-set ids carry URN colons (`NS-urn:party:legal-entity:
+ * …-ZAR`), which the SubstrateAlert alertId slug (`^alert:[a-z]+:[a-z0-9-]+$`)
+ * forbids — lowercase and collapse every non-[a-z0-9] run to a single hyphen.
+ */
+export function saCcrExpectationId(nettingSetId: string): string {
+  const slug = nettingSetId
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return `sa-ccr-fx-ead-${slug}`;
+}
+
+/**
+ * STORE-DERIVED expectations — one per LIVE, REGISTERED FX netting set: a
+ * fresh `CcrEadComputed` (maxAgeBusinessDays 1) must exist for each, else
+ * Rohan's daily `rohan:sa-ccr-eod` scheduled run (cron `0 19 * * 1-5`) has not
+ * fired and the EAD feeding CreditRWA (rwa-from-positions,
+ * D-FX-CCR-INTERIM-CONSERVATIVE-RWA) is stale.
+ *
+ * "Live" = the netting set groups ≥1 live FX trade as-of `asOf` (same
+ * derivation the SA-CCR driver itself uses — `buildFxSaCcrTradeSummaries`).
+ * "Registered" = an `ISDACSAAssessmentCompleted` exists for the counterparty
+ * + currency pair, so the driver CAN compute it (an unregistered netting set
+ * is surfaced by the run summary, not falsely flagged as stale here; a flat
+ * book raises no expectation at all — no live trades, no EAD required).
+ *
+ * Unlike the static manifest, this set is derived from the store at check
+ * time, so a newly-traded counterparty is covered with no code change.
+ * Closes tracked deferred gap `fx-sa-ccr-daily-cadence` (credit-risk
+ * dimension, prd:bank:fx:otc-vanilla) together with the scheduled handler.
+ * Authority: D-FX-HELD-DIMS-SEAT-SWEEP; D-FX-SA-CCR-BUILD-PHASE-ACTIVATION.
+ */
+export function saCcrFxNettingSetExpectations(store: EventStore, asOf: string): ExpectedEvent[] {
+  // Registered netting sets — fold the ISDA/CSA assessment register.
+  const registered = new Set<string>();
+  for (const ev of store.replay({ type: "ISDACSAAssessmentCompleted", asOf })) {
+    const p = ev.payload as { counterpartyId?: string; currency?: string };
+    if (p.counterpartyId && p.currency)
+      registered.add(nettingSetIdFor(p.counterpartyId, p.currency));
+  }
+  if (registered.size === 0) return [];
+
+  const out: ExpectedEvent[] = [];
+  for (const nettingSetId of buildFxSaCcrTradeSummaries(store, asOf).keys()) {
+    if (!registered.has(nettingSetId)) continue;
+    out.push({
+      id: saCcrExpectationId(nettingSetId),
+      eventType: "CcrEadComputed",
+      matches: (p) => p.nettingSetId === nettingSetId,
+      label: `Daily SA-CCR EAD (${nettingSetId})`,
+      owningRole: "Rohan (Risk engineer, engineering)",
+      rationale: `the latest CcrEadComputed for live netting set ${nettingSetId} is missing or older than one business day — Rohan's daily rohan:sa-ccr-eod run has not fired, so the SA-CCR EAD feeding CreditRWA is stale for a netting set with live FX trades`,
+      citation: "D-FX-SA-CCR-BUILD-PHASE-ACTIVATION",
+      maxAgeBusinessDays: 1,
+    });
+  }
+  return out;
+}
+
 /** A declared expectation with no matching event in the store. */
 export interface ExpectedEventGap {
   readonly id: string;
@@ -272,7 +335,16 @@ export interface ExpectedEventGap {
 export function checkExpectedEvents(store: EventStore, asOf?: string): ExpectedEventGap[] {
   const gaps: ExpectedEventGap[] = [];
   const asOfDate = asOf ? new Date(asOf) : null;
-  for (const exp of expectedEvents()) {
+  // Store-derived per-netting-set SA-CCR expectations are freshness-class
+  // (maxAgeBusinessDays 1) AND need an asOf to resolve the live FX book, so
+  // they only join the manifest when the caller supplies one. The presence-only
+  // call (no asOf — the original build-phase contract) keeps the static
+  // manifest unchanged.
+  const expectations =
+    asOf !== undefined
+      ? [...expectedEvents(), ...saCcrFxNettingSetExpectations(store, asOf)]
+      : expectedEvents();
+  for (const exp of expectations) {
     // Find the freshest matching event (by as_of) in one pass.
     let latestAsOf: string | null = null;
     for (const ev of store.replay({ type: exp.eventType })) {

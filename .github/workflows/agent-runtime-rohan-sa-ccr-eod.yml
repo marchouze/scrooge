@@ -1,0 +1,58 @@
+# Rohan — daily SA-CCR EOD (CcrEadComputed per live FX netting set) run (autonomous)
+#
+# Daily SA-CCR exposure-at-default run per Rohan's operating spec § 6 (Cadence).
+# Closes tracked deferred gap `fx-sa-ccr-daily-cadence` (credit-risk dimension of
+# prd:bank:fx:otc-vanilla): the SA-CCR production driver ran only via the
+# one-shot scripts/run-sa-ccr-fx-eod.ts, so the EAD feeding CreditRWA could go
+# stale without operator action.
+#
+# Cadence is via the launchd scheduler (com.scrooge.scheduler-tick), which reads
+# the cron from runtime/agents/metadata/rohan.ts (`0 19 * * 1-5` — 19:00 UTC
+# weekdays, after the daily MTM at 18:00 UTC so replacement cost reads today's
+# marks). This workflow is workflow_dispatch-only for manual / on-demand runs
+# (GH-Actions schedule crons were decommissioned 2026-05-11; metadata is the
+# sole cron source).
+#
+# Idempotent: one CcrEadComputed per (nettingSetId, computationDate).
+# Brief: brief:rohan:close-fx-sa-ccr-daily-cadence-sa-ccr-eod-schedul:2026-06-12
+# Authority: D-FX-HELD-DIMS-SEAT-SWEEP; D-FX-SA-CCR-BUILD-PHASE-ACTIVATION;
+#            BCBS-SA-CCR-CRE52; D-CREDIT-LIMIT-ENGINE-BUILD Phase 5.
+
+name: Rohan daily SA-CCR EOD
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - working-directory: prototype
+        run: bun install --frozen-lockfile
+      - working-directory: prototype
+        env:
+          BANK_EVENT_DB_URL: ${{ secrets.BANK_EVENT_DB_URL }}
+        run: bun run event-store:sync
+      - working-directory: prototype
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: bun run agent:rohan-sa-ccr-eod
+      - working-directory: prototype
+        env:
+          BANK_EVENT_DB_URL: ${{ secrets.BANK_EVENT_DB_URL }}
+        run: bun run event-store:sync
