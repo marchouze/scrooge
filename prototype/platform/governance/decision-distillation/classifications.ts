@@ -1606,6 +1606,13 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
     citations: ["D-V2-BBAAS-W1-DECISION-DISTILLATION"],
   },
   {
+    decisionId: "D-V2-BBAAS-W8-AGENT-LEARNING",
+    class: "foundational",
+    rationale:
+      "Charters the agent-learning architecture: structured-first knowledge substrate (posture register, applicability assessments, impact sweeps). Defines how backbone agents learn for any tenant.",
+    citations: ["D-V2-BBAAS-W1-DECISION-DISTILLATION"],
+  },
+  {
     decisionId: "D-VERA-IFRS-THRESHOLD-CURRENCY-RECONS-POST-ICAAP",
     class: "directional",
     rationale:
@@ -1620,10 +1627,10 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
 ];
 
 /** Snapshot count of approved decisionIds covered at authoring time. */
-export const DECISION_CLASSIFICATION_COUNT = 258;
+export const DECISION_CLASSIFICATION_COUNT = 259;
 
 export const DECISION_CLASSIFICATION_COUNTS = {
-  foundational: 92,
+  foundational: 93,
   directional: 141,
   obsolete: 25,
 } as const;
