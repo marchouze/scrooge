@@ -436,6 +436,13 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
     citations: ["D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER"],
   },
   {
+    decisionId: "D-FIL-FRAMEWORK-UNIFICATION",
+    class: "foundational",
+    rationale:
+      "Unifies the instrument language and model library into one FIL Framework — facets as interfaces, models as their versioned citable implementations; one boundary spec for any tenant.",
+    citations: ["D-V2-BBAAS-W9-FIL", "D-V2-BBAAS-W4-W7-DISPATCH"],
+  },
+  {
     decisionId: "D-FINANCIAL-INSTRUMENT-ENTITY",
     class: "foundational",
     rationale:
@@ -1667,10 +1674,10 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
 ];
 
 /** Snapshot count of approved decisionIds covered at authoring time. */
-export const DECISION_CLASSIFICATION_COUNT = 265;
+export const DECISION_CLASSIFICATION_COUNT = 266;
 
 export const DECISION_CLASSIFICATION_COUNTS = {
-  foundational: 97,
+  foundational: 98,
   directional: 143,
   obsolete: 25,
 } as const;
