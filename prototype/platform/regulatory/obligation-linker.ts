@@ -429,6 +429,18 @@ export function deriveDomainLetter(id: string): ObligationReviewDomain {
   switch (prefix) {
     case "PR":
       return "A";
+    // PR(IV) is a distinct ID-scheme convention: the POPIA / PAIA privacy and
+    // data-protection obligations are historically nested under the `PR(...)`
+    // bracketed-roman family but are NOT prudential (the bare `PR` prefix).
+    // They are filed under domain F (privacy / data-protection sits with the
+    // governance / Information-Officer cluster, owned by the CoSec-as-IO seat).
+    // Without this branch the bracketed prefix falls through to the default
+    // (domain J), disagreeing with the filed domain. The obligation IDs are NOT
+    // re-keyed (re-keying would break citation edges — WS-OBLIGATION-CLEANUP
+    // Phase-1a, D-OBLIGATIONS-REGISTER-CLEANUP); instead derivation is taught
+    // the PR(IV) convention so it agrees with the filed domain.
+    case "PR(IV)":
+      return "F";
     case "FC":
       return "B";
     case "EXCON":
