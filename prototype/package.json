@@ -28,6 +28,7 @@
     "file:rohan-v2-bbaas-w4-model-library": "bun run scripts/file-rohan-v2-bbaas-w4-model-library.ts",
     "file:atlas-v2-bbaas-blueprint": "bun run scripts/file-atlas-v2-bbaas-blueprint.ts",
     "file:atlas-v2-bbaas-w9-fil": "bun run scripts/file-atlas-v2-bbaas-w9-fil.ts",
+    "file:mira-v2-s3-applies-when-design-note": "bun run scripts/file-mira-v2-s3-applies-when-design-note.ts",
     "file:atlas-v2-repo-strategy-reexamination": "bun run scripts/file-atlas-v2-repo-strategy-reexamination.ts",
     "file:atlas-fil-framework-unification": "bun run scripts/file-atlas-fil-framework-unification.ts",
     "record:d-fil-framework-unification": "bun run scripts/record-d-fil-framework-unification.ts",
