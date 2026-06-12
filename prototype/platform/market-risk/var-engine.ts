@@ -259,8 +259,7 @@ export function deriveRiskFactorExposures(args: {
   const netByCurrency = deriveNetFxPositionByCurrency(eventStore.replay({ asOf }));
 
   // Build (or accept) the ZAR-rate map across every currency the book touches.
-  const zarRates =
-    args.zarRates ?? deriveZarRatesFromMarketData(marketData, netByCurrency.keys());
+  const zarRates = args.zarRates ?? deriveZarRatesFromMarketData(marketData, netByCurrency.keys());
 
   const exposures: RiskFactorExposure[] = [];
   const returnsByFactor = new Map<string, number[]>();

@@ -102,11 +102,12 @@ function foldNearLegIntoNetPosition(
   const nearLeg = legs.find((l) => l.legKind === "near") ?? legs[0];
   if (!nearLeg) return net;
 
-  const receiveCcy =
-    typeof nearLeg.receiveCurrency === "string" ? nearLeg.receiveCurrency : null;
+  const receiveCcy = typeof nearLeg.receiveCurrency === "string" ? nearLeg.receiveCurrency : null;
   const payCcy = typeof nearLeg.payCurrency === "string" ? nearLeg.payCurrency : null;
   const rcvMinor =
-    typeof nearLeg.counterNotional?.amountMinor === "number" ? nearLeg.counterNotional.amountMinor : 0;
+    typeof nearLeg.counterNotional?.amountMinor === "number"
+      ? nearLeg.counterNotional.amountMinor
+      : 0;
   const payMinor =
     typeof nearLeg.notional?.amountMinor === "number" ? nearLeg.notional.amountMinor : 0;
 
@@ -125,9 +126,7 @@ function foldNearLegIntoNetPosition(
  * RETAINED, non-operating-book events held out. ZAR may appear as the home-
  * currency residual leg; callers exclude it from NOP per BA 310 / reg 29(3).
  */
-export function deriveNetFxPositionByCurrency(
-  events: Iterable<Event>,
-): Map<string, number> {
+export function deriveNetFxPositionByCurrency(events: Iterable<Event>): Map<string, number> {
   // Materialise once: `events` may be a single-shot generator (e.g.
   // `eventStore.replay({ asOf })`), and we iterate it twice — once for the
   // lifecycle index, once for the fold. A spent generator would silently yield
