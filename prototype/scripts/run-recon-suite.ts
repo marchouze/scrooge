@@ -69,6 +69,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:aggregate-id-coverage",
     "recon:madge-circular-deps",
     "recon:v2-no-v1-import",
+    "recon:v2-tenant-axis-present",
     "recon:dashboard",
     "recon:wall-clock-callsite-coverage",
     "recon:decisions-events-only",
