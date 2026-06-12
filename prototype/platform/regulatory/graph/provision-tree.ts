@@ -24,6 +24,7 @@ interface RegSubsection {
   id: string;
   number?: string;
   text?: string;
+  subsections?: RegSubsection[];
 }
 
 interface RegSection {
@@ -111,16 +112,14 @@ export function buildProvisionTree(doc: RegStructuredDocMinimal): ProvisionTree 
       });
       addChild(chapter.id, section.id);
 
-      for (const sub of section.subsections ?? []) {
-        addNode({
-          id: sub.id,
-          parentId: section.id,
-          children: [],
-          text: sub.text ?? "",
-          number: sub.number,
-        });
-        addChild(section.id, sub.id);
-      }
+      const addSubs = (subs: RegSubsection[], parentId: string) => {
+        for (const sub of subs) {
+          addNode({ id: sub.id, parentId, children: [], text: sub.text ?? "", number: sub.number });
+          addChild(parentId, sub.id);
+          if (sub.subsections && sub.subsections.length > 0) addSubs(sub.subsections, sub.id);
+        }
+      };
+      addSubs(section.subsections ?? [], section.id);
     }
   }
 

@@ -79,16 +79,22 @@
   function buildClientTree(detail) {
     const tree = new Map();
     tree.set(detail.slug, { parentId: null, children: [], text: "" });
+
+    function addSubs(subs, parentId) {
+      for (const sub of subs || []) {
+        tree.set(sub.id, { parentId, children: [], text: sub.text || "" });
+        tree.get(parentId).children.push(sub.id);
+        if (sub.subsections && sub.subsections.length > 0) addSubs(sub.subsections, sub.id);
+      }
+    }
+
     for (const chapter of detail.chapters || []) {
       tree.set(chapter.id, { parentId: detail.slug, children: [], text: "" });
       tree.get(detail.slug).children.push(chapter.id);
       for (const section of chapter.sections || []) {
         tree.set(section.id, { parentId: chapter.id, children: [], text: section.text || "" });
         tree.get(chapter.id).children.push(section.id);
-        for (const sub of section.subsections || []) {
-          tree.set(sub.id, { parentId: section.id, children: [], text: sub.text || "" });
-          tree.get(section.id).children.push(sub.id);
-        }
+        addSubs(section.subsections, section.id);
       }
     }
     return tree;
