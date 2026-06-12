@@ -51,6 +51,7 @@ import {
   makeOrderApprovedAtGateway,
   makeOrderRejectedAtGateway,
   makeRwaComputed,
+  makeSanctionsClearancePassed,
 } from "../platform/event-store/event-types";
 import {
   makeCreditLimitApproved,
@@ -137,6 +138,34 @@ function seedEligibleCounterparty(store: EventStore, counterpartyId: string): vo
         faisCategory: "market-counterparty",
         classifiedAt: T_2026,
         classifiedBy: "agent:niko:counterparty-lifecycle",
+      },
+    }),
+  );
+  // KYC acceptance of record (FIC Act 38/2001 s.21B/s.28A onboarding CDD +
+  // sanctions clearance) — required for the FAIL-CLOSED identity gateway check
+  // (D-FX-HELD-DIMS-SEAT-SWEEP). Eligibility (above) is the party-of-record
+  // anchor; this is the KYC-accepted anchor.
+  seedKycAccepted(store, counterpartyId);
+}
+
+/**
+ * Seed a counterparty-keyed KYC acceptance of record (SanctionsClearancePassed,
+ * FIC Act 38/2001 s.21B/s.28A) so the FAIL-CLOSED identity gateway check admits
+ * — the identity analogue of seedLoadedCreditLimit / seedLegalDocumentation.
+ */
+function seedKycAccepted(store: EventStore, counterpartyId: string): void {
+  store.append(
+    makeSanctionsClearancePassed({
+      asOf: T_2026,
+      entity: ENTITY,
+      actor: { type: "service", id: "agent:zara:mlro" },
+      citations: ["FIC-ACT-38-2001", "AML-CFT-POLICY-V1"],
+      payload: {
+        counterpartyId,
+        screeningProvider: "test-screening-provider",
+        screeningRef: `sanctions-clearance:${counterpartyId}:2026-05-09`,
+        clearedAt: T_2026,
+        screenedBy: "agent:zara:mlro",
       },
     }),
   );
@@ -399,9 +428,39 @@ describe("FX Slice 4 — routeOrderToGateway (rejection path)", () => {
     counterpartyId: "cp:ineligible-bank",
   };
 
+  /**
+   * Seed identity-passing (party-of-record with an `ineligible` screening +
+   * KYC acceptance of record) so the FAIL-CLOSED identity gateway check (which
+   * runs FIRST) admits, isolating the rejection at the counterparty-eligibility
+   * check. The party-of-record condition is satisfied by ANY
+   * CounterpartyEligibilityScreened event; `isCounterpartyEligible` requires the
+   * outcome to be `institutional-eligible`, so an `ineligible` screening is a
+   * party of record that still fails eligibility.
+   */
+  function seedIdentityButIneligible(store: EventStore, counterpartyId: string): void {
+    store.append(
+      makeCounterpartyEligibilityScreened({
+        asOf: T_2026,
+        entity: ENTITY,
+        actor: NIKO_ACTOR,
+        citations: ELIGIBILITY_CITATIONS,
+        payload: {
+          counterpartyId,
+          screeningId: `cp-eligibility:${counterpartyId}:2026-05-09`,
+          criteria: ["screened — not institutionally eligible"],
+          outcome: "ineligible",
+          evidenceRefs: ["screening-fixture"],
+          asOf: T_2026,
+        },
+      }),
+    );
+    seedKycAccepted(store, counterpartyId);
+  }
+
   it("case 8: ineligible counterparty → status 'rejected', OrderRejectedAtGateway emitted", () => {
     const store = freshStore();
-    // Do NOT seed counterparty — it is ineligible
+    // Identity passes (party of record + KYC), but eligibility is `ineligible`.
+    seedIdentityButIneligible(store, INELIGIBLE_RFQ.counterpartyId);
 
     const quote = quoteRfq(INELIGIBLE_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: INELIGIBLE_RFQ, quote, asOf: T_NOW });
@@ -415,6 +474,7 @@ describe("FX Slice 4 — routeOrderToGateway (rejection path)", () => {
 
   it("case 9: all 8 check events are emitted even on rejection, terminal event is Rejected", () => {
     const store = freshStore();
+    seedIdentityButIneligible(store, INELIGIBLE_RFQ.counterpartyId);
 
     const quote = quoteRfq(INELIGIBLE_RFQ);
     routeOrderToGateway({ store, rfqInput: INELIGIBLE_RFQ, quote, asOf: T_NOW });
@@ -430,6 +490,7 @@ describe("FX Slice 4 — routeOrderToGateway (rejection path)", () => {
 
   it("case 10: rejectingCheck is 'counterparty-eligibility' for ineligible counterparty", () => {
     const store = freshStore();
+    seedIdentityButIneligible(store, INELIGIBLE_RFQ.counterpartyId);
 
     const quote = quoteRfq(INELIGIBLE_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: INELIGIBLE_RFQ, quote, asOf: T_NOW });
@@ -439,6 +500,7 @@ describe("FX Slice 4 — routeOrderToGateway (rejection path)", () => {
 
   it("case 11: rejectionReason is 'counterparty not in eligibility-passing set'", () => {
     const store = freshStore();
+    seedIdentityButIneligible(store, INELIGIBLE_RFQ.counterpartyId);
 
     const quote = quoteRfq(INELIGIBLE_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: INELIGIBLE_RFQ, quote, asOf: T_NOW });
@@ -448,6 +510,7 @@ describe("FX Slice 4 — routeOrderToGateway (rejection path)", () => {
 
   it("case 13: rejected result.status is 'rejected' and no OrderApprovedAtGateway emitted", () => {
     const store = freshStore();
+    seedIdentityButIneligible(store, INELIGIBLE_RFQ.counterpartyId);
 
     const quote = quoteRfq(INELIGIBLE_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: INELIGIBLE_RFQ, quote, asOf: T_NOW });
@@ -779,15 +842,119 @@ describe("FX gateway — legal-documentation FAIL-CLOSED enforcement (ORG-CS3-00
 
   it("documentation rejection still runs after counterparty-eligibility (first-rejection-wins order)", () => {
     const store = freshStore();
-    // Nothing seeded at all: eligibility (3rd check) rejects first; the
+    // Identity seeded (party of record + KYC, but `ineligible` screening) so it
+    // PASSES — eligibility (3rd check) is then the first to reject; the
     // documentation check (5th) also rejects, but rejectingCheck must be the
     // FIRST rejecting check in order.
+    store.append(
+      makeCounterpartyEligibilityScreened({
+        asOf: T_2026,
+        entity: ENTITY,
+        actor: NIKO_ACTOR,
+        citations: ELIGIBILITY_CITATIONS,
+        payload: {
+          counterpartyId: VALID_RFQ.counterpartyId,
+          screeningId: `cp-eligibility:${VALID_RFQ.counterpartyId}:2026-05-09`,
+          criteria: ["screened — not institutionally eligible"],
+          outcome: "ineligible",
+          evidenceRefs: ["screening-fixture"],
+          asOf: T_2026,
+        },
+      }),
+    );
+    store.append(
+      makeSanctionsClearancePassed({
+        asOf: T_2026,
+        entity: ENTITY,
+        actor: { type: "service", id: "agent:zara:mlro" },
+        citations: ["FIC-ACT-38-2001", "AML-CFT-POLICY-V1"],
+        payload: {
+          counterpartyId: VALID_RFQ.counterpartyId,
+          screeningProvider: "test-screening-provider",
+          screeningRef: `sanctions-clearance:${VALID_RFQ.counterpartyId}:2026-05-09`,
+          clearedAt: T_2026,
+          screenedBy: "agent:zara:mlro",
+        },
+      }),
+    );
     const quote = quoteRfq(VALID_RFQ);
     const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
 
     expect(result.status).toBe("rejected");
     expect(result.rejectingCheck).toBe("counterparty-eligibility");
     expect(result.checks.find((c) => c.checkKind === "documentation")?.outcome).toBe("reject");
+    store.close();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Identity FAIL-CLOSED enforcement (position 1; D-FX-HELD-DIMS-SEAT-SWEEP,
+// FIC Act 38/2001 s.21B/s.28A). A counterparty must be a KYC-accepted party of
+// record — a CounterpartyEligibilityScreened (party-of-record) AND a
+// SanctionsClearancePassed / ClientAccepted (KYC acceptance) of record — before
+// any substantive check runs. An unknown or un-KYC'd counterparty is rejected
+// at the "identity" check, which runs FIRST.
+// ---------------------------------------------------------------------------
+
+describe("FX gateway — identity FAIL-CLOSED enforcement (D-FX-HELD-DIMS-SEAT-SWEEP)", () => {
+  const UNKNOWN_RFQ = { ...VALID_RFQ, counterpartyId: "cp:never-onboarded" };
+
+  it("rejects a never-onboarded counterparty at the identity check (runs first)", () => {
+    const store = freshStore();
+    // Nothing seeded — no party-of-record, no KYC acceptance.
+    const quote = quoteRfq(UNKNOWN_RFQ);
+    const result = routeOrderToGateway({ store, rfqInput: UNKNOWN_RFQ, quote, asOf: T_NOW });
+
+    expect(result.status).toBe("rejected");
+    expect(result.rejectingCheck).toBe("identity");
+    const idCheck = result.checks.find((c) => c.checkKind === "identity");
+    expect(idCheck?.outcome).toBe("reject");
+    expect(idCheck?.rejectionReason).toContain("not a KYC-accepted party of record");
+    expect(replayToArray(store, "OrderApprovedAtGateway")).toHaveLength(0);
+    expect(replayToArray(store, "OrderRejectedAtGateway")).toHaveLength(1);
+    store.close();
+  });
+
+  it("rejects at identity a party-of-record that has NO KYC acceptance", () => {
+    const store = freshStore();
+    // Party of record (eligible screening) but NO SanctionsClearancePassed.
+    store.append(
+      makeCounterpartyEligibilityScreened({
+        asOf: T_2026,
+        entity: ENTITY,
+        actor: NIKO_ACTOR,
+        citations: ELIGIBILITY_CITATIONS,
+        payload: {
+          counterpartyId: UNKNOWN_RFQ.counterpartyId,
+          screeningId: `cp-eligibility:${UNKNOWN_RFQ.counterpartyId}:2026-05-09`,
+          criteria: ["SARB-licensed bank (Banks Act 94/1990)"],
+          outcome: "institutional-eligible",
+          evidenceRefs: ["SARB-licence-fixture"],
+          asOf: T_2026,
+        },
+      }),
+    );
+    const quote = quoteRfq(UNKNOWN_RFQ);
+    const result = routeOrderToGateway({ store, rfqInput: UNKNOWN_RFQ, quote, asOf: T_NOW });
+
+    expect(result.status).toBe("rejected");
+    expect(result.rejectingCheck).toBe("identity");
+    expect(result.checks.find((c) => c.checkKind === "identity")?.rejectionReason).toContain(
+      "NO KYC acceptance",
+    );
+    store.close();
+  });
+
+  it("approves identity once the counterparty is a KYC-accepted party of record", () => {
+    const store = freshStore();
+    seedEligibleCounterparty(store, VALID_RFQ.counterpartyId); // party-of-record + KYC
+    seedLoadedCreditLimit(store, VALID_RFQ.counterpartyId);
+    seedLegalDocumentation(store, VALID_RFQ.counterpartyId);
+    const quote = quoteRfq(VALID_RFQ);
+    const result = routeOrderToGateway({ store, rfqInput: VALID_RFQ, quote, asOf: T_NOW });
+
+    expect(result.status).toBe("approved");
+    expect(result.checks.find((c) => c.checkKind === "identity")?.outcome).toBe("approve");
     store.close();
   });
 });

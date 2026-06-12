@@ -118,6 +118,8 @@ export { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
 export { ALCO_EVENT_TYPES_REGISTRY } from "./alco";
 // Product Control — daily FX P&L report event.
 export { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
+// Operational-risk loss-event capture (OperationalLossEvent).
+export { OPERATIONAL_RISK_EVENT_TYPES_REGISTRY } from "./operational-risk";
 // Market-data domain control-plane events (stale-data alerts, model validation).
 export { MARKET_DATA_EVENT_TYPES_REGISTRY } from "./market-data";
 // MTM engine event-type registry rows.
@@ -274,6 +276,7 @@ import { OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY } from "./obligation-review";
 import { ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY } from "./odp-collateral-segregation";
 import { ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY } from "./odp-portfolio-recon";
 import { ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY } from "./odp-umoja-uti";
+import { OPERATIONAL_RISK_EVENT_TYPES_REGISTRY } from "./operational-risk";
 import { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
 import { POLICY_ACTIVATION_EVENT_TYPES_REGISTRY } from "./policy-activation";
 import { PRODUCT_CONTROL_EVENT_TYPES_REGISTRY } from "./product-control";
@@ -389,6 +392,10 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Product Control — daily FX P&L report event.
   // Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1.
   ...PRODUCT_CONTROL_EVENT_TYPES_REGISTRY,
+  // WS-FX-OTC-OPRISK — operational-risk loss-event capture (OperationalLossEvent).
+  // Capture-only internal loss-data set; op-RWA capital stays gross-income-blocked.
+  // Authority: D-FX-HELD-DIMS-SEAT-SWEEP; Basel II Annex 9 / BCBS D196 §644; Reg 33.
+  ...OPERATIONAL_RISK_EVENT_TYPES_REGISTRY,
   // Market-data domain control-plane events (stale-data alerts, model validation).
   // Authority: D-MARKETS-SCHEMA-FOUNDATION; Policies/valuation-policy-v1.md §5.
   ...MARKET_DATA_EVENT_TYPES_REGISTRY,

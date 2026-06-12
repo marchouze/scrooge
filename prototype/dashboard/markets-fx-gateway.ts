@@ -29,6 +29,7 @@ import {
 } from "../platform/event-store/event-types/trading";
 import { simulatedTag } from "../platform/event-store/provenance";
 import type { EventStore } from "../platform/event-store/store";
+import { checkCounterpartyIdentityOfRecord } from "../platform/markets/identity/counterparty-identity-gate";
 import { checkLegalDocumentationOfRecord } from "../platform/markets/legal/legal-documentation-gate";
 import { screenCounterpartySanctions } from "../platform/markets/regulatory/sanctions-screen";
 import { checkHeadroom } from "../platform/risk/credit-limit-engine";
@@ -71,6 +72,11 @@ const GATEWAY_CITATIONS = ["D-FX-SALES-TRADING-FRONTEND", "D-MARKETS-SCHEMA-FOUN
 
 /** The eight pre-trade gateway check kinds run for every order. */
 const CHECK_KINDS = [
+  // identity runs FIRST: a counterparty must be a KYC-accepted party of record
+  // (CounterpartyEligibilityScreened party-of-record AND SanctionsClearance-
+  // Passed / ClientAccepted KYC acceptance) before any substantive check runs.
+  // FAIL-CLOSED — see checkCounterpartyIdentityOfRecord (D-FX-HELD-DIMS-SEAT-
+  // SWEEP; FIC Act 38/2001 s.21B/s.28A).
   "identity",
   "sanctions",
   "counterparty-eligibility",
@@ -250,6 +256,24 @@ export function routeOrderToGateway(args: {
     let outcome: "approve" | "reject" | "timeout" = "approve";
     let checkRejectionReason: string | undefined;
 
+    // identity — FAIL-CLOSED counterparty-identity gate (position 1). The
+    // counterparty must be a KYC-accepted party of record: a
+    // CounterpartyEligibilityScreened (party-of-record) AND a
+    // SanctionsClearancePassed / ClientAccepted (KYC acceptance) of record.
+    // Asks the prior question — "is this an onboarded, KYC-accepted party?" —
+    // before any substantive check runs. Distinct from the order-time
+    // `sanctions` blocked-list screen and from `counterparty-eligibility`.
+    // ops/COO posture (Devon, Chief Operating Officer, governance), fail-closed,
+    // FIC Act 38/2001 s.21B/s.28A; D-FX-HELD-DIMS-SEAT-SWEEP. Reads the SAME
+    // store the gateway writes to (threaded), not the composition global.
+    if (checkKind === "identity") {
+      const identity = checkCounterpartyIdentityOfRecord(store, rfqInput.counterpartyId);
+      if (!identity.ok) {
+        outcome = "reject";
+        checkRejectionReason = identity.rejectionReason;
+      }
+    }
+
     if (checkKind === "counterparty-eligibility") {
       if (!isCounterpartyEligible(store, rfqInput.counterpartyId)) {
         outcome = "reject";
@@ -390,7 +414,9 @@ export function routeOrderToGateway(args: {
           ? [...GATEWAY_CITATIONS, "D-FX-GATEWAY-CAPITAL-FUNDING-THRESHOLDS"]
           : checkKind === "documentation"
             ? [...GATEWAY_CITATIONS, "ORG-CS3-001", "D-FX-HELD-DIMS-SEAT-SWEEP"]
-            : [...GATEWAY_CITATIONS],
+            : checkKind === "identity"
+              ? [...GATEWAY_CITATIONS, "FIC-ACT-38-2001", "D-FX-HELD-DIMS-SEAT-SWEEP"]
+              : [...GATEWAY_CITATIONS],
       payload: {
         orderId,
         checkKind,
