@@ -28,7 +28,7 @@
           "id": "s1",
           "number": "1",
           "heading": "Introduction",
-          "text": "Introduction",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -160,7 +160,7 @@
           "id": "s2",
           "number": "2",
           "heading": "Definitions",
-          "text": "Definitions",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -190,7 +190,7 @@
           "id": "s3",
           "number": "3",
           "heading": "Application of a risk-based approach: Identification and assessment of risks relative to CAs and CASPs",
-          "text": "Application of a risk-based approach: Identification and assessment of risks relative to CAs and CASPs",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -290,7 +290,7 @@
           "id": "s4",
           "number": "4",
           "heading": "Monitoring of client relationships",
-          "text": "Monitoring of client relationships",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -327,7 +327,7 @@
           "id": "s5",
           "number": "5",
           "heading": "Acknowledgment of receipt",
-          "text": "Acknowledgment of receipt",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {

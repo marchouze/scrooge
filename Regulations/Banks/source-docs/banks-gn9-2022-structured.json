@@ -28,7 +28,7 @@
           "id": "s1",
           "number": "1",
           "heading": "Introduction",
-          "text": "Introduction",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -65,7 +65,7 @@
           "id": "s2",
           "number": "2",
           "heading": "Model documentation quality",
-          "text": "Model documentation quality",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -282,7 +282,7 @@
           "id": "s3",
           "number": "3",
           "heading": "LGD estimates for defaulted loans",
-          "text": "LGD estimates for defaulted loans",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -334,7 +334,7 @@
           "id": "s4",
           "number": "4",
           "heading": "LGD overrides",
-          "text": "LGD overrides",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -392,7 +392,7 @@
           "id": "s5",
           "number": "5",
           "heading": "Quality and representativeness of development datasets",
-          "text": "Quality and representativeness of development datasets",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -535,7 +535,7 @@
           "id": "s6",
           "number": "6",
           "heading": "The definition and incorporation of downturn in LGDs and EADs",
-          "text": "The definition and incorporation of downturn in LGDs and EADs",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -622,7 +622,7 @@
           "id": "s7",
           "number": "7",
           "heading": "The treatment of stale ratings",
-          "text": "The treatment of stale ratings",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -652,7 +652,7 @@
           "id": "s8",
           "number": "8",
           "heading": "Validation",
-          "text": "Validation",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -783,7 +783,7 @@
           "id": "s9",
           "number": "9",
           "heading": "Acknowledgement of receipt",
-          "text": "Acknowledgement of receipt",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {

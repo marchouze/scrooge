@@ -28,7 +28,7 @@
           "id": "s1",
           "number": "1",
           "heading": "Introduction",
-          "text": "Introduction",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -65,7 +65,7 @@
           "id": "s2",
           "number": "2",
           "heading": "Background on lessons learned from the ML/TF/PF Business Risk Assessment second thematic review",
-          "text": "Background on lessons learned from the ML/TF/PF Business Risk Assessment second thematic review",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -167,7 +167,7 @@
           "id": "s3",
           "number": "3",
           "heading": "Best practices for ML/TF/PF Business Risk Assessments",
-          "text": "Best practices for ML/TF/PF Business Risk Assessments",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -951,7 +951,7 @@
           "id": "s4",
           "number": "4",
           "heading": "Acknowledgement of receipt",
-          "text": "Acknowledgement of receipt",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {

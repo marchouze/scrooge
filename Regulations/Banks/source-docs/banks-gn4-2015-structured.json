@@ -28,7 +28,7 @@
           "id": "s1",
           "number": "1",
           "heading": "Introduction",
-          "text": "Introduction",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -116,7 +116,7 @@
           "id": "s2",
           "number": "2",
           "heading": "Pillar 2 4",
-          "text": "Pillar 2 4",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -182,7 +182,7 @@
           "id": "s3",
           "number": "3",
           "heading": "High-level requirements for an ICAAP 5",
-          "text": "High-level requirements for an ICAAP 5",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -1036,7 +1036,7 @@
           "id": "s4",
           "number": "4",
           "heading": "ICAAP submission",
-          "text": "ICAAP submission",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {
@@ -1052,7 +1052,7 @@
           "id": "s5",
           "number": "5",
           "heading": "Acknowledgement of receipt",
-          "text": "Acknowledgement of receipt",
+          "text": "",
           "verbatim": true,
           "subsections": [
             {

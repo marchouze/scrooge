@@ -28,7 +28,7 @@
           "id": "s-banks-d5-2025-1",
           "number": "1",
           "heading": "Introduction",
-          "text": "Introduction 1. Introduction",
+          "text": "1. Introduction",
           "verbatim": true,
           "subsections": [
             {
@@ -87,7 +87,7 @@
           "id": "s-banks-d5-2025-2",
           "number": "2",
           "heading": "Directive",
-          "text": "Directive 2. Directive",
+          "text": "2. Directive",
           "verbatim": true,
           "subsections": [
             {
@@ -315,7 +315,7 @@
           "id": "s-banks-d5-2025-3",
           "number": "3",
           "heading": "Implementation date",
-          "text": "Implementation date 3. Implementation date",
+          "text": "3. Implementation date",
           "verbatim": true,
           "subsections": [
             {

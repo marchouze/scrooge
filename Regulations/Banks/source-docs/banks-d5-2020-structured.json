@@ -28,7 +28,7 @@
           "id": "s-banks-d5-2020-2",
           "number": "2",
           "heading": "Directive",
-          "text": "Directive 2. Directive In order to ensure that the legal framework for the regulation and supervision of banks in South Africa remains relevant and current, based upon the aforesaid, and in accordance with the provisions of section 6(6) of the Banks Act 94 of 1990, banks are hereby directed as follows:",
+          "text": "2. Directive In order to ensure that the legal framework for the regulation and supervision of banks in South Africa remains relevant and current, based upon the aforesaid, and in accordance with the provisions of section 6(6) of the Banks Act 94 of 1990, banks are hereby directed as follows:",
           "verbatim": true,
           "subsections": [
             {
@@ -122,7 +122,7 @@
           "id": "s-banks-d5-2020-3",
           "number": "3",
           "heading": "Definitions",
-          "text": "Definitions 3. Definitions",
+          "text": "3. Definitions",
           "verbatim": true,
           "subsections": [
             {
@@ -250,7 +250,7 @@
           "id": "s-banks-d5-2020-2",
           "number": "2",
           "heading": "Materiality threshold",
-          "text": "Materiality threshold 2. Materiality threshold",
+          "text": "2. Materiality threshold",
           "verbatim": true,
           "subsections": [
             {
@@ -303,7 +303,7 @@
           "id": "s-banks-d5-2020-3",
           "number": "3",
           "heading": "Determination of PVAs under the simplified approach",
-          "text": "Determination of PVAs under the simplified approach 3. Determination of PVAs under the simplified approach",
+          "text": "3. Determination of PVAs under the simplified approach",
           "verbatim": true,
           "subsections": [
             {
@@ -333,7 +333,7 @@
           "id": "s-banks-d5-2020-4",
           "number": "4",
           "heading": "Determination of PVAs under the core approach",
-          "text": "Determination of PVAs under the core approach 4. Determination of PVAs under the core approach",
+          "text": "4. Determination of PVAs under the core approach",
           "verbatim": true,
           "subsections": [
             {
@@ -710,7 +710,7 @@
           "id": "s-banks-d5-2020-5",
           "number": "5",
           "heading": "Exhibit 1: Formulae to be used for the purpose of aggregating PVAs",
-          "text": "Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs Method 1: APV A = (FV – PV) – 50%*(FV – PV) = 50%*(FV-PV) PVA = ΣAPV A Method 2: APV A = max{0, (FV – PV) – 50%*(EV – PV)} =max{0,FV – 50%*(EV + PV)} PVA = ΣAPV A Where: FV = The valuation exposure level fair value after any accounting adjustment applied in the bank’s fair value that can be identified as addressing the same source of valuation uncertainty at the relevant PVA. PV = The valuation exposure level prudent value determined in accordance with this Directive. EV = The expected value at a valuation exposure level taken from the range of plausible values as referred to in this Directive. APV A = The valuation exposure level PVA after adjusting for aggregation. PVA = The total category level PVA after adjusting for aggregation. 8",
+          "text": "5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs 5. Exhibit 1: Formulae to be used for the purpose of aggregating PVAs Method 1: APV A = (FV – PV) – 50%*(FV – PV) = 50%*(FV-PV) PVA = ΣAPV A Method 2: APV A = max{0, (FV – PV) – 50%*(EV – PV)} =max{0,FV – 50%*(EV + PV)} PVA = ΣAPV A Where: FV = The valuation exposure level fair value after any accounting adjustment applied in the bank’s fair value that can be identified as addressing the same source of valuation uncertainty at the relevant PVA. PV = The valuation exposure level prudent value determined in accordance with this Directive. EV = The expected value at a valuation exposure level taken from the range of plausible values as referred to in this Directive. APV A = The valuation exposure level PVA after adjusting for aggregation. PVA = The total category level PVA after adjusting for aggregation. 8",
           "verbatim": true,
           "subsections": []
         }
