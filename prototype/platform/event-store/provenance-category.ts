@@ -68,6 +68,10 @@ export const DEFAULT_CATEGORY_POLICY: CategoryProvenanceMap = {
 const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   // Governance — decisions, briefs, records, audit, agent governance.
   Decision: "governance",
+  // WS-V2-BBAAS W1 — distillation classification of an existing Decision
+  // (foundational/directional/obsolete). Governance record, never simulated.
+  // Authority: D-V2-BBAAS-W1-DECISION-DISTILLATION (2026-06-12).
+  DecisionDistilled: "governance",
   CeoDecision: "governance",
   DecisionRequested: "governance",
   DecisionComment: "governance",

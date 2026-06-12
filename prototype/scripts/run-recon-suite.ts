@@ -140,6 +140,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:procedure-event-name-coherence",
     "recon:regulatory-extraction-coverage",
     "recon:provision-tick-drift",
+    "recon:decision-distillation-coverage",
     "recon:period-close-cursor-integrity",
     "recon:ba310-submission-completeness",
     "recon:ba-returns-vs-gl-balances",
