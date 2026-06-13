@@ -388,6 +388,14 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // access path. T-01 carve-out.
   // Citation: D-FX-SA-CCR-BUILD-PHASE-ACTIVATION, P4-SECURITY-DESIGNED-IN.
   "runtime/agents/rohan-sa-ccr-eod.test.ts",
+  // SA-CCR FIL-mediated vMtm (Valuable feed) + collateral feed unit tests
+  // (WS-V2-BBAAS, brief:rohan:v2-sa-ccr-valuable-facet-mtm-collateral-feed-ret).
+  // Co-located per-module test convention. Raw EventStore(":memory:") is a
+  // build-phase fixture for the latest-event-of-record-vs-cumulative + as-of
+  // bounding assertions against an isolated store, not a production access
+  // path. T-01 carve-out.
+  // Citation: D-MODEL-BINDING-CONTRACT-V1, P4-SECURITY-DESIGNED-IN.
+  "platform/risk/sa-ccr/fil-valuable-collateral-feed.test.ts",
   // CVA engine unit tests (D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 5) — co-located
   // per-module test convention. Raw EventStore(":memory:") is a build-phase fixture
   // for the loud-status / computed-CVA assertions, not a production access path.
