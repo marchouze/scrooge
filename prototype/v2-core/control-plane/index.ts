@@ -10,3 +10,4 @@ export * from "./store";
 export * from "./projection";
 export * from "./fleet";
 export * from "./functional-seats";
+export * from "./onboarding";
