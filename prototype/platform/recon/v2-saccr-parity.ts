@@ -23,16 +23,29 @@
 // This makes "FIL facets are the sole data-access path" (D-MODEL-BINDING-
 // CONTRACT-V1) true end-to-end for the SA-CCR trade/netting structure.
 //
-// EXTERNALLY-SOURCED INPUTS (documented, not faked): the RC inputs vMtm +
-// collateral are pinned FROM THE RECORDED v1 RC EVENT, NOT from the FIL
-// instances. This is legitimate: a position's MARK-TO-MARKET is the output of
-// the `Valuable` facet (a `*Revalued` event-of-record) and collateral lives in
-// the collateral-inventory register — neither is an economic TERM of the
-// instrument, so neither belongs on the FIL instance lifecycle record. The FIL
-// instances source what they own (the trade/netting STRUCTURE: notional,
-// direction, counterparty, netting set, maturity, hedging set); MtM + collateral
-// remain sourced from their own events-of-record. Wiring those through the
-// `Valuable` facet is a later slice.
+// FULLY FIL-MEDIATED (pin RETIRED): the RC inputs vMtm + collateral are now
+// sourced FROM THEIR OWN EVENTS-OF-RECORD via FIL-mediated feeds, NOT pinned
+// from the recorded v1 RC event:
+//   - vMtm      ← the latest `*Revalued` EVENT-OF-RECORD per trade, as-of the RC
+//                 date, through the `Valuable` facet's `RevaluationRecord` shape
+//                 (`sourceVMtmFromValuableFeed`). Principle 1: read the canonical
+//                 revaluation event; do NOT recompute via the drift-prone
+//                 cumulative-delta walk in v1 `resolveMtm`.
+//   - collateral ← the collateral-inventory register, as-of the RC date
+//                 (`sourceCollateralFromRegister`).
+// The FIL instances source the trade/netting STRUCTURE (notional, direction,
+// counterparty, netting set, maturity, hedging set); the Valuable feed + the
+// collateral register source MtM + collateral. SA-CCR is now sourced END-TO-END
+// from FIL-mediated reads — "FIL facets are the sole data-access path"
+// (D-MODEL-BINDING-CONTRACT-V1) holds for ALL of SA-CCR's inputs.
+//
+// THE RECORDED v1 RC EVENT IS NOW ORACLE-ONLY: it is compared against (a
+// diagnostic of the cutover), never an INPUT SOURCE. Where the feed-sourced
+// vMtm diverges from the recorded RC's vMtm — because the recorded RC used a
+// DIFFERENT MtM BASIS (v1 `resolveMtm`'s cumulative-delta sum) or a different
+// as-of snapshot — the gate SURFACES the divergence as a finding (the two vMtm
+// values + as-of), it does NOT adjust the feed to force a match. A genuine
+// divergence here is exactly what this cutover exists to surface (brief §4).
 //
 // Gate behaviour:
 //   - For each live netting set, run BOTH engines over the SAME inputs and
@@ -62,6 +75,11 @@ import { resolveNettingSet } from "../markets/netting-sets";
 import { computeEad as v1ComputeEadEad } from "../risk/sa-ccr/ead";
 // --- FIL-instance-sourced position feed (the v2 candidate's data-access path) ---
 import { buildSaCcrTradeSummariesFromFilInstances } from "../risk/sa-ccr/fil-instance-positions";
+// --- FIL-mediated vMtm (Valuable feed) + collateral (register) feeds ---
+import {
+  sourceCollateralFromRegister,
+  sourceVMtmFromValuableFeed,
+} from "../risk/sa-ccr/fil-valuable-collateral-feed";
 // --- v1 SA-CCR engine (the oracle) ---
 import { computeAddOn as v1ComputeAddOn } from "../risk/sa-ccr/pfe-addon";
 import { buildFxSaCcrTradeSummaries } from "../risk/sa-ccr/positions-to-summaries";
@@ -351,38 +369,47 @@ export function run(): ReconResult {
       });
     }
 
-    // PIN the RC inputs (vMtm, collateral) FROM THE RECORDED RC EVENT. These
-    // remain EXTERNALLY SOURCED (documented in the file header): a position's
-    // mark-to-market is the output of the `Valuable` facet (a `*Revalued`
-    // event-of-record) and collateral lives in the collateral-inventory
-    // register — neither is an economic TERM that belongs on the FIL instance
-    // lifecycle record, so neither is sourced from the instances. The recorded
-    // v1 RC event is the authoritative source for these inputs.
-    const vMtm: V1Money = v1Minor(BigInt(Number(rec.rcPayload.vMtm)), ns.currency as Currency);
-    const collateral: V1Money = v1Minor(
-      BigInt(Number(rec.rcPayload.collateralHeld)),
-      ns.currency as Currency,
-    );
+    // SOURCE the RC inputs (vMtm, collateral) FROM THEIR OWN EVENTS-OF-RECORD —
+    // PIN RETIRED. vMtm comes from the `Valuable` feed (latest `*Revalued`
+    // event-of-record per trade, as-of the RC date); collateral from the
+    // collateral-inventory register. The recorded v1 RC event is NO LONGER an
+    // input source — it is ORACLE-ONLY (compared below). FIL-mediated end-to-end
+    // (D-MODEL-BINDING-CONTRACT-V1).
+    const vMtmV2: V2Money = sourceVMtmFromValuableFeed(eventStore, {
+      counterpartyId: ns.counterpartyId,
+      currency: ns.currency,
+      asOf,
+    });
+    const collateralV2: V2Money = sourceCollateralFromRegister({
+      currency: ns.currency,
+      asOf,
+    });
+    // v1 oracle side consumes the SAME feed-sourced inputs (lossless v2→v1 Money).
+    const vMtm: V1Money = v1Minor(vMtmV2.minorUnits, ns.currency as Currency);
+    const collateral: V1Money = v1Minor(collateralV2.minorUnits, ns.currency as Currency);
 
     const v1Out = v1Payloads({ ns, vMtm, collateral, trades, asOf });
     const v2Out = v2Payloads({
       ns,
-      vMtm: v1ToV2Money(vMtm),
-      collateral: v1ToV2Money(collateral),
-      // SOURCED FROM FIL INSTANCES (gap closed) — not `trades.map(v1ToV2Trade)`.
+      vMtm: vMtmV2,
+      collateral: collateralV2,
+      // Trade STRUCTURE from native FIL instances (gap closed in #1296).
       trades: v2Trades,
       asOf,
     });
 
     nettingSetsChecked += 1;
 
-    // (1) v2 recompute == v1 recompute (the core port-fidelity assertion).
+    // (1) HARD GATE — v2 recompute == v1 recompute over the SAME FIL-mediated
+    //     inputs (the core port-fidelity assertion). Both engines consume the
+    //     feed-sourced vMtm + collateral + FIL-instance trades, so any byte-diff
+    //     is a genuine port-fidelity failure → `fail`.
     result.asserted += 2;
     if (stableJson(v1Out.rc) !== stableJson(v2Out.rc)) {
       byteDiffs += 1;
       violations.push({
         subject: `${rec.nettingSetId}:CcrReplacementCostComputed:recompute`,
-        message: `RC payload diverges v1-recompute vs v2:\n  v1=${stableJson(v1Out.rc)}\n  v2=${stableJson(v2Out.rc)}`,
+        message: `RC payload diverges v1-recompute vs v2 (same FIL-mediated inputs):\n  v1=${stableJson(v1Out.rc)}\n  v2=${stableJson(v2Out.rc)}`,
         severity: "fail",
       });
     }
@@ -390,35 +417,40 @@ export function run(): ReconResult {
       byteDiffs += 1;
       violations.push({
         subject: `${rec.nettingSetId}:CcrEadComputed:recompute`,
-        message: `EAD payload diverges v1-recompute vs v2:\n  v1=${stableJson(v1Out.ead)}\n  v2=${stableJson(v2Out.ead)}`,
+        message: `EAD payload diverges v1-recompute vs v2 (same FIL-mediated inputs):\n  v1=${stableJson(v1Out.ead)}\n  v2=${stableJson(v2Out.ead)}`,
         severity: "fail",
       });
     }
 
-    // (2) v2 recompute == the RECORDED v1 event (binds the port to real
-    //     history, byte-for-byte). With RC inputs pinned from the recorded
-    //     event, RC reproduces exactly; PFE/EAD reproduce when the trade list
-    //     reconstructs (it does at the recorded as_of). A diff here is a real
-    //     port-fidelity failure → `fail`.
+    // (2) ORACLE DIAGNOSTIC — feed-sourced RC/EAD vs the RECORDED v1 event.
+    //     The recorded event is NO LONGER an input; it is an oracle. A byte-match
+    //     confirms the full FIL cutover reproduces history exactly. A DIVERGENCE
+    //     is SURFACED (not forced) — it means the recorded RC used a different
+    //     MtM BASIS (v1 `resolveMtm`'s drift-prone cumulative-delta walk) or a
+    //     different as-of snapshot than the `Valuable` event-of-record feed. We
+    //     report both vMtm values + as-of and classify `warn` (a real finding to
+    //     escalate, per brief §4 "surface, don't force"), NOT `fail`: the feed is
+    //     the correct Principle-1 source and must not be bent to match a
+    //     wrong-basis oracle.
     result.asserted += 1;
     const recRc = normaliseRecorded(rec.rcPayload, false);
     if (stableJson(v2Out.rc) !== stableJson(recRc)) {
-      byteDiffs += 1;
+      const recVMtm = Number(rec.rcPayload.vMtm);
+      const feedVMtm = Number(vMtmV2.minorUnits);
       violations.push({
-        subject: `${rec.nettingSetId}:CcrReplacementCostComputed:vs-recorded`,
-        message: `v2 RC diverges from the RECORDED v1 event:\n  recorded=${stableJson(recRc)}\n  v2=${stableJson(v2Out.rc)}`,
-        severity: "fail",
+        subject: `${rec.nettingSetId}:CcrReplacementCostComputed:vs-recorded-oracle`,
+        message: `Feed-sourced RC diverges from the RECORDED v1 oracle for ${rec.nettingSetId} (recorded-RC pin retired; basis divergence SURFACED, not forced):\n  recorded vMtm=${recVMtm} (basis: v1 resolveMtm cumulative-delta walk; as-of ${rec.asOf})\n  feed vMtm=${feedVMtm} (basis: latest *Revalued event-of-record per trade; as-of ${asOf})\n  recorded=${stableJson(recRc)}\n  feed-sourced=${stableJson(v2Out.rc)}`,
+        severity: "warn",
       });
     }
     if (rec.eadPayload) {
       result.asserted += 1;
       const recEad = normaliseRecorded(rec.eadPayload, true);
       if (stableJson(v2Out.ead) !== stableJson(recEad)) {
-        byteDiffs += 1;
         violations.push({
-          subject: `${rec.nettingSetId}:CcrEadComputed:vs-recorded`,
-          message: `v2 EAD diverges from the RECORDED v1 event:\n  recorded=${stableJson(recEad)}\n  v2=${stableJson(v2Out.ead)}`,
-          severity: "fail",
+          subject: `${rec.nettingSetId}:CcrEadComputed:vs-recorded-oracle`,
+          message: `Feed-sourced EAD diverges from the RECORDED v1 oracle for ${rec.nettingSetId} (downstream of the vMtm basis divergence above; surfaced, not forced):\n  recorded=${stableJson(recEad)}\n  feed-sourced=${stableJson(v2Out.ead)}`,
+          severity: "warn",
         });
       }
     }
@@ -433,7 +465,8 @@ export function run(): ReconResult {
   }
 
   result.ok = violations.filter((v) => v.severity === "fail").length === 0;
-  result.asOf = `saccr-parity: ${nettingSetsChecked} netting set(s) checked over recorded history, ${byteDiffs} byte-diff(s); v2 trade/netting structure sourced from native FIL instances (MtM + collateral externally sourced from the recorded RC event-of-record)`;
+  const oracleDivergences = violations.filter((v) => v.severity === "warn").length;
+  result.asOf = `saccr-parity: ${nettingSetsChecked} netting set(s) checked over recorded history, ${byteDiffs} hard byte-diff(s) (v1-recompute vs v2 over identical FIL-mediated inputs); ${oracleDivergences} recorded-RC oracle divergence(s) surfaced (warn). FULLY FIL-MEDIATED: vMtm from the Valuable feed (latest *Revalued event-of-record), collateral from the register; recorded-RC pin RETIRED (oracle-only).`;
   return result;
 }
 
