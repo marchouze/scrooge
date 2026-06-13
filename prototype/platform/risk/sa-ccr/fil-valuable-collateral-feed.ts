@@ -43,7 +43,7 @@
 //   BCBS-SA-CCR-CRE52 §52.10–52.18 (RC = f(V, C)); Principle 1.
 // Author: Rohan (Risk Engineer, engineering).
 
-import type { Money as V2Money } from "../../../v2-core/fil-core/primitives";
+import type { Instant, Money as V2Money } from "../../../v2-core/fil-core/primitives";
 import type { ObservableRef, RevaluationRecord } from "../../../v2-core/fil-facets/facets";
 import { getCollateralInventory } from "../../collateral/inventory";
 import type { EventStore } from "../../event-store/store";
@@ -130,7 +130,7 @@ export function materialiseNettingSetRevaluations(
     // last assignment is the latest event-of-record.
     latest.set(tid, {
       value: { currency, minorUnits: BigInt(Math.round(p.npvClosingMinor)) },
-      asOf: ev.as_of,
+      asOf: ev.as_of as Instant,
       observablesUsed: [irObservable(currency)],
     });
   }
@@ -149,7 +149,7 @@ export function materialiseNettingSetRevaluations(
       if (typeof p.unrealisedPnlZarMinor !== "number") continue;
       latest.set(tid, {
         value: { currency: "ZAR", minorUnits: BigInt(Math.round(p.unrealisedPnlZarMinor)) },
-        asOf: ev.as_of,
+        asOf: ev.as_of as Instant,
         observablesUsed: [fxObservable(p.currencyPair ?? "?/ZAR")],
       });
     }
