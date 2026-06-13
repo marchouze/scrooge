@@ -4,7 +4,9 @@
 //
 // Authority: D-V2-TENANCY-ARCHITECTURE; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
 
+export * from "./tenant";
 export * from "./events";
 export * from "./store";
 export * from "./projection";
 export * from "./fleet";
+export * from "./functional-seats";
