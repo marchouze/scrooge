@@ -138,6 +138,17 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // Authority: D-FIL-ATTRIBUTION-A1-BUILD; D-METRIC-ATTRIBUTION-DIMENSIONAL.
     "recon:attribution-additivity",
     "recon:attribution-nonadditive-no-sum",
+    // WS-V2-BBAAS S15 — tenant onboarding-readiness (ENFORCING). Every registered
+    // tenant is `ready` ONLY when every provisioning step landed (S1 register +
+    // S11 seats + S5 surface grant + S14 fleet state) AND its tier preconditions
+    // are met — a C-tier tenant cannot be ready while the S16 C-go-live
+    // preconditions (tested second-provider fallback, cross-tenant CSI gate) are
+    // unsatisfied (selling gated). The platform can REFUSE incomplete onboarding;
+    // the synthetic half-provisioned tenant is caught sabotage-proof in the
+    // v2-core regression test. The anchor (K) is already-onboarded and passes
+    // without re-provisioning. Authority: D-V2-WAVE4-COMMERCIAL-POSTURE;
+    // D-V2-TENANCY-ARCHITECTURE.
+    "recon:v2-onboarding-readiness",
     "recon:dashboard",
     "recon:wall-clock-callsite-coverage",
     "recon:decisions-events-only",

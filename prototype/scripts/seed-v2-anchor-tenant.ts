@@ -1,12 +1,17 @@
 // scripts/seed-v2-anchor-tenant.ts
 //
-// Idempotent seed script — V2 S1.
+// Idempotent seed script — V2 S1 (extended S11 + S15).
 //
 // Emits the bootstrap event sequence for the anchor bank tenant in the
-// control-plane store:
+// control-plane store so the anchor is a FULLY-ONBOARDED reference that
+// satisfies the S15 onboarding-readiness gate without re-provisioning:
 //
-//   1. TenantRegistered   — tenant:za-bank, tier K, legalEntityRef LE-ZA-HOZ-BANK
-//   2. TenantSurfaceGranted — grants surfaceVersion "v1.0" (build-phase placeholder)
+//   1. TenantRegistered     — tenant:za-bank, tier K, legalEntityRef LE-ZA-HOZ-BANK
+//   2. FunctionalSeatRegistered ×N — derive the anchor's tenant-scoped seat map
+//      from the canonical roster (S11) so the anchor has functional seats
+//      (onboarding-readiness step 2). Idempotent (deterministic seat event_ids).
+//   3. TenantSurfaceGranted  — grants surfaceVersion "v1.0" (build-phase placeholder)
+//   4. TenantUpgradeLedgerEntry — brings the anchor onto its genesis platform version
 //
 // Idempotency: replays the store first and skips any event whose logical
 // subject already exists, so re-running is safe. The seed is a build-phase
@@ -29,6 +34,7 @@ import {
   TENANT_UPGRADE_LEDGER_ENTRY,
   buildControlPlaneProjection,
   defaultControlPlanePath,
+  deriveAndAppendAnchorSeats,
   newCpEventId,
   openControlPlaneStore,
 } from "../v2-core/control-plane";
@@ -80,6 +86,26 @@ if (existing) {
   });
   console.log(`[seed-v2-anchor-tenant] TenantRegistered emitted for ${TENANT_ID}.`);
   emitted += 1;
+}
+
+// Step 1b — FunctionalSeatRegistered ×N (S11): derive the anchor's tenant-scoped
+// seat map from the canonical roster and append it. Idempotent — seat event_ids
+// are deterministic (`seat-registered:<seatId>`), so re-running does not
+// duplicate. This makes the anchor a FULLY-onboarded reference that satisfies
+// the S15 onboarding-readiness gate (which requires at least one seat).
+{
+  const seatMap = deriveAndAppendAnchorSeats(store, { registeredAt: NOW });
+  if (seatMap.findings.length > 0) {
+    console.warn(
+      `[seed-v2-anchor-tenant] WARNING: seat derivation produced ${seatMap.findings.length} finding(s) — roster drift. Seats still appended; FIX THE ROSTER.`,
+    );
+    for (const f of seatMap.findings) {
+      console.warn(`[seed-v2-anchor-tenant]   • ${f.subject}: ${f.message}`);
+    }
+  }
+  console.log(
+    `[seed-v2-anchor-tenant] derived + appended ${seatMap.seats.length} functional seat(s) for ${TENANT_ID} (idempotent).`,
+  );
 }
 
 // Step 2 — TenantSurfaceGranted (idempotent: skip if already granted at this version)

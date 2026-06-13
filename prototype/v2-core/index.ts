@@ -164,6 +164,16 @@ export * from "./control-plane/fleet";
 /** @tier R — S11 tenant-scoped functional-seat model (FunctionalSeatProjection, deriveSeatMap, deriveAndAppendAnchorSeats, seatId, roleSlug, assertSeatRosterParity); seats are tenant-scoped so a second tenant's CRO seat never collides with the anchor's */
 export * from "./control-plane/functional-seats";
 
+/** @tier K — S15 tenant onboarding mechanics + onboarding-readiness (runOnboarding, preflightOnboarding,
+ * OnboardingPlan, OnboardingResult, assertOnboardingReadiness, foldTenantOnboardingState, checkTenantReadiness,
+ * ONBOARDING_STEPS). The onboarding flow PROVISIONS a tenant by wiring the existing substrate (S1 register →
+ * S11 seats → S5 surface grant → S14 fleet state); fail-closed (no half-provisioned tenant). Readiness gates
+ * a tenant ready ONLY when every step landed + tier preconditions met — the platform can REFUSE incomplete
+ * onboarding (a C-tier tenant cannot be ready while S16 C-go-live preconditions are unsatisfied). Provisions
+ * TENANCY ONLY — no part of the anchor's PA approval-file IP is packaged/shipped (held as internal IP).
+ * Fleet-operator anchor-internal. Authority: D-V2-WAVE4-COMMERCIAL-POSTURE; D-V2-TENANCY-ARCHITECTURE. */
+export * from "./control-plane/onboarding";
+
 // --- Tier entitlements (S16) — K/R/C flat-tier packaging --------------------
 
 /** @tier R — S16 K/R/C flat-tier entitlement model (TierEntitlement, tierEntitlements, buildTierEntitlement,
