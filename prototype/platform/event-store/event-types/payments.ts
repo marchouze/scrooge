@@ -563,9 +563,9 @@ export function makeMessageCorrelated(args: {
 // Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
 // ---------------------------------------------------------------------------
 
+import type { Money } from "../../core/decimal-money";
 import type { MoneyWire } from "../../core/money-codec";
 import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
-import type { Money } from "../../core/decimal-money";
 
 // ── SettlementInstructionReceived V2 ─────────────────────────────────────────
 
@@ -596,8 +596,7 @@ export function decodeSettlementInstructionReceived(
 /** @deprecated DECIMAL-MIGRATION: superseded by PaymentInitiatedPayloadV2. */
 export type PaymentInitiatedPayloadLegacy = PaymentInitiatedPayload;
 
-export interface PaymentInitiatedPayloadV2
-  extends Omit<PaymentInitiatedPayload, "netCash"> {
+export interface PaymentInitiatedPayloadV2 extends Omit<PaymentInitiatedPayload, "netCash"> {
   readonly netCashWire: MoneyWire;
 }
 
@@ -618,8 +617,7 @@ export function decodePaymentInitiated(raw: PaymentInitiatedPayload): PaymentIni
 /** @deprecated DECIMAL-MIGRATION: superseded by PaymentSettledPayloadV2. */
 export type PaymentSettledPayloadLegacy = PaymentSettledPayload;
 
-export interface PaymentSettledPayloadV2
-  extends Omit<PaymentSettledPayload, "netCash"> {
+export interface PaymentSettledPayloadV2 extends Omit<PaymentSettledPayload, "netCash"> {
   readonly netCashWire: MoneyWire;
 }
 

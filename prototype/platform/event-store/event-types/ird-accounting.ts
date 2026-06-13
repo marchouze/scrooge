@@ -376,9 +376,9 @@ export function makeIrdSwapTerminated(args: {
 // Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
 // ---------------------------------------------------------------------------
 
+import type { Money } from "../../core/decimal-money";
 import type { MoneyWire } from "../../core/money-codec";
 import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
-import type { Money } from "../../core/decimal-money";
 
 // ── IrdSwapTradeExecuted V2 ─────────────────────────────────────────────────
 
@@ -462,10 +462,7 @@ export function decodeIrdSwapPositionRevalued(
 export type IrdSwapCouponSettledPayloadLegacy = IrdSwapCouponSettledPayload;
 
 export interface IrdSwapCouponSettledPayloadV2
-  extends Omit<
-    IrdSwapCouponSettledPayload,
-    "netCashMinor" | "fixedLegMinor" | "floatingLegMinor"
-  > {
+  extends Omit<IrdSwapCouponSettledPayload, "netCashMinor" | "fixedLegMinor" | "floatingLegMinor"> {
   /** Net cash (signed; positive = bank receives). */
   readonly netCash: MoneyWire;
   readonly fixedLeg: MoneyWire;
@@ -530,15 +527,8 @@ export function encodeIrdSwapTerminated(
   };
 }
 
-export function decodeIrdSwapTerminated(
-  raw: IrdSwapTerminatedPayload,
-): IrdSwapTerminatedPayloadV2 {
-  const {
-    terminationPaymentMinor,
-    carryingNpvAtTerminationMinor,
-    realisedPnlMinor,
-    ...rest
-  } = raw;
+export function decodeIrdSwapTerminated(raw: IrdSwapTerminatedPayload): IrdSwapTerminatedPayloadV2 {
+  const { terminationPaymentMinor, carryingNpvAtTerminationMinor, realisedPnlMinor, ...rest } = raw;
   return {
     ...rest,
     terminationPayment: moneyWireFromMinor(terminationPaymentMinor, raw.currency),

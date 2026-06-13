@@ -344,10 +344,10 @@ export function makeBondSold(args: {
 // Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
 // ---------------------------------------------------------------------------
 
-import type { MoneyWire } from "../../core/money-codec";
-import { decodeMoney, encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
 import type { Money } from "../../core/decimal-money";
 import { money } from "../../core/decimal-money";
+import type { MoneyWire } from "../../core/money-codec";
+import { decodeMoney, encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
 
 // ── BondTradeExecuted V2 ────────────────────────────────────────────────────
 
@@ -416,12 +416,8 @@ export function encodeBondInterestAccrued(
 export function decodeBondInterestAccrued(
   raw: BondInterestAccruedPayload,
 ): BondInterestAccruedPayloadV2 {
-  const {
-    accruedInterestMinor,
-    openingCarryingAmountMinor,
-    closingCarryingAmountMinor,
-    ...rest
-  } = raw;
+  const { accruedInterestMinor, openingCarryingAmountMinor, closingCarryingAmountMinor, ...rest } =
+    raw;
   return {
     ...rest,
     accruedInterest: moneyWireFromMinor(accruedInterestMinor, raw.currency),
@@ -503,7 +499,10 @@ export interface BondSoldPayloadV2
 }
 
 export function encodeBondSold(
-  base: Omit<BondSoldPayload, "saleProceedsMinor" | "carryingAmountAtSaleMinor" | "realisedPnlMinor">,
+  base: Omit<
+    BondSoldPayload,
+    "saleProceedsMinor" | "carryingAmountAtSaleMinor" | "realisedPnlMinor"
+  >,
   saleProceeds: Money,
   carryingAmountAtSale: Money,
   realisedPnl: Money,

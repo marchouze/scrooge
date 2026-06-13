@@ -657,8 +657,7 @@ import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
 /** @deprecated DECIMAL-MIGRATION: superseded by TrialBalanceSnapshotRowV2. */
 export type TrialBalanceSnapshotRowLegacy = TrialBalanceSnapshotRow;
 
-export interface TrialBalanceSnapshotRowV2
-  extends Omit<TrialBalanceSnapshotRow, "amountMinor"> {
+export interface TrialBalanceSnapshotRowV2 extends Omit<TrialBalanceSnapshotRow, "amountMinor"> {
   readonly amount: MoneyWire;
 }
 
@@ -716,8 +715,7 @@ export interface ManualJournalLegV2 {
 /** @deprecated DECIMAL-MIGRATION: superseded by ManualJournalEntryPayloadV2. */
 export type ManualJournalEntryPayloadLegacy = ManualJournalEntryPayload;
 
-export interface ManualJournalEntryPayloadV2
-  extends Omit<ManualJournalEntryPayload, "legs"> {
+export interface ManualJournalEntryPayloadV2 extends Omit<ManualJournalEntryPayload, "legs"> {
   readonly legs: ManualJournalLegV2[];
 }
 

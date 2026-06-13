@@ -281,9 +281,9 @@ export function makeRwaComputed(args: {
 // Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
 // ---------------------------------------------------------------------------
 
+import type { Money } from "../../core/decimal-money";
 import type { MoneyWire } from "../../core/money-codec";
 import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
-import type { Money } from "../../core/decimal-money";
 
 // ── RwaComputed V2 ───────────────────────────────────────────────────────────
 
@@ -321,13 +321,7 @@ export function encodeRwaComputed(
 }
 
 export function decodeRwaComputed(raw: RwaComputedPayload): RwaComputedPayloadV2 {
-  const {
-    creditRwaMinor,
-    marketRwaMinor,
-    operationalRwaMinor,
-    totalRwaMinor,
-    ...rest
-  } = raw;
+  const { creditRwaMinor, marketRwaMinor, operationalRwaMinor, totalRwaMinor, ...rest } = raw;
   return {
     ...rest,
     creditRwa: moneyWireFromMinor(creditRwaMinor, "ZAR"),

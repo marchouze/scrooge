@@ -137,9 +137,9 @@ export function makeIfrs9StageAssigned(args: {
 // Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
 // ---------------------------------------------------------------------------
 
+import type { Money } from "../../core/decimal-money";
 import type { MoneyWire } from "../../core/money-codec";
 import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
-import type { Money } from "../../core/decimal-money";
 
 // ── Ifrs9StageAssigned V2 ────────────────────────────────────────────────────
 

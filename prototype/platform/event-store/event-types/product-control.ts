@@ -721,7 +721,8 @@ import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
 /** @deprecated DECIMAL-MIGRATION: superseded by PnLByPairV2. */
 export type PnLByPairLegacy = PnLByPair;
 
-export interface PnLByPairV2 extends Omit<PnLByPair, "unrealisedPnlZarMinor" | "realisedPnlZarMinor"> {
+export interface PnLByPairV2
+  extends Omit<PnLByPair, "unrealisedPnlZarMinor" | "realisedPnlZarMinor"> {
   readonly unrealisedPnlZar: MoneyWire;
   readonly realisedPnlZar: MoneyWire;
 }
@@ -739,7 +740,8 @@ export function decodePnlByPair(raw: PnLByPair): PnLByPairV2 {
 /** @deprecated DECIMAL-MIGRATION: superseded by PnLByCurrencyV2. */
 export type PnLByCurrencyLegacy = PnLByCurrency;
 
-export interface PnLByCurrencyV2 extends Omit<PnLByCurrency, "unrealisedPnlZarMinor" | "realisedPnlZarMinor"> {
+export interface PnLByCurrencyV2
+  extends Omit<PnLByCurrency, "unrealisedPnlZarMinor" | "realisedPnlZarMinor"> {
   readonly unrealisedPnlZar: MoneyWire;
   readonly realisedPnlZar: MoneyWire;
 }

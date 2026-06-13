@@ -767,9 +767,9 @@ export function makeRealisedPnlRecognised(args: {
 // Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
 // ---------------------------------------------------------------------------
 
+import type { Money } from "../../core/decimal-money";
 import type { MoneyWire } from "../../core/money-codec";
 import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
-import type { Money } from "../../core/decimal-money";
 
 // ── FxPositionRevalued V2 ────────────────────────────────────────────────────
 
@@ -816,8 +816,7 @@ export function decodeFxPositionRevalued(
 /** @deprecated DECIMAL-MIGRATION: superseded by SubLedgerLegV2. */
 export type SubLedgerLegLegacy = SubLedgerLeg;
 
-export interface SubLedgerLegV2
-  extends Omit<SubLedgerLeg, "amountMinor"> {
+export interface SubLedgerLegV2 extends Omit<SubLedgerLeg, "amountMinor"> {
   /** Positive decimal amount as MoneyWire (debitCredit indicates direction). */
   readonly amount: MoneyWire;
 }

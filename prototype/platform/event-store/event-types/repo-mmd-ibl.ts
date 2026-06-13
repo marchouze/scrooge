@@ -765,9 +765,9 @@ export function makeFundingLineCommitmentRecorded(payload: FundingLineCommitment
 // Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
 // ---------------------------------------------------------------------------
 
+import type { Money } from "../../core/decimal-money";
 import type { MoneyWire } from "../../core/money-codec";
 import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
-import type { Money } from "../../core/decimal-money";
 
 // ── FundingLineCommitmentRecorded V2 ────────────────────────────────────────
 

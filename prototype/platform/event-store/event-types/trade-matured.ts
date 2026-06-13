@@ -116,9 +116,9 @@ export function makeTradeMatured(args: {
 // Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
 // ---------------------------------------------------------------------------
 
+import type { Money } from "../../core/decimal-money";
 import type { MoneyWire } from "../../core/money-codec";
 import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
-import type { Money } from "../../core/decimal-money";
 
 // ── TradeMatured / FX-spot V2 ────────────────────────────────────────────────
 
@@ -168,12 +168,7 @@ export function decodeTradeMaturedFxSpot(
   raw: TradeMaturedFxSpotPayload,
 ): TradeMaturedFxSpotPayloadV2 {
   const [baseCcy = "ZAR", quoteCcy = "ZAR"] = raw.currencyPair.split("/");
-  const {
-    settledBaseCurrencyMinor,
-    settledQuoteCurrencyMinor,
-    realisedPnlZarMinor,
-    ...rest
-  } = raw;
+  const { settledBaseCurrencyMinor, settledQuoteCurrencyMinor, realisedPnlZarMinor, ...rest } = raw;
   return {
     ...rest,
     settledBaseCurrency: moneyWireFromMinor(settledBaseCurrencyMinor, baseCcy),

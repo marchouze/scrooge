@@ -185,9 +185,9 @@ export function makeEquitySold(args: {
 // Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
 // ---------------------------------------------------------------------------
 
+import type { Money } from "../../core/decimal-money";
 import type { MoneyWire } from "../../core/money-codec";
 import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
-import type { Money } from "../../core/decimal-money";
 
 // ── EquityDividendAccrued V2 ─────────────────────────────────────────────────
 
@@ -257,7 +257,10 @@ export type EquitySoldPayloadLegacy = EquitySoldPayload;
 export interface EquitySoldPayloadV2
   extends Omit<
     EquitySoldPayload,
-    "salePricePerShareMinor" | "saleProceedsMinor" | "carryingAmountAtSaleMinor" | "realisedPnlMinor"
+    | "salePricePerShareMinor"
+    | "saleProceedsMinor"
+    | "carryingAmountAtSaleMinor"
+    | "realisedPnlMinor"
   > {
   readonly salePricePerShare: MoneyWire;
   readonly saleProceeds: MoneyWire;
