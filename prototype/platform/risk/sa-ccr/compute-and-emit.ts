@@ -51,8 +51,8 @@
 //   validation, risk) — `record:documents:nadia:v2-saccr-model-validation:
 //   2026-06-13`.
 
+import type { Money as V2Money } from "../../../v2-core/fil-core/primitives";
 import {
-  type Money as V2Money,
   type SaCcrEadComputation as V2Ead,
   type SaCcrNettingSet as V2NettingSet,
   type SaCcrReplacementCost as V2Rc,

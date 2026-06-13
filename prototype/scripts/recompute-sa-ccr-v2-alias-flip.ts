@@ -44,8 +44,8 @@ import "../platform/event-store/resolve-event-db-boot";
 
 import { clock, eventStore } from "../platform/composition";
 import type { CcrEadComputedPayload } from "../platform/event-store/event-types/counterparty-credit-risk";
-import { logger } from "../platform/observability/logger";
 import { resolveNettingSet } from "../platform/markets/netting-sets";
+import { logger } from "../platform/observability/logger";
 import { computeAndEmit } from "../platform/risk/sa-ccr/compute-and-emit";
 import {
   sourceCollateralFromRegister,

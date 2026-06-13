@@ -439,7 +439,7 @@ export function run(): ReconResult {
       const feedVMtm = Number(vMtmV2.minorUnits);
       violations.push({
         subject: `${rec.nettingSetId}:CcrReplacementCostComputed:vs-recorded-oracle`,
-        message: `Feed-sourced RC diverges from the RECORDED v1 oracle for ${rec.nettingSetId} (recorded-RC pin retired; basis divergence SURFACED, not forced):\n  recorded vMtm=${recVMtm} (basis: v1 resolveMtm cumulative-delta walk; as-of ${rec.asOf})\n  feed vMtm=${feedVMtm} (basis: latest *Revalued event-of-record per trade; as-of ${asOf})\n  recorded=${stableJson(recRc)}\n  feed-sourced=${stableJson(v2Out.rc)}`,
+        message: `Feed-sourced RC diverges from the RECORDED oracle for ${rec.nettingSetId} (recorded-RC pin retired; divergence SURFACED, not forced):\n  recorded vMtm=${recVMtm} (as-of ${rec.asOf} — basis: the pre-flip v1 resolveMtm cumulative-delta walk for the original EOD events, OR a post-flip v2 restatement whose valuation date differs from its computationDate stamp)\n  feed vMtm=${feedVMtm} (basis: latest *Revalued event-of-record per trade; reconstructed as-of ${asOf})\n  recorded=${stableJson(recRc)}\n  feed-sourced=${stableJson(v2Out.rc)}`,
         severity: "warn",
       });
     }
@@ -449,7 +449,7 @@ export function run(): ReconResult {
       if (stableJson(v2Out.ead) !== stableJson(recEad)) {
         violations.push({
           subject: `${rec.nettingSetId}:CcrEadComputed:vs-recorded-oracle`,
-          message: `Feed-sourced EAD diverges from the RECORDED v1 oracle for ${rec.nettingSetId} (downstream of the vMtm basis divergence above; surfaced, not forced):\n  recorded=${stableJson(recEad)}\n  feed-sourced=${stableJson(v2Out.ead)}`,
+          message: `Feed-sourced EAD diverges from the RECORDED oracle for ${rec.nettingSetId} (downstream of the vMtm divergence above; surfaced, not forced):\n  recorded=${stableJson(recEad)}\n  feed-sourced=${stableJson(v2Out.ead)}`,
           severity: "warn",
         });
       }
