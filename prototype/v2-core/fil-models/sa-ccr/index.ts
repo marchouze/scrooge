@@ -6,3 +6,4 @@
 
 export * from "./methodology";
 export * from "./model";
+export * from "./model-alias";

@@ -89,6 +89,10 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // WS-V2-BBAAS S6 — composition-factory seam (advisory): alias resolves +
     // no v2-core module bypasses the factory alias.
     "recon:v2-composition-factory",
+    // WS-V2-BBAAS — shared FIL alias-registry conformance: every swappable
+    // v2-core seam resolves through the one shared registry; no ad-hoc per-seam
+    // singleton. Authority: D-FIL-SHARED-ALIAS-REGISTRY.
+    "recon:v2-alias-registry-conformance",
     "recon:dashboard",
     "recon:wall-clock-callsite-coverage",
     "recon:decisions-events-only",
