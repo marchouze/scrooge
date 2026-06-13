@@ -28,11 +28,7 @@
 import type { FilLifecycleStage } from "../fil-core/lifecycle";
 import type { Money } from "../fil-core/primitives";
 import type { FilInstanceUrn, FilTypeUrn } from "../fil-core/urn";
-import type {
-  FilEconomicTerms,
-  FilInstanceLifecycleEvent,
-  FilOriginatingEventRef,
-} from "./events";
+import type { FilEconomicTerms, FilInstanceLifecycleEvent, FilOriginatingEventRef } from "./events";
 
 // ---------------------------------------------------------------------------
 // The register row — the current-state view of one FIL instance.
@@ -81,13 +77,22 @@ interface MutableRow {
  * before amendments/termination for any given instance). A terminated instance
  * stays in the register with its terminal stage (it is a closed-but-recorded
  * instance — Principle 1; consumers filter on stage).
+ *
+ * `asOf` (optional) bounds the fold to lifecycle events with `event.asOf <=
+ * asOf` — the proper Principle-1 as-of query. An instance created before but
+ * terminated after `asOf` therefore reads back as `active` AS OF that instant,
+ * exactly as a historical position reconstruction requires (the SA-CCR parity
+ * proof replays at a recorded as_of). Omit `asOf` for the latest-state view.
  */
 export function foldFilInstances(
   events: Iterable<FilInstanceLifecycleEvent>,
+  asOf?: string,
 ): FilInstanceRegister {
   const byUrn = new Map<FilInstanceUrn, MutableRow>();
+  const bound = asOf === undefined ? undefined : new Date(asOf).getTime();
 
   for (const ev of events) {
+    if (bound !== undefined && new Date(ev.asOf).getTime() > bound) continue;
     switch (ev.kind) {
       case "FilInstrumentCreated": {
         // Latest creation wins per URN (idempotent re-materialisation).

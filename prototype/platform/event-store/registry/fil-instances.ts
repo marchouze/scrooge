@@ -46,9 +46,7 @@ export const FIL_INSTANCES_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     subscribers: [...SUBSCRIBERS],
     replay: "latest-wins-per-key",
     retention: RETENTION_GOVERNANCE_7Y,
-    payloadSchema: filInstrumentCreatedPayload as unknown as z.ZodType<
-      Record<string, unknown>
-    >,
+    payloadSchema: filInstrumentCreatedPayload as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "v2-core/fil-instances/events.ts — FilInstrumentCreated",
   },
@@ -59,9 +57,7 @@ export const FIL_INSTANCES_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     subscribers: [...SUBSCRIBERS],
     replay: "append-only-audit",
     retention: RETENTION_GOVERNANCE_7Y,
-    payloadSchema: filInstrumentAmendedPayload as unknown as z.ZodType<
-      Record<string, unknown>
-    >,
+    payloadSchema: filInstrumentAmendedPayload as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "v2-core/fil-instances/events.ts — FilInstrumentAmended",
   },
@@ -72,9 +68,7 @@ export const FIL_INSTANCES_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     subscribers: [...SUBSCRIBERS],
     replay: "latest-wins-per-key",
     retention: RETENTION_GOVERNANCE_7Y,
-    payloadSchema: filInstrumentTerminatedPayload as unknown as z.ZodType<
-      Record<string, unknown>
-    >,
+    payloadSchema: filInstrumentTerminatedPayload as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "v2-core/fil-instances/events.ts — FilInstrumentTerminated",
   },

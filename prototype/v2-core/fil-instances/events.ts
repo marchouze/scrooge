@@ -54,13 +54,7 @@ import { filInstanceUrnSchema, filTypeUrnSchema } from "../fil-core/urn";
 // schema change.
 // ---------------------------------------------------------------------------
 
-export const filSaCcrAssetClassSchema = z.enum([
-  "ir",
-  "fx",
-  "credit",
-  "equity",
-  "commodity",
-]);
+export const filSaCcrAssetClassSchema = z.enum(["ir", "fx", "credit", "equity", "commodity"]);
 
 export type FilSaCcrAssetClass = z.infer<typeof filSaCcrAssetClassSchema>;
 

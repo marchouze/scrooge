@@ -202,6 +202,7 @@
     "recon:v2-released-surface-clean-core": "bun run platform/recon/v2-released-surface-gate.ts",
     "recon:v2-standing-data-seed-parity": "bun run platform/recon/v2-standing-data-seed-parity.ts",
     "seed:v2-anchor-bank-standing-data": "bun run scripts/seed-v2-anchor-bank-standing-data.ts",
+    "seed:v2-fil-instances-ir-fx": "bun run scripts/seed-v2-fil-instances-ir-fx.ts",
     "recon:fil-conformance": "bun run platform/recon/fil-conformance.ts",
     "recon:v2-saccr-parity": "bun run platform/recon/v2-saccr-parity.ts",
     "recon:v2-posture-register-integrity": "bun run platform/recon/v2-posture-register-integrity.ts",
