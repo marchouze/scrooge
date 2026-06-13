@@ -171,7 +171,8 @@ for (const t of settledWithReval) {
   const real = t.realisedPnlDelta ?? 0;
   if (unreal === 0 || real === 0) continue;
   // Same-sign overlap = the unrealised accrual not reversed (double-booked).
-  const overlap = Math.sign(unreal) === Math.sign(real) ? Math.min(Math.abs(unreal), Math.abs(real)) : 0;
+  const overlap =
+    Math.sign(unreal) === Math.sign(real) ? Math.min(Math.abs(unreal), Math.abs(real)) : 0;
   if (overlap === 0) continue;
   doubleCountSettledTrades += 1;
   doubleCountMinor += overlap;
@@ -188,7 +189,8 @@ for (const t of settledWithReval) {
   }
 }
 
-const fmt = (minor: number) => `R${(minor / 100).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmt = (minor: number) =>
+  `R${(minor / 100).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 console.log("════════════════════════════════════════════════════════════════");
 console.log(" FX P&L INSTRUMENT-LEVEL GAP — quantification (READ-ONLY)");
@@ -199,20 +201,34 @@ console.log("Population (canonical store):");
 console.log(`  FxTradeExecuted        : ${trades.size}`);
 console.log(`  …settled (SettlementConfirmed): ${settled.length}`);
 console.log(`  …settled WITH ≥1 reval : ${settledWithReval.length}`);
-console.log(`  RealisedPnlRecognised  : ${realisedRecognisedCount} (correct CSH close-out path), sum ${fmt(realisedRecognisedSumMinor)}`);
+console.log(
+  `  RealisedPnlRecognised  : ${realisedRecognisedCount} (correct CSH close-out path), sum ${fmt(realisedRecognisedSumMinor)}`,
+);
 console.log("");
 console.log("─── (A) IAS 21 §23(a) frozen-FCY retranslation gap ───");
-console.log(`  Settled FCY base notional frozen out of revaluation: ${settledBaseNotionalMinor} minor (base ccy units)`);
+console.log(
+  `  Settled FCY base notional frozen out of revaluation: ${settledBaseNotionalMinor} minor (base ccy units)`,
+);
 for (const [ccy, minor] of [...settledByCcy.entries()].sort((a, b) => b[1] - a[1])) {
   console.log(`     ${ccy}: ${(minor / 100).toLocaleString("en-ZA")} (base units)`);
 }
-console.log(`  Stranded accrued unrealised on settled trades (carried but never derecognised/reversed): ${fmt(strandedAccruedMinor)}`);
-console.log(`     → this is the GL fx.receivable/fx.unrealised_pnl balance attributable to settled positions that are`);
-console.log(`       no longer revalued; it is frozen at the last pre-settlement reval and bears no further retranslation.`);
+console.log(
+  `  Stranded accrued unrealised on settled trades (carried but never derecognised/reversed): ${fmt(strandedAccruedMinor)}`,
+);
+console.log(
+  "     → this is the GL fx.receivable/fx.unrealised_pnl balance attributable to settled positions that are",
+);
+console.log(
+  "       no longer revalued; it is frozen at the last pre-settlement reval and bears no further retranslation.",
+);
 console.log("");
 console.log("─── (B) Realised/unrealised double-count ───");
-console.log(`  Settled trades with overlapping (same-direction) unrealised + realised: ${doubleCountSettledTrades}`);
-console.log(`  DOUBLE-COUNTED amount (unrealised accrual not reversed on settlement): ${fmt(doubleCountMinor)}`);
+console.log(
+  `  Settled trades with overlapping (same-direction) unrealised + realised: ${doubleCountSettledTrades}`,
+);
+console.log(
+  `  DOUBLE-COUNTED amount (unrealised accrual not reversed on settlement): ${fmt(doubleCountMinor)}`,
+);
 console.log("");
 console.log("  Sample (first 8):");
 for (const s of doubleCountSamples) {
