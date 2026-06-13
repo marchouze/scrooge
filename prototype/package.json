@@ -209,6 +209,7 @@
     "recon:v2-saccr-parity": "bun run platform/recon/v2-saccr-parity.ts",
     "recon:v2-posture-register-integrity": "bun run platform/recon/v2-posture-register-integrity.ts",
     "recon:v2-control-plane-tenant-registry": "bun run platform/recon/v2-control-plane-tenant-registry.ts",
+    "recon:v2-composition-factory": "bun run platform/recon/v2-composition-factory.ts",
     "seed:v2-anchor-tenant": "bun run scripts/seed-v2-anchor-tenant.ts",
     "recon:graph-ontology": "bun run platform/recon/graph-ontology-coverage.ts",
     "recon:orphan-capability": "bun run platform/recon/orphan-capability.ts",

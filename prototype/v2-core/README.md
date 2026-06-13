@@ -218,7 +218,67 @@ allowlist) flips per check-class as the allowlist burns down (S-FIL-3…6).
 
 ---
 
-## 6. What lands next (NOT in this package yet)
+## 6. The composition factory behind an alias (S6)
+
+S0 landed the composition **algebra** (`fil-core/composition.ts`: `FilLeg`,
+`FilComponent`, `FilWrapper`, and the `legsOf` / `componentsOf` / `wrapping`
+constructors). S6 adds the construction **seam** on top of it.
+
+**The factory** (`fil-core/composition-factory.ts`) builds well-formed composite
+FIL instruments from **typed, kind-discriminated specs** over that algebra:
+
+| Spec `kind` | Built composition |
+|---|---|
+| `irs` | `legs: [fixedLeg, floatLeg]` (each a typed `FilLeg`) |
+| `fx-swap` | `legs: [nearLeg, farLeg]` |
+| `structured` | `components: [...]` (containment) |
+
+It **validates leg/component typing against the taxonomy**: every `legType` /
+`componentType` (and the composite's own `compositeType`) must be a valid
+`fil:type:…@maj.min` URN (a registered FIL type, never a free object); leg/
+component ids must be unique; a structured composite must carry ≥1 component.
+Rejections throw a `CompositionFactoryError` carrying a **stable `code`**
+(`leg-type-not-a-fil-type-urn`, `empty-components`, `duplicate-leg-id`, …) so
+callers and the recon gate can assert *which* rule fired. The factory builds via
+the S0 constructors (`legsOf` / `componentsOf`) — never a hand-assembled
+`FilComposition` literal — and returns a `BuiltComposite` keyed to the
+composite's own `fil:type:` URN. **No valuation / lifecycle / risk** — pure
+construction.
+
+**The alias seam** (`fil-core/composition-factory-alias.ts`) is *why this is S6
+and not just a helper*. Composite construction is going to **move** (more
+instrument kinds, tenant-composed types, CDM-economic-terms leaves). Rather than
+have every call-site `import` the concrete factory — a wide coordinated rewrite
+each time construction changes — consumers resolve it through a single stable
+indirection:
+
+- `COMPOSITION_FACTORY_ALIAS` = `"fil-core:composition-factory"` — the addressable seam identity.
+- `buildComposite(spec)` — the one-call construction surface every consumer uses.
+- `registerCompositionFactory(impl)` — swap the implementation behind the alias (the cutover primitive); returns a `restore()` handle (rollback / test isolation).
+- `resolveCompositionFactory()` — the implementation live *now* (default registered eagerly at module load, so the alias is never dangling).
+
+The implementation behind the alias can be **swapped without touching any
+call-site** — the strangler/cutover pattern, the **same seam shape as the
+SA-CCR alias-flip** (where v2 became the sole live CCR emitter behind one
+resolution boundary; here the boundary is composite *construction* rather than
+CCR *emission*). The `composition-factory.test.ts` `"honours a swapped
+implementation behind the same alias"` case proves the seam is real: a sentinel
+factory registered behind the alias is honoured by `buildComposite`, and the
+default is restored on unwind.
+
+`recon:v2-composition-factory` (advisory) asserts (1) the alias resolves to a
+live factory, and (2) no `v2-core` module bypasses the seam by importing the
+concrete factory's `build` / `defaultCompositionFactory` directly. Advisory
+because S6 proves the seam in isolation (not yet wired into the FIL-instance
+backfill — that is a later wave), so it never blocks CI on the absence of
+consumers while standing ready to catch the first bypass.
+
+Authority: `D-V2-BBAAS-BLUEPRINT-SYNTHESIS`, `D-MODEL-BINDING-CONTRACT-V1`,
+`D-FIL-FRAMEWORK-UNIFICATION`.
+
+---
+
+## 7. What lands next (NOT in this package yet)
 
 - **S1/S2** — control-plane store + tenant axis (Wave 1).
 - **S7-FIL** — the first FIL-Model: SA-CCR implementing `RiskMeasurable` over

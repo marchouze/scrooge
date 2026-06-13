@@ -200,7 +200,11 @@ function requireFilTypeUrn(
 
 /** Build a validated `FilLeg` from a `LegSpec` (leg type must be a FIL type URN). */
 function buildLeg(spec: LegSpec): FilLeg {
-  const legType = requireFilTypeUrn(spec.legType, "leg-type-not-a-fil-type-urn", `leg "${spec.legId}" legType`);
+  const legType = requireFilTypeUrn(
+    spec.legType,
+    "leg-type-not-a-fil-type-urn",
+    `leg "${spec.legId}" legType`,
+  );
   return { legId: spec.legId, legType, direction: spec.direction };
 }
 
