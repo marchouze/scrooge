@@ -32,10 +32,10 @@ export {
   tradeDelta,
 } from "./pfe-addon";
 export { computeEad } from "./ead";
-export {
-  computeAndEmit,
-  computeAndEmitFor,
-  resolveCollateral,
-  resolveMtm,
-} from "./compute-and-emit";
+// NOTE: `resolveMtm` / `resolveCollateral` are RETIRED at the SA-CCR alias-flip
+// (WS-V2-BBAAS, D-SACCR-V2-CUTOVER-ACCELERATE). The defective v1 `resolveMtm`
+// FX-summing path is severed; RC inputs are now FIL-mediated
+// (`fil-valuable-collateral-feed.ts`). No live fallback to the v1 resolution
+// layer survives the cutover (Nadia MV-SACCR-V2-003).
+export { computeAndEmit, computeAndEmitFor } from "./compute-and-emit";
 export type { ComputeAndEmitForInput, ComputeAndEmitInput } from "./compute-and-emit";

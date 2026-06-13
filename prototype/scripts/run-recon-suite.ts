@@ -53,6 +53,8 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon",
     "recon:runtime-handler-sync",
     "recon:posting-engine-single-subscriber",
+    // WS-V2-BBAAS — SA-CCR alias-flip single-emitter gate (CCR events of record).
+    "recon:ccr-single-emitter",
     "recon:dispatch-sync-integrity",
     "recon:parallel-dispatch-divergence",
     "recon:rms-event-projection-parity",

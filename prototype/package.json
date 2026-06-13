@@ -189,6 +189,7 @@
     "recon:ras-b7-model-tier-discipline-coverage": "bun run platform/recon/ras-b7-model-tier-discipline-coverage.ts",
     "recon:permission-gate-default": "bun run platform/recon/permission-gate-default.ts",
     "recon:posting-engine-single-subscriber": "bun run platform/recon/posting-engine-single-subscriber.ts",
+    "recon:ccr-single-emitter": "bun run platform/recon/ccr-single-emitter.ts",
     "recon:permission-policy-coverage": "bun run platform/recon/permission-policy-coverage.ts",
     "seed:permission-policies": "bun run scripts/seed-permission-policies.ts",
     "seed:sarb-fixings": "bun run scripts/bootstrap/seed-sarb-fixings.ts",
