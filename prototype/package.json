@@ -32,6 +32,7 @@
     "file:mira-v2-s3-applies-when-design-note": "bun run scripts/file-mira-v2-s3-applies-when-design-note.ts",
     "file:atlas-v2-repo-strategy-reexamination": "bun run scripts/file-atlas-v2-repo-strategy-reexamination.ts",
     "file:atlas-fil-framework-unification": "bun run scripts/file-atlas-fil-framework-unification.ts",
+    "file:atlas-dimensional-metric-attribution-layer-design-spec": "bun run scripts/file-atlas-dimensional-metric-attribution-layer-design-spec.ts",
     "file:atlas-v2-s1-control-plane-store": "bun run scripts/file-atlas-v2-s1-control-plane-store.ts",
     "file:owen-v2-s11-functional-seats": "bun run scripts/file-owen-v2-s11-functional-seats.ts",
     "record:d-fil-framework-unification": "bun run scripts/record-d-fil-framework-unification.ts",
