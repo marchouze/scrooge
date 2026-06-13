@@ -173,3 +173,88 @@ export const tenantMeterEventPayloadSchema = z
   .strict() as z.ZodType<TenantMeterEventPayload>;
 
 export const TENANT_METER_EVENT = "TenantMeterEvent" as const;
+
+// ---------------------------------------------------------------------------
+// FunctionalSeatRegistered (V2 S11)
+// ---------------------------------------------------------------------------
+
+/**
+ * Seat type — the v2-core analogue of the roster `type` field.
+ *
+ *   governance  — a seat holding NAMED REGULATORY ACCOUNTABILITY (CRO, CoSec, …).
+ *   engineering — a seat that BUILDS coded controls, projections, platform
+ *                 components (Risk Engineer, RegTech Engineer, …).
+ *
+ * The two seat types are distinct; the distinction is sourced verbatim from the
+ * roster's `type` field (roster `rules.engineeringVsGovernance`). S11 never
+ * invents a seat type — it derives it.
+ *
+ * Authority: D-V2-TENANCY-ARCHITECTURE.
+ */
+export type SeatType = "governance" | "engineering";
+
+export const seatTypeSchema = z.enum(["governance", "engineering"]);
+
+/**
+ * A tenant-scoped functional seat is registered.
+ *
+ * S11 introduces the SEAT/PERSONA split for a multi-tenant platform: the SEAT
+ * is the functional role (tenant-scoped — every tenant gets its own seats); the
+ * PERSONA (Helena, Rohan, …) is the anchor tenant's *occupant* of its seat.
+ * This event is the founding record for one seat in one tenant's seat register.
+ *
+ * KEY SHAPE — `seatId` is `tenant:<tenantId-segment>:seat:<role-slug>`, e.g.
+ *   `tenant:za-bank:seat:cro`, `:seat:company-secretary`, `:seat:risk-engineer`.
+ * Because the key embeds the tenantId, `tenant:za-bank:seat:cro` and a
+ * hypothetical `tenant:uk-bank:seat:cro` are DISTINCT, non-colliding keys —
+ * the multi-tenant property S11 exists to establish.
+ *
+ *   `tenantId`       — the owning tenant (e.g. `tenant:za-bank`).
+ *   `functionalRole` — the role, sourced verbatim from the roster `role` field
+ *                      (e.g. "Chief Risk Officer"). The role is what the seat
+ *                      IS; the slug in `seatId` is its key form.
+ *   `seatType`       — governance | engineering, from the roster `type` field.
+ *   `reportsToSeat`  — the seatId of the seat this seat reports to, or `null`
+ *                      for a top-of-house seat reporting to the CEO (the roster
+ *                      `reportsTo` of "CEO"/"marc" has no persona seat).
+ *   `occupant`       — the anchor persona NAME filling this seat (e.g. "Helena").
+ *                      For a non-anchor tenant a seat may be registered with a
+ *                      different occupant; the occupant is NOT the seat identity.
+ *
+ * Authority: D-V2-TENANCY-ARCHITECTURE; D-V2-BBAAS-TIER-STRUCTURE;
+ * D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
+ */
+export interface FunctionalSeatRegisteredPayload {
+  readonly seatId: string; // e.g. "tenant:za-bank:seat:cro"
+  readonly tenantId: string; // e.g. "tenant:za-bank"
+  readonly functionalRole: string; // from roster `role`, e.g. "Chief Risk Officer"
+  readonly seatType: SeatType; // from roster `type`
+  readonly reportsToSeat: string | null; // seatId of the reports-to seat, or null (CEO)
+  readonly occupant: string; // anchor persona name, e.g. "Helena"
+  readonly registeredAt: string; // ISO-8601 UTC
+}
+
+export const functionalSeatRegisteredPayloadSchema = z
+  .object({
+    seatId: z
+      .string()
+      .min(1)
+      .regex(/^tenant:[^:]+:seat:[a-z0-9-]+$/, {
+        message:
+          "seatId must be 'tenant:<tenantId-segment>:seat:<role-slug>' (e.g. 'tenant:za-bank:seat:cro')",
+      }),
+    tenantId: z
+      .string()
+      .min(1)
+      .regex(/^tenant:/, {
+        message: "tenantId must start with 'tenant:' (e.g. 'tenant:za-bank')",
+      }),
+    functionalRole: z.string().min(1),
+    seatType: seatTypeSchema,
+    reportsToSeat: z.string().min(1).nullable(),
+    occupant: z.string().min(1),
+    registeredAt: z.string().min(1),
+  })
+  .strict() as z.ZodType<FunctionalSeatRegisteredPayload>;
+
+export const FUNCTIONAL_SEAT_REGISTERED = "FunctionalSeatRegistered" as const;

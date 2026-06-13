@@ -95,6 +95,13 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // tenant has tier + surface grant; metering windows well-formed; upgrade
     // ledger consistent (no version regressions, connected chain).
     "recon:v2-fleet-integrity",
+    // WS-V2-BBAAS S11 — tenant-scoped functional-seat roster parity (advisory→
+    // enforcing): every anchor persona maps to exactly one anchor seat; seat
+    // role/type/reportsTo/occupant consistent with Team/_team-roster.json
+    // (the roster is the source — drift is a finding); no orphan seats. The
+    // deterministic core is enforced sabotage-proof in the v2-core test.
+    // Authority: D-V2-TENANCY-ARCHITECTURE.
+    "recon:v2-functional-seat-roster-parity",
     // WS-V2-BBAAS S6 — composition-factory seam (advisory): alias resolves +
     // no v2-core module bypasses the factory alias.
     "recon:v2-composition-factory",

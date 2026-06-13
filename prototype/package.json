@@ -215,6 +215,7 @@
     "recon:v2-decision-impact-sweep-coverage": "bun run platform/recon/v2-decision-impact-sweep-coverage.ts",
     "recon:v2-control-plane-tenant-registry": "bun run platform/recon/v2-control-plane-tenant-registry.ts",
     "recon:v2-fleet-integrity": "bun run platform/recon/v2-fleet-integrity.ts",
+    "recon:v2-functional-seat-roster-parity": "bun run platform/recon/v2-functional-seat-roster-parity.ts",
     "recon:v2-composition-factory": "bun run platform/recon/v2-composition-factory.ts",
     "recon:v2-alias-registry-conformance": "bun run platform/recon/v2-alias-registry-conformance.ts",
     "recon:v2-tenant-isolation": "bun run platform/recon/v2-tenant-isolation.ts",

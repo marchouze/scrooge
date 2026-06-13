@@ -149,3 +149,6 @@ export * from "./control-plane/projection";
 
 /** @tier K — S14 operational fleet layer (FleetProjection: listFleet, getTenantFleetState, meteringSummary, fleetMeteringSummary, tenantVersion, fleetVersionDrift); AgentOps anchor-bank only */
 export * from "./control-plane/fleet";
+
+/** @tier R — S11 tenant-scoped functional-seat model (FunctionalSeatProjection, deriveSeatMap, deriveAndAppendAnchorSeats, seatId, roleSlug, assertSeatRosterParity); seats are tenant-scoped so a second tenant's CRO seat never collides with the anchor's */
+export * from "./control-plane/functional-seats";
