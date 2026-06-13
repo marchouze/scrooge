@@ -1,0 +1,127 @@
+// platform/core/money-codec.ts
+//
+// Event-payload codec for the decimal `Money` type. Money serialises as a
+// `{ amount: <decimal-string>, currency: <code> }` object — `amount` is ALWAYS
+// a JSON string, NEVER a JSON number (JSON numbers are IEEE-754 floats, banned
+// for money). On read the codec parses the string back into the exact decimal
+// `Money` (validating it round-trips).
+//
+// This module also defines HOW A SCHEMA DECLARES A MONEY FIELD: a field is a
+// money field iff its serialised shape is `MoneyWire` (the `__money` discriminant
+// + string amount). The `recon:money-codec-no-float` gate (authored in slice 1,
+// enforced fully in slice 5) asserts no money-bearing payload field is a JSON
+// number. This replaces the `*Minor: bigint` convention, which retires in
+// slice 2.
+//
+// Design spec §1.5 ("JSON / event codec").
+//
+// Author: Atlas (Core banking platform architect, engineering).
+
+import { toCanonicalString, toDecimal } from "./decimal-engine";
+import { type Money, money } from "./decimal-money";
+import { isKnownCurrency } from "./iso4217";
+import type { Currency } from "./types";
+
+/**
+ * The on-the-wire shape of a money field in an event payload. The `__money`
+ * discriminant lets a generic walker (and the no-float recon gate) detect a
+ * money field structurally, without a per-schema field-name allowlist.
+ */
+export interface MoneyWire {
+  readonly __money: "v1";
+  /** Canonical decimal string. NEVER a number. */
+  readonly amount: string;
+  readonly currency: string;
+}
+
+/** A schema declares a money field by typing it `MoneyWire` in its payload
+ *  interface (and using `encodeMoney`/`decodeMoney` at the producer /
+ *  projection boundary). Example:
+ *
+ *  ```ts
+ *  interface FxSpotBookedPayload {
+ *    readonly tradeId: string;
+ *    readonly boughtAmount: MoneyWire;   // ← money field
+ *    readonly soldAmount: MoneyWire;     // ← money field
+ *  }
+ *  ```
+ */
+
+const MONEY_DISCRIMINANT = "v1" as const;
+
+/** Encode a `Money` into its wire form for an event payload. */
+export function encodeMoney(m: Money): MoneyWire {
+  // Re-canonicalise defensively so an externally-constructed Money cannot
+  // smuggle a non-canonical or float-derived string onto the wire.
+  return {
+    __money: MONEY_DISCRIMINANT,
+    amount: toCanonicalString(toDecimal(m.amount)),
+    currency: m.currency,
+  };
+}
+
+/** True if a value is a well-formed money wire object (string amount). */
+export function isMoneyWire(v: unknown): v is MoneyWire {
+  if (typeof v !== "object" || v === null) return false;
+  const o = v as Record<string, unknown>;
+  return (
+    o.__money === MONEY_DISCRIMINANT &&
+    typeof o.amount === "string" &&
+    typeof o.currency === "string"
+  );
+}
+
+/**
+ * Decode a money wire object back into the exact decimal `Money`. Throws if the
+ * amount is not a string (e.g. a JSON number slipped in — a float-money
+ * violation), if the currency is unknown to ISO 4217, or if the decimal string
+ * is malformed.
+ */
+export function decodeMoney<C extends Currency = Currency>(wire: unknown): Money<C> {
+  if (!isMoneyWire(wire)) {
+    // The single most important guard: reject a numeric amount loudly.
+    if (
+      typeof wire === "object" &&
+      wire !== null &&
+      typeof (wire as Record<string, unknown>).amount === "number"
+    ) {
+      throw new TypeError(
+        "money-codec: amount is a JSON number — money must serialise as a decimal string (no IEEE-754 floats).",
+      );
+    }
+    throw new TypeError(`money-codec: not a valid money wire object: ${JSON.stringify(wire)}`);
+  }
+  if (!isKnownCurrency(wire.currency as Currency)) {
+    // Unknown currencies still decode (the ISO table degrades to a policy
+    // default scale, never a throw), but we surface it for the no-float gate's
+    // sibling currency-coverage check.
+  }
+  return money(wire.amount, wire.currency as C);
+}
+
+/**
+ * Walk an arbitrary payload and report any field whose value is a money wire
+ * object carrying a NUMERIC amount (a float-money violation), plus any bare
+ * `amount`/`*Minor`-looking numeric leaf that should have been a `MoneyWire`.
+ * Used by `recon:money-codec-no-float`. Returns dotted paths of violations.
+ */
+export function findFloatMoneyViolations(payload: unknown): string[] {
+  const violations: string[] = [];
+  const visit = (node: unknown, path: string): void => {
+    if (node === null || typeof node !== "object") return;
+    if (Array.isArray(node)) {
+      node.forEach((v, i) => visit(v, `${path}[${i}]`));
+      return;
+    }
+    const o = node as Record<string, unknown>;
+    // A money wire object with a numeric amount is a hard violation.
+    if (o.__money !== undefined && typeof o.amount === "number") {
+      violations.push(`${path}.amount`);
+    }
+    for (const [k, v] of Object.entries(o)) {
+      visit(v, path ? `${path}.${k}` : k);
+    }
+  };
+  visit(payload, "");
+  return violations;
+}

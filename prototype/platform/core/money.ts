@@ -4,36 +4,82 @@
 // (P5). Arithmetic across currencies is rejected at runtime; FX conversion
 // is an explicit event with a rate source, rate timestamp, and citation.
 //
-// Amounts are stored as bigint in minor units (cents for ZAR / USD / EUR /
-// GBP) to avoid float drift. Higher-precision currencies that require more
-// than 2 dp are not yet supported in the prototype.
+// ── CONVERGENCE NOTICE (D-MONEY-DECIMAL-BUILD-PROCEED, slice 1) ───────────────
+//   The CANONICAL money primitive is now the EXACT-DECIMAL `Money` in
+//   `./decimal-money.ts` (string major-unit amount, complete ISO 4217 boundary
+//   table, explicit RoundingContext at every division, codec at
+//   `./money-codec.ts`). It is re-exported below under the `Decimal*` aliases
+//   AND `decimal-money` is the import target new code should use directly.
 //
-// Author: Atlas
+//   The bigint MINOR-UNIT surface below (`Money` = { amount: bigint }, `minor`,
+//   `decimalsFor` with the 4-entry `DECIMALS` stub) is RETAINED ONLY as the
+//   legacy boundary for ~20 existing consumers; it is DEPRECATED and migrated
+//   off in slice 2. No new code should import the bigint `Money` from here.
+//   `platform/types/currency.ts` (the other divergent Money) also re-exports
+//   the decimal type — the two have converged to one canonical definition.
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Author: Atlas (Core banking platform architect, engineering).
 
+import { scaleFor as scaleForExponent } from "./iso4217";
 import type { Currency } from "./types";
+
+// Re-export the canonical decimal money surface so the two prior money modules
+// converge here. New code: prefer importing from `./decimal-money` directly.
+export {
+  type Money as DecimalMoney,
+  type RoundingContext,
+  type RoundingMode,
+  ROUNDING,
+  money as decimalMoney,
+  zeroMoney,
+  add as addDecimal,
+  sub as subDecimal,
+  neg as negDecimal,
+  sum as sumDecimal,
+  eq as eqDecimal,
+  compare as compareDecimal,
+  isZero as isZeroDecimal,
+  isNegative as isNegativeDecimal,
+  mulScalar,
+  round as roundMoney,
+  divideRounded,
+  convertFx,
+  allocate,
+  settleWithResidual,
+} from "./decimal-money";
+export {
+  type MoneyWire,
+  encodeMoney,
+  decodeMoney,
+  isMoneyWire,
+  findFloatMoneyViolations,
+} from "./money-codec";
+export {
+  ISO4217_EXPONENTS,
+  iso4217Exponent,
+  scaleFor,
+  isKnownCurrency,
+  hasNoMinorUnit,
+} from "./iso4217";
 
 export interface Money {
   readonly amount: bigint; // minor units
   readonly currency: Currency;
 }
 
-const DECIMALS: Record<string, number> = {
-  ZAR: 2,
-  USD: 2,
-  EUR: 2,
-  GBP: 2,
-};
-
 /**
- * Number of minor-unit decimal places for a currency (e.g. ZAR/USD/EUR/GBP
- * = 2; JPY would be 0 once added). Exported so cross-currency consumers
- * (MT300 field-36 rate derivation, payments serialisers) can normalise
- * minor units to decimal-units without going via `format()`.
+ * Number of minor-unit decimal places for a currency.
+ *
+ * As of the decimal-money convergence (slice 1) this delegates to the COMPLETE
+ * ISO 4217 boundary table (`scaleFor`), so it no longer throws on JPY/KRW/BHD
+ * or any other valid currency — the 4-entry `DECIMALS` stub is gone. A
+ * no-minor-unit currency (metals) degrades to the policy-default scale rather
+ * than throwing (design spec §1.3). Retained for legacy minor-unit consumers
+ * (MT300 field-36, payments serialisers) until slice 2 migrates them.
  */
 export function decimalsFor(currency: Currency): number {
-  const d = DECIMALS[currency];
-  if (d === undefined) throw new Error(`Unsupported currency: ${currency}. Add to DECIMALS.`);
-  return d;
+  return scaleForExponent(currency);
 }
 
 /** Construct money from a major-unit number or numeric string. */
