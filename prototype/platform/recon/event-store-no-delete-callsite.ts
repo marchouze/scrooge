@@ -77,6 +77,17 @@ const ALLOWLIST_RELATIVE_PATHS: ReadonlySet<string> = new Set([
   // destroyed — they are preserved in the archive DB at archivePath and
   // remain replayable via PartitionedEventStore.
   "platform/event-store/store.ts",
+  // Decimal-money redenomination purge (D-MONEY-DECIMAL-REDENOMINATION,
+  // D-MONEY-DECIMAL-BUILD-PROCEED, CEO-approved 2026-06-13).
+  // slice4-purge-reseed.ts is a one-shot operational script that MUST run
+  // against a copy (VACUUM INTO backup verified by slice3-backup.ts and
+  // gated by RecordFiled "Pre-purge backup verified" in the live store before
+  // any DELETE is attempted). The purge removes ONLY transactional-category
+  // event types (trading, accounting, settlement, market-data) which are
+  // build-phase simulated data; the append-only governance/config events are
+  // retained. This is the sanctioned pre-licence purge path; all events are
+  // preserved in the pre-purge backup taken by slice3-backup.ts.
+  "scripts/money/slice4-purge-reseed.ts",
 ]);
 
 // Directories to skip entirely when walking prototype/.

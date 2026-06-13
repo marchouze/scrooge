@@ -67,6 +67,16 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:trigger-spec-handler-symmetry",
     "recon:event-store-append-only",
     "recon:event-store-no-delete-callsite",
+    // D-MONEY-DECIMAL-REDENOMINATION — decimal-money cutover gates.
+    // On a fresh config-only store: trivially green (no transactional events).
+    // On a populated build-phase store: advisory audit lens (no FAIL-severity).
+    // recon:no-legacy-le-identity is FAIL-severity (enforcement).
+    // recon:no-residual-minor-encoding is FAIL-severity (enforcement).
+    // Authority: D-MONEY-DECIMAL-BUILD-PROCEED; D-MONEY-DECIMAL-REDENOMINATION;
+    //            D-LEGAL-ENTITY-NAME-HOZ-BANK.
+    "recon:no-transactional-sim-events",
+    "recon:no-legacy-le-identity",
+    "recon:no-residual-minor-encoding",
     "recon:urn-shape",
     "recon:aggregate-id-coverage",
     "recon:madge-circular-deps",
