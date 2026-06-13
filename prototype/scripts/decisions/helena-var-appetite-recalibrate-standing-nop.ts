@@ -45,10 +45,10 @@
 import "../../platform/event-store/resolve-event-db-boot";
 
 import { clock } from "../../platform/composition";
+import { eventStore } from "../../platform/composition";
 import { makeRasLineCalibrated } from "../../platform/event-store/event-types/risk";
 import { recordFiled } from "../../platform/records";
 import { marketVarAppetiteCeilingZar } from "../../platform/risk/ras-appetite-register";
-import { eventStore } from "../../platform/composition";
 import { recordDecision, requestDecision } from "../../runtime/decisions/record";
 
 const DECISION_ID = "D-VAR-APPETITE-RECALIBRATE-STANDING-NOP";
@@ -77,31 +77,9 @@ const CITATIONS = [
   "BANKS-REG-29",
 ];
 
-const RECOMMENDATION =
-  `Re-calibrate the RAS §B4 market-risk 1-day 99% VaR appetite line ` +
-  `\`${LINE_ID}\` (MR-1-FX) from R${OLD_CEILING_ZAR.toLocaleString()} to ` +
-  `R${NEW_CEILING_ZAR.toLocaleString()}. New ceiling = corrected standing-NOP ` +
-  `VaR base ~R${CORRECTED_BASE_VAR_ZAR.toLocaleString()} + ~15% management buffer ` +
-  `(≈R75,000), rounded. RAG bands unchanged in shape: amber ≥80% of ceiling, ` +
-  `red ≥100%. Ceiling is the single-source value the VaR-measure emitters read ` +
-  `from the canonical RAS register (no more module-local VAR_APPETITE_ZAR). ` +
-  `Interim build-phase ceiling under D-BRC-INTERIM-MR-1-FX; re-tabled to the ` +
-  `Board Risk Committee at licence-day.`;
+const RECOMMENDATION = `Re-calibrate the RAS §B4 market-risk 1-day 99% VaR appetite line \`${LINE_ID}\` (MR-1-FX) from R${OLD_CEILING_ZAR.toLocaleString()} to R${NEW_CEILING_ZAR.toLocaleString()}. New ceiling = corrected standing-NOP VaR base ~R${CORRECTED_BASE_VAR_ZAR.toLocaleString()} + ~15% management buffer (≈R75,000), rounded. RAG bands unchanged in shape: amber ≥80% of ceiling, red ≥100%. Ceiling is the single-source value the VaR-measure emitters read from the canonical RAS register (no more module-local VAR_APPETITE_ZAR). Interim build-phase ceiling under D-BRC-INTERIM-MR-1-FX; re-tabled to the Board Risk Committee at licence-day.`;
 
-const RATIONALE =
-  `PR #1279 (D-VAR-EXPOSURE-INCLUDES-STANDING-NOP) re-based market-risk VaR / ` +
-  `SVaR / ES onto the standing FX net-open-position (settlement-retained, ` +
-  `B3-aligned) — the same book BA 310 attests. Corrected live base ~R` +
-  `${CORRECTED_BASE_VAR_ZAR.toLocaleString()} VaR / SVaR, ~R` +
-  `${CORRECTED_BASE_ES_ZAR.toLocaleString()} ES (5 risk factors), vs ~R280,000 ` +
-  `on the OLD trade-only basis (3 risk factors). The R${OLD_CEILING_ZAR.toLocaleString()} ` +
-  `MR-1-FX ceiling was calibrated against the OLD basis (utilisation ~80%, amber); ` +
-  `against the corrected base it reads ~143% (red) and is stale. Re-calibrating ` +
-  `to R${NEW_CEILING_ZAR.toLocaleString()} restores the ~87% (amber) utilisation ` +
-  `posture the original carried against the old base — preserving the early-warning ` +
-  `headroom on the corrected basis, not re-setting it looser. Within-methodology, ` +
-  `interim, build-phase, tier-2: CRO authority; no RAS Tier-1 / Board threshold ` +
-  `crossed; no CEO sign-off required.`;
+const RATIONALE = `PR #1279 (D-VAR-EXPOSURE-INCLUDES-STANDING-NOP) re-based market-risk VaR / SVaR / ES onto the standing FX net-open-position (settlement-retained, B3-aligned) — the same book BA 310 attests. Corrected live base ~R${CORRECTED_BASE_VAR_ZAR.toLocaleString()} VaR / SVaR, ~R${CORRECTED_BASE_ES_ZAR.toLocaleString()} ES (5 risk factors), vs ~R280,000 on the OLD trade-only basis (3 risk factors). The R${OLD_CEILING_ZAR.toLocaleString()} MR-1-FX ceiling was calibrated against the OLD basis (utilisation ~80%, amber); against the corrected base it reads ~143% (red) and is stale. Re-calibrating to R${NEW_CEILING_ZAR.toLocaleString()} restores the ~87% (amber) utilisation posture the original carried against the old base — preserving the early-warning headroom on the corrected basis, not re-setting it looser. Within-methodology, interim, build-phase, tier-2: CRO authority; no RAS Tier-1 / Board threshold crossed; no CEO sign-off required.`;
 
 // --- Decision lifecycle: requested -> approved (CRO self-ratifies) -----------
 requestDecision(
@@ -149,14 +127,9 @@ const calibration = makeRasLineCalibrated({
   payload: {
     lineId: LINE_ID,
     rasSection: "RAS §B4",
-    calibrationDescription:
-      `Market-risk 1-day 99% VaR appetite ceiling R${NEW_CEILING_ZAR.toLocaleString()} ` +
-      `(MR-1-FX), measured against the standing FX net-open-position basis ` +
-      `(settlement-retained, B3-aligned). Amber ≥80% of ceiling; red ≥100%. ` +
-      `Re-calibrated from R${OLD_CEILING_ZAR.toLocaleString()} (stale, old trade-only basis).`,
+    calibrationDescription: `Market-risk 1-day 99% VaR appetite ceiling R${NEW_CEILING_ZAR.toLocaleString()} (MR-1-FX), measured against the standing FX net-open-position basis (settlement-retained, B3-aligned). Amber ≥80% of ceiling; red ≥100%. Re-calibrated from R${OLD_CEILING_ZAR.toLocaleString()} (stale, old trade-only basis).`,
     calibrationCitations: CITATIONS,
-    calibrationSource:
-      "record:documents:helena:var-appetite-recalibration-standing-nop:2026-06-13",
+    calibrationSource: "record:documents:helena:var-appetite-recalibration-standing-nop:2026-06-13",
     standingAuthority: "D-VAR-EXPOSURE-INCLUDES-STANDING-NOP",
     obligationRowId: "ORG-PR-RETURNS-011",
     calibrationParameters: {
