@@ -149,6 +149,8 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:provision-tick-drift",
     "recon:decision-distillation-coverage",
     "recon:fil-conformance",
+    // WS-V2-BBAAS S7-FIL — SA-CCR FIL-Model ↔ v1 engine byte-equivalence gate.
+    "recon:v2-saccr-parity",
     "recon:period-close-cursor-integrity",
     "recon:ba310-submission-completeness",
     "recon:ba-returns-vs-gl-balances",
