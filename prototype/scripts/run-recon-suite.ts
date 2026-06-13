@@ -149,6 +149,13 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // without re-provisioning. Authority: D-V2-WAVE4-COMMERCIAL-POSTURE;
     // D-V2-TENANCY-ARCHITECTURE.
     "recon:v2-onboarding-readiness",
+    // A2 FX Valuable FIL-Model gates. fx-settlement-continuity: value_pre ==
+    // value_post on settlement (structural — value() is lifecycle-free).
+    // fx-book-nop-parity: the book:fx-trading slice value reconciles to the
+    // shared standing-NOP fold (deriveNetFxPositionByCurrency), read-only /
+    // parallel to v1. Authority: D-FIL-ATTRIBUTION-A1-BUILD (A2).
+    "recon:fx-settlement-continuity",
+    "recon:fx-book-nop-parity",
     "recon:dashboard",
     "recon:wall-clock-callsite-coverage",
     "recon:decisions-events-only",

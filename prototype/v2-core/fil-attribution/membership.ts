@@ -29,18 +29,21 @@
 //
 // PACKAGE BOUNDARY: no v1 imports.
 //
-// ── OPEN QUESTION #4 (spec §6, NOT decided — leave open) ────────────────────
-// TODO(#4 / D-FIL-ATTRIBUTION-A1-BUILD substrate-gap): the `strategy` and
-// `portfolio` dimension KEYS are declared (dimensions.ts) and extensible, but
-// their OWNERSHIP / AUTHORITY / SCOPE under BBaaS multi-tenancy is NOT decided.
-// Open question: are `strategy` and `portfolio` tenant-defined tags (each tenant
-// owns its own namespace) or bank-canonical with a reserved set? Until the CEO /
-// tenancy model rules, this module treats them as opaque strings folded like any
-// other organisational dimension — it does NOT enforce a namespace, a reserved
-// set, or a per-tenant ownership rule for them. DO NOT invent an answer here;
-// the authority routing for strategy/portfolio assignment is a follow-on
-// decision (see authority.ts cross-desk co-sign for the `desk`/`book` case that
-// IS decided). This TODO is the named substrate gap A1 carries forward.
+// ── OPEN QUESTION #4 — RESOLVED (D-ATTRIBUTION-STRATEGY-PORTFOLIO-TENANCY) ───
+// The `strategy` and `portfolio` dimension OWNERSHIP / AUTHORITY / SCOPE under
+// BBaaS multi-tenancy is now DECIDED (D-ATTRIBUTION-STRATEGY-PORTFOLIO-TENANCY,
+// CEO-approved): strategy/portfolio are TENANT-SCOPED + TENANT-OWNED — each
+// tenant owns its own namespace; there is no bank-canonical reserved set.
+// CROSS-TENANT strategy/portfolio analytics (a view that aggregates the same
+// strategy tag across tenants) is DEFERRED to a separate gated decision and is
+// NOT enabled here. This module's treatment is exactly correct under the
+// resolution: strategy/portfolio are folded like any other organisational
+// dimension within the slice's `tenantId` (the hard outer partition already
+// scopes them to one tenant), with no namespace enforcement and no reserved set
+// — a tenant's strategy tag is opaque within its own partition. The tenant-drop
+// below is what keeps one tenant's strategy/portfolio tags out of another's
+// projection. Cross-tenant aggregation remains forbidden until the deferred
+// decision lands.
 // ────────────────────────────────────────────────────────────────────────────
 //
 // Authority: D-FIL-ATTRIBUTION-A1-BUILD; D-METRIC-ATTRIBUTION-DIMENSIONAL;
