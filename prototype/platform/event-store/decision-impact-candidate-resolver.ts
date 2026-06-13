@@ -139,12 +139,13 @@ export function buildCandidates(store: EventStore, decision: SweptDecision): Can
   }
 
   // --- FIL-models (resolvable: citation-graph + product-scope overlap) ---
-  const latestFilModel = new Map<
-    string,
-    { cites: readonly string[]; scope: readonly string[] }
-  >();
+  const latestFilModel = new Map<string, { cites: readonly string[]; scope: readonly string[] }>();
   for (const ev of store.replay({ type: "FilModelImplementationDeclared" })) {
-    const p = ev.payload as { modelId?: string; cites?: readonly string[]; scope?: readonly string[] };
+    const p = ev.payload as {
+      modelId?: string;
+      cites?: readonly string[];
+      scope?: readonly string[];
+    };
     if (!p.modelId) continue;
     latestFilModel.set(p.modelId, { cites: p.cites ?? [], scope: p.scope ?? [] });
   }

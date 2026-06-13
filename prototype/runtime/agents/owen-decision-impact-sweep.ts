@@ -51,7 +51,10 @@
 //   Architect, engineering).
 
 import { clock, eventStore, logger } from "../../platform/composition";
-import { buildCandidates, resolveSweptDecision } from "../../platform/event-store/decision-impact-candidate-resolver";
+import {
+  buildCandidates,
+  resolveSweptDecision,
+} from "../../platform/event-store/decision-impact-candidate-resolver";
 import {
   makeDecisionImpactAssessed,
   makeDecisionImpactSweepRequested,
@@ -191,18 +194,16 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     swept.push(decisionId);
   }
 
-  logger.info(
-    { swept, skipped, eventsEmitted },
-    "owen:decision-impact-sweep — auto-trigger ran",
-  );
+  logger.info({ swept, skipped, eventsEmitted }, "owen:decision-impact-sweep — auto-trigger ran");
 
+  const sweptPart = swept.length > 0 ? ` [${swept.join(", ")}]` : "";
+  const skippedPart =
+    skipped.length > 0
+      ? `; ${skipped.length} already-swept (idempotent skip) [${skipped.join(", ")}]`
+      : "";
   return {
     eventsEmitted,
-    summary:
-      `owen:decision-impact-sweep — swept ${swept.length} approved decision(s)` +
-      (swept.length > 0 ? ` [${swept.join(", ")}]` : "") +
-      (skipped.length > 0 ? `; ${skipped.length} already-swept (idempotent skip) [${skipped.join(", ")}]` : "") +
-      ". Structured-first: recommendations only, no auto-execution.",
+    summary: `owen:decision-impact-sweep — swept ${swept.length} approved decision(s)${sweptPart}${skippedPart}. Structured-first: recommendations only, no auto-execution.`,
     ok: true,
   };
 };
