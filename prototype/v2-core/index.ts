@@ -137,3 +137,6 @@ export * from "./control-plane/store";
 
 /** @tier K — control-plane in-memory projection (ControlPlaneProjection, Tenant, listTenants, getTenant, getMeteringWindow); anchor-bank only */
 export * from "./control-plane/projection";
+
+/** @tier K — S14 operational fleet layer (FleetProjection: listFleet, getTenantFleetState, meteringSummary, fleetMeteringSummary, tenantVersion, fleetVersionDrift); AgentOps anchor-bank only */
+export * from "./control-plane/fleet";

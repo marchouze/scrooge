@@ -86,6 +86,10 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:v2-decision-impact-sweep-coverage",
     // WS-V2-BBAAS S1 — control-plane tenant registry (advisory in S1).
     "recon:v2-control-plane-tenant-registry",
+    // WS-V2-BBAAS S14 — operational fleet integrity (advisory→enforcing): every
+    // tenant has tier + surface grant; metering windows well-formed; upgrade
+    // ledger consistent (no version regressions, connected chain).
+    "recon:v2-fleet-integrity",
     // WS-V2-BBAAS S6 — composition-factory seam (advisory): alias resolves +
     // no v2-core module bypasses the factory alias.
     "recon:v2-composition-factory",

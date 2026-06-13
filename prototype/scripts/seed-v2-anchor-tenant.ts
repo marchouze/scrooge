@@ -26,6 +26,7 @@
 import {
   TENANT_REGISTERED,
   TENANT_SURFACE_GRANTED,
+  TENANT_UPGRADE_LEDGER_ENTRY,
   buildControlPlaneProjection,
   defaultControlPlanePath,
   newCpEventId,
@@ -37,6 +38,11 @@ const TIER = "K" as const;
 const DISPLAY_NAME = "The Bank (ZA) — anchor tenant";
 const LEGAL_ENTITY_REF = "LE-ZA-HOZ-BANK";
 const SURFACE_VERSION = "v1.0";
+// S14: the anchor's genesis platform version — the upgrade ledger's first
+// entry brings the anchor from the pre-release placeholder onto v1.0 so the
+// fleet view (FleetProjection.tenantVersion) is populated for the live tenant.
+const GENESIS_FROM_VERSION = "v0";
+const PLATFORM_VERSION = "v1.0";
 const NOW = new Date().toISOString();
 const ACTOR = { type: "service" as const, id: "scripts:seed-v2-anchor-tenant" };
 const CITATIONS = ["D-V2-TENANCY-ARCHITECTURE", "D-V2-BBAAS-BLUEPRINT-SYNTHESIS"] as const;
@@ -102,6 +108,41 @@ if (tenantAfterRegister?.surfaceVersion === SURFACE_VERSION) {
   });
   console.log(
     `[seed-v2-anchor-tenant] TenantSurfaceGranted(${SURFACE_VERSION}) emitted for ${TENANT_ID}.`,
+  );
+  emitted += 1;
+}
+
+// Step 3 — TenantUpgradeLedgerEntry (S14): bring the anchor onto its genesis
+// platform version so the fleet view is populated. Idempotent: skip if the
+// tenant is already on (or ahead of) PLATFORM_VERSION.
+const projectionAfterSurface = buildControlPlaneProjection(store);
+const tenantAfterSurface = projectionAfterSurface.getTenant(TENANT_ID);
+
+if (tenantAfterSurface?.platformVersion === PLATFORM_VERSION) {
+  console.log(
+    `[seed-v2-anchor-tenant] TenantUpgradeLedgerEntry(${PLATFORM_VERSION}) already present for ${TENANT_ID} — skipping.`,
+  );
+} else if (tenantAfterSurface?.platformVersion != null) {
+  console.log(
+    `[seed-v2-anchor-tenant] ${TENANT_ID} already on platform version ${tenantAfterSurface.platformVersion} — leaving as-is.`,
+  );
+} else {
+  store.append({
+    event_id: newCpEventId(),
+    type: TENANT_UPGRADE_LEDGER_ENTRY,
+    as_of: NOW,
+    entity: ENTITY,
+    actor: ACTOR,
+    citations: [...CITATIONS, "D-V2-BBAAS-TIER-STRUCTURE"],
+    payload: {
+      tenantId: TENANT_ID,
+      fromVersion: GENESIS_FROM_VERSION,
+      toVersion: PLATFORM_VERSION,
+      appliedAt: NOW,
+    },
+  });
+  console.log(
+    `[seed-v2-anchor-tenant] TenantUpgradeLedgerEntry(${GENESIS_FROM_VERSION}→${PLATFORM_VERSION}) emitted for ${TENANT_ID}.`,
   );
   emitted += 1;
 }
