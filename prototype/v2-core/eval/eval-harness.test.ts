@@ -12,12 +12,11 @@
 // Author: Vera (Internal Audit Engineer, governance).
 
 import { describe, expect, it } from "bun:test";
+import type { CitationRef, Instant } from "../fil-core/primitives";
 import {
   type ExamSet,
   SA_CCR_PILOT_EXAM_SET,
   SA_CCR_SUBJECT_HASH,
-  type CitationRef,
-  type Instant,
   checkExamSetWellFormed,
   evalRunCompletedFromResult,
   evalRunCompletedPayloadSchema,

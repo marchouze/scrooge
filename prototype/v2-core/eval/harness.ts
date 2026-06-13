@@ -107,22 +107,27 @@ function evaluateExpectation(exp: ExamExpectation, observed: ObservedOutput): st
       // Primitive deep-equal (JSON) — sufficient for the structural fields the
       // exam vocabulary targets.
       const ok = JSON.stringify(value) === JSON.stringify(exp.value);
-      return ok ? null : `expected ${exp.field} === ${JSON.stringify(exp.value)}, got ${JSON.stringify(value)}`;
+      return ok
+        ? null
+        : `expected ${exp.field} === ${JSON.stringify(exp.value)}, got ${JSON.stringify(value)}`;
     }
     case "numeric-equals": {
       const n = asFiniteNumber(value);
-      if (n === null) return `field '${exp.field}' is not a finite number: ${JSON.stringify(value)}`;
+      if (n === null)
+        return `field '${exp.field}' is not a finite number: ${JSON.stringify(value)}`;
       const ok = Math.abs(n - exp.value) <= exp.tolerance;
       return ok ? null : `expected ${exp.field} ≈ ${exp.value} (±${exp.tolerance}), got ${n}`;
     }
     case "at-least": {
       const n = asFiniteNumber(value);
-      if (n === null) return `field '${exp.field}' is not a finite number: ${JSON.stringify(value)}`;
+      if (n === null)
+        return `field '${exp.field}' is not a finite number: ${JSON.stringify(value)}`;
       return n >= exp.value ? null : `expected ${exp.field} ≥ ${exp.value}, got ${n}`;
     }
     case "at-most": {
       const n = asFiniteNumber(value);
-      if (n === null) return `field '${exp.field}' is not a finite number: ${JSON.stringify(value)}`;
+      if (n === null)
+        return `field '${exp.field}' is not a finite number: ${JSON.stringify(value)}`;
       return n <= exp.value ? null : `expected ${exp.field} ≤ ${exp.value}, got ${n}`;
     }
     case "monotonic-nondecreasing": {
@@ -132,7 +137,8 @@ function evaluateExpectation(exp: ExamExpectation, observed: ObservedOutput): st
       const series: number[] = [];
       for (const el of value) {
         const n = asFiniteNumber(el);
-        if (n === null) return `field '${exp.field}' series contains a non-number: ${JSON.stringify(el)}`;
+        if (n === null)
+          return `field '${exp.field}' series contains a non-number: ${JSON.stringify(el)}`;
         series.push(n);
       }
       for (let i = 1; i < series.length; i++) {

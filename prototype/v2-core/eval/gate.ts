@@ -116,34 +116,24 @@ export function evaluateChangeGate(args: ChangeGateArgs): ChangeGateResult {
   const admit = args.admitPassedWithFindings ?? false;
   const verdict = args.eval.verdict;
 
-  const systematicCleared =
-    verdict === "passed" || (admit && verdict === "passed-with-findings");
+  const systematicCleared = verdict === "passed" || (admit && verdict === "passed-with-findings");
 
   const status: ChangeGateStatus = systematicCleared ? "cleared" : "blocked";
 
-  const independentSignOff =
-    args.independentSignOff === undefined ? null : args.independentSignOff;
+  const independentSignOff = args.independentSignOff === undefined ? null : args.independentSignOff;
 
   const adoptable = systematicCleared && independentSignOff === true;
 
+  const passedCount = `${args.eval.examsPassed}/${args.eval.examsRun} exams passed`;
   let reason: string;
   if (!systematicCleared) {
-    reason =
-      `systematic gate BLOCKED: eval verdict '${verdict}' over exam-set ` +
-      `'${args.eval.examSetId}' (${args.eval.examsFailed}/${args.eval.examsRun} exams failed)`;
+    reason = `systematic gate BLOCKED: eval verdict '${verdict}' over exam-set '${args.eval.examSetId}' (${args.eval.examsFailed}/${args.eval.examsRun} exams failed)`;
   } else if (independentSignOff === null) {
-    reason =
-      `systematic gate CLEARED (${args.eval.examsPassed}/${args.eval.examsRun} exams passed); ` +
-      "independent model-validation sign-off NOT supplied to the gate — the adoption " +
-      "path must confirm Nadia's ModelValidationApproved separately before adoption";
+    reason = `systematic gate CLEARED (${passedCount}); independent model-validation sign-off NOT supplied to the gate — the adoption path must confirm Nadia's ModelValidationApproved separately before adoption`;
   } else if (independentSignOff === false) {
-    reason =
-      `systematic gate CLEARED (${args.eval.examsPassed}/${args.eval.examsRun} exams passed), ` +
-      "but independent model-validation sign-off is WITHHELD — change is NOT adoptable";
+    reason = `systematic gate CLEARED (${passedCount}), but independent model-validation sign-off is WITHHELD — change is NOT adoptable`;
   } else {
-    reason =
-      `ADOPTABLE: systematic gate CLEARED (${args.eval.examsPassed}/${args.eval.examsRun} exams passed) ` +
-      "AND independent model-validation sign-off confirmed";
+    reason = `ADOPTABLE: systematic gate CLEARED (${passedCount}) AND independent model-validation sign-off confirmed`;
   }
 
   return { status, evalVerdict: verdict, reason, independentSignOff, adoptable };

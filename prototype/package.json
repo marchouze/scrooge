@@ -210,6 +210,7 @@
     "recon:fil-conformance": "bun run platform/recon/fil-conformance.ts",
     "recon:v2-saccr-parity": "bun run platform/recon/v2-saccr-parity.ts",
     "recon:v2-posture-register-integrity": "bun run platform/recon/v2-posture-register-integrity.ts",
+    "recon:v2-eval-harness-integrity": "bun run platform/recon/v2-eval-harness-integrity.ts",
     "recon:v2-applicability-assessment-integrity": "bun run platform/recon/v2-applicability-assessment-integrity.ts",
     "recon:v2-decision-impact-sweep-coverage": "bun run platform/recon/v2-decision-impact-sweep-coverage.ts",
     "recon:v2-control-plane-tenant-registry": "bun run platform/recon/v2-control-plane-tenant-registry.ts",

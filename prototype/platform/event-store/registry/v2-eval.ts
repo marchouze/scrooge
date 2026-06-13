@@ -39,9 +39,7 @@ export const V2_EVAL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     subscribers: ["Vera", "Nadia", "Rohan", "Sade", "Atlas", "Scrooge"],
     replay: "latest-wins-per-key",
     retention: RETENTION_GOVERNANCE_7Y,
-    payloadSchema: examSetRegisteredPayloadSchema as unknown as z.ZodType<
-      Record<string, unknown>
-    >,
+    payloadSchema: examSetRegisteredPayloadSchema as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/v2-eval.ts",
   },
@@ -52,9 +50,7 @@ export const V2_EVAL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     subscribers: ["Vera", "Nadia", "Rohan", "Sade", "Atlas", "Scrooge"],
     replay: "append-only-audit",
     retention: RETENTION_GOVERNANCE_7Y,
-    payloadSchema: evalRunCompletedPayloadSchema as unknown as z.ZodType<
-      Record<string, unknown>
-    >,
+    payloadSchema: evalRunCompletedPayloadSchema as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/v2-eval.ts",
   },
