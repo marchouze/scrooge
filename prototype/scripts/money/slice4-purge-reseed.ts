@@ -29,16 +29,16 @@ import { resolve } from "node:path";
 import { Database } from "bun:sqlite";
 
 import { eventStore } from "../../platform/composition";
-import { resolveEventDbPath } from "../../platform/event-store/resolve-event-db";
 import {
-  categoryForEventType,
   PROVENANCE_CATEGORIES,
+  categoryForEventType,
 } from "../../platform/event-store/provenance-category";
+import { resolveEventDbPath } from "../../platform/event-store/resolve-event-db";
 
 // ---------------------------------------------------------------------------
 // HARD GATE — abort if backup not verified
 // ---------------------------------------------------------------------------
-const BACKUP_RECORD_ID = `record:documents:atlas:pre-purge-backup-verified:2026-06-13`;
+const BACKUP_RECORD_ID = "record:documents:atlas:pre-purge-backup-verified:2026-06-13";
 const BACKUP_RECORD_TITLE = "Pre-purge backup verified";
 
 console.log("[slice4-purge-reseed] HARD GATE: checking for pre-purge backup RecordFiled...");
@@ -51,8 +51,7 @@ const backupRecord = [...eventStore.replay({ type: "RecordFiled" })].find(
 
 if (!backupRecord) {
   console.error(
-    `[slice4-purge-reseed] ABORT: Pre-purge backup not verified. Run slice3-backup.ts first.\n` +
-    `Expected RecordFiled with recordId="${BACKUP_RECORD_ID}" or title="${BACKUP_RECORD_TITLE}" in the live event store.`,
+    `[slice4-purge-reseed] ABORT: Pre-purge backup not verified. Run slice3-backup.ts first.\nExpected RecordFiled with recordId="${BACKUP_RECORD_ID}" or title="${BACKUP_RECORD_TITLE}" in the live event store.`,
   );
   process.exit(1);
 }
@@ -70,7 +69,12 @@ console.log(`[slice4-purge-reseed] Event store: ${dbPath}`);
 // Transactional categories (from provenance-category.ts DEFAULT_CATEGORY_POLICY):
 // These are the categories that default to "simulated" under the build-phase policy.
 // Governance and build are "production" (retained). The rest are transactional.
-const TRANSACTIONAL_CATEGORIES = new Set<string>(["trading", "accounting", "settlement", "market-data"]);
+const TRANSACTIONAL_CATEGORIES = new Set<string>([
+  "trading",
+  "accounting",
+  "settlement",
+  "market-data",
+]);
 // Note: "counterparty" types include PartyRegistered etc which are CONFIG seeds
 // and must be RETAINED. "messaging" is also retained.
 // We intentionally exclude "counterparty" from the purge.
@@ -80,7 +84,9 @@ const rawDb = new Database(dbPath, { readonly: true });
 
 // Get all distinct event types in the store
 const allTypesInStore = (
-  rawDb.prepare("SELECT DISTINCT type FROM events ORDER BY type ASC").all() as Array<{ type: string }>
+  rawDb.prepare("SELECT DISTINCT type FROM events ORDER BY type ASC").all() as Array<{
+    type: string;
+  }>
 ).map((r) => r.type);
 
 rawDb.close();
@@ -98,7 +104,7 @@ for (const t of allTypesInStore) {
   }
 }
 
-console.log(`\n[slice4-purge-reseed] Classification summary:`);
+console.log("\n[slice4-purge-reseed] Classification summary:");
 console.log(`  Total distinct types in store: ${allTypesInStore.length}`);
 console.log(`  Transactional (will purge):    ${transactionalTypes.length}`);
 console.log(`  Retained (governance/config):  ${retainedTypes.length}`);
@@ -158,12 +164,14 @@ const dbAfter = new Database(dbPath, { readonly: true });
 const totalAfter = (dbAfter.prepare("SELECT COUNT(*) AS n FROM events").get() as { n: number }).n;
 let residualTransactional = 0;
 for (const t of transactionalTypes) {
-  const row = dbAfter.prepare("SELECT COUNT(*) AS n FROM events WHERE type = ?").get(t) as { n: number };
+  const row = dbAfter.prepare("SELECT COUNT(*) AS n FROM events WHERE type = ?").get(t) as {
+    n: number;
+  };
   residualTransactional += Number(row.n);
 }
 dbAfter.close();
 
-console.log(`\n[slice4-purge-reseed] After purge:`);
+console.log("\n[slice4-purge-reseed] After purge:");
 console.log(`  Total events: ${totalAfter}`);
 console.log(`  Residual transactional: ${residualTransactional} (expected: 0)`);
 
@@ -264,7 +272,9 @@ dbFinal.close();
 const seedTypesEmitted: Record<string, number> = {};
 const dbSeedCheck = new Database(dbPath, { readonly: true });
 for (const t of retainedTypes) {
-  const row = dbSeedCheck.prepare("SELECT COUNT(*) AS n FROM events WHERE type = ?").get(t) as { n: number };
+  const row = dbSeedCheck.prepare("SELECT COUNT(*) AS n FROM events WHERE type = ?").get(t) as {
+    n: number;
+  };
   const n = Number(row.n);
   if (n > 0) seedTypesEmitted[t] = n;
 }
@@ -272,7 +282,9 @@ dbSeedCheck.close();
 
 console.log("\n=== SLICE 4 PURGE + RE-SEED SUMMARY ===");
 console.log(`Events before purge:       ${totalBefore}`);
-console.log(`Transactional types purged: ${transactionalTypes.length} types, ${totalTransactionalBefore} events`);
+console.log(
+  `Transactional types purged: ${transactionalTypes.length} types, ${totalTransactionalBefore} events`,
+);
 console.log(`Events after purge:         ${totalAfter}`);
 console.log(`Events after re-seed:       ${finalCount}`);
 console.log(`Legacy LE refs in store:    ${legacyCount} (expected: 0)`);

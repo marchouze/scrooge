@@ -18,10 +18,17 @@
 
 import "../../platform/event-store/resolve-event-db-boot";
 
-import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { homedir } from "node:os";
 import { resolve } from "node:path";
-import { randomUUID } from "node:crypto";
 
 import { Database } from "bun:sqlite";
 
@@ -40,7 +47,9 @@ console.log(`[slice5-rebaseline] Append-only baseline path: ${baselinePath}`);
 
 if (existsSync(baselinePath)) {
   unlinkSync(baselinePath);
-  console.log("[slice5-rebaseline] Step 1: Deleted stale append-only baseline. Gate will re-seed on next run.");
+  console.log(
+    "[slice5-rebaseline] Step 1: Deleted stale append-only baseline. Gate will re-seed on next run.",
+  );
 } else {
   console.log("[slice5-rebaseline] Step 1: No stale baseline found (already clean).");
 }
@@ -61,9 +70,9 @@ const archiveDir = resolve(homedir(), ".local", "share", "bank", "archive");
 const hotDb = new Database(dbPath);
 
 // Read existing registrations in the hot store
-const existingPartitions = hotDb
-  .prepare("SELECT path FROM archive_partitions")
-  .all() as Array<{ path: string }>;
+const existingPartitions = hotDb.prepare("SELECT path FROM archive_partitions").all() as Array<{
+  path: string;
+}>;
 const existingPaths = new Set(existingPartitions.map((r) => r.path));
 console.log(`[slice5-rebaseline] Already registered partitions: ${existingPaths.size}`);
 
@@ -127,7 +136,9 @@ if (existsSync(archiveDir)) {
     }
   }
 } else {
-  console.log(`[slice5-rebaseline] No archive directory at ${archiveDir} — skipping partition registration.`);
+  console.log(
+    `[slice5-rebaseline] No archive directory at ${archiveDir} — skipping partition registration.`,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -135,10 +146,16 @@ if (existsSync(archiveDir)) {
 // ---------------------------------------------------------------------------
 const hotCount = (hotDb.prepare("SELECT COUNT(*) AS n FROM events").get() as { n: number }).n;
 const archiveCount = (
-  hotDb.prepare("SELECT COALESCE(SUM(event_count), 0) AS n FROM archive_partitions").get() as { n: number }
+  hotDb.prepare("SELECT COALESCE(SUM(event_count), 0) AS n FROM archive_partitions").get() as {
+    n: number;
+  }
 ).n;
-const maxSeq = (hotDb.prepare("SELECT COALESCE(MAX(sequence), 0) AS m FROM events").get() as { m: number }).m;
-const partitionCount = (hotDb.prepare("SELECT COUNT(*) AS n FROM archive_partitions").get() as { n: number }).n;
+const maxSeq = (
+  hotDb.prepare("SELECT COALESCE(MAX(sequence), 0) AS m FROM events").get() as { m: number }
+).m;
+const partitionCount = (
+  hotDb.prepare("SELECT COUNT(*) AS n FROM archive_partitions").get() as { n: number }
+).n;
 
 hotDb.close();
 
@@ -156,10 +173,12 @@ console.log("\n=== SLICE 5 RECON REBASELINE SUMMARY ===");
 console.log(`Fresh hot store path:          ${dbPath}`);
 console.log(`Fresh store event count:       ${hotCount}`);
 console.log(`Fresh store max sequence:      ${maxSeq}`);
-console.log(`Cold archive partitions:       ${partitionCount} (registered: ${registered}, skipped/already-in: ${skipped})`);
+console.log(
+  `Cold archive partitions:       ${partitionCount} (registered: ${registered}, skipped/already-in: ${skipped})`,
+);
 console.log(`Cold archived events:          ${archiveCount}`);
 console.log(`\nGates re-pinned: ${GATES_RE_PINNED.join(", ")}`);
-console.log(`Append-only baseline:          DELETED (will re-seed on next ci run)`);
+console.log("Append-only baseline:          DELETED (will re-seed on next ci run)");
 console.log("\nStatus: SUCCESS — recon rebaseline complete");
 console.log("========================================\n");
 

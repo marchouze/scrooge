@@ -28,9 +28,7 @@ import { existsSync } from "node:fs";
 
 import { Database } from "bun:sqlite";
 
-import {
-  categoryForEventType,
-} from "../event-store/provenance-category";
+import { categoryForEventType } from "../event-store/provenance-category";
 import { resolveEventDbPath } from "../event-store/resolve-event-db";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
@@ -74,7 +72,9 @@ export function run(opts: RunOpts = {}): ReconResult {
 
     // Get all distinct transactional event types present in the store
     const types = (
-      db.prepare("SELECT DISTINCT type FROM events ORDER BY type ASC").all() as Array<{ type: string }>
+      db.prepare("SELECT DISTINCT type FROM events ORDER BY type ASC").all() as Array<{
+        type: string;
+      }>
     ).map((r) => r.type);
 
     const transactionalTypes = types.filter((t) => {

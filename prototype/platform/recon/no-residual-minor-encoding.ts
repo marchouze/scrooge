@@ -111,9 +111,11 @@ export function run(opts: RunOpts = {}): ReconResult {
         rows.push(...batch);
       }
     } else {
-      rows = db
-        .prepare("SELECT event_id, type, payload FROM events")
-        .all() as Array<{ event_id: string; type: string; payload: string }>;
+      rows = db.prepare("SELECT event_id, type, payload FROM events").all() as Array<{
+        event_id: string;
+        type: string;
+        payload: string;
+      }>;
     }
 
     asserted = rows.length;
@@ -167,7 +169,9 @@ if (import.meta.main) {
         failCount === 0
           ? "no-residual-minor-encoding: ok — zero legacy *Minor numeric fields"
           : "no-residual-minor-encoding: FAILED — legacy *Minor numeric fields found in event payloads",
-      details: r.violations.slice(0, 10).map((v) => `[${v.severity.toUpperCase()}] ${v.subject}: ${v.message}`),
+      details: r.violations
+        .slice(0, 10)
+        .map((v) => `[${v.severity.toUpperCase()}] ${v.subject}: ${v.message}`),
     }),
   );
   if (!r.ok) process.exit(1);

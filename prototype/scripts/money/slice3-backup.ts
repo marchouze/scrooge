@@ -20,15 +20,15 @@
 
 import "../../platform/event-store/resolve-event-db-boot";
 
-import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { resolve } from "node:path";
 
 import { Database } from "bun:sqlite";
 
 import { hashContent } from "../../platform/document-store/hash";
-import { recordFiled } from "../../platform/records";
 import { resolveEventDbPath } from "../../platform/event-store/resolve-event-db";
+import { recordFiled } from "../../platform/records";
 
 const ACTOR = {
   type: "service" as const,
@@ -36,7 +36,7 @@ const ACTOR = {
 };
 const ENTITY = "LE-ZA-HOZ-BANK";
 const RECORD_TITLE = "Pre-purge backup verified";
-const RECORD_ID = `record:documents:atlas:pre-purge-backup-verified:2026-06-13`;
+const RECORD_ID = "record:documents:atlas:pre-purge-backup-verified:2026-06-13";
 
 // ---------------------------------------------------------------------------
 // Step 1: Resolve DB path
@@ -68,7 +68,9 @@ try {
   sourceDb.close();
   console.log(`[slice3-backup] VACUUM INTO completed: ${backupPath}`);
 } catch (err) {
-  console.error(`[slice3-backup] ABORT: VACUUM INTO failed: ${err instanceof Error ? err.message : String(err)}`);
+  console.error(
+    `[slice3-backup] ABORT: VACUUM INTO failed: ${err instanceof Error ? err.message : String(err)}`,
+  );
   process.exit(1);
 }
 
@@ -97,10 +99,14 @@ try {
   const backupDb = new Database(backupPath, { readonly: true });
 
   // PRAGMA integrity_check
-  const integrityRows = backupDb.prepare("PRAGMA integrity_check").all() as Array<{ integrity_check: string }>;
+  const integrityRows = backupDb.prepare("PRAGMA integrity_check").all() as Array<{
+    integrity_check: string;
+  }>;
   const integrityOk = integrityRows.length === 1 && integrityRows[0]?.integrity_check === "ok";
   if (!integrityOk) {
-    console.error(`[slice3-backup] ABORT: backup integrity_check failed: ${JSON.stringify(integrityRows)}`);
+    console.error(
+      `[slice3-backup] ABORT: backup integrity_check failed: ${JSON.stringify(integrityRows)}`,
+    );
     backupDb.close();
     process.exit(1);
   }
@@ -110,12 +116,16 @@ try {
   const countRow = backupDb.prepare("SELECT COUNT(*) AS n FROM events").get() as { n: number };
   backupEventCount = Number(countRow.n);
 
-  const maxSeqRow = backupDb.prepare("SELECT COALESCE(MAX(sequence), 0) AS m FROM events").get() as { m: number };
+  const maxSeqRow = backupDb
+    .prepare("SELECT COALESCE(MAX(sequence), 0) AS m FROM events")
+    .get() as { m: number };
   backupMaxSequence = Number(maxSeqRow.m);
 
   backupDb.close();
 } catch (err) {
-  console.error(`[slice3-backup] ABORT: backup round-trip check failed: ${err instanceof Error ? err.message : String(err)}`);
+  console.error(
+    `[slice3-backup] ABORT: backup round-trip check failed: ${err instanceof Error ? err.message : String(err)}`,
+  );
   process.exit(1);
 }
 
@@ -126,18 +136,22 @@ try {
   sourceEventCount = Number(countRow.n);
   sourceDb.close();
 } catch (err) {
-  console.error(`[slice3-backup] ABORT: failed to count source events: ${err instanceof Error ? err.message : String(err)}`);
+  console.error(
+    `[slice3-backup] ABORT: failed to count source events: ${err instanceof Error ? err.message : String(err)}`,
+  );
   process.exit(1);
 }
 
 if (backupEventCount !== sourceEventCount) {
   console.error(
-    `[slice3-backup] ABORT: event count mismatch — backup has ${backupEventCount}, source has ${sourceEventCount}`
+    `[slice3-backup] ABORT: event count mismatch — backup has ${backupEventCount}, source has ${sourceEventCount}`,
   );
   process.exit(1);
 }
 
-console.log(`[slice3-backup] Round-trip verified: ${backupEventCount} events, max_sequence=${backupMaxSequence}`);
+console.log(
+  `[slice3-backup] Round-trip verified: ${backupEventCount} events, max_sequence=${backupMaxSequence}`,
+);
 
 // ---------------------------------------------------------------------------
 // Step 6: Confirm archive files exist (list, NOT delete)
@@ -230,7 +244,7 @@ Archive directory: ${archiveDir}
       entity: ENTITY,
       metadata: {
         title: RECORD_TITLE,
-        path: `2026-06-13_atlas_pre-purge-backup-verified.md`,
+        path: "2026-06-13_atlas_pre-purge-backup-verified.md",
         category: "backup-verification",
         author: "Atlas (Core banking platform architect, engineering)",
         date: "2026-06-13",

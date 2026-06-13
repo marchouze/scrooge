@@ -72,9 +72,7 @@ export function run(opts: RunOpts = {}): ReconResult {
 
     for (const pattern of LEGACY_PATTERNS) {
       const row = db
-        .prepare(
-          `SELECT count(*) AS n FROM events WHERE payload LIKE ?`,
-        )
+        .prepare("SELECT count(*) AS n FROM events WHERE payload LIKE ?")
         .get(`%${pattern}%`) as { n: number };
       const n = Number(row.n);
       if (n > 0) {
