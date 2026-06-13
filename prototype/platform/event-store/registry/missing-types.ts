@@ -247,6 +247,24 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     source: "platform/event-store/event-types/fx-accounting.ts (RealisedPnlRecognised)",
   },
   {
+    // A4 — EOD snapshot of the FX book's gross value by instrument. Emitted
+    // once per EOD run after the Δ(gross) GL posting; provides the prior-day
+    // anchor for the next EOD Δ(gross) computation (MV-FX-A4-004 CLOSED).
+    // Category "accounting" — survives config-only purges (provenance-category.ts).
+    // Authority: D-FIL-BOOK-COMPOSITE-VALUATION; IAS-21-§23; IFRS-9-§5.7.1.
+    type: "FxBookValuationSnapshotted",
+    class: "markets",
+    // No Zod payloadSchema yet — envelope-only (F-032 follow-on when schema
+    // is promoted to a full Zod schema). Payload TS interface:
+    // FxBookValuationSnapshottedPayload (platform/event-store/event-types/fx-accounting.ts).
+    issuer: "Atlas",
+    subscribers: ["Bea", "Camille", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source:
+      "platform/event-store/event-types/fx-accounting.ts (FxBookValuationSnapshottedPayload); D-FIL-BOOK-COMPOSITE-VALUATION",
+  },
+  {
     // Generic lifecycle-terminal event — confirms a trade has matured /
     // settled. Discriminated-union payload (productKind: "fx-spot" today).
     // Retires `TradeMatured` (2026-05-21) per

@@ -1,5 +1,16 @@
 // platform/markets/eod/fx-revaluation.ts
 //
+// RETIRED — A4 (D-FIL-BOOK-COMPOSITE-VALUATION, 2026-06-13)
+// Replaced by: platform/markets/eod/fx-valuation-eod.ts
+// The new runner computes Δ(gross book value) via the v2 FIL-Model and emits
+// FxBookValuationSnapshotted as the EOD anchor event. This file is retained
+// for backward-compat (test imports, fx-revaluation.test.ts) and will be
+// removed when all callers are migrated.
+//
+// ---------------------------------------------------------------------------
+// ORIGINAL CONTENT BELOW (DO NOT DELETE — audit trail)
+// ---------------------------------------------------------------------------
+//
 // EOD FX position revaluation automation trigger (Anya brief, 2026-05-16).
 //
 // Algorithm:

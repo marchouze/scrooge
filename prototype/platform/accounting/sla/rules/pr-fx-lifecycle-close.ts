@@ -1,5 +1,19 @@
 // platform/accounting/sla/rules/pr-fx-lifecycle-close.ts
 //
+// RETIRED — A4 (D-FIL-BOOK-COMPOSITE-VALUATION, 2026-06-13)
+// WRONG: posted (officialMark − bookRate) × notional at settlement (an asset
+// swap, not realised P&L). SettlementConfirmed.realisedPnlDelta was always 0
+// (see settle-matured-trades.ts) so postings were silent no-ops.
+// Replaced by: platform/accounting/sla/rules/pr-fx-realised-pnl.ts
+// (PR-FX-REALISED-PNL, triggered by RealisedPnlRecognised event).
+//
+// This file is RETAINED for reference and backward-compat export; the constant
+// is no longer included in FX_IFRS_RULES. See index.ts.
+//
+// ---------------------------------------------------------------------------
+// ORIGINAL CONTENT BELOW (DO NOT DELETE — audit trail)
+// ---------------------------------------------------------------------------
+//
 // PR-FX-LIFECYCLE-CLOSE — IFRS realised-P&L residual on the CDM
 // SettlementConfirmed lifecycle-close event, expressed as rules-as-data. The
 // sole production posting path for SettlementConfirmed.
