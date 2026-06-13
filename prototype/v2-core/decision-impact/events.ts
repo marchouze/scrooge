@@ -41,7 +41,12 @@
 //         Architect, engineering) on the sweep engine.
 
 import { z } from "zod";
-import { type CitationRef, citationRefSchema, type Instant, instantSchema } from "../fil-core/primitives";
+import {
+  type CitationRef,
+  type Instant,
+  citationRefSchema,
+  instantSchema,
+} from "../fil-core/primitives";
 
 // ---------------------------------------------------------------------------
 // Impacted-artefact kinds

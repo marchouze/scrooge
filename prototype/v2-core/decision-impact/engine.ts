@@ -30,11 +30,11 @@
 // Author: Owen (Company Secretary, governance), with Atlas (Substrate
 //         Architect, engineering).
 
-import { type AppliesToScope, evaluateAppliesToScope, type PostureContext } from "../posture";
+import { type AppliesToScope, type PostureContext, evaluateAppliesToScope } from "../posture";
 import type {
+  ImpactEdge,
   ImpactedArtefact,
   ImpactedArtefactKind,
-  ImpactEdge,
   RecommendedAction,
 } from "./events";
 

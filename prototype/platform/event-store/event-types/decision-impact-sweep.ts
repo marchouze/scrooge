@@ -97,5 +97,4 @@ export const DECISION_IMPACT_SWEEP_TYPED_EVENT_TYPES = [
   "DecisionImpactAssessed",
 ] as const;
 
-export type DecisionImpactSweepEventType =
-  (typeof DECISION_IMPACT_SWEEP_TYPED_EVENT_TYPES)[number];
+export type DecisionImpactSweepEventType = (typeof DECISION_IMPACT_SWEEP_TYPED_EVENT_TYPES)[number];
