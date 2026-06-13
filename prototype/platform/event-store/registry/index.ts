@@ -153,6 +153,11 @@ export { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillat
 // WS-V2-BBAAS S0 — FilModelImplementationDeclared (FIL-Models registry).
 // Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1.
 export { FIL_MODELS_EVENT_TYPES_REGISTRY } from "./fil-models";
+// WS-V2-BBAAS — FilInstrumentCreated/Amended/Terminated (FIL instance family).
+// Native fil:inst lifecycle records for the materialised anchor IR + FX book;
+// emitted ONLY into BANK_V2_ANCHOR_DB; never touch the v1 canonical store.
+// Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1.
+export { FIL_INSTANCES_EVENT_TYPES_REGISTRY } from "./fil-instances";
 // WS-V2-BBAAS S3 — PostureRegistered/Activated/Deactivated/Revised.
 // Posture register event family (W8 Slice 1, structured-first).
 // Authority: D-W8-POSTURE-REGISTER-SLICE-1; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
@@ -251,6 +256,7 @@ import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 import { CREDIT_LIMIT_EVENT_TYPES_REGISTRY } from "./credit-limit";
 import { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillation";
 import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
+import { FIL_INSTANCES_EVENT_TYPES_REGISTRY } from "./fil-instances";
 import { FIL_MODELS_EVENT_TYPES_REGISTRY } from "./fil-models";
 import { FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY } from "./financial-instrument";
 import {
@@ -462,6 +468,10 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // WS-V2-BBAAS S0 — FilModelImplementationDeclared (FIL-Models registry scaffold).
   // Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1.
   ...FIL_MODELS_EVENT_TYPES_REGISTRY,
+  // WS-V2-BBAAS — FilInstrumentCreated/Amended/Terminated (FIL instance family).
+  // Native fil:inst lifecycle records for the materialised anchor IR + FX book.
+  // Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1.
+  ...FIL_INSTANCES_EVENT_TYPES_REGISTRY,
   // WS-V2-BBAAS S3 — PostureRegistered/Activated/Deactivated/Revised.
   // Posture register (W8 Slice 1, structured-first).
   // Authority: D-W8-POSTURE-REGISTER-SLICE-1; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.

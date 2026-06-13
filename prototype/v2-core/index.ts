@@ -74,6 +74,13 @@ export * from "./control-plane/envelope";
 /** @tier K — anchor-bank standing-data events (product catalogue, CoA, RAS) */
 export * from "./banking/events";
 
+// --- FIL instances (materialisation: IR + FX as native fil:inst) -----------
+
+/** @tier K — FIL instance lifecycle event family + live-instance projection
+ * (anchor-book materialisation; emitted into BANK_V2_ANCHOR_DB only).
+ * Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1. */
+export * from "./fil-instances";
+
 // --- Posture register (W8 Slice 1) -----------------------------------------
 
 /** @tier R — PostureRegistered / Activated / Deactivated / Revised event types; APPLIES_WHEN
