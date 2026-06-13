@@ -76,9 +76,13 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:v2-posture-register-integrity",
     // WS-V2-BBAAS S8 — applicability-assessment lifecycle integrity (advisory).
     "recon:v2-applicability-assessment-integrity",
-    // WS-V2-BBAAS S9 — decision-impact sweep coverage (advisory; baseline-forward).
-    // Every approved Decision since the baseline has a sweep; orphan impacts +
-    // recommendedActions well-formedness asserted. Authority: D-W8-DECISION-IMPACT-SWEEP.
+    // WS-V2-BBAAS S9 — decision-impact sweep coverage (ENFORCING as of the W8
+    // auto-trigger landing). Every approved Decision since the baseline MUST
+    // carry a sweep (assertion 4 = fail); orphan impacts + recommendedActions
+    // well-formedness asserted. The auto-trigger
+    // (runtime/agents/owen-decision-impact-sweep.ts) sweeps every approved
+    // Decision forward; the merge window was backfilled. Authority:
+    // D-W8-DECISION-IMPACT-SWEEP.
     "recon:v2-decision-impact-sweep-coverage",
     // WS-V2-BBAAS S1 — control-plane tenant registry (advisory in S1).
     "recon:v2-control-plane-tenant-registry",
