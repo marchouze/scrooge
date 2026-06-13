@@ -16,14 +16,18 @@
 // construction of composites rather than the emission of CCR events.
 //
 // ─── THE MECHANISM ──────────────────────────────────────────────────────────
-// A module-singleton holds the currently-registered factory. At module load the
-// DEFAULT factory is registered, so the alias is live from line one (no boot
-// step required). `registerCompositionFactory(impl)` swaps it (returning a
+// This seam resolves through the SHARED FIL alias-registry
+// (`alias-registry.ts`), under the namespaced key `fil-core:composition-factory`.
+// At module load the DEFAULT factory is registered EAGERLY as that key's default,
+// so the alias is live from line one (no boot step required).
+// `registerCompositionFactory(impl)` swaps it via the registry (returning a
 // restore handle so a swap can be unwound — the cutover/rollback primitive);
 // `resolveCompositionFactory()` returns whatever is registered NOW. The
 // convenience `buildComposite(spec)` is the one-call construction surface every
 // consumer uses — it resolves the alias and delegates, so it always honours the
-// current implementation.
+// current implementation. The public surface is UNCHANGED by the migration onto
+// the shared registry — only the internal singleton is now the shared substrate
+// (no per-seam ad-hoc singleton; `recon:v2-alias-registry-conformance`).
 //
 // `recon:v2-composition-factory` (advisory) asserts that every composite
 // construction in v2-core flows through this alias (`buildComposite` /
@@ -38,50 +42,53 @@
 // Author: Atlas (Substrate Architect, engineering).
 
 import {
+  type AliasRestore,
+  isAliasRegistered,
+  registerAlias,
+  resolveAlias,
+  swapAlias,
+} from "./alias-registry";
+import {
   type BuiltComposite,
   type CompositeSpec,
   type CompositionFactory,
   defaultCompositionFactory,
 } from "./composition-factory";
 
-/** The stable alias name — the addressable identity of the construction seam. */
+/** The stable alias name — the addressable identity of the construction seam,
+ * and this seam's namespaced key in the shared FIL alias-registry. */
 export const COMPOSITION_FACTORY_ALIAS = "fil-core:composition-factory" as const;
 
 // ---------------------------------------------------------------------------
-// The registry singleton. Module-scoped so it is process-global within the
-// package; the default is registered eagerly so the alias is never unresolved.
+// Eager default registration. The seam registers its DEFAULT factory in the
+// shared registry at module load, so the alias is live from line one (never
+// dangling). Guarded by `isAliasRegistered` so a double-import is a no-op
+// rather than a re-register throw.
 // ---------------------------------------------------------------------------
 
-let registered: CompositionFactory = defaultCompositionFactory;
+if (!isAliasRegistered(COMPOSITION_FACTORY_ALIAS)) {
+  registerAlias<CompositionFactory>(COMPOSITION_FACTORY_ALIAS, defaultCompositionFactory);
+}
 
 /** A handle returned by a swap, allowing the previous implementation to be restored. */
-export interface CompositionFactoryRestore {
-  /** Re-register the implementation that was live before the swap. */
-  restore(): void;
-}
+export type CompositionFactoryRestore = AliasRestore;
 
 /**
  * Swap the implementation behind the alias (the cutover primitive). Returns a
  * restore handle so the swap can be unwound (rollback / test isolation).
  */
 export function registerCompositionFactory(impl: CompositionFactory): CompositionFactoryRestore {
-  const previous = registered;
-  registered = impl;
-  return {
-    restore() {
-      registered = previous;
-    },
-  };
+  return swapAlias<CompositionFactory>(COMPOSITION_FACTORY_ALIAS, impl);
 }
 
 /** Resolve the implementation currently behind the alias. Always defined. */
 export function resolveCompositionFactory(): CompositionFactory {
-  return registered;
+  return resolveAlias<CompositionFactory>(COMPOSITION_FACTORY_ALIAS);
 }
 
 /** Reset the alias to the default factory (test/teardown convenience). */
 export function resetCompositionFactory(): void {
-  registered = defaultCompositionFactory;
+  swapAlias<CompositionFactory>(COMPOSITION_FACTORY_ALIAS, defaultCompositionFactory);
 }
 
 /**
