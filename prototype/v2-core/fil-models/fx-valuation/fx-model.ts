@@ -45,8 +45,12 @@ import { type FilScopePattern, isFilScopePattern, isFilTypeUrn } from "../../fil
 import type {
   Accountable,
   BookDesignation,
+  EngineId,
   ObservableRef,
+  PositionSelector,
   RevaluationRecord,
+  RiskFactorRef,
+  RiskMeasurable,
   Valuable,
 } from "../../fil-facets/facets";
 import type { FilModelImplementationDeclared } from "../declaration";
@@ -93,7 +97,7 @@ export const FX_MODEL_METHODOLOGY_HASH = computeFxMethodologyHash(
 export const FX_MODEL_DECLARATION: FilModelImplementationDeclared = {
   kind: "FilModelImplementationDeclared",
   modelId: FX_MODEL_ID,
-  implementsFacets: ["Valuable", "Accountable"],
+  implementsFacets: ["Valuable", "Accountable", "RiskMeasurable"],
   scope: FX_MODEL_SCOPE,
   version: FX_MODEL_VERSION,
   requires: {
@@ -237,6 +241,45 @@ export function fxAccountable(): Accountable {
     },
     fairValueHierarchy(): "level-1" | "level-2" | "level-3" {
       return "level-2";
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// The RiskMeasurable facet IMPLEMENTATION (A3).
+//
+// An FX position's risk factor is the FX spot pair `<CCY>/ZAR` — a `delta`
+// factor (a spot-rate move). The VaR `AttributionMetric` (A3) reads this to know
+// which currency's return window the member's exposure maps to. The factor id is
+// the canonical pair string, identical to the v1 VaR engine's factor key
+// (`${ccy}/ZAR`) — so the v2 attribution VaR and the v1 engine speak the same
+// factor vocabulary (the A3 parity proof).
+//
+// `positionContribution(engine)` declares HOW a risk engine selects this
+// instrument's positions: the FX lifecycle events that move the position
+// (execution / settlement). The selector is the encapsulated answer to "which
+// of my events does the VaR / SA-CCR engine consume?" (W9 §3.4).
+// ---------------------------------------------------------------------------
+
+/** The FX spot risk-factor pair for a position currency (`<CCY>/ZAR`). */
+export function fxRiskFactorId(currency: string, reporting = "ZAR"): string {
+  return `${currency}/${reporting}`;
+}
+
+export function fxRiskMeasurable(position: FxValuablePosition): RiskMeasurable {
+  const reporting = position.reporting ?? "ZAR";
+  return {
+    riskFactors(): readonly RiskFactorRef[] {
+      // A reporting-currency leg carries no FX risk factor (rate is 1, no
+      // translation risk); a foreign leg loads its spot pair as a delta factor.
+      if (position.currency === reporting) return [];
+      return [{ factorId: fxRiskFactorId(position.currency, reporting), kind: "delta" }];
+    },
+    positionContribution(engine: EngineId): PositionSelector {
+      return {
+        engine,
+        lifecycleEvents: ["FxTradeExecuted", "TradeMatured"] as FilEventRef[],
+      };
     },
   };
 }

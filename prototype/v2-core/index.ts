@@ -74,6 +74,13 @@ export * from "./fil-models/sa-ccr";
  * Authority: D-FIL-ATTRIBUTION-A1-BUILD (A2). */
 export * from "./fil-models/fx-valuation";
 
+/** @tier R — Market-risk VaR: the first non-additive (`joint-recompute`)
+ * `AttributionMetric`. Historical-simulation VaR/ES over a JOINT member set
+ * (ported from v1, no import); proves diversification (group VaR < Σ desk VaRs)
+ * + v1 standing-NOP parity at the group node. Read-only / parallel to v1 (A3).
+ * Authority: D-FIL-ATTRIBUTION-A1-BUILD (A3); D-VAR-EXPOSURE-INCLUDES-STANDING-NOP. */
+export * from "./fil-models/market-risk-var";
+
 // --- Control-plane (Wave 1) ------------------------------------------------
 
 /** @tier R — tenant axis: ANCHOR_TENANT_ID, TenantId, tenantIdSchema, isAnchorTenantEvent (dark, not yet enforced) */

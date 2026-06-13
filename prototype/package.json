@@ -229,6 +229,7 @@
     "recon:v2-csi-cross-tenant-gate": "bun run platform/recon/v2-csi-cross-tenant-gate.ts",
     "recon:attribution-additivity": "bun run platform/recon/attribution-additivity.ts",
     "recon:attribution-nonadditive-no-sum": "bun run platform/recon/attribution-nonadditive-no-sum.ts",
+    "recon:attribution-var-diversification": "bun run platform/recon/attribution-var-diversification.ts",
     "recon:v2-onboarding-readiness": "bun run platform/recon/v2-onboarding-readiness.ts",
     "rehearse:v2-onboarding": "bun run scripts/v2-onboarding-rehearsal.ts",
     "recon:fx-settlement-continuity": "bun run platform/recon/fx-settlement-continuity.ts",

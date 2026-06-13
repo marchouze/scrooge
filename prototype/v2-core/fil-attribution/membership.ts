@@ -44,6 +44,15 @@
 // below is what keeps one tenant's strategy/portfolio tags out of another's
 // projection. Cross-tenant aggregation remains forbidden until the deferred
 // decision lands.
+//
+// A3 FINALISES #4 IN CODE (no remaining TODO): `portfolio` is now folded as a
+// MULTI-VALUED set — an instance carries EVERY portfolio tag whose latest
+// covering assignment is effective at asOf (re-assignable per-tag,
+// latest-covering-event-wins). The A1/A2 scaffold carried only the latest single
+// tag and left the multi-tag fold as a #4 TODO; that is removed. `strategy`
+// stays single-valued (an instance has one strategy at a time). Both are
+// tenant-scoped per the decision; the multi-tag fold does NOT enable any
+// cross-tenant aggregation (still forbidden).
 // ────────────────────────────────────────────────────────────────────────────
 //
 // Authority: D-FIL-ATTRIBUTION-A1-BUILD; D-METRIC-ATTRIBUTION-DIMENSIONAL;
@@ -101,13 +110,34 @@ export function foldOrganisationalDimensions(
   tenantId: string,
   asOf: Instant,
 ): Map<string, Partial<AttributionDimensions>> {
-  // instance → dim → { value, effectiveFrom } (latest-covering wins)
+  // SINGLE-VALUED org dims (bookingAgent / book / desk / strategy): instance →
+  // dim → { value, effectiveFrom } (latest-covering-event-wins).
   const winning = new Map<string, Map<string, { value: string; effectiveFrom: string }>>();
+
+  // MULTI-VALUED `portfolio` (#4, ENCODED — not deferred): an instance can sit in
+  // MANY portfolios at once (a hedge set, a strategy book, a desk roll-up are
+  // overlapping groupings). Each distinct portfolio TAG is its own membership,
+  // re-assignable independently with latest-covering-event-wins PER TAG:
+  //   instance → portfolioTag → { effectiveFrom } (the latest covering assignment
+  //   of THAT tag). The instance's `portfolio` snapshot is the SET of tags whose
+  //   latest covering assignment is effective at asOf. This is the multi-tag fold
+  //   the A1/A2 scaffold deferred; it is now the encoded semantics.
+  const portfolios = new Map<string, Map<string, { effectiveFrom: string }>>();
 
   for (const ev of events) {
     if (ev.tenantId !== tenantId) continue; // cross-tenant bleed — drop
     if (!isOrganisationalDimension(ev.dimension as never)) continue; // economic — ignore
     if (ev.effectiveFrom > asOf) continue; // not yet effective
+
+    if (ev.dimension === "portfolio") {
+      const perInstance = portfolios.get(ev.instanceUrn) ?? new Map();
+      const prev = perInstance.get(ev.value);
+      if (!prev || ev.effectiveFrom >= prev.effectiveFrom) {
+        perInstance.set(ev.value, { effectiveFrom: ev.effectiveFrom });
+      }
+      portfolios.set(ev.instanceUrn, perInstance);
+      continue;
+    }
 
     const perInstance = winning.get(ev.instanceUrn) ?? new Map();
     const prev = perInstance.get(ev.dimension);
@@ -118,12 +148,17 @@ export function foldOrganisationalDimensions(
   }
 
   const out = new Map<string, Partial<AttributionDimensions>>();
-  for (const [instance, dims] of winning) {
+  const instanceUrns = new Set<string>([...winning.keys(), ...portfolios.keys()]);
+  for (const instance of instanceUrns) {
     const snap: Record<string, unknown> = {};
-    for (const [dim, picked] of dims) {
-      // portfolio is multi-valued; A1 carries the latest single tag (the
-      // multi-tag fold is part of open question #4 — see file header TODO).
-      snap[dim] = dim === "portfolio" ? [picked.value] : picked.value;
+    for (const [dim, picked] of winning.get(instance) ?? new Map()) {
+      snap[dim] = picked.value;
+    }
+    const tags = portfolios.get(instance);
+    if (tags && tags.size > 0) {
+      // The instance's portfolio membership is the SET of effective tags (sorted
+      // for a deterministic snapshot — slice predicates use `includes`).
+      snap.portfolio = [...tags.keys()].sort();
     }
     out.set(instance, snap as Partial<AttributionDimensions>);
   }

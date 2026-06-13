@@ -170,15 +170,18 @@ export function evaluateSlice<TResult>(
 
   const cellResults: CellResult<TResult>[] = [];
   for (const [groupKey, cellMembers] of cells) {
-    // additive vs joint-recompute: BOTH paths call evaluate over the joint cell
-    // member set (the definition is "evaluate over the member set"). The
-    // difference is what the ENGINE may do across cells / hierarchy levels —
-    // additive may sum cached children, joint-recompute may not. At a single
-    // cell both recompute; the no-sum guard ensures a joint-recompute metric is
-    // never asked to sum across cells.
-    if (!isAdditive(metric.aggregation)) {
-      assertNoSum(metric);
-    }
+    // additive vs joint-recompute: BOTH paths call `evaluate` over the joint cell
+    // member set (the definition is "evaluate over the member set"). Per-cell
+    // evaluation is ALWAYS a from-scratch recompute over that cell's joint member
+    // set — it never sums anything, so it is legal for BOTH semantics. The no-sum
+    // guard belongs on the CROSS-CELL fold (`sumChildren`), NOT here: a
+    // joint-recompute metric MUST be evaluable per cell (that IS how a
+    // diversified VaR is computed at each node). The earlier A1 scaffold placed
+    // `assertNoSum` inside this loop, which made the engine throw for ANY
+    // joint-recompute metric — a latent bug that A3 (the first real
+    // joint-recompute metric, VaR) surfaces. Fixed: per-cell evaluate is
+    // unconditional; the no-sum rule is enforced where summation actually
+    // happens (`sumChildren` / `assertNoSum`), preserved verbatim.
     cellResults.push({
       groupKey,
       memberCount: cellMembers.length,

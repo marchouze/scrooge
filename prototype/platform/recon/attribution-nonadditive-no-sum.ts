@@ -45,6 +45,7 @@ import {
   metricRegistry,
   sumChildren,
 } from "../../v2-core/fil-attribution";
+import { registerVarMetric } from "../../v2-core/fil-models/market-risk-var";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 /** Path to the kernel metric module (the static-guard source of truth). */
@@ -145,11 +146,15 @@ export function run(): ReconResult {
   }
 
   // ── LIVE scan: every registered joint-recompute metric is confirmed to carry
-  //    no `add` path. A1 registry is empty → vacuous. A3+ registers VaR/ES/SVaR;
-  //    each is checked the same way.
+  //    no `add` path. A1 registry was empty → vacuous; A3 registers the FIRST
+  //    real joint-recompute metric (market-risk VaR), so the scan is now
+  //    NON-VACUOUS. Registration is idempotent.
+  registerVarMetric(metricRegistry);
+  let jointRecomputeScanned = 0;
   for (const metricId of metricRegistry.list()) {
     const metric = metricRegistry.get(metricId);
     if (!metric || !isJointRecompute(metric.aggregation)) continue;
+    jointRecomputeScanned += 1;
     result.asserted += 1;
     if ("add" in metric.aggregation || "zero" in metric.aggregation) {
       violations.push({
@@ -159,6 +164,37 @@ export function run(): ReconResult {
         severity: "fail",
       });
     }
+    // Non-vacuity belt: the registered joint-recompute metric MUST throw if
+    // a caller tries to sum it (the runtime guard on a REAL metric, not just the
+    // fixture).
+    result.asserted += 1;
+    let liveSumThrew = false;
+    try {
+      sumChildren(metric as AttributionMetric<unknown>, []);
+    } catch {
+      liveSumThrew = true;
+    }
+    if (!liveSumThrew) {
+      violations.push({
+        subject: metricId,
+        message:
+          "sumChildren did NOT throw for a registered joint-recompute metric — a caller could compose child VaRs",
+        severity: "fail",
+      });
+    }
+  }
+
+  // A3 onward: the registry MUST carry at least one joint-recompute metric (VaR),
+  // so the LIVE scan is non-vacuous. If none is found the registration wiring
+  // broke — surface it (info-severity so a future registry refactor that moves
+  // registration elsewhere does not hard-fail this independence-shaped gate).
+  if (jointRecomputeScanned === 0) {
+    violations.push({
+      subject: "metricRegistry",
+      message:
+        "no registered joint-recompute metric found — the live no-sum scan is vacuous (expected market-risk-var registered from A3)",
+      severity: "info",
+    });
   }
 
   return {

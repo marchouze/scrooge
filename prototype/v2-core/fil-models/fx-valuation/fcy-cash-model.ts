@@ -39,8 +39,12 @@ import type { FilScopePattern } from "../../fil-core/urn";
 import type {
   Accountable,
   BookDesignation,
+  EngineId,
   ObservableRef,
+  PositionSelector,
   RevaluationRecord,
+  RiskFactorRef,
+  RiskMeasurable,
   Valuable,
 } from "../../fil-facets/facets";
 import type { FilModelImplementationDeclared } from "../declaration";
@@ -83,7 +87,7 @@ export const FCY_CASH_MODEL_METHODOLOGY_HASH = computeFxMethodologyHash(
 export const FCY_CASH_MODEL_DECLARATION: FilModelImplementationDeclared = {
   kind: "FilModelImplementationDeclared",
   modelId: FCY_CASH_MODEL_ID,
-  implementsFacets: ["Valuable", "Accountable"],
+  implementsFacets: ["Valuable", "Accountable", "RiskMeasurable"],
   scope: FCY_CASH_MODEL_SCOPE,
   version: FCY_CASH_MODEL_VERSION,
   requires: {
@@ -208,6 +212,33 @@ export function fcyCashAccountable(): Accountable {
     },
     fairValueHierarchy(): "level-1" | "level-2" | "level-3" {
       return "level-1";
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// The RiskMeasurable facet IMPLEMENTATION (A3).
+//
+// Standing FCY cash is a STANDING-NOP risk factor — the bank still holds the
+// foreign currency after settlement and bears FX risk on it (D-VAR-EXPOSURE-
+// INCLUDES-STANDING-NOP). Its risk factor is the same `<CCY>/ZAR` spot pair as
+// the pre-settlement FX position, so the VaR `AttributionMetric` nets the
+// settled cash and the live position into ONE per-currency exposure (the
+// settlement-continuity invariant carried into the risk factor).
+// ---------------------------------------------------------------------------
+
+export function fcyCashRiskMeasurable(position: FcyCashPosition): RiskMeasurable {
+  const reporting = position.reporting ?? "ZAR";
+  return {
+    riskFactors(): readonly RiskFactorRef[] {
+      if (position.currency === reporting) return [];
+      return [{ factorId: `${position.currency}/${reporting}`, kind: "delta" }];
+    },
+    positionContribution(engine: EngineId): PositionSelector {
+      return {
+        engine,
+        lifecycleEvents: ["TradeMatured", "FcyCashBalanceRevalued"] as FilEventRef[],
+      };
     },
   };
 }
