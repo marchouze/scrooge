@@ -41,10 +41,7 @@ import {
 } from "../platform/event-store/event-types/applicability-assessment";
 import { provenanceForEmit } from "../platform/event-store/provenance";
 import type { Event } from "../platform/event-store/types";
-import {
-  type AssessedContext,
-  assessApplicability,
-} from "../v2-core/applicability";
+import { type AssessedContext, assessApplicability } from "../v2-core/applicability";
 import type { CitationRef, Instant } from "../v2-core/fil-core/primitives";
 import type { AppliesToScope } from "../v2-core/posture";
 
@@ -134,9 +131,9 @@ const CANDIDATES: readonly AssessedContext[] = [
 // Idempotency: skip if this assessment is already concluded.
 // ---------------------------------------------------------------------------
 
-const alreadyConcluded = [
-  ...eventStore.replay({ type: "ApplicabilityAssessmentConcluded" }),
-].some((e) => (e.payload as { assessmentId?: string }).assessmentId === ASSESSMENT_ID);
+const alreadyConcluded = [...eventStore.replay({ type: "ApplicabilityAssessmentConcluded" })].some(
+  (e) => (e.payload as { assessmentId?: string }).assessmentId === ASSESSMENT_ID,
+);
 
 if (alreadyConcluded) {
   process.stdout.write(

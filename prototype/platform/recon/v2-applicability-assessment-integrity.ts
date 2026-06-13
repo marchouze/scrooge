@@ -24,7 +24,6 @@
 // Author: Mira (Chief Obligations & Regulatory Officer, compliance).
 
 import {
-  type AppliesToScope,
   APPLICABILITY_VERDICTS,
   type ApplicabilityVerdict,
   type AssessedContext,
@@ -32,6 +31,7 @@ import {
   assessApplicability,
   foldAssessmentRegister,
 } from "../../v2-core/applicability";
+import type { AppliesToScope } from "../../v2-core/posture";
 import { eventStore } from "../composition";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 

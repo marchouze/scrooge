@@ -71,7 +71,8 @@ export interface AssessedContext {
   readonly context: PostureContext;
 }
 
-export const assessedContextSchema: z.ZodType<AssessedContext> = z.object({
+// biome-ignore lint/suspicious/noExplicitAny: ZodType<any,any,any> required for exactOptionalPropertyTypes compat with PostureContext's optional fields
+export const assessedContextSchema: z.ZodType<any, any, any> = z.object({
   contextRef: z.string().min(1),
   context: postureContextSchema,
 });
@@ -193,8 +194,12 @@ export const applicabilityAssessmentConcludedPayloadSchema: z.ZodType<any, any, 
 // ---------------------------------------------------------------------------
 
 export type ApplicabilityAssessmentEventPayload =
-  | ({ readonly kind: "ApplicabilityAssessmentRequested" } & ApplicabilityAssessmentRequestedPayload)
-  | ({ readonly kind: "ApplicabilityAssessmentPerformed" } & ApplicabilityAssessmentPerformedPayload)
+  | ({
+      readonly kind: "ApplicabilityAssessmentRequested";
+    } & ApplicabilityAssessmentRequestedPayload)
+  | ({
+      readonly kind: "ApplicabilityAssessmentPerformed";
+    } & ApplicabilityAssessmentPerformedPayload)
   | ({
       readonly kind: "ApplicabilityAssessmentConcluded";
     } & ApplicabilityAssessmentConcludedPayload);

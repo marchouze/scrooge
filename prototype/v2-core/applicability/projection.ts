@@ -20,11 +20,7 @@
 // Author: Mira (Chief Obligations & Regulatory Officer, compliance).
 
 import type { AppliesToScope } from "../posture";
-import type {
-  ApplicabilitySubjectKind,
-  ApplicabilityVerdict,
-  AssessedContext,
-} from "./events";
+import type { ApplicabilitySubjectKind, ApplicabilityVerdict, AssessedContext } from "./events";
 
 // ---------------------------------------------------------------------------
 // Assessment record — the projected state of a single assessment

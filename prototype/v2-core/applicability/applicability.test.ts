@@ -91,10 +91,11 @@ describe("assessApplicability", () => {
   });
 
   it("is pure — preserves candidate order in matches", () => {
-    const r = assessApplicability(
-      { kind: "jurisdiction", jurisdiction: "ZA" },
-      [BOND_CTX, FX_CTX, IRS_CTX],
-    );
+    const r = assessApplicability({ kind: "jurisdiction", jurisdiction: "ZA" }, [
+      BOND_CTX,
+      FX_CTX,
+      IRS_CTX,
+    ]);
     expect(r.matches).toEqual(["product:bond", "product:fx", "product:irs"]);
   });
 });
