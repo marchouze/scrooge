@@ -29,11 +29,7 @@
 // Author: Sade (AgentOps, operations) with Atlas (Substrate Architect, engineering).
 
 import type { TenantTier } from "./events";
-import {
-  ControlPlaneProjection,
-  type MeterEntry,
-  type UpgradeEntry,
-} from "./projection";
+import { ControlPlaneProjection, type MeterEntry, type UpgradeEntry } from "./projection";
 import type { ControlPlaneStore } from "./store";
 
 // ---------------------------------------------------------------------------
@@ -189,10 +185,7 @@ export class FleetProjection extends ControlPlaneProjection {
     return this.deriveFleetState(tenantId, this.fleetCurrentVersion());
   }
 
-  private deriveFleetState(
-    tenantId: string,
-    fleetVersion: string | null,
-  ): TenantFleetState {
+  private deriveFleetState(tenantId: string, fleetVersion: string | null): TenantFleetState {
     // getTenant is non-null at every call site (callers guard).
     const tenant = this.getTenant(tenantId);
     if (tenant === null) {
