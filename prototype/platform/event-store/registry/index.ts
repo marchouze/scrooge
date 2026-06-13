@@ -158,6 +158,12 @@ export { FIL_MODELS_EVENT_TYPES_REGISTRY } from "./fil-models";
 // emitted ONLY into BANK_V2_ANCHOR_DB; never touch the v1 canonical store.
 // Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1.
 export { FIL_INSTANCES_EVENT_TYPES_REGISTRY } from "./fil-instances";
+// WS-V2-BBAAS A1 — InstrumentDimensionAssigned/SliceDefined (FIL attribution
+// kernel). Organisational-dimension assignment + named-slice definition for the
+// dimensional metric-attribution layer; a book/desk/portfolio is a stored
+// predicate, never a primitive. Authority: D-FIL-ATTRIBUTION-A1-BUILD;
+// D-METRIC-ATTRIBUTION-DIMENSIONAL.
+export { FIL_ATTRIBUTION_EVENT_TYPES_REGISTRY } from "./fil-attribution";
 // WS-V2-BBAAS S3 — PostureRegistered/Activated/Deactivated/Revised.
 // Posture register event family (W8 Slice 1, structured-first).
 // Authority: D-W8-POSTURE-REGISTER-SLICE-1; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
@@ -284,6 +290,7 @@ import { CROSS_TENANT_CSI_EVENT_TYPES } from "./cross-tenant-csi";
 import { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillation";
 import { DECISION_IMPACT_SWEEP_EVENT_TYPES_REGISTRY } from "./decision-impact-sweep";
 import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
+import { FIL_ATTRIBUTION_EVENT_TYPES_REGISTRY } from "./fil-attribution";
 import { FIL_INSTANCES_EVENT_TYPES_REGISTRY } from "./fil-instances";
 import { FIL_MODELS_EVENT_TYPES_REGISTRY } from "./fil-models";
 import { FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY } from "./financial-instrument";
@@ -501,6 +508,11 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Native fil:inst lifecycle records for the materialised anchor IR + FX book.
   // Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1.
   ...FIL_INSTANCES_EVENT_TYPES_REGISTRY,
+  // WS-V2-BBAAS A1 — InstrumentDimensionAssigned/SliceDefined (FIL attribution).
+  // Dimensional metric-attribution kernel: organisational-dimension assignment +
+  // named-slice definition. Authority: D-FIL-ATTRIBUTION-A1-BUILD;
+  // D-METRIC-ATTRIBUTION-DIMENSIONAL.
+  ...FIL_ATTRIBUTION_EVENT_TYPES_REGISTRY,
   // WS-V2-BBAAS S3 — PostureRegistered/Activated/Deactivated/Revised.
   // Posture register (W8 Slice 1, structured-first).
   // Authority: D-W8-POSTURE-REGISTER-SLICE-1; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
