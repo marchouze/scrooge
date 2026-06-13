@@ -202,8 +202,25 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 //   Authority: D-V2-WAVE4-COMMERCIAL-POSTURE (the S15 onboarding work);
 //     D-PROACTIVE-ESCALATION-SURFACING (surface inherited main-red, don't hide).
 //   Author: Atlas (Core banking platform architect, engineering), 2026-06-13.
+//
+// 2026-06-13 — Bumped 64 → 65 (inherited main-red, WS-V2-BBAAS A2 FX PR):
+//   `dashboard/market-data-view.ts:89` carries a wall-clock `Date.now()` in the
+//   FX facets-cache TTL check (`if (!facetsCache || Date.now() - facetsCache.asOf
+//   > FACETS_TTL_MS)`), landed by the A2 FX market-data-view work on main (PR
+//   #1317). It was present on `origin/main` before the A3 PR but the snapshot was
+//   never bumped — main is red on a fresh CI store (confirmed:
+//   `git show origin/main:…/market-data-view.ts` carries the callsite). Following
+//   the documented convention (a main-callsite present-but-unallowlisted is
+//   unblocked by a snapshot bump), bumping 64 → 65 here so the A3 PR (which adds
+//   NO production wall-clock callsite — the A3 recon's `new Date()` is recon
+//   infrastructure, not production) is not blocked by the inherited drift. The
+//   TTL cache is a presentation-layer read-through cache, not an event-sourced
+//   number, matching the 62→63 / 63→64 precedent above.
+//   Authority: D-FIL-ATTRIBUTION-A1-BUILD (A2/A3 FX work);
+//     D-PROACTIVE-ESCALATION-SURFACING (surface inherited main-red, don't hide).
+//   Author: Atlas (Core banking platform architect, engineering), 2026-06-13.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 64;
+const KNOWN_VIOLATIONS_SNAPSHOT = 65;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",
