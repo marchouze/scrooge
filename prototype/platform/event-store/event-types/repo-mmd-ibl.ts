@@ -760,6 +760,40 @@ export function makeFundingLineCommitmentRecorded(payload: FundingLineCommitment
 }
 
 // ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { Money } from "../../core/decimal-money";
+import type { MoneyWire } from "../../core/money-codec";
+import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
+
+// ── FundingLineCommitmentRecorded V2 ────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by FundingLineCommitmentRecordedPayloadV2. */
+export type FundingLineCommitmentRecordedPayloadLegacy = FundingLineCommitmentRecordedPayload;
+
+export interface FundingLineCommitmentRecordedPayloadV2
+  extends Omit<FundingLineCommitmentRecordedPayload, "committedAmountMinor"> {
+  readonly committedAmount: MoneyWire;
+}
+
+export function encodeFundingLineCommitmentRecorded(
+  base: Omit<FundingLineCommitmentRecordedPayload, "committedAmountMinor">,
+  committedAmount: Money,
+): FundingLineCommitmentRecordedPayloadV2 {
+  return { ...base, committedAmount: encodeMoney(committedAmount) };
+}
+
+export function decodeFundingLineCommitmentRecorded(
+  raw: FundingLineCommitmentRecordedPayload,
+): FundingLineCommitmentRecordedPayloadV2 {
+  const { committedAmountMinor, ...rest } = raw;
+  return { ...rest, committedAmount: moneyWireFromMinor(committedAmountMinor, raw.currency) };
+}
+
+// ---------------------------------------------------------------------------
 // Typed event type registry for this module
 // ---------------------------------------------------------------------------
 

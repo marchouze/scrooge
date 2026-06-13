@@ -1,16 +1,22 @@
 // platform/core/money-pilot.ts
 //
-// PILOT conversion (design spec §8, slice 1). Two representative event payload
-// types are declared the NEW way — money fields typed as `MoneyWire` (decimal
-// string), produced via `encodeMoney`, and read back in a projection via
-// `decodeMoney` — proving the type → codec → projection-read path end-to-end.
+// DECIMAL-MIGRATION SUPERSEDED: slice 1 pilot types.
 //
-// This is the TEMPLATE slice 2 follows when it sweeps the 33 real money-bearing
-// schemas off `*Minor: bigint`. It is deliberately SELF-CONTAINED (no event
-// store, no wiring into live producers) so slice 1 stays non-destructive: no
-// production schema changes, no live emit path touched. The two shapes mirror
-// the brief's suggestion — one FX accounting type, one simple amount type.
+// The two payload shapes here (FeeChargedPayloadV2, FxSpotBookedPayloadV2) were
+// built in slice 1 as a non-destructive proof of the MoneyWire encode→decode
+// path. Slice 2 (brief:atlas:money-slice-2-sweep-all-33-transactional-event-s:
+// 2026-06-13) has now swept all 19 money-bearing real event-type files and
+// established the same pattern at scale.
 //
+// This file is RETAINED because:
+//   1. The pilot types are referenced in `decimal-money.test.ts` (pilot
+//      conversion end-to-end test suite). Removing them would break that test.
+//   2. `FeeChargedPayloadV2` and `FxSpotBookedPayloadV2` serve as reference
+//      examples for the MoneyWire encode→decode pattern.
+//
+// No production code emits these pilot types.
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { type Money, convertFx } from "./decimal-money";

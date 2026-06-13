@@ -180,6 +180,134 @@ export function makeEquitySold(args: {
 }
 
 // ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { Money } from "../../core/decimal-money";
+import type { MoneyWire } from "../../core/money-codec";
+import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
+
+// ── EquityDividendAccrued V2 ─────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by EquityDividendAccruedPayloadV2. */
+export type EquityDividendAccruedPayloadLegacy = EquityDividendAccruedPayload;
+
+export interface EquityDividendAccruedPayloadV2
+  extends Omit<
+    EquityDividendAccruedPayload,
+    | "grossDividendPerShareMinor"
+    | "grossDividendTotalMinor"
+    | "withholdingTaxMinor"
+    | "netDividendMinor"
+  > {
+  readonly grossDividendPerShare: MoneyWire;
+  readonly grossDividendTotal: MoneyWire;
+  readonly withholdingTax: MoneyWire;
+  readonly netDividend: MoneyWire;
+}
+
+export function encodeEquityDividendAccrued(
+  base: Omit<
+    EquityDividendAccruedPayload,
+    | "grossDividendPerShareMinor"
+    | "grossDividendTotalMinor"
+    | "withholdingTaxMinor"
+    | "netDividendMinor"
+  >,
+  grossDividendPerShare: Money,
+  grossDividendTotal: Money,
+  withholdingTax: Money,
+  netDividend: Money,
+): EquityDividendAccruedPayloadV2 {
+  return {
+    ...base,
+    grossDividendPerShare: encodeMoney(grossDividendPerShare),
+    grossDividendTotal: encodeMoney(grossDividendTotal),
+    withholdingTax: encodeMoney(withholdingTax),
+    netDividend: encodeMoney(netDividend),
+  };
+}
+
+export function decodeEquityDividendAccrued(
+  raw: EquityDividendAccruedPayload,
+): EquityDividendAccruedPayloadV2 {
+  const {
+    grossDividendPerShareMinor,
+    grossDividendTotalMinor,
+    withholdingTaxMinor,
+    netDividendMinor,
+    ...rest
+  } = raw;
+  return {
+    ...rest,
+    grossDividendPerShare: moneyWireFromMinor(grossDividendPerShareMinor, raw.currency),
+    grossDividendTotal: moneyWireFromMinor(grossDividendTotalMinor, raw.currency),
+    withholdingTax: moneyWireFromMinor(withholdingTaxMinor, raw.currency),
+    netDividend: moneyWireFromMinor(netDividendMinor, raw.currency),
+  };
+}
+
+// ── EquitySold V2 ────────────────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by EquitySoldPayloadV2. */
+export type EquitySoldPayloadLegacy = EquitySoldPayload;
+
+export interface EquitySoldPayloadV2
+  extends Omit<
+    EquitySoldPayload,
+    | "salePricePerShareMinor"
+    | "saleProceedsMinor"
+    | "carryingAmountAtSaleMinor"
+    | "realisedPnlMinor"
+  > {
+  readonly salePricePerShare: MoneyWire;
+  readonly saleProceeds: MoneyWire;
+  readonly carryingAmountAtSale: MoneyWire;
+  readonly realisedPnl: MoneyWire;
+}
+
+export function encodeEquitySold(
+  base: Omit<
+    EquitySoldPayload,
+    | "salePricePerShareMinor"
+    | "saleProceedsMinor"
+    | "carryingAmountAtSaleMinor"
+    | "realisedPnlMinor"
+  >,
+  salePricePerShare: Money,
+  saleProceeds: Money,
+  carryingAmountAtSale: Money,
+  realisedPnl: Money,
+): EquitySoldPayloadV2 {
+  return {
+    ...base,
+    salePricePerShare: encodeMoney(salePricePerShare),
+    saleProceeds: encodeMoney(saleProceeds),
+    carryingAmountAtSale: encodeMoney(carryingAmountAtSale),
+    realisedPnl: encodeMoney(realisedPnl),
+  };
+}
+
+export function decodeEquitySold(raw: EquitySoldPayload): EquitySoldPayloadV2 {
+  const {
+    salePricePerShareMinor,
+    saleProceedsMinor,
+    carryingAmountAtSaleMinor,
+    realisedPnlMinor,
+    ...rest
+  } = raw;
+  return {
+    ...rest,
+    salePricePerShare: moneyWireFromMinor(salePricePerShareMinor, raw.currency),
+    saleProceeds: moneyWireFromMinor(saleProceedsMinor, raw.currency),
+    carryingAmountAtSale: moneyWireFromMinor(carryingAmountAtSaleMinor, raw.currency),
+    realisedPnl: moneyWireFromMinor(realisedPnlMinor, raw.currency),
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Equity accounting event-type registry
 // ---------------------------------------------------------------------------
 

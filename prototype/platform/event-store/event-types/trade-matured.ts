@@ -110,5 +110,80 @@ export function makeTradeMatured(args: {
   });
 }
 
+// ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { Money } from "../../core/decimal-money";
+import type { MoneyWire } from "../../core/money-codec";
+import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
+
+// ── TradeMatured / FX-spot V2 ────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by TradeMaturedFxSpotPayloadV2. */
+export type TradeMaturedFxSpotPayloadLegacy = TradeMaturedFxSpotPayload;
+
+export interface TradeMaturedFxSpotPayloadV2
+  extends Omit<
+    TradeMaturedFxSpotPayload,
+    "settledBaseCurrencyMinor" | "settledQuoteCurrencyMinor" | "realisedPnlZarMinor"
+  > {
+  /** Base-currency settled amount (signed: positive = received). */
+  readonly settledBaseCurrency: MoneyWire;
+  /** Quote-currency settled amount (signed: positive = received). */
+  readonly settledQuoteCurrency: MoneyWire;
+  /** Realised P&L in ZAR (signed). */
+  readonly realisedPnlZar: MoneyWire;
+}
+
+/**
+ * Producer: build a V2 FX-spot maturation payload from typed Money values.
+ * `baseCurrency` and `quoteCurrency` are the ISO 4217 codes from the pair.
+ */
+export function encodeTradeMaturedFxSpot(
+  base: Omit<
+    TradeMaturedFxSpotPayload,
+    "settledBaseCurrencyMinor" | "settledQuoteCurrencyMinor" | "realisedPnlZarMinor"
+  >,
+  settledBaseCurrency: Money,
+  settledQuoteCurrency: Money,
+  realisedPnlZar: Money,
+): TradeMaturedFxSpotPayloadV2 {
+  return {
+    ...base,
+    settledBaseCurrency: encodeMoney(settledBaseCurrency),
+    settledQuoteCurrency: encodeMoney(settledQuoteCurrency),
+    realisedPnlZar: encodeMoney(realisedPnlZar),
+  };
+}
+
+/**
+ * Bridge: convert legacy minor-unit FX-spot payload to V2.
+ * The pair is parsed from `currencyPair` ("BASE/QUOTE") to derive the
+ * individual currency codes for base and quote legs.
+ */
+export function decodeTradeMaturedFxSpot(
+  raw: TradeMaturedFxSpotPayload,
+): TradeMaturedFxSpotPayloadV2 {
+  const [baseCcy = "ZAR", quoteCcy = "ZAR"] = raw.currencyPair.split("/");
+  const { settledBaseCurrencyMinor, settledQuoteCurrencyMinor, realisedPnlZarMinor, ...rest } = raw;
+  return {
+    ...rest,
+    settledBaseCurrency: moneyWireFromMinor(settledBaseCurrencyMinor, baseCcy),
+    settledQuoteCurrency: moneyWireFromMinor(settledQuoteCurrencyMinor, quoteCcy),
+    realisedPnlZar: moneyWireFromMinor(realisedPnlZarMinor, "ZAR"),
+  };
+}
+
+/** @deprecated DECIMAL-MIGRATION: superseded by TradeMaturedPayloadV2. */
+export type TradeMaturedPayloadLegacy = TradeMaturedPayload;
+
+/** V2 discriminated union — extends as new productKind variants land. */
+export type TradeMaturedPayloadV2 = TradeMaturedFxSpotPayloadV2;
+
+export { encodeMoney, moneyWireFromMinor };
+
 export const TRADE_MATURED_EVENT_TYPES = ["TradeMatured"] as const;
 export type TradeMaturedEventType = (typeof TRADE_MATURED_EVENT_TYPES)[number];

@@ -165,5 +165,45 @@ export function makeOperationalLossEvent(args: {
 // Typed event-type list — registered in registry/operational-risk.ts (F-032).
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { Money } from "../../core/decimal-money";
+import type { MoneyWire } from "../../core/money-codec";
+import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
+
+// ── OperationalLossEvent V2 ──────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by OperationalLossEventPayloadV2. */
+export type OperationalLossEventPayloadLegacy = OperationalLossEventPayload;
+
+export interface OperationalLossEventPayloadV2
+  extends Omit<OperationalLossEventPayload, "grossLossMinor" | "recoveryMinor"> {
+  readonly grossLoss: MoneyWire;
+  readonly recovery: MoneyWire;
+}
+
+export function encodeOperationalLossEvent(
+  base: Omit<OperationalLossEventPayload, "grossLossMinor" | "recoveryMinor">,
+  grossLoss: Money,
+  recovery: Money,
+): OperationalLossEventPayloadV2 {
+  return { ...base, grossLoss: encodeMoney(grossLoss), recovery: encodeMoney(recovery) };
+}
+
+export function decodeOperationalLossEvent(
+  raw: OperationalLossEventPayload,
+): OperationalLossEventPayloadV2 {
+  const { grossLossMinor, recoveryMinor, ...rest } = raw;
+  return {
+    ...rest,
+    grossLoss: moneyWireFromMinor(grossLossMinor, raw.currency),
+    recovery: moneyWireFromMinor(recoveryMinor ?? 0, raw.currency),
+  };
+}
+
 export const OPERATIONAL_RISK_TYPED_EVENT_TYPES = ["OperationalLossEvent"] as const;
 export type OperationalRiskEventType = (typeof OPERATIONAL_RISK_TYPED_EVENT_TYPES)[number];

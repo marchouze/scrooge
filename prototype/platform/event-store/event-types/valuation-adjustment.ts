@@ -295,6 +295,108 @@ export function makePrudentValuationAvaAggregated(args: {
 }
 
 // ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { Money } from "../../core/decimal-money";
+import type { MoneyWire } from "../../core/money-codec";
+import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
+
+// ── ValuationAdjustmentComputed V2 ──────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by ValuationAdjustmentComputedPayloadV2. */
+export type ValuationAdjustmentComputedPayloadLegacy = ValuationAdjustmentComputedPayload;
+
+export interface ValuationAdjustmentComputedPayloadV2
+  extends Omit<ValuationAdjustmentComputedPayload, "amountZarMinor"> {
+  readonly amountZar: MoneyWire;
+}
+
+export function encodeValuationAdjustmentComputed(
+  base: Omit<ValuationAdjustmentComputedPayload, "amountZarMinor">,
+  amountZar: Money,
+): ValuationAdjustmentComputedPayloadV2 {
+  return { ...base, amountZar: encodeMoney(amountZar) };
+}
+
+export function decodeValuationAdjustmentComputed(
+  raw: ValuationAdjustmentComputedPayload,
+): ValuationAdjustmentComputedPayloadV2 {
+  const { amountZarMinor, ...rest } = raw;
+  return { ...rest, amountZar: moneyWireFromMinor(amountZarMinor, "ZAR") };
+}
+
+// ── Day1PnLDeferralRecorded V2 ───────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by Day1PnLDeferralRecordedPayloadV2. */
+export type Day1PnLDeferralRecordedPayloadLegacy = Day1PnLDeferralRecordedPayload;
+
+export interface Day1PnLDeferralRecordedPayloadV2
+  extends Omit<Day1PnLDeferralRecordedPayload, "day1PnlZarMinor"> {
+  readonly day1PnlZar: MoneyWire;
+}
+
+export function encodeDay1PnLDeferralRecorded(
+  base: Omit<Day1PnLDeferralRecordedPayload, "day1PnlZarMinor">,
+  day1PnlZar: Money,
+): Day1PnLDeferralRecordedPayloadV2 {
+  return { ...base, day1PnlZar: encodeMoney(day1PnlZar) };
+}
+
+export function decodeDay1PnLDeferralRecorded(
+  raw: Day1PnLDeferralRecordedPayload,
+): Day1PnLDeferralRecordedPayloadV2 {
+  const { day1PnlZarMinor, ...rest } = raw;
+  return { ...rest, day1PnlZar: moneyWireFromMinor(day1PnlZarMinor, "ZAR") };
+}
+
+// ── AvaCategoryLine V2 ───────────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by AvaCategoryLineV2. */
+export type AvaCategoryLineLegacy = AvaCategoryLine;
+
+export interface AvaCategoryLineV2 extends Omit<AvaCategoryLine, "amountZarMinor"> {
+  readonly amountZar: MoneyWire;
+}
+
+function decodeAvaCategoryLine(raw: AvaCategoryLine): AvaCategoryLineV2 {
+  const { amountZarMinor, ...rest } = raw;
+  return { ...rest, amountZar: moneyWireFromMinor(amountZarMinor, "ZAR") };
+}
+
+// ── PrudentValuationAvaAggregated V2 ─────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by PrudentValuationAvaAggregatedPayloadV2. */
+export type PrudentValuationAvaAggregatedPayloadLegacy = PrudentValuationAvaAggregatedPayload;
+
+export interface PrudentValuationAvaAggregatedPayloadV2
+  extends Omit<PrudentValuationAvaAggregatedPayload, "totalAvaZarMinor" | "categories"> {
+  readonly totalAvaZar: MoneyWire;
+  readonly categories: AvaCategoryLineV2[];
+}
+
+export function encodePrudentValuationAvaAggregated(
+  base: Omit<PrudentValuationAvaAggregatedPayload, "totalAvaZarMinor" | "categories">,
+  totalAvaZar: Money,
+  categories: AvaCategoryLineV2[],
+): PrudentValuationAvaAggregatedPayloadV2 {
+  return { ...base, totalAvaZar: encodeMoney(totalAvaZar), categories };
+}
+
+export function decodePrudentValuationAvaAggregated(
+  raw: PrudentValuationAvaAggregatedPayload,
+): PrudentValuationAvaAggregatedPayloadV2 {
+  const { totalAvaZarMinor, categories, ...rest } = raw;
+  return {
+    ...rest,
+    totalAvaZar: moneyWireFromMinor(totalAvaZarMinor, "ZAR"),
+    categories: categories.map(decodeAvaCategoryLine),
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Registry
 // ---------------------------------------------------------------------------
 

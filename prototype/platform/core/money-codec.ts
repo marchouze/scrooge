@@ -17,9 +17,9 @@
 //
 // Author: Atlas (Core banking platform architect, engineering).
 
-import { toCanonicalString, toDecimal } from "./decimal-engine";
+import { fromMinorUnits, mulD, roundDecimal, toCanonicalString, toDecimal } from "./decimal-engine";
 import { type Money, money } from "./decimal-money";
-import { isKnownCurrency } from "./iso4217";
+import { isKnownCurrency, scaleFor } from "./iso4217";
 import type { Currency } from "./types";
 
 /**
@@ -98,6 +98,45 @@ export function decodeMoney<C extends Currency = Currency>(wire: unknown): Money
   }
   return money(wire.amount, wire.currency as C);
 }
+
+// ─────────────── Minor-unit bridge (slice 2 migration helper) ───────────────
+//
+// Legacy event schemas encode money as `*Minor: number` (integer minor units,
+// e.g. ZAR cents). The V2 schemas use MoneyWire (decimal string major units).
+// These helpers bridge between the two representations.
+
+/**
+ * Convert a minor-unit integer (e.g. ZAR cents: 10050 → R100.50) to the
+ * canonical `MoneyWire`. The exponent is looked up from the ISO 4217 table
+ * (`scaleFor`); a no-minor-unit currency defaults to 2 dp (policy default,
+ * never throws). Used by decode* helpers in slice-2 V2 event types.
+ */
+export function moneyWireFromMinor(minorAmount: number, currency: string): MoneyWire {
+  const scale = scaleFor(currency as Currency);
+  // Use the Decimal engine's fromMinorUnits to avoid any IEEE-754 drift.
+  const majorStr = toCanonicalString(fromMinorUnits(BigInt(Math.round(minorAmount)), scale));
+  return {
+    __money: MONEY_DISCRIMINANT,
+    amount: majorStr,
+    currency,
+  };
+}
+
+/**
+ * Convert a MoneyWire back to a minor-unit integer (rounding HALF_UP at the
+ * currency exponent). Used for round-trip testing and legacy interface bridging.
+ */
+export function minorFromMoneyWire(wire: MoneyWire): number {
+  const scale = scaleFor(wire.currency as Currency);
+  const factor = 10 ** scale;
+  const dec = toDecimal(wire.amount);
+  const minorDec = mulD(dec, toDecimal(factor.toString()));
+  return Number(toCanonicalString(roundDecimal(minorDec, 0, "HALF_UP")));
+}
+
+/** Re-export `scaleFor` so callers can check the currency scale without a
+ *  second import from iso4217. */
+export { scaleFor };
 
 /**
  * Walk an arbitrary payload and report any field whose value is a money wire

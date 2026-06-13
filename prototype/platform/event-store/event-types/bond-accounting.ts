@@ -335,6 +335,200 @@ export function makeBondSold(args: {
 }
 
 // ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// Each *PayloadV2 type replaces the *Minor: number fields with MoneyWire
+// (decimal-string amount, discriminant __money:"v1"). The originals above are
+// @deprecated but retained for legacy consumers until slice 3 removes them.
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { Money } from "../../core/decimal-money";
+import { money } from "../../core/decimal-money";
+import type { MoneyWire } from "../../core/money-codec";
+import { decodeMoney, encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
+
+// ── BondTradeExecuted V2 ────────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by BondTradeExecutedPayloadV2. */
+export type BondTradeExecutedPayloadLegacy = BondTradeExecutedPayload;
+
+export interface BondTradeExecutedPayloadV2
+  extends Omit<BondTradeExecutedPayload, "nominalMinor" | "accruedInterestMinor"> {
+  /** Nominal face value as exact decimal MoneyWire. */
+  readonly nominal: MoneyWire;
+  /** Accrued interest component as exact decimal MoneyWire. */
+  readonly accruedInterest: MoneyWire;
+}
+
+/** Producer: build a V2 payload from typed Money values. */
+export function encodeBondTradeExecuted(
+  base: Omit<BondTradeExecutedPayload, "nominalMinor" | "accruedInterestMinor">,
+  nominal: Money,
+  accruedInterest: Money,
+): BondTradeExecutedPayloadV2 {
+  return { ...base, nominal: encodeMoney(nominal), accruedInterest: encodeMoney(accruedInterest) };
+}
+
+/** Bridge: convert legacy minor-unit payload to V2. */
+export function decodeBondTradeExecuted(raw: BondTradeExecutedPayload): BondTradeExecutedPayloadV2 {
+  const { nominalMinor, accruedInterestMinor, ...rest } = raw;
+  return {
+    ...rest,
+    nominal: moneyWireFromMinor(nominalMinor, raw.currency),
+    accruedInterest: moneyWireFromMinor(accruedInterestMinor, raw.currency),
+  };
+}
+
+// ── BondInterestAccrued V2 ──────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by BondInterestAccruedPayloadV2. */
+export type BondInterestAccruedPayloadLegacy = BondInterestAccruedPayload;
+
+export interface BondInterestAccruedPayloadV2
+  extends Omit<
+    BondInterestAccruedPayload,
+    "accruedInterestMinor" | "openingCarryingAmountMinor" | "closingCarryingAmountMinor"
+  > {
+  readonly accruedInterest: MoneyWire;
+  readonly openingCarryingAmount: MoneyWire;
+  readonly closingCarryingAmount: MoneyWire;
+}
+
+export function encodeBondInterestAccrued(
+  base: Omit<
+    BondInterestAccruedPayload,
+    "accruedInterestMinor" | "openingCarryingAmountMinor" | "closingCarryingAmountMinor"
+  >,
+  accruedInterest: Money,
+  openingCarryingAmount: Money,
+  closingCarryingAmount: Money,
+): BondInterestAccruedPayloadV2 {
+  return {
+    ...base,
+    accruedInterest: encodeMoney(accruedInterest),
+    openingCarryingAmount: encodeMoney(openingCarryingAmount),
+    closingCarryingAmount: encodeMoney(closingCarryingAmount),
+  };
+}
+
+export function decodeBondInterestAccrued(
+  raw: BondInterestAccruedPayload,
+): BondInterestAccruedPayloadV2 {
+  const { accruedInterestMinor, openingCarryingAmountMinor, closingCarryingAmountMinor, ...rest } =
+    raw;
+  return {
+    ...rest,
+    accruedInterest: moneyWireFromMinor(accruedInterestMinor, raw.currency),
+    openingCarryingAmount: moneyWireFromMinor(openingCarryingAmountMinor, raw.currency),
+    closingCarryingAmount: moneyWireFromMinor(closingCarryingAmountMinor, raw.currency),
+  };
+}
+
+// ── BondPositionRevalued V2 ─────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by BondPositionRevaluedPayloadV2. */
+export type BondPositionRevaluedPayloadLegacy = BondPositionRevaluedPayload;
+
+export interface BondPositionRevaluedPayloadV2
+  extends Omit<BondPositionRevaluedPayload, "unrealisedPnlZarMinor"> {
+  /** Signed unrealised P&L as exact decimal MoneyWire (ZAR). */
+  readonly unrealisedPnlZar: MoneyWire;
+}
+
+export function encodeBondPositionRevalued(
+  base: Omit<BondPositionRevaluedPayload, "unrealisedPnlZarMinor">,
+  unrealisedPnlZar: Money,
+): BondPositionRevaluedPayloadV2 {
+  return { ...base, unrealisedPnlZar: encodeMoney(unrealisedPnlZar) };
+}
+
+export function decodeBondPositionRevalued(
+  raw: BondPositionRevaluedPayload,
+): BondPositionRevaluedPayloadV2 {
+  const { unrealisedPnlZarMinor, ...rest } = raw;
+  return { ...rest, unrealisedPnlZar: moneyWireFromMinor(unrealisedPnlZarMinor, "ZAR") };
+}
+
+// ── BondMatured V2 ──────────────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by BondMaturedPayloadV2. */
+export type BondMaturedPayloadLegacy = BondMaturedPayload;
+
+export interface BondMaturedPayloadV2
+  extends Omit<BondMaturedPayload, "nominalRepaidMinor" | "finalCouponMinor"> {
+  readonly nominalRepaid: MoneyWire;
+  readonly finalCoupon: MoneyWire;
+}
+
+export function encodeBondMatured(
+  base: Omit<BondMaturedPayload, "nominalRepaidMinor" | "finalCouponMinor">,
+  nominalRepaid: Money,
+  finalCoupon: Money,
+): BondMaturedPayloadV2 {
+  return {
+    ...base,
+    nominalRepaid: encodeMoney(nominalRepaid),
+    finalCoupon: encodeMoney(finalCoupon),
+  };
+}
+
+export function decodeBondMatured(raw: BondMaturedPayload): BondMaturedPayloadV2 {
+  const { nominalRepaidMinor, finalCouponMinor, ...rest } = raw;
+  return {
+    ...rest,
+    nominalRepaid: moneyWireFromMinor(nominalRepaidMinor, raw.currency),
+    finalCoupon: moneyWireFromMinor(finalCouponMinor, raw.currency),
+  };
+}
+
+// ── BondSold V2 ─────────────────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by BondSoldPayloadV2. */
+export type BondSoldPayloadLegacy = BondSoldPayload;
+
+export interface BondSoldPayloadV2
+  extends Omit<
+    BondSoldPayload,
+    "saleProceedsMinor" | "carryingAmountAtSaleMinor" | "realisedPnlMinor"
+  > {
+  readonly saleProceeds: MoneyWire;
+  readonly carryingAmountAtSale: MoneyWire;
+  readonly realisedPnl: MoneyWire;
+}
+
+export function encodeBondSold(
+  base: Omit<
+    BondSoldPayload,
+    "saleProceedsMinor" | "carryingAmountAtSaleMinor" | "realisedPnlMinor"
+  >,
+  saleProceeds: Money,
+  carryingAmountAtSale: Money,
+  realisedPnl: Money,
+): BondSoldPayloadV2 {
+  return {
+    ...base,
+    saleProceeds: encodeMoney(saleProceeds),
+    carryingAmountAtSale: encodeMoney(carryingAmountAtSale),
+    realisedPnl: encodeMoney(realisedPnl),
+  };
+}
+
+export function decodeBondSold(raw: BondSoldPayload): BondSoldPayloadV2 {
+  const { saleProceedsMinor, carryingAmountAtSaleMinor, realisedPnlMinor, ...rest } = raw;
+  return {
+    ...rest,
+    saleProceeds: moneyWireFromMinor(saleProceedsMinor, raw.currency),
+    carryingAmountAtSale: moneyWireFromMinor(carryingAmountAtSaleMinor, raw.currency),
+    realisedPnl: moneyWireFromMinor(realisedPnlMinor, raw.currency),
+  };
+}
+
+// Re-export decode helper that returns typed Money for projection use
+export { decodeMoney, encodeMoney, money };
+
+// ---------------------------------------------------------------------------
 // Bond accounting event-type registry
 // ---------------------------------------------------------------------------
 

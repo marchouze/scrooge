@@ -558,6 +558,108 @@ export function makeMessageCorrelated(args: {
 }
 
 // ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { Money } from "../../core/decimal-money";
+import type { MoneyWire } from "../../core/money-codec";
+import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
+
+// ── SettlementInstructionReceived V2 ─────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by SettlementInstructionReceivedPayloadV2. */
+export type SettlementInstructionReceivedPayloadLegacy = SettlementInstructionReceivedPayload;
+
+export interface SettlementInstructionReceivedPayloadV2
+  extends Omit<SettlementInstructionReceivedPayload, "netCash"> {
+  readonly netCashWire: MoneyWire;
+}
+
+export function encodeSettlementInstructionReceived(
+  base: Omit<SettlementInstructionReceivedPayload, "netCash">,
+  netCash: Money,
+): SettlementInstructionReceivedPayloadV2 {
+  return { ...base, netCashWire: encodeMoney(netCash) };
+}
+
+export function decodeSettlementInstructionReceived(
+  raw: SettlementInstructionReceivedPayload,
+): SettlementInstructionReceivedPayloadV2 {
+  const { netCash, ...rest } = raw;
+  return { ...rest, netCashWire: moneyWireFromMinor(netCash, raw.currency) };
+}
+
+// ── PaymentInitiated V2 ──────────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by PaymentInitiatedPayloadV2. */
+export type PaymentInitiatedPayloadLegacy = PaymentInitiatedPayload;
+
+export interface PaymentInitiatedPayloadV2 extends Omit<PaymentInitiatedPayload, "netCash"> {
+  readonly netCashWire: MoneyWire;
+}
+
+export function encodePaymentInitiated(
+  base: Omit<PaymentInitiatedPayload, "netCash">,
+  netCash: Money,
+): PaymentInitiatedPayloadV2 {
+  return { ...base, netCashWire: encodeMoney(netCash) };
+}
+
+export function decodePaymentInitiated(raw: PaymentInitiatedPayload): PaymentInitiatedPayloadV2 {
+  const { netCash, ...rest } = raw;
+  return { ...rest, netCashWire: moneyWireFromMinor(netCash, raw.currency) };
+}
+
+// ── PaymentSettled V2 ────────────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by PaymentSettledPayloadV2. */
+export type PaymentSettledPayloadLegacy = PaymentSettledPayload;
+
+export interface PaymentSettledPayloadV2 extends Omit<PaymentSettledPayload, "netCash"> {
+  readonly netCashWire: MoneyWire;
+}
+
+export function encodePaymentSettled(
+  base: Omit<PaymentSettledPayload, "netCash">,
+  netCash: Money,
+): PaymentSettledPayloadV2 {
+  return { ...base, netCashWire: encodeMoney(netCash) };
+}
+
+export function decodePaymentSettled(raw: PaymentSettledPayload): PaymentSettledPayloadV2 {
+  const { netCash, ...rest } = raw;
+  return { ...rest, netCashWire: moneyWireFromMinor(netCash, raw.currency) };
+}
+
+// ── JournalEntryPosted V2 ────────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by JournalEntryPostedPayloadV2. */
+export type JournalEntryPostedPayloadLegacy = JournalEntryPostedPayload;
+
+export interface JournalEntryPostedPayloadV2
+  extends Omit<JournalEntryPostedPayload, "amountMinor"> {
+  readonly amount: MoneyWire;
+}
+
+export function encodeJournalEntryPosted(
+  base: Omit<JournalEntryPostedPayload, "amountMinor">,
+  amount: Money,
+): JournalEntryPostedPayloadV2 {
+  return { ...base, amount: encodeMoney(amount) };
+}
+
+export function decodeJournalEntryPosted(
+  raw: JournalEntryPostedPayload,
+): JournalEntryPostedPayloadV2 {
+  const { amountMinor, ...rest } = raw;
+  return { ...rest, amount: moneyWireFromMinor(amountMinor, raw.currency) };
+}
+
+export { encodeMoney };
+
+// ---------------------------------------------------------------------------
 // Payments event-type registry
 // ---------------------------------------------------------------------------
 

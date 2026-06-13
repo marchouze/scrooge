@@ -156,6 +156,39 @@ export function makeIpvExceptionRaised(args: {
 // MTM event-type array (for registry)
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { Money } from "../../core/decimal-money";
+import type { MoneyWire } from "../../core/money-codec";
+import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
+
+// ── MtmRunCompleted V2 ───────────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by MtmRunCompletedPayloadV2. */
+export type MtmRunCompletedPayloadLegacy = MtmRunCompletedPayload;
+
+export interface MtmRunCompletedPayloadV2
+  extends Omit<MtmRunCompletedPayload, "totalPnlDeltaMinor"> {
+  /** Net P&L delta in ZAR as exact decimal MoneyWire. */
+  readonly totalPnlDelta: MoneyWire;
+}
+
+export function encodeMtmRunCompleted(
+  base: Omit<MtmRunCompletedPayload, "totalPnlDeltaMinor">,
+  totalPnlDelta: Money,
+): MtmRunCompletedPayloadV2 {
+  return { ...base, totalPnlDelta: encodeMoney(totalPnlDelta) };
+}
+
+export function decodeMtmRunCompleted(raw: MtmRunCompletedPayload): MtmRunCompletedPayloadV2 {
+  const { totalPnlDeltaMinor, ...rest } = raw;
+  return { ...rest, totalPnlDelta: moneyWireFromMinor(totalPnlDeltaMinor, "ZAR") };
+}
+
 export const MTM_TYPED_EVENT_TYPES = ["MtmRunCompleted", "IpvExceptionRaised"] as const;
 
 export type MtmEventType = (typeof MTM_TYPED_EVENT_TYPES)[number];

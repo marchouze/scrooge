@@ -371,6 +371,173 @@ export function makeIrdSwapTerminated(args: {
 }
 
 // ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { Money } from "../../core/decimal-money";
+import type { MoneyWire } from "../../core/money-codec";
+import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
+
+// ── IrdSwapTradeExecuted V2 ─────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by IrdSwapTradeExecutedPayloadV2. */
+export type IrdSwapTradeExecutedPayloadLegacy = IrdSwapTradeExecutedPayload;
+
+export interface IrdSwapTradeExecutedPayloadV2
+  extends Omit<IrdSwapTradeExecutedPayload, "notionalMinor" | "npvMinor"> {
+  /** Notional amount as exact decimal MoneyWire. */
+  readonly notional: MoneyWire;
+  /** Initial NPV as exact decimal MoneyWire (signed; positive = asset). */
+  readonly npv: MoneyWire;
+}
+
+export function encodeIrdSwapTradeExecuted(
+  base: Omit<IrdSwapTradeExecutedPayload, "notionalMinor" | "npvMinor">,
+  notional: Money,
+  npv: Money,
+): IrdSwapTradeExecutedPayloadV2 {
+  return { ...base, notional: encodeMoney(notional), npv: encodeMoney(npv) };
+}
+
+export function decodeIrdSwapTradeExecuted(
+  raw: IrdSwapTradeExecutedPayload,
+): IrdSwapTradeExecutedPayloadV2 {
+  const { notionalMinor, npvMinor, ...rest } = raw;
+  return {
+    ...rest,
+    notional: moneyWireFromMinor(notionalMinor, raw.currency),
+    npv: moneyWireFromMinor(npvMinor, raw.currency),
+  };
+}
+
+// ── IrdSwapPositionRevalued V2 ──────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by IrdSwapPositionRevaluedPayloadV2. */
+export type IrdSwapPositionRevaluedPayloadLegacy = IrdSwapPositionRevaluedPayload;
+
+export interface IrdSwapPositionRevaluedPayloadV2
+  extends Omit<
+    IrdSwapPositionRevaluedPayload,
+    "npvDeltaMinor" | "npvClosingMinor" | "npvOpeningMinor"
+  > {
+  readonly npvDelta: MoneyWire;
+  readonly npvClosing: MoneyWire;
+  readonly npvOpening: MoneyWire;
+}
+
+export function encodeIrdSwapPositionRevalued(
+  base: Omit<
+    IrdSwapPositionRevaluedPayload,
+    "npvDeltaMinor" | "npvClosingMinor" | "npvOpeningMinor"
+  >,
+  npvDelta: Money,
+  npvClosing: Money,
+  npvOpening: Money,
+): IrdSwapPositionRevaluedPayloadV2 {
+  return {
+    ...base,
+    npvDelta: encodeMoney(npvDelta),
+    npvClosing: encodeMoney(npvClosing),
+    npvOpening: encodeMoney(npvOpening),
+  };
+}
+
+export function decodeIrdSwapPositionRevalued(
+  raw: IrdSwapPositionRevaluedPayload,
+): IrdSwapPositionRevaluedPayloadV2 {
+  const { npvDeltaMinor, npvClosingMinor, npvOpeningMinor, ...rest } = raw;
+  return {
+    ...rest,
+    npvDelta: moneyWireFromMinor(npvDeltaMinor, raw.currency),
+    npvClosing: moneyWireFromMinor(npvClosingMinor, raw.currency),
+    npvOpening: moneyWireFromMinor(npvOpeningMinor, raw.currency),
+  };
+}
+
+// ── IrdSwapCouponSettled V2 ─────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by IrdSwapCouponSettledPayloadV2. */
+export type IrdSwapCouponSettledPayloadLegacy = IrdSwapCouponSettledPayload;
+
+export interface IrdSwapCouponSettledPayloadV2
+  extends Omit<IrdSwapCouponSettledPayload, "netCashMinor" | "fixedLegMinor" | "floatingLegMinor"> {
+  /** Net cash (signed; positive = bank receives). */
+  readonly netCash: MoneyWire;
+  readonly fixedLeg: MoneyWire;
+  readonly floatingLeg: MoneyWire;
+}
+
+export function encodeIrdSwapCouponSettled(
+  base: Omit<IrdSwapCouponSettledPayload, "netCashMinor" | "fixedLegMinor" | "floatingLegMinor">,
+  netCash: Money,
+  fixedLeg: Money,
+  floatingLeg: Money,
+): IrdSwapCouponSettledPayloadV2 {
+  return {
+    ...base,
+    netCash: encodeMoney(netCash),
+    fixedLeg: encodeMoney(fixedLeg),
+    floatingLeg: encodeMoney(floatingLeg),
+  };
+}
+
+export function decodeIrdSwapCouponSettled(
+  raw: IrdSwapCouponSettledPayload,
+): IrdSwapCouponSettledPayloadV2 {
+  const { netCashMinor, fixedLegMinor, floatingLegMinor, ...rest } = raw;
+  return {
+    ...rest,
+    netCash: moneyWireFromMinor(netCashMinor, raw.currency),
+    fixedLeg: moneyWireFromMinor(fixedLegMinor, raw.currency),
+    floatingLeg: moneyWireFromMinor(floatingLegMinor, raw.currency),
+  };
+}
+
+// ── IrdSwapTerminated V2 ────────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by IrdSwapTerminatedPayloadV2. */
+export type IrdSwapTerminatedPayloadLegacy = IrdSwapTerminatedPayload;
+
+export interface IrdSwapTerminatedPayloadV2
+  extends Omit<
+    IrdSwapTerminatedPayload,
+    "terminationPaymentMinor" | "carryingNpvAtTerminationMinor" | "realisedPnlMinor"
+  > {
+  readonly terminationPayment: MoneyWire;
+  readonly carryingNpvAtTermination: MoneyWire;
+  readonly realisedPnl: MoneyWire;
+}
+
+export function encodeIrdSwapTerminated(
+  base: Omit<
+    IrdSwapTerminatedPayload,
+    "terminationPaymentMinor" | "carryingNpvAtTerminationMinor" | "realisedPnlMinor"
+  >,
+  terminationPayment: Money,
+  carryingNpvAtTermination: Money,
+  realisedPnl: Money,
+): IrdSwapTerminatedPayloadV2 {
+  return {
+    ...base,
+    terminationPayment: encodeMoney(terminationPayment),
+    carryingNpvAtTermination: encodeMoney(carryingNpvAtTermination),
+    realisedPnl: encodeMoney(realisedPnl),
+  };
+}
+
+export function decodeIrdSwapTerminated(raw: IrdSwapTerminatedPayload): IrdSwapTerminatedPayloadV2 {
+  const { terminationPaymentMinor, carryingNpvAtTerminationMinor, realisedPnlMinor, ...rest } = raw;
+  return {
+    ...rest,
+    terminationPayment: moneyWireFromMinor(terminationPaymentMinor, raw.currency),
+    carryingNpvAtTermination: moneyWireFromMinor(carryingNpvAtTerminationMinor, raw.currency),
+    realisedPnl: moneyWireFromMinor(realisedPnlMinor, raw.currency),
+  };
+}
+
+// ---------------------------------------------------------------------------
 // IRD accounting event-type registry
 // ---------------------------------------------------------------------------
 
