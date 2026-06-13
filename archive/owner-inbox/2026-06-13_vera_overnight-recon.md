@@ -1,7 +1,7 @@
 ---
 agent: Vera
 trigger: overnight-recon
-asOf: 2026-06-13T02:16:05.688Z
+asOf: 2026-06-13T03:24:00.863Z
 decision-required: false
 ---
 
@@ -144,7 +144,7 @@ Autonomous run of Vera's continuous-controls pipelines per `Team/Vera.md` operat
 
 ## Vera's narrative
 
-_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CbzTKsX4ETfNok2o7eY7F"}). Mechanical recon results above stand on their own._
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CbzYWUU7QCaBN2UQE7pGm"}). Mechanical recon results above stand on their own._
 
 ## Substrate
 
