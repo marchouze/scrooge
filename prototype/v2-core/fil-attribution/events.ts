@@ -169,17 +169,84 @@ export const sliceDefinedPayloadSchema = z
   .strict();
 
 // ---------------------------------------------------------------------------
+// OrgHierarchyEdgeAssigned (A3)
+// ---------------------------------------------------------------------------
+
+/**
+ * The closed set of org-ladder axes an edge may connect, child-first. Mirrors
+ * `hierarchy.ts` `ORG_HIERARCHY_LADDER` (the child axes) plus the synthetic
+ * `consolidatedGroup` terminal (a valid PARENT axis only). Keeping the enum here
+ * lets the event schema reject an edge that points off the ladder.
+ */
+export const ORG_LADDER_CHILD_AXES = ["bookingAgent", "book", "desk", "legalEntity"] as const;
+export const ORG_LADDER_PARENT_AXES = ["book", "desk", "legalEntity", "consolidatedGroup"] as const;
+
+export const orgLadderChildAxisSchema = z.enum(ORG_LADDER_CHILD_AXES);
+export const orgLadderParentAxisSchema = z.enum(ORG_LADDER_PARENT_AXES);
+
+/**
+ * `OrgHierarchyEdgeAssigned` (A3) — a child node (book / desk / legalEntity /
+ * bookingAgent) is asserted to roll up to a parent node, effective from an
+ * instant. A desk move, an LE re-parent, a book re-desk is a NEW edge event,
+ * never a mutation (Principle 1). "Which group did this desk roll up to AS-OF
+ * T?" is a latest-covering-edge-wins projection over these events (hierarchy.ts).
+ *
+ * Consolidation tops out at the tenant: the terminal parent axis is
+ * `consolidatedGroup` (the tenant's own LE-tree root); there is no edge above it.
+ *
+ * `tenantId`     — the owning tenant (the hard outer partition; an edge is always
+ *                  within one tenant — a cross-tenant roll-up is not a thing).
+ * `childAxis`    — the child's org axis. MUST be a ladder child axis.
+ * `child`        — the child node id (e.g. a `desk` id).
+ * `parentAxis`   — the parent's org axis; MUST be the ladder parent of childAxis.
+ * `parent`       — the parent node id (e.g. a `legalEntity` id, or the group root).
+ * `effectiveFrom`— time-versioned; a re-parent is a new edge with a later instant.
+ * `assignedBy`   — the agent/seat that emitted the edge (the authority axis).
+ * `citation`     — Principle 2 upward citation (the authorising decision / brief).
+ */
+export interface OrgHierarchyEdgeAssignedPayload {
+  readonly kind: "OrgHierarchyEdgeAssigned";
+  readonly tenantId: string;
+  readonly childAxis: string;
+  readonly child: string;
+  readonly parentAxis: string;
+  readonly parent: string;
+  readonly effectiveFrom: string;
+  readonly assignedBy: string;
+  readonly citation: string;
+}
+
+export const orgHierarchyEdgeAssignedPayloadSchema = z
+  .object({
+    kind: z.literal("OrgHierarchyEdgeAssigned"),
+    tenantId: tenantIdSchema,
+    childAxis: orgLadderChildAxisSchema,
+    child: z.string().min(1),
+    parentAxis: orgLadderParentAxisSchema,
+    parent: z.string().min(1),
+    effectiveFrom: instantSchema,
+    assignedBy: z.string().min(1),
+    citation: citationRefSchema,
+  })
+  .strict();
+
+// ---------------------------------------------------------------------------
 // Discriminated union + kind list (registration helpers)
 // ---------------------------------------------------------------------------
 
 export const attributionEventPayloadSchema = z.discriminatedUnion("kind", [
   instrumentDimensionAssignedPayloadSchema,
   sliceDefinedPayloadSchema,
+  orgHierarchyEdgeAssignedPayloadSchema,
 ]);
 
 export type AttributionEventPayload = z.infer<typeof attributionEventPayloadSchema>;
 
-/** The two new event kinds this package contributes (F-032 site list). */
-export const ATTRIBUTION_EVENT_KINDS = ["InstrumentDimensionAssigned", "SliceDefined"] as const;
+/** The three new event kinds this package contributes (F-032 site list). */
+export const ATTRIBUTION_EVENT_KINDS = [
+  "InstrumentDimensionAssigned",
+  "SliceDefined",
+  "OrgHierarchyEdgeAssigned",
+] as const;
 
 export type AttributionEventKind = (typeof ATTRIBUTION_EVENT_KINDS)[number];

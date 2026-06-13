@@ -164,6 +164,7 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   // Authority: D-FIL-ATTRIBUTION-A1-BUILD; D-METRIC-ATTRIBUTION-DIMENSIONAL; Principle 1.
   InstrumentDimensionAssigned: "governance",
   SliceDefined: "governance",
+  OrgHierarchyEdgeAssigned: "governance",
   // Counterparty / party register.
   PartyRegistered: "counterparty",
   PartyClassified: "counterparty",

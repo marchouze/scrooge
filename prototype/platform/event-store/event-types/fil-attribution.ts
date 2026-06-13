@@ -31,6 +31,7 @@
 
 import {
   instrumentDimensionAssignedPayloadSchema,
+  orgHierarchyEdgeAssignedPayloadSchema,
   sliceDefinedPayloadSchema,
 } from "../../../v2-core/fil-attribution/events";
 import { newEventId } from "../../core/types";
@@ -39,11 +40,15 @@ import { type Actor, type Event, eventSchema } from "../types";
 // Re-export the v2-core schemas as the canonical payload grammar (single source).
 export const instrumentDimensionAssignedPayload = instrumentDimensionAssignedPayloadSchema;
 export const sliceDefinedPayload = sliceDefinedPayloadSchema;
+export const orgHierarchyEdgeAssignedPayload = orgHierarchyEdgeAssignedPayloadSchema;
 
 export type InstrumentDimensionAssignedEventPayload = ReturnType<
   typeof instrumentDimensionAssignedPayloadSchema.parse
 >;
 export type SliceDefinedEventPayload = ReturnType<typeof sliceDefinedPayloadSchema.parse>;
+export type OrgHierarchyEdgeAssignedEventPayload = ReturnType<
+  typeof orgHierarchyEdgeAssignedPayloadSchema.parse
+>;
 
 export function makeInstrumentDimensionAssigned(args: {
   asOf: string;
@@ -83,8 +88,28 @@ export function makeSliceDefined(args: {
   });
 }
 
+export function makeOrgHierarchyEdgeAssigned(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: OrgHierarchyEdgeAssignedEventPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "OrgHierarchyEdgeAssigned",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: orgHierarchyEdgeAssignedPayloadSchema.parse(args.payload),
+  });
+}
+
 export const FIL_ATTRIBUTION_TYPED_EVENT_TYPES = [
   "InstrumentDimensionAssigned",
   "SliceDefined",
+  "OrgHierarchyEdgeAssigned",
 ] as const;
 export type FilAttributionEventType = (typeof FIL_ATTRIBUTION_TYPED_EVENT_TYPES)[number];

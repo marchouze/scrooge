@@ -37,3 +37,4 @@ export * from "./metric";
 export * from "./slice";
 export * from "./engine";
 export * from "./membership";
+export * from "./hierarchy";
