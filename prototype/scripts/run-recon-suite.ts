@@ -76,6 +76,9 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:v2-posture-register-integrity",
     // WS-V2-BBAAS S1 — control-plane tenant registry (advisory in S1).
     "recon:v2-control-plane-tenant-registry",
+    // WS-V2-BBAAS S6 — composition-factory seam (advisory): alias resolves +
+    // no v2-core module bypasses the factory alias.
+    "recon:v2-composition-factory",
     "recon:dashboard",
     "recon:wall-clock-callsite-coverage",
     "recon:decisions-events-only",
