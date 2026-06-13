@@ -248,6 +248,11 @@ export { V2_BANKING_EVENT_TYPES_REGISTRY } from "./v2-banking";
 // TenantRegistered, TenantSurfaceGranted, TenantUpgradeLedgerEntry, TenantMeterEvent.
 // Authority: D-V2-TENANCY-ARCHITECTURE (Option C); D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
 export { V2_CONTROL_PLANE_EVENT_TYPES } from "./v2-control-plane";
+// WS-V2-BBAAS S12 — cross-tenant CSI gate (competition-law keystone).
+// CsiCategoryRegistered, CsiCategoryRetired, CrossTenantLearningScreened,
+// CrossTenantLearningBlocked.
+// Authority: D-W7-VENDOR-ENTITY-STRUCTURE; D-V2-TENANCY-ARCHITECTURE.
+export { CROSS_TENANT_CSI_EVENT_TYPES } from "./cross-tenant-csi";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -269,6 +274,7 @@ import { CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY } from "./correspondent-s
 import { COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY } from "./counterparty-credit-risk";
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 import { CREDIT_LIMIT_EVENT_TYPES_REGISTRY } from "./credit-limit";
+import { CROSS_TENANT_CSI_EVENT_TYPES } from "./cross-tenant-csi";
 import { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillation";
 import { DECISION_IMPACT_SWEEP_EVENT_TYPES_REGISTRY } from "./decision-impact-sweep";
 import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
@@ -574,6 +580,12 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // TenantRegistered, TenantSurfaceGranted, TenantUpgradeLedgerEntry, TenantMeterEvent.
   // Authority: D-V2-TENANCY-ARCHITECTURE (Option C); D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
   ...V2_CONTROL_PLANE_EVENT_TYPES,
+  // WS-V2-BBAAS S12 — cross-tenant CSI gate (competition-law keystone).
+  // CsiCategoryRegistered, CsiCategoryRetired, CrossTenantLearningScreened,
+  // CrossTenantLearningBlocked. The CSI blocklist + every cross-tenant crossing
+  // are competition-law records (Competition Act 89/1998 s.4(1)).
+  // Authority: D-W7-VENDOR-ENTITY-STRUCTURE; D-V2-TENANCY-ARCHITECTURE.
+  ...CROSS_TENANT_CSI_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

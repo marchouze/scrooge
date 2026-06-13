@@ -117,6 +117,16 @@ export * from "./applicability";
  * Authority: D-W8-DECISION-IMPACT-SWEEP; D-V2-BBAAS-BLUEPRINT-SYNTHESIS. */
 export * from "./decision-impact";
 
+// --- Cross-tenant CSI gate (S12) — competition-law keystone ----------------
+
+/** @tier K — CSI blocklist register (CsiCategoryRegistered/Retired, CSI_SEED_CATEGORIES),
+ * CsiBlocklist projection, and the fail-closed cross-tenant learning gate
+ * (screenCrossTenantLearningFlow, CrossTenantLearningScreened/Blocked). ANCHOR-BANK
+ * ONLY: cross-tenant learning is NOT in the R/C released surface until this gate
+ * clears (the D-W7 C-tier / multi-tenant-learning go-live precondition).
+ * Authority: D-W7-VENDOR-ENTITY-STRUCTURE; D-V2-TENANCY-ARCHITECTURE. */
+export * from "./cross-tenant";
+
 // --- Control-plane (Wave 1, S1) — fleet store --------------------------------
 
 /** @tier K — control-plane event shapes (TenantRegistered, TenantSurfaceGranted, TenantUpgradeLedgerEntry, TenantMeterEvent); anchor-bank only */
