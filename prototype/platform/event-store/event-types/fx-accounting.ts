@@ -762,6 +762,127 @@ export function makeRealisedPnlRecognised(args: {
 }
 
 // ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { MoneyWire } from "../../core/money-codec";
+import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
+import type { Money } from "../../core/decimal-money";
+
+// ── FxPositionRevalued V2 ────────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by FxPositionRevaluedPayloadV2. */
+export type FxPositionRevaluedPayloadLegacy = FxPositionRevaluedPayload;
+
+export interface FxPositionRevaluedPayloadV2
+  extends Omit<FxPositionRevaluedPayload, "notionalBaseMinor" | "unrealisedPnlZarMinor"> {
+  /** Base-currency notional as exact decimal MoneyWire. */
+  readonly notionalBase: MoneyWire;
+  /** Signed unrealised P&L delta in ZAR as exact decimal MoneyWire. */
+  readonly unrealisedPnlZar: MoneyWire;
+}
+
+export function encodeFxPositionRevalued(
+  base: Omit<FxPositionRevaluedPayload, "notionalBaseMinor" | "unrealisedPnlZarMinor">,
+  notionalBase: Money,
+  unrealisedPnlZar: Money,
+): FxPositionRevaluedPayloadV2 {
+  return {
+    ...base,
+    notionalBase: encodeMoney(notionalBase),
+    unrealisedPnlZar: encodeMoney(unrealisedPnlZar),
+  };
+}
+
+export function decodeFxPositionRevalued(
+  raw: FxPositionRevaluedPayload,
+): FxPositionRevaluedPayloadV2 {
+  const [baseCcy = "ZAR"] = raw.currencyPair.split("/");
+  const { notionalBaseMinor, unrealisedPnlZarMinor, ...rest } = raw;
+  return {
+    ...rest,
+    notionalBase: moneyWireFromMinor(notionalBaseMinor, baseCcy),
+    unrealisedPnlZar: moneyWireFromMinor(unrealisedPnlZarMinor, "ZAR"),
+  };
+}
+
+// ── SubLedgerLeg V2 ─────────────────────────────────────────────────────────
+//
+// The SubLedgerLeg shared type is the primary posting primitive consumed by
+// computeTrialBalance. V2 replaces amountMinor with a MoneyWire.
+
+/** @deprecated DECIMAL-MIGRATION: superseded by SubLedgerLegV2. */
+export type SubLedgerLegLegacy = SubLedgerLeg;
+
+export interface SubLedgerLegV2
+  extends Omit<SubLedgerLeg, "amountMinor"> {
+  /** Positive decimal amount as MoneyWire (debitCredit indicates direction). */
+  readonly amount: MoneyWire;
+}
+
+export function encodeSubLedgerLeg(
+  base: Omit<SubLedgerLeg, "amountMinor">,
+  amount: Money,
+): SubLedgerLegV2 {
+  return { ...base, amount: encodeMoney(amount) };
+}
+
+export function decodeSubLedgerLeg(raw: SubLedgerLeg): SubLedgerLegV2 {
+  const { amountMinor, ...rest } = raw;
+  return { ...rest, amount: moneyWireFromMinor(amountMinor, raw.currency) };
+}
+
+/** @deprecated DECIMAL-MIGRATION: superseded by SubLedgerPostingEmittedPayloadV2. */
+export type SubLedgerPostingEmittedPayloadLegacy = SubLedgerPostingEmittedPayload;
+
+export interface SubLedgerPostingEmittedPayloadV2
+  extends Omit<SubLedgerPostingEmittedPayload, "legs"> {
+  readonly legs: SubLedgerLegV2[];
+}
+
+export function decodeSubLedgerPostingEmitted(
+  raw: SubLedgerPostingEmittedPayload,
+): SubLedgerPostingEmittedPayloadV2 {
+  return { ...raw, legs: raw.legs.map((l) => decodeSubLedgerLeg(l)) };
+}
+
+// ── RealisedPnlRecognised V2 ─────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by RealisedPnlRecognisedPayloadV2. */
+export type RealisedPnlRecognisedPayloadLegacy = RealisedPnlRecognisedPayload;
+
+export interface RealisedPnlRecognisedPayloadV2
+  extends Omit<RealisedPnlRecognisedPayload, "amountClosedMinor" | "realisedPnlZarMinor"> {
+  readonly amountClosed: MoneyWire;
+  readonly realisedPnlZar: MoneyWire;
+}
+
+export function encodeRealisedPnlRecognised(
+  base: Omit<RealisedPnlRecognisedPayload, "amountClosedMinor" | "realisedPnlZarMinor">,
+  amountClosed: Money,
+  realisedPnlZar: Money,
+): RealisedPnlRecognisedPayloadV2 {
+  return {
+    ...base,
+    amountClosed: encodeMoney(amountClosed),
+    realisedPnlZar: encodeMoney(realisedPnlZar),
+  };
+}
+
+export function decodeRealisedPnlRecognised(
+  raw: RealisedPnlRecognisedPayload,
+): RealisedPnlRecognisedPayloadV2 {
+  const { amountClosedMinor, realisedPnlZarMinor, ...rest } = raw;
+  return {
+    ...rest,
+    amountClosed: moneyWireFromMinor(amountClosedMinor, raw.currency),
+    realisedPnlZar: moneyWireFromMinor(realisedPnlZarMinor, "ZAR"),
+  };
+}
+
+// ---------------------------------------------------------------------------
 // FX accounting event-type registry
 // ---------------------------------------------------------------------------
 

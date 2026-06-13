@@ -989,6 +989,39 @@ export function computeBreachRemediationDeadline(
 }
 
 // ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// `SegMoneyAmount` (currency + amountMinor) is the shared sub-type throughout
+// this file. V2 bridge provided via `decodeSegMoneyAmount`. The `valueShortfallMinor`
+// and `valueSurplusMinor` standalone minor-unit fields are also bridged.
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { MoneyWire } from "../../core/money-codec";
+import { moneyWireFromMinor } from "../../core/money-codec";
+
+/** V2 collateral money amount: replaces `amountMinor: number` with `amount: MoneyWire`. */
+export interface SegMoneyAmountV2 {
+  readonly currency: string;
+  readonly amount: MoneyWire;
+}
+
+/** Convert a legacy `SegMoneyAmount` to V2. */
+export function decodeSegMoneyAmount(raw: SegMoneyAmount): SegMoneyAmountV2 {
+  return { currency: raw.currency, amount: moneyWireFromMinor(raw.amountMinor, raw.currency) };
+}
+
+/**
+ * Convenience: convert a `valueSurplusMinor` or `valueShortfallMinor` bare
+ * integer (always in the CSA base currency, carried in the parent payload) to
+ * MoneyWire. Callers supply the `baseCurrency` from the enclosing payload.
+ */
+export function decodeSegMinorToWire(minorAmount: number, currency: string): MoneyWire {
+  return moneyWireFromMinor(minorAmount, currency);
+}
+
+// ---------------------------------------------------------------------------
 // Type registry
 // ---------------------------------------------------------------------------
 

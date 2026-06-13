@@ -54,6 +54,8 @@ export {
   decodeMoney,
   isMoneyWire,
   findFloatMoneyViolations,
+  moneyWireFromMinor,
+  minorFromMoneyWire,
 } from "./money-codec";
 export {
   ISO4217_EXPONENTS,

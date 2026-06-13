@@ -275,6 +275,68 @@ export function makeRwaComputed(args: {
   });
 }
 
+// ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { MoneyWire } from "../../core/money-codec";
+import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
+import type { Money } from "../../core/decimal-money";
+
+// ── RwaComputed V2 ───────────────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by RwaComputedPayloadV2. */
+export type RwaComputedPayloadLegacy = RwaComputedPayload;
+
+export interface RwaComputedPayloadV2
+  extends Omit<
+    RwaComputedPayload,
+    "creditRwaMinor" | "marketRwaMinor" | "operationalRwaMinor" | "totalRwaMinor"
+  > {
+  readonly creditRwa: MoneyWire;
+  readonly marketRwa: MoneyWire;
+  readonly operationalRwa: MoneyWire;
+  readonly totalRwa: MoneyWire;
+}
+
+export function encodeRwaComputed(
+  base: Omit<
+    RwaComputedPayload,
+    "creditRwaMinor" | "marketRwaMinor" | "operationalRwaMinor" | "totalRwaMinor"
+  >,
+  creditRwa: Money,
+  marketRwa: Money,
+  operationalRwa: Money,
+  totalRwa: Money,
+): RwaComputedPayloadV2 {
+  return {
+    ...base,
+    creditRwa: encodeMoney(creditRwa),
+    marketRwa: encodeMoney(marketRwa),
+    operationalRwa: encodeMoney(operationalRwa),
+    totalRwa: encodeMoney(totalRwa),
+  };
+}
+
+export function decodeRwaComputed(raw: RwaComputedPayload): RwaComputedPayloadV2 {
+  const {
+    creditRwaMinor,
+    marketRwaMinor,
+    operationalRwaMinor,
+    totalRwaMinor,
+    ...rest
+  } = raw;
+  return {
+    ...rest,
+    creditRwa: moneyWireFromMinor(creditRwaMinor, "ZAR"),
+    marketRwa: moneyWireFromMinor(marketRwaMinor, "ZAR"),
+    operationalRwa: moneyWireFromMinor(operationalRwaMinor, "ZAR"),
+    totalRwa: moneyWireFromMinor(totalRwaMinor, "ZAR"),
+  };
+}
+
 export const REGULATORY_REPORTING_TYPED_EVENT_TYPES = [
   "TradeReportSubmitted",
   "SarbSubmissionAttempted",

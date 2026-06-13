@@ -678,6 +678,31 @@ export function makeIsdaCsaSuperseded(args: {
 }
 
 // ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// The `MoneyAmount` sub-type (currency + amountMinor) is used throughout this
+// file for thresholds and MTAs. V2 provides a `MoneyAmountV2` that replaces
+// `amountMinor: number` with a `MoneyWire`. A helper `decodeMoneyAmount`
+// converts legacy minor-unit values to the canonical decimal wire format.
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { MoneyWire } from "../../core/money-codec";
+import { moneyWireFromMinor } from "../../core/money-codec";
+
+/** V2 money amount: replaces `amountMinor: number` with `amount: MoneyWire`. */
+export interface MoneyAmountV2 {
+  readonly currency: string;
+  readonly amount: MoneyWire;
+}
+
+/** Convert a legacy `MoneyAmount` to V2. */
+export function decodeIsdaMoneyAmount(raw: MoneyAmount): MoneyAmountV2 {
+  return { currency: raw.currency, amount: moneyWireFromMinor(raw.amountMinor, raw.currency) };
+}
+
+// ---------------------------------------------------------------------------
 // Type registry
 // ---------------------------------------------------------------------------
 

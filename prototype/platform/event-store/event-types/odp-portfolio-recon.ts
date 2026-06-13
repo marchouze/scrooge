@@ -965,6 +965,29 @@ export function computeDisputeDeadline(disputeKind: DisputeKind, openedAt: strin
 // Type registry
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// `OdpMoneyAmount` (currency + amountMinor) is the shared sub-type throughout
+// this file for recon run break amounts. V2 bridge: `decodeOdpMoneyAmount`.
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { MoneyWire } from "../../core/money-codec";
+import { moneyWireFromMinor } from "../../core/money-codec";
+
+/** V2 ODP money amount: replaces `amountMinor: number` with `amount: MoneyWire`. */
+export interface OdpMoneyAmountV2 {
+  readonly currency: string;
+  readonly amount: MoneyWire;
+}
+
+/** Convert a legacy `OdpMoneyAmount` to V2. */
+export function decodeOdpMoneyAmount(raw: OdpMoneyAmount): OdpMoneyAmountV2 {
+  return { currency: raw.currency, amount: moneyWireFromMinor(raw.amountMinor, raw.currency) };
+}
+
 export const ODP_PORTFOLIO_RECON_TYPED_EVENT_TYPES = [
   "OdpMtmVsGlReconRun",
   "OdpExposureVsCsaReconRun",

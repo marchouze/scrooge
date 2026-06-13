@@ -131,4 +131,39 @@ export function makeIfrs9StageAssigned(args: {
   });
 }
 
+// ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { MoneyWire } from "../../core/money-codec";
+import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
+import type { Money } from "../../core/decimal-money";
+
+// ── Ifrs9StageAssigned V2 ────────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by Ifrs9StageAssignedPayloadV2. */
+export type Ifrs9StageAssignedPayloadLegacy = Ifrs9StageAssignedPayload;
+
+export interface Ifrs9StageAssignedPayloadV2
+  extends Omit<Ifrs9StageAssignedPayload, "eclAmountMinor"> {
+  /** ECL provision amount as exact decimal MoneyWire. */
+  readonly eclAmount: MoneyWire;
+}
+
+export function encodeIfrs9StageAssigned(
+  base: Omit<Ifrs9StageAssignedPayload, "eclAmountMinor">,
+  eclAmount: Money,
+): Ifrs9StageAssignedPayloadV2 {
+  return { ...base, eclAmount: encodeMoney(eclAmount) };
+}
+
+export function decodeIfrs9StageAssigned(
+  raw: Ifrs9StageAssignedPayload,
+): Ifrs9StageAssignedPayloadV2 {
+  const { eclAmountMinor, ...rest } = raw;
+  return { ...rest, eclAmount: moneyWireFromMinor(eclAmountMinor, raw.currency) };
+}
+
 export const IFRS9_STAGING_TYPED_EVENT_TYPES = ["Ifrs9StageAssigned"] as const;

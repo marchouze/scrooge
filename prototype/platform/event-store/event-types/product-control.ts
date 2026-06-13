@@ -703,6 +703,140 @@ export function makePnLFlashActualReconciled(args: {
 // Registry
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// Product-control P&L aggregates are all ZAR-denominated. V2 lifts every
+// *Minor: number field (unrealisedPnlZarMinor, realisedPnlZarMinor, etc.)
+// to MoneyWire. The sub-shape V2 types mirror the exact Zod schemas above.
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { MoneyWire } from "../../core/money-codec";
+import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
+
+// ── Sub-shape V2 types ───────────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by PnLByPairV2. */
+export type PnLByPairLegacy = PnLByPair;
+
+export interface PnLByPairV2 extends Omit<PnLByPair, "unrealisedPnlZarMinor" | "realisedPnlZarMinor"> {
+  readonly unrealisedPnlZar: MoneyWire;
+  readonly realisedPnlZar: MoneyWire;
+}
+
+/** Convert a legacy PnLByPair to V2. Retained for use when passthrough data contains byPair. */
+export function decodePnlByPair(raw: PnLByPair): PnLByPairV2 {
+  const { unrealisedPnlZarMinor, realisedPnlZarMinor, ...rest } = raw;
+  return {
+    ...rest,
+    unrealisedPnlZar: moneyWireFromMinor(unrealisedPnlZarMinor, "ZAR"),
+    realisedPnlZar: moneyWireFromMinor(realisedPnlZarMinor, "ZAR"),
+  };
+}
+
+/** @deprecated DECIMAL-MIGRATION: superseded by PnLByCurrencyV2. */
+export type PnLByCurrencyLegacy = PnLByCurrency;
+
+export interface PnLByCurrencyV2 extends Omit<PnLByCurrency, "unrealisedPnlZarMinor" | "realisedPnlZarMinor"> {
+  readonly unrealisedPnlZar: MoneyWire;
+  readonly realisedPnlZar: MoneyWire;
+}
+
+function decodePnlByCurrency(raw: PnLByCurrency): PnLByCurrencyV2 {
+  const { unrealisedPnlZarMinor, realisedPnlZarMinor, ...rest } = raw;
+  return {
+    ...rest,
+    unrealisedPnlZar: moneyWireFromMinor(unrealisedPnlZarMinor, "ZAR"),
+    realisedPnlZar: moneyWireFromMinor(realisedPnlZarMinor, "ZAR"),
+  };
+}
+
+/** @deprecated DECIMAL-MIGRATION: superseded by PnLByCounterpartyV2. */
+export type PnLByCounterpartyLegacy = PnLByCounterparty;
+
+export interface PnLByCounterpartyV2
+  extends Omit<PnLByCounterparty, "unrealisedPnlZarMinor" | "realisedPnlZarMinor"> {
+  readonly unrealisedPnlZar: MoneyWire;
+  readonly realisedPnlZar: MoneyWire;
+}
+
+function decodePnlByCounterparty(raw: PnLByCounterparty): PnLByCounterpartyV2 {
+  const { unrealisedPnlZarMinor, realisedPnlZarMinor, ...rest } = raw;
+  return {
+    ...rest,
+    unrealisedPnlZar: moneyWireFromMinor(unrealisedPnlZarMinor, "ZAR"),
+    realisedPnlZar: moneyWireFromMinor(realisedPnlZarMinor, "ZAR"),
+  };
+}
+
+/** @deprecated DECIMAL-MIGRATION: superseded by PnLByBookV2. */
+export type PnLByBookLegacy = PnLByBook;
+
+export interface PnLByBookV2
+  extends Omit<PnLByBook, "unrealisedPnlZarMinor" | "realisedPnlZarMinor"> {
+  readonly unrealisedPnlZar: MoneyWire;
+  readonly realisedPnlZar: MoneyWire;
+}
+
+function decodePnlByBook(raw: PnLByBook): PnLByBookV2 {
+  const { unrealisedPnlZarMinor, realisedPnlZarMinor, ...rest } = raw;
+  return {
+    ...rest,
+    unrealisedPnlZar: moneyWireFromMinor(unrealisedPnlZarMinor, "ZAR"),
+    realisedPnlZar: moneyWireFromMinor(realisedPnlZarMinor, "ZAR"),
+  };
+}
+
+// ── DailyPnLReportGenerated V2 ───────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by DailyPnLReportGeneratedPayloadV2. */
+export type DailyPnLReportGeneratedPayloadLegacy = DailyPnLReportGeneratedPayload;
+
+export interface DailyPnLReportGeneratedPayloadV2
+  extends Omit<
+    DailyPnLReportGeneratedPayload,
+    | "totalUnrealisedPnlZarMinor"
+    | "totalRealisedPnlZarMinor"
+    | "totalPnlZarMinor"
+    | "byCurrency"
+    | "byCounterparty"
+    | "byBook"
+  > {
+  readonly totalUnrealisedPnlZar: MoneyWire;
+  readonly totalRealisedPnlZar: MoneyWire;
+  readonly totalPnlZar: MoneyWire;
+  readonly byCurrency: PnLByCurrencyV2[];
+  readonly byCounterparty: PnLByCounterpartyV2[];
+  readonly byBook: PnLByBookV2[];
+}
+
+export function decodeDailyPnLReportGenerated(
+  raw: DailyPnLReportGeneratedPayload,
+): DailyPnLReportGeneratedPayloadV2 {
+  const {
+    totalUnrealisedPnlZarMinor,
+    totalRealisedPnlZarMinor,
+    totalPnlZarMinor,
+    byCurrency,
+    byCounterparty,
+    byBook,
+    ...rest
+  } = raw;
+  return {
+    ...rest,
+    totalUnrealisedPnlZar: moneyWireFromMinor(totalUnrealisedPnlZarMinor, "ZAR"),
+    totalRealisedPnlZar: moneyWireFromMinor(totalRealisedPnlZarMinor, "ZAR"),
+    totalPnlZar: moneyWireFromMinor(totalPnlZarMinor, "ZAR"),
+    byCurrency: byCurrency.map(decodePnlByCurrency),
+    byCounterparty: byCounterparty.map(decodePnlByCounterparty),
+    byBook: byBook.map(decodePnlByBook),
+  };
+}
+
+export { encodeMoney, moneyWireFromMinor };
+
 export const PRODUCT_CONTROL_EVENT_TYPES = [
   "DailyPnLReportGenerated",
   "PnLAttributionGenerated",

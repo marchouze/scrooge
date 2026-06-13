@@ -182,6 +182,76 @@ export function makeBondCustodianSettlementFailed(args: {
 }
 
 // ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { MoneyWire } from "../../core/money-codec";
+import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
+import type { Money } from "../../core/decimal-money";
+
+// ── BondSettlementInstructed V2 ──────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by BondSettlementInstructedPayloadV2. */
+export type BondSettlementInstructedPayloadLegacy = BondSettlementInstructedPayload;
+
+export interface BondSettlementInstructedPayloadV2
+  extends Omit<BondSettlementInstructedPayload, "nominalMinor" | "dirtyConsiderationZarMinor"> {
+  readonly nominal: MoneyWire;
+  readonly dirtyConsiderationZar: MoneyWire;
+}
+
+export function encodeBondSettlementInstructed(
+  base: Omit<BondSettlementInstructedPayload, "nominalMinor" | "dirtyConsiderationZarMinor">,
+  nominal: Money,
+  dirtyConsiderationZar: Money,
+): BondSettlementInstructedPayloadV2 {
+  return {
+    ...base,
+    nominal: encodeMoney(nominal),
+    dirtyConsiderationZar: encodeMoney(dirtyConsiderationZar),
+  };
+}
+
+export function decodeBondSettlementInstructed(
+  raw: BondSettlementInstructedPayload,
+): BondSettlementInstructedPayloadV2 {
+  const { nominalMinor, dirtyConsiderationZarMinor, ...rest } = raw;
+  return {
+    ...rest,
+    nominal: moneyWireFromMinor(nominalMinor, "ZAR"),
+    dirtyConsiderationZar: moneyWireFromMinor(dirtyConsiderationZarMinor, "ZAR"),
+  };
+}
+
+// ── BondCustodianSettlementConfirmed V2 ─────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by BondCustodianSettlementConfirmedPayloadV2. */
+export type BondCustodianSettlementConfirmedPayloadLegacy = BondCustodianSettlementConfirmedPayload;
+
+export interface BondCustodianSettlementConfirmedPayloadV2
+  extends Omit<BondCustodianSettlementConfirmedPayload, "cashLegZarMinor"> {
+  readonly cashLegZar: MoneyWire;
+}
+
+export function encodeBondCustodianSettlementConfirmed(
+  base: Omit<BondCustodianSettlementConfirmedPayload, "cashLegZarMinor">,
+  cashLegZar: Money,
+): BondCustodianSettlementConfirmedPayloadV2 {
+  return { ...base, cashLegZar: encodeMoney(cashLegZar) };
+}
+
+export function decodeBondCustodianSettlementConfirmed(
+  raw: BondCustodianSettlementConfirmedPayload,
+): BondCustodianSettlementConfirmedPayloadV2 {
+  const { cashLegZarMinor, ...rest } = raw;
+  return { ...rest, cashLegZar: moneyWireFromMinor(cashLegZarMinor, "ZAR") };
+}
+
+export { encodeMoney, moneyWireFromMinor };
+
+// ---------------------------------------------------------------------------
 // Bond settlement event-type registry helper
 // ---------------------------------------------------------------------------
 

@@ -643,6 +643,100 @@ export function makeSubLedgerPostingRemediationRecorded(args: {
   });
 }
 
+// ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { MoneyWire } from "../../core/money-codec";
+import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
+
+// ── TrialBalanceSnapshotRow V2 ───────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by TrialBalanceSnapshotRowV2. */
+export type TrialBalanceSnapshotRowLegacy = TrialBalanceSnapshotRow;
+
+export interface TrialBalanceSnapshotRowV2
+  extends Omit<TrialBalanceSnapshotRow, "amountMinor"> {
+  readonly amount: MoneyWire;
+}
+
+export function decodeTrialBalanceSnapshotRow(
+  raw: TrialBalanceSnapshotRow,
+): TrialBalanceSnapshotRowV2 {
+  const { amountMinor, ...rest } = raw;
+  return { ...rest, amount: moneyWireFromMinor(amountMinor, raw.currency) };
+}
+
+// ── TrialBalanceSnapshotted V2 ───────────────────────────────────────────────
+//
+// perCurrencyTotals uses debitMinor/creditMinor. V2 lifts them to MoneyWire.
+
+export interface TrialBalanceCurrencyTotalV2 {
+  readonly currency: string;
+  readonly debit: MoneyWire;
+  readonly credit: MoneyWire;
+}
+
+/** @deprecated DECIMAL-MIGRATION: superseded by TrialBalanceSnapshottedPayloadV2. */
+export type TrialBalanceSnapshottedPayloadLegacy = TrialBalanceSnapshottedPayload;
+
+export interface TrialBalanceSnapshottedPayloadV2
+  extends Omit<TrialBalanceSnapshottedPayload, "rows" | "perCurrencyTotals"> {
+  readonly rows: TrialBalanceSnapshotRowV2[];
+  readonly perCurrencyTotals: TrialBalanceCurrencyTotalV2[];
+}
+
+export function decodeTrialBalanceSnapshotted(
+  raw: TrialBalanceSnapshottedPayload,
+): TrialBalanceSnapshottedPayloadV2 {
+  return {
+    ...raw,
+    rows: raw.rows.map((r) => decodeTrialBalanceSnapshotRow(r)),
+    perCurrencyTotals: raw.perCurrencyTotals.map((t) => ({
+      currency: t.currency,
+      debit: moneyWireFromMinor(t.debitMinor, t.currency),
+      credit: moneyWireFromMinor(t.creditMinor, t.currency),
+    })),
+  };
+}
+
+// ── ManualJournalEntry V2 ────────────────────────────────────────────────────
+//
+// The ManualJournalEntry legs re-use the same amountMinor shape as SubLedgerLeg.
+
+export interface ManualJournalLegV2 {
+  readonly accountId: string;
+  readonly debitCredit: "debit" | "credit";
+  readonly amount: MoneyWire;
+  readonly currency: string;
+}
+
+/** @deprecated DECIMAL-MIGRATION: superseded by ManualJournalEntryPayloadV2. */
+export type ManualJournalEntryPayloadLegacy = ManualJournalEntryPayload;
+
+export interface ManualJournalEntryPayloadV2
+  extends Omit<ManualJournalEntryPayload, "legs"> {
+  readonly legs: ManualJournalLegV2[];
+}
+
+export function decodeManualJournalEntry(
+  raw: ManualJournalEntryPayload,
+): ManualJournalEntryPayloadV2 {
+  return {
+    ...raw,
+    legs: raw.legs.map((l) => ({
+      accountId: l.accountId,
+      debitCredit: l.debitCredit,
+      currency: l.currency,
+      amount: moneyWireFromMinor(l.amountMinor, l.currency),
+    })),
+  };
+}
+
+export { encodeMoney, moneyWireFromMinor };
+
 export const ACCOUNTING_TYPED_EVENT_TYPES = [
   "BankAccountOpened",
   "BankAccountConfigured",

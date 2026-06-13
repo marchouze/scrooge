@@ -1053,6 +1053,29 @@ export function makeUmojaPortalTokenRefreshed(args: {
 }
 
 // ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// `UmojaMoneyAmount` (currency + amountMinor) is used for `reportingNotional`.
+// V2 bridge: `decodeUmojaMoneyAmount`.
+//
+// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// ---------------------------------------------------------------------------
+
+import type { MoneyWire } from "../../core/money-codec";
+import { moneyWireFromMinor } from "../../core/money-codec";
+
+/** V2 Umoja money amount: replaces `amountMinor: number` with `amount: MoneyWire`. */
+export interface UmojaMoneyAmountV2 {
+  readonly currency: string;
+  readonly amount: MoneyWire;
+}
+
+/** Convert a legacy `UmojaMoneyAmount` to V2. */
+export function decodeUmojaMoneyAmount(raw: UmojaMoneyAmount): UmojaMoneyAmountV2 {
+  return { currency: raw.currency, amount: moneyWireFromMinor(raw.amountMinor, raw.currency) };
+}
+
+// ---------------------------------------------------------------------------
 // Type registry
 // ---------------------------------------------------------------------------
 
