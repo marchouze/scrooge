@@ -15,23 +15,32 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
   exit 2
 fi
 
-LABEL="com.scrooge.scheduler-tick"
-TARGET_PLIST="${HOME}/Library/LaunchAgents/${LABEL}.plist"
-DOMAIN_TARGET="gui/$(id -u)/${LABEL}"
+# All Scrooge LaunchAgents installed by install.sh. Kept in sync with the
+# `install_agent` calls there.
+LABELS=(
+  "com.scrooge.scheduler-tick"
+  "com.scrooge.event-store-archive"
+  "com.scrooge.golden-source-integrity-tick"
+)
 
-if launchctl print "${DOMAIN_TARGET}" >/dev/null 2>&1; then
-  echo "uninstall.sh: bootout ${DOMAIN_TARGET}"
-  launchctl bootout "${DOMAIN_TARGET}" || true
-else
-  echo "uninstall.sh: ${DOMAIN_TARGET} not loaded; skipping bootout"
-fi
+for LABEL in "${LABELS[@]}"; do
+  TARGET_PLIST="${HOME}/Library/LaunchAgents/${LABEL}.plist"
+  DOMAIN_TARGET="gui/$(id -u)/${LABEL}"
 
-if [[ -f "${TARGET_PLIST}" ]]; then
-  echo "uninstall.sh: rm ${TARGET_PLIST}"
-  rm -f "${TARGET_PLIST}"
-else
-  echo "uninstall.sh: ${TARGET_PLIST} absent; skipping rm"
-fi
+  if launchctl print "${DOMAIN_TARGET}" >/dev/null 2>&1; then
+    echo "uninstall.sh: bootout ${DOMAIN_TARGET}"
+    launchctl bootout "${DOMAIN_TARGET}" || true
+  else
+    echo "uninstall.sh: ${DOMAIN_TARGET} not loaded; skipping bootout"
+  fi
+
+  if [[ -f "${TARGET_PLIST}" ]]; then
+    echo "uninstall.sh: rm ${TARGET_PLIST}"
+    rm -f "${TARGET_PLIST}"
+  else
+    echo "uninstall.sh: ${TARGET_PLIST} absent; skipping rm"
+  fi
+done
 
 echo "uninstall.sh: done."
 echo "  Logs at ~/Library/Logs/scrooge/ are NOT removed; rm them manually if desired."

@@ -33,13 +33,41 @@ foreground process.
 
 ## Files
 
-| File                                          | Purpose                                                                        |
-| --------------------------------------------- | ------------------------------------------------------------------------------ |
-| `com.scrooge.scheduler-tick.plist`            | macOS LaunchAgent template; `install.sh` substitutes paths and renders.        |
-| `install.sh`                                  | macOS install script — renders the plist, bootstraps via `launchctl`, idempotent. |
-| `uninstall.sh`                                | macOS uninstall — `launchctl bootout` + `rm`, idempotent.                      |
-| `com.scrooge.scheduler-tick.service`          | Linux systemd user unit (one-shot worker).                                     |
-| `com.scrooge.scheduler-tick.timer`            | Linux systemd user timer (60s cadence).                                        |
+| File                                              | Purpose                                                                        |
+| ------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `com.scrooge.scheduler-tick.plist`                | macOS LaunchAgent template; `install.sh` substitutes paths and renders.        |
+| `com.scrooge.event-store-archive.plist`           | macOS LaunchAgent — `archive:check` every 6 h (D-EVENT-STORE-SCALING-PHASE-5). |
+| `com.scrooge.golden-source-integrity-tick.plist`  | macOS LaunchAgent — daily shared-store golden-source integrity assertion (see below). |
+| `install.sh`                                      | macOS install script — renders the plists, bootstraps via `launchctl`, idempotent. Installs all three agents. |
+| `uninstall.sh`                                     | macOS uninstall — `launchctl bootout` + `rm` for all three agents, idempotent. |
+| `com.scrooge.scheduler-tick.service`              | Linux systemd user unit (one-shot worker).                                     |
+| `com.scrooge.scheduler-tick.timer`                | Linux systemd user timer (60s cadence).                                        |
+
+## Golden-source integrity tick (`com.scrooge.golden-source-integrity-tick`)
+
+A daily LaunchAgent that runs `bun run recon:golden-source-integrity-tick`
+(`scripts/regulatory/golden-source-integrity-tick.ts`).
+
+`recon:regulatory-golden-source-integrity` is a **shared-store assertion**,
+not a clean-CI gate (`D-GOLDEN-SOURCE-SHARED-STORE-ASSERTION`, 2026-06-13):
+golden-source bytes and the `goldenSourceHash` linkage live in the
+shared/home store **by design** (Principle 1; `data/documents/*` is
+gitignored). On a clean CI runner the regulatory graph is never seeded, so
+the gate reads zero nodes and warns-clean — the real dangling-hash assertion
+runs **nowhere in the pipeline**. This tick is the place it actually runs:
+
+1. Seeds the regulatory graph from the **populated** shared store (the boot
+   shim resolves `BANK_EVENT_DB` / `BANK_DOCUMENT_STORE` to the home pair;
+   `BANK_GRAPH_DB` is the home `graph.db`).
+2. Runs the gate against the seeded graph + resolved store.
+3. Emits a `SubstrateAlert{alertClass:"integrity"}` (idempotent, one stable
+   `alertId` per dangling node) for any golden-source hash with no blob in any
+   reachable store — so a genuinely missing blob is escalated, not silent.
+
+Fires daily (`StartInterval 86400`) — a golden-source blob does not vanish
+mid-day, and `RunAtLoad` catches a missed window on next wake. Exit code is
+always 0: the tick records its finding as a `SubstrateAlert` event; it does
+not fail the host.
 
 ## macOS install
 

@@ -204,6 +204,15 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:rwa-computed-sourcing",
     "recon:fx-subledger-reconciliation",
     "recon:escalation-surface-parity",
+    // Shared-store assertion, NOT a clean-CI gate. On a clean runner the
+    // regulatory graph is unseeded and the in-repo store has no blobs, so it
+    // asserts zero nodes → ok:true (intentional; pinned by
+    // regulatory-golden-source-integrity-empty-graph.test.ts). The REAL
+    // dangling-hash assertion runs off-pipeline on the populated shared store
+    // via the scheduled tick (recon:golden-source-integrity-tick, launchd
+    // com.scrooge.golden-source-integrity-tick), which escalates any missing
+    // blob as SubstrateAlert{alertClass:"integrity"}.
+    // Authority: D-GOLDEN-SOURCE-SHARED-STORE-ASSERTION (CEO-approved 2026-06-13).
     "recon:regulatory-golden-source-integrity",
     "recon:regulatory-source-coverage",
     "recon:regulatory-source-extract-quality",

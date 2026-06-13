@@ -2,12 +2,14 @@
 #
 # install.sh — install Scrooge LaunchAgents on macOS.
 #
-# Installs two agents:
-#   com.scrooge.scheduler-tick      — fires every 60 s (agent scheduler)
-#   com.scrooge.event-store-archive — fires every 6 h  (archive threshold check)
+# Installs three agents:
+#   com.scrooge.scheduler-tick             — fires every 60 s (agent scheduler)
+#   com.scrooge.event-store-archive        — fires every 6 h  (archive threshold check)
+#   com.scrooge.golden-source-integrity-tick — fires daily (shared-store golden-source assertion)
 #
 # Authority: D-AGENT-AUTONOMY-OPERATIONAL (scheduler-tick, 2026-05-11)
 #            D-EVENT-STORE-SCALING-PHASE-5 (event-store-archive, 2026-05-24)
+#            D-GOLDEN-SOURCE-SHARED-STORE-ASSERTION (golden-source-integrity-tick, 2026-06-13)
 #
 # Author: Atlas (Core banking platform architect; substrate).
 # Co-author: Devon (Chief Operating Officer, governance) — .env.local
@@ -178,8 +180,11 @@ install_agent() {
 # --------------------------------------------------------------------
 # Install both agents.
 # --------------------------------------------------------------------
-install_agent "com.scrooge.scheduler-tick"      "com.scrooge.scheduler-tick.plist"
-install_agent "com.scrooge.event-store-archive" "com.scrooge.event-store-archive.plist"
+install_agent "com.scrooge.scheduler-tick"             "com.scrooge.scheduler-tick.plist"
+install_agent "com.scrooge.event-store-archive"        "com.scrooge.event-store-archive.plist"
+# Daily shared-store golden-source integrity assertion
+# (D-GOLDEN-SOURCE-SHARED-STORE-ASSERTION).
+install_agent "com.scrooge.golden-source-integrity-tick" "com.scrooge.golden-source-integrity-tick.plist"
 
 echo ""
 echo "install.sh: all agents installed."

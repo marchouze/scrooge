@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  com.scrooge.golden-source-integrity-tick.plist
+  ==============================================
+
+  macOS LaunchAgent that runs `bun run recon:golden-source-integrity-tick`
+  once a day. Seeds the regulatory graph from the POPULATED shared/home store
+  and asserts golden-source integrity against it, escalating any dangling
+  golden-source hash (a Document node citing a goldenSourceHash whose blob is
+  missing from every reachable store) as a
+  SubstrateAlert{alertClass:"integrity"}.
+
+  WHY A SEPARATE TICK. `recon:regulatory-golden-source-integrity` is a
+  SHARED-STORE assertion, not a clean-CI gate (D-GOLDEN-SOURCE-SHARED-STORE-
+  ASSERTION): golden-source bytes live shared-store-only by design
+  (Principle 1; `data/documents/*` gitignored). In the CI pipeline the
+  regulatory graph is unseeded → the gate reads zero nodes → warns-clean.
+  The REAL dangling-hash assertion runs nowhere in the pipeline, so it runs
+  here, on a cadence, against the home store.
+
+  Fires daily (86400 s). The tick reads the home store, which the boot-shim
+  resolves via BANK_EVENT_DB / BANK_DOCUMENT_STORE (defaulting to
+  ~/.local/share/bank/{event.db,documents}) and BANK_GRAPH_DB (home graph.db).
+  launchd guarantees a single in-flight invocation. Daily is sensible: a
+  golden-source blob does not vanish mid-day, and a missed window (sleeping
+  machine) catches up at next wake via RunAtLoad-on-reload.
+
+  Authority: D-GOLDEN-SOURCE-SHARED-STORE-ASSERTION (CEO-approved 2026-06-13);
+             D-REGULATORY-LIBRARY-V1.
+  Author: Mira (Chief Obligations & Regulatory Officer, compliance).
+
+  - TEMPLATE: install.sh substitutes `__BUN_PATH__`, `__WORKING_DIRECTORY__`,
+  - `__LOG_DIR__`, and `__ENVIRONMENT_VARIABLES__` at install time.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.scrooge.golden-source-integrity-tick</string>
+
+    <key>ProgramArguments</key>
+    <array>
+      <string>__BUN_PATH__</string>
+      <string>run</string>
+      <string>scripts/regulatory/golden-source-integrity-tick.ts</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>__WORKING_DIRECTORY__</string>
+
+    <!-- Once a day -->
+    <key>StartInterval</key>
+    <integer>86400</integer>
+
+    <!-- Run once at load so a freshly-installed agent asserts immediately -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <false/>
+
+    <key>Nice</key>
+    <integer>10</integer>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+
+    <key>StandardOutPath</key>
+    <string>__LOG_DIR__/golden-source-integrity-tick.log</string>
+    <key>StandardErrorPath</key>
+    <string>__LOG_DIR__/golden-source-integrity-tick.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+__ENVIRONMENT_VARIABLES__
+    </dict>
+
+    <key>ThrottleInterval</key>
+    <integer>60</integer>
+  </dict>
+</plist>
