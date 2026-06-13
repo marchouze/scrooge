@@ -292,6 +292,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // access path. T-01 carve-out.
   // Citation: D-CRO-GAP-SECTION-DERIVE-FROM-STORE, P4-SECURITY-DESIGNED-IN.
   "runtime/agents/helena-risk-appetite-watch.test.ts",
+  // Owen S9 decision-impact-sweep auto-trigger unit test — co-located per-module
+  // test convention. Raw EventStore(":memory:") is a build-phase fixture seeding
+  // Decision / PostureRegistered / FilModelImplementationDeclared events for the
+  // candidate-resolver + pure-engine assertions, not a production access path.
+  // T-01 carve-out.
+  // Citation: D-W8-DECISION-IMPACT-SWEEP, P4-SECURITY-DESIGNED-IN.
+  "runtime/agents/owen-decision-impact-sweep.test.ts",
   // IRRBB ΔEVE projection unit test — co-located per-module test convention.
   // Raw EventStore(":memory:") is a build-phase fixture seeding IRRBBChecked
   // events for the RAS §B4 supervisory-outlier fold, not a production access

@@ -60,6 +60,7 @@ Owen does **not** draft contracts (Imani), measure risk (Rohan), oversee complia
 | `MOIChangeProposed` event | Imani / CEO | Pre-CIPC filing |
 | `SupervisoryLetterReceived` event | Regulator-correspondence intake | Triage within 24h; route within 24h |
 | `AgentEscalation` from Helena (BRC pathway), Camille (AC pathway), Thandiwe (Chief Audit Executive) | Governance peers | Per escalator-stated deadline |
+| `Decision` event (phase `approved`) — W8 S9 decision-impact sweep auto-trigger | Any seat's approved decision (via the event-trigger bus) | Automatic on append; idempotent (sweeps once per decision-day). Structured-first: recommends re-validate / re-distill / re-assess, never auto-executes. Authority: D-W8-DECISION-IMPACT-SWEEP |
 | Scheduled wake-up — weekly forum prep | Runtime scheduler | 1 business day |
 | Scheduled wake-up — quarterly framework refresh | Runtime scheduler | Per cycle |
 | Scheduled wake-up — annual director-induction cycle | Runtime scheduler | Per induction cycle |

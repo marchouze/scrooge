@@ -139,7 +139,9 @@ function sweepDecision(decisionId: string, asOf: string): number {
   ];
 
   for (const ev of batch) {
-    eventStore.append(ev, { provenance: provenanceForEmit("DecisionImpactSweepRequested") });
+    // Provenance is a field ON the Event (EventStore.append takes a single arg);
+    // tag each event by its own type.
+    eventStore.append({ ...ev, provenance: provenanceForEmit(ev.type) });
   }
   return batch.length;
 }
