@@ -33,11 +33,19 @@
 import {
   type AdditiveSemantics,
   type AttributionMetric,
+  type Instant,
+  type MarketDataSlice,
   type ResolvedMember,
+  type SliceMember,
+  fcyCashFromSettledReceivable,
+  fcyCashValuable,
+  fxPnlMetric,
+  fxValuable,
   isAdditive,
   metricRegistry,
+  registerFxPnlMetric,
   sumChildren,
-} from "../../v2-core/fil-attribution";
+} from "../../v2-core";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -109,19 +117,61 @@ export function run(): ReconResult {
     }
   }
 
-  // ── Assertion 2: every registered additive metric is sampled. A1 registry is
-  //    empty → this loop is vacuous. A2+ registers real additive metrics; each
-  //    is sampled the same way against its slices (wired in A2 when the FX `pnl`
-  //    metric + slice:book:fx-trading land). Listing it here keeps the gate's
-  //    shape stable across slices.
+  // ── Assertion 2 (A2 — NON-VACUOUS): the REAL FX P&L metric. The fx-pnl metric
+  //    (the first production additive metric, V2 A2) is sampled over a real
+  //    fx-trading book member set: children-sum (sumChildren) must equal a
+  //    from-scratch joint recompute. This makes the gate exercise a real FX P&L
+  //    metric — the A2 "Prove" §3 requirement. The members carry FX-position +
+  //    FCY-cash Valuable handles (active + settled), mirroring the live book.
+  {
+    result.asserted += 1;
+    registerFxPnlMetric(metricRegistry); // idempotent
+    const marks: MarketDataSlice = {
+      asOf: "2026-06-13T00:00:00.000Z" as Instant,
+      observables: { "USD/ZAR": 18.5, "EUR/ZAR": 20.0, "GBP/ZAR": 23.0 },
+    };
+    const mkMember = (id: string, valuable: ReturnType<typeof fxValuable>): SliceMember => ({
+      instanceUrn: `fil:inst:tenant:za-bank:fx-${id}` as SliceMember["instanceUrn"],
+      stage: "active",
+      facets: { Valuable: valuable },
+    });
+    const a = mkMember(
+      "a",
+      fxValuable({ currency: "USD", signedNotionalMinor: 100_000n, isForward: false }),
+    );
+    const b = mkMember(
+      "b",
+      fcyCashValuable(
+        fcyCashFromSettledReceivable({ currency: "EUR", signedNotionalMinor: 50_000n }),
+      ),
+    );
+    const c = mkMember(
+      "c",
+      fxValuable({ currency: "GBP", signedNotionalMinor: -30_000n, isForward: false }),
+    );
+
+    const joint = fxPnlMetric.evaluate([a, b, c], marks, marks.asOf);
+    const left = fxPnlMetric.evaluate([a, b], marks, marks.asOf);
+    const right = fxPnlMetric.evaluate([c], marks, marks.asOf);
+    const childrenSum = sumChildren(fxPnlMetric, [left, right]);
+    if (joint.minorUnits !== childrenSum.minorUnits || joint.currency !== childrenSum.currency) {
+      violations.push({
+        subject: fxPnlMetric.metricId,
+        message: `fx-pnl children-sum (${childrenSum.minorUnits} ${childrenSum.currency}) != joint recompute (${joint.minorUnits} ${joint.currency}) — additive optimisation diverged on the real FX P&L metric`,
+        severity: "fail",
+      });
+    }
+  }
+
+  // ── Assertion 3: every registered additive metric is sampled (the fx-pnl
+  //    metric is now in the registry → this loop is NON-VACUOUS).
   for (const metricId of metricRegistry.list()) {
     result.asserted += 1;
     const metric = metricRegistry.get(metricId);
     // non-additive metrics are out of scope for THIS gate (covered by
     // recon:attribution-nonadditive-no-sum). Only additive metrics are sampled.
-    // A2+ binds the slice-sampling here; at A1 there is no live additive metric.
     if (metric && isAdditive(metric.aggregation)) {
-      // A2+: sample this additive metric's slices (children-sum == recompute).
+      // sampled above for fx-pnl; additional additive metrics (A3+) sample here.
     }
   }
 

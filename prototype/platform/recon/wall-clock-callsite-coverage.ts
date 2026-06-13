@@ -186,8 +186,24 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 //   reaching this ratchet, masking the count until clean-store GitHub CI.
 //   Authority: D-PROACTIVE-ESCALATION-SURFACING (CEO-approved 2026-06-09).
 //   Author: Scrooge (Chief of Staff, orchestration), 2026-06-09.
+//
+// 2026-06-13 — Bumped 63 → 64 (inherited main-red, WS-V2-BBAAS A2 PR):
+//   `platform/lifecycle/onboarding-orchestrator.ts:457` carries a wall-clock
+//   `new Date().toISOString()` DEFAULT-PARAMETER fallback (annotated `// wall-
+//   clock: default; pass nowIso for deterministic scenarios`), landed by the
+//   S15 tenant-onboarding-readiness work on main. It was present on main before
+//   the A2 PR but the snapshot was never bumped — main is red on a fresh CI
+//   store. Following the documented convention above (a main-callsite present-
+//   but-unallowlisted is unblocked by a snapshot bump), bumping 63 → 64 here so
+//   the A2 PR (which adds NO production wall-clock callsite) is not blocked by
+//   the inherited drift. The fallback only activates when a caller omits the
+//   nowIso parameter (the deterministic-scenario seam), matching the 62→63 /
+//   63→64 precedent above.
+//   Authority: D-V2-WAVE4-COMMERCIAL-POSTURE (the S15 onboarding work);
+//     D-PROACTIVE-ESCALATION-SURFACING (surface inherited main-red, don't hide).
+//   Author: Atlas (Core banking platform architect, engineering), 2026-06-13.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 63;
+const KNOWN_VIOLATIONS_SNAPSHOT = 64;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",

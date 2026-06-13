@@ -67,6 +67,13 @@ export * from "./fil-models/registry";
 /** @tier R — SA-CCR: the first FIL-Model (RiskMeasurable over IR + FX); S7-FIL */
 export * from "./fil-models/sa-ccr";
 
+/** @tier R — FX valuation: the second FIL-Model (Valuable + Accountable over
+ * fil:type:fx:*) + FCY-cash monetary Valuable + the first real attribution
+ * metric (additive FX P&L) + the book:fx-trading slice. Read-only / parallel to
+ * v1 (A2); v1 retirement is A4.
+ * Authority: D-FIL-ATTRIBUTION-A1-BUILD (A2). */
+export * from "./fil-models/fx-valuation";
+
 // --- Control-plane (Wave 1) ------------------------------------------------
 
 /** @tier R — tenant axis: ANCHOR_TENANT_ID, TenantId, tenantIdSchema, isAnchorTenantEvent (dark, not yet enforced) */

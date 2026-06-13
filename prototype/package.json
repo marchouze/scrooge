@@ -231,6 +231,8 @@
     "recon:attribution-nonadditive-no-sum": "bun run platform/recon/attribution-nonadditive-no-sum.ts",
     "recon:v2-onboarding-readiness": "bun run platform/recon/v2-onboarding-readiness.ts",
     "rehearse:v2-onboarding": "bun run scripts/v2-onboarding-rehearsal.ts",
+    "recon:fx-settlement-continuity": "bun run platform/recon/fx-settlement-continuity.ts",
+    "recon:fx-book-nop-parity": "bun run platform/recon/fx-book-nop-parity.ts",
     "seed:v2-anchor-tenant": "bun run scripts/seed-v2-anchor-tenant.ts",
     "seed:v2-csi-blocklist": "bun run scripts/seed-v2-csi-blocklist.ts",
     "recon:graph-ontology": "bun run platform/recon/graph-ontology-coverage.ts",
