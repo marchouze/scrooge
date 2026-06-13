@@ -58,6 +58,9 @@ export * from "./fil-models/declaration";
 /** @tier R — FIL-Model registry (read-only query surface for R; write surface for K) */
 export * from "./fil-models/registry";
 
+/** @tier R — SA-CCR: the first FIL-Model (RiskMeasurable over IR + FX); S7-FIL */
+export * from "./fil-models/sa-ccr";
+
 // --- Control-plane (Wave 1) ------------------------------------------------
 
 /** @tier R — tenant axis: ANCHOR_TENANT_ID, TenantId, tenantIdSchema, isAnchorTenantEvent (dark, not yet enforced) */

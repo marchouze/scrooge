@@ -101,6 +101,14 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   // governance record (real seat decision, not simulated market activity).
   // Authority: D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH; FAIS §16.
   BestExecutionPolicySchedule: "governance",
+  // WS-V2-BBAAS S7-FIL — a FIL-Model implementation declaration (e.g. SA-CCR as
+  // the first FIL-Model) is a governance record: a versioned, citable model
+  // binding minted through the governed process, never simulated market
+  // activity. Registered v1-side as class "governance"; this mapping keeps the
+  // provenance category in lock-step so the type does not resolve to
+  // "simulated" (the S3 three-site-registration defect this prevents).
+  // Authority: D-FIL-FRAMEWORK-UNIFICATION; Principle 1.
+  FilModelImplementationDeclared: "governance",
   // Counterparty / party register.
   PartyRegistered: "counterparty",
   PartyClassified: "counterparty",
