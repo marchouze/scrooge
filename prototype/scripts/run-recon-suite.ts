@@ -98,6 +98,12 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // routing fails closed on unknown tenant, no cross-tenant write. ENFORCING.
     // Authority: D-V2-TENANCY-ARCHITECTURE.
     "recon:v2-tenant-isolation",
+    // WS-V2-BBAAS S12 — cross-tenant CSI gate (competition-law keystone, ENFORCING).
+    // No cross-tenant learning flow bypasses the CSI gate; the synthetic
+    // tenant-A-position → tenant-B-posture leak is CAUGHT (sabotage-proof,
+    // non-vacuous). D-W7 C-tier / multi-tenant-learning go-live precondition.
+    // Authority: D-W7-VENDOR-ENTITY-STRUCTURE; D-V2-TENANCY-ARCHITECTURE.
+    "recon:v2-csi-cross-tenant-gate",
     "recon:dashboard",
     "recon:wall-clock-callsite-coverage",
     "recon:decisions-events-only",
