@@ -39,6 +39,12 @@ export * from "./fil-core/urn";
 /** @tier R — FIL composition engine; regulated-tenant surface and above */
 export * from "./fil-core/composition";
 
+/** @tier R — FIL composition factory (S6): typed-spec → composite builder; regulated-tenant surface and above */
+export * from "./fil-core/composition-factory";
+
+/** @tier R — FIL composition-factory alias (S6): the swappable construction seam; regulated-tenant surface and above */
+export * from "./fil-core/composition-factory-alias";
+
 /** @tier R — FIL lifecycle state machine; regulated-tenant surface and above */
 export * from "./fil-core/lifecycle";
 
