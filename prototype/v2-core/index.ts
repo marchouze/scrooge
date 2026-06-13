@@ -75,6 +75,13 @@ export * from "./control-plane/tenant";
 /** @tier R — V2 event envelope: V2Envelope, createV2Envelope (dark, not yet enforced) */
 export * from "./control-plane/envelope";
 
+/** @tier R — tenant-axis ENFORCEMENT (S10): per-tenant store routing
+ * (resolveTenantStore, TenantScopedStore, makeAnchorOnlyResolver,
+ * makeRegistryResolver) + fail-closed resolver seam through the shared
+ * alias-registry. Flips the S2 tenant axis from dark → enforced.
+ * Authority: D-V2-TENANCY-ARCHITECTURE; D-FIL-SHARED-ALIAS-REGISTRY. */
+export * from "./control-plane/tenant-store";
+
 // --- Banking (S4: anchor-bank standing-data events) ------------------------
 
 /** @tier K — anchor-bank standing-data events (product catalogue, CoA, RAS) */
