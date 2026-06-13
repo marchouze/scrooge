@@ -22,12 +22,12 @@
 import { describe, expect, it } from "bun:test";
 
 import {
+  ANCHOR_TENANT_ID,
+  OnboardingAbortedError,
   type OnboardingTierPrecondition,
   type RosterPersona,
   type TenantOnboardingState,
   type TenantTier,
-  ANCHOR_TENANT_ID,
-  OnboardingAbortedError,
   assertOnboardingReadiness,
   checkTenantReadiness,
   foldTenantOnboardingState,
@@ -96,11 +96,11 @@ describe("S15 onboarding flow — provisioning", () => {
 
   it("calls the per-tenant store binding hook (S10) and aborts fail-closed if it throws", () => {
     const store = openControlPlaneStore(":memory:");
-    let bound: string | null = null;
+    const calls: string[] = [];
     runOnboarding(store, R_PLAN, (tid) => {
-      bound = tid;
+      calls.push(tid);
     });
-    expect(bound).toBe(R_PLAN.tenantId);
+    expect(calls).toEqual([R_PLAN.tenantId]);
     store.close();
 
     // A throwing binding aborts the flow.

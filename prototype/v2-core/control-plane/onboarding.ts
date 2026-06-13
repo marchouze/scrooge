@@ -194,9 +194,10 @@ const DEFAULT_CITATIONS = [
  * reportsTo) is a hard abort: a tenant must not be onboarded against a roster
  * that does not derive cleanly into a seat map.
  */
-export function preflightOnboarding(
-  plan: OnboardingPlan,
-): { personas: readonly RosterPersona[]; seatMap: DerivedSeatMap } {
+export function preflightOnboarding(plan: OnboardingPlan): {
+  personas: readonly RosterPersona[];
+  seatMap: DerivedSeatMap;
+} {
   if (!plan.tenantId.startsWith("tenant:")) {
     throw new OnboardingAbortedError(
       "register-tenant",
@@ -481,7 +482,8 @@ export function assertOnboardingReadiness(
   if (state.seatCount <= 0) {
     violations.push({
       tenantId: state.tenantId,
-      reason: "no functional seats registered — seat derivation/grant did not land (step 2 missing)",
+      reason:
+        "no functional seats registered — seat derivation/grant did not land (step 2 missing)",
     });
   }
   if (state.surfaceVersion === null) {

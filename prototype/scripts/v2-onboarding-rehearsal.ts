@@ -34,12 +34,12 @@
 // Author: Atlas (Substrate Architect, engineering).
 
 import {
+  ANCHOR_TENANT_ID,
   type OnboardingPlan,
   type OnboardingResult,
   type OnboardingTierPrecondition,
   type RosterPersona,
   type TenantTier,
-  ANCHOR_TENANT_ID,
   checkTenantReadiness,
   openControlPlaneStore,
   runOnboarding,
@@ -194,7 +194,7 @@ if (import.meta.main) {
   const r = runOnboardingRehearsal();
   console.log("\n=== V2 S15 Tenant Onboarding Rehearsal (scratch-only) ===");
   console.log(`  hypothetical tenant:  ${r.provisioned.tenantId} (tier ${r.provisioned.tier})`);
-  console.log(`  provisioning steps:`);
+  console.log("  provisioning steps:");
   for (const step of r.provisioned.steps) {
     console.log(`    • ${step.step}: ${step.note} (${step.eventsEmitted} event(s))`);
   }
@@ -204,7 +204,9 @@ if (import.meta.main) {
   if (r.incompleteReasons.length > 0) {
     for (const reason of r.incompleteReasons) console.log(`      ↳ ${reason}`);
   }
-  console.log(`  anchor (K) ready:     ${r.anchorReady ? "READY ✅ (no re-provisioning)" : "NOT READY ❌"}`);
+  console.log(
+    `  anchor (K) ready:     ${r.anchorReady ? "READY ✅ (no re-provisioning)" : "NOT READY ❌"}`,
+  );
   console.log(`  live store written:   ${r.liveStoreWritten} (always false)`);
   console.log(`  RESULT: ${r.ok ? "PASS ✅" : "FAIL ❌"}`);
   process.exit(r.ok ? 0 : 1);

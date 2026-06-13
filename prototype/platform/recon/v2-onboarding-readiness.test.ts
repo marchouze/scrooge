@@ -52,7 +52,11 @@ describe("recon:v2-onboarding-readiness — non-vacuous", () => {
   });
 
   it("FAILS a synthetic half-provisioned tenant (no surface grant)", () => {
-    const half: TenantOnboardingState = { ...COMPLETE, tenantId: "tenant:half", surfaceVersion: null };
+    const half: TenantOnboardingState = {
+      ...COMPLETE,
+      tenantId: "tenant:half",
+      surfaceVersion: null,
+    };
     const { violations } = assertFleetOnboardingReadiness({
       states: [COMPLETE, half],
       tierPreconditions: NO_PRECONDITIONS,
@@ -84,7 +88,7 @@ describe("recon:v2-onboarding-readiness — non-vacuous", () => {
     const map = buildTierPreconditionMap();
     expect(map.get("K")?.length).toBe(0);
     expect(map.get("R")?.length).toBe(0);
-    expect((map.get("C")?.length ?? 0)).toBeGreaterThan(0);
+    expect(map.get("C")?.length ?? 0).toBeGreaterThan(0);
     expect(map.get("C")?.every((p) => p.satisfied === false)).toBe(true);
   });
 
