@@ -268,26 +268,26 @@ export function allocate<C extends Currency>(
   const floored: DecimalValue[] = [];
   const remainders: { idx: number; rem: DecimalValue }[] = [];
   let allocated = toDecimal("0");
-  for (let i = 0; i < weightD.length; i++) {
-    const exact = divD(mulD(totalD, weightD[i]), weightSum);
+  weightD.forEach((w, i) => {
+    const exact = divD(mulD(totalD, w), weightSum);
     const down = roundDecimal(exact, scale, "DOWN");
     floored.push(down);
     remainders.push({ idx: i, rem: subD(exact, down) });
     allocated = addD(allocated, down);
-  }
+  });
 
   // The shortfall (total − Σ floored) is an exact integer number of minor
   // units; hand one unit each to the largest remainders.
-  let shortfall = subD(totalD, allocated);
+  const shortfall = subD(totalD, allocated);
   // Number of whole units still to distribute.
-  const unitsToDistribute = Number(
-    roundDecimal(divD(shortfall, unit), 0, "HALF_UP").toFixed(0),
-  );
+  const unitsToDistribute = Number(roundDecimal(divD(shortfall, unit), 0, "HALF_UP").toFixed(0));
   remainders.sort((a, b) => cmpD(b.rem, a.rem) || a.idx - b.idx);
   for (let k = 0; k < unitsToDistribute; k++) {
-    const target = remainders[k % remainders.length].idx;
-    floored[target] = addD(floored[target], unit);
-    shortfall = subD(shortfall, unit);
+    const entry = remainders[k % remainders.length];
+    if (entry === undefined) break;
+    const current = floored[entry.idx];
+    if (current === undefined) continue;
+    floored[entry.idx] = addD(current, unit);
   }
 
   return floored.map((d) => lift(d, total.currency));
