@@ -439,12 +439,7 @@ export function run(): ReconResult {
       const feedVMtm = Number(vMtmV2.minorUnits);
       violations.push({
         subject: `${rec.nettingSetId}:CcrReplacementCostComputed:vs-recorded-oracle`,
-        message:
-          `Feed-sourced RC diverges from the RECORDED v1 oracle for ${rec.nettingSetId} ` +
-          `(recorded-RC pin retired; basis divergence SURFACED, not forced):\n` +
-          `  recorded vMtm=${recVMtm} (basis: v1 resolveMtm cumulative-delta walk; as-of ${rec.asOf})\n` +
-          `  feed vMtm=${feedVMtm} (basis: latest *Revalued event-of-record per trade; as-of ${asOf})\n` +
-          `  recorded=${stableJson(recRc)}\n  feed-sourced=${stableJson(v2Out.rc)}`,
+        message: `Feed-sourced RC diverges from the RECORDED v1 oracle for ${rec.nettingSetId} (recorded-RC pin retired; basis divergence SURFACED, not forced):\n  recorded vMtm=${recVMtm} (basis: v1 resolveMtm cumulative-delta walk; as-of ${rec.asOf})\n  feed vMtm=${feedVMtm} (basis: latest *Revalued event-of-record per trade; as-of ${asOf})\n  recorded=${stableJson(recRc)}\n  feed-sourced=${stableJson(v2Out.rc)}`,
         severity: "warn",
       });
     }
@@ -454,10 +449,7 @@ export function run(): ReconResult {
       if (stableJson(v2Out.ead) !== stableJson(recEad)) {
         violations.push({
           subject: `${rec.nettingSetId}:CcrEadComputed:vs-recorded-oracle`,
-          message:
-            `Feed-sourced EAD diverges from the RECORDED v1 oracle for ${rec.nettingSetId} ` +
-            `(downstream of the vMtm basis divergence above; surfaced, not forced):\n` +
-            `  recorded=${stableJson(recEad)}\n  feed-sourced=${stableJson(v2Out.ead)}`,
+          message: `Feed-sourced EAD diverges from the RECORDED v1 oracle for ${rec.nettingSetId} (downstream of the vMtm basis divergence above; surfaced, not forced):\n  recorded=${stableJson(recEad)}\n  feed-sourced=${stableJson(v2Out.ead)}`,
           severity: "warn",
         });
       }
@@ -474,12 +466,7 @@ export function run(): ReconResult {
 
   result.ok = violations.filter((v) => v.severity === "fail").length === 0;
   const oracleDivergences = violations.filter((v) => v.severity === "warn").length;
-  result.asOf =
-    `saccr-parity: ${nettingSetsChecked} netting set(s) checked over recorded history, ` +
-    `${byteDiffs} hard byte-diff(s) (v1-recompute vs v2 over identical FIL-mediated inputs); ` +
-    `${oracleDivergences} recorded-RC oracle divergence(s) surfaced (warn). ` +
-    `FULLY FIL-MEDIATED: vMtm from the Valuable feed (latest *Revalued event-of-record), ` +
-    `collateral from the register; recorded-RC pin RETIRED (oracle-only).`;
+  result.asOf = `saccr-parity: ${nettingSetsChecked} netting set(s) checked over recorded history, ${byteDiffs} hard byte-diff(s) (v1-recompute vs v2 over identical FIL-mediated inputs); ${oracleDivergences} recorded-RC oracle divergence(s) surfaced (warn). FULLY FIL-MEDIATED: vMtm from the Valuable feed (latest *Revalued event-of-record), collateral from the register; recorded-RC pin RETIRED (oracle-only).`;
   return result;
 }
 

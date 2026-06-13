@@ -55,7 +55,11 @@ import type { EventStore } from "../../event-store/store";
 // pair, so MTM membership is the counterparty's trades in the netting-set ccy.
 // ---------------------------------------------------------------------------
 
-function counterpartyTradeIds(store: EventStore, counterpartyId: string, asOf: string): Set<string> {
+function counterpartyTradeIds(
+  store: EventStore,
+  counterpartyId: string,
+  asOf: string,
+): Set<string> {
   const tradeIds = new Set<string>();
   for (const t of ["IrsTradeBooked", "FxTradeExecuted"] as const) {
     for (const ev of store.replay({ type: t, asOf })) {

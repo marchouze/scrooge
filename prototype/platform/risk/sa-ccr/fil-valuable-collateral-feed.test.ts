@@ -13,9 +13,11 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { EventStore } from "../../event-store/store";
 import { makeFxPositionRevalued } from "../../event-store/event-types/fx-accounting";
+import { makeIrdSwapPositionRevalued } from "../../event-store/event-types/ird-accounting";
+import { EventStore } from "../../event-store/store";
 import { makeFxTradeExecuted } from "../../markets/cdm/fx";
+import { makeIrsTradeBooked } from "../../markets/cdm/ird";
 import {
   materialiseNettingSetRevaluations,
   sourceCollateralFromRegister,
@@ -170,6 +172,86 @@ describe("FIL-mediated vMtm Valuable feed", () => {
     const store = new EventStore(":memory:");
     const v = sourceVMtmFromValuableFeed(store, {
       counterpartyId: "urn:party:legal-entity:unknown",
+      currency: "ZAR",
+      asOf: "2026-06-11T17:00:00.000Z",
+    });
+    expect(v.minorUnits).toBe(0n);
+  });
+});
+
+function bookIrs(store: EventStore, tradeId: string, asOf: string): void {
+  store.append(
+    makeIrsTradeBooked({
+      asOf,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITES,
+      payload: {
+        tradeId: { scheme: "INTERNAL", value: tradeId },
+        counterparty: { partyId: CP, name: CP, role: "counterparty", jurisdiction: "ZA" },
+        notional: { currency: "ZAR", amountMinor: 100_000_000 },
+        fixedRate: 0.085,
+        floatingIndex: "JIBAR-3M",
+        bankPays: "fixed",
+        tradeDate: { iso: asOf.slice(0, 10), calendar: "JIHCAL" },
+        effectiveDate: { iso: asOf.slice(0, 10), calendar: "JIHCAL" },
+        maturityDate: { iso: "2031-06-30", calendar: "JIHCAL" },
+        paymentFrequency: "quarterly",
+        dayCountConvention: "ACT/365",
+        bookId: "IRS-BOOK",
+        traderRef: "trader:test",
+      },
+    }),
+  );
+}
+
+function revalueIrs(
+  store: EventStore,
+  tradeId: string,
+  npvClosingMinor: number,
+  asOf: string,
+  currency = "ZAR",
+): void {
+  store.append(
+    makeIrdSwapPositionRevalued({
+      asOf,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITES,
+      payload: {
+        tradeId,
+        npvDeltaMinor: 0,
+        npvClosingMinor,
+        npvOpeningMinor: npvClosingMinor,
+        currency,
+        revalDate: asOf.slice(0, 10),
+      },
+    }),
+  );
+}
+
+describe("FIL-mediated vMtm Valuable feed — IRS arm", () => {
+  it("sources IRS vMtm from the LATEST npvClosingMinor per trade, currency-matched", () => {
+    const store = new EventStore(":memory:");
+    bookIrs(store, "IRS-1", "2026-06-08T10:00:00.000Z");
+    revalueIrs(store, "IRS-1", 1_000_000, "2026-06-08T18:00:00.000Z");
+    revalueIrs(store, "IRS-1", 1_750_000, "2026-06-10T18:00:00.000Z"); // latest closing NPV
+
+    const v = sourceVMtmFromValuableFeed(store, {
+      counterpartyId: CP,
+      currency: "ZAR",
+      asOf: "2026-06-11T17:00:00.000Z",
+    });
+    expect(v.minorUnits).toBe(1_750_000n); // latest, not 1_000_000 + 1_750_000
+  });
+
+  it("skips IRS revaluations whose currency differs from the netting-set currency", () => {
+    const store = new EventStore(":memory:");
+    bookIrs(store, "IRS-1", "2026-06-08T10:00:00.000Z");
+    revalueIrs(store, "IRS-1", 1_750_000, "2026-06-10T18:00:00.000Z", "USD"); // cross-ccy
+
+    const v = sourceVMtmFromValuableFeed(store, {
+      counterpartyId: CP,
       currency: "ZAR",
       asOf: "2026-06-11T17:00:00.000Z",
     });
