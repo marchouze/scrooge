@@ -354,7 +354,15 @@ describe("Stage: principal (PR-FX-PRIN) — ZAR/USD/EUR + JPY trading/nostro spl
 });
 
 // ---------------------------------------------------------------------------
-// STAGE 4 — close (PR-FX-LIFECYCLE-CLOSE). All ZAR; gain/loss/zero.
+// STAGE 4 — close (PR-FX-LIFECYCLE-CLOSE RETIRED — A4, D-FIL-BOOK-COMPOSITE-VALUATION).
+//
+// SettlementConfirmed no longer triggers a GL posting. The broken
+// (officialMark − bookRate) × notional formula was an asset swap, not
+// realised P&L. Realised P&L is now recognised via RealisedPnlRecognised
+// + PR-FX-REALISED-PNL (see tests below).
+//
+// SettlementConfirmed is now "no-eligible-rule" (rejected by the interpreter)
+// since no IFRS rule handles it after the A4 retirement.
 // ---------------------------------------------------------------------------
 
 function closePayload(pnl: number) {
@@ -368,21 +376,57 @@ function closePayload(pnl: number) {
   };
 }
 
-describe("Stage: close (PR-FX-LIFECYCLE-CLOSE) — ZAR", () => {
-  it("gain (pnl +250,000)", () => {
-    expectInterpreterLegs("SettlementConfirmed", closePayload(250_000), [
+describe("Stage: close (PR-FX-LIFECYCLE-CLOSE RETIRED — A4) — SettlementConfirmed no longer posts", () => {
+  it("gain (pnl +250,000) — no-eligible-rule after A4 retirement", () => {
+    // SettlementConfirmed has no matching IFRS rule (PR-FX-LIFECYCLE-CLOSE retired).
+    // The interpreter returns 'rejected' rather than 'post'.
+    expect(runOne("SettlementConfirmed", closePayload(250_000)).outcome).toBe("rejected");
+  });
+  it("loss (pnl -175,000) — no-eligible-rule after A4 retirement", () => {
+    expect(runOne("SettlementConfirmed", closePayload(-175_000)).outcome).toBe("rejected");
+  });
+  it("zero pnl — also no-eligible-rule (PR-FX-LIFECYCLE-CLOSE retired)", () => {
+    expect(runOne("SettlementConfirmed", closePayload(0)).outcome).toBe("rejected");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// STAGE 4 replacement — realised P&L via PR-FX-REALISED-PNL.
+// RealisedPnlRecognised → Dr fx.nostro[ZAR] / Cr fx.realised_pnl[ZAR] (gain)
+//                     → Dr fx.realised_pnl[ZAR] / Cr fx.nostro[ZAR] (loss)
+// ---------------------------------------------------------------------------
+
+function realisedPnlPayload(pnlMinor: number) {
+  return {
+    instrumentId: "fi:csh:USD:fx-trading",
+    bookId: "fx-trading",
+    currency: "USD",
+    amountClosedMinor: Math.abs(pnlMinor) * 10, // FCY amount closed
+    avgCostZarRate: 18.0,
+    disposalCostZarRate: pnlMinor > 0 ? 18.5 : 17.5,
+    realisedPnlZarMinor: pnlMinor,
+    sourceTradeId: "T1",
+    recognisedAt: "2026-06-09T16:00:00.000Z",
+  };
+}
+
+describe("Stage: realised P&L (PR-FX-REALISED-PNL — A4 replacement)", () => {
+  it("gain (pnl +250,000) — Dr nostro[ZAR] / Cr realised_pnl[ZAR]", () => {
+    expectInterpreterLegs("RealisedPnlRecognised", realisedPnlPayload(250_000), [
       { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 250_000, currency: "ZAR" },
       { accountId: "ACC-2100-006", debitCredit: "credit", amountMinor: 250_000, currency: "ZAR" },
     ]);
   });
-  it("loss (pnl -175,000)", () => {
-    expectInterpreterLegs("SettlementConfirmed", closePayload(-175_000), [
+  it("loss (pnl -175,000) — Dr realised_pnl[ZAR] / Cr nostro[ZAR]", () => {
+    expectInterpreterLegs("RealisedPnlRecognised", realisedPnlPayload(-175_000), [
       { accountId: "ACC-2100-006", debitCredit: "debit", amountMinor: 175_000, currency: "ZAR" },
       { accountId: "ACC-1200-001", debitCredit: "credit", amountMinor: 175_000, currency: "ZAR" },
     ]);
   });
   it("zero pnl — no posting (intentional-no-impact)", () => {
-    expect(runOne("SettlementConfirmed", closePayload(0)).outcome).toBe("intentional-no-impact");
+    expect(runOne("RealisedPnlRecognised", realisedPnlPayload(0)).outcome).toBe(
+      "intentional-no-impact",
+    );
   });
 });
 

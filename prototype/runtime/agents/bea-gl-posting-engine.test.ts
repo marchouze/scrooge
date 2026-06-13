@@ -514,8 +514,11 @@ describe("Regression — PrincipalPayment produces an 'fx-principal-payment' pos
   });
 });
 
-describe("Regression — CDM SettlementConfirmed produces an 'fx-lifecycle-close' posting", () => {
-  it("seeded FxTradeExecuted + SettlementConfirmed with non-zero realisedPnlDelta → engine emits SubLedgerPostingEmitted{postingType:'fx-lifecycle-close'}", async () => {
+describe("Regression — CDM SettlementConfirmed no longer produces a posting (A4: PR-FX-LIFECYCLE-CLOSE retired)", () => {
+  it("RETIRED A4: SettlementConfirmed is rejected by the engine — realised P&L now flows via RealisedPnlRecognised + PR-FX-REALISED-PNL", async () => {
+    // Authority: D-FIL-BOOK-COMPOSITE-VALUATION (2026-06-13, A4 cutover).
+    // PR-FX-LIFECYCLE-CLOSE is removed from FX_IFRS_RULES; SettlementConfirmed
+    // produces no SubLedgerPostingEmitted. Realised P&L is posted on RealisedPnlRecognised.
     const tradeId = `REG-LCC-${newEventId()}`;
     const asOf = "2026-05-21T10:00:00.000Z";
 
@@ -544,24 +547,12 @@ describe("Regression — CDM SettlementConfirmed produces an 'fx-lifecycle-close
     const result = await beaGlPostingEngine(buildRegressionCtx("2026-05-23T16:00:00.000Z"));
     expect(result.ok).toBe(true);
 
-    // 4) Assert exactly one "fx-lifecycle-close" posting for this SettlementConfirmed
+    // 4) Assert NO "fx-lifecycle-close" posting is emitted for SettlementConfirmed (A4 retirement)
     const postings = postingsForSource(lifecycleClose.event_id).filter((ev) => {
       const p = ev.payload as { postingType?: string };
       return p.postingType === "fx-lifecycle-close";
     });
-    expect(postings).toHaveLength(1);
-
-    // 5) Legs balance (Dr Nostro / Cr Realised P&L on a gain)
-    const legs = (postings[0].payload as { legs: SubLedgerLeg[] }).legs;
-    expect(legs).toHaveLength(2);
-    const totalDebit = legs
-      .filter((l) => l.debitCredit === "debit")
-      .reduce((s, l) => s + l.amountMinor, 0);
-    const totalCredit = legs
-      .filter((l) => l.debitCredit === "credit")
-      .reduce((s, l) => s + l.amountMinor, 0);
-    expect(totalDebit).toBe(totalCredit);
-    expect(totalDebit).toBe(50_000);
+    expect(postings).toHaveLength(0);
   });
 });
 

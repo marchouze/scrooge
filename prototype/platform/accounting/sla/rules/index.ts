@@ -10,11 +10,16 @@
 //   PR-FX-001            FxTradeExecuted        — trade booking
 //   PR-FX-002            FxPositionRevalued     — daily FVTPL revaluation
 //   PR-FX-PRIN           PrincipalPayment       — per-leg cash derecognition
-//   PR-FX-LIFECYCLE-CLOSE SettlementConfirmed   — realised-P&L residual / close
+//   PR-FX-REALISED-PNL   RealisedPnlRecognised  — realised P&L on FCY close-out (A4)
 //   PR-FX-005            FxSettlementFailed      — Stage-3 ECL (Herstatt; enrichment)
 //   PR-FX-CANCEL         FxTradeCancelled        — full reversal (enrichment, for_each)
 //   PR-FX-INSTRUCT       FxSettlementInstructed  — intentional-no-impact memo
 //   PR-FX-REGREPORT      TradeReportSubmitted    — intentional-no-impact memo
+//
+// PR-FX-LIFECYCLE-CLOSE (SettlementConfirmed) is RETIRED in A4 — it posted the
+// wrong (officialMark − bookRate)×notional formula (an asset swap, not realised
+// P&L). Replaced by PR-FX-REALISED-PNL which fires on RealisedPnlRecognised.
+// Authority: D-FIL-BOOK-COMPOSITE-VALUATION (2026-06-13).
 //
 // PR-FX-003 (TradeMatured) is DEPRECATED and deliberately NOT ported — see
 // pr-fx-memo.ts for the documented skip rationale.
@@ -38,16 +43,24 @@ import {
   PR_FX_REGREPORT_BA,
 } from "./pr-fx-ba-lifecycle";
 import { PR_FX_CANCEL } from "./pr-fx-cancel";
+// PR-FX-LIFECYCLE-CLOSE is RETIRED (A4 — D-FIL-BOOK-COMPOSITE-VALUATION);
+// still imported for export (backward-compat for the SARB-BA side that keeps
+// a parallel PR-FX-CLOSE-BA entry, and for any consumers that reference the
+// constant directly). NOT included in FX_IFRS_RULES.
 import { PR_FX_LIFECYCLE_CLOSE } from "./pr-fx-lifecycle-close";
 import { PR_FX_INSTRUCT, PR_FX_REGREPORT } from "./pr-fx-memo";
 import { PR_FX_PRIN } from "./pr-fx-prin";
+import { PR_FX_REALISED_PNL } from "./pr-fx-realised-pnl";
 
 /** Every FX IFRS posting rule, in lifecycle order. */
 export const FX_IFRS_RULES: readonly SlaRule[] = [
   PR_FX_001,
   PR_FX_002,
   PR_FX_PRIN,
-  PR_FX_LIFECYCLE_CLOSE,
+  // PR-FX-REALISED-PNL replaces PR-FX-LIFECYCLE-CLOSE (A4).
+  // Triggers on RealisedPnlRecognised; posts realised P&L on FCY close-out.
+  // Authority: D-FIL-BOOK-COMPOSITE-VALUATION.
+  PR_FX_REALISED_PNL,
   PR_FX_005,
   PR_FX_CANCEL,
   PR_FX_INSTRUCT,
@@ -108,6 +121,8 @@ export {
   PR_FX_002_BA,
   PR_FX_PRIN,
   PR_FX_PRIN_BA,
+  // PR-FX-LIFECYCLE-CLOSE RETIRED (A4). Still exported for backward-compat
+  // (SARB-BA parallel rule + recon history). NOT in FX_IFRS_RULES.
   PR_FX_LIFECYCLE_CLOSE,
   PR_FX_CLOSE_BA,
   PR_FX_005,
@@ -118,4 +133,6 @@ export {
   PR_FX_INSTRUCT_BA,
   PR_FX_REGREPORT,
   PR_FX_REGREPORT_BA,
+  // A4 — replaces PR-FX-LIFECYCLE-CLOSE. Authority: D-FIL-BOOK-COMPOSITE-VALUATION.
+  PR_FX_REALISED_PNL,
 };

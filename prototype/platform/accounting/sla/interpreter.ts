@@ -378,6 +378,12 @@ const CONTEXT_BUILDERS: Readonly<Record<string, ContextBuilder>> = {
   TradeCancelled: makeFlatFxContextBuilder(),
   FxSettlementInstructed: makeFlatFxContextBuilder(),
   TradeReportSubmitted: makeFlatFxContextBuilder(),
+  // A4 — RealisedPnlRecognised replaces SettlementConfirmed as the realised-P&L
+  // trigger (PR-FX-REALISED-PNL). Uses the same flat-FX context builder as the
+  // other FX lifecycle events (instrument_type = "FX-spot" as dispatch axis;
+  // the rule leaves instrument_type unconstrained so it matches as a wildcard).
+  // Authority: D-FIL-BOOK-COMPOSITE-VALUATION; IAS 21 §28; IFRS 9 §5.7.1.
+  RealisedPnlRecognised: makeFlatFxContextBuilder(),
   // Treasury money-market family (full-retirement Batch 1) — flat payloads, one
   // product (instrument_type) per lifecycle. Enrichment is supplied by the
   // caller for the prior-event-dependent rules (maturity/recall/early-unwind).

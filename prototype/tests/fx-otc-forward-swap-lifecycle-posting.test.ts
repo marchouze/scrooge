@@ -149,11 +149,14 @@ describe("FX OTC umbrella — forward/swap lifecycle posts via the spot-stamped 
     ]);
   });
 
-  it("PR-FX-LIFECYCLE-CLOSE: a forward's realised close posts the same legs as spot", () => {
-    const spot = legsOf(runOne("SettlementConfirmed", closePayload(250_000)));
-    expect(spot).toEqual(["debit ACC-1200-001 250000 ZAR", "credit ACC-2100-006 250000 ZAR"]);
+  it("PR-FX-LIFECYCLE-CLOSE RETIRED (A4): SettlementConfirmed is now rejected by the SLA engine — realised P&L is posted by PR-FX-REALISED-PNL on RealisedPnlRecognised", () => {
+    // A4 retirement: PR-FX-LIFECYCLE-CLOSE removed from FX_IFRS_RULES (D-FIL-BOOK-COMPOSITE-VALUATION).
+    // SettlementConfirmed now produces "rejected" (no matching IFRS rule).
+    const r = runOne("SettlementConfirmed", closePayload(250_000));
+    expect(r.outcome).toBe("rejected");
     for (const taxonomy of ["FX-forward", "FX-swap"]) {
-      expect(legsOf(runOne("SettlementConfirmed", closePayload(250_000, taxonomy)))).toEqual(spot);
+      const rTax = runOne("SettlementConfirmed", closePayload(250_000, taxonomy));
+      expect(rTax.outcome).toBe("rejected");
     }
   });
 });

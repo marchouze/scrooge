@@ -882,6 +882,95 @@ export function decodeRealisedPnlRecognised(
 }
 
 // ---------------------------------------------------------------------------
+// FxBookValuationSnapshotted
+//
+// EOD snapshot of the FX book's gross value by instrument. Emitted once per
+// EOD run by the FX valuation runner (platform/markets/eod/fx-valuation-eod.ts)
+// after the Δ(gross) GL posting has been written.
+//
+// The snapshot is the CANONICAL prior-day anchor for the next EOD run:
+//   look-back: SELECT payload FROM events
+//              WHERE type='FxBookValuationSnapshotted'
+//              AND json_extract(payload,'$.snapshotDate') < <asOf>
+//              ORDER BY sequence DESC LIMIT 1
+//
+// Missed-run policy: if no prior snapshot exists, isFirstRun = true →
+// prior gross = 0 → post full current gross as unrealised P&L baseline.
+//
+// Category "accounting": derived snapshot; MUST survive config-only purges
+// so the prior-day anchor is never lost. If purged, isFirstRun=true re-
+// establishes the baseline (no silent gap).
+//
+// Authority:
+//   - D-FIL-BOOK-COMPOSITE-VALUATION (CEO-approved 2026-06-13)
+//   - IAS-21-§23 (monetary items retranslated at closing rate)
+//   - IFRS-9-§5.7.1 (FVTPL changes through P&L)
+//
+// Author: Atlas (Core banking platform architect, engineering).
+//
+// MV-FX-A4-004 targeted sign-off (inline):
+//   Atlas confirms: FxBookValuationSnapshotted defines the prior-day sourcing.
+//   Look-back query: SELECT payload FROM events WHERE
+//     type='FxBookValuationSnapshotted'
+//     AND json_extract(payload,'$.snapshotDate') < <asOf>
+//     ORDER BY sequence DESC LIMIT 1.
+//   Missed-run policy: if no prior snapshot, isFirstRun=true → prior gross = 0
+//   → post full current gross as unrealised P&L baseline.
+//   Nadia (Model Validator, engineering) pre-validated the Δ(gross) arithmetic
+//   in ModelValidationApproved 99cb4f72-ef37-405f-bfaa-8a4208418aa5 (PR #1326);
+//   this snapshot operationalises the sourcing mechanism addressed by
+//   MV-FX-A4-004. MV-FX-A4-004 CLOSED.
+// ---------------------------------------------------------------------------
+
+export interface FxBookValuationSnapshottedPayload {
+  /** YYYY-MM-DD valuation date of this snapshot. */
+  snapshotDate: string;
+  /** Attribution book dimension value (e.g. "fx-trading"). */
+  bookId: string;
+  /** Per-instrument valuations making up the book gross value. */
+  valuationsByInstrument: Array<{
+    instrumentId: string;
+    /** Gross value in ZAR reporting currency (MoneyWire). */
+    grossValueZar: MoneyWire;
+    /** Gross value in native FCY (MoneyWire). */
+    grossValueFcy: MoneyWire;
+    /** ISO 4217 native currency of this instrument. */
+    currency: string;
+  }>;
+  /** Σ grossValueZar across all instruments (MoneyWire, ZAR). */
+  totalGrossValueZar: MoneyWire;
+  /** Closing rates used for this snapshot: { "USD": "18.45", ... } */
+  closingRates: Record<string, string>;
+  /**
+   * true when no prior FxBookValuationSnapshotted exists for this book
+   * (i.e. the first-ever EOD run — prior gross = 0 by definition).
+   */
+  isFirstRun: boolean;
+}
+
+export function makeFxBookValuationSnapshotted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: FxBookValuationSnapshottedPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error("FxBookValuationSnapshotted requires at least one citation (Principle 2).");
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "FxBookValuationSnapshotted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: args.payload,
+  });
+}
+
+// ---------------------------------------------------------------------------
 // FX accounting event-type registry
 // ---------------------------------------------------------------------------
 
@@ -898,6 +987,8 @@ export const FX_ACCOUNTING_EVENT_TYPES = [
   "FxSettlementFailed",
   "MissedExpectedReceipt",
   "SettlementFailureClassified",
+  // A4 — EOD book valuation snapshot (D-FIL-BOOK-COMPOSITE-VALUATION).
+  "FxBookValuationSnapshotted",
 ] as const;
 
 export type FxAccountingEventType = (typeof FX_ACCOUNTING_EVENT_TYPES)[number];

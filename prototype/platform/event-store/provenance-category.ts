@@ -175,6 +175,10 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   SettlementInstructionIssued: "settlement",
   SettlementConfirmed: "settlement",
   PrincipalPayment: "settlement",
+  // A4 — FX book EOD valuation snapshot. Category "accounting" (derived
+  // snapshot; must survive config-only purges so the prior-day anchor is
+  // preserved). Authority: D-FIL-BOOK-COMPOSITE-VALUATION.
+  FxBookValuationSnapshotted: "accounting",
 };
 
 const PREFIX: ReadonlyArray<[string, ProvenanceCategory]> = [
