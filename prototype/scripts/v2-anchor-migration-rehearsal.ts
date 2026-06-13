@@ -137,14 +137,12 @@ function assertSourceIsNotCanonical(sourcePath: string): void {
   const canonical = resolveCanonicalDb();
   if (resolve(sourcePath) === resolve(canonical)) {
     throw new Error(
-      `REFUSING: the migration source "${sourcePath}" is the v1 canonical event store. ` +
-        `The rehearsal reads ONLY the v2 anchor store (BANK_V2_ANCHOR_DB). Never the canonical store.`,
+      `REFUSING: the migration source "${sourcePath}" is the v1 canonical event store. The rehearsal reads ONLY the v2 anchor store (BANK_V2_ANCHOR_DB). Never the canonical store.`,
     );
   }
   if (/(^|\/)event\.db$/.test(sourcePath)) {
     throw new Error(
-      `REFUSING: the migration source "${sourcePath}" looks like a canonical "event.db". ` +
-        `Point BANK_V2_ANCHOR_DB at the v2 anchor store (v2-anchor.db).`,
+      `REFUSING: the migration source "${sourcePath}" looks like a canonical "event.db". Point BANK_V2_ANCHOR_DB at the v2 anchor store (v2-anchor.db).`,
     );
   }
 }
@@ -226,7 +224,10 @@ function foldStandingData(rows: V2EventRow[]): string {
 // ---------------------------------------------------------------------------
 
 /** Build a TenantEventStore over a SQLite-backed v2_events table at `dbPath`. */
-function makeSqliteTenantStore(dbPath: string, tenantId: TenantId): {
+function makeSqliteTenantStore(
+  dbPath: string,
+  tenantId: TenantId,
+): {
   store: TenantEventStore;
   close: () => void;
 } {
@@ -274,9 +275,7 @@ function makeSqliteTenantStore(dbPath: string, tenantId: TenantId): {
       }
     },
     count() {
-      return (
-        db.query<{ n: number }, []>("SELECT COUNT(*) AS n FROM v2_events").get()?.n ?? 0
-      );
+      return db.query<{ n: number }, []>("SELECT COUNT(*) AS n FROM v2_events").get()?.n ?? 0;
     },
   };
   return { store, close: () => db.close() };

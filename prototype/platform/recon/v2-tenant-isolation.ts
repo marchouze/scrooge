@@ -58,8 +58,8 @@ import {
 } from "../../v2-core/control-plane/tenant";
 import {
   type TenantEventStore,
-  type TenantTaggedEvent,
   TenantScopedStore,
+  type TenantTaggedEvent,
   UnknownTenantError,
   makeAnchorOnlyResolver,
   makeRegistryResolver,

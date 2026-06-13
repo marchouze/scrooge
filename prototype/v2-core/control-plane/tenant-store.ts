@@ -249,10 +249,7 @@ const FAIL_CLOSED_DEFAULT_RESOLVER: TenantStoreResolver = (tenantId: TenantId) =
 // ---------------------------------------------------------------------------
 
 if (!isAliasRegistered(TENANT_STORE_RESOLVER_ALIAS)) {
-  registerAlias<TenantStoreResolver>(
-    TENANT_STORE_RESOLVER_ALIAS,
-    FAIL_CLOSED_DEFAULT_RESOLVER,
-  );
+  registerAlias<TenantStoreResolver>(TENANT_STORE_RESOLVER_ALIAS, FAIL_CLOSED_DEFAULT_RESOLVER);
 }
 
 /** A handle returned by a swap, allowing the previous resolver to be restored. */

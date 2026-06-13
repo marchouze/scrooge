@@ -10,8 +10,8 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { ANCHOR_TENANT_ID, type TenantId, tenantIdSchema } from "./tenant";
 import {
   type TenantEventStore,
-  type TenantTaggedEvent,
   TenantScopedStore,
+  type TenantTaggedEvent,
   UnknownTenantError,
   makeAnchorOnlyResolver,
   makeRegistryResolver,
@@ -131,8 +131,16 @@ describe("tenant-store resolver", () => {
     ]);
     const restore = swapTenantStoreResolver(makeRegistryResolver(stores));
     try {
-      expect(resolveTenantStore(ANCHOR).readAll().map((e) => e.eventId)).toEqual(["a1", "a2"]);
-      expect(resolveTenantStore(OTHER).readAll().map((e) => e.eventId)).toEqual(["b1"]);
+      expect(
+        resolveTenantStore(ANCHOR)
+          .readAll()
+          .map((e) => e.eventId),
+      ).toEqual(["a1", "a2"]);
+      expect(
+        resolveTenantStore(OTHER)
+          .readAll()
+          .map((e) => e.eventId),
+      ).toEqual(["b1"]);
       // A tenant absent from the registry fails closed.
       const ghost = tenantIdSchema.parse("tenant:ghost");
       expect(() => resolveTenantStore(ghost)).toThrow(UnknownTenantError);

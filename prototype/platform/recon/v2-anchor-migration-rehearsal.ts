@@ -86,7 +86,8 @@ export function run(): ReconResult {
     violations.push({
       subject: "live-store-safety",
       severity: "fail",
-      message: "REHEARSAL WROTE THE LIVE STORE — this must never happen (scratch-only constraint violated).",
+      message:
+        "REHEARSAL WROTE THE LIVE STORE — this must never happen (scratch-only constraint violated).",
     });
   }
 

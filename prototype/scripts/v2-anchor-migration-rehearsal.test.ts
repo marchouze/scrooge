@@ -69,11 +69,27 @@ function seedSource(
 }
 
 const SAMPLE_ROWS = [
-  { event_id: "e1", type: "V2ProductRegistered", payload: { productId: "v2:prd:bank:fx:otc-vanilla", name: "FX OTC Vanilla" } },
-  { event_id: "e2", type: "V2ProductRegistered", payload: { productId: "v2:prd:bank:bond:sagb", name: "SAGB" } },
-  { event_id: "e3", type: "V2AccountTypeRegistered", payload: { accountTypeKey: "nostro", name: "Nostro" } },
+  {
+    event_id: "e1",
+    type: "V2ProductRegistered",
+    payload: { productId: "v2:prd:bank:fx:otc-vanilla", name: "FX OTC Vanilla" },
+  },
+  {
+    event_id: "e2",
+    type: "V2ProductRegistered",
+    payload: { productId: "v2:prd:bank:bond:sagb", name: "SAGB" },
+  },
+  {
+    event_id: "e3",
+    type: "V2AccountTypeRegistered",
+    payload: { accountTypeKey: "nostro", name: "Nostro" },
+  },
   { event_id: "e4", type: "V2RiskAppetiteSet", payload: { rasLineId: "B1", label: "Liquidity" } },
-  { event_id: "e5", type: "V2ProductDeprecated", payload: { productId: "v2:prd:bank:fx:fx-spot-zar-usd", reason: "superseded" } },
+  {
+    event_id: "e5",
+    type: "V2ProductDeprecated",
+    payload: { productId: "v2:prd:bank:fx:fx-spot-zar-usd", reason: "superseded" },
+  },
 ];
 
 let dir: string;
@@ -128,7 +144,11 @@ describe("v2 anchor migration rehearsal", () => {
     // and confirm their projection folds differ (the parity primitive itself).
     const otherPath = resolve(dir, "other-src.db");
     seedSource(otherPath, [
-      { event_id: "e1", type: "V2ProductRegistered", payload: { productId: "v2:prd:DIFFERENT", name: "X" } },
+      {
+        event_id: "e1",
+        type: "V2ProductRegistered",
+        payload: { productId: "v2:prd:DIFFERENT", name: "X" },
+      },
     ]);
     const a = runRehearsal({ sourcePath: srcPath });
     const b = runRehearsal({ sourcePath: otherPath });
