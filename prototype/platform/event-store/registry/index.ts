@@ -162,6 +162,12 @@ export { FIL_INSTANCES_EVENT_TYPES_REGISTRY } from "./fil-instances";
 // Posture register event family (W8 Slice 1, structured-first).
 // Authority: D-W8-POSTURE-REGISTER-SLICE-1; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
 export { POSTURE_EVENT_TYPES_REGISTRY } from "./posture";
+// WS-V2-BBAAS S8 — ApplicabilityAssessmentRequested/Performed/Concluded.
+// Applicability-assessment lifecycle: the typed process that assesses which
+// contexts a posture/obligation/regulatory-change applies to (reusing the S3
+// APPLIES_WHEN evaluator) and records the verdict as events.
+// Authority: D-W8-POSTURE-REGISTER-SLICE-1; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
+export { APPLICABILITY_ASSESSMENT_EVENT_TYPES_REGISTRY } from "./applicability-assessment";
 // D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
 // events (Defined / Classified / Decomposed / Reconstituted).
 // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
@@ -241,6 +247,7 @@ export { V2_CONTROL_PLANE_EVENT_TYPES } from "./v2-control-plane";
 // ---------------------------------------------------------------------------
 
 import { ALCO_EVENT_TYPES_REGISTRY } from "./alco";
+import { APPLICABILITY_ASSESSMENT_EVENT_TYPES_REGISTRY } from "./applicability-assessment";
 import { BALANCE_SHEET_EVENT_TYPES_REGISTRY } from "./balance-sheet";
 import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 import { CAE_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./cae-governance";
@@ -476,6 +483,11 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Posture register (W8 Slice 1, structured-first).
   // Authority: D-W8-POSTURE-REGISTER-SLICE-1; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
   ...POSTURE_EVENT_TYPES_REGISTRY,
+  // WS-V2-BBAAS S8 — ApplicabilityAssessmentRequested/Performed/Concluded.
+  // Applicability-assessment lifecycle (assesses which contexts a posture /
+  // obligation / regulatory-change binds, via the S3 APPLIES_WHEN evaluator).
+  // Authority: D-W8-POSTURE-REGISTER-SLICE-1; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
+  ...APPLICABILITY_ASSESSMENT_EVENT_TYPES_REGISTRY,
   // D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
   // events (Defined / Classified / Decomposed / Reconstituted).
   // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
