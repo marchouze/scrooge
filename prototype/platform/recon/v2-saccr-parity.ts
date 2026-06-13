@@ -14,15 +14,25 @@
 // v2→v1. The permitted direction is v1→v2 (v1 is the seed tenant). This file
 // imports v2-core; v2-core never reaches back here.
 //
-// HARNESS-BOUNDARY FIL-INSTANCE GAP (surfaced, not hidden): the v2 model reads
-// IR + FX positions as FIL instances via `RiskMeasurable`. Per-trade native FIL
-// instances are NOT yet materialised in v2 (no `fil:inst:` event family exists
-// in the live store yet — that is a later slice). So this harness ADAPTS the v1
-// live positions into the v2 model's `SaCcrTradeSummary` shape AT THE V1 SIDE
-// (allowed) — `buildFxSaCcrTradeSummaries` (v1) → v2 trade summaries — and
-// resolves vMtm + collateral via the v1 helpers. The adaptation is 1:1 (same
-// fields), so it does not perturb parity; it is the explicit substrate gap a
-// future slice (native FIL-instance materialisation) closes.
+// FIL-INSTANCE-SOURCED (gap CLOSED): the v2 side now sources its netting-set
+// TRADE STRUCTURE from the NATIVE FIL instance projection
+// (`buildSaCcrTradeSummariesFromFilInstances`, reading the materialised
+// `fil:inst:` lifecycle family from the v2 anchor store, folded as-of). The
+// interim v1-position adapter (`buildFxSaCcrTradeSummaries`) is RETAINED only on
+// the v1-oracle side of the comparison — the v2 candidate reads from instances.
+// This makes "FIL facets are the sole data-access path" (D-MODEL-BINDING-
+// CONTRACT-V1) true end-to-end for the SA-CCR trade/netting structure.
+//
+// EXTERNALLY-SOURCED INPUTS (documented, not faked): the RC inputs vMtm +
+// collateral are pinned FROM THE RECORDED v1 RC EVENT, NOT from the FIL
+// instances. This is legitimate: a position's MARK-TO-MARKET is the output of
+// the `Valuable` facet (a `*Revalued` event-of-record) and collateral lives in
+// the collateral-inventory register — neither is an economic TERM of the
+// instrument, so neither belongs on the FIL instance lifecycle record. The FIL
+// instances source what they own (the trade/netting STRUCTURE: notional,
+// direction, counterparty, netting set, maturity, hedging set); MtM + collateral
+// remain sourced from their own events-of-record. Wiring those through the
+// `Valuable` facet is a later slice.
 //
 // Gate behaviour:
 //   - For each live netting set, run BOTH engines over the SAME inputs and
@@ -50,6 +60,8 @@ import { type Money as V1Money, minor as v1Minor } from "../core/money";
 import type { Currency } from "../core/types";
 import { resolveNettingSet } from "../markets/netting-sets";
 import { computeEad as v1ComputeEadEad } from "../risk/sa-ccr/ead";
+// --- FIL-instance-sourced position feed (the v2 candidate's data-access path) ---
+import { buildSaCcrTradeSummariesFromFilInstances } from "../risk/sa-ccr/fil-instance-positions";
 // --- v1 SA-CCR engine (the oracle) ---
 import { computeAddOn as v1ComputeAddOn } from "../risk/sa-ccr/pfe-addon";
 import { buildFxSaCcrTradeSummaries } from "../risk/sa-ccr/positions-to-summaries";
@@ -196,9 +208,10 @@ function v2Payloads(args: {
   };
 }
 
-/** Stable JSON for byte-compare (sorted keys, deep). */
+/** Stable JSON for byte-compare (sorted keys, deep; bigint → string). */
 function stableJson(value: unknown): string {
   return JSON.stringify(value, (_k, v) => {
+    if (typeof v === "bigint") return v.toString();
     if (v && typeof v === "object" && !Array.isArray(v)) {
       return Object.fromEntries(
         Object.entries(v as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)),
@@ -206,6 +219,12 @@ function stableJson(value: unknown): string {
     }
     return v;
   });
+}
+
+/** Order-independent trade comparison: sort by tradeId so the structural parity
+ * assertion does not depend on store-walk ordering between the two paths. */
+function sortTrades(trades: readonly V2TradeSummary[]): V2TradeSummary[] {
+  return [...trades].sort((a, b) => (a.tradeId ?? "").localeCompare(b.tradeId ?? ""));
 }
 
 // ---------------------------------------------------------------------------
@@ -301,19 +320,44 @@ export function run(): ReconResult {
           currency: rec.currency,
         };
 
-    // Reconstruct the trade list at the historical as_of (drives PFE add-ons).
+    // ORACLE trade list — the v1 adapter reconstructs the historical as_of book
+    // (drives the v1-recompute side; PFE add-ons).
     const groups = buildFxSaCcrTradeSummaries(eventStore, asOf);
     const grp = groups.get(rec.nettingSetId);
     const trades: V1TradeSummary[] = grp?.trades ?? [];
 
-    // PIN the RC inputs (vMtm, collateral) FROM THE RECORDED RC EVENT. These are
-    // the authoritative inputs the live v1 engine used — they are NOT
-    // re-derived from the as-of-sensitive `resolveMtm` cumulative-delta walk,
-    // which drifts as later revaluations land. This is the harness-boundary
-    // FIL-instance gap made explicit: per-trade native FIL instances are not
-    // yet materialised in v2, so the position MTM is taken from the recorded
-    // v1 event-of-record rather than re-resolved. Pinning the recorded inputs
-    // makes the recorded-history parity proof deterministic.
+    // CANDIDATE trade list — the v2 side sources its trade/netting STRUCTURE from
+    // the NATIVE FIL instance projection (folded as-of). This is the data-access
+    // path the gap-closure proves: the v2 SA-CCR model reads positions through
+    // the materialised `fil:inst:` register, not the v1-position adapter.
+    const filGroups = buildSaCcrTradeSummariesFromFilInstances(asOf);
+    const filGrp = filGroups.get(rec.nettingSetId);
+    const v2Trades: V2TradeSummary[] = filGrp?.trades ?? [];
+
+    // STRUCTURAL PARITY — the FIL-sourced v2 trade summaries must byte-match the
+    // trades the v1 adapter derives (each field 1:1). A diff here means the
+    // materialised instance did not faithfully carry the trade structure → fail.
+    result.asserted += 1;
+    const v1AdaptedV2Trades = trades.map(v1ToV2Trade);
+    if (stableJson(sortTrades(v1AdaptedV2Trades)) !== stableJson(sortTrades(v2Trades))) {
+      byteDiffs += 1;
+      violations.push({
+        subject: `${rec.nettingSetId}:trade-structure:fil-vs-v1-adapter`,
+        message:
+          `FIL-instance-sourced trades diverge from the v1 adapter for ${rec.nettingSetId}:\n` +
+          `  v1-adapter=${stableJson(sortTrades(v1AdaptedV2Trades))}\n` +
+          `  fil-sourced=${stableJson(sortTrades(v2Trades))}`,
+        severity: "fail",
+      });
+    }
+
+    // PIN the RC inputs (vMtm, collateral) FROM THE RECORDED RC EVENT. These
+    // remain EXTERNALLY SOURCED (documented in the file header): a position's
+    // mark-to-market is the output of the `Valuable` facet (a `*Revalued`
+    // event-of-record) and collateral lives in the collateral-inventory
+    // register — neither is an economic TERM that belongs on the FIL instance
+    // lifecycle record, so neither is sourced from the instances. The recorded
+    // v1 RC event is the authoritative source for these inputs.
     const vMtm: V1Money = v1Minor(BigInt(Number(rec.rcPayload.vMtm)), ns.currency as Currency);
     const collateral: V1Money = v1Minor(
       BigInt(Number(rec.rcPayload.collateralHeld)),
@@ -325,7 +369,8 @@ export function run(): ReconResult {
       ns,
       vMtm: v1ToV2Money(vMtm),
       collateral: v1ToV2Money(collateral),
-      trades: trades.map(v1ToV2Trade),
+      // SOURCED FROM FIL INSTANCES (gap closed) — not `trades.map(v1ToV2Trade)`.
+      trades: v2Trades,
       asOf,
     });
 
@@ -388,7 +433,7 @@ export function run(): ReconResult {
   }
 
   result.ok = violations.filter((v) => v.severity === "fail").length === 0;
-  result.asOf = `saccr-parity: ${nettingSetsChecked} netting set(s) checked over recorded history, ${byteDiffs} byte-diff(s)`;
+  result.asOf = `saccr-parity: ${nettingSetsChecked} netting set(s) checked over recorded history, ${byteDiffs} byte-diff(s); v2 trade/netting structure sourced from native FIL instances (MtM + collateral externally sourced from the recorded RC event-of-record)`;
   return result;
 }
 

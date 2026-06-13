@@ -109,6 +109,17 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   // "simulated" (the S3 three-site-registration defect this prevents).
   // Authority: D-FIL-FRAMEWORK-UNIFICATION; Principle 1.
   FilModelImplementationDeclared: "governance",
+  // WS-V2-BBAAS — FIL instance lifecycle family. A materialised FIL instance is
+  // a real anchor-book record (the native fil:inst feed for the bank's IR + FX
+  // book), minted through the governed materialisation process and emitted into
+  // the v2 anchor store — never simulated market activity. Registered v1-side as
+  // class "governance"; this mapping keeps the provenance category in lock-step
+  // (the third site of the recurring three-site-registration gotcha) so the
+  // types do not resolve to "simulated".
+  // Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1; Principle 1.
+  FilInstrumentCreated: "governance",
+  FilInstrumentAmended: "governance",
+  FilInstrumentTerminated: "governance",
   // Counterparty / party register.
   PartyRegistered: "counterparty",
   PartyClassified: "counterparty",
