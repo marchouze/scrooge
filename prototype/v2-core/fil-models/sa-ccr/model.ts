@@ -27,21 +27,17 @@
 //   D-FIL-FRAMEWORK-UNIFICATION; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
 // Author: Rohan (Risk Engineer, engineering).
 
+import type { FilEventRef } from "../../fil-core/lifecycle";
+import type { CitationRef, MethodologyHash } from "../../fil-core/primitives";
+import { type FilScopePattern, isFilScopePattern, isFilTypeUrn } from "../../fil-core/urn";
 import type {
   EngineId,
   PositionSelector,
   RiskFactorRef,
   RiskMeasurable,
 } from "../../fil-facets/facets";
-import type { FilEventRef } from "../../fil-core/lifecycle";
-import type { CitationRef, MethodologyHash } from "../../fil-core/primitives";
-import { type FilScopePattern, isFilScopePattern, isFilTypeUrn } from "../../fil-core/urn";
 import type { FilModelImplementationDeclared } from "../declaration";
-import {
-  ALPHA_SA_CCR,
-  PFE_MULTIPLIER_FLOOR,
-  type SaCcrTradeSummary,
-} from "./methodology";
+import { ALPHA_SA_CCR, PFE_MULTIPLIER_FLOOR, type SaCcrTradeSummary } from "./methodology";
 
 // ---------------------------------------------------------------------------
 // Model identity + version.
@@ -54,10 +50,7 @@ export const SA_CCR_MODEL_VERSION = { major: 1, minor: 0 } as const;
 export const SA_CCR_SCOPE = ["fil:type:ir:*", "fil:type:fx:*"] as FilScopePattern[];
 
 /** The events-of-record the model emits (registered v1-side; see CCR schemas). */
-export const SA_CCR_EMITS = [
-  "CcrReplacementCostComputed",
-  "CcrEadComputed",
-] as FilEventRef[];
+export const SA_CCR_EMITS = ["CcrReplacementCostComputed", "CcrEadComputed"] as FilEventRef[];
 
 /** BCBS d317 / CRE52 provisions the model implements (IMPLEMENTED_BY targets). */
 export const SA_CCR_CITES = [
@@ -97,11 +90,11 @@ export function computeSaCcrMethodologyHash(): MethodologyHash {
     `version=${SA_CCR_MODEL_VERSION.major}.${SA_CCR_MODEL_VERSION.minor}`,
     `alpha=${ALPHA_SA_CCR}`,
     `pfeFloor=${PFE_MULTIPLIER_FLOOR}`,
-    `mpor=10bd/250`,
+    "mpor=10bd/250",
     `sf=${SUPERVISORY_FACTORS_PINNED}`,
-    `rc=max(V-C,MTA+TH,0)|max(V,0)`,
-    `pfe=mult*Σ(|Σδ·d·MF|·SF)`,
-    `ead=alpha*(RC+PFE)`,
+    "rc=max(V-C,MTA+TH,0)|max(V,0)",
+    "pfe=mult*Σ(|Σδ·d·MF|·SF)",
+    "ead=alpha*(RC+PFE)",
   ].join("|");
   return `saccr:v1.0:${fnv1a(pin)}` as MethodologyHash;
 }
@@ -187,14 +180,8 @@ export function scopePatternsValid(): boolean {
 export const SA_CCR_ENGINE_ID = "sa-ccr" as EngineId;
 
 /** Lifecycle event families the SA-CCR engine selects positions from. */
-const SA_CCR_IR_LIFECYCLE_EVENTS = [
-  "IrsTradeBooked",
-  "IrdSwapPositionRevalued",
-] as FilEventRef[];
-const SA_CCR_FX_LIFECYCLE_EVENTS = [
-  "FxTradeExecuted",
-  "FxPositionRevalued",
-] as FilEventRef[];
+const SA_CCR_IR_LIFECYCLE_EVENTS = ["IrsTradeBooked", "IrdSwapPositionRevalued"] as FilEventRef[];
+const SA_CCR_FX_LIFECYCLE_EVENTS = ["FxTradeExecuted", "FxPositionRevalued"] as FilEventRef[];
 
 export function saCcrRiskMeasurable(trade: SaCcrTradeSummary): RiskMeasurable {
   return {
@@ -202,9 +189,7 @@ export function saCcrRiskMeasurable(trade: SaCcrTradeSummary): RiskMeasurable {
       // SA-CCR is driven by the netting-set delta-adjusted notional — the
       // load-bearing risk factor per asset class is the directional delta
       // exposure; IR additionally carries the maturity-bucket curve factor.
-      const factors: RiskFactorRef[] = [
-        { factorId: `${trade.assetClass}:delta`, kind: "delta" },
-      ];
+      const factors: RiskFactorRef[] = [{ factorId: `${trade.assetClass}:delta`, kind: "delta" }];
       if (trade.assetClass === "ir") {
         factors.push({ factorId: "ir:curve", kind: "curve" });
       }

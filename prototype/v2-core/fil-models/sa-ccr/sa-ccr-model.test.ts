@@ -16,12 +16,12 @@ import { describe, expect, it } from "bun:test";
 import type { Money } from "../../fil-core/primitives";
 import { EMPTY_FIL_MODELS_REGISTER, foldFilModelsRegister } from "../registry";
 import {
+  type SaCcrNettingSet,
+  type SaCcrTradeSummary,
   computeAddOn,
   computeEad,
   computeReplacementCost,
   computeSaCcr,
-  type SaCcrNettingSet,
-  type SaCcrTradeSummary,
 } from "./methodology";
 import {
   SA_CCR_ENGINE_ID,

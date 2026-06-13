@@ -38,23 +38,23 @@
 // Author: Rohan (Risk Engineer, engineering) ·
 //         Vera (Internal audit engineer, third line — recon shape).
 
-import { eventStore } from "../composition";
-import { type Money as V1Money, minor as v1Minor } from "../core/money";
-import type { Currency } from "../core/types";
-// --- v1 SA-CCR engine (the oracle) ---
-import { computeAddOn as v1ComputeAddOn } from "../risk/sa-ccr/pfe-addon";
-import { computeReplacementCost as v1ComputeReplacementCost } from "../risk/sa-ccr/replacement-cost";
-import { computeEad as v1ComputeEadEad } from "../risk/sa-ccr/ead";
-import { buildFxSaCcrTradeSummaries } from "../risk/sa-ccr/positions-to-summaries";
-import type { TradeSummary as V1TradeSummary } from "../risk/sa-ccr/types";
-import { resolveNettingSet } from "../markets/netting-sets";
+import type { Money as V2Money } from "../../v2-core/fil-core/primitives";
 // --- v2 FIL-Model (the candidate) ---
 import {
   type SaCcrNettingSet as V2NettingSet,
   type SaCcrTradeSummary as V2TradeSummary,
   computeSaCcr,
 } from "../../v2-core/fil-models/sa-ccr";
-import type { Money as V2Money } from "../../v2-core/fil-core/primitives";
+import { eventStore } from "../composition";
+import { type Money as V1Money, minor as v1Minor } from "../core/money";
+import type { Currency } from "../core/types";
+import { resolveNettingSet } from "../markets/netting-sets";
+import { computeEad as v1ComputeEadEad } from "../risk/sa-ccr/ead";
+// --- v1 SA-CCR engine (the oracle) ---
+import { computeAddOn as v1ComputeAddOn } from "../risk/sa-ccr/pfe-addon";
+import { buildFxSaCcrTradeSummaries } from "../risk/sa-ccr/positions-to-summaries";
+import { computeReplacementCost as v1ComputeReplacementCost } from "../risk/sa-ccr/replacement-cost";
+import type { TradeSummary as V1TradeSummary } from "../risk/sa-ccr/types";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "v2-saccr-parity";
@@ -113,7 +113,12 @@ function v1Payloads(args: {
     csaPresent: ns.csaPresent,
     currency: ns.currency,
     ...(ns.threshold !== undefined
-      ? { threshold: { amount: ns.threshold.minorUnits, currency: ns.threshold.currency as Currency } }
+      ? {
+          threshold: {
+            amount: ns.threshold.minorUnits,
+            currency: ns.threshold.currency as Currency,
+          },
+        }
       : {}),
     ...(ns.mta !== undefined
       ? { mta: { amount: ns.mta.minorUnits, currency: ns.mta.currency as Currency } }
@@ -245,7 +250,10 @@ function collectRecordedCcr(): RecordedCcr[] {
 }
 
 /** Normalise a recorded payload to the harness-comparable shape (placeholder rcEventId). */
-function normaliseRecorded(payload: Record<string, unknown>, isEad: boolean): Record<string, unknown> {
+function normaliseRecorded(
+  payload: Record<string, unknown>,
+  isEad: boolean,
+): Record<string, unknown> {
   if (!isEad) return payload;
   const src = payload.sourceEvents as Record<string, unknown> | undefined;
   return {
@@ -374,7 +382,8 @@ export function run(): ReconResult {
   result.violations = violations;
   if (nettingSetsChecked === 0) {
     result.ok = true;
-    result.asOf = "saccr-parity: 0 recorded SA-CCR netting sets — nothing to reconcile (engine has not run on this store)";
+    result.asOf =
+      "saccr-parity: 0 recorded SA-CCR netting sets — nothing to reconcile (engine has not run on this store)";
     return result;
   }
 

@@ -28,8 +28,8 @@
 //
 // Author: Rohan (Risk Engineer, engineering).
 
-import type { SaCcrAssetClass } from "../../fil-facets/facets";
 import type { Money } from "../../fil-core/primitives";
+import type { SaCcrAssetClass } from "../../fil-facets/facets";
 
 // SA-CCR asset classes — the v2-native partition is the kernel
 // `SaCcrAssetClass` (fil-facets/facets.ts): the closed Basel partition the FIL
@@ -389,7 +389,11 @@ export function computeEad(
   const ccy = rc.rc.currency;
   const aggAddOn = aggregatedAddOn(addOns, ccy);
 
-  const multiplier = pfeMultiplier(rc.vMtm.minorUnits, rc.collateralHeld.minorUnits, aggAddOn.minorUnits);
+  const multiplier = pfeMultiplier(
+    rc.vMtm.minorUnits,
+    rc.collateralHeld.minorUnits,
+    aggAddOn.minorUnits,
+  );
 
   // PFE = multiplier × AggAddOn. Scale multiplier by 1e6 for half-up rounding.
   const multiplierScaled = BigInt(Math.round(multiplier * 1_000_000));

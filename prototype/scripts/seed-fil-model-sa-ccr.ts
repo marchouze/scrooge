@@ -30,7 +30,11 @@ import {
 const AS_OF = process.env.SA_CCR_DECL_AS_OF ?? "2026-06-13T09:00:00.000Z";
 
 const already = [...eventStore.replay({ type: "FilModelImplementationDeclared" })].some((e) => {
-  const p = e.payload as { modelId?: string; version?: { major: number; minor: number }; methodologyHash?: string };
+  const p = e.payload as {
+    modelId?: string;
+    version?: { major: number; minor: number };
+    methodologyHash?: string;
+  };
   return (
     p.modelId === SA_CCR_MODEL_DECLARATION.modelId &&
     p.version?.major === SA_CCR_MODEL_VERSION.major &&
