@@ -30,9 +30,7 @@ const alreadyFiled = [...eventStore.replay({ type: "RecordFiled" })].some(
 );
 
 if (alreadyFiled) {
-  console.log(
-    `[file-atlas-dimensional-metric-attribution] ${RECORD_ID} already filed — skipping.`,
-  );
+  console.log(`[file-atlas-dimensional-metric-attribution] ${RECORD_ID} already filed — skipping.`);
   process.exit(0);
 }
 
