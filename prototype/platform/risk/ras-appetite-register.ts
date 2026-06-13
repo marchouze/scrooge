@@ -203,6 +203,18 @@ export interface RasAppetiteLine {
    */
   readonly floorZar?: number;
   /**
+   * Governed monetary CEILING (ZAR, major units) for lines whose calibration is
+   * an absolute loss-magnitude cap rather than a ratio floor — e.g. the
+   * market-risk 1-day 99% VaR appetite ceiling. This is the CANONICAL source of
+   * the value consuming engines evaluate: `runtime/agents/rohan-market-risk-
+   * measure.ts` reads the VaR appetite from here rather than a module-local
+   * `VAR_APPETITE_ZAR` constant (D-VAR-EXPOSURE-INCLUDES-STANDING-NOP). The
+   * line's `thresholds` ratio bands are expressed as a % of this ceiling
+   * (utilisation = measured VaR ÷ ceilingZar). Absent for lines with no
+   * absolute-ceiling calibration.
+   */
+  readonly ceilingZar?: number;
+  /**
    * The projection / event that MEASURES this line (function name or event
    * type), or `null` when the line is genuinely unmeasured today. Turns the
    * "measurement substrate" gap into a per-line checkable fact.
@@ -383,18 +395,56 @@ export const RAS_APPETITE_LINES: readonly RasAppetiteLine[] = [
   },
   {
     id: "appetite:market:trading-var",
-    label: "Trading-book 1-day 99% VaR",
+    label: "Market-risk 1-day 99% VaR ceiling (MR-1-FX)",
     rasSection: "RAS §B4",
     category: "market",
     tier: "tier-2",
+    // Re-calibrated 2026-06-13 per D-VAR-EXPOSURE-INCLUDES-STANDING-NOP. The
+    // MR-1-FX VaR ceiling was R350k under D-BRC-INTERIM-MR-1-FX (CEO-approved
+    // 2026-05-21), calibrated against the OLD trade-only VaR basis where it sat
+    // at ~80% utilisation (amber). PR #1279 re-based market-risk VaR onto the
+    // standing FX NOP (settlement-retained, B3-aligned per
+    // D-VAR-EXPOSURE-INCLUDES-STANDING-NOP); the corrected base is ~R499.4k
+    // (was ~R280k). R350k is stale against the corrected basis. Re-calibrated to
+    // R575k = corrected base R499.4k + ~15% management buffer (≈R75k), rounded —
+    // restoring the ~87% (amber) utilisation posture the original R350k carried
+    // against the OLD base. Within-methodology, build-phase, tier-2: CRO
+    // authority (no RAS Tier-1 / Board threshold crossed; no CEO sign-off).
     thresholds: {
-      kind: "posture",
-      printed: "Default trading-book VaR as % of CET1 (RAS §B4; calibrated when book opens).",
+      kind: "ratio",
+      printed: "green <80% of ceiling / amber 80-100% / red ≥100%",
+      bands: [
+        { band: "green", formatted: "green <80% of ceiling", comparator: "lt", upperPct: 80 },
+        {
+          band: "amber",
+          formatted: "amber 80-100%",
+          comparator: "between",
+          lowerPct: 80,
+          upperPct: 100,
+        },
+        { band: "red", formatted: "red ≥100%", comparator: "gte", lowerPct: 100 },
+      ],
     },
-    measurementBinding: null,
-    measurementOwner: "Rohan (eng) joint with Kai (eng) → Saskia (Head of Markets)",
-    citations: [D_RAS, RAS_FRAMEWORK],
-    summary: "Default trading-book VaR as % of CET1 (RAS §B4; calibrated when book opens).",
+    // Canonical VaR appetite ceiling (ZAR). rohan-market-risk-measure.ts reads
+    // this rather than a module-local VAR_APPETITE_ZAR constant (single-source,
+    // Principle 2 — the IRRBB δEVE / intraday-floor precedent).
+    ceilingZar: 575_000,
+    measurementBinding:
+      "getMarketRiskMeasure (platform/projections/markets/market-risk-measure.ts): latest MarketRiskMeasureComputed.var (1-day 99% historical-simulation VaR over the standing FX NOP basis) ÷ ceilingZar; amber ≥80%, red ≥100%",
+    measurementOwner: "Rohan (eng) joint with Kai (eng) → Saskia (Head of Markets, governance)",
+    citations: [
+      D_RAS,
+      RAS_FRAMEWORK,
+      "D-BRC-INTERIM-MR-1-FX",
+      "D-VAR-EXPOSURE-INCLUDES-STANDING-NOP",
+    ],
+    summary:
+      "Market-risk 1-day 99% VaR ceiling R575k (MR-1-FX). Measured against the standing FX " +
+      "net-open-position basis (settlement-retained, B3-aligned per D-VAR-EXPOSURE-INCLUDES-STANDING-NOP) " +
+      "— the same book BA 310 attests. Amber early-warning at 80% of ceiling; red at 100%. " +
+      "Re-calibrated 2026-06-13 from R350k (stale against the old trade-only basis) to R575k = " +
+      "corrected VaR base ~R499.4k + ~15% management buffer. Interim build-phase ceiling under " +
+      "D-BRC-INTERIM-MR-1-FX; re-tabled to the Board Risk Committee at licence-day.",
   },
   {
     id: "appetite:market:counterparty-concentration",
@@ -674,4 +724,26 @@ export function requireRasAppetiteLine(id: string): RasAppetiteLine {
     throw new Error(`Unknown RAS appetite-line id: ${id}`);
   }
   return line;
+}
+
+/** The canonical market-risk VaR appetite line id (MR-1-FX, RAS §B4). */
+export const MARKET_VAR_APPETITE_LINE_ID = "appetite:market:trading-var";
+
+/**
+ * The canonical market-risk 1-day 99% VaR appetite CEILING (ZAR, major units).
+ * Single-source for the VaR-measure emitters (`runtime/agents/rohan-market-
+ * risk-measure.ts`, `scripts/market-risk-measure-run.ts`) — they MUST read this
+ * rather than a module-local constant (D-VAR-EXPOSURE-INCLUDES-STANDING-NOP,
+ * Principle 2 — single-graph discipline). Throws if the line lacks a
+ * `ceilingZar` calibration (a posture-only VaR line carries no numeric appetite
+ * to measure against).
+ */
+export function marketVarAppetiteCeilingZar(): number {
+  const line = requireRasAppetiteLine(MARKET_VAR_APPETITE_LINE_ID);
+  if (line.ceilingZar === undefined) {
+    throw new Error(
+      `Market-risk VaR appetite line \`${MARKET_VAR_APPETITE_LINE_ID}\` has no ceilingZar calibration.`,
+    );
+  }
+  return line.ceilingZar;
 }

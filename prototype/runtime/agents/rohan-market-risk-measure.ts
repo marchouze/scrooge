@@ -44,14 +44,19 @@ import type { EventStore } from "../../platform/event-store/store";
 import { resolveMarketDataDbPath } from "../../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../../platform/market-data/store";
 import { computeMarketRisk } from "../../platform/market-risk/var-engine";
+import { marketVarAppetiteCeilingZar } from "../../platform/risk/ras-appetite-register";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC } from "./_shared";
 
 const BANK_ENTITY = "LE-ZA-HOZ-BANK";
 
-// Helena MR-1-FX §1.1 — 1-day 99% VaR appetite ceiling (ZAR). Mirrors the
-// constant in scripts/market-risk-measure-run.ts.
-const VAR_APPETITE_ZAR = 350_000;
+// Helena MR-1-FX — 1-day 99% VaR appetite ceiling (ZAR). SINGLE-SOURCE from the
+// canonical RAS register (`appetite:market:trading-var`); re-calibrated to R575k
+// against the standing-NOP basis per D-VAR-EXPOSURE-INCLUDES-STANDING-NOP. The
+// former module-local `VAR_APPETITE_ZAR = 350_000` constant (stale, old
+// trade-only basis) is retired — the register is the source of truth
+// (Principle 2).
+const VAR_APPETITE_ZAR = marketVarAppetiteCeilingZar();
 
 const ENGINE_ACTOR = {
   type: "service" as const,
