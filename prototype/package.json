@@ -226,6 +226,8 @@
     "recon:v2-anchor-migration-rehearsal": "bun run platform/recon/v2-anchor-migration-rehearsal.ts",
     "rehearse:v2-anchor-migration": "bun run scripts/v2-anchor-migration-rehearsal.ts",
     "recon:v2-csi-cross-tenant-gate": "bun run platform/recon/v2-csi-cross-tenant-gate.ts",
+    "recon:attribution-additivity": "bun run platform/recon/attribution-additivity.ts",
+    "recon:attribution-nonadditive-no-sum": "bun run platform/recon/attribution-nonadditive-no-sum.ts",
     "seed:v2-anchor-tenant": "bun run scripts/seed-v2-anchor-tenant.ts",
     "seed:v2-csi-blocklist": "bun run scripts/seed-v2-csi-blocklist.ts",
     "recon:graph-ontology": "bun run platform/recon/graph-ontology-coverage.ts",

@@ -129,6 +129,15 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // non-vacuous). D-W7 C-tier / multi-tenant-learning go-live precondition.
     // Authority: D-W7-VENDOR-ENTITY-STRUCTURE; D-V2-TENANCY-ARCHITECTURE.
     "recon:v2-csi-cross-tenant-gate",
+    // WS-V2-BBAAS A1 — FIL attribution kernel gates (design spec §5.2). Pass
+    // vacuously over the live store until A2+ binds metrics; non-vacuous on
+    // fixtures (they CAN fail). attribution-additivity: children-sum == joint
+    // recompute for additive metrics. attribution-nonadditive-no-sum: a
+    // joint-recompute metric (VaR/ES) can NEVER be summed from child results
+    // (static: no `add` member; runtime: assertNoSum + sumChildren throw).
+    // Authority: D-FIL-ATTRIBUTION-A1-BUILD; D-METRIC-ATTRIBUTION-DIMENSIONAL.
+    "recon:attribution-additivity",
+    "recon:attribution-nonadditive-no-sum",
     "recon:dashboard",
     "recon:wall-clock-callsite-coverage",
     "recon:decisions-events-only",

@@ -154,6 +154,16 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   FilInstrumentCreated: "governance",
   FilInstrumentAmended: "governance",
   FilInstrumentTerminated: "governance",
+  // WS-V2-BBAAS A1 — FIL attribution kernel. An organisational-dimension
+  // assignment (a book/desk/strategy/portfolio re-tag) and a named-slice
+  // definition are real governance configuration records (a book/desk/portfolio
+  // is a stored predicate, never simulated market activity), emitted into the v2
+  // anchor store. Registered v1-side as class "governance"; this mapping keeps
+  // the provenance category in lock-step (third site of the three-site-
+  // registration gotcha) so the types do not resolve to "simulated".
+  // Authority: D-FIL-ATTRIBUTION-A1-BUILD; D-METRIC-ATTRIBUTION-DIMENSIONAL; Principle 1.
+  InstrumentDimensionAssigned: "governance",
+  SliceDefined: "governance",
   // Counterparty / party register.
   PartyRegistered: "counterparty",
   PartyClassified: "counterparty",
