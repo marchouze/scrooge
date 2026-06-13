@@ -135,10 +135,18 @@ export const SA_CCR_MODEL_DECLARATION: FilModelImplementationDeclared = {
   emits: SA_CCR_EMITS,
   cites: SA_CCR_CITES,
   methodologyHash: SA_CCR_METHODOLOGY_HASH,
-  // Builder submits; Nadia (Model validation) approval is a gated follow-on
-  // (brief §"Out of scope"). The parity proof here is engineering validation,
-  // not the independent model-validation sign-off.
-  validationStatus: "submitted",
+  // VALIDATED-WITH-CONDITIONS by Nadia (Model validation, risk) — independent
+  // third-line sign-off, 2026-06-13 (brief:nadia:independent-model-validation-of
+  // -v2-sa-ccr-fil-mo:2026-06-13; D-SACCR-V2-CUTOVER-ACCELERATE). The
+  // methodology is a faithful d317/CRE52 port and the v2 latest-per-trade MtM
+  // basis is correct (the v1 FX-summing defect independently confirmed); the
+  // verdict transitions `submitted → validation-approved`. The conditions on the
+  // alias-flip (Valuable-feed merge, live-path wiring, v1 FX-resolveMtm
+  // retirement) are carried as OPEN ValidationFindingRaised events + the
+  // RecordFiled validation report, NOT on this registry row (the registry
+  // status enum is binary submitted/approved/withheld). See the validation
+  // record `record:documents:nadia:v2-saccr-model-validation:2026-06-13`.
+  validationStatus: "validation-approved",
 };
 
 // ---------------------------------------------------------------------------

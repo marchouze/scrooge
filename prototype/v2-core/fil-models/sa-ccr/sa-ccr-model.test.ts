@@ -47,7 +47,10 @@ describe("SA-CCR FIL-Model registry fold", () => {
     expect(row?.version).toBe("1.0");
     expect(row?.emits).toEqual(["CcrReplacementCostComputed", "CcrEadComputed"]);
     expect(row?.methodologyHash).toBe(SA_CCR_METHODOLOGY_HASH);
-    expect(row?.validationStatus).toBe("submitted");
+    // Nadia (Model validation, risk) independent sign-off transitioned the model
+    // submitted → validation-approved (validated-with-conditions; the conditions
+    // ride OPEN ValidationFindingRaised events, not the binary registry status).
+    expect(row?.validationStatus).toBe("validation-approved");
   });
 
   it("declares valid fil:type scope patterns", () => {
