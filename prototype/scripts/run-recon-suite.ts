@@ -73,6 +73,15 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:v2-no-v1-import",
     "recon:v2-tenant-axis-present",
     "recon:v2-released-surface-clean-core",
+    // WS-V2-BBAAS S16 — tier-entitlement coherence (ENFORCING): the K/R/C
+    // flat-tier entitlement table stays coherent with the S5 released-surface
+    // boundary — surfaceScope==tier, every capability resolves + is within
+    // scope, C ⊆ R ⊆ K, flat-tier marker + no price field, anchor==K, and the
+    // C-tier go-live preconditions (incl. tested second-provider fallback) are
+    // present + gate go-live. The synthetic over-grant (C entitling a K-only
+    // export) is caught sabotage-proof in the regression test. Authority:
+    // D-V2-WAVE4-COMMERCIAL-POSTURE; D-V2-BBAAS-TIER-STRUCTURE.
+    "recon:v2-tier-entitlement-coherence",
     "recon:v2-posture-register-integrity",
     // WS-V2-BBAAS S13 — eval-harness integrity (advisory). Every EvalRunCompleted
     // references a registered exam-set; exam-sets well-formed; recorded verdicts
