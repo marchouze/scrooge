@@ -90,12 +90,12 @@ describe("SA-CCR RiskMeasurable facet implementation", () => {
     const m = saCcrRiskMeasurable(irTrade);
     const sel = m.positionContribution(SA_CCR_ENGINE_ID);
     expect(sel.engine).toBe(SA_CCR_ENGINE_ID);
-    expect(sel.lifecycleEvents).toContain("IrsTradeBooked");
+    expect(sel.lifecycleEvents as readonly string[]).toContain("IrsTradeBooked");
   });
   it("selects FX lifecycle events for an FX trade", () => {
     const fxTrade: SaCcrTradeSummary = { ...irTrade, assetClass: "fx" };
     const sel = saCcrRiskMeasurable(fxTrade).positionContribution(SA_CCR_ENGINE_ID);
-    expect(sel.lifecycleEvents).toContain("FxTradeExecuted");
+    expect(sel.lifecycleEvents as readonly string[]).toContain("FxTradeExecuted");
   });
 });
 
@@ -183,11 +183,14 @@ describe("SA-CCR methodology math (d317)", () => {
   });
 
   it("the declaration emits the two CCR events of record", () => {
-    expect(SA_CCR_MODEL_DECLARATION.emits).toEqual([
+    expect(SA_CCR_MODEL_DECLARATION.emits as readonly string[]).toEqual([
       "CcrReplacementCostComputed",
       "CcrEadComputed",
     ]);
-    expect(SA_CCR_MODEL_DECLARATION.requires.facets).toEqual(["Lifecycled", "Valuable"]);
+    expect(SA_CCR_MODEL_DECLARATION.requires.facets as readonly string[]).toEqual([
+      "Lifecycled",
+      "Valuable",
+    ]);
   });
 
   it("computeEad rounding matches v1 half-up scheme on a non-trivial multiplier", () => {

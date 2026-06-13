@@ -28,17 +28,16 @@
 //
 // Author: Rohan (Risk Engineer, engineering).
 
+import type { SaCcrAssetClass } from "../../fil-facets/facets";
 import type { Money } from "../../fil-core/primitives";
 
-// ---------------------------------------------------------------------------
-// SA-CCR asset classes — the v2-native partition. Deliberately equal to the
-// v1 `SaCcrAssetClass` union AND to the kernel `SaCcrAssetClass` in
-// fil-facets/facets.ts (the closed Basel partition the FIL taxonomy aligns to,
-// W9 §3.1). S7-FIL scope is IR + FX; credit/equity/commodity are carried in
-// the union so the engine forwards them, exactly as v1.
-// ---------------------------------------------------------------------------
-
-export type SaCcrAssetClass = "ir" | "fx" | "credit" | "equity" | "commodity";
+// SA-CCR asset classes — the v2-native partition is the kernel
+// `SaCcrAssetClass` (fil-facets/facets.ts): the closed Basel partition the FIL
+// taxonomy aligns to (W9 §3.1), equal to v1's union. S7-FIL scope is IR + FX;
+// credit/equity/commodity are carried in the union so the engine forwards them,
+// exactly as v1. NOT re-exported from this module (it already lives on the
+// v2-core surface via fil-facets) — that avoids a duplicate-export ambiguity in
+// the v2-core barrel; consumers import the type from fil-facets.
 
 // ---------------------------------------------------------------------------
 // Money helpers — v2-native bigint minor-unit arithmetic. Mirrors the v1
