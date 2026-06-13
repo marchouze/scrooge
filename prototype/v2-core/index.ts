@@ -94,6 +94,17 @@ export * from "./banking/events";
  * Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1. */
 export * from "./fil-instances";
 
+// --- FIL attribution (A1 kernel) -------------------------------------------
+
+/** @tier R — dimensional metric-attribution kernel: AttributionDimensions +
+ * DimensionHierarchy; the AttributionMetric interface + AggregationSemantics
+ * (additive / joint-recompute) + empty metric registry; the Slice / query model;
+ * InstrumentDimensionAssigned + SliceDefined event payloads; the tenant-scoped
+ * aggregation engine (member selection REUSES the S10 tenant axis — no parallel
+ * mechanism). No metrics bound at A1; models register in later slices.
+ * Authority: D-FIL-ATTRIBUTION-A1-BUILD; D-METRIC-ATTRIBUTION-DIMENSIONAL. */
+export * from "./fil-attribution";
+
 // --- Posture register (W8 Slice 1) -----------------------------------------
 
 /** @tier R — PostureRegistered / Activated / Deactivated / Revised event types; APPLIES_WHEN
