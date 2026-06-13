@@ -206,6 +206,7 @@
     "recon:madge-circular-deps": "bun run platform/recon/madge-circular-deps.ts",
     "recon:v2-no-v1-import": "bun run platform/recon/v2-no-v1-import.ts",
     "recon:v2-released-surface-clean-core": "bun run platform/recon/v2-released-surface-gate.ts",
+    "recon:v2-tier-entitlement-coherence": "bun run platform/recon/v2-tier-entitlement-coherence.ts",
     "recon:v2-standing-data-seed-parity": "bun run platform/recon/v2-standing-data-seed-parity.ts",
     "seed:v2-anchor-bank-standing-data": "bun run scripts/seed-v2-anchor-bank-standing-data.ts",
     "seed:v2-fil-instances-ir-fx": "bun run scripts/seed-v2-fil-instances-ir-fx.ts",

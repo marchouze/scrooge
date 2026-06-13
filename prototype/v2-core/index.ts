@@ -152,3 +152,13 @@ export * from "./control-plane/fleet";
 
 /** @tier R — S11 tenant-scoped functional-seat model (FunctionalSeatProjection, deriveSeatMap, deriveAndAppendAnchorSeats, seatId, roleSlug, assertSeatRosterParity); seats are tenant-scoped so a second tenant's CRO seat never collides with the anchor's */
 export * from "./control-plane/functional-seats";
+
+// --- Tier entitlements (S16) — K/R/C flat-tier packaging --------------------
+
+/** @tier R — S16 K/R/C flat-tier entitlement model (TierEntitlement, tierEntitlements, buildTierEntitlement,
+ * deriveK/R/CCapabilities, ANCHOR_TIER, isAnchorTier, SUBSCRIPTION_MODEL_FLAT_TIER) + C-tier go-live
+ * preconditions (CTierGoLivePrecondition, SECOND_PROVIDER_FALLBACK_PRECONDITION, C_TIER_GO_LIVE_PRECONDITIONS,
+ * isCTierGoLiveReady). Capabilities are DERIVED from the S5 released-surface manifest — the tier boundary IS
+ * the surface boundary. Flat-subscription marker only; NO price fields (selling gated). The packaging model
+ * is itself R-visible. Authority: D-V2-WAVE4-COMMERCIAL-POSTURE; D-V2-BBAAS-TIER-STRUCTURE. */
+export * from "./tier-entitlement";
