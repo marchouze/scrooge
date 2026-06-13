@@ -168,6 +168,14 @@ export { POSTURE_EVENT_TYPES_REGISTRY } from "./posture";
 // APPLIES_WHEN evaluator) and records the verdict as events.
 // Authority: D-W8-POSTURE-REGISTER-SLICE-1; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
 export { APPLICABILITY_ASSESSMENT_EVENT_TYPES_REGISTRY } from "./applicability-assessment";
+// WS-V2-BBAAS S9 — DecisionImpactSweepRequested/Assessed.
+// Decision-impact sweep lifecycle: when a Decision lands, an automated sweep
+// computes which downstream artefacts (postures / FIL-Models / obligations /
+// procedures) it touches — via the citation graph + S3 APPLIES_WHEN scope
+// overlap — and records the impact set + recommended actions as events. The
+// governance keystone of the W8 layer (structured-first; S9 recommends, agents
+// dispose). Authority: D-W8-DECISION-IMPACT-SWEEP; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
+export { DECISION_IMPACT_SWEEP_EVENT_TYPES_REGISTRY } from "./decision-impact-sweep";
 // D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
 // events (Defined / Classified / Decomposed / Reconstituted).
 // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
@@ -262,6 +270,7 @@ import { COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY } from "./counterparty-cr
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 import { CREDIT_LIMIT_EVENT_TYPES_REGISTRY } from "./credit-limit";
 import { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillation";
+import { DECISION_IMPACT_SWEEP_EVENT_TYPES_REGISTRY } from "./decision-impact-sweep";
 import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
 import { FIL_INSTANCES_EVENT_TYPES_REGISTRY } from "./fil-instances";
 import { FIL_MODELS_EVENT_TYPES_REGISTRY } from "./fil-models";
@@ -488,6 +497,11 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // obligation / regulatory-change binds, via the S3 APPLIES_WHEN evaluator).
   // Authority: D-W8-POSTURE-REGISTER-SLICE-1; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
   ...APPLICABILITY_ASSESSMENT_EVENT_TYPES_REGISTRY,
+  // WS-V2-BBAAS S9 — DecisionImpactSweepRequested/Assessed.
+  // Decision-impact sweep lifecycle (computes which downstream artefacts a
+  // Decision touches via the citation graph + S3 APPLIES_WHEN scope overlap).
+  // Authority: D-W8-DECISION-IMPACT-SWEEP; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
+  ...DECISION_IMPACT_SWEEP_EVENT_TYPES_REGISTRY,
   // D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
   // events (Defined / Classified / Decomposed / Reconstituted).
   // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
