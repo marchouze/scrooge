@@ -93,6 +93,14 @@ export * from "./fil-instances";
  * predicate; PostureRegister projection. Authority: D-W8-POSTURE-REGISTER-SLICE-1. */
 export * from "./posture";
 
+// --- Applicability-assessment lifecycle (S8) -------------------------------
+
+/** @tier R — ApplicabilityAssessmentRequested / Performed / Concluded event types; the pure
+ * assessment engine (assessApplicability) reusing the S3 APPLIES_WHEN evaluator; AssessmentRegister
+ * projection (getAssessment / listAssessments / assessmentsForSubject). Authority:
+ * D-W8-POSTURE-REGISTER-SLICE-1; D-V2-BBAAS-BLUEPRINT-SYNTHESIS. */
+export * from "./applicability";
+
 // --- Control-plane (Wave 1, S1) — fleet store --------------------------------
 
 /** @tier K — control-plane event shapes (TenantRegistered, TenantSurfaceGranted, TenantUpgradeLedgerEntry, TenantMeterEvent); anchor-bank only */

@@ -97,6 +97,14 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   PostureActivated: "governance",
   PostureDeactivated: "governance",
   PostureRevised: "governance",
+  // WS-V2-BBAAS S8 — applicability-assessment lifecycle. A real regulatory
+  // assessment: it determines which contexts (entities / products /
+  // jurisdictions) a posture / obligation / regulatory-change binds, recorded
+  // as a typed, replayable verdict (not simulated market activity). Authority:
+  // D-W8-POSTURE-REGISTER-SLICE-1; D-V2-BBAAS-BLUEPRINT-SYNTHESIS; Principle 1.
+  ApplicabilityAssessmentRequested: "governance",
+  ApplicabilityAssessmentPerformed: "governance",
+  ApplicabilityAssessmentConcluded: "governance",
   // CCO-published best-execution tolerance schedule — a conduct-committee
   // governance record (real seat decision, not simulated market activity).
   // Authority: D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH; FAIS §16.
