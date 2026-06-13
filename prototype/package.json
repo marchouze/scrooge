@@ -27,6 +27,7 @@
     "file:atlas-v2-s2-tenant-axis-design-note": "bun run scripts/file-atlas-v2-s2-tenant-axis-design-note.ts",
     "file:vera-v2-s5-released-surface-gate-design-note": "bun run scripts/file-vera-v2-s5-released-surface-gate-design-note.ts",
     "file:atlas-v2-s16-tier-entitlement-design-note": "bun run scripts/file-atlas-v2-s16-tier-entitlement-design-note.ts",
+    "file:atlas-v2-s15-onboarding-design-note": "bun run scripts/file-atlas-v2-s15-onboarding-design-note.ts",
     "file:rohan-v2-bbaas-w4-model-library": "bun run scripts/file-rohan-v2-bbaas-w4-model-library.ts",
     "file:atlas-v2-bbaas-blueprint": "bun run scripts/file-atlas-v2-bbaas-blueprint.ts",
     "file:atlas-v2-bbaas-w9-fil": "bun run scripts/file-atlas-v2-bbaas-w9-fil.ts",
