@@ -28,4 +28,12 @@ export const OWEN_HANDLER_METADATA: readonly HandlerMetadata[] = [
       "AgentEscalation",
     ],
   }),
+  // owen:decision-impact-sweep — the W8 S9 auto-trigger. Fires on every appended
+  // `Decision`; the handler sweeps only those in phase `approved`. Closes the
+  // loop "when a Decision lands, an automated sweep computes its impact".
+  // Idempotent (bus BusDispatched + handler sweep-level guard) → replay/
+  // migration-safe. Authority: D-W8-DECISION-IMPACT-SWEEP.
+  entry("Owen", "decision-impact-sweep", "event-driven", {
+    subscribesTo: ["Decision"],
+  }),
 ];

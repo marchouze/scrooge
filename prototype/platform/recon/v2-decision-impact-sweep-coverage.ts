@@ -3,8 +3,16 @@
 // `recon:v2-decision-impact-sweep-coverage` — the structural gate for the V2 S9
 // decision-impact sweep lifecycle (W8 governance keystone).
 //
-// ADVISORY in S9 (exits 0 unless a HARD structural error is found). Becomes
-// enforcing-ready as the sweep population grows past the baseline-forward set.
+// ENFORCING as of the W8 auto-trigger landing (the auto-trigger
+// `runtime/agents/owen-decision-impact-sweep.ts` now fires the sweep on every
+// approved Decision; the S9-merge → trigger-landing window was backfilled in
+// the same PR via `scripts/backfill-v2-decision-impact-sweeps.ts`). The
+// coverage assertion (4) is now `fail`-severity: a post-baseline approved
+// Decision with no sweep is a HARD finding. Orphan-IMPACT findings (assertion
+// 3) stay `warn`/`info` because obligation/procedure refs are not resolvable
+// from the v2 registers this gate reads (no false positives on cross-register
+// refs). The pilot-absence note stays `info` (a clean/unseeded CI runner
+// legitimately holds no pilot seed).
 //
 // Assertions:
 //   1. No fold violations (orphan Assessed — a DecisionImpactAssessed with no
@@ -24,8 +32,9 @@
 //   4. Coverage: every `Decision` event since the BASELINE that is in an
 //      actionable phase (`approved`) has at least one sweep over it. A
 //      post-baseline approved decision with no sweep is an orphan-decision
-//      finding (advisory in S9 — the population is built baseline-forward).
-//                                                                       [warn]
+//      finding. ENFORCING: the auto-trigger sweeps every approved Decision
+//      forward and the merge-window was backfilled, so a gap here is a real
+//      regression in the W8 loop.                                       [fail]
 //
 // BASELINE: D-W8-DECISION-IMPACT-SWEEP was CEO-approved 2026-06-13. S9 is a
 // baseline-forward + pilot capability (out of scope: back-sweeping the entire
@@ -250,8 +259,8 @@ export function run(): ReconResult {
     if (register.sweepsForDecision(d.decisionId).length === 0) {
       violations.push({
         subject: d.decisionId,
-        message: `orphan decision: approved on/after baseline ${BASELINE_AS_OF} (as_of ${d.asOf.slice(0, 10)}) but has no decision-impact sweep`,
-        severity: "warn",
+        message: `orphan decision: approved on/after baseline ${BASELINE_AS_OF} (as_of ${d.asOf.slice(0, 10)}) but has no decision-impact sweep — the W8 auto-trigger should have swept it (or backfill via scripts/backfill-v2-decision-impact-sweeps.ts)`,
+        severity: "fail",
       });
     }
   }
