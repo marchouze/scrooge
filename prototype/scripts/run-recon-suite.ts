@@ -93,6 +93,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // v2-core seam resolves through the one shared registry; no ad-hoc per-seam
     // singleton. Authority: D-FIL-SHARED-ALIAS-REGISTRY.
     "recon:v2-alias-registry-conformance",
+    // WS-V2-BBAAS S10 — tenant-axis ENFORCEMENT (the S2 dark→enforced flip):
+    // scoped reads isolate (synthetic cross-tenant-bleed case caught, non-vacuous),
+    // routing fails closed on unknown tenant, no cross-tenant write. ENFORCING.
+    // Authority: D-V2-TENANCY-ARCHITECTURE.
+    "recon:v2-tenant-isolation",
     "recon:dashboard",
     "recon:wall-clock-callsite-coverage",
     "recon:decisions-events-only",
@@ -241,6 +246,12 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // ok=true (advisory) unless store is absent; CI never fails on this alone.
     // Authority: D-V2-BBAAS-BLUEPRINT-SYNTHESIS; D-MODEL-BINDING-CONTRACT-V1.
     "recon:v2-standing-data-seed-parity",
+    // WS-V2-BBAAS S10 — advisory gate: anchor migration rehearsal parity
+    // (scratch-only). Asserts byte-equivalence + projection parity of a
+    // scratch-migrated per-tenant store vs the source, and that the live store
+    // was never written. Advisory — the live cutover is a separate gated
+    // decision. Authority: D-V2-TENANCY-ARCHITECTURE.
+    "recon:v2-anchor-migration-rehearsal",
   ],
 };
 
