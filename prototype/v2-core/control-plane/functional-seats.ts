@@ -312,12 +312,17 @@ export function deriveAndAppendAnchorSeats(
     readonly tenantId?: string;
     readonly rosterPath?: string;
     readonly rosterPersonas?: readonly RosterPersona[];
-    readonly registeredAt?: string;
-  } = {},
+    // Required: the caller (a seed script / handler with clock access) supplies
+    // the timestamp. v2-core must not read the wall clock (no clock-abstraction
+    // import crosses the no-v1-import boundary), so there is no default here —
+    // this keeps the package free of `Date.now()`/`new Date()` callsites
+    // (wall-clock-callsite ratchet, P1/P3 clock discipline).
+    readonly registeredAt: string;
+  },
 ): DerivedSeatMap {
   const tenantId = opts.tenantId ?? ANCHOR_TENANT_ID;
   const personas = opts.rosterPersonas ?? loadRoster(opts.rosterPath);
-  const registeredAt = opts.registeredAt ?? new Date().toISOString();
+  const registeredAt = opts.registeredAt;
   const map = deriveSeatMap(personas, tenantId, registeredAt);
   for (const seat of map.seats) {
     store.append(makeFunctionalSeatRegisteredEvent(seat));
