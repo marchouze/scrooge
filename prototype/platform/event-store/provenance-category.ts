@@ -105,6 +105,15 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   ApplicabilityAssessmentRequested: "governance",
   ApplicabilityAssessmentPerformed: "governance",
   ApplicabilityAssessmentConcluded: "governance",
+  // WS-V2-BBAAS S9 — decision-impact sweep lifecycle (W8 governance keystone).
+  // A real governance record: when a board/seat Decision lands, the sweep
+  // computes which downstream artefacts (postures / FIL-Models / obligations /
+  // procedures) it touches and records the impact set + recommended actions as
+  // typed, replayable events — the structured replacement for the prose
+  // follow-on list (not simulated market activity). Authority:
+  // D-W8-DECISION-IMPACT-SWEEP; D-V2-BBAAS-BLUEPRINT-SYNTHESIS; Principle 1.
+  DecisionImpactSweepRequested: "governance",
+  DecisionImpactAssessed: "governance",
   // CCO-published best-execution tolerance schedule — a conduct-committee
   // governance record (real seat decision, not simulated market activity).
   // Authority: D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH; FAIS §16.

@@ -101,6 +101,15 @@ export * from "./posture";
  * D-W8-POSTURE-REGISTER-SLICE-1; D-V2-BBAAS-BLUEPRINT-SYNTHESIS. */
 export * from "./applicability";
 
+// --- Decision-impact sweeps (S9) — W8 governance keystone ------------------
+
+/** @tier R — DecisionImpactSweepRequested / DecisionImpactAssessed event types; the pure
+ * sweep engine (computeDecisionImpact) computing impacted artefacts via the citation graph +
+ * scope overlap (reusing the S3 APPLIES_WHEN evaluator a decision is one S8 subjectKind of);
+ * SweepRegister projection (impactsForDecision / listSweeps / getSweep / sweepsForDecision).
+ * Authority: D-W8-DECISION-IMPACT-SWEEP; D-V2-BBAAS-BLUEPRINT-SYNTHESIS. */
+export * from "./decision-impact";
+
 // --- Control-plane (Wave 1, S1) — fleet store --------------------------------
 
 /** @tier K — control-plane event shapes (TenantRegistered, TenantSurfaceGranted, TenantUpgradeLedgerEntry, TenantMeterEvent); anchor-bank only */
