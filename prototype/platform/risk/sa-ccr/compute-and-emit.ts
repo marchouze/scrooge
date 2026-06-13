@@ -57,7 +57,7 @@ import {
   type SaCcrNettingSet as V2NettingSet,
   type SaCcrReplacementCost as V2Rc,
   type SaCcrTradeSummary as V2TradeSummary,
-  computeSaCcr,
+  computeSaCcrViaAlias,
 } from "../../../v2-core/fil-models/sa-ccr";
 import { eventStore } from "../../composition";
 import { type Money, minor } from "../../core/money";
@@ -224,9 +224,13 @@ export function computeAndEmit(input: ComputeAndEmitInput): ComputeAndEmitResult
       : sourceCollateralFromRegister({ currency: ccy, asOf });
 
   // 3. v2 FIL-Model computation — RC + PFE add-on + EAD over the netting set.
+  //    Resolved through the SA-CCR model alias (the shared FIL alias-registry
+  //    seam): the selection of WHICH validated model computes is swappable
+  //    behind this boundary; the default is the validated v2 `computeSaCcr`, so
+  //    behaviour is unchanged (recon:v2-saccr-parity).
   const v2Ns = v1ToV2NettingSet(input.nettingSet);
   const v2Trades = input.trades.map(v1ToV2Trade);
-  const { rc, ead, addOns } = computeSaCcr({
+  const { rc, ead, addOns } = computeSaCcrViaAlias({
     nettingSet: v2Ns,
     vMtm: vMtmV2,
     collateralHeld: collateralV2,
