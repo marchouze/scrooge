@@ -22,6 +22,7 @@
 import type { z } from "zod";
 import {
   instrumentDimensionAssignedPayload,
+  orgHierarchyEdgeAssignedPayload,
   sliceDefinedPayload,
 } from "../event-types/fil-attribution";
 import { RETENTION_GOVERNANCE_7Y } from "./types";
@@ -65,5 +66,19 @@ export const FIL_ATTRIBUTION_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: sliceDefinedPayload as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "v2-core/fil-attribution/events.ts — SliceDefined",
+  },
+  {
+    type: "OrgHierarchyEdgeAssigned",
+    class: "governance",
+    issuer: "Atlas",
+    subscribers: [...SUBSCRIBERS],
+    // A re-parent (desk move / LE re-parent) is a new edge with its own
+    // effectiveFrom; the org-hierarchy projection folds latest-covering-edge-
+    // wins — the event stream itself is append-only audit.
+    replay: "append-only-audit",
+    retention: RETENTION_GOVERNANCE_7Y,
+    payloadSchema: orgHierarchyEdgeAssignedPayload as unknown as z.ZodType<Record<string, unknown>>,
+    citationsHint: CITATIONS,
+    source: "v2-core/fil-attribution/events.ts — OrgHierarchyEdgeAssigned",
   },
 ];

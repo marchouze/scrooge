@@ -138,6 +138,14 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // Authority: D-FIL-ATTRIBUTION-A1-BUILD; D-METRIC-ATTRIBUTION-DIMENSIONAL.
     "recon:attribution-additivity",
     "recon:attribution-nonadditive-no-sum",
+    // WS-V2-BBAAS A3 — the NON-ADDITIVE proof. attribution-var-diversification:
+    // the VaR `joint-recompute` AttributionMetric re-computes at each node; over
+    // the LIVE standing-NOP book it proves (a) no-sum on the REAL metric, (b)
+    // group VaR < Σ desk VaRs (diversification), (c) group VaR == v1 standing-NOP
+    // VaR (read-only parity), (d) additive FX P&L still rolls up group == Σ desk.
+    // Flat/historyless book downgrades (b)/(c) to info. v1 untouched.
+    // Authority: D-FIL-ATTRIBUTION-A1-BUILD (A3); D-VAR-EXPOSURE-INCLUDES-STANDING-NOP.
+    "recon:attribution-var-diversification",
     // WS-V2-BBAAS S15 — tenant onboarding-readiness (ENFORCING). Every registered
     // tenant is `ready` ONLY when every provisioning step landed (S1 register +
     // S11 seats + S5 surface grant + S14 fleet state) AND its tier preconditions

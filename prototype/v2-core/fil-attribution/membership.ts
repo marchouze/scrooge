@@ -44,6 +44,15 @@
 // below is what keeps one tenant's strategy/portfolio tags out of another's
 // projection. Cross-tenant aggregation remains forbidden until the deferred
 // decision lands.
+//
+// A3 FINALISES #4 IN CODE (no remaining TODO): `portfolio` is now folded as a
+// MULTI-VALUED set — an instance carries EVERY portfolio tag whose latest
+// covering assignment is effective at asOf (re-assignable per-tag,
+// latest-covering-event-wins). The A1/A2 scaffold carried only the latest single
+// tag and left the multi-tag fold as a #4 TODO; that is removed. `strategy`
+// stays single-valued (an instance has one strategy at a time). Both are
+// tenant-scoped per the decision; the multi-tag fold does NOT enable any
+// cross-tenant aggregation (still forbidden).
 // ────────────────────────────────────────────────────────────────────────────
 //
 // Authority: D-FIL-ATTRIBUTION-A1-BUILD; D-METRIC-ATTRIBUTION-DIMENSIONAL;
@@ -56,6 +65,14 @@ import type { FilInstanceUrn } from "../fil-core/urn";
 import { type AttributionDimensions, isOrganisationalDimension } from "./dimensions";
 import type { ResolvedMember } from "./engine";
 import type { InstrumentDimensionAssignedPayload } from "./events";
+import {
+  CONSOLIDATED_GROUP_AXIS,
+  type ConsolidatedGroupAxis,
+  ORG_HIERARCHY_LADDER,
+  type OrgLadderAxis,
+  isOrgLadderAxis,
+  parentAxisOf,
+} from "./hierarchy";
 import { type DimensionPredicate, type Slice, matchesSlice } from "./slice";
 
 // ---------------------------------------------------------------------------
@@ -93,13 +110,34 @@ export function foldOrganisationalDimensions(
   tenantId: string,
   asOf: Instant,
 ): Map<string, Partial<AttributionDimensions>> {
-  // instance → dim → { value, effectiveFrom } (latest-covering wins)
+  // SINGLE-VALUED org dims (bookingAgent / book / desk / strategy): instance →
+  // dim → { value, effectiveFrom } (latest-covering-event-wins).
   const winning = new Map<string, Map<string, { value: string; effectiveFrom: string }>>();
+
+  // MULTI-VALUED `portfolio` (#4, ENCODED — not deferred): an instance can sit in
+  // MANY portfolios at once (a hedge set, a strategy book, a desk roll-up are
+  // overlapping groupings). Each distinct portfolio TAG is its own membership,
+  // re-assignable independently with latest-covering-event-wins PER TAG:
+  //   instance → portfolioTag → { effectiveFrom } (the latest covering assignment
+  //   of THAT tag). The instance's `portfolio` snapshot is the SET of tags whose
+  //   latest covering assignment is effective at asOf. This is the multi-tag fold
+  //   the A1/A2 scaffold deferred; it is now the encoded semantics.
+  const portfolios = new Map<string, Map<string, { effectiveFrom: string }>>();
 
   for (const ev of events) {
     if (ev.tenantId !== tenantId) continue; // cross-tenant bleed — drop
     if (!isOrganisationalDimension(ev.dimension as never)) continue; // economic — ignore
     if (ev.effectiveFrom > asOf) continue; // not yet effective
+
+    if (ev.dimension === "portfolio") {
+      const perInstance = portfolios.get(ev.instanceUrn) ?? new Map();
+      const prev = perInstance.get(ev.value);
+      if (!prev || ev.effectiveFrom >= prev.effectiveFrom) {
+        perInstance.set(ev.value, { effectiveFrom: ev.effectiveFrom });
+      }
+      portfolios.set(ev.instanceUrn, perInstance);
+      continue;
+    }
 
     const perInstance = winning.get(ev.instanceUrn) ?? new Map();
     const prev = perInstance.get(ev.dimension);
@@ -110,12 +148,17 @@ export function foldOrganisationalDimensions(
   }
 
   const out = new Map<string, Partial<AttributionDimensions>>();
-  for (const [instance, dims] of winning) {
+  const instanceUrns = new Set<string>([...winning.keys(), ...portfolios.keys()]);
+  for (const instance of instanceUrns) {
     const snap: Record<string, unknown> = {};
-    for (const [dim, picked] of dims) {
-      // portfolio is multi-valued; A1 carries the latest single tag (the
-      // multi-tag fold is part of open question #4 — see file header TODO).
-      snap[dim] = dim === "portfolio" ? [picked.value] : picked.value;
+    for (const [dim, picked] of winning.get(instance) ?? new Map()) {
+      snap[dim] = picked.value;
+    }
+    const tags = portfolios.get(instance);
+    if (tags && tags.size > 0) {
+      // The instance's portfolio membership is the SET of effective tags (sorted
+      // for a deterministic snapshot — slice predicates use `includes`).
+      snap.portfolio = [...tags.keys()].sort();
     }
     out.set(instance, snap as Partial<AttributionDimensions>);
   }
@@ -145,6 +188,7 @@ export function membersOf(
   instances: readonly InstanceFacetSnapshot[],
   assignments: readonly InstrumentDimensionAssignedPayload[],
   asOf: Instant,
+  rollUp?: RollUpContext,
 ): ResolvedMember[] {
   const orgDims = foldOrganisationalDimensions(assignments, slice.tenantId, asOf);
 
@@ -159,7 +203,7 @@ export function membersOf(
 
     if (!matchesSlice(combined, slice.where as readonly DimensionPredicate[])) continue;
 
-    const groupKey = groupKeyForLevel(slice, combined);
+    const groupKey = groupKeyForLevel(slice, combined, asOf, rollUp);
     const member: ResolvedMember = {
       instanceUrn: inst.instanceUrn,
       stage: inst.stage,
@@ -172,15 +216,131 @@ export function membersOf(
   return out;
 }
 
-/**
- * The group key a member rolls up to for the slice's target level. For a
- * dimension level it is that dimension's value; for `leaf`/`group` it is
- * undefined (the engine puts everything in one cell). A1 supports flat
- * grouping; hierarchy roll-up (LE-tree descendants) is wired in A3.
- */
-function groupKeyForLevel(slice: Slice, dims: AttributionDimensions): string | undefined {
-  if (slice.level === "leaf" || slice.level === "group") return undefined;
-  const v = (dims as Record<string, unknown>)[slice.level];
-  if (v === undefined || v === null) return undefined;
-  return Array.isArray(v) ? (v as unknown[]).map(String).join(",") : String(v);
+// ---------------------------------------------------------------------------
+// Hierarchy roll-up context (A3) — the org-ladder ancestor resolver
+//
+// To roll a member up to a target org level ABOVE the dimension it itself
+// carries (e.g. a member tagged `desk` rolled up to its `legalEntity`, or every
+// member rolled to the consolidated `group`), the membership query needs the
+// org hierarchy. A1/A2 callers pass no context → flat grouping (a member's own
+// dimension value is its group key). A3 callers pass a `RollUpContext`:
+//
+//   parentOf(axis, node, asOf) — the parent node of `node` (which sits on org
+//     axis `axis`) one level up the ladder, or null at the consolidated-group
+//     root. Supplied by `orgHierarchy(...).parentOf`.
+//   consolidatedGroupRoot      — the tenant's LE-tree root (the `group` level
+//     target). Every member rolls up to it (consolidation tops out at the
+//     tenant — the hard outer partition).
+// ---------------------------------------------------------------------------
+
+export interface RollUpContext {
+  /** Parent node of `node` (on org axis `axis`) one ladder level up, or null. */
+  parentOf(axis: OrgLadderAxis, node: string, asOf: Instant): string | null;
+  /** The tenant's consolidated-group root node (the `group` roll-up target). */
+  readonly consolidatedGroupRoot: string;
 }
+
+/**
+ * The group key a member rolls up to for the slice's target level.
+ *
+ *   leaf                      → undefined (no roll-up; the engine cells per
+ *                               member individually — handled upstream).
+ *   group                     → the consolidated-group root (every member rolls
+ *                               to the tenant's LE-tree root; A3 needs a
+ *                               `RollUpContext` to know the root, else the flat
+ *                               single-cell "ALL" behaviour — A1/A2 unchanged).
+ *   a flat dimension (currency, productType, …)
+ *                             → that dimension's own value (flat grouping).
+ *   an org-ladder dimension (book, desk, legalEntity, bookingAgent)
+ *                             → if the member carries that dimension, its value;
+ *                               otherwise the ANCESTOR at that axis, resolved by
+ *                               climbing the org ladder via `rollUp.parentOf`
+ *                               (the A3 hierarchy roll-up).
+ *
+ * Without a `rollUp` context the behaviour is exactly A1/A2's flat grouping (a
+ * member's own dimension value, or undefined) — so A1/A2 call-sites are
+ * unaffected.
+ */
+function groupKeyForLevel(
+  slice: Slice,
+  dims: AttributionDimensions,
+  asOf: Instant,
+  rollUp?: RollUpContext,
+): string | undefined {
+  if (slice.level === "leaf") return undefined;
+
+  if (slice.level === "group") {
+    // The consolidated-group cell: every member rolls up to the tenant's LE-tree
+    // root. Without a roll-up context the engine keeps the flat single-cell
+    // ("ALL") behaviour (A1/A2 unchanged).
+    return rollUp?.consolidatedGroupRoot;
+  }
+
+  // A flat (non-org-ladder) dimension: the member's own value is the cell key.
+  if (!isOrgLadderAxis(slice.level)) {
+    const v = (dims as Record<string, unknown>)[slice.level];
+    if (v === undefined || v === null) return undefined;
+    return Array.isArray(v) ? (v as unknown[]).map(String).join(",") : String(v);
+  }
+
+  // An org-ladder dimension target. If the member carries that dimension, that
+  // value is the cell key (flat grouping). Otherwise — and when a hierarchy is
+  // supplied — climb the ladder from the lowest org dimension the member DOES
+  // carry up to the target axis.
+  const ownValue = (dims as Record<string, unknown>)[slice.level];
+  if (ownValue !== undefined && ownValue !== null) {
+    return Array.isArray(ownValue)
+      ? (ownValue as unknown[]).map(String).join(",")
+      : String(ownValue);
+  }
+  if (!rollUp) return undefined; // flat grouping (A1/A2): no ancestor resolution
+
+  return climbToAxis(dims, slice.level, asOf, rollUp);
+}
+
+/**
+ * Climb the org ladder from the lowest org dimension the member carries up to
+ * `targetAxis`, returning the ancestor node at that axis (or undefined if the
+ * chain breaks before reaching it). Pure walk over `rollUp.parentOf`.
+ */
+function climbToAxis(
+  dims: AttributionDimensions,
+  targetAxis: OrgLadderAxis,
+  asOf: Instant,
+  rollUp: RollUpContext,
+): string | undefined {
+  // Find the lowest org-ladder axis the member carries a value for (child-first).
+  let currentAxis: OrgLadderAxis | undefined;
+  let currentNode: string | undefined;
+  for (const axis of ORG_HIERARCHY_LADDER) {
+    const v = (dims as Record<string, unknown>)[axis];
+    if (v !== undefined && v !== null) {
+      currentAxis = axis;
+      currentNode = Array.isArray(v) ? String((v as unknown[])[0]) : String(v);
+      break;
+    }
+  }
+  if (currentAxis === undefined || currentNode === undefined) return undefined;
+
+  // Climb until we reach the target axis or run off the ladder.
+  let guard = 0;
+  while (currentAxis !== undefined && currentNode !== undefined && guard++ < 16) {
+    if (currentAxis === targetAxis) return currentNode;
+    const parent = rollUp.parentOf(currentAxis, currentNode, asOf);
+    if (parent === null) return undefined; // hit the root before the target axis
+    const nextAxis = parentAxisOf(currentAxis);
+    if (nextAxis === null || nextAxis === CONSOLIDATED_GROUP_AXIS) {
+      // Climbed to the group terminal without hitting the target org axis.
+      return targetAxis === (CONSOLIDATED_GROUP_AXIS as unknown as OrgLadderAxis)
+        ? parent
+        : undefined;
+    }
+    currentAxis = nextAxis as OrgLadderAxis;
+    currentNode = parent;
+  }
+  return undefined;
+}
+
+// Re-export the hierarchy axis helpers commonly used alongside membership.
+export { CONSOLIDATED_GROUP_AXIS };
+export type { ConsolidatedGroupAxis };
