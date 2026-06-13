@@ -33,6 +33,7 @@
     "file:atlas-v2-repo-strategy-reexamination": "bun run scripts/file-atlas-v2-repo-strategy-reexamination.ts",
     "file:atlas-fil-framework-unification": "bun run scripts/file-atlas-fil-framework-unification.ts",
     "file:atlas-v2-s1-control-plane-store": "bun run scripts/file-atlas-v2-s1-control-plane-store.ts",
+    "file:owen-v2-s11-functional-seats": "bun run scripts/file-owen-v2-s11-functional-seats.ts",
     "record:d-fil-framework-unification": "bun run scripts/record-d-fil-framework-unification.ts",
     "record:d-v2-repo-strategy-reexamination": "bun run scripts/record-d-v2-repo-strategy-reexamination.ts",
     "record:d-v2-bbaas-w9-fil": "bun run scripts/record-d-v2-bbaas-w9-fil.ts",

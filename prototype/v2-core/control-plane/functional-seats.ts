@@ -53,8 +53,8 @@ import {
   type SeatType,
   functionalSeatRegisteredPayloadSchema,
 } from "./events";
-import { ANCHOR_TENANT_ID } from "./tenant";
 import type { ControlPlaneStore, CpEvent } from "./store";
+import { ANCHOR_TENANT_ID } from "./tenant";
 
 // ---------------------------------------------------------------------------
 // Seat-key construction

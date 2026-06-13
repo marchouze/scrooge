@@ -52,8 +52,12 @@ describe("roleSlug + seatId", () => {
   });
 
   it("embeds the tenant in the seat key", () => {
-    expect(seatId("tenant:za-bank", "Chief Risk Officer")).toBe("tenant:za-bank:seat:chief-risk-officer");
-    expect(seatId("tenant:uk-bank", "Chief Risk Officer")).toBe("tenant:uk-bank:seat:chief-risk-officer");
+    expect(seatId("tenant:za-bank", "Chief Risk Officer")).toBe(
+      "tenant:za-bank:seat:chief-risk-officer",
+    );
+    expect(seatId("tenant:uk-bank", "Chief Risk Officer")).toBe(
+      "tenant:uk-bank:seat:chief-risk-officer",
+    );
   });
 });
 
@@ -156,7 +160,10 @@ describe("deriveAndAppendAnchorSeats — against the REAL canonical roster", () 
   it("resolves the anchor CRO seat occupied by Helena", () => {
     const store = openControlPlaneStore(":memory:");
     try {
-      deriveAndAppendAnchorSeats(store, { rosterPersonas: loadRoster(), registeredAt: REGISTERED_AT });
+      deriveAndAppendAnchorSeats(store, {
+        rosterPersonas: loadRoster(),
+        registeredAt: REGISTERED_AT,
+      });
       const proj = buildFunctionalSeatProjection(store);
       const cro = proj.getSeat("tenant:za-bank:seat:chief-risk-officer");
       expect(cro?.occupant).toBe("Helena");
@@ -203,12 +210,12 @@ describe("the multi-tenant property — anchor vs hypothetical second tenant", (
       expect(ukCro?.occupant).toBe("Fiona");
 
       // Each tenant's seat list is isolated to that tenant.
-      expect(proj.seatsForTenant(ANCHOR_TENANT_ID).every((s) => s.tenantId === ANCHOR_TENANT_ID)).toBe(
-        true,
-      );
-      expect(proj.seatsForTenant(HYPOTHETICAL_UK).every((s) => s.tenantId === HYPOTHETICAL_UK)).toBe(
-        true,
-      );
+      expect(
+        proj.seatsForTenant(ANCHOR_TENANT_ID).every((s) => s.tenantId === ANCHOR_TENANT_ID),
+      ).toBe(true);
+      expect(
+        proj.seatsForTenant(HYPOTHETICAL_UK).every((s) => s.tenantId === HYPOTHETICAL_UK),
+      ).toBe(true);
       expect(proj.seatsForTenant(HYPOTHETICAL_UK)).toHaveLength(1);
 
       // Anchor parity unaffected by the second tenant's seats.
@@ -232,15 +239,25 @@ describe("assertSeatRosterParity — sabotage-proof (non-vacuous)", () => {
 
   it("catches a missing seat", () => {
     const seats = anchorSeatsFrom(SYNTH_ROSTER).slice(1); // drop Helena's seat
-    const { violations } = assertSeatRosterParity(SYNTH_ROSTER, seats, ANCHOR_TENANT_ID, REGISTERED_AT);
+    const { violations } = assertSeatRosterParity(
+      SYNTH_ROSTER,
+      seats,
+      ANCHOR_TENANT_ID,
+      REGISTERED_AT,
+    );
     expect(violations.some((v) => v.message.includes("NO registered anchor seat"))).toBe(true);
   });
 
   it("catches a drifted seatType", () => {
-    const seats = anchorSeatsFrom(SYNTH_ROSTER);
-    const idx = seats.findIndex((s) => s.occupant === "Helena");
-    seats[idx] = { ...seats[idx]!, seatType: "engineering" }; // drift from roster governance
-    const { violations } = assertSeatRosterParity(SYNTH_ROSTER, seats, ANCHOR_TENANT_ID, REGISTERED_AT);
+    const seats = anchorSeatsFrom(SYNTH_ROSTER).map((s) =>
+      s.occupant === "Helena" ? { ...s, seatType: "engineering" as const } : s,
+    ); // drift Helena from roster governance → engineering
+    const { violations } = assertSeatRosterParity(
+      SYNTH_ROSTER,
+      seats,
+      ANCHOR_TENANT_ID,
+      REGISTERED_AT,
+    );
     expect(violations.some((v) => v.message.includes("seatType"))).toBe(true);
   });
 
@@ -255,7 +272,12 @@ describe("assertSeatRosterParity — sabotage-proof (non-vacuous)", () => {
       occupant: "Ghost",
       registeredAt: REGISTERED_AT,
     });
-    const { violations } = assertSeatRosterParity(SYNTH_ROSTER, seats, ANCHOR_TENANT_ID, REGISTERED_AT);
+    const { violations } = assertSeatRosterParity(
+      SYNTH_ROSTER,
+      seats,
+      ANCHOR_TENANT_ID,
+      REGISTERED_AT,
+    );
     expect(violations.some((v) => v.message.includes("Orphan anchor seat"))).toBe(true);
   });
 
