@@ -7,3 +7,4 @@
 export * from "./events";
 export * from "./store";
 export * from "./projection";
+export * from "./fleet";

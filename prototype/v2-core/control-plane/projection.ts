@@ -65,6 +65,31 @@ export interface MeteringWindowResult {
   readonly quantity: number;
 }
 
+/**
+ * A single folded metering accumulator row — one `(tenant, metric, window)`
+ * with the summed quantity. Exposed read-only so the fleet layer (S14) can
+ * aggregate metering across metrics/tenants without re-reading the store.
+ */
+export interface MeterEntry {
+  readonly tenantId: string;
+  readonly metricKey: string;
+  readonly windowStart: string;
+  readonly windowEnd: string;
+  readonly quantity: number;
+}
+
+/**
+ * A single upgrade-ledger entry as folded from the store. Exposed read-only so
+ * the fleet layer (S14) can build per-tenant upgrade history + version-drift
+ * detection without re-reading the store.
+ */
+export interface UpgradeEntry {
+  readonly tenantId: string;
+  readonly fromVersion: string;
+  readonly toVersion: string;
+  readonly appliedAt: string;
+}
+
 // ---------------------------------------------------------------------------
 // Internal mutable state
 // ---------------------------------------------------------------------------
@@ -101,6 +126,8 @@ interface MeterAccumulator {
 export class ControlPlaneProjection {
   private readonly tenants = new Map<string, TenantState>();
   private readonly metering = new Map<string, MeterAccumulator>();
+  // Upgrade ledger entries in store (sequence) order, per tenant.
+  private readonly upgrades = new Map<string, UpgradeEntry[]>();
   private readonly store: ControlPlaneStore;
 
   constructor(store: ControlPlaneStore) {
@@ -137,6 +164,29 @@ export class ControlPlaneProjection {
     return this.metering.get(key)?.quantity ?? 0;
   }
 
+  /**
+   * All folded metering accumulator rows (one per `(tenant, metric, window)`),
+   * read-only. The fleet layer (S14) aggregates these; callers MUST NOT
+   * mutate the returned rows.
+   */
+  meterEntries(): readonly MeterEntry[] {
+    return [...this.metering.values()].map((m) => ({
+      tenantId: m.tenantId,
+      metricKey: m.metricKey,
+      windowStart: m.windowStart,
+      windowEnd: m.windowEnd,
+      quantity: m.quantity,
+    }));
+  }
+
+  /**
+   * Upgrade-ledger history for a tenant, in store (sequence) order — oldest
+   * first. Returns an empty array when the tenant has no upgrade entries.
+   */
+  upgradeHistory(tenantId: string): readonly UpgradeEntry[] {
+    return this.upgrades.get(tenantId)?.slice() ?? [];
+  }
+
   // ---- Fold ---------------------------------------------------------------
 
   /**
@@ -147,6 +197,7 @@ export class ControlPlaneProjection {
   rebuild(): void {
     this.tenants.clear();
     this.metering.clear();
+    this.upgrades.clear();
     this.fold();
   }
 
@@ -186,6 +237,18 @@ export class ControlPlaneProjection {
         const state = this.tenants.get(p.tenantId);
         if (state) {
           state.platformVersion = p.toVersion;
+        }
+        const entry: UpgradeEntry = {
+          tenantId: p.tenantId,
+          fromVersion: p.fromVersion,
+          toVersion: p.toVersion,
+          appliedAt: p.appliedAt,
+        };
+        const history = this.upgrades.get(p.tenantId);
+        if (history) {
+          history.push(entry);
+        } else {
+          this.upgrades.set(p.tenantId, [entry]);
         }
         break;
       }
