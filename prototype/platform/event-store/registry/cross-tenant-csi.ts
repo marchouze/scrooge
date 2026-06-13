@@ -37,8 +37,7 @@ const CITATIONS = [
   "P2-SINGLE-GRAPH-DISCIPLINE",
 ] as const;
 
-const SOURCE =
-  "brief:atlas:v2-s12-cross-tenant-learning-gate-csi-blocklist-:2026-06-13";
+const SOURCE = "brief:atlas:v2-s12-cross-tenant-learning-gate-csi-blocklist-:2026-06-13";
 
 export const CROSS_TENANT_CSI_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
@@ -61,9 +60,7 @@ export const CROSS_TENANT_CSI_EVENT_TYPES: readonly EventTypeMetadata[] = [
     subscribers: ["Zara", "Vera", "Atlas", "Owen", "Scrooge"],
     replay: "latest-wins-per-key",
     retention: RETENTION_GOVERNANCE_7Y,
-    payloadSchema: csiCategoryRetiredPayloadSchema as unknown as z.ZodType<
-      Record<string, unknown>
-    >,
+    payloadSchema: csiCategoryRetiredPayloadSchema as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: SOURCE,
   },

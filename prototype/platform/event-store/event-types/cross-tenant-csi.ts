@@ -84,7 +84,10 @@ export function makeCsiCategoryRegistered(args: {
   return makeCsiEvent({
     ...args,
     type: "CsiCategoryRegistered",
-    payload: csiCategoryRegisteredPayloadSchema.parse(args.payload) as unknown as Record<string, unknown>,
+    payload: csiCategoryRegisteredPayloadSchema.parse(args.payload) as unknown as Record<
+      string,
+      unknown
+    >,
   });
 }
 
@@ -99,7 +102,10 @@ export function makeCsiCategoryRetired(args: {
   return makeCsiEvent({
     ...args,
     type: "CsiCategoryRetired",
-    payload: csiCategoryRetiredPayloadSchema.parse(args.payload) as unknown as Record<string, unknown>,
+    payload: csiCategoryRetiredPayloadSchema.parse(args.payload) as unknown as Record<
+      string,
+      unknown
+    >,
   });
 }
 
@@ -132,7 +138,10 @@ export function makeCrossTenantLearningBlocked(args: {
   return makeCsiEvent({
     ...args,
     type: "CrossTenantLearningBlocked",
-    payload: crossTenantLearningBlockedPayloadSchema.parse(args.payload) as unknown as Record<string, unknown>,
+    payload: crossTenantLearningBlockedPayloadSchema.parse(args.payload) as unknown as Record<
+      string,
+      unknown
+    >,
   });
 }
 

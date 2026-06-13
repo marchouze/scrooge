@@ -39,11 +39,8 @@ import {
   CSI_SEED_CATEGORIES,
   type CsiBlocklistEventPayload,
 } from "../../v2-core/cross-tenant/csi-blocklist";
-import {
-  type LearningFlow,
-  screenCrossTenantLearningFlow,
-} from "../../v2-core/cross-tenant/gate";
-import { CsiBlocklist, foldCsiBlocklist } from "../../v2-core/cross-tenant/projection";
+import { type LearningFlow, screenCrossTenantLearningFlow } from "../../v2-core/cross-tenant/gate";
+import { type CsiBlocklist, foldCsiBlocklist } from "../../v2-core/cross-tenant/projection";
 import { eventStore } from "../composition";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
@@ -80,7 +77,7 @@ function readCsiBlocklist(): CsiBlocklist {
         lawBasis: c.lawBasis,
         registeredBy: "Zara",
         citations: ["D-W7-VENDOR-ENTITY-STRUCTURE"],
-      })) as CsiBlocklistEventPayload[],
+      })) as unknown as CsiBlocklistEventPayload[],
     );
   }
   return folded;

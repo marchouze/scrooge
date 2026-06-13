@@ -18,9 +18,9 @@ import {
   CSI_SEED_CATEGORIES,
   type CsiBlocklistEventPayload,
 } from "../../v2-core/cross-tenant/csi-blocklist";
-import type { CitationRef } from "../../v2-core/fil-core/primitives";
 import { type LearningFlow, screenCrossTenantLearningFlow } from "../../v2-core/cross-tenant/gate";
 import { foldCsiBlocklist } from "../../v2-core/cross-tenant/projection";
+import type { CitationRef } from "../../v2-core/fil-core/primitives";
 
 function seedBlocklist() {
   return foldCsiBlocklist(
@@ -70,14 +70,15 @@ describe("recon:v2-csi-cross-tenant-gate — load-bearing logic", () => {
   });
 
   it("SABOTAGE: a degenerate gate that returns allowed=true would FAIL assertion 3", () => {
-    // Simulate the sabotage: a gate that passes the leak. The recon's assertion
-    // 3 fires iff allowed===true || outcome!=="blocked". Prove that predicate.
-    const sabotaged = { allowed: true, outcome: "cleared" as const };
-    const assertionFires = sabotaged.allowed || sabotaged.outcome !== "blocked";
-    expect(assertionFires).toBe(true);
-    // And the real gate does NOT trip it:
+    // The recon's assertion 3 fires iff (allowed === true || outcome !== "blocked").
+    // Express the predicate as a function so a sabotaged result trips it and the
+    // real gate's result does not.
+    const assertionFires = (r: { allowed: boolean; outcome: string }): boolean =>
+      r.allowed || r.outcome !== "blocked";
+    // A sabotaged gate (passes the leak) trips the assertion:
+    expect(assertionFires({ allowed: true, outcome: "cleared" })).toBe(true);
+    // The real gate does NOT trip it:
     const real = screenCrossTenantLearningFlow(SYNTHETIC_LEAK, seedBlocklist());
-    const realFires = real.allowed || real.outcome !== "blocked";
-    expect(realFires).toBe(false);
+    expect(assertionFires(real)).toBe(false);
   });
 });

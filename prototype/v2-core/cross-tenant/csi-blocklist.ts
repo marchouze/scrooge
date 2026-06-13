@@ -137,10 +137,7 @@ export type CsiBlocklistEventPayload =
   | ({ readonly kind: "CsiCategoryRegistered" } & CsiCategoryRegisteredPayload)
   | ({ readonly kind: "CsiCategoryRetired" } & CsiCategoryRetiredPayload);
 
-export const CSI_BLOCKLIST_EVENT_KINDS = [
-  "CsiCategoryRegistered",
-  "CsiCategoryRetired",
-] as const;
+export const CSI_BLOCKLIST_EVENT_KINDS = ["CsiCategoryRegistered", "CsiCategoryRetired"] as const;
 
 export type CsiBlocklistEventKind = (typeof CSI_BLOCKLIST_EVENT_KINDS)[number];
 

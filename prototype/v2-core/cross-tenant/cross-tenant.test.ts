@@ -18,11 +18,7 @@ import {
   CSI_SEED_CATEGORIES,
   type CsiBlocklistEventPayload,
 } from "./csi-blocklist";
-import {
-  type LearningFlow,
-  gateOutcomeEvent,
-  screenCrossTenantLearningFlow,
-} from "./gate";
+import { type LearningFlow, gateOutcomeEvent, screenCrossTenantLearningFlow } from "./gate";
 import { emptyCsiBlocklist, foldCsiBlocklist } from "./projection";
 
 const NOW = "2026-06-13T00:00:00.000Z" as Instant;

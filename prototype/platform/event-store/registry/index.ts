@@ -274,6 +274,7 @@ import { CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY } from "./correspondent-s
 import { COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY } from "./counterparty-credit-risk";
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
 import { CREDIT_LIMIT_EVENT_TYPES_REGISTRY } from "./credit-limit";
+import { CROSS_TENANT_CSI_EVENT_TYPES } from "./cross-tenant-csi";
 import { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillation";
 import { DECISION_IMPACT_SWEEP_EVENT_TYPES_REGISTRY } from "./decision-impact-sweep";
 import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
@@ -343,7 +344,6 @@ import { SLA_APPROVAL_EVENT_TYPES_REGISTRY } from "./sla-approval";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
 import { V2_BANKING_EVENT_TYPES_REGISTRY } from "./v2-banking";
 import { V2_CONTROL_PLANE_EVENT_TYPES } from "./v2-control-plane";
-import { CROSS_TENANT_CSI_EVENT_TYPES } from "./cross-tenant-csi";
 import { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
 import { VALUATION_ADJUSTMENT_EVENT_TYPES_REGISTRY } from "./valuation-adjustment";
 
