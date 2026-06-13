@@ -19,7 +19,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 import { LocalFsDocumentStore } from "../document-store/local-fs";
-import { type GoldenSourceNode, run } from "./regulatory-golden-source-integrity";
+import { ENFORCEMENT_DATE, type GoldenSourceNode, run } from "./regulatory-golden-source-integrity";
 
 const ENFORCEMENT = "2026-09-01";
 const PRE_ENFORCEMENT_NOW = "2026-06-11T10:00:00.000Z";
@@ -70,6 +70,29 @@ describe("recon:regulatory-golden-source-integrity", () => {
       legacyStore,
       enforcementDate: ENFORCEMENT,
       asOfDate: POST_ENFORCEMENT_NOW,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.asserted).toBe(0);
+    expect(r.violations).toHaveLength(0);
+  });
+
+  // PIN-TEST (D-GOLDEN-SOURCE-SHARED-STORE-ASSERTION): the clean-CI shape.
+  // This gate is a SHARED-STORE assertion — in the pipeline the regulatory
+  // graph is unseeded, so the gate sees zero golden-source nodes and MUST
+  // return ok:true / asserted:0, EVEN at the real ENFORCEMENT_DATE with the
+  // advisory window closed. The empty-node population is the only input that
+  // determines the verdict here (deterministic; independent of ambient graph
+  // DB state in the shared test process). This pins that "nothing to assert"
+  // can never produce a violation — the warn→fail grading only bites once
+  // there ARE nodes (the populated shared store, via the scheduled tick),
+  // never on the empty pipeline graph. A future change that lets the gate
+  // fail with zero nodes — at any date — is caught here.
+  it("PIN: zero nodes at the real enforcement boundary → ok:true, asserted 0 (clean-CI shape)", () => {
+    const r = run({
+      nodes: [],
+      resolvedStore,
+      legacyStore,
+      asOfDate: `${ENFORCEMENT_DATE}T12:00:00.000Z`,
     });
     expect(r.ok).toBe(true);
     expect(r.asserted).toBe(0);

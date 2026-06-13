@@ -227,6 +227,7 @@
     "recon:rms-documents-parity": "bun run platform/recon/rms-documents-parity.ts",
     "recon:rms-document-blob-integrity": "bun run platform/recon/rms-document-blob-integrity.ts",
     "recon:regulatory-golden-source-integrity": "bun run platform/recon/regulatory-golden-source-integrity.ts",
+    "recon:golden-source-integrity-tick": "bun run scripts/regulatory/golden-source-integrity-tick.ts",
     "recon:regulatory-source-coverage": "bun run platform/recon/regulatory-source-coverage.ts",
     "recon:regulatory-source-extract-quality": "bun run platform/recon/regulatory-source-extract-quality.ts",
     "build:source-coverage": "bun run scripts/regulatory/build-source-coverage.ts",
