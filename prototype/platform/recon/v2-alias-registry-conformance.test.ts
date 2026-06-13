@@ -35,9 +35,7 @@ describe("recon:v2-alias-registry-conformance", () => {
   });
 
   it("recognises an import from the shared alias-registry", () => {
-    expect(
-      importsSharedRegistry(`import { resolveAlias } from "./alias-registry";`),
-    ).toBe(true);
+    expect(importsSharedRegistry(`import { resolveAlias } from "./alias-registry";`)).toBe(true);
     expect(
       importsSharedRegistry(
         `import { registerAlias, swapAlias } from "../../fil-core/alias-registry";`,
@@ -76,9 +74,10 @@ describe("recon:v2-alias-registry-conformance", () => {
   });
 
   it("does NOT flag a module with a mutable but no swap/restore surface", () => {
-    const benign = ["let counter = 0;", "export function tick() { counter += 1; return counter; }"].join(
-      "\n",
-    );
+    const benign = [
+      "let counter = 0;",
+      "export function tick() { counter += 1; return counter; }",
+    ].join("\n");
     expect(mintsAdHocAliasSingleton(benign)).toBe(false);
   });
 });
