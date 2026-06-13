@@ -117,6 +117,15 @@ export * from "./applicability";
  * Authority: D-W8-DECISION-IMPACT-SWEEP; D-V2-BBAAS-BLUEPRINT-SYNTHESIS. */
 export * from "./decision-impact";
 
+// --- Eval harness (S13) — the assurance / eval plane ------------------------
+
+/** @tier R — exam-set register (Exam / ExamSet / ExamExpectation + schemas + well-formedness);
+ * the eval harness (runEval, EvalSubject, EvalResult); the structured-first change-gate
+ * (evaluateChangeGate, composes with — does not replace — Nadia's independent-validation plane);
+ * ExamSetRegistered / EvalRunCompleted event payloads; the SA-CCR pilot exam-set + subject adapter.
+ * Authority: D-W4-MODEL-LIBRARY-PILOT; D-V2-BBAAS-BLUEPRINT-SYNTHESIS; D-W8-POSTURE-REGISTER-SLICE-1. */
+export * from "./eval";
+
 // --- Cross-tenant CSI gate (S12) — competition-law keystone ----------------
 
 /** @tier K — CSI blocklist register (CsiCategoryRegistered/Retired, CSI_SEED_CATEGORIES),

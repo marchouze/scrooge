@@ -253,6 +253,12 @@ export { V2_CONTROL_PLANE_EVENT_TYPES } from "./v2-control-plane";
 // CrossTenantLearningBlocked.
 // Authority: D-W7-VENDOR-ENTITY-STRUCTURE; D-V2-TENANCY-ARCHITECTURE.
 export { CROSS_TENANT_CSI_EVENT_TYPES } from "./cross-tenant-csi";
+// WS-V2-BBAAS S13 — eval-harness event family (the assurance / eval plane).
+// ExamSetRegistered, EvalRunCompleted. The exam-set register + eval verdicts
+// are the systematic assurance substrate that gates W8 disposal / model
+// adoption (composes with — does not replace — Nadia's independent validation).
+// Authority: D-V2-BBAAS-BLUEPRINT-SYNTHESIS; D-W4-MODEL-LIBRARY-PILOT.
+export { V2_EVAL_EVENT_TYPES_REGISTRY } from "./v2-eval";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -344,6 +350,7 @@ import { SLA_APPROVAL_EVENT_TYPES_REGISTRY } from "./sla-approval";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
 import { V2_BANKING_EVENT_TYPES_REGISTRY } from "./v2-banking";
 import { V2_CONTROL_PLANE_EVENT_TYPES } from "./v2-control-plane";
+import { V2_EVAL_EVENT_TYPES_REGISTRY } from "./v2-eval";
 import { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
 import { VALUATION_ADJUSTMENT_EVENT_TYPES_REGISTRY } from "./valuation-adjustment";
 
@@ -586,6 +593,11 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // are competition-law records (Competition Act 89/1998 s.4(1)).
   // Authority: D-W7-VENDOR-ENTITY-STRUCTURE; D-V2-TENANCY-ARCHITECTURE.
   ...CROSS_TENANT_CSI_EVENT_TYPES,
+  // WS-V2-BBAAS S13 — eval-harness event family (the assurance / eval plane).
+  // ExamSetRegistered, EvalRunCompleted. The systematic assurance substrate
+  // that gates W8 disposal / model adoption on a passing exam-set eval.
+  // Authority: D-V2-BBAAS-BLUEPRINT-SYNTHESIS; D-W4-MODEL-LIBRARY-PILOT.
+  ...V2_EVAL_EVENT_TYPES_REGISTRY,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

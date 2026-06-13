@@ -97,6 +97,12 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   PostureActivated: "governance",
   PostureDeactivated: "governance",
   PostureRevised: "governance",
+  // WS-V2-BBAAS S13 — eval-harness event family. An exam-set registration and
+  // an eval verdict are real governance assurance records (the systematic
+  // substrate that gates W8 disposal / model adoption), not simulated market
+  // activity. Authority: D-V2-BBAAS-BLUEPRINT-SYNTHESIS; D-W4-MODEL-LIBRARY-PILOT.
+  ExamSetRegistered: "governance",
+  EvalRunCompleted: "governance",
   // WS-V2-BBAAS S8 — applicability-assessment lifecycle. A real regulatory
   // assessment: it determines which contexts (entities / products /
   // jurisdictions) a posture / obligation / regulatory-change binds, recorded
