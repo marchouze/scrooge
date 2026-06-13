@@ -3,7 +3,10 @@
 // MarketRiskMeasureProjection (RAS B3 review R8 / D-B3-5).
 //
 // Folds the latest `MarketRiskMeasureComputed` event and surfaces VaR / SVaR /
-// ES against Helena's MR-1-FX 1-day 99% VaR appetite (ZAR 350,000) as the
+// ES against Helena's MR-1-FX 1-day 99% VaR appetite (the ceiling carried on the
+// event's `varAppetiteZar`, sourced from the canonical RAS register line
+// `appetite:market:trading-var` — re-calibrated to ZAR 575,000 against the
+// standing-NOP basis per D-VAR-EXPOSURE-INCLUDES-STANDING-NOP) as the
 // risk-calibrated rung of the market-risk appetite stack — a SEPARATE line from
 // the B3 Net Open Position position limit. This closes the semantic mismatch
 // behind vera:mr-1-fx-var-projection-gap: the VaR appetite is now read against a

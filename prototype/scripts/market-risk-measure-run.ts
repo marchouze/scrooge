@@ -20,10 +20,13 @@ import { makeMarketRiskMeasureComputed } from "../platform/event-store/event-typ
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../platform/market-data/store";
 import { computeMarketRisk } from "../platform/market-risk/var-engine";
+import { marketVarAppetiteCeilingZar } from "../platform/risk/ras-appetite-register";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
-// Helena MR-1-FX §1.1 — 1-day 99% VaR appetite ceiling.
-const VAR_APPETITE_ZAR = 350_000;
+// Helena MR-1-FX — 1-day 99% VaR appetite ceiling (ZAR). SINGLE-SOURCE from the
+// canonical RAS register; re-calibrated to R575k against the standing-NOP basis
+// per D-VAR-EXPOSURE-INCLUDES-STANDING-NOP (was R350k, stale old trade-only basis).
+const VAR_APPETITE_ZAR = marketVarAppetiteCeilingZar();
 
 const asOf = nowUtc();
 const measureId = `MR-MEASURE-${ENTITY}-${asOf.slice(0, 10)}`;
