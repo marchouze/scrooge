@@ -248,6 +248,11 @@ export { V2_BANKING_EVENT_TYPES_REGISTRY } from "./v2-banking";
 // TenantRegistered, TenantSurfaceGranted, TenantUpgradeLedgerEntry, TenantMeterEvent.
 // Authority: D-V2-TENANCY-ARCHITECTURE (Option C); D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
 export { V2_CONTROL_PLANE_EVENT_TYPES } from "./v2-control-plane";
+// WS-V2-BBAAS S12 — cross-tenant CSI gate (competition-law keystone).
+// CsiCategoryRegistered, CsiCategoryRetired, CrossTenantLearningScreened,
+// CrossTenantLearningBlocked.
+// Authority: D-W7-VENDOR-ENTITY-STRUCTURE; D-V2-TENANCY-ARCHITECTURE.
+export { CROSS_TENANT_CSI_EVENT_TYPES } from "./cross-tenant-csi";
 
 // ---------------------------------------------------------------------------
 // Combined registry — re-assembly of all domain arrays into the flat list
@@ -338,6 +343,7 @@ import { SLA_APPROVAL_EVENT_TYPES_REGISTRY } from "./sla-approval";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
 import { V2_BANKING_EVENT_TYPES_REGISTRY } from "./v2-banking";
 import { V2_CONTROL_PLANE_EVENT_TYPES } from "./v2-control-plane";
+import { CROSS_TENANT_CSI_EVENT_TYPES } from "./cross-tenant-csi";
 import { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
 import { VALUATION_ADJUSTMENT_EVENT_TYPES_REGISTRY } from "./valuation-adjustment";
 
@@ -574,6 +580,12 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // TenantRegistered, TenantSurfaceGranted, TenantUpgradeLedgerEntry, TenantMeterEvent.
   // Authority: D-V2-TENANCY-ARCHITECTURE (Option C); D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
   ...V2_CONTROL_PLANE_EVENT_TYPES,
+  // WS-V2-BBAAS S12 — cross-tenant CSI gate (competition-law keystone).
+  // CsiCategoryRegistered, CsiCategoryRetired, CrossTenantLearningScreened,
+  // CrossTenantLearningBlocked. The CSI blocklist + every cross-tenant crossing
+  // are competition-law records (Competition Act 89/1998 s.4(1)).
+  // Authority: D-W7-VENDOR-ENTITY-STRUCTURE; D-V2-TENANCY-ARCHITECTURE.
+  ...CROSS_TENANT_CSI_EVENT_TYPES,
 ];
 
 const REGISTRY_BY_TYPE: ReadonlyMap<string, EventTypeMetadata> = new Map(

@@ -114,6 +114,17 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   // D-W8-DECISION-IMPACT-SWEEP; D-V2-BBAAS-BLUEPRINT-SYNTHESIS; Principle 1.
   DecisionImpactSweepRequested: "governance",
   DecisionImpactAssessed: "governance",
+  // WS-V2-BBAAS S12 — cross-tenant CSI gate (competition-law keystone). The CSI
+  // blocklist register + every cross-tenant learning crossing are real
+  // governance / competition-law records (Competition Act 89/1998 s.4(1)),
+  // minted through the CCO-governed process and the gate — never simulated
+  // market activity. Third site of the three-site-registration gotcha
+  // (event-types + registry + provenance-category) so the types do not resolve
+  // to "simulated". Authority: D-W7-VENDOR-ENTITY-STRUCTURE; Principle 1.
+  CsiCategoryRegistered: "governance",
+  CsiCategoryRetired: "governance",
+  CrossTenantLearningScreened: "governance",
+  CrossTenantLearningBlocked: "governance",
   // CCO-published best-execution tolerance schedule — a conduct-committee
   // governance record (real seat decision, not simulated market activity).
   // Authority: D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH; FAIS §16.

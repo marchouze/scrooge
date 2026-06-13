@@ -46,9 +46,12 @@ export const RELEASED_SURFACE = {
   K: {
     description: "Anchor bank — full internal access; no restriction on any export",
     // K-only exports are those tagged @tier K in v2-core/index.ts.
-    // Currently none exist (all S0 exports are R or C accessible).
-    // Future K-only exports (e.g. control-plane/internal write surface) are listed here.
-    kOnlyExports: [] as string[],
+    // The gate asserts none of these appear in the R or C surface below.
+    // S12: the cross-tenant CSI gate is K-only by design — cross-tenant learning
+    // is NOT in the R/C released surface until this gate clears (the D-W7 C-tier /
+    // multi-tenant-learning go-live precondition). Listing it here documents the
+    // tie: the gate substrate is anchor-internal; no tenant tier can call it.
+    kOnlyExports: ["cross-tenant"] as string[],
   },
   R: {
     description:
