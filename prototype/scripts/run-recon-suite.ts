@@ -74,6 +74,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:v2-tenant-axis-present",
     "recon:v2-released-surface-clean-core",
     "recon:v2-posture-register-integrity",
+    // WS-V2-BBAAS S13 — eval-harness integrity (advisory). Every EvalRunCompleted
+    // references a registered exam-set; exam-sets well-formed; recorded verdicts
+    // reproducible by re-running the harness (engine-consistency). Authority:
+    // D-W4-MODEL-LIBRARY-PILOT; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
+    "recon:v2-eval-harness-integrity",
     // WS-V2-BBAAS S8 — applicability-assessment lifecycle integrity (advisory).
     "recon:v2-applicability-assessment-integrity",
     // WS-V2-BBAAS S9 — decision-impact sweep coverage (ENFORCING as of the W8
