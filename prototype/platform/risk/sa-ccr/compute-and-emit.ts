@@ -1,58 +1,67 @@
 // platform/risk/sa-ccr/compute-and-emit.ts
 //
-// WS-CREDIT-LIMIT-ENGINE Phase 5 (v1) — only event-emitting boundary of
-// the SA-CCR engine. All other modules in `@platform/risk/sa-ccr` are
-// pure computations; this module composes them, resolves the inputs,
-// and emits both `CcrReplacementCostComputed` and `CcrEadComputed`
-// (event types registered in PR #612 / PR #622).
+// WS-V2-BBAAS — SA-CCR ALIAS-FLIP. This is now the V2-SOURCED, single live
+// CCR emitting boundary. After the flip (brief
+// `brief:rohan:sa-ccr-alias-flip-v2-sole-live-emitter-v1-retire:2026-06-13`,
+// authority D-SACCR-V2-CUTOVER-ACCELERATE / D-W4-MODEL-LIBRARY-PILOT /
+// D-MODEL-BINDING-CONTRACT-V1) the live `CcrReplacementCostComputed` +
+// `CcrEadComputed` events are computed by the VALIDATED v2 SA-CCR FIL-Model
+// (`v2-core/fil-models/sa-ccr` — `computeSaCcr`), sourced END-TO-END from
+// FIL-mediated reads, NOT by the v1 engine's input-resolution layer:
 //
-// A `(counterpartyId, currency)` convenience entry — `computeAndEmitFor`
-// — looks up the netting set from the Phase-5 netting-set register
-// (`@platform/markets/netting-sets`, Imani's slice) and forwards to
-// `computeAndEmit`. That closes the canonical netting-set substrate gap.
+//   - vMtm     ← `sourceVMtmFromValuableFeed` — the LATEST `*Revalued`
+//                EVENT-OF-RECORD per trade, as-of the RC date, through the
+//                `Valuable` facet's `RevaluationRecord` shape (last-write-wins
+//                per trade, summed ONLY across trades). This is the Principle-1
+//                reading and the CORRECT d317/CRE52.10 RC `V` basis (the current
+//                net mark, exactly one mark per trade). It REPLACES the v1
+//                `resolveMtm` cumulative-delta walk, whose FX arm summed
+//                `FxPositionRevalued.unrealisedPnlZarMinor` across revaluations
+//                as if it were a per-period delta — it is the FULL cumulative
+//                mark recomputed each EOD, so summing N revals N-counted V (the
+//                recorded Investec RC ~R55.5m vs correct ~R0). That defect is
+//                RETIRED by this flip: `resolveMtm` no longer exists and there
+//                is no live fallback to it (Nadia MV-SACCR-V2-003).
+//   - collateral ← `sourceCollateralFromRegister` — the collateral-inventory
+//                register, as-of the RC date (haircut-adjusted ZAR pool;
+//                per-netting-set CSA allocation is D-CSA-COLLATERAL-ALLOCATION,
+//                future). Mirrors the prior v1 `resolveCollateral` semantics.
 //
-// v1 also closes the MTM + collateral substrate gaps that v0 left as
-// caller-threaded parameters:
-//   - `resolveMtm(nettingSetId, asOf)` walks `IrsTradeBooked` /
-//     `FxTradeExecuted` events for the netting set's counterparty, finds
-//     the latest `IrdSwapPositionRevalued` / `FxPositionRevalued` per trade
-//     as-of `asOf`, and sums them in the netting-set currency. The MTM
-//     event-type shape comes from Bea's MTM engine slice — the contract
-//     decision (`IrdSwapPositionRevalued.npvClosingMinor`, `FxPositionRevalued
-//     .unrealisedPnlZarMinor`) is attributed to **Bea (Accounting and
-//     financial reporting engineer, engineering)**. IRS MTM was repointed from
-//     the trade-domain `IrsPositionRevalued.markToMarket` to the accounting
-//     family per D-IRS-FAMILY-CONVERGE-ACCOUNTING.
-//   - `resolveCollateral(nettingSetId, asOf)` queries
-//     `getCollateralInventory()` (Atlas's projection) and sums the
-//     haircut-adjusted ZAR values. v1 does not yet associate inventory
-//     positions to specific netting sets — the build-phase inventory is
-//     a bank-level pool. When the per-netting-set CSA breakdown lands
-//     (D-CSA-COLLATERAL-ALLOCATION, future), this helper switches to a
-//     netting-set-keyed lookup.
+// The CCR event SCHEMAS are UNCHANGED — consumers (ba-700-leverage-ratio,
+// rwa-from-positions, leverage-ratio-metrics, cva-engine) read the event-of-
+// record and are untouched. The v1 pure methodology functions
+// (`replacement-cost.ts`, `pfe-addon.ts`, `ead.ts`) are RETAINED — they are the
+// ORACLE side of `recon:v2-saccr-parity` (v1-recompute vs v2 byte-equivalence),
+// not a live emission path.
 //
-// Both helpers are exported so callers can pre-flight the auto-resolution
-// before computing. The legacy `vMtm` + `collateralHeld` parameters are
-// retained as test seams on `ComputeAndEmitInput` — when not passed, the
-// helpers resolve them; when passed, they bypass the helpers.
+// A `(counterpartyId, currency)` convenience entry — `computeAndEmitFor` —
+// looks up the netting set from the Phase-5 netting-set register and forwards
+// to `computeAndEmit`; returns `null` when no active assessment exists.
 //
 // Citations:
-//   BCBS d317 §136 (RC formula);
-//   BCBS d317 §10 (EAD = α × (RC + PFE));
+//   BCBS d317 §136 (RC formula); BCBS d317 §10 (EAD = α × (RC + PFE));
 //   BCBS d317 §149 / CRE52 §52.5 (PFE multiplier);
+//   CRE52 §52.10 (RC V = current net mark-to-market);
 //   Policies/credit-risk-policy-v1.md §3 line 129 (IN FORCE 2026-05-13);
-//   D-CREDIT-LIMIT-ENGINE-BUILD Phase 5;
-//   Principles/1-events-are-truth.md.
+//   D-CREDIT-LIMIT-ENGINE-BUILD Phase 5; D-SACCR-V2-CUTOVER-ACCELERATE;
+//   D-MODEL-BINDING-CONTRACT-V1; Principles/1-events-are-truth.md.
 //
-// Author: Rohan (Market risk quantitative engineer, engineering).
-// MTM event-type contract: Bea (Accounting and financial reporting
-// engineer, engineering) — see `IrdSwapPositionRevalued` / `FxPositionRevalued`
-// schemas.
+// Author: Rohan (Risk Engineer, engineering).
+// v2 FIL-Model methodology: validated-with-conditions by Nadia (Model
+//   validation, risk) — `record:documents:nadia:v2-saccr-model-validation:
+//   2026-06-13`.
 
-import { getCollateralInventory } from "../../collateral/inventory";
+import {
+  type Money as V2Money,
+  type SaCcrEadComputation as V2Ead,
+  type SaCcrNettingSet as V2NettingSet,
+  type SaCcrReplacementCost as V2Rc,
+  type SaCcrTradeSummary as V2TradeSummary,
+  computeSaCcr,
+} from "../../../v2-core/fil-models/sa-ccr";
 import { eventStore } from "../../composition";
 import { type Money, minor } from "../../core/money";
-import { type Actor, BANK_ZA_001, newEventId } from "../../core/types";
+import { type Actor, BANK_ZA_001, type Currency, newEventId } from "../../core/types";
 import {
   makeCcrEadComputed,
   makeCcrReplacementCostComputed,
@@ -60,9 +69,10 @@ import {
 import type { Event } from "../../event-store/types";
 import { resolveNettingSet as resolveNsFromRegister } from "../../markets/netting-sets";
 import { utcNow } from "../../types/time";
-import { computeEad } from "./ead";
-import { computeAddOn } from "./pfe-addon";
-import { computeReplacementCost } from "./replacement-cost";
+import {
+  sourceCollateralFromRegister,
+  sourceVMtmFromValuableFeed,
+} from "./fil-valuable-collateral-feed";
 import type { EadComputation, NettingSet, ReplacementCost, TradeSummary } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -72,156 +82,88 @@ import type { EadComputation, NettingSet, ReplacementCost, TradeSummary } from "
 const DEFAULT_CITATIONS = ["D-CREDIT-LIMIT-ENGINE-BUILD", "Policies/credit-risk-policy-v1.md#3"];
 
 // ---------------------------------------------------------------------------
-// resolveMtm — auto-resolve the netting set's net MTM by summing the
-// latest IrdSwapPositionRevalued + FxPositionRevalued per trade owned by the
-// netting set's counterparty.
+// v1 ↔ v2 Money + shape conversions at the v2-model boundary.
 //
-// **MTM event-type contract owned by Bea.** This helper reads from those
-// events; Bea owns the schema, so any change to the MTM shape (e.g.
-// signed/unsigned, minor-unit currency tag) must be coordinated via Bea.
-// v1 reads:
-//   - `IrdSwapPositionRevalued.npvClosingMinor` (signed minor units) + `.currency`
-//   - `FxPositionRevalued.unrealisedPnlZarMinor` (ZAR minor units, signed)
-//
-// Caller passes the netting-set currency. Cross-currency trades within
-// the netting set are skipped (P5 — a netting set is single-currency by
-// Credit Risk Policy §3 line 132).
+// v1 Money is `{ amount: bigint, currency }`; v2 Money is `{ minorUnits: bigint,
+// currency }`. Both are bigint minor-units — the conversion is lossless. The
+// emitted CCR event payloads coerce the minor-unit bigints to Number EXACTLY as
+// before (schema unchanged); the v1-shaped return value is rebuilt from the v2
+// results so existing callers / tests observe an unchanged result contract.
 // ---------------------------------------------------------------------------
 
-interface NettingSetMtmInputs {
-  counterpartyId: string;
-  currency: string;
-  asOf: string;
+function v1ToV2Money(m: Money): V2Money {
+  return { currency: String(m.currency), minorUnits: m.amount };
 }
 
-export function resolveMtm(inputs: NettingSetMtmInputs): Money {
-  const { counterpartyId, currency, asOf } = inputs;
+function v2ToV1Money(m: V2Money): Money {
+  return minor(m.minorUnits, m.currency as Currency);
+}
 
-  // Step 1: collect trade IDs for the counterparty (across IRS + FX
-  // booking events). counterparty.partyId is the canonical key.
-  const tradeIds = new Set<string>();
+function v1ToV2NettingSet(ns: NettingSet): V2NettingSet {
+  return {
+    nettingSetId: ns.nettingSetId,
+    counterpartyId: ns.counterpartyId,
+    csaPresent: ns.csaPresent,
+    currency: ns.currency,
+    ...(ns.threshold !== undefined ? { threshold: v1ToV2Money(ns.threshold) } : {}),
+    ...(ns.mta !== undefined ? { mta: v1ToV2Money(ns.mta) } : {}),
+  };
+}
 
-  for (const ev of eventStore.replay({ type: "IrsTradeBooked", asOf })) {
-    const payload = ev.payload as {
-      tradeId?: { value?: string } | string;
-      counterparty?: { partyId?: string };
-    };
-    if (payload.counterparty?.partyId !== counterpartyId) continue;
-    const tid =
-      typeof payload.tradeId === "string" ? payload.tradeId : (payload.tradeId?.value ?? undefined);
-    if (tid) tradeIds.add(tid);
-  }
-  for (const ev of eventStore.replay({ type: "FxTradeExecuted", asOf })) {
-    const payload = ev.payload as {
-      tradeId?: { value?: string } | string;
-      counterparty?: { partyId?: string };
-    };
-    if (payload.counterparty?.partyId !== counterpartyId) continue;
-    const tid =
-      typeof payload.tradeId === "string" ? payload.tradeId : (payload.tradeId?.value ?? undefined);
-    if (tid) tradeIds.add(tid);
-  }
+function v1ToV2Trade(t: TradeSummary): V2TradeSummary {
+  return {
+    ...(t.tradeId !== undefined ? { tradeId: t.tradeId } : {}),
+    counterpartyId: t.counterpartyId,
+    nettingSetId: t.nettingSetId,
+    assetClass: t.assetClass,
+    notional: v1ToV2Money(t.notional),
+    ...(t.direction !== undefined ? { direction: t.direction } : {}),
+    ...(t.remainingYears !== undefined ? { remainingYears: t.remainingYears } : {}),
+    ...(t.currency !== undefined ? { currency: t.currency } : {}),
+    ...(t.hedgingSetTag !== undefined ? { hedgingSetTag: t.hedgingSetTag } : {}),
+    ...(t.optionType !== undefined ? { optionType: t.optionType } : {}),
+  };
+}
 
-  if (tradeIds.size === 0) return minor(0n, currency as never);
+function v2RcToV1(rc: V2Rc): ReplacementCost {
+  return {
+    nettingSetId: rc.nettingSetId,
+    rc: v2ToV1Money(rc.rc),
+    vMtm: v2ToV1Money(rc.vMtm),
+    collateralHeld: v2ToV1Money(rc.collateralHeld),
+    computedAt: rc.computedAt,
+  };
+}
 
-  // Step 2: find the latest revaluation per trade.
-  // Strategy: streaming replay in sequence order; last-write-wins per
-  // tradeId. (replay is sequence-ordered which monotonically tracks
-  // as_of for revaluations.)
-  // IRS MTM is sourced from the accounting IrdSwapPositionRevalued family — the
-  // single canonical revaluation fact post D-IRS-FAMILY-CONVERGE-ACCOUNTING.
-  // npvClosingMinor is the signed mark-to-market (positive = net asset to bank).
-  const latestIrsMtmMinor = new Map<string, bigint>();
-  for (const ev of eventStore.replay({ type: "IrdSwapPositionRevalued", asOf })) {
-    const payload = ev.payload as {
-      tradeId?: string;
-      npvClosingMinor?: number;
-      currency?: string;
-    };
-    const tid = typeof payload.tradeId === "string" ? payload.tradeId : undefined;
-    if (!tid || !tradeIds.has(tid)) continue;
-    if (typeof payload.npvClosingMinor !== "number") continue;
-    // Skip cross-currency trades — netting set is single-currency.
-    if (payload.currency !== currency) continue;
-    latestIrsMtmMinor.set(tid, BigInt(Math.round(payload.npvClosingMinor)));
-  }
-
-  const latestFxMtmMinor = new Map<string, bigint>();
-  for (const ev of eventStore.replay({ type: "FxPositionRevalued", asOf })) {
-    const payload = ev.payload as {
-      tradeId?: string;
-      unrealisedPnlZarMinor?: number;
-    };
-    const tid = typeof payload.tradeId === "string" ? payload.tradeId : undefined;
-    if (!tid || !tradeIds.has(tid)) continue;
-    if (typeof payload.unrealisedPnlZarMinor !== "number") continue;
-    // FxPositionRevalued.unrealisedPnlZarMinor is the *delta* P&L for the
-    // revaluation period — to obtain the cumulative MTM since trade
-    // inception, sum the deltas. We hold the running total per tradeId.
-    const prev = latestFxMtmMinor.get(tid) ?? 0n;
-    latestFxMtmMinor.set(tid, prev + BigInt(Math.round(payload.unrealisedPnlZarMinor)));
-    // FX MTM is by convention ZAR-denominated — only contribute when the
-    // netting set currency is ZAR.
-  }
-
-  // Step 3: sum.
-  let total = 0n;
-  for (const v of latestIrsMtmMinor.values()) total += v;
-  // FX P&L only contributes to ZAR netting sets (FxPositionRevalued is
-  // ZAR-denominated by schema).
-  if (currency === "ZAR") {
-    for (const v of latestFxMtmMinor.values()) total += v;
-  }
-
-  return minor(total, currency as never);
+function v2EadToV1(ead: V2Ead): EadComputation {
+  return {
+    nettingSetId: ead.nettingSetId,
+    counterpartyId: ead.counterpartyId,
+    rc: v2ToV1Money(ead.rc),
+    pfe: v2ToV1Money(ead.pfe),
+    alpha: 1.4,
+    multiplier: ead.multiplier,
+    aggregatedAddOn: v2ToV1Money(ead.aggregatedAddOn),
+    ead: v2ToV1Money(ead.ead),
+    asOf: ead.asOf,
+  };
 }
 
 // ---------------------------------------------------------------------------
-// resolveCollateral — auto-resolve the netting set's haircut-adjusted
-// collateral by querying `getCollateralInventory()`.
-//
-// v1 limitation: the collateral inventory is a bank-level pool, not yet
-// allocated to specific netting sets. This helper returns the total
-// haircut-adjusted ZAR pool when the netting set currency = ZAR; zero
-// otherwise. When `D-CSA-COLLATERAL-ALLOCATION` lands (future), this
-// helper switches to a netting-set-keyed lookup.
-//
-// Build-phase status: with zero positions in the inventory the helper
-// returns zero — matches the v0 default of caller passing zero collateral.
-// ---------------------------------------------------------------------------
-
-interface NettingSetCollateralInputs {
-  nettingSetId: string;
-  currency: string;
-  asOf: string;
-}
-
-export function resolveCollateral(inputs: NettingSetCollateralInputs): Money {
-  const { currency, asOf } = inputs;
-  // Build-phase: per-netting-set allocation not yet wired. Return zero
-  // for non-ZAR netting sets (the inventory is ZAR-denominated).
-  if (currency !== "ZAR") return minor(0n, currency as never);
-  const inv = getCollateralInventory(asOf);
-  const totalZar = inv.totalHQLAZar; // already haircut-adjusted
-  // Convert ZAR major (rand) → minor (cents). The inventory carries
-  // major-currency units (number); SA-CCR everywhere uses minor BigInt.
-  const minorAmount = BigInt(Math.round(totalZar * 100));
-  return minor(minorAmount, currency as never);
-}
-
-// ---------------------------------------------------------------------------
-// ComputeAndEmitInput — caller-threaded inputs. `vMtm` + `collateralHeld`
-// are now optional (auto-resolve when omitted). All Money values must
-// share the netting-set currency.
+// ComputeAndEmitInput — caller-threaded inputs. `vMtm` + `collateralHeld` are
+// optional test seams: when omitted, the FIL-mediated feeds resolve them (the
+// production path); when passed, they bypass the feeds (tests / pre-flight).
+// All Money values must share the netting-set currency.
 // ---------------------------------------------------------------------------
 
 export interface ComputeAndEmitInput {
   nettingSet: NettingSet;
-  /** Net mark-to-market of the netting set. Signed Money in netting-set
-   * ccy. Optional — when omitted, `resolveMtm` queries the event store. */
+  /** Net mark-to-market of the netting set. Signed Money in netting-set ccy.
+   * Optional — when omitted, the `Valuable` feed (latest `*Revalued`
+   * event-of-record per trade) resolves it. */
   vMtm?: Money;
   /** Net collateral held against the netting set. Non-negative Money.
-   * Optional — when omitted, `resolveCollateral` queries the inventory. */
+   * Optional — when omitted, the collateral register resolves it. */
   collateralHeld?: Money;
   /** Trades in the netting set — feeds the PFE add-on aggregation. */
   trades: TradeSummary[];
@@ -235,7 +177,7 @@ export interface ComputeAndEmitInput {
 }
 
 // ---------------------------------------------------------------------------
-// ComputeAndEmitResult — composite result, plus the emitted event handle
+// ComputeAndEmitResult — composite result, plus the emitted RC event handle
 // for caller-side assertions / Vera recon symmetry checks.
 // ---------------------------------------------------------------------------
 
@@ -246,62 +188,54 @@ export interface ComputeAndEmitResult {
 }
 
 // ---------------------------------------------------------------------------
-// computeAndEmit — top-level engine entry. Pure function up to the single
-// `eventStore.append` call.
+// computeAndEmit — top-level engine entry. The COMPUTATION runs through the
+// validated v2 SA-CCR FIL-Model (`computeSaCcr`); the RC inputs are sourced from
+// the FIL-mediated feeds (vMtm ← Valuable feed; collateral ← register) unless a
+// caller threads them in (test seam). Pure up to the two `eventStore.append`
+// calls.
 //
-// Returns the RC, the EAD, and the emitted RC event so callers + tests
-// can observe the engine's output without re-reading from the event store.
-//
-// Emits two events on the same call:
-//   1. `CcrReplacementCostComputed` — RC component (BCBS d317 §136);
-//      preserved at the netting-set level for audit + Vera recon.
-//   2. `CcrEadComputed` — composed EAD = α × (RC + PFE) (BCBS d317 §10 /
-//      Credit Risk Policy §3 line 131). Carries the chain back to the RC
-//      event via `sourceEvents.rcEventId`.
-//
-// The credit-limit engine (`pre-deal-check.ts`) prefers `CcrEadComputed`
-// over `CcrReplacementCostComputed` when both are present. The RC-only
-// fallback remains for back-compat with seeded fixtures and any path
-// that emits RC without composing an EAD.
+// Emits two events on the same call (schemas UNCHANGED):
+//   1. `CcrReplacementCostComputed` — RC component (BCBS d317 §136).
+//   2. `CcrEadComputed` — composed EAD = α × (RC + PFE) (BCBS d317 §10). Carries
+//      the chain back to the RC event via `sourceEvents.rcEventId`.
 // ---------------------------------------------------------------------------
 
 export function computeAndEmit(input: ComputeAndEmitInput): ComputeAndEmitResult {
   const asOf = input.asOf ?? utcNow();
+  const ccy = input.nettingSet.currency;
 
-  // 1. Resolve MTM (caller-supplied or auto-resolved from event store).
-  const vMtm =
-    input.vMtm ??
-    resolveMtm({
-      counterpartyId: input.nettingSet.counterpartyId,
-      currency: input.nettingSet.currency,
-      asOf,
-    });
+  // 1. Resolve MTM via the Valuable feed (latest `*Revalued` event-of-record
+  //    per trade, as-of the RC date) unless the caller threads it in. This is
+  //    the correct d317/CRE52.10 `V` basis — NOT the retired v1 `resolveMtm`
+  //    cumulative-delta walk.
+  const vMtmV2: V2Money =
+    input.vMtm !== undefined
+      ? v1ToV2Money(input.vMtm)
+      : sourceVMtmFromValuableFeed(eventStore, {
+          counterpartyId: input.nettingSet.counterpartyId,
+          currency: ccy,
+          asOf,
+        });
 
-  // 2. Resolve collateral (caller-supplied or auto-resolved from inventory).
-  const collateralHeld =
-    input.collateralHeld ??
-    resolveCollateral({
-      nettingSetId: input.nettingSet.nettingSetId,
-      currency: input.nettingSet.currency,
-      asOf,
-    });
+  // 2. Resolve collateral via the register unless the caller threads it in.
+  const collateralV2: V2Money =
+    input.collateralHeld !== undefined
+      ? v1ToV2Money(input.collateralHeld)
+      : sourceCollateralFromRegister({ currency: ccy, asOf });
 
-  // 3. Pure RC.
-  const rc = computeReplacementCost(input.nettingSet, vMtm, collateralHeld, asOf);
-
-  // 4. Pure add-on aggregation. Trades may be empty (zero PFE).
-  //    `margined` flag is forwarded from the netting set config — drives
-  //    the maturity-factor schedule choice (BCBS d317 §164).
-  const addOns = computeAddOn(input.trades, { margined: input.nettingSet.csaPresent });
-
-  // 5. Pure EAD composition (applies BCBS d317 §149 multiplier).
-  const ead = computeEad(rc, addOns, {
-    counterpartyId: input.nettingSet.counterpartyId,
+  // 3. v2 FIL-Model computation — RC + PFE add-on + EAD over the netting set.
+  const v2Ns = v1ToV2NettingSet(input.nettingSet);
+  const v2Trades = input.trades.map(v1ToV2Trade);
+  const { rc, ead, addOns } = computeSaCcr({
+    nettingSet: v2Ns,
+    vMtm: vMtmV2,
+    collateralHeld: collateralV2,
+    trades: v2Trades,
     asOf,
   });
 
-  // 6. Emit. computationDate is the date portion of asOf (per the event
-  //    schema — `computationDate` is the T-0 close-of-business date).
+  // 4. Emit. computationDate is the date portion of asOf (the T-0 close-of-
+  //    business date per the event schema).
   const computationDate = asOf.slice(0, 10);
   const actor: Actor = input.actor ?? { type: "service", id: "platform:risk:sa-ccr" };
 
@@ -313,12 +247,12 @@ export function computeAndEmit(input: ComputeAndEmitInput): ComputeAndEmitResult
     payload: {
       nettingSetId: input.nettingSet.nettingSetId,
       counterpartyId: input.nettingSet.counterpartyId,
-      rc: Number(rc.rc.amount),
-      currency: input.nettingSet.currency,
+      rc: Number(rc.rc.minorUnits),
+      currency: ccy,
       computationDate,
       methodology: "sa-ccr",
-      vMtm: Number(vMtm.amount),
-      collateralHeld: Number(collateralHeld.amount),
+      vMtm: Number(vMtmV2.minorUnits),
+      collateralHeld: Number(collateralV2.minorUnits),
     },
     eventId: newEventId(),
   });
@@ -326,8 +260,6 @@ export function computeAndEmit(input: ComputeAndEmitInput): ComputeAndEmitResult
   eventStore.append(event);
 
   // 5. Emit CcrEadComputed alongside RC. Composes EAD = α × (RC + PFE).
-  //    Chain link back to the RC event via sourceEvents.rcEventId, and
-  //    record the number of AddOnComponent rows feeding PFE.
   const eadEvent = makeCcrEadComputed({
     asOf,
     entity: String(BANK_ZA_001),
@@ -336,11 +268,11 @@ export function computeAndEmit(input: ComputeAndEmitInput): ComputeAndEmitResult
     payload: {
       nettingSetId: input.nettingSet.nettingSetId,
       counterpartyId: input.nettingSet.counterpartyId,
-      rc: Number(rc.rc.amount),
-      pfe: Number(ead.pfe.amount),
+      rc: Number(rc.rc.minorUnits),
+      pfe: Number(ead.pfe.minorUnits),
       alpha: 1.4,
-      ead: Number(ead.ead.amount),
-      currency: input.nettingSet.currency,
+      ead: Number(ead.ead.minorUnits),
+      currency: ccy,
       computationDate,
       methodology: "sa-ccr",
       sourceEvents: {
@@ -353,30 +285,28 @@ export function computeAndEmit(input: ComputeAndEmitInput): ComputeAndEmitResult
 
   eventStore.append(eadEvent);
 
-  return { rc, ead, event };
+  return { rc: v2RcToV1(rc), ead: v2EadToV1(ead), event };
 }
 
 // ---------------------------------------------------------------------------
-// computeAndEmitFor — register-resolved entry. Looks up the active
-// netting set for `(counterpartyId, currency)` from the Phase-5
-// netting-set register (`@platform/markets/netting-sets`) and forwards
-// to `computeAndEmit`. Returns `null` when the register holds no active
-// assessment for the pair — callers decide whether to fall back to a
+// computeAndEmitFor — register-resolved entry. Looks up the active netting set
+// for `(counterpartyId, currency)` from the Phase-5 netting-set register and
+// forwards to `computeAndEmit`. Returns `null` when the register holds no
+// active assessment for the pair — callers decide whether to fall back to a
 // trade-by-trade computation or to refuse the trade pending ISDA / CSA
 // onboarding.
 //
 // Citations:
 //   Policies/credit-risk-policy-v1.md §3 line 136 (netting-enforceability
-//     prerequisite);
-//   D-CREDIT-LIMIT-ENGINE-BUILD Phase 5.
+//     prerequisite); D-CREDIT-LIMIT-ENGINE-BUILD Phase 5.
 // ---------------------------------------------------------------------------
 
 export interface ComputeAndEmitForInput {
   counterpartyId: string;
   currency: string;
-  /** Optional — when omitted, `resolveMtm` queries the event store. */
+  /** Optional — when omitted, the `Valuable` feed resolves vMtm. */
   vMtm?: Money;
-  /** Optional — when omitted, `resolveCollateral` queries the inventory. */
+  /** Optional — when omitted, the collateral register resolves collateral. */
   collateralHeld?: Money;
   trades: TradeSummary[];
   asOf?: string;

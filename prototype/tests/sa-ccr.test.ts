@@ -40,7 +40,6 @@ import {
   makeCreditLimitApproved,
   makeCreditLimitLoaded,
 } from "../platform/event-store/event-types/credit-limit";
-import { makeFxPositionRevalued } from "../platform/event-store/event-types/fx-accounting";
 import { makeIrdSwapPositionRevalued } from "../platform/event-store/event-types/ird-accounting";
 import { makeIrsTradeBooked } from "../platform/markets/cdm/ird";
 import { checkHeadroom } from "../platform/risk/credit-limit-engine";
@@ -57,8 +56,6 @@ import {
   hedgingSetKey,
   maturityFactor,
   pfeMultiplier,
-  resolveCollateral,
-  resolveMtm,
   supervisoryFactor,
   tradeDelta,
 } from "../platform/risk/sa-ccr";
@@ -746,193 +743,25 @@ describe("SA-CCR v1 — supervisory factors per asset class (BCBS d317 Table 2)"
 });
 
 // ---------------------------------------------------------------------------
-// v1 — Item 2: resolveMtm
+// SA-CCR ALIAS-FLIP (WS-V2-BBAAS, D-SACCR-V2-CUTOVER-ACCELERATE):
+// the v1 `resolveMtm` / `resolveCollateral` input-resolution functions are
+// RETIRED. The defective v1 `resolveMtm` FX-summing arm (which N-counted the
+// cumulative mark) no longer exists and has no live fallback (Nadia
+// MV-SACCR-V2-003). RC inputs are now FIL-mediated: vMtm via the `Valuable`
+// feed (latest `*Revalued` event-of-record per trade, last-write-wins),
+// collateral via the register. Both feeds are tested directly in
+// `platform/risk/sa-ccr/fil-valuable-collateral-feed.test.ts`. The
+// `computeAndEmit auto-resolution` test below exercises the live wiring of the
+// feed path end-to-end (omitting vMtm + collateral so the feed resolves them).
 // ---------------------------------------------------------------------------
 
-describe("SA-CCR v1 — resolveMtm (reads IrsPositionRevalued + FxPositionRevalued)", () => {
-  it("sums latest IrsPositionRevalued markToMarket per trade in netting set", () => {
-    const cp = uniqueId("CP-MTM-IRS");
-    const asOf = tsIso();
-
-    // Book two IRS trades for this counterparty.
-    const tradeIdA = `IRS-${cp}-A`;
-    const tradeIdB = `IRS-${cp}-B`;
-    eventStore.append(
-      makeIrsTradeBooked({
-        asOf,
-        entity: ENTITY,
-        actor: ACTOR,
-        citations: CITATIONS,
-        payload: {
-          tradeId: { scheme: "internal", value: tradeIdA },
-          counterparty: { partyId: cp, name: cp, role: "counterparty" },
-          notional: { currency: "ZAR", amountMinor: 100_000_000_00 },
-          fixedRate: 0.085,
-          floatingIndex: "JIBAR-3M",
-          bankPays: "fixed",
-          tradeDate: { iso: "2026-01-01", calendar: "JIHCAL" as const },
-          effectiveDate: { iso: "2026-01-03", calendar: "JIHCAL" as const },
-          maturityDate: { iso: "2031-01-03", calendar: "JIHCAL" as const },
-          paymentFrequency: "quarterly",
-          dayCountConvention: "ACT/365",
-          bookId: "TRADING-IRS-001",
-          traderRef: "test-trader",
-        },
-        eventId: newEventId(),
-      }),
-    );
-    eventStore.append(
-      makeIrsTradeBooked({
-        asOf,
-        entity: ENTITY,
-        actor: ACTOR,
-        citations: CITATIONS,
-        payload: {
-          tradeId: { scheme: "internal", value: tradeIdB },
-          counterparty: { partyId: cp, name: cp, role: "counterparty" },
-          notional: { currency: "ZAR", amountMinor: 50_000_000_00 },
-          fixedRate: 0.09,
-          floatingIndex: "JIBAR-3M",
-          bankPays: "floating",
-          tradeDate: { iso: "2026-01-01", calendar: "JIHCAL" as const },
-          effectiveDate: { iso: "2026-01-03", calendar: "JIHCAL" as const },
-          maturityDate: { iso: "2029-01-03", calendar: "JIHCAL" as const },
-          paymentFrequency: "quarterly",
-          dayCountConvention: "ACT/365",
-          bookId: "TRADING-IRS-001",
-          traderRef: "test-trader",
-        },
-        eventId: newEventId(),
-      }),
-    );
-
-    // Emit two revaluations — last-write-wins per tradeId. SA-CCR reads the
-    // accounting IrdSwapPositionRevalued family (D-IRS-FAMILY-CONVERGE-ACCOUNTING);
-    // npvClosingMinor IS the signed MTM.
-    eventStore.append(
-      makeIrdSwapPositionRevalued({
-        asOf: "2026-05-19T16:00:00.000Z",
-        entity: ENTITY,
-        actor: ACTOR,
-        citations: CITATIONS,
-        payload: {
-          tradeId: tradeIdA,
-          revalDate: "2026-05-19",
-          npvOpeningMinor: 0,
-          npvClosingMinor: 3_000_000_00,
-          npvDeltaMinor: 3_000_000_00,
-          currency: "ZAR",
-        },
-        eventId: newEventId(),
-      }),
-    );
-    eventStore.append(
-      makeIrdSwapPositionRevalued({
-        asOf,
-        entity: ENTITY,
-        actor: ACTOR,
-        citations: CITATIONS,
-        payload: {
-          tradeId: tradeIdA,
-          revalDate: "2026-05-20",
-          npvOpeningMinor: 3_000_000_00,
-          npvClosingMinor: 4_000_000_00, // latest
-          npvDeltaMinor: 1_000_000_00,
-          currency: "ZAR",
-        },
-        eventId: newEventId(),
-      }),
-    );
-    eventStore.append(
-      makeIrdSwapPositionRevalued({
-        asOf,
-        entity: ENTITY,
-        actor: ACTOR,
-        citations: CITATIONS,
-        payload: {
-          tradeId: tradeIdB,
-          revalDate: "2026-05-20",
-          npvOpeningMinor: 0,
-          npvClosingMinor: 2_000_000_00,
-          npvDeltaMinor: 2_000_000_00,
-          currency: "ZAR",
-        },
-        eventId: newEventId(),
-      }),
-    );
-
-    const mtm = resolveMtm({ counterpartyId: cp, currency: "ZAR", asOf });
-    // Latest A = R4m, B = R2m → total = R6m.
-    expect(mtm.amount).toBe(BigInt(6_000_000_00));
-  });
-
-  it("returns zero when counterparty has no trades", () => {
-    const cp = uniqueId("CP-NOTRADES");
-    const mtm = resolveMtm({ counterpartyId: cp, currency: "ZAR", asOf: tsIso() });
-    expect(mtm.amount).toBe(0n);
-  });
-
-  it("sums FxPositionRevalued deltas for ZAR netting set", () => {
-    const cp = uniqueId("CP-MTM-FX");
-    const asOf = tsIso();
-
-    // Note: FxTradeExecuted requires full schema. For this test we bypass
-    // the booking event by emitting a manual one with the minimal needed
-    // fields via direct eventStore.append of a permissive shape; but the
-    // resolveMtm impl walks via counterparty in TradeBooked. To exercise
-    // the FX path we use IRS booking event as the counterparty cap and
-    // emit FxPositionRevalued under a separately-booked FxTradeExecuted.
-    // Simpler: book one IRS trade with cp as counterparty so resolveMtm
-    // finds the cp, then emit FxPositionRevalued for a tradeId that's
-    // separately booked via FxTradeExecuted is overkill. Build a direct
-    // FX booking event using makeFxTradeExecuted.
-    // For test brevity, skip the FX-booking step here and verify the
-    // FxPositionRevalued event lookup path is wired by hooking it to an
-    // FxTradeExecuted-shaped trade.
-
-    // For the v1 slice, the IRS path is the load-bearing case; FX MTM is
-    // covered in the FX-MTM substrate. We assert here that when no FX
-    // trade is booked for the counterparty, FxPositionRevalued events for
-    // other tradeIds do NOT contaminate the MTM.
-    const mtm = resolveMtm({ counterpartyId: cp, currency: "ZAR", asOf });
-    // No trades for `cp` → zero.
-    expect(mtm.amount).toBe(0n);
-    // Silence biome unused-warning for the imported maker.
-    void makeFxPositionRevalued;
-  });
-});
-
 // ---------------------------------------------------------------------------
-// v1 — Item 3: resolveCollateral
+// computeAndEmit auto-resolves MTM + collateral via the FIL feeds when not
+// threaded (the v2-sourced live emission path).
 // ---------------------------------------------------------------------------
 
-describe("SA-CCR v1 — resolveCollateral (queries getCollateralInventory)", () => {
-  it("returns zero for non-ZAR netting set (inventory is ZAR-denominated)", () => {
-    const c = resolveCollateral({
-      nettingSetId: "NS-USD",
-      currency: "USD",
-      asOf: tsIso(),
-    });
-    expect(c.amount).toBe(0n);
-  });
-
-  it("returns the haircut-adjusted inventory total for ZAR netting set", () => {
-    // Build phase: inventory has zero positions → totalHQLAZar = 0.
-    const c = resolveCollateral({
-      nettingSetId: "NS-ZAR",
-      currency: "ZAR",
-      asOf: tsIso(),
-    });
-    expect(c.amount).toBe(0n);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// v1 — computeAndEmit auto-resolves MTM + collateral when not threaded
-// ---------------------------------------------------------------------------
-
-describe("SA-CCR v1 — computeAndEmit auto-resolution", () => {
-  it("falls back to resolveMtm + resolveCollateral when not provided", () => {
+describe("SA-CCR — computeAndEmit auto-resolution via the FIL feeds", () => {
+  it("resolves vMtm via the Valuable feed (latest *Revalued per trade) + collateral via the register when not provided", () => {
     const cp = uniqueId("CP-AUTO");
     const asOf = tsIso();
 
@@ -1004,7 +833,8 @@ describe("SA-CCR v1 — computeAndEmit auto-resolution", () => {
       asOf,
     });
 
-    // resolveMtm should have returned R2.5m; collateral = 0 (empty inventory).
+    // The Valuable feed returns the latest IrdSwapPositionRevalued npvClosing
+    // for the trade = R2.5m; collateral = 0 (empty inventory).
     expect(result.rc.vMtm.amount).toBe(BigInt(2_500_000_00));
     expect(result.rc.collateralHeld.amount).toBe(0n);
     // Unmargined: RC = max(V, 0) = R2.5m.
