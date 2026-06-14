@@ -672,7 +672,7 @@
     },
     {
       "file": "platform/risk/credit-limit-engine/pre-deal-check.ts",
-      "line": 191,
+      "line": 192,
       "pattern": "money-multiply/divide"
     },
     {
