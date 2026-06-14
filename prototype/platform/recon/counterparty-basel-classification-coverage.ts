@@ -26,7 +26,8 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
-import type { CcrEadComputedPayload } from "@platform/event-store/event-types/counterparty-credit-risk";
+import type { CcrEadComputedPayloadV2Type } from "@platform/event-store/event-types/counterparty-credit-risk";
+import { minorFromMoneyWire } from "@platform/core/money-codec";
 import { EventStore } from "@platform/event-store/store";
 import { resolveAllCounterpartyClasses } from "@platform/risk/counterparty-classification";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
@@ -60,12 +61,13 @@ export function run(opts: RunOpts = {}): ReconResult {
 
   // Population: counterparties with a latest (ZAR) SA-CCR EAD — the exposures
   // whose risk weight depends on the counterparty class.
-  const latestEadByNettingSet = new Map<string, CcrEadComputedPayload>();
+  // DECIMAL-MIGRATION (slice 2): CcrEadComputed.ead is now MoneyWire.
+  const latestEadByNettingSet = new Map<string, CcrEadComputedPayloadV2Type>();
   const eadReplayOpts = opts.asOf
     ? { type: "CcrEadComputed" as const, asOf: opts.asOf }
     : { type: "CcrEadComputed" as const };
   for (const ev of store.replay(eadReplayOpts)) {
-    const p = ev.payload as unknown as CcrEadComputedPayload;
+    const p = ev.payload as unknown as CcrEadComputedPayloadV2Type;
     if (!p.nettingSetId || p.currency !== FUNCTIONAL_CURRENCY) continue;
     const prev = latestEadByNettingSet.get(p.nettingSetId);
     if (prev && prev.computationDate >= p.computationDate) continue;
@@ -73,7 +75,7 @@ export function run(opts: RunOpts = {}): ReconResult {
   }
   const exposedCounterparties = new Set<string>();
   for (const p of latestEadByNettingSet.values()) {
-    if (p.ead > 0) exposedCounterparties.add(p.counterpartyId);
+    if (minorFromMoneyWire(p.ead) > 0) exposedCounterparties.add(p.counterpartyId);
   }
 
   const classes = resolveAllCounterpartyClasses(store, opts.asOf);

@@ -27,7 +27,7 @@
 
 import { type Money, minor } from "../../core/money";
 import { ZAR } from "../../core/types";
-import type { CcrEadComputedPayload } from "../../event-store/event-types/counterparty-credit-risk";
+import type { CcrEadComputedPayloadV2Type } from "../../event-store/event-types/counterparty-credit-risk";
 import type { EventStore } from "../../event-store/store";
 import { isLiveInstance, resolveTradeLifecycle } from "../../lifecycle/trade-lifecycle-state";
 import type { FxTradeExecutedPayload } from "../../markets/cdm/fx";
@@ -124,7 +124,7 @@ export function runSaCcrForFxPositions(eventStore: EventStore, asOf: string): Sa
   // Idempotency: netting sets already EAD-computed for this date.
   const alreadyComputed = new Set<string>();
   for (const ev of eventStore.replay({ type: "CcrEadComputed" })) {
-    const p = ev.payload as CcrEadComputedPayload;
+    const p = ev.payload as CcrEadComputedPayloadV2Type;
     if (p.computationDate === computationDate) alreadyComputed.add(p.nettingSetId);
   }
 

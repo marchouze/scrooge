@@ -21,9 +21,10 @@ import { describe, expect, it } from "bun:test";
 
 import { eventStore } from "../platform/composition";
 import { type Money, money } from "../platform/core/money";
+import { minorFromMoneyWire, moneyWireFromMinor } from "../platform/core/money-codec";
 import { BANK_ZA_001, ZAR, newEventId } from "../platform/core/types";
 import {
-  type CcrEadComputedPayload,
+  type CcrEadComputedPayloadV2Type,
   type CcrReplacementCostComputedPayload,
   makeCcrEadComputed,
   makeCcrReplacementCostComputed,
@@ -62,13 +63,14 @@ describe("CcrEadComputed event factory", () => {
   it("round-trips a valid payload through the event store", () => {
     const cp = uniqueId("CP-EAD");
     const rcId = newEventId();
-    const payload: CcrEadComputedPayload = {
+    // DECIMAL-MIGRATION (slice 2): rc/pfe/ead are now MoneyWire.
+    const payload: CcrEadComputedPayloadV2Type = {
       nettingSetId: `NS-${cp}-ZAR`,
       counterpartyId: cp,
-      rc: 5_500_000_00,
-      pfe: 1_200_000_00,
+      rc: moneyWireFromMinor(5_500_000_00, "ZAR"),
+      pfe: moneyWireFromMinor(1_200_000_00, "ZAR"),
       alpha: 1.4,
-      ead: 9_380_000_00,
+      ead: moneyWireFromMinor(9_380_000_00, "ZAR"),
       currency: "ZAR",
       computationDate: "2026-05-20",
       methodology: "sa-ccr",
@@ -89,40 +91,46 @@ describe("CcrEadComputed event factory", () => {
     expect(event.type).toBe("CcrEadComputed");
     eventStore.append(event);
 
-    let observed: CcrEadComputedPayload | undefined;
+    let observed: CcrEadComputedPayloadV2Type | undefined;
     for (const e of eventStore.replay({ type: "CcrEadComputed" })) {
-      const p = e.payload as CcrEadComputedPayload;
+      const p = e.payload as CcrEadComputedPayloadV2Type;
       if (p.counterpartyId === cp) observed = p;
     }
     expect(observed).toBeDefined();
-    expect(observed?.rc).toBe(5_500_000_00);
-    expect(observed?.pfe).toBe(1_200_000_00);
-    expect(observed?.ead).toBe(9_380_000_00);
+    // Assert MoneyWire encoding — exact decimal strings, no IEEE-754 drift.
+    expect(observed?.rc.__money).toBe("v1");
+    expect(observed?.rc.amount).toBe("550000000");
+    expect(observed?.rc.currency).toBe("ZAR");
+    expect(minorFromMoneyWire(observed!.rc)).toBe(5_500_000_00);
+    expect(minorFromMoneyWire(observed!.pfe)).toBe(1_200_000_00);
+    expect(minorFromMoneyWire(observed!.ead)).toBe(9_380_000_00);
     expect(observed?.alpha).toBe(1.4);
     expect(observed?.methodology).toBe("sa-ccr");
     expect(observed?.sourceEvents.rcEventId).toBe(rcId);
     expect(observed?.sourceEvents.pfeComponents).toBe(2);
   });
 
-  it("rejects negative ead via the zod schema", () => {
+  it("rejects malformed ead MoneyWire via the zod schema", () => {
+    // DECIMAL-MIGRATION (slice 2): ead is MoneyWire — passing an integer rejects.
     expect(() =>
       makeCcrEadComputed({
         asOf: tsIso(),
         entity: ENTITY,
         actor: ACTOR,
         citations: CITATIONS,
+        // biome-ignore lint/suspicious/noExplicitAny: deliberate schema-rejection test
         payload: {
           nettingSetId: "NS-X-ZAR",
           counterpartyId: "CP-X",
-          rc: 0,
-          pfe: 0,
+          rc: moneyWireFromMinor(0, "ZAR"),
+          pfe: moneyWireFromMinor(0, "ZAR"),
           alpha: 1.4,
-          ead: -1,
+          ead: -1, // wrong type — should be MoneyWire
           currency: "ZAR",
           computationDate: "2026-05-20",
           methodology: "sa-ccr",
           sourceEvents: { rcEventId: "evt-1", pfeComponents: 0 },
-        },
+        } as unknown as CcrEadComputedPayloadV2Type,
       }),
     ).toThrow();
   });
@@ -171,9 +179,9 @@ describe("SA-CCR computeAndEmit — RC + EAD emission", () => {
       const p = e.payload as CcrReplacementCostComputedPayload;
       if (p.counterpartyId === cp) rcEvent = { event_id: e.event_id, payload: p };
     }
-    let eadEvent: { event_id: string; payload: CcrEadComputedPayload } | undefined;
+    let eadEvent: { event_id: string; payload: CcrEadComputedPayloadV2Type } | undefined;
     for (const e of eventStore.replay({ type: "CcrEadComputed" })) {
-      const p = e.payload as CcrEadComputedPayload;
+      const p = e.payload as CcrEadComputedPayloadV2Type;
       if (p.counterpartyId === cp) eadEvent = { event_id: e.event_id, payload: p };
     }
 
@@ -183,10 +191,11 @@ describe("SA-CCR computeAndEmit — RC + EAD emission", () => {
     // RC = R5.5m. PFE = R240k (v1 SA-CCR: margined MF=0.2, multiplier=1.0
     //   because V−C ≫ 0 — see sa-ccr.test.ts for the per-asset-class
     //   add-on breakdown). EAD = 1.4 × (R5.5m + R240k) = R8.036m.
-    expect(rcEvent?.payload.rc).toBe(5_500_000_00);
-    expect(eadEvent?.payload.rc).toBe(5_500_000_00);
-    expect(eadEvent?.payload.pfe).toBe(240_000_00);
-    expect(eadEvent?.payload.ead).toBe(8_036_000_00);
+    // DECIMAL-MIGRATION (slice 2): rc/pfe/ead on CcrEadComputed are MoneyWire.
+    expect(rcEvent?.payload.rc).toBe(5_500_000_00); // RC event still uses integer
+    expect(minorFromMoneyWire(eadEvent!.payload.rc)).toBe(5_500_000_00);
+    expect(minorFromMoneyWire(eadEvent!.payload.pfe)).toBe(240_000_00);
+    expect(minorFromMoneyWire(eadEvent!.payload.ead)).toBe(8_036_000_00);
     expect(eadEvent?.payload.alpha).toBe(1.4);
     expect(eadEvent?.payload.methodology).toBe("sa-ccr");
     expect(eadEvent?.payload.currency).toBe("ZAR");
@@ -217,15 +226,15 @@ describe("SA-CCR computeAndEmit — RC + EAD emission", () => {
       asOf: tsIso(),
     });
 
-    let eadEvent: CcrEadComputedPayload | undefined;
+    let eadEvent: CcrEadComputedPayloadV2Type | undefined;
     for (const e of eventStore.replay({ type: "CcrEadComputed" })) {
-      const p = e.payload as CcrEadComputedPayload;
+      const p = e.payload as CcrEadComputedPayloadV2Type;
       if (p.counterpartyId === cp) eadEvent = p;
     }
     expect(eadEvent).toBeDefined();
-    expect(eadEvent?.pfe).toBe(0);
+    expect(minorFromMoneyWire(eadEvent!.pfe)).toBe(0);
     // EAD = 1.4 × R3m = R4.2m.
-    expect(eadEvent?.ead).toBe(4_200_000_00);
+    expect(minorFromMoneyWire(eadEvent!.ead)).toBe(4_200_000_00);
     expect(eadEvent?.sourceEvents.pfeComponents).toBe(0);
   });
 });

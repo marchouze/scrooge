@@ -43,7 +43,8 @@
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock, eventStore } from "../platform/composition";
-import type { CcrEadComputedPayload } from "../platform/event-store/event-types/counterparty-credit-risk";
+import type { CcrEadComputedPayloadV2Type } from "../platform/event-store/event-types/counterparty-credit-risk";
+import { minorFromMoneyWire } from "../platform/core/money-codec";
 import { resolveNettingSet } from "../platform/markets/netting-sets";
 import { logger } from "../platform/observability/logger";
 import { computeAndEmit } from "../platform/risk/sa-ccr/compute-and-emit";
@@ -76,13 +77,14 @@ const CITATIONS = [
 function latestEadByNs(): Map<string, { rc: number; pfe: number; ead: number; date: string }> {
   const by = new Map<string, { rc: number; pfe: number; ead: number; date: string }>();
   for (const ev of eventStore.replay({ type: "CcrEadComputed" })) {
-    const p = ev.payload as CcrEadComputedPayload;
+    // DECIMAL-MIGRATION (slice 2): rc/pfe/ead are MoneyWire — decode to minor units.
+    const p = ev.payload as CcrEadComputedPayloadV2Type;
     const prev = by.get(p.nettingSetId);
     if (prev && prev.date >= p.computationDate) continue;
     by.set(p.nettingSetId, {
-      rc: Number(p.rc),
-      pfe: Number(p.pfe),
-      ead: Number(p.ead),
+      rc: minorFromMoneyWire(p.rc),
+      pfe: minorFromMoneyWire(p.pfe),
+      ead: minorFromMoneyWire(p.ead),
       date: p.computationDate,
     });
   }
@@ -94,7 +96,7 @@ const before = latestEadByNs();
 // Netting sets already corrected at CORRECTION_DATE (idempotency).
 const alreadyCorrected = new Set<string>();
 for (const ev of eventStore.replay({ type: "CcrEadComputed" })) {
-  const p = ev.payload as CcrEadComputedPayload;
+  const p = ev.payload as CcrEadComputedPayloadV2Type;
   if (p.computationDate === CORRECTION_DATE) alreadyCorrected.add(p.nettingSetId);
 }
 

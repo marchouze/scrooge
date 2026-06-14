@@ -45,9 +45,10 @@ import { eventStore, logger } from "../../composition";
 import { type Money, add, minor, sub } from "../../core/money";
 import type { Currency } from "../../core/types";
 import type {
-  CcrEadComputedPayload,
+  CcrEadComputedPayloadV2Type,
   CcrReplacementCostComputedPayload,
 } from "../../event-store/event-types/counterparty-credit-risk";
+import { minorFromMoneyWire } from "../../core/money-codec";
 import { utcNow } from "../../types/time";
 import { getCreditLimit } from "./projection";
 import type { CreditLimit, CreditLimitHeadroom } from "./types";
@@ -107,13 +108,13 @@ export function getCurrentExposure(
 ): Money {
   const es = store ?? eventStore;
   // Tier 1: latest CcrEadComputed per netting set.
-  const latestEadPerNettingSet = new Map<string, CcrEadComputedPayload>();
+  const latestEadPerNettingSet = new Map<string, CcrEadComputedPayloadV2Type>();
   const eadReplayOpts =
     asOf !== undefined
       ? ({ type: "CcrEadComputed", asOf } as const)
       : ({ type: "CcrEadComputed" } as const);
   for (const event of es.replay(eadReplayOpts)) {
-    const p = event.payload as CcrEadComputedPayload;
+    const p = event.payload as CcrEadComputedPayloadV2Type;
     if (p.counterpartyId !== counterpartyId) continue;
     const prev = latestEadPerNettingSet.get(p.nettingSetId);
     if (!prev || prev.computationDate <= p.computationDate) {
@@ -149,7 +150,7 @@ export function getCurrentExposure(
     const ead = latestEadPerNettingSet.get(nsId);
     if (ead) {
       if (ead.currency !== currency) continue; // skip cross-currency sets
-      total = add(total, minor(BigInt(ead.ead), currency as Currency));
+      total = add(total, minor(BigInt(minorFromMoneyWire(ead.ead)), currency as Currency));
       observedInCurrency += 1;
       continue;
     }
