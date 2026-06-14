@@ -12,37 +12,37 @@
     },
     {
       "file": "dashboard/server.ts",
-      "line": 385,
+      "line": 387,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 531,
+      "line": 533,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 532,
+      "line": 534,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 622,
+      "line": 624,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 642,
+      "line": 644,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 665,
+      "line": 667,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 666,
+      "line": 668,
       "pattern": "money-multiply/divide"
     },
     {
@@ -922,7 +922,7 @@
     },
     {
       "file": "runtime/agents/bea-gl-fx-interpreter-cutover.ts",
-      "line": 190,
+      "line": 192,
       "pattern": "Math.round(money)"
     },
     {
