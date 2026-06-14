@@ -56,6 +56,7 @@ import {
 } from "../accounting/fx-subledger-legacy-reconciliation";
 import { buildGlView } from "../accounting/gl-projection";
 import { eventStore } from "../composition";
+import { amountToMinorUnits } from "../core/decimal-money";
 import type { Event } from "../event-store/types";
 import type { ReconResult, ReconViolation } from "./types";
 
@@ -145,7 +146,7 @@ export function run(opts: RunOpts = {}): ReconResult {
       violations.push({
         subject: `${l.accountId}|${l.currency}`,
         severity: "fail",
-        message: `Orphaned FX sub-ledger gross: ACC-2100 trading account ${l.accountId} (${l.currency}) is not at the live-trade-only target — ${l.debitCredit === "debit" ? "Dr" : "Cr"} ${fmt(l.amountMinor)} closing move still required. Run scripts/reconcile-fx-subledger-legacy.ts --emit. Authority: D-FX-SUBLEDGER-LEGACY-RECONCILIATION; Principle 1.`,
+        message: `Orphaned FX sub-ledger gross: ACC-2100 trading account ${l.accountId} (${l.currency}) is not at the live-trade-only target — ${l.debitCredit === "debit" ? "Dr" : "Cr"} ${fmt(Number(amountToMinorUnits(l.amount)))} closing move still required. Run scripts/reconcile-fx-subledger-legacy.ts --emit. Authority: D-FX-SUBLEDGER-LEGACY-RECONCILIATION; Principle 1.`,
       });
     }
   }

@@ -22,7 +22,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { type Money, amountToMinorUnits } from "../core/decimal-money";
+import { type Money, amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
 import { legAmountMoney } from "../core/money-codec";
 import type { Event } from "../event-store/types";
 import { eventInOperatingBook } from "../projections/filter";
@@ -93,6 +93,8 @@ export interface GlLedgerEntry {
   debitCredit: "debit" | "credit";
   /** Amount in minor currency units */
   amountMinor: number;
+  /** Amount as exact decimal Money — source of truth (decimal-native consumer migration) */
+  amount: Money<string>;
   /** ISO 4217 currency */
   currency: string;
   /** For ManualJournalEntry: the journal ID */
@@ -353,6 +355,7 @@ export function buildGlView(
           accountCategory: coa.category,
           debitCredit: l.debitCredit,
           amountMinor: legMinor,
+          amount: l.amount,
           currency: l.currency,
           ...rptFields(legMinor, l.currency),
         });
@@ -366,6 +369,7 @@ export function buildGlView(
       const amountMinor = typeof p.amountMinor === "number" ? p.amountMinor : 0;
       const tradeId = typeof p.tradeId === "string" ? p.tradeId : event.event_id;
 
+      const journalAmount = moneyFromMinorUnits(amountMinor, currency);
       if (accountDebit) {
         const coa = getCoaEntry(accountDebit);
         ledgerEntries.push({
@@ -378,6 +382,7 @@ export function buildGlView(
           accountCategory: coa.category,
           debitCredit: "debit",
           amountMinor,
+          amount: journalAmount,
           currency,
           ...rptFields(amountMinor, currency),
         });
@@ -394,6 +399,7 @@ export function buildGlView(
           accountCategory: coa.category,
           debitCredit: "credit",
           amountMinor,
+          amount: journalAmount,
           currency,
           ...rptFields(amountMinor, currency),
         });
@@ -412,7 +418,8 @@ export function buildGlView(
           debitCredit: (r.debitCredit === "credit" ? "credit" : "debit") as "debit" | "credit",
           currency: typeof r.currency === "string" ? r.currency : "ZAR",
         };
-        const legMinor = Number(amountToMinorUnits(legAmountMoney(r)));
+        const legMoney = legAmountMoney(r);
+        const legMinor = Number(amountToMinorUnits(legMoney));
         const coa = getCoaEntry(l.accountId);
         ledgerEntries.push({
           eventId: event.event_id,
@@ -424,6 +431,7 @@ export function buildGlView(
           accountCategory: coa.category,
           debitCredit: l.debitCredit,
           amountMinor: legMinor,
+          amount: legMoney,
           currency: l.currency,
           journalId,
           ...rptFields(legMinor, l.currency),
