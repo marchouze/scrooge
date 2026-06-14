@@ -424,7 +424,6 @@
     "recon:no-legacy-le-identity": "bun run platform/recon/no-legacy-le-identity.ts",
     "recon:no-residual-minor-encoding": "bun run platform/recon/no-residual-minor-encoding.ts",
     "recon:no-residual-minor-encoding-fixture": "bun run platform/recon/no-residual-minor-encoding-fixture-check.ts",
-    "recon:sub-ledger-leg-decimal-parity": "bun run platform/recon/sub-ledger-leg-decimal-parity.ts",
     "recon:event-store-append-only": "bun run platform/recon/event-store-append-only.ts",
     "recon:event-store-no-delete-callsite": "bun run platform/recon/event-store-no-delete-callsite.ts",
     "recon:urn-shape": "bun run platform/recon/urn-shape.ts",

@@ -41,6 +41,11 @@ import { EventStore } from "../../platform/event-store/store";
 
 import type { SubLedgerLeg } from "../../platform/accounting/fx-accounting-types";
 import { fxTradeBookingJournals } from "../../platform/accounting/posting-rules/fx-spot";
+import { amountToMinorUnits } from "../../platform/core/decimal-money";
+
+function legMinor(l: SubLedgerLeg): number {
+  return Number(amountToMinorUnits(l.amount));
+}
 
 // Helper: sum debit/credit per account across a set of legs, returning net
 // (positive = net debit, negative = net credit).
@@ -48,7 +53,7 @@ function netPerAccount(legs: SubLedgerLeg[]): Map<string, number> {
   const m = new Map<string, number>();
   for (const leg of legs) {
     const current = m.get(leg.accountId) ?? 0;
-    const delta = leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+    const delta = leg.debitCredit === "debit" ? legMinor(leg) : -legMinor(leg);
     m.set(leg.accountId, current + delta);
   }
   return m;
@@ -145,10 +150,10 @@ describe("GL posting engine — manual-provenance FxTradeExecuted", () => {
       const ccyLegs = legs.filter((l) => l.currency === ccy);
       const debit = ccyLegs
         .filter((l) => l.debitCredit === "debit")
-        .reduce((s, l) => s + l.amountMinor, 0);
+        .reduce((s, l) => s + legMinor(l), 0);
       const credit = ccyLegs
         .filter((l) => l.debitCredit === "credit")
-        .reduce((s, l) => s + l.amountMinor, 0);
+        .reduce((s, l) => s + legMinor(l), 0);
       expect(debit).toBe(credit);
     }
 
@@ -453,7 +458,7 @@ describe("Regression — cancelling a REVALUED FxTrade reverses the accumulated 
     // Net cumulative was a +R7,500 GAIN (Dr receivable / Cr unrealised over the
     // revaluations); the reversal must DEBIT unrealised P&L by exactly R7,500.
     expect(unrealisedLeg?.debitCredit).toBe("debit");
-    expect(unrealisedLeg?.amountMinor).toBe(7_500_00);
+    expect(unrealisedLeg ? legMinor(unrealisedLeg) : undefined).toBe(7_500_00);
 
     // 8) END-TO-END: every IFRS posting on this trade — booking + both
     //    revaluations + cancellation — must net to ZERO on EVERY account.
@@ -518,10 +523,10 @@ describe("Regression — PrincipalPayment produces an 'fx-principal-payment' pos
       const ccyLegs = legs.filter((l) => l.currency === ccy);
       const debit = ccyLegs
         .filter((l) => l.debitCredit === "debit")
-        .reduce((s, l) => s + l.amountMinor, 0);
+        .reduce((s, l) => s + legMinor(l), 0);
       const credit = ccyLegs
         .filter((l) => l.debitCredit === "credit")
-        .reduce((s, l) => s + l.amountMinor, 0);
+        .reduce((s, l) => s + legMinor(l), 0);
       expect(debit).toBe(credit);
     }
   });
@@ -776,13 +781,13 @@ describe("Regression — securities cutover: bond + equity post via the SLA inte
     const assetLeg = legs.find((l) => l.accountId === "ACC-3100-001");
     const cashLeg = legs.find((l) => l.accountId === "ACC-1200-001");
     expect(assetLeg?.debitCredit).toBe("debit");
-    expect(assetLeg?.amountMinor).toBe(dirty);
+    expect(assetLeg ? legMinor(assetLeg) : undefined).toBe(dirty);
     expect(cashLeg?.debitCredit).toBe("credit");
-    expect(cashLeg?.amountMinor).toBe(dirty);
+    expect(cashLeg ? legMinor(cashLeg) : undefined).toBe(dirty);
     // Balanced.
     // Balanced: total debits == total credits (per currency).
     let bal = 0;
-    for (const l of legs) bal += l.debitCredit === "debit" ? l.amountMinor : -l.amountMinor;
+    for (const l of legs) bal += l.debitCredit === "debit" ? legMinor(l) : -legMinor(l);
     expect(bal).toBe(0);
   });
 
@@ -820,7 +825,7 @@ describe("Regression — securities cutover: bond + equity post via the SLA inte
     expect(legs).toHaveLength(3); // Dr receivable, Dr WHT, Cr income
     // Balanced: total debits == total credits (per currency).
     let bal = 0;
-    for (const l of legs) bal += l.debitCredit === "debit" ? l.amountMinor : -l.amountMinor;
+    for (const l of legs) bal += l.debitCredit === "debit" ? legMinor(l) : -legMinor(l);
     expect(bal).toBe(0);
   });
 
@@ -858,7 +863,7 @@ describe("Regression — securities cutover: bond + equity post via the SLA inte
     // legacy FVOCI imbalance cannot regress through the engine.
     // Balanced: total debits == total credits (per currency).
     let bal = 0;
-    for (const l of legs) bal += l.debitCredit === "debit" ? l.amountMinor : -l.amountMinor;
+    for (const l of legs) bal += l.debitCredit === "debit" ? legMinor(l) : -legMinor(l);
     expect(bal).toBe(0);
     // No P&L recycling (§5.7.5): the FVTPL P&L account is NOT touched.
     expect(legs.find((l) => l.accountId === "ACC-3200-003")).toBeUndefined();
@@ -981,7 +986,7 @@ describe("IRS convergence — booked IRS + EOD reval → GL postings on IrdSwap*
     for (const posting of [bookingPostings[0], revalPostings[0]]) {
       const legs = (posting.payload as { legs: SubLedgerLeg[] }).legs;
       let bal = 0;
-      for (const l of legs) bal += l.debitCredit === "debit" ? l.amountMinor : -l.amountMinor;
+      for (const l of legs) bal += l.debitCredit === "debit" ? legMinor(l) : -legMinor(l);
       expect(bal).toBe(0);
     }
   });

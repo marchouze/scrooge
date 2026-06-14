@@ -562,8 +562,8 @@
             <td><code>${esc(e.source)}</code></td>
             <td title="${esc(e.journalId ?? e.eventId)}">${esc(e.description)}</td>
             <td title="${esc(e.accountId)}">${esc(e.accountName !== e.accountId ? e.accountName : e.accountId)}<br><span class="mono" style="font-size:0.75rem;color:var(--muted)">${esc(e.accountId)}</span></td>
-            <td style="text-align:right" class="mono ${e.debitCredit === 'debit' ? 'dr' : ''}">${e.debitCredit === 'debit' ? fmt(e.amountMinor) : ''}</td>
-            <td style="text-align:right" class="mono ${e.debitCredit === 'credit' ? 'cr' : ''}">${e.debitCredit === 'credit' ? fmt(e.amountMinor) : ''}</td>
+            <td style="text-align:right" class="mono ${e.debitCredit === 'debit' ? 'dr' : ''}">${e.debitCredit === 'debit' ? fmt(e.amount ? Math.round(parseFloat(e.amount.amount) * 100) : (e.amountMinor ?? 0)) : ''}</td>
+            <td style="text-align:right" class="mono ${e.debitCredit === 'credit' ? 'cr' : ''}">${e.debitCredit === 'credit' ? fmt(e.amount ? Math.round(parseFloat(e.amount.amount) * 100) : (e.amountMinor ?? 0)) : ''}</td>
             <td>${esc(e.currency)}</td>
             ${rptCell}
           </tr>`;

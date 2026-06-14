@@ -1,6 +1,7 @@
 // platform/accounting/fx-subledger-trade-reconciliation.test.ts
 
 import { describe, expect, test } from "bun:test";
+import { amountToMinorUnits } from "../core/decimal-money";
 import type { Event } from "../event-store/types";
 import {
   FX_MISROUTED_RESERVE,
@@ -118,15 +119,15 @@ describe("computeFxSubledgerReconciliation", () => {
     const legs = rows[0]?.correctionLegs ?? [];
     const zar001 = legs.find((l) => l.accountId === "ACC-2100-001" && l.currency === "ZAR");
     expect(zar001?.debitCredit).toBe("credit");
-    expect(zar001?.amountMinor).toBe(1000);
+    expect(zar001 ? Math.round(Number(zar001.amount.amount) * 100) : undefined).toBe(1000);
     // balanced per currency
     for (const ccy of ["ZAR", "USD"]) {
       const d = legs
         .filter((l) => l.currency === ccy && l.debitCredit === "debit")
-        .reduce((s, l) => s + l.amountMinor, 0);
+        .reduce((s, l) => s + Number(amountToMinorUnits(l.amount)), 0);
       const c = legs
         .filter((l) => l.currency === ccy && l.debitCredit === "credit")
-        .reduce((s, l) => s + l.amountMinor, 0);
+        .reduce((s, l) => s + Number(amountToMinorUnits(l.amount)), 0);
       expect(d).toBe(c);
     }
   });
@@ -175,10 +176,10 @@ describe("computeFxSubledgerRebuild", () => {
     for (const ccy of ["ZAR", "USD"]) {
       const d = r.restateLegs
         .filter((l) => l.currency === ccy && l.debitCredit === "debit")
-        .reduce((s, l) => s + l.amountMinor, 0);
+        .reduce((s, l) => s + Number(amountToMinorUnits(l.amount)), 0);
       const c = r.restateLegs
         .filter((l) => l.currency === ccy && l.debitCredit === "credit")
-        .reduce((s, l) => s + l.amountMinor, 0);
+        .reduce((s, l) => s + Number(amountToMinorUnits(l.amount)), 0);
       expect(d).toBe(c);
     }
 
@@ -194,7 +195,7 @@ describe("computeFxSubledgerRebuild", () => {
       (l) => l.accountId === FX_REMEDIATION_SUSPENSE && l.currency === "ZAR",
     );
     expect(susLeg?.debitCredit).toBe("debit");
-    expect(susLeg?.amountMinor).toBe(12345);
+    expect(susLeg ? Math.round(Number(susLeg.amount.amount) * 100) : undefined).toBe(12345);
   });
 });
 
@@ -244,9 +245,11 @@ describe("computeFxMisroutedCashRestate", () => {
     const suspenseLeg = restateLegs.find((l) => l.accountId === FX_REMEDIATION_SUSPENSE);
     // reserve holds a -1250 (credit) residue → sweep posts Dr reserve / Cr suspense.
     expect(reserveLeg?.debitCredit).toBe("debit");
-    expect(reserveLeg?.amountMinor).toBe(1250);
+    expect(reserveLeg ? Math.round(Number(reserveLeg.amount.amount) * 100) : undefined).toBe(1250);
     expect(suspenseLeg?.debitCredit).toBe("credit");
-    expect(suspenseLeg?.amountMinor).toBe(1250);
+    expect(suspenseLeg ? Math.round(Number(suspenseLeg.amount.amount) * 100) : undefined).toBe(
+      1250,
+    );
   });
 
   test("ignores fixture-sourced postings and non-FX posting types", () => {

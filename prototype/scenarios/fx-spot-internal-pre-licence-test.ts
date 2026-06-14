@@ -107,9 +107,12 @@
 
 import { unlinkSync } from "node:fs";
 
+import type { SubLedgerLeg } from "../platform/accounting/fx-accounting-types";
+import { subLedgerLegFromMinor } from "../platform/accounting/fx-accounting-types";
 import { buildGlView } from "../platform/accounting/gl-projection";
 import { closePeriod, openPeriod } from "../platform/accounting/period-close";
 import { eventStore } from "../platform/composition";
+import { amountToMinorUnits, money } from "../platform/core/decimal-money";
 import { newEventId } from "../platform/core/types";
 import type {
   CreditLimitLoadedPayload,
@@ -465,12 +468,7 @@ async function emitPosting(args: {
     | "settlement"
     | "fx-principal-payment"
     | "fx-lifecycle-close";
-  legs: ReadonlyArray<{
-    accountId: string;
-    debitCredit: "debit" | "credit";
-    amountMinor: number;
-    currency: string;
-  }>;
+  legs: ReadonlyArray<SubLedgerLeg>;
   postedAt: string;
   entity?: string;
 }): Promise<Event | null> {
@@ -1131,36 +1129,38 @@ async function runPhase3(): Promise<PhaseResult> {
       (l) => l.accountId === "ACC-2300-003" && l.debitCredit === "credit",
     );
 
+    const toMinor = (l: { amount: { amount: string; currency: string } }) =>
+      Number(amountToMinorUnits(money(l.amount.amount, l.amount.currency as never)));
     r.assert(
       "PR-FX-005 — Dr Settlement-Failed Receivable [USD] = USD 500k",
       settlementFailedReceivableLeg !== undefined &&
-        settlementFailedReceivableLeg.amountMinor === usdReceiveLegMinor &&
+        toMinor(settlementFailedReceivableLeg) === usdReceiveLegMinor &&
         settlementFailedReceivableLeg.currency === "USD",
       `leg=${JSON.stringify(settlementFailedReceivableLeg)}`,
     );
     r.assert(
       "PR-FX-005 — Cr FX Trading Receivable [USD] = USD 500k (derecognise FVTPL)",
       fxTradingReceivableCrLeg !== undefined &&
-        fxTradingReceivableCrLeg.amountMinor === usdReceiveLegMinor,
+        toMinor(fxTradingReceivableCrLeg) === usdReceiveLegMinor,
       `leg=${JSON.stringify(fxTradingReceivableCrLeg)}`,
     );
     r.assert(
       "PR-FX-005 — Dr Credit Loss Expense — FX Settlement (ZAR functional)",
       creditLossExpenseLeg !== undefined &&
-        creditLossExpenseLeg.amountMinor === zarEquivalentMinor &&
+        toMinor(creditLossExpenseLeg) === zarEquivalentMinor &&
         creditLossExpenseLeg.currency === "ZAR",
       `leg=${JSON.stringify(creditLossExpenseLeg)}`,
     );
     r.assert(
       "PR-FX-005 — Cr ECL Allowance — Settlement-Failed (100% Stage-3, IFRS 9 §5.5.13)",
       eclAllowanceLeg !== undefined &&
-        eclAllowanceLeg.amountMinor === zarEquivalentMinor &&
+        toMinor(eclAllowanceLeg) === zarEquivalentMinor &&
         eclAllowanceLeg.currency === "ZAR",
       `leg=${JSON.stringify(eclAllowanceLeg)}`,
     );
 
     // Stage-3 ECL = 100% of expected receive leg.
-    const eclAllowance = eclAllowanceLeg?.amountMinor ?? 0;
+    const eclAllowance = eclAllowanceLeg ? toMinor(eclAllowanceLeg) : 0;
     r.assert(
       "Stage-3 ECL = 100% of expected receive-leg ZAR equivalent (IFRS 9 §5.5.13)",
       eclAllowance === zarEquivalentMinor,
@@ -1638,18 +1638,14 @@ async function runPhase6(): Promise<PhaseResult> {
         sourceEventId: openResult.event.event_id,
         postingType: "trade-booking",
         legs: [
-          {
-            accountId: "ACC-1100-001", // Nostro ZAR / SARB cash — HQLA Level 1
-            debitCredit: "debit",
-            amountMinor: 100_000_000_00,
-            currency: "ZAR",
-          },
-          {
-            accountId: "ACC-5000-001", // Share Capital
-            debitCredit: "credit",
-            amountMinor: 100_000_000_00,
-            currency: "ZAR",
-          },
+          subLedgerLegFromMinor(
+            { accountId: "ACC-1100-001", debitCredit: "debit", currency: "ZAR" },
+            100_000_000_00,
+          ),
+          subLedgerLegFromMinor(
+            { accountId: "ACC-5000-001", debitCredit: "credit", currency: "ZAR" },
+            100_000_000_00,
+          ),
         ],
         postedAt: "2026-05-01T08:00:00.000Z",
       },

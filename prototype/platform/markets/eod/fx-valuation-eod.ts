@@ -34,7 +34,7 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { clock } from "../../composition";
-import { money } from "../../core/decimal-money";
+import { money, moneyFromMinorUnits } from "../../core/decimal-money";
 import { encodeMoney } from "../../core/money-codec";
 import type { MoneyWire } from "../../core/money-codec";
 import { type Currency, newEventId } from "../../core/types";
@@ -344,13 +344,13 @@ export function runFxValuationEod(
             {
               accountId: debitAccount,
               debitCredit: "debit",
-              amountMinor: absMinor,
+              amount: encodeMoney(moneyFromMinorUnits(BigInt(absMinor), "ZAR" as Currency)),
               currency: "ZAR",
             },
             {
               accountId: creditAccount,
               debitCredit: "credit",
-              amountMinor: absMinor,
+              amount: encodeMoney(moneyFromMinorUnits(BigInt(absMinor), "ZAR" as Currency)),
               currency: "ZAR",
             },
           ],

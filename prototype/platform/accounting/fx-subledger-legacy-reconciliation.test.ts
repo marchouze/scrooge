@@ -7,6 +7,7 @@
 
 import { describe, expect, it } from "bun:test";
 
+import { amountToMinorUnits } from "../core/decimal-money";
 import {
   makeFxTradeCancelled,
   makeSubLedgerPostingEmitted,
@@ -125,7 +126,7 @@ describe("computeFxSubledgerLegacyReconciliation", () => {
     expect(r.suspenseResidue).toEqual([]);
     // GBP must move off 002/004 onto 010/011; USD untouched.
     const byKey = new Map(
-      r.closingLegs.map((l) => [`${l.accountId}|${l.currency}|${l.debitCredit}`, l.amountMinor]),
+      r.closingLegs.map((l) => [`${l.accountId}|${l.currency}|${l.debitCredit}`, legMinor(l)]),
     );
     expect(byKey.get("ACC-2100-002|GBP|credit")).toBe(38_135_709); // remove Dr from 002
     expect(byKey.get("ACC-2100-010|GBP|debit")).toBe(38_135_709); // add Dr to 010
@@ -159,7 +160,7 @@ describe("computeFxSubledgerLegacyReconciliation", () => {
     expect(r.liveTradeIds).toEqual([]);
     // ACC-2100-001 holds Dr 10; ACC-2100-003 holds Cr 10 → both swept to suspense.
     const byKey = new Map(
-      r.closingLegs.map((l) => [`${l.accountId}|${l.currency}|${l.debitCredit}`, l.amountMinor]),
+      r.closingLegs.map((l) => [`${l.accountId}|${l.currency}|${l.debitCredit}`, legMinor(l)]),
     );
     expect(byKey.get("ACC-2100-001|ZAR|credit")).toBe(10_00); // clear the Dr 10
     expect(byKey.get("ACC-2100-003|ZAR|debit")).toBe(10_00); // clear the Cr 10
@@ -196,7 +197,7 @@ describe("computeFxSubledgerLegacyReconciliation", () => {
     expect(residueByCcy.size).toBe(0);
     // But closing legs DO move each account to zero (gross retired).
     const byKey = new Map(
-      r.closingLegs.map((l) => [`${l.accountId}|${l.currency}|${l.debitCredit}`, l.amountMinor]),
+      r.closingLegs.map((l) => [`${l.accountId}|${l.currency}|${l.debitCredit}`, legMinor(l)]),
     );
     expect(byKey.get("ACC-2100-001|ZAR|credit")).toBe(200_00);
     expect(byKey.get("ACC-2100-003|ZAR|debit")).toBe(300_00);
@@ -221,7 +222,7 @@ describe("computeFxSubledgerLegacyReconciliation", () => {
     // ACC-2100-001 Dr 75 has no ACC-2100 contra ⇒ suspense holds Dr 75 ZAR.
     expect(residueByCcy.get("ZAR")).toBe(75_00);
     const byKey = new Map(
-      r.closingLegs.map((l) => [`${l.accountId}|${l.currency}|${l.debitCredit}`, l.amountMinor]),
+      r.closingLegs.map((l) => [`${l.accountId}|${l.currency}|${l.debitCredit}`, legMinor(l)]),
     );
     // Clear the trading account (Cr 75) and contra into suspense (Dr 75).
     expect(byKey.get("ACC-2100-001|ZAR|credit")).toBe(75_00);
@@ -234,8 +235,14 @@ describe("computeFxSubledgerLegacyReconciliation", () => {
 function expectBalanced(legs: readonly SubLedgerLeg[]): void {
   const byCcy = new Map<string, number>();
   for (const l of legs) {
-    const signed = l.debitCredit === "debit" ? l.amountMinor : -l.amountMinor;
+    const minor = Number(amountToMinorUnits(l.amount));
+    const signed = l.debitCredit === "debit" ? minor : -minor;
     byCcy.set(l.currency, (byCcy.get(l.currency) ?? 0) + signed);
   }
   for (const [, net] of byCcy) expect(net).toBe(0);
+}
+
+/** Extract minor units from a SubLedgerLeg (for test assertions). */
+function legMinor(l: SubLedgerLeg): number {
+  return Number(amountToMinorUnits(l.amount));
 }

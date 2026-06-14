@@ -7,7 +7,13 @@
 
 import { describe, expect, it } from "bun:test";
 
+import type { SubLedgerLeg } from "../platform/accounting/fx-accounting-types";
+import { amountToMinorUnits } from "../platform/core/decimal-money";
 import type { Event } from "../platform/event-store/types";
+
+function legMinor(l: SubLedgerLeg): number {
+  return Number(amountToMinorUnits(l.amount));
+}
 import {
   REBOOK_POSTING_TYPE,
   buildRebookEvent,
@@ -106,21 +112,19 @@ describe("runRebook (injected events)", () => {
       postingType: string;
       rebookKey: string;
       postedAt: string;
-      legs: Array<{
-        accountId: string;
-        debitCredit: string;
-        amountMinor: number;
-        currency: string;
-      }>;
+      legs: SubLedgerLeg[];
     };
     expect(payload.postingType).toBe(REBOOK_POSTING_TYPE);
     expect(payload.rebookKey).toBe(rebookKeyFor("ACC-1200-002", "GBP"));
     // Net credit residual → reverse with a DEBIT on the contaminated account,
     // CREDIT into the per-currency home; balanced within GBP.
-    expect(payload.legs).toEqual([
-      { accountId: "ACC-1200-002", debitCredit: "debit", amountMinor: 168715899, currency: "GBP" },
-      { accountId: "ACC-1200-004", debitCredit: "credit", amountMinor: 168715899, currency: "GBP" },
-    ]);
+    expect(payload.legs[0]?.accountId).toBe("ACC-1200-002");
+    expect(payload.legs[0]?.debitCredit).toBe("debit");
+    expect(payload.legs[0] ? legMinor(payload.legs[0]) : undefined).toBe(168715899);
+    expect(payload.legs[0]?.currency).toBe("GBP");
+    expect(payload.legs[1]?.accountId).toBe("ACC-1200-004");
+    expect(payload.legs[1]?.debitCredit).toBe("credit");
+    expect(payload.legs[1] ? legMinor(payload.legs[1]) : undefined).toBe(168715899);
     // Timestamp-aligned to the contaminating leg, never wall-clock-now.
     expect(payload.postedAt).toBe("2026-06-04T00:00:00.000Z");
     // Provenance inherited from the contaminated posting (same plane).
@@ -207,15 +211,13 @@ describe("buildRebookEvent / existingRebookKeysFrom", () => {
 
   it("emits a schema-valid balanced posting (debits == credits per currency)", () => {
     const result = runRebook({ apply: false, events: [contaminatedNostro()] });
-    const payload = result.plan[0]?.event.payload as {
-      legs: Array<{ debitCredit: string; amountMinor: number; currency: string }>;
-    };
+    const payload = result.plan[0]?.event.payload as { legs: SubLedgerLeg[] };
     const totals = new Map<string, number>();
     for (const leg of payload.legs) {
       totals.set(
         leg.currency,
         (totals.get(leg.currency) ?? 0) +
-          (leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor),
+          (leg.debitCredit === "debit" ? legMinor(leg) : -legMinor(leg)),
       );
     }
     for (const [, net] of totals) expect(net).toBe(0);
@@ -239,18 +241,14 @@ describe("buildRebookEvent / existingRebookKeysFrom", () => {
       ]),
     ];
     const result = runRebook({ apply: false, events });
-    const payload = result.plan[0]?.event.payload as {
-      legs: Array<{
-        accountId: string;
-        debitCredit: string;
-        amountMinor: number;
-        currency: string;
-      }>;
-    };
+    const payload = result.plan[0]?.event.payload as { legs: SubLedgerLeg[] };
     expect(result.plan[0]?.targetAccountId).toBe("ACC-1200-006");
-    expect(payload.legs).toEqual([
-      { accountId: "ACC-1200-002", debitCredit: "credit", amountMinor: 331799070, currency: "CHF" },
-      { accountId: "ACC-1200-006", debitCredit: "debit", amountMinor: 331799070, currency: "CHF" },
-    ]);
+    expect(payload.legs[0]?.accountId).toBe("ACC-1200-002");
+    expect(payload.legs[0]?.debitCredit).toBe("credit");
+    expect(payload.legs[0] ? legMinor(payload.legs[0]) : undefined).toBe(331799070);
+    expect(payload.legs[0]?.currency).toBe("CHF");
+    expect(payload.legs[1]?.accountId).toBe("ACC-1200-006");
+    expect(payload.legs[1]?.debitCredit).toBe("debit");
+    expect(payload.legs[1] ? legMinor(payload.legs[1]) : undefined).toBe(331799070);
   });
 });

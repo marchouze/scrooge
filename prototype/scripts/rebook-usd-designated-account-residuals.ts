@@ -140,7 +140,7 @@ import {
   extractGlLegs,
   mismatchedResiduals,
 } from "../platform/accounting/designated-currency-ledger";
-import type { SubLedgerLeg } from "../platform/accounting/fx-accounting-types";
+import { subLedgerLegFromMinor } from "../platform/accounting/fx-accounting-types";
 import {
   FX_UNRESOLVED_CURRENCY_SUSPENSE,
   defaultResolver,
@@ -262,19 +262,15 @@ export function buildRebookEvent(residual: MismatchedResidual, targetAccountId: 
   const residualSide: "debit" | "credit" = residual.netMinor >= 0 ? "debit" : "credit";
   const reverseSide: "debit" | "credit" = residual.netMinor >= 0 ? "credit" : "debit";
   const amountMinor = Math.abs(residual.netMinor);
-  const legs: SubLedgerLeg[] = [
-    {
-      accountId: residual.accountId,
-      debitCredit: reverseSide,
+  const legs = [
+    subLedgerLegFromMinor(
+      { accountId: residual.accountId, debitCredit: reverseSide, currency: residual.currency },
       amountMinor,
-      currency: residual.currency,
-    },
-    {
-      accountId: targetAccountId,
-      debitCredit: residualSide,
+    ),
+    subLedgerLegFromMinor(
+      { accountId: targetAccountId, debitCredit: residualSide, currency: residual.currency },
       amountMinor,
-      currency: residual.currency,
-    },
+    ),
   ];
   const event = makeSubLedgerPostingEmitted({
     // Stamped with the latest mismatched leg's own postedAt — NOT wall-clock-

@@ -33,8 +33,18 @@ function makePosting(sourceEventId: string): SubLedgerPostingEmittedPayload {
     sourceEventId,
     postingType: "trade-booking",
     legs: [
-      { accountId: "ACC-1200-001", debitCredit: "debit", amountMinor: 100_000, currency: "ZAR" },
-      { accountId: "ACC-2100-001", debitCredit: "credit", amountMinor: 100_000, currency: "ZAR" },
+      {
+        accountId: "ACC-1200-001",
+        debitCredit: "debit",
+        amount: { __money: "v1", amount: "1000", currency: "ZAR" },
+        currency: "ZAR",
+      },
+      {
+        accountId: "ACC-2100-001",
+        debitCredit: "credit",
+        amount: { __money: "v1", amount: "1000", currency: "ZAR" },
+        currency: "ZAR",
+      },
     ],
     postedAt: "2026-05-15T10:00:00.000Z",
   };

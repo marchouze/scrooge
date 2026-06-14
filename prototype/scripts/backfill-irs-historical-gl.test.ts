@@ -22,7 +22,9 @@
 
 import { describe, expect, it } from "bun:test";
 
+import type { SubLedgerLeg } from "../platform/accounting/fx-accounting-types";
 import { eventStore } from "../platform/composition";
+import { amountToMinorUnits } from "../platform/core/decimal-money";
 import { newEventId } from "../platform/core/types";
 import { makeIrsPositionRevalued, makeIrsTradeBooked } from "../platform/markets/cdm/ird";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
@@ -195,10 +197,12 @@ describe("backfill-irs-historical-gl — additive Irs* → IrdSwap*", () => {
 
     // Each posting balances (interpreter assert_zero).
     for (const posting of revalPostings) {
-      const legs = (posting.payload as { legs: { debitCredit: string; amountMinor: number }[] })
-        .legs;
+      const legs = (posting.payload as { legs: SubLedgerLeg[] }).legs;
       let bal = 0;
-      for (const l of legs) bal += l.debitCredit === "debit" ? l.amountMinor : -l.amountMinor;
+      for (const l of legs) {
+        const minor = Number(amountToMinorUnits(l.amount));
+        bal += l.debitCredit === "debit" ? minor : -minor;
+      }
       expect(bal).toBe(0);
     }
   });

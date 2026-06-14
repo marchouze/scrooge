@@ -26,6 +26,7 @@
 
 import { describe, expect, it } from "bun:test";
 
+import { amountToMinorUnits, money } from "../../core/decimal-money";
 import type { FxSettlementFailedPayload } from "../../event-store/event-types/fx-accounting";
 import { subLedgerLegFromMinor } from "../fx-accounting-types";
 import { FX_ACCOUNTS, fxSettlementFailedJournals, fxSettlementJournals } from "./fx-spot";
@@ -34,12 +35,24 @@ import { FX_ACCOUNTS, fxSettlementFailedJournals, fxSettlementJournals } from ".
 // Helpers
 // ---------------------------------------------------------------------------
 
-function assertBalanced(legs: { debitCredit: string; amountMinor: number; currency: string }[]) {
+type AnyLeg = { debitCredit: string; currency: string } & (
+  | { amountMinor: number; amount?: undefined }
+  | { amount: { amount: string; __money?: string; currency?: string }; amountMinor?: undefined }
+);
+
+function legMinor(leg: AnyLeg): number {
+  if (leg.amount !== undefined)
+    return Number(amountToMinorUnits(money(leg.amount.amount, leg.currency as never)));
+  return leg.amountMinor ?? 0;
+}
+
+function assertBalanced(legs: AnyLeg[]) {
   const totals = new Map<string, { debit: number; credit: number }>();
   for (const leg of legs) {
     const t = totals.get(leg.currency) ?? { debit: 0, credit: 0 };
-    if (leg.debitCredit === "debit") t.debit += leg.amountMinor;
-    else t.credit += leg.amountMinor;
+    const minor = legMinor(leg);
+    if (leg.debitCredit === "debit") t.debit += minor;
+    else t.credit += minor;
     totals.set(leg.currency, t);
   }
   for (const [ccy, t] of totals.entries()) {
@@ -211,8 +224,8 @@ describe("PR-FX-005: fxSettlementFailedJournals (IFRS-9 default-recognition)", (
         },
       });
       expect(legs).toHaveLength(4);
-      expect(legs[0]?.amountMinor).toBe(1_000_000);
-      expect(legs[2]?.amountMinor).toBe(18_000_000_00);
+      expect(legs[0] ? legMinor(legs[0]) : undefined).toBe(1_000_000);
+      expect(legs[2] ? legMinor(legs[2]) : undefined).toBe(18_000_000_00);
       assertBalanced(legs);
     });
 
@@ -382,9 +395,10 @@ describe("PR-FX-005: fxSettlementFailedJournals (IFRS-9 default-recognition)", (
       // Trial-balance check: aggregate all legs and assert the expected
       // closing positions.
       const totals = new Map<string, number>();
-      for (const leg of [...bookingLegs, ...deliverLegs, ...failureLegs]) {
-        const key = `${leg.accountId}|${leg.currency}`;
-        const signed = leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+      for (const leg of [...bookingLegs, ...deliverLegs, ...failureLegs] as AnyLeg[]) {
+        const key = `${(leg as { accountId?: string }).accountId}|${leg.currency}`;
+        const minor = legMinor(leg);
+        const signed = leg.debitCredit === "debit" ? minor : -minor;
         totals.set(key, (totals.get(key) ?? 0) + signed);
       }
 
