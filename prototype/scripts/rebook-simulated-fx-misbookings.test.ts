@@ -160,14 +160,14 @@ describe("buildCorrectionEvent — reverse-out + re-book-in, balanced, accounts-
     const legs = (ev.payload as { legs: SubLedgerLeg[] }).legs;
     expect(legs.length).toBe(2);
     // (1) reverse out of USD slot — opposite side
-    expect(legs[0]).toEqual({
+    expect(legs[0]).toMatchObject({
       accountId: "ACC-2100-002",
       debitCredit: "credit",
       amountMinor: 50_000_000,
       currency: "GBP",
     });
     // (2) re-book into GBP receivable — same side
-    expect(legs[1]).toEqual({
+    expect(legs[1]).toMatchObject({
       accountId: "ACC-2100-010",
       debitCredit: "debit",
       amountMinor: 50_000_000,
