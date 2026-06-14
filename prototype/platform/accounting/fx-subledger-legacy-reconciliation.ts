@@ -251,7 +251,11 @@ export function computeFxSubledgerLegacyReconciliation(
     // Suspense balances the per-ccy delta: posts the opposite sign.
     closingLegs.push(
       subLedgerLegFromMinor(
-        { accountId: FX_REMEDIATION_SUSPENSE, currency, debitCredit: delta > 0 ? "credit" : "debit" },
+        {
+          accountId: FX_REMEDIATION_SUSPENSE,
+          currency,
+          debitCredit: delta > 0 ? "credit" : "debit",
+        },
         Math.abs(delta),
       ),
     );

@@ -30,7 +30,10 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { type SubLedgerLeg, subLedgerLegFromMinor } from "../platform/accounting/fx-accounting-types";
+import {
+  type SubLedgerLeg,
+  subLedgerLegFromMinor,
+} from "../platform/accounting/fx-accounting-types";
 
 /** Test fixture helper: build a SubLedgerLeg from an integer minor magnitude
  *  (decimal `amount` derived) — keeps fixtures decimal-native (slice 1). */

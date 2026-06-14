@@ -27,10 +27,7 @@
 // Brief: brief:bea:decimal-native-slice-1-subledgerleg-decimal-sour:2026-06-14.
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
-import {
-  type SubLedgerLeg,
-  subLedgerLegFromMinor,
-} from "../accounting/fx-accounting-types";
+import { type SubLedgerLeg, subLedgerLegFromMinor } from "../accounting/fx-accounting-types";
 import {
   fxRevaluationJournals,
   fxSettlementFailedJournals,
@@ -115,14 +112,17 @@ export function runParityCheck(): ParityResult {
   sources.push({
     name: "fxSettlementFailedJournals",
     legs: fxSettlementFailedJournals({
-      // biome-ignore lint/suspicious/noExplicitAny: minimal fixture.
       event: {
         tradeId: "PARITY-FX-FAIL-1",
         failureKind: "one-leg-delivered",
         legStatus: { payLegDelivered: true, receiveLegDelivered: false },
         // biome-ignore lint/suspicious/noExplicitAny: minimal fixture.
       } as any,
-      failedReceiveLeg: { currency: "USD", amountMinor: 1_000_000, zarEquivalentMinor: 18_000_000_00 },
+      failedReceiveLeg: {
+        currency: "USD",
+        amountMinor: 1_000_000,
+        zarEquivalentMinor: 18_000_000_00,
+      },
     }),
   });
 
@@ -133,9 +133,18 @@ export function runParityCheck(): ParityResult {
   sources.push({
     name: "subLedgerLegFromMinor(edges)",
     legs: [
-      subLedgerLegFromMinor({ accountId: "ACC-2100-001", debitCredit: "debit", currency: "ZAR" }, 0),
-      subLedgerLegFromMinor({ accountId: "ACC-2100-001", debitCredit: "debit", currency: "ZAR" }, 1),
-      subLedgerLegFromMinor({ accountId: "ACC-2100-002", debitCredit: "credit", currency: "JPY" }, 1_000_000),
+      subLedgerLegFromMinor(
+        { accountId: "ACC-2100-001", debitCredit: "debit", currency: "ZAR" },
+        0,
+      ),
+      subLedgerLegFromMinor(
+        { accountId: "ACC-2100-001", debitCredit: "debit", currency: "ZAR" },
+        1,
+      ),
+      subLedgerLegFromMinor(
+        { accountId: "ACC-2100-002", debitCredit: "credit", currency: "JPY" },
+        1_000_000,
+      ),
       subLedgerLegFromMinor(
         { accountId: "ACC-2100-001", debitCredit: "debit", currency: "USD" },
         9_007_199_254_741_000n,

@@ -69,9 +69,18 @@ describe("SubLedgerLeg constructors — decimal source of truth", () => {
 
   it("the invariant holds: amountMinor === Number(amountToMinorUnits(amount)) for every leg", () => {
     const legs: SubLedgerLeg[] = [
-      subLedgerLegFromMinor({ accountId: "ACC-2100-001", debitCredit: "debit", currency: "ZAR" }, 0),
-      subLedgerLegFromMinor({ accountId: "ACC-2100-001", debitCredit: "debit", currency: "ZAR" }, 1),
-      subLedgerLegFromMinor({ accountId: "ACC-2100-002", debitCredit: "credit", currency: "USD" }, 99_999),
+      subLedgerLegFromMinor(
+        { accountId: "ACC-2100-001", debitCredit: "debit", currency: "ZAR" },
+        0,
+      ),
+      subLedgerLegFromMinor(
+        { accountId: "ACC-2100-001", debitCredit: "debit", currency: "ZAR" },
+        1,
+      ),
+      subLedgerLegFromMinor(
+        { accountId: "ACC-2100-002", debitCredit: "credit", currency: "USD" },
+        99_999,
+      ),
     ];
     for (const leg of legs) {
       expect(leg.amountMinor).toBe(Number(amountToMinorUnits(leg.amount)));

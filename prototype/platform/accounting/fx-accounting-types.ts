@@ -6,11 +6,7 @@
 // Authors: Camille (CFO, finance) + Bea (Accounting & financial reporting
 //   engineer, engineering)
 
-import {
-  type Money,
-  amountToMinorUnits,
-  moneyFromMinorUnits,
-} from "../core/decimal-money";
+import { type Money, amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
 import type { Currency } from "../core/types";
 
 /**

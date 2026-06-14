@@ -447,7 +447,11 @@ export function computeFxSubledgerRebuild(
     // Suspense leg balances the per-ccy delta: posts the opposite sign.
     restateLegs.push(
       subLedgerLegFromMinor(
-        { accountId: FX_REMEDIATION_SUSPENSE, currency, debitCredit: delta > 0 ? "credit" : "debit" },
+        {
+          accountId: FX_REMEDIATION_SUSPENSE,
+          currency,
+          debitCredit: delta > 0 ? "credit" : "debit",
+        },
         Math.abs(delta),
       ),
     );
@@ -525,7 +529,9 @@ function normaliseLeg(raw: unknown): SubLedgerLeg[] {
     const amt = typeof r.amountMinor === "number" ? r.amountMinor : 0;
     const ccy = typeof r.currency === "string" ? r.currency : "ZAR";
     const side: "debit" | "credit" = r.debitCredit === "credit" ? "credit" : "debit";
-    return [subLedgerLegFromMinor({ accountId: r.accountId, debitCredit: side, currency: ccy }, amt)];
+    return [
+      subLedgerLegFromMinor({ accountId: r.accountId, debitCredit: side, currency: ccy }, amt),
+    ];
   }
   if (typeof r.debit === "string" && typeof r.credit === "string") {
     const amt = typeof r.amountMinor === "number" ? r.amountMinor : 0;

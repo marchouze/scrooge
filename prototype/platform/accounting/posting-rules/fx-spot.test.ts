@@ -138,7 +138,11 @@ describe("PR-FX-005: fxSettlementFailedJournals (IFRS-9 default-recognition)", (
       // proving the decimal-native producer yields the same cents (decimal s1).
       expect(legs[0]).toEqual(
         subLedgerLegFromMinor(
-          { accountId: FX_ACCOUNTS.SETTLEMENT_FAILED_RECEIVABLE_USD, debitCredit: "debit", currency: "USD" },
+          {
+            accountId: FX_ACCOUNTS.SETTLEMENT_FAILED_RECEIVABLE_USD,
+            debitCredit: "debit",
+            currency: "USD",
+          },
           1_000_000,
         ),
       );
@@ -159,7 +163,11 @@ describe("PR-FX-005: fxSettlementFailedJournals (IFRS-9 default-recognition)", (
       );
       expect(legs[3]).toEqual(
         subLedgerLegFromMinor(
-          { accountId: FX_ACCOUNTS.ECL_ALLOWANCE_SETTLEMENT_FAILED, debitCredit: "credit", currency: "ZAR" },
+          {
+            accountId: FX_ACCOUNTS.ECL_ALLOWANCE_SETTLEMENT_FAILED,
+            debitCredit: "credit",
+            currency: "ZAR",
+          },
           18_000_000_00,
         ),
       );

@@ -830,7 +830,11 @@ export function fxSettlementFailedJournals(input: FxSettlementFailedInput): SubL
   if (absAmount > 0) {
     legs.push(
       subLedgerLegFromMinor(
-        { accountId: settlementFailedReceivableAccountFor(currency), debitCredit: "debit", currency },
+        {
+          accountId: settlementFailedReceivableAccountFor(currency),
+          debitCredit: "debit",
+          currency,
+        },
         absAmount,
       ),
     );
