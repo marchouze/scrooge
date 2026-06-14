@@ -34,6 +34,7 @@ import {
   categoryForEventType,
 } from "../../platform/event-store/provenance-category";
 import { resolveEventDbPath } from "../../platform/event-store/resolve-event-db";
+import { findUncategorisedMoneyTypes } from "./money-bearing-detector";
 
 // ---------------------------------------------------------------------------
 // HARD GATE — abort if backup not verified
@@ -89,7 +90,46 @@ const allTypesInStore = (
   }>
 ).map((r) => r.type);
 
+// ---------------------------------------------------------------------------
+// FAIL-CLOSED GUARD (WS-MONEY-DECIMAL-PURGE-REMEDIATION Wave 1)
+//
+// The classifier below is an ALLOW-LIST keyed on `categoryForEventType`. If a
+// money-bearing transactional type is UNCATEGORISED (returns <none>), the old
+// `else` branch silently routed it to `retainedTypes` — that is exactly how the
+// slice-4 purge left 496 financial-transaction events in the canonical store
+// (PR #1325). A retain-on-unknown allow-list is unsafe for a purge.
+//
+// We DERIVE "money-bearing" structurally from a sample payload per type (a
+// legacy `*Minor` numeric key OR a `__money`/MoneyWire field at any depth). Any
+// type that carries money but has NO provenance category ABORTS the purge with
+// the offending list, rather than silently retaining (and orphaning) it. The
+// detector is shared with the Wave-1 test (money-bearing-detector.ts).
+// Authority: D-MONEY-DECIMAL-PURGE-REMEDIATION (be0580ff).
+// ---------------------------------------------------------------------------
+const uncategorisedMoneyTypes = findUncategorisedMoneyTypes(
+  allTypesInStore,
+  {
+    // Sample a single payload per type — money encoding is per-type structural,
+    // so the first event is representative. Cheap (one row), avoids a full scan.
+    samplePayload(eventType: string): string | undefined {
+      const row = rawDb
+        .prepare("SELECT payload FROM events WHERE type = ? LIMIT 1")
+        .get(eventType) as { payload?: string } | undefined;
+      return row?.payload;
+    },
+  },
+  categoryForEventType,
+);
+
 rawDb.close();
+
+if (uncategorisedMoneyTypes.length > 0) {
+  const offenderList = uncategorisedMoneyTypes.map((t) => `- ${t}`).join("\n  ");
+  console.error(
+    `[slice4-purge-reseed] ABORT (fail-closed): the following money-bearing event types carry a money field but have NO provenance category, so the purge allow-list would silently RETAIN (orphan) them. Categorise each in platform/event-store/provenance-category.ts (settlement | accounting | trading | market-data) before re-running the purge.\n  ${offenderList}\nAuthority: D-MONEY-DECIMAL-PURGE-REMEDIATION.`,
+  );
+  process.exit(1);
+}
 
 // Classify each type
 const transactionalTypes: string[] = [];
