@@ -194,6 +194,17 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:event-type-registry-coverage",
     "recon:golden-source-hardcoded-maps",
     "recon:server-version-vs-head",
+    // Engineering Charter — "no-shortcuts" gates (D-ENGINEERING-INTEGRITY-CHARTER,
+    // CEO-approved 2026-06-14). Harden-only ratchets that make the most common
+    // coding shortcuts fail CI: type-checker suppression (#6), skipped/narrowed
+    // tests (#3), swallowed errors (#6), and untracked deferrals (#1, #5).
+    // ratchet-hardening-only is the advisory meta-gate guarding the ratchets
+    // themselves (#3) — warns, never fails, during its soak phase.
+    "recon:no-ts-suppression",
+    "recon:no-skipped-tests",
+    "recon:no-swallowed-errors",
+    "recon:tracked-todo",
+    "recon:ratchet-hardening-only",
   ],
   domain: [
     "recon:prose-duplication",
