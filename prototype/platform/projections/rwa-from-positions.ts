@@ -68,9 +68,9 @@
 
 import { buildRateMap, convertMinor } from "../accounting/fx-rate-projection";
 import { rwaInstrumentClassWeights } from "../config/financial-constants";
+import { minorFromMoneyWire } from "../core/money-codec";
 import type { BondTradeExecutedPayload } from "../event-store/event-types/bond-accounting";
 import type { CcrEadComputedPayloadV2Type } from "../event-store/event-types/counterparty-credit-risk";
-import { minorFromMoneyWire } from "../core/money-codec";
 import type {
   InterbankLoanPlacedPayload,
   RepoTradeOpenedPayload,
@@ -361,7 +361,10 @@ export function computeRwaFromPositions(
   // NO rate path to ZAR is skipped with a logged note (observable, not silent).
   const fxRates = buildRateMap([...eventStore.replay({ type: "FxTradeExecuted", asOf })]);
 
-  const latestEadByNettingSet = new Map<string, { p: CcrEadComputedPayloadV2Type; eventId: string }>();
+  const latestEadByNettingSet = new Map<
+    string,
+    { p: CcrEadComputedPayloadV2Type; eventId: string }
+  >();
   for (const ev of eventStore.replay({ type: "CcrEadComputed", asOf })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const p = ev.payload as unknown as CcrEadComputedPayloadV2Type;

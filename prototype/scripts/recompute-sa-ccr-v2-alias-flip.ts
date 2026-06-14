@@ -43,8 +43,8 @@
 import "../platform/event-store/resolve-event-db-boot";
 
 import { clock, eventStore } from "../platform/composition";
-import type { CcrEadComputedPayloadV2Type } from "../platform/event-store/event-types/counterparty-credit-risk";
 import { minorFromMoneyWire } from "../platform/core/money-codec";
+import type { CcrEadComputedPayloadV2Type } from "../platform/event-store/event-types/counterparty-credit-risk";
 import { resolveNettingSet } from "../platform/markets/netting-sets";
 import { logger } from "../platform/observability/logger";
 import { computeAndEmit } from "../platform/risk/sa-ccr/compute-and-emit";

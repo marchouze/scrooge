@@ -9,6 +9,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import { moneyWireFromMinor } from "../platform/core/money-codec";
 import {
   makeCcrEadComputed,
   makeCounterpartyBaselClassAssigned,
@@ -36,10 +37,10 @@ function seedEad(store: EventStore, counterpartyId: string): void {
       payload: {
         nettingSetId: `NS-${counterpartyId}-ZAR`,
         counterpartyId,
-        rc: 1_000_000,
-        pfe: 200_000,
+        rc: moneyWireFromMinor(1_000_000, "ZAR"),
+        pfe: moneyWireFromMinor(200_000, "ZAR"),
         alpha: 1.4,
-        ead: 1_680_000,
+        ead: moneyWireFromMinor(1_680_000, "ZAR"),
         currency: "ZAR",
         computationDate: "2026-06-11",
         methodology: "sa-ccr",

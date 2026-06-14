@@ -43,12 +43,12 @@
 
 import { eventStore, logger } from "../../composition";
 import { type Money, add, minor, sub } from "../../core/money";
+import { minorFromMoneyWire } from "../../core/money-codec";
 import type { Currency } from "../../core/types";
 import type {
   CcrEadComputedPayloadV2Type,
   CcrReplacementCostComputedPayload,
 } from "../../event-store/event-types/counterparty-credit-risk";
-import { minorFromMoneyWire } from "../../core/money-codec";
 import { utcNow } from "../../types/time";
 import { getCreditLimit } from "./projection";
 import type { CreditLimit, CreditLimitHeadroom } from "./types";

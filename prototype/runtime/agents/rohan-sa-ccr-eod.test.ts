@@ -25,6 +25,7 @@
 
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
+import { moneyWireFromMinor } from "../../platform/core/money-codec";
 import { makeCcrEadComputed } from "../../platform/event-store/event-types/counterparty-credit-risk";
 import { makeISDACSAAssessmentCompleted } from "../../platform/event-store/event-types/credit-limit";
 import { EventStore } from "../../platform/event-store/store";
@@ -98,10 +99,10 @@ function appendEad(store: EventStore, nettingSetId: string, cp: string, asOf: st
       payload: {
         nettingSetId,
         counterpartyId: cp,
-        rc: 0,
-        pfe: 720_000,
+        rc: moneyWireFromMinor(0, "ZAR"),
+        pfe: moneyWireFromMinor(720_000, "ZAR"),
         alpha: 1.4,
-        ead: 1_008_000,
+        ead: moneyWireFromMinor(1_008_000, "ZAR"),
         currency: "ZAR",
         computationDate: asOf.slice(0, 10),
         methodology: "sa-ccr",

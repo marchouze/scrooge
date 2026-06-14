@@ -98,16 +98,17 @@ describe("CcrEadComputed event factory", () => {
     }
     expect(observed).toBeDefined();
     // Assert MoneyWire encoding — exact decimal strings, no IEEE-754 drift.
-    expect(observed?.rc.__money).toBe("v1");
-    expect(observed?.rc.amount).toBe("550000000");
-    expect(observed?.rc.currency).toBe("ZAR");
-    expect(minorFromMoneyWire(observed!.rc)).toBe(5_500_000_00);
-    expect(minorFromMoneyWire(observed!.pfe)).toBe(1_200_000_00);
-    expect(minorFromMoneyWire(observed!.ead)).toBe(9_380_000_00);
-    expect(observed?.alpha).toBe(1.4);
-    expect(observed?.methodology).toBe("sa-ccr");
-    expect(observed?.sourceEvents.rcEventId).toBe(rcId);
-    expect(observed?.sourceEvents.pfeComponents).toBe(2);
+    const obs = observed as CcrEadComputedPayloadV2Type;
+    expect(obs.rc.__money).toBe("v1");
+    expect(obs.rc.amount).toBe("5500000");
+    expect(obs.rc.currency).toBe("ZAR");
+    expect(minorFromMoneyWire(obs.rc)).toBe(5_500_000_00);
+    expect(minorFromMoneyWire(obs.pfe)).toBe(1_200_000_00);
+    expect(minorFromMoneyWire(obs.ead)).toBe(9_380_000_00);
+    expect(obs.alpha).toBe(1.4);
+    expect(obs.methodology).toBe("sa-ccr");
+    expect(obs.sourceEvents.rcEventId).toBe(rcId);
+    expect(obs.sourceEvents.pfeComponents).toBe(2);
   });
 
   it("rejects malformed ead MoneyWire via the zod schema", () => {
@@ -192,19 +193,20 @@ describe("SA-CCR computeAndEmit — RC + EAD emission", () => {
     //   because V−C ≫ 0 — see sa-ccr.test.ts for the per-asset-class
     //   add-on breakdown). EAD = 1.4 × (R5.5m + R240k) = R8.036m.
     // DECIMAL-MIGRATION (slice 2): rc/pfe/ead on CcrEadComputed are MoneyWire.
+    const ead = eadEvent as { event_id: string; payload: CcrEadComputedPayloadV2Type };
     expect(rcEvent?.payload.rc).toBe(5_500_000_00); // RC event still uses integer
-    expect(minorFromMoneyWire(eadEvent!.payload.rc)).toBe(5_500_000_00);
-    expect(minorFromMoneyWire(eadEvent!.payload.pfe)).toBe(240_000_00);
-    expect(minorFromMoneyWire(eadEvent!.payload.ead)).toBe(8_036_000_00);
-    expect(eadEvent?.payload.alpha).toBe(1.4);
-    expect(eadEvent?.payload.methodology).toBe("sa-ccr");
-    expect(eadEvent?.payload.currency).toBe("ZAR");
-    expect(eadEvent?.payload.computationDate).toBe("2026-05-20");
+    expect(minorFromMoneyWire(ead.payload.rc)).toBe(5_500_000_00);
+    expect(minorFromMoneyWire(ead.payload.pfe)).toBe(240_000_00);
+    expect(minorFromMoneyWire(ead.payload.ead)).toBe(8_036_000_00);
+    expect(ead.payload.alpha).toBe(1.4);
+    expect(ead.payload.methodology).toBe("sa-ccr");
+    expect(ead.payload.currency).toBe("ZAR");
+    expect(ead.payload.computationDate).toBe("2026-05-20");
 
     // Chain link: CcrEadComputed.sourceEvents.rcEventId === RC event_id.
-    expect(eadEvent?.payload.sourceEvents.rcEventId).toBe(rcEvent?.event_id ?? "");
+    expect(ead.payload.sourceEvents.rcEventId).toBe(rcEvent?.event_id ?? "");
     // Two add-on components (IR + FX).
-    expect(eadEvent?.payload.sourceEvents.pfeComponents).toBe(2);
+    expect(ead.payload.sourceEvents.pfeComponents).toBe(2);
 
     // computeAndEmit return shape matches the emitted EAD figures.
     expect(result.ead.ead.amount).toBe(BigInt(8_036_000_00));
@@ -232,10 +234,11 @@ describe("SA-CCR computeAndEmit — RC + EAD emission", () => {
       if (p.counterpartyId === cp) eadEvent = p;
     }
     expect(eadEvent).toBeDefined();
-    expect(minorFromMoneyWire(eadEvent!.pfe)).toBe(0);
+    const eadPayload = eadEvent as CcrEadComputedPayloadV2Type;
+    expect(minorFromMoneyWire(eadPayload.pfe)).toBe(0);
     // EAD = 1.4 × R3m = R4.2m.
-    expect(minorFromMoneyWire(eadEvent!.ead)).toBe(4_200_000_00);
-    expect(eadEvent?.sourceEvents.pfeComponents).toBe(0);
+    expect(minorFromMoneyWire(eadPayload.ead)).toBe(4_200_000_00);
+    expect(eadPayload.sourceEvents.pfeComponents).toBe(0);
   });
 });
 

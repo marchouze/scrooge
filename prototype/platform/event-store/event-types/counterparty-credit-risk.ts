@@ -676,8 +676,7 @@ export type CcrEadComputedPayloadLegacy = CcrEadComputedPayload;
  * V2 CcrEadComputed payload: rc / pfe / ead are MoneyWire (decimal string,
  * HALF_UP rounding — SA-CCR regulatory convention per BCBS d317 §10).
  */
-export interface CcrEadComputedPayloadV2
-  extends Omit<CcrEadComputedPayload, "rc" | "pfe" | "ead"> {
+export interface CcrEadComputedPayloadV2 extends Omit<CcrEadComputedPayload, "rc" | "pfe" | "ead"> {
   /** Replacement cost as exact-decimal MoneyWire (HALF_UP rounding, SA-CCR). */
   readonly rc: MoneyWire;
   /** Potential future exposure add-on as MoneyWire. */

@@ -7,6 +7,7 @@
 
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
+import { moneyWireFromMinor } from "../platform/core/money-codec";
 import {
   makeCcrEadComputed,
   makeCounterpartyBaselClassAssigned,
@@ -124,10 +125,10 @@ describe("rwa-from-positions uses the authoritative class over the fallback", ()
         payload: {
           nettingSetId: `NS-${counterpartyId}-ZAR`,
           counterpartyId,
-          rc: 1_000_000,
-          pfe: 200_000,
+          rc: moneyWireFromMinor(1_000_000, "ZAR"),
+          pfe: moneyWireFromMinor(200_000, "ZAR"),
           alpha: 1.4,
-          ead: 1_680_000,
+          ead: moneyWireFromMinor(1_680_000, "ZAR"),
           currency: "ZAR",
           computationDate: "2026-06-11",
           methodology: "sa-ccr",
@@ -200,10 +201,10 @@ describe("rwa-from-positions uses the authoritative class over the fallback", ()
         payload: {
           nettingSetId: "NS-CP-USD-USD",
           counterpartyId: "CP-USD",
-          rc: 6_000_000,
-          pfe: 1_142_857,
+          rc: moneyWireFromMinor(6_000_000, "USD"),
+          pfe: moneyWireFromMinor(1_142_857, "USD"),
           alpha: 1.4,
-          ead: 10_000_000, // USD 100,000.00
+          ead: moneyWireFromMinor(10_000_000, "USD"), // USD 100,000.00
           currency: "USD",
           computationDate: "2026-06-11",
           methodology: "sa-ccr",
