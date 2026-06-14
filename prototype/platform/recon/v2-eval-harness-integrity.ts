@@ -164,8 +164,14 @@ export function run(): ReconResult {
   const registeredById = new Map(registered.map((r) => [r.examSetId, r]));
   const reconstructableById = buildReconstructable();
 
-  // Assertion 2 — every registered exam-set is well-formed.
-  for (const r of registered) {
+  // Assertion 2 — every EFFECTIVE (latest) registered exam-set is well-formed.
+  // We check the latest registration per examSetId (registeredById is sequence-
+  // ordered last-write-wins), NOT every historical registration. A superseded
+  // version is an immutable record of what was registered then; it must not be
+  // retroactively required to satisfy well-formedness rules added after it was
+  // registered (e.g. the D-W8-EXAM-GOVERNANCE adversarial-pass rule). Principle 1:
+  // the effective state is the latest projection; history is append-only.
+  for (const r of registeredById.values()) {
     result.asserted += 1;
     const findings = checkExamSetWellFormed(r.examSet);
     for (const f of findings) {
