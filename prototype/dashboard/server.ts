@@ -250,6 +250,7 @@ import {
   enrichBlockedBy,
   listEscalations,
 } from "./oversight";
+import { getOwnershipMapView, getSeatObligations } from "./ownership-map-view";
 import {
   eventDerivedPageProvenance,
   productionReferencePageProvenance,
@@ -3237,6 +3238,23 @@ const server = Bun.serve({
       // tracked for migration on /obligation-readers.html.
       return jsonResponse({
         ...getBankObligationsView(eventStore, REPO_ROOT),
+        pageProvenance: productionReferencePageProvenance(),
+      });
+    }
+    if (url.pathname === "/api/ownership-map" && req.method === "GET") {
+      // Coherent Agent ⟺ Domain ⟺ Obligation ownership map (D-DOMAIN-OWNERSHIP-MAP):
+      // by-agent + by-domain rollups + two-axis coverage stats. Optional
+      // ?seat=<seat> returns that seat's obligations with owner-drift flags.
+      const seat = url.searchParams.get("seat");
+      if (seat) {
+        return jsonResponse({
+          seat,
+          obligations: getSeatObligations(eventStore, seat),
+          pageProvenance: productionReferencePageProvenance(),
+        });
+      }
+      return jsonResponse({
+        ...getOwnershipMapView(eventStore),
         pageProvenance: productionReferencePageProvenance(),
       });
     }

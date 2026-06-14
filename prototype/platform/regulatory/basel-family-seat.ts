@@ -18,41 +18,47 @@
 //   never drift again. With the emit path corrected, the remediation script is a
 //   permanent no-op.
 //
-// Seat vocabulary is the one PR #1139 established for obligation ownership /
-// review (`cco | cfo | cro | company-secretary | operational |
-// head-of-global-markets`). No new seats are invented here; a family that is not
-// in the map leaves `owner` empty (the caller does not guess).
+// Seats now DELEGATE to the canonical Agent⟺Domain⟺Obligation map
+// (`domain-ownership-map.ts`, D-DOMAIN-OWNERSHIP-MAP, 2026-06-14) — the single
+// source of truth — so the two can never drift. The v3 taxonomy reassigned
+// several families vs the original PR #1139 vocabulary: capital/leverage →
+// cfo (capital framework); liquidity (LCR/NSF) → treasurer; operational risk →
+// cro (replacing the non-roster "operational" seat). A family that the map
+// cannot classify leaves `owner` empty (the caller does not guess).
 //
-// Authority: D-OBLIGATIONS-REGISTER-CLEANUP · WS-OBLIGATIONS-CLEANUP.
+// Authority: D-DOMAIN-OWNERSHIP-MAP (CEO-approved 2026-06-14);
+//            D-OBLIGATIONS-REGISTER-CLEANUP · WS-OBLIGATIONS-CLEANUP.
 // Author: Atlas (Core banking platform architect, engineering).
 
+import { type Seat, seatForObligation } from "./domain-ownership-map";
+
+/** Basel families the emit path may stamp (a superset of the obligation families). */
+const BASEL_FAMILIES = [
+  "RBC",
+  "CAP",
+  "CRE",
+  "LEV",
+  "LEX",
+  "MAR",
+  "LCR",
+  "NSF",
+  "DIS",
+  "OPE",
+  "BCP",
+  "SCO",
+] as const;
+
 /**
- * Basel family token → accountable seat.
- *
- *   RBC / CAP / CRE / LEV / LEX → cro   (risk-based capital / credit / leverage / large-exp)
- *   MAR                          → cro   (market risk)
- *   LCR / NSF                    → cfo   (liquidity ratios)
- *   DIS  (Pillar 3 disclosure)   → cfo
- *   OPE  (operational risk)      → operational
- *   BCP / SCO (governance / core principles) → company-secretary
- *
- * A family absent from this map is intentionally left unmapped — the caller
- * leaves `owner` empty and reports, rather than guessing a seat.
+ * Basel family token → accountable seat, DERIVED from the canonical map by
+ * classifying a representative `BCBS-<FAM>` id. Reconciled to v3:
+ *   RBC / CAP / LEV → cfo (capital framework) · CRE / LEX / MAR / OPE → cro ·
+ *   LCR / NSF → treasurer · DIS → cfo · BCP / SCO → company-secretary.
  */
-export const BASEL_FAMILY_TO_SEAT: Record<string, string> = {
-  RBC: "cro",
-  CAP: "cro",
-  CRE: "cro",
-  LEV: "cro",
-  LEX: "cro",
-  MAR: "cro",
-  LCR: "cfo",
-  NSF: "cfo",
-  DIS: "cfo",
-  OPE: "operational",
-  BCP: "company-secretary",
-  SCO: "company-secretary",
-};
+export const BASEL_FAMILY_TO_SEAT: Record<string, string> = Object.fromEntries(
+  BASEL_FAMILIES.map((fam) => [fam, seatForObligation({ id: `BCBS-${fam}10` }) ?? ""]).filter(
+    ([, seat]) => seat !== "",
+  ),
+);
 
 /**
  * Extract the Basel family token from a BCBS obligation id, e.g.
@@ -65,12 +71,14 @@ export function baselFamilyOf(obligationId: string): string {
 }
 
 /**
- * Accountable seat for a graph-imported BCBS obligation id, derived from its
- * Basel family. Returns `""` when the id is not a BCBS id or its family has no
+ * Accountable seat for a graph-imported BCBS obligation id, delegated to the
+ * canonical map. Returns `""` when the id is not a BCBS id or its family has no
  * mapping — callers MUST treat `""` as "leave owner empty / report", never as a
  * seat.
  */
 export function seatForBcbsObligationId(obligationId: string): string {
   const family = baselFamilyOf(obligationId);
-  return BASEL_FAMILY_TO_SEAT[family] ?? "";
+  if (!family) return "";
+  const seat: Seat | null = seatForObligation({ id: `BCBS-${family}10` });
+  return seat ?? "";
 }

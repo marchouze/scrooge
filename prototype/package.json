@@ -92,6 +92,7 @@
     "recon:expected-event-watchdog": "bun run platform/recon/expected-event-watchdog.ts",
     "recon:clients-entityname-uniqueness": "bun run platform/recon/clients-entityname-uniqueness.ts",
     "recon:mandate-coverage": "bun run platform/recon/mandate-coverage.ts",
+    "recon:domain-ownership-coherence": "bun run platform/recon/domain-ownership-coherence.ts",
     "recon:procedure-actor": "bun run platform/recon/procedure-actor.ts",
     "recon:compliance-obligation-tracing": "bun run platform/recon/compliance-obligation-tracing.ts",
     "recon:posting-source-id-canonical": "bun run platform/recon/posting-source-id-canonical.ts",
