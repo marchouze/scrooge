@@ -93,6 +93,8 @@ import {
   type LeverageRatioOutput,
   generateLeverageRatio,
 } from "./ba-700-leverage-ratio";
+import { type Money, amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
+import type { Currency } from "../core/types";
 
 // P1 fix note (C-3): the events-first entry point for BA 100 lives at
 // `ba-100-events-adapter.ts` → `generateBa100CapitalFromEvents()`. Callers
@@ -303,6 +305,8 @@ export interface Ba100LineItem {
   readonly lineId: string;
   readonly lineLabel: string;
   readonly amountMinor: number;
+  /** Decimal-native money — source of truth; amountMinor is kept for compat. */
+  readonly amount: Money<Currency>;
   readonly currency: string;
   /** Line provenance — which trial-balance rows / deduction lines fed this line. */
   readonly contributingAccounts: readonly string[];
@@ -536,7 +540,7 @@ export function generateBa100Capital(input: Ba100GeneratorInput): Ba100Output {
     );
   }
 
-  const ccy = input.functionalCurrency;
+  const ccy = input.functionalCurrency as Currency;
   const buffers = input.bufferRequirements ?? BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS;
   validateBuffers(buffers);
 
@@ -573,24 +577,28 @@ export function generateBa100Capital(input: Ba100GeneratorInput): Ba100Output {
     const stockMinor = Math.abs(row.amountMinor);
     const note =
       row.amountMinor > 0 ? "warning: capital-classified account has debit balance" : undefined;
+    const amount = moneyFromMinorUnits(BigInt(stockMinor), ccy);
     const lineItem: Ba100LineItem = {
       lineId: `${c.capitalTier}.${row.leafAccountId}`,
       lineLabel: c.subCategory ?? `Capital ${c.capitalTier.toUpperCase()} — ${row.leafAccountId}`,
       amountMinor: stockMinor,
+      amount,
       currency: ccy,
       contributingAccounts: [row.leafAccountId],
       ...(c.subCategory ? { subCategory: c.subCategory } : {}),
       ...(note ? { note } : {}),
     };
+    // Use amount (decimal-native Money) as source of truth for accumulation.
+    const lineMinor = Number(amountToMinorUnits(lineItem.amount));
     if (c.capitalTier === "cet1") {
       cet1Lines.push(lineItem);
-      cet1Gross += stockMinor;
+      cet1Gross += lineMinor;
     } else if (c.capitalTier === "at1") {
       at1Lines.push(lineItem);
-      at1Gross += stockMinor;
+      at1Gross += lineMinor;
     } else {
       t2Lines.push(lineItem);
-      t2Gross += stockMinor;
+      t2Gross += lineMinor;
     }
   }
 
@@ -619,23 +627,27 @@ export function generateBa100Capital(input: Ba100GeneratorInput): Ba100Output {
         `BA 100 generator: deduction '${d.category}' amountMinor must be non-negative, got ${d.amountMinor}. Deductions are reported as positive magnitudes; the generator subtracts them.`,
       );
     }
+    const deductAmount = moneyFromMinorUnits(BigInt(d.amountMinor), ccy);
     const lineItem: Ba100LineItem = {
       lineId: `deduction.${d.deductionTier}.${d.category}`,
       lineLabel: `Deduction (${d.deductionTier.toUpperCase()}) — ${d.category}`,
       amountMinor: d.amountMinor,
+      amount: deductAmount,
       currency: ccy,
       contributingAccounts: d.sourceAccountId ? [d.sourceAccountId] : [],
       subCategory: d.category,
     };
+    // Use amount (decimal-native Money) as source of truth for accumulation.
+    const deductMinor = Number(amountToMinorUnits(lineItem.amount));
     if (d.deductionTier === "cet1") {
       cet1DeductLines.push(lineItem);
-      cet1DeductTotal += d.amountMinor;
+      cet1DeductTotal += deductMinor;
     } else if (d.deductionTier === "at1") {
       at1DeductLines.push(lineItem);
-      at1DeductTotal += d.amountMinor;
+      at1DeductTotal += deductMinor;
     } else {
       t2DeductLines.push(lineItem);
-      t2DeductTotal += d.amountMinor;
+      t2DeductTotal += deductMinor;
     }
   }
 
