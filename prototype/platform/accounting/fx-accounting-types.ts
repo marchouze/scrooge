@@ -6,24 +6,17 @@
 // Authors: Camille (CFO, finance) + Bea (Accounting & financial reporting
 //   engineer, engineering)
 
-import { type Money, amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
+import { type Money, moneyFromMinorUnits } from "../core/decimal-money";
 import type { Currency } from "../core/types";
 
 /**
  * A single double-entry posting leg. Used by posting rule functions
  * (fx-spot.ts) and consumed by SubLedgerPostingEmitted event construction.
  *
- * DECIMAL-NATIVE SOURCE OF TRUTH (D-DECIMAL-NATIVE-MONEY-ARITHMETIC, slice 1).
- * `amount` is the exact-decimal `Money` the production layer computes; it is
- * THE source of truth. `amountMinor` is a DERIVED compat field —
- * `amountMinor === Number(amountToMinorUnits(amount))` by construction (asserted
- * by recon:sub-ledger-leg-decimal-parity). The 269 downstream consumers (trial
- * balance, GL projection, BA-300/400/700 renderers) keep reading the derived
- * `amountMinor` until a later slice migrates them to read `amount`; only then
- * does `amountMinor` retire (Nadia/Vera review at removal). Two parallel
- * computations of the same magnitude are NOT permitted — always construct a leg
- * through `subLedgerLegFromMoney` / `subLedgerLegFromMinor`, never by writing
- * `amount` and `amountMinor` independently.
+ * DECIMAL-NATIVE (D-DECIMAL-NATIVE-MONEY-ARITHMETIC, D-DECIMAL-NATIVE-CONSUMER-MIGRATION-BEFORE-WAVE-3).
+ * `amount` is the exact-decimal `Money` — THE sole source of truth for the leg
+ * magnitude. All consumers have migrated to read `amount`; `amountMinor` has
+ * been fully retired (DROP completed — no `amountMinor` field on this type).
  */
 export interface SubLedgerLeg {
   /** Chart-of-accounts leaf account ID (ACC-NNNN-NNN). */
@@ -31,16 +24,10 @@ export interface SubLedgerLeg {
   readonly debitCredit: "debit" | "credit";
   /**
    * Exact-decimal leg amount (always non-negative; `debitCredit` carries the
-   * sign). The source of truth for the leg magnitude (Principle 1 exactness —
+   * sign). The sole source of truth for the leg magnitude (Principle 1 exactness —
    * no float, no Math.round in its derivation).
    */
   readonly amount: Money<Currency>;
-  /**
-   * Amount in minor currency units (always positive). DERIVED from `amount` —
-   * a compat field for the not-yet-migrated consumer surface. Never computed
-   * independently of `amount`.
-   */
-  readonly amountMinor: number;
   /** ISO 4217 currency code. */
   readonly currency: string;
 }
@@ -67,7 +54,6 @@ export function subLedgerLegFromMoney(
     accountId: base.accountId,
     debitCredit: base.debitCredit,
     amount,
-    amountMinor: Number(amountToMinorUnits(amount)),
     currency: amount.currency,
   };
 }
@@ -90,7 +76,6 @@ export function subLedgerLegFromMinor(base: LegBase, minor: number | bigint): Su
     accountId: base.accountId,
     debitCredit: base.debitCredit,
     amount,
-    amountMinor: Number(amountToMinorUnits(amount)),
     currency: base.currency,
   };
 }

@@ -149,10 +149,8 @@ export function makeFxPositionRevalued(args: {
 //   "settlement-instruction"— SettlementInstructionReceived; receivable DR / suspense CR
 // ---------------------------------------------------------------------------
 
-// MoneyWire shape for the leg's decimal `amount` on the wire (decimal-native
-// slice 1). The `__money` discriminant + string amount is the canonical money
-// codec form (see money-codec.ts); the integer `amountMinor` below is now a
-// DERIVED compat field. Both are present during the strangler transition.
+// MoneyWire shape for the leg's decimal `amount` on the wire (decimal-native).
+// Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC; D-DECIMAL-NATIVE-CONSUMER-MIGRATION-BEFORE-WAVE-3.
 const moneyWireSchema = z.object({
   __money: z.literal("v1"),
   amount: z.string().min(1),
@@ -166,18 +164,12 @@ export const subLedgerLegSchema = z.object({
   }),
   debitCredit: z.enum(["debit", "credit"]),
   /**
-   * Exact-decimal leg amount as MoneyWire — THE source of truth on the wire
-   * (D-DECIMAL-NATIVE-MONEY-ARITHMETIC slice 1). Optional during the transition
-   * so legacy events (which carry only `amountMinor`) still decode; every leg
-   * the production engine emits now carries it.
+   * Exact-decimal leg amount as MoneyWire — THE sole source of truth on the wire
+   * (D-DECIMAL-NATIVE-MONEY-ARITHMETIC). Required for all new events; old stored
+   * events carry it too (emitter migration complete). `amountMinor` dropped
+   * (D-DECIMAL-NATIVE-CONSUMER-MIGRATION-BEFORE-WAVE-3 DROP).
    */
-  amount: moneyWireSchema.optional(),
-  /**
-   * Amount in minor currency units (always positive; debitCredit indicates
-   * direction). DERIVED from `amount` for emitted legs; retained as the compat
-   * field the not-yet-migrated 269 consumers read.
-   */
-  amountMinor: z.number().int().nonnegative(),
+  amount: moneyWireSchema,
   /** ISO 4217 currency. */
   currency: z
     .string()
@@ -307,12 +299,13 @@ export const subLedgerPostingEmittedPayloadSchema = z
   })
   .passthrough()
   .superRefine((p, ctx) => {
-    // Validate: debits = credits per currency.
+    // Validate: debits = credits per currency (using MoneyWire decimal amounts).
     const totals = new Map<string, { debit: number; credit: number }>();
     for (const leg of p.legs) {
       const t = totals.get(leg.currency) ?? { debit: 0, credit: 0 };
-      if (leg.debitCredit === "debit") t.debit += leg.amountMinor;
-      else t.credit += leg.amountMinor;
+      const legAmount = Math.round(parseFloat(leg.amount.amount) * 100);
+      if (leg.debitCredit === "debit") t.debit += legAmount;
+      else t.credit += legAmount;
       totals.set(leg.currency, t);
     }
     for (const [ccy, t] of totals.entries()) {
@@ -333,16 +326,16 @@ export type SubLedgerPostingEmittedPayload = z.infer<typeof subLedgerPostingEmit
  * Producers build the in-memory `SubLedgerLeg` (fx-accounting-types.ts), whose
  * `amount` is a decimal `Money` (`{ amount, currency }`); on emit it is encoded
  * to the canonical `MoneyWire` (`{ __money, amount, currency }`). A leg that
- * already carries a MoneyWire (or none) passes through unchanged. This is the
- * decimal-native emit boundary (D-DECIMAL-NATIVE-MONEY-ARITHMETIC slice 1).
+ * already carries a MoneyWire passes through unchanged. This is the
+ * decimal-native emit boundary (D-DECIMAL-NATIVE-MONEY-ARITHMETIC,
+ * D-DECIMAL-NATIVE-CONSUMER-MIGRATION-BEFORE-WAVE-3 DROP).
  */
 type EmitLegInput = Omit<z.input<typeof subLedgerLegSchema>, "amount"> & {
-  readonly amount?: Money | MoneyWire;
+  readonly amount: Money | MoneyWire;
 };
 
 function encodeLegForWire(leg: EmitLegInput): z.input<typeof subLedgerLegSchema> {
   const { amount, ...rest } = leg;
-  if (amount === undefined) return rest;
   // A `Money` lacks the `__money` discriminant; a `MoneyWire` carries it.
   const wire = "__money" in amount ? amount : encodeMoney(amount);
   return { ...rest, amount: wire };
@@ -864,41 +857,45 @@ export function decodeFxPositionRevalued(
 
 // ── SubLedgerLeg V2 ─────────────────────────────────────────────────────────
 //
-// The SubLedgerLeg shared type is the primary posting primitive consumed by
-// computeTrialBalance. V2 replaces amountMinor with a MoneyWire.
+// DROP complete (D-DECIMAL-NATIVE-CONSUMER-MIGRATION-BEFORE-WAVE-3). The schema
+// DROP retired `amountMinor`; `SubLedgerLeg` now carries only `amount: MoneyWire`.
+// The V2 aliases and decode helpers are kept as thin pass-throughs for any
+// callers that imported them; they will be removed in a follow-up tidy.
 
-/** @deprecated DECIMAL-MIGRATION: superseded by SubLedgerLegV2. */
+/** @deprecated DROP complete — SubLedgerLeg is now equivalent to V2. */
 export type SubLedgerLegLegacy = SubLedgerLeg;
 
-export interface SubLedgerLegV2 extends Omit<SubLedgerLeg, "amountMinor"> {
-  /** Positive decimal amount as MoneyWire (debitCredit indicates direction). */
-  readonly amount: MoneyWire;
-}
+/** @deprecated DROP complete — SubLedgerLeg.amount is already a MoneyWire. */
+export type SubLedgerLegV2 = SubLedgerLeg;
 
 export function encodeSubLedgerLeg(
-  base: Omit<SubLedgerLeg, "amountMinor">,
+  base: Omit<SubLedgerLeg, "amount">,
   amount: Money,
 ): SubLedgerLegV2 {
   return { ...base, amount: encodeMoney(amount) };
 }
 
+/**
+ * Decode a raw wire leg into SubLedgerLeg. After the DROP, `amount` is always
+ * a MoneyWire on new events. Old stored events that carried `amountMinor` (but
+ * no `amount`) are handled by `legAmountMoney` in money-codec.ts; this function
+ * now just passes through the parsed leg.
+ * @deprecated DROP complete — SubLedgerLeg.amount is already a MoneyWire.
+ */
 export function decodeSubLedgerLeg(raw: SubLedgerLeg): SubLedgerLegV2 {
-  const { amountMinor, ...rest } = raw;
-  return { ...rest, amount: moneyWireFromMinor(amountMinor, raw.currency) };
+  return raw;
 }
 
-/** @deprecated DECIMAL-MIGRATION: superseded by SubLedgerPostingEmittedPayloadV2. */
+/** @deprecated DROP complete — SubLedgerPostingEmittedPayload legs are already V2. */
 export type SubLedgerPostingEmittedPayloadLegacy = SubLedgerPostingEmittedPayload;
 
-export interface SubLedgerPostingEmittedPayloadV2
-  extends Omit<SubLedgerPostingEmittedPayload, "legs"> {
-  readonly legs: SubLedgerLegV2[];
-}
+/** @deprecated DROP complete — SubLedgerPostingEmittedPayload is already V2-shaped. */
+export type SubLedgerPostingEmittedPayloadV2 = SubLedgerPostingEmittedPayload;
 
 export function decodeSubLedgerPostingEmitted(
   raw: SubLedgerPostingEmittedPayload,
 ): SubLedgerPostingEmittedPayloadV2 {
-  return { ...raw, legs: raw.legs.map((l) => decodeSubLedgerLeg(l)) };
+  return raw;
 }
 
 // ── RealisedPnlRecognised V2 ─────────────────────────────────────────────────

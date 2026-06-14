@@ -261,11 +261,13 @@ describe("fx-accounting V2 decode round-trips", () => {
     assertNoFloatMoney(v2, "FxPositionRevaluedPayloadV2");
   });
 
-  it("decodeSubLedgerLeg: minor → MoneyWire", () => {
+  it("decodeSubLedgerLeg: DROP complete — pass-through with MoneyWire amount", () => {
+    // After DROP, SubLedgerLeg carries `amount: MoneyWire` directly; decodeSubLedgerLeg
+    // is a no-op pass-through kept for call-site compatibility.
     const raw = {
       accountId: "ACC-1001-001",
       debitCredit: "debit" as const,
-      amountMinor: 100_00,
+      amount: { __money: "v1" as const, amount: "100", currency: "ZAR" },
       currency: "ZAR",
     };
     const v2 = decodeSubLedgerLeg(raw);
