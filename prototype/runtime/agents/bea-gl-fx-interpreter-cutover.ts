@@ -62,6 +62,8 @@ import {
   type SubLedgerLeg,
   subLedgerLegFromMinor,
 } from "../../platform/accounting/fx-accounting-types";
+import { amountToMinorUnits } from "../../platform/core/decimal-money";
+import { legAmountMoney } from "../../platform/core/money-codec";
 import {
   type InterpreterApprovalGate,
   PRODUCTION_REPRESENTATIONS,
@@ -316,7 +318,7 @@ function toSubLedgerLegs(post: ProposedPosting): SubLedgerLeg[] {
   return post.legs.map((l) =>
     subLedgerLegFromMinor(
       { accountId: l.accountId, debitCredit: l.debitCredit, currency: l.currency },
-      BigInt(l.amountMinor),
+      amountToMinorUnits(legAmountMoney(l)),
     ),
   );
 }

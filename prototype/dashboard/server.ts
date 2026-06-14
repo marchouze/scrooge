@@ -78,6 +78,8 @@ import type {
   BankConfigServer,
 } from "../platform/config/schema";
 import { CURRENCY_POSITIONS, NEGATIVE_STYLES } from "../platform/config/schema";
+import { amountToMinorUnits } from "../platform/core/decimal-money";
+import { legAmountMoney } from "../platform/core/money-codec";
 import { newEventId, nowUtc } from "../platform/core/types";
 import { defaultDocumentStore } from "../platform/document-store";
 import { makeAgentEscalationDecided } from "../platform/event-store/event-types/agent";
@@ -789,7 +791,8 @@ function emitAgedItemAlerts(
         currency: leg.currency,
         amountMinor: 0,
       };
-      existing.amountMinor += leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+      const legMinor = Number(amountToMinorUnits(legAmountMoney(leg)));
+      existing.amountMinor += leg.debitCredit === "debit" ? legMinor : -legMinor;
       netByKey.set(key, existing);
     }
   }

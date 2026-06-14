@@ -34,6 +34,8 @@
 //   engineer, engineering — BA-form generator inputs contract)
 //   + Camille (CFO, finance — capital-stack methodology)
 
+import { amountToMinorUnits } from "../core/decimal-money";
+import { legAmountMoney } from "../core/money-codec";
 import type { EventStore } from "../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 import { generateBa110OffBalanceSheetFromEvents } from "./ba-110-off-balance-sheet";
@@ -197,7 +199,8 @@ function foldCapitalAccountBalances(
       if (ccy !== functionalCurrency) continue; // multi-currency at Slice 6+
       const key = `${acctId}:${ccy}`;
       const current = balances.get(key) ?? 0;
-      const delta = leg.debitCredit === "debit" ? (leg.amountMinor ?? 0) : -(leg.amountMinor ?? 0);
+      const minor = Number(amountToMinorUnits(legAmountMoney(leg)));
+      const delta = leg.debitCredit === "debit" ? minor : -minor;
       balances.set(key, current + delta);
     }
   }
