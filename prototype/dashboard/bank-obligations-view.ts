@@ -31,6 +31,7 @@ import { getDb } from "../platform/regulatory/graph/db";
 import { buildProvisionTree } from "../platform/regulatory/graph/provision-tree";
 import { extractSectionIdsFromCitation } from "../platform/regulatory/obligation-linker";
 import { loadStructuredDocBySlug } from "../platform/regulatory/structured-doc-loader";
+import { foldAssessmentRegister } from "../v2-core/applicability";
 
 /** A reference row from the committed obligations seed (the authored origin). */
 export interface ObligationSeedRow {
@@ -785,31 +786,43 @@ export function getObligationDetail(
   const citation = projection?.citation ?? seed?.citation ?? "";
   const domain = resolveDomain({ section: seed?.section, domainCode: projection?.domain });
 
-  // W8 Slice C — fold the obligation's applicability verdict from the S8
-  // ApplicabilityAssessmentConcluded events whose subjectRef === this obligation
-  // id; take the LATEST by as_of (a re-adoption on a later day re-assesses
-  // against a fresh posture snapshot). Principle 1: a query over events.
+  // W8 Slice C — the obligation's applicability verdict. The S8 lifecycle
+  // carries `subjectRef` ONLY on the Requested event; the Concluded payload does
+  // not. So we fold the full register (Requested+Performed+Concluded) and use
+  // `assessmentsForSubject(id)` (which propagates subjectRef from Requested onto
+  // each folded assessment), keeping only concluded assessments. We pick the
+  // LATEST by the Concluded event's as_of (a re-adoption on a later day
+  // re-assesses against a fresh posture snapshot). Principle 1: a query over
+  // events. (D-W8-POSTURE-REGISTER-SLICE-1.)
   let applicability: ObligationDetail["applicability"] | undefined;
-  let latestAt = "";
-  for (const ev of store.replay({ type: "ApplicabilityAssessmentConcluded" })) {
-    const p = ev.payload as {
-      subjectRef?: string;
-      verdict?: string;
-      appliesToContexts?: string[];
-      rationale?: string;
-    };
-    if (p.subjectRef !== id) continue;
-    const at = ev.as_of ?? "";
-    if (applicability && at <= latestAt) continue;
-    if (
-      p.verdict === "applies" ||
-      p.verdict === "partially-applies" ||
-      p.verdict === "does-not-apply"
-    ) {
+  {
+    // Map assessmentId → latest Concluded as_of (for the latest-wins tiebreak).
+    const concludedAt = new Map<string, string>();
+    const payloads: unknown[] = [];
+    for (const ev of store.replay({ type: "ApplicabilityAssessmentRequested" })) {
+      payloads.push({ kind: "ApplicabilityAssessmentRequested", ...(ev.payload as object) });
+    }
+    for (const ev of store.replay({ type: "ApplicabilityAssessmentPerformed" })) {
+      payloads.push({ kind: "ApplicabilityAssessmentPerformed", ...(ev.payload as object) });
+    }
+    for (const ev of store.replay({ type: "ApplicabilityAssessmentConcluded" })) {
+      payloads.push({ kind: "ApplicabilityAssessmentConcluded", ...(ev.payload as object) });
+      const aid = (ev.payload as { assessmentId?: string }).assessmentId;
+      const at = ev.as_of ?? "";
+      if (aid && (!concludedAt.has(aid) || at > (concludedAt.get(aid) ?? ""))) {
+        concludedAt.set(aid, at);
+      }
+    }
+    const register = foldAssessmentRegister(payloads);
+    let latestAt = "";
+    for (const a of register.assessmentsForSubject(id)) {
+      if (a.stage !== "concluded" || a.verdict === undefined) continue;
+      const at = concludedAt.get(a.assessmentId) ?? "";
+      if (applicability && at <= latestAt) continue;
       applicability = {
-        verdict: p.verdict,
-        matchedContexts: p.appliesToContexts ?? [],
-        rationale: p.rationale ?? "",
+        verdict: a.verdict,
+        matchedContexts: [...(a.appliesToContexts ?? [])],
+        rationale: a.rationale ?? "",
       };
       latestAt = at;
     }
