@@ -60,7 +60,10 @@
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (full-retirement Batch 1, CEO-approved
 // 2026-06-05). Citations: Principles/1-events-are-truth.md.
 
-import type { SubLedgerLeg } from "../../platform/accounting/fx-accounting-types";
+import {
+  type SubLedgerLeg,
+  subLedgerLegFromMinor,
+} from "../../platform/accounting/fx-accounting-types";
 import type { Representation } from "../../platform/accounting/sla/generated/sla-types";
 import {
   type InterpretResult,
@@ -213,12 +216,16 @@ export type TreasuryInterpretOutcome =
   | { readonly kind: "reject"; readonly detail: string };
 
 function toSubLedgerLegs(post: ProposedPosting): SubLedgerLeg[] {
-  return post.legs.map((l) => ({
-    accountId: l.accountId,
-    debitCredit: l.debitCredit,
-    amountMinor: Number(l.amountMinor),
-    currency: l.currency,
-  }));
+  // ProposedLeg.amountMinor is an EXACT integer minor-unit magnitude (the SLA
+  // bigint engine never introduces a fraction); lift it losslessly to the
+  // decimal `amount` source of truth, then derive `amountMinor` back from it
+  // (D-DECIMAL-NATIVE-MONEY-ARITHMETIC slice 1 — one source, no float).
+  return post.legs.map((l) =>
+    subLedgerLegFromMinor(
+      { accountId: l.accountId, debitCredit: l.debitCredit, currency: l.currency },
+      BigInt(l.amountMinor),
+    ),
+  );
 }
 
 /**

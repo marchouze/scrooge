@@ -26,6 +26,7 @@ import {
   cmpD,
   divD,
   eqD,
+  fromMinorUnits,
   isNegativeD,
   isZeroD,
   mulD,
@@ -34,6 +35,7 @@ import {
   subD,
   toCanonicalString,
   toDecimal,
+  toMinorUnits,
 } from "./decimal-engine";
 import { scaleFor } from "./iso4217";
 import type { Currency } from "./types";
@@ -307,6 +309,37 @@ export function settleWithResidual<C extends Currency>(
   const settled = round(m, ctx);
   const roundingDifference = sub(m, settled);
   return { settled, roundingDifference };
+}
+
+// ─────────────── minor-unit bridge (compat derivation) ───────────────
+//
+// The legacy `*Minor: number/bigint` integer surface (e.g. `SubLedgerLeg.
+// amountMinor`) is DERIVED from the decimal `Money` during the strangler
+// migration, so there is exactly ONE source of truth (the decimal amount) and
+// the minor field cannot drift. These two functions are that bridge.
+
+/**
+ * Lower an exact-decimal `Money` to an integer count of minor units at the
+ * currency's ISO 4217 exponent. The amount MUST already be rounded to (at most)
+ * the currency scale — an over-precise amount throws (via the engine), because
+ * silently truncating money at the minor-unit boundary is a rounding decision
+ * that must be made EXPLICITLY upstream (`round`/`divideRounded`/`allocate`),
+ * never here. Used to derive a compat `amountMinor` from the decimal source.
+ */
+export function amountToMinorUnits(m: Money): bigint {
+  return toMinorUnits(toDecimal(m.amount), scaleFor(m.currency));
+}
+
+/**
+ * Lift an integer count of minor units (already exact — e.g. an existing
+ * `amountMinor`) to its exact-decimal `Money`. The result carries no rounding:
+ * an integer minor-unit value is exact at the currency scale by definition, so
+ * `amountToMinorUnits(moneyFromMinorUnits(n, c)) === n` for every `n`. This is
+ * the lossless lift that lets a producer holding a legacy integer magnitude
+ * make the decimal `amount` the source of truth without changing any figure.
+ */
+export function moneyFromMinorUnits<C extends Currency>(minor: bigint, currency: C): Money<C> {
+  return lift(fromMinorUnits(minor, scaleFor(currency)), currency);
 }
 
 // ───────────────────────── display ─────────────────────────

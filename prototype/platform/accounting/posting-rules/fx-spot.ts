@@ -71,7 +71,7 @@ import type {
 } from "../../event-store/event-types/fx-accounting";
 import type { TradeMaturedFxSpotPayload } from "../../event-store/event-types/trade-matured";
 import type { FxLeg, FxTradeExecutedPayload } from "../../markets/cdm/fx";
-import type { SubLedgerLeg } from "../fx-accounting-types";
+import { type SubLedgerLeg, subLedgerLegFromMinor } from "../fx-accounting-types";
 
 // ---------------------------------------------------------------------------
 // Types for new posting rules
@@ -437,32 +437,35 @@ export function fxTradeBookingJournals(
     // receive-leg Cr's the Receivable; deliver-leg Dr's the Payable.
 
     // payCcy sub-entry: Dr Receivable [payCcy] / Cr Payable [payCcy]
-    legs.push({
-      accountId: receivableAccountFor(payCcy),
-      debitCredit: "debit",
-      amountMinor: payAmount,
-      currency: payCcy,
-    });
-    legs.push({
-      accountId: payableAccountFor(payCcy),
-      debitCredit: "credit",
-      amountMinor: payAmount,
-      currency: payCcy,
-    });
+    // `payAmount`/`receiveAmount` are EXACT integer minor units (Math.abs of an
+    // integer notional) — lifted losslessly to the decimal `amount` source of
+    // truth, with `amountMinor` derived (D-DECIMAL-NATIVE-MONEY-ARITHMETIC s1).
+    legs.push(
+      subLedgerLegFromMinor(
+        { accountId: receivableAccountFor(payCcy), debitCredit: "debit", currency: payCcy },
+        payAmount,
+      ),
+    );
+    legs.push(
+      subLedgerLegFromMinor(
+        { accountId: payableAccountFor(payCcy), debitCredit: "credit", currency: payCcy },
+        payAmount,
+      ),
+    );
 
     // receiveCcy sub-entry: Dr Receivable [receiveCcy] / Cr Payable [receiveCcy]
-    legs.push({
-      accountId: receivableAccountFor(receiveCcy),
-      debitCredit: "debit",
-      amountMinor: receiveAmount,
-      currency: receiveCcy,
-    });
-    legs.push({
-      accountId: payableAccountFor(receiveCcy),
-      debitCredit: "credit",
-      amountMinor: receiveAmount,
-      currency: receiveCcy,
-    });
+    legs.push(
+      subLedgerLegFromMinor(
+        { accountId: receivableAccountFor(receiveCcy), debitCredit: "debit", currency: receiveCcy },
+        receiveAmount,
+      ),
+    );
+    legs.push(
+      subLedgerLegFromMinor(
+        { accountId: payableAccountFor(receiveCcy), debitCredit: "credit", currency: receiveCcy },
+        receiveAmount,
+      ),
+    );
   }
 
   return legs;
@@ -497,19 +500,25 @@ export function fxRevaluationJournals(event: FxPositionRevaluedPayload): SubLedg
 
   // Use ZAR receivable account for the revaluation posting (ZAR is functional currency).
   // The receivable is the asset being revalued.
+  // `absAmount` is an EXACT integer minor-unit |Δ fair value| — lifted to the
+  // decimal `amount` source of truth, `amountMinor` derived (decimal-native s1).
   return [
-    {
-      accountId: isGain ? FX_ACCOUNTS.RECEIVABLE_ZAR : FX_ACCOUNTS.UNREALISED_PNL,
-      debitCredit: "debit",
-      amountMinor: absAmount,
-      currency: "ZAR",
-    },
-    {
-      accountId: isGain ? FX_ACCOUNTS.UNREALISED_PNL : FX_ACCOUNTS.RECEIVABLE_ZAR,
-      debitCredit: "credit",
-      amountMinor: absAmount,
-      currency: "ZAR",
-    },
+    subLedgerLegFromMinor(
+      {
+        accountId: isGain ? FX_ACCOUNTS.RECEIVABLE_ZAR : FX_ACCOUNTS.UNREALISED_PNL,
+        debitCredit: "debit",
+        currency: "ZAR",
+      },
+      absAmount,
+    ),
+    subLedgerLegFromMinor(
+      {
+        accountId: isGain ? FX_ACCOUNTS.UNREALISED_PNL : FX_ACCOUNTS.RECEIVABLE_ZAR,
+        debitCredit: "credit",
+        currency: "ZAR",
+      },
+      absAmount,
+    ),
   ];
 }
 
@@ -562,36 +571,52 @@ export function fxSettlementJournals(event: TradeMaturedFxSpotPayload): SubLedge
   const baseAbs = Math.abs(event.settledBaseCurrencyMinor);
   if (baseAbs > 0) {
     const bankReceivesBase = event.settledBaseCurrencyMinor > 0;
-    legs.push({
-      accountId: bankReceivesBase ? event.nostroAccountBase : receivableAccountFor(baseCcy),
-      debitCredit: "debit",
-      amountMinor: baseAbs,
-      currency: baseCcy,
-    });
-    legs.push({
-      accountId: bankReceivesBase ? receivableAccountFor(baseCcy) : event.nostroAccountBase,
-      debitCredit: "credit",
-      amountMinor: baseAbs,
-      currency: baseCcy,
-    });
+    legs.push(
+      subLedgerLegFromMinor(
+        {
+          accountId: bankReceivesBase ? event.nostroAccountBase : receivableAccountFor(baseCcy),
+          debitCredit: "debit",
+          currency: baseCcy,
+        },
+        baseAbs,
+      ),
+    );
+    legs.push(
+      subLedgerLegFromMinor(
+        {
+          accountId: bankReceivesBase ? receivableAccountFor(baseCcy) : event.nostroAccountBase,
+          debitCredit: "credit",
+          currency: baseCcy,
+        },
+        baseAbs,
+      ),
+    );
   }
 
   // (ii) Deliver/receive quote currency
   const quoteAbs = Math.abs(event.settledQuoteCurrencyMinor);
   if (quoteAbs > 0) {
     const bankReceivesQuote = event.settledQuoteCurrencyMinor > 0;
-    legs.push({
-      accountId: bankReceivesQuote ? event.nostroAccountQuote : payableAccountFor(quoteCcy),
-      debitCredit: "debit",
-      amountMinor: quoteAbs,
-      currency: quoteCcy,
-    });
-    legs.push({
-      accountId: bankReceivesQuote ? payableAccountFor(quoteCcy) : event.nostroAccountQuote,
-      debitCredit: "credit",
-      amountMinor: quoteAbs,
-      currency: quoteCcy,
-    });
+    legs.push(
+      subLedgerLegFromMinor(
+        {
+          accountId: bankReceivesQuote ? event.nostroAccountQuote : payableAccountFor(quoteCcy),
+          debitCredit: "debit",
+          currency: quoteCcy,
+        },
+        quoteAbs,
+      ),
+    );
+    legs.push(
+      subLedgerLegFromMinor(
+        {
+          accountId: bankReceivesQuote ? payableAccountFor(quoteCcy) : event.nostroAccountQuote,
+          debitCredit: "credit",
+          currency: quoteCcy,
+        },
+        quoteAbs,
+      ),
+    );
   }
 
   // (iii) Realised P&L residual in ZAR
@@ -599,18 +624,26 @@ export function fxSettlementJournals(event: TradeMaturedFxSpotPayload): SubLedge
   if (pnl !== 0) {
     const pnlAbs = Math.abs(pnl);
     const isGain = pnl > 0;
-    legs.push({
-      accountId: isGain ? FX_ACCOUNTS.NOSTRO_ZAR : FX_ACCOUNTS.REALISED_PNL,
-      debitCredit: "debit",
-      amountMinor: pnlAbs,
-      currency: "ZAR",
-    });
-    legs.push({
-      accountId: isGain ? FX_ACCOUNTS.REALISED_PNL : FX_ACCOUNTS.NOSTRO_ZAR,
-      debitCredit: "credit",
-      amountMinor: pnlAbs,
-      currency: "ZAR",
-    });
+    legs.push(
+      subLedgerLegFromMinor(
+        {
+          accountId: isGain ? FX_ACCOUNTS.NOSTRO_ZAR : FX_ACCOUNTS.REALISED_PNL,
+          debitCredit: "debit",
+          currency: "ZAR",
+        },
+        pnlAbs,
+      ),
+    );
+    legs.push(
+      subLedgerLegFromMinor(
+        {
+          accountId: isGain ? FX_ACCOUNTS.REALISED_PNL : FX_ACCOUNTS.NOSTRO_ZAR,
+          debitCredit: "credit",
+          currency: "ZAR",
+        },
+        pnlAbs,
+      ),
+    );
   }
 
   return legs;
@@ -795,35 +828,39 @@ export function fxSettlementFailedJournals(input: FxSettlementFailedInput): SubL
   //     Settlement-Failed Receivable sub-ledger. Same currency; balanced
   //     within currency.
   if (absAmount > 0) {
-    legs.push({
-      accountId: settlementFailedReceivableAccountFor(currency),
-      debitCredit: "debit",
-      amountMinor: absAmount,
-      currency,
-    });
-    legs.push({
-      accountId: receivableAccountFor(currency),
-      debitCredit: "credit",
-      amountMinor: absAmount,
-      currency,
-    });
+    legs.push(
+      subLedgerLegFromMinor(
+        { accountId: settlementFailedReceivableAccountFor(currency), debitCredit: "debit", currency },
+        absAmount,
+      ),
+    );
+    legs.push(
+      subLedgerLegFromMinor(
+        { accountId: receivableAccountFor(currency), debitCredit: "credit", currency },
+        absAmount,
+      ),
+    );
   }
 
   // (b) Recognise Stage-3 lifetime ECL = 100% of receivable's ZAR equivalent.
   //     ZAR functional-currency basis per IAS 21 §23. Balanced within ZAR.
   if (absZar > 0) {
-    legs.push({
-      accountId: FX_ACCOUNTS.CREDIT_LOSS_EXPENSE_FX,
-      debitCredit: "debit",
-      amountMinor: absZar,
-      currency: "ZAR",
-    });
-    legs.push({
-      accountId: FX_ACCOUNTS.ECL_ALLOWANCE_SETTLEMENT_FAILED,
-      debitCredit: "credit",
-      amountMinor: absZar,
-      currency: "ZAR",
-    });
+    legs.push(
+      subLedgerLegFromMinor(
+        { accountId: FX_ACCOUNTS.CREDIT_LOSS_EXPENSE_FX, debitCredit: "debit", currency: "ZAR" },
+        absZar,
+      ),
+    );
+    legs.push(
+      subLedgerLegFromMinor(
+        {
+          accountId: FX_ACCOUNTS.ECL_ALLOWANCE_SETTLEMENT_FAILED,
+          debitCredit: "credit",
+          currency: "ZAR",
+        },
+        absZar,
+      ),
+    );
   }
 
   return legs;
