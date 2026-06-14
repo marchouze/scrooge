@@ -27,7 +27,10 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { minorFromMoneyWire } from "@platform/core/money-codec";
-import type { CcrEadComputedPayloadV2Type } from "@platform/event-store/event-types/counterparty-credit-risk";
+import {
+  type CcrEadComputedPayloadV2Type,
+  normalizeCcrEadPayload,
+} from "@platform/event-store/event-types/counterparty-credit-risk";
 import { EventStore } from "@platform/event-store/store";
 import { resolveAllCounterpartyClasses } from "@platform/risk/counterparty-classification";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
@@ -67,7 +70,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     ? { type: "CcrEadComputed" as const, asOf: opts.asOf }
     : { type: "CcrEadComputed" as const };
   for (const ev of store.replay(eadReplayOpts)) {
-    const p = ev.payload as unknown as CcrEadComputedPayloadV2Type;
+    const p = normalizeCcrEadPayload(ev.payload); // upcast legacy V1 -> V2
     if (!p.nettingSetId || p.currency !== FUNCTIONAL_CURRENCY) continue;
     const prev = latestEadByNettingSet.get(p.nettingSetId);
     if (prev && prev.computationDate >= p.computationDate) continue;
