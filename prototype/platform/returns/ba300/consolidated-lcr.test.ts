@@ -23,6 +23,8 @@
 import { describe, expect, it } from "bun:test";
 
 import tree from "../../../seeds/legal-entity-tree.json";
+import { moneyFromMinorUnits } from "../../core/decimal-money";
+import type { Currency } from "../../core/types";
 import type { Ba300LcrOutput } from "../../reporting/ba-300-lcr";
 import { applyHqlaCaps } from "../../reporting/ba-300-lcr";
 import {
@@ -34,8 +36,6 @@ import {
   consolidateBa300Lcr,
   resolveLcrConsolidationPerimeter,
 } from "./consolidated-lcr";
-import { moneyFromMinorUnits } from "../../core/decimal-money";
-import type { Currency } from "../../core/types";
 
 const AS_OF = "2026-06-30T23:59:59.000Z";
 const PERIOD_ID = "2026-06";
@@ -464,7 +464,10 @@ describe("consolidateBa300Lcr — validation", () => {
             fromEntityId: "LE-ZA-HOZ-BANK",
             toEntityId: "LE-MU-HOZ-BANK-MU",
             amountMinor: HOZ_BANK.solo.cashFlows.outflows.grossMinor + 1,
-            amount: moneyFromMinorUnits(BigInt(HOZ_BANK.solo.cashFlows.outflows.grossMinor + 1), "ZAR" as Currency),
+            amount: moneyFromMinorUnits(
+              BigInt(HOZ_BANK.solo.cashFlows.outflows.grossMinor + 1),
+              "ZAR" as Currency,
+            ),
             source: "test",
           },
         ],

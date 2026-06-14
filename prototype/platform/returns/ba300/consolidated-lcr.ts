@@ -87,9 +87,9 @@
 //   assessment owner); methodology per Helena (Chief Risk Officer,
 //   governance) policy v1.2 §2.6.
 
-import { type Ba300LcrOutput, applyHqlaCaps } from "../../reporting/ba-300-lcr";
 import { type Money, amountToMinorUnits } from "../../core/decimal-money";
 import type { Currency } from "../../core/types";
+import { type Ba300LcrOutput, applyHqlaCaps } from "../../reporting/ba-300-lcr";
 
 // ---------------------------------------------------------------------------
 // Cited constants — no magic numbers
@@ -435,10 +435,7 @@ export function consolidateBa300Lcr(input: ConsolidatedLcrInput): Ba300Consolida
       el.fromEntityId,
       (outflowElimByEntity.get(el.fromEntityId) ?? 0) + elimMinor,
     );
-    inflowElimByEntity.set(
-      el.toEntityId,
-      (inflowElimByEntity.get(el.toEntityId) ?? 0) + elimMinor,
-    );
+    inflowElimByEntity.set(el.toEntityId, (inflowElimByEntity.get(el.toEntityId) ?? 0) + elimMinor);
   }
 
   let sumSoloGrossOutflows = 0;

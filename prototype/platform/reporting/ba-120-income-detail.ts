@@ -74,9 +74,9 @@
 //   + Ravi (Treasury & ALM engineer, engineering — FTP + ALM banding
 //   substrate consult).
 
-import type { Ba610IncomeStatement, Ba610LineItem } from "./ba-120-income-statement";
 import { type Money, amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
 import type { Currency } from "../core/types";
+import type { Ba610IncomeStatement, Ba610LineItem } from "./ba-120-income-statement";
 
 // ---------------------------------------------------------------------------
 // Instrument classes

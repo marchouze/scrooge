@@ -29,6 +29,8 @@
 //   reports to Camille CFO; IFRS line-mapping owner) · Atlas (Core banking
 //   platform architect, engineering — substrate consult).
 
+import { amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
+import type { Currency } from "../core/types";
 import {
   IFRS_AFS_BASE_CITATIONS,
   IfrsGeneratorError,
@@ -41,8 +43,6 @@ import {
   fingerprintIfrsClassifications,
   indexClassifications,
 } from "./ifrs-types";
-import { amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
-import type { Currency } from "../core/types";
 
 // ---------------------------------------------------------------------------
 // Output

@@ -27,9 +27,9 @@
 //   + Atlas (Core banking platform architect, engineering — substrate
 //   consult; generator-input contract).
 
-import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
 import type { Money } from "../core/decimal-money";
 import type { Currency } from "../core/types";
+import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
 
 // ---------------------------------------------------------------------------
 // Account-class taxonomy (the IFRS axis the renderer reads)

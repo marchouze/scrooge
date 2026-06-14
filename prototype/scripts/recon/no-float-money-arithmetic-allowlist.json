@@ -497,17 +497,17 @@
     },
     {
       "file": "platform/reporting/ba-100-balance-sheet.ts",
-      "line": 612,
+      "line": 632,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/reporting/ba-120-income-detail.ts",
-      "line": 643,
+      "line": 651,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/reporting/ba-120-income-detail.ts",
-      "line": 747,
+      "line": 755,
       "pattern": "money-multiply/divide"
     },
     {
@@ -522,32 +522,32 @@
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1217,
+      "line": 1242,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1731,
+      "line": 1760,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1733,
+      "line": 1762,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1348,
+      "line": 1374,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1560,
+      "line": 1589,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1727,
+      "line": 1756,
       "pattern": "money-multiply/divide"
     },
     {
@@ -607,22 +607,22 @@
     },
     {
       "file": "platform/returns/ba300/consolidated-lcr.ts",
-      "line": 508,
+      "line": 511,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/returns/ba300/consolidated-lcr.ts",
-      "line": 509,
+      "line": 512,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/returns/ba300/consolidated-lcr.ts",
-      "line": 510,
+      "line": 513,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/returns/ba300/consolidated-lcr.ts",
-      "line": 554,
+      "line": 557,
       "pattern": "money-multiply/divide"
     },
     {

@@ -115,11 +115,7 @@
 //   + Atlas (Core banking platform architect, engineering — P1 fix).
 
 import { buildRateMap, convertMinor } from "../accounting/fx-rate-projection";
-import {
-  type Money,
-  amountToMinorUnits,
-  moneyFromMinorUnits,
-} from "../core/decimal-money";
+import { type Money, amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
 import type { Currency } from "../core/types";
 import { newEventId } from "../core/types";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";

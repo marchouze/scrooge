@@ -86,6 +86,8 @@
 //   + Anya (Data / analytics engineer, engineering — reports to Devon COO;
 //   semantic-layer integration).
 
+import { type Money, amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
+import type { Currency } from "../core/types";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
 import {
   BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM,
@@ -93,8 +95,6 @@ import {
   type LeverageRatioOutput,
   generateLeverageRatio,
 } from "./ba-700-leverage-ratio";
-import { type Money, amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
-import type { Currency } from "../core/types";
 
 // P1 fix note (C-3): the events-first entry point for BA 100 lives at
 // `ba-100-events-adapter.ts` → `generateBa100CapitalFromEvents()`. Callers

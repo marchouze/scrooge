@@ -70,19 +70,15 @@
 //   + Anya (Data / analytics engineer, engineering — reports to Devon COO;
 //   semantic-layer integration; JSON-schema co-design).
 
+import Decimal from "decimal.js";
 import {
   COUNTERPARTY_SECTORS,
   type CounterpartySector,
   sectorForAccountId,
 } from "../accounting/coa-registry";
-import {
-  type Money,
-  amountToMinorUnits,
-  moneyFromMinorUnits,
-} from "../core/decimal-money";
-import type { Currency } from "../core/types";
 import { divD, roundDecimal, toDecimal } from "../core/decimal-engine";
-import Decimal from "decimal.js";
+import { type Money, amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
+import type { Currency } from "../core/types";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
 
 // ---------------------------------------------------------------------------
@@ -632,14 +628,15 @@ function splitLineBySector(line: Ba600LineItem): Ba600SectorSplit {
   // Authority: D-DECIMAL-NATIVE-CONSUMER-MIGRATION-BEFORE-WAVE-3; brief §"Rounding policy".
   const perD = roundDecimal(
     divD(toDecimal(String(amountToMinorUnits(line.amount))), new Decimal(accounts.length)),
-    0,     // integer minor-unit result (no decimal places)
+    0, // integer minor-unit result (no decimal places)
     "DOWN", // floor-division toward zero — matches prior Math.trunc for positive amounts
     // Authority: D-DECIMAL-NATIVE-CONSUMER-MIGRATION-BEFORE-WAVE-3; brief §"Rounding policy"
   );
   const per = Number(BigInt(perD.toFixed(0)));
   let allocated = 0;
   accounts.forEach((account, idx) => {
-    const share = idx === 0 ? Number(amountToMinorUnits(line.amount)) - per * (accounts.length - 1) : per;
+    const share =
+      idx === 0 ? Number(amountToMinorUnits(line.amount)) - per * (accounts.length - 1) : per;
     allocated += share;
     split[sectorForAccountId(account)] += share;
   });
@@ -729,7 +726,11 @@ function computePerCurrencyTotals(
     };
     // trial-balance row.amountMinor is the source here; convert via Money for decimal-native path.
     const rowMoney = moneyFromMinorUnits(BigInt(row.amountMinor), row.currency as Currency);
-    const stock = Number(amountToMinorUnits(rowMoney) < 0n ? -amountToMinorUnits(rowMoney) : amountToMinorUnits(rowMoney));
+    const stock = Number(
+      amountToMinorUnits(rowMoney) < 0n
+        ? -amountToMinorUnits(rowMoney)
+        : amountToMinorUnits(rowMoney),
+    );
     if (c.section === "assets") bucket.assetsMinor += stock;
     else if (c.section === "liabilities") bucket.liabilitiesMinor += stock;
     else bucket.equityMinor += stock;
