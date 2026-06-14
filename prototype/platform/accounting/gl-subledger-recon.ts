@@ -18,9 +18,10 @@
 //   reports to Camille, CFO)
 // Co-author: Devon (COO, governance)
 
-import { amountToMinorUnits } from "../core/decimal-money";
+import { type Money, amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
 import { legAmountMoney } from "../core/money-codec";
 import type { SubLedgerPostingEmittedPayload } from "../event-store/event-types/fx-accounting";
+import type { Currency } from "../core/types";
 import type { TrialBalance } from "./period-close";
 
 // ---------------------------------------------------------------------------
@@ -217,7 +218,8 @@ export function verifyIfrsClassification(args: {
   const failed: ClassificationFinding[] = [];
 
   for (const row of trialBalance.rows) {
-    if (row.amountMinor === 0) continue;
+    const rowAmount = moneyFromMinorUnits(BigInt(row.amountMinor), row.currency as Currency);
+    if (amountToMinorUnits(rowAmount) === 0n) continue;
 
     const entry = coaByAccountId.get(row.leafAccountId);
 
@@ -448,7 +450,8 @@ export function checkAgedItems(args: {
   const aged: AgedItem[] = [];
 
   for (const row of trialBalance.rows) {
-    if (row.amountMinor === 0) continue;
+    const rowAmount = moneyFromMinorUnits(BigInt(row.amountMinor), row.currency as Currency);
+    if (amountToMinorUnits(rowAmount) === 0n) continue;
 
     const key = `${row.leafAccountId}|${row.currency}`;
     const entry = coaByAccountId.get(row.leafAccountId);
@@ -494,7 +497,8 @@ export function checkAgedItems(args: {
 export interface ZeroBalanceFinding {
   readonly accountId: string;
   readonly currency: string;
-  readonly amountMinor: number;
+  /** Decimal-native net balance. Source of truth; replaces legacy amountMinor. */
+  readonly amount: Money;
   readonly reason: "non-zero-suspense";
 }
 
@@ -549,11 +553,12 @@ export function assertZeroBalance(args: {
     }
 
     for (const row of rows) {
-      if (row.amountMinor !== 0) {
+      const rowAmount = moneyFromMinorUnits(BigInt(row.amountMinor), row.currency as Currency);
+      if (amountToMinorUnits(rowAmount) !== 0n) {
         failed.push({
           accountId,
           currency: row.currency,
-          amountMinor: row.amountMinor,
+          amount: rowAmount,
           reason: "non-zero-suspense",
         });
       } else {
