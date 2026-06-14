@@ -30,8 +30,21 @@
       border: 1px solid var(--color-border); border-radius: var(--radius-md);
       background: var(--color-surface); color: var(--color-text-primary); font: var(--text-body);
     }
+    .bo-filter { display: flex; flex-direction: column; gap: 2px; }
+    .bo-filter-label { font: var(--text-caption); color: var(--color-text-secondary);
+      text-transform: uppercase; letter-spacing: 0.04em; }
+    .bo-filter select {
+      padding: var(--space-2) var(--space-3); min-width: 200px;
+      border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      background: var(--color-surface); color: var(--color-text-primary); font: var(--text-body);
+    }
     .bo-derives { font-family: var(--font-mono); font-size: 0.78em; color: var(--color-accent); }
     .bo-muted { color: var(--color-text-disabled); }
+    .bo-title-id { display: block; font-family: var(--font-mono); font-size: 0.72em; color: var(--color-text-secondary); margin-top: 2px; }
+    .bo-req { font-size: 12px; color: var(--color-text-secondary); }
+    .bo-yes { color: #16a34a; font-weight: 600; }
+    .bo-pol { font-family: var(--font-mono); font-size: 0.78em; color: var(--color-accent); text-decoration: none; }
+    .bo-pol:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -48,9 +61,19 @@
       </div>
       <div class="bo-tiles" id="bo-tiles"></div>
       <div class="bo-controls">
-        <input id="bo-search" type="search" placeholder="Search id, owner, requirement, policy…" autocomplete="off">
+        <div class="bo-filter">
+          <span class="bo-filter-label">Domain</span>
+          <select id="bo-domain"><option value="">All domains</option></select>
+        </div>
+        <div class="bo-filter">
+          <span class="bo-filter-label">Regulator</span>
+          <select id="bo-regulator"><option value="">All regulators</option></select>
+        </div>
+        <div class="bo-filter" style="flex:1 1 240px">
+          <span class="bo-filter-label">Search</span>
+          <input id="bo-search" type="search" placeholder="Search title, requirement, citation, policy…" autocomplete="off">
+        </div>
       </div>
-      <div id="bo-tabs" class="tab-bar" style="margin-bottom:var(--space-4)"></div>
       <div id="bo-table"></div>
     </div>
   </main>
@@ -68,56 +91,73 @@
       document.getElementById("bo-table").innerHTML = SC.renderSkeleton(8);
       const data = await sf("/api/bank-obligations");
       const all = data?.obligations ?? [];
-      const sum = data?.summary ?? { total: 0, byStatus: {}, withDerivesFrom: 0 };
+      const sum = data?.summary ?? { total: 0, byDomain: {}, byRegulator: {}, withDerivesFrom: 0 };
 
       // Summary tiles
+      const withVerbatim = all.filter(o => o.hasVerbatim).length;
+      const withPolicies = all.filter(o => (o.policies || []).length).length;
       document.getElementById("bo-tiles").innerHTML = [
         ["Total", sum.total],
-        ["With source link", sum.withDerivesFrom],
-        ...Object.entries(sum.byStatus || {}).sort((a,b)=>b[1]-a[1]).slice(0,4),
+        ["With verbatim quote", withVerbatim],
+        ["With linked policy", withPolicies],
+        ["Regulators", Object.keys(sum.byRegulator || {}).length],
       ].map(([label, value]) =>
         `<div class="bo-tile"><div class="bo-tile-label">${SC.esc(String(label))}</div><div class="bo-tile-value">${SC.esc(String(value))}</div></div>`
       ).join("");
 
-      // Status tabs
-      let activeStatus = null, query = "";
-      const statuses = Object.entries(sum.byStatus || {}).sort((a,b)=>b[1]-a[1]);
-      const TABS = [{ label: `All (${all.length})`, filter: null },
-        ...statuses.map(([s,c]) => ({ label: `${s} (${c})`, filter: s }))];
-      const tabsEl = document.getElementById("bo-tabs");
-      tabsEl.innerHTML = TABS.map(t =>
-        `<button class="tab-btn${t.filter===activeStatus?" active":""}" data-filter="${t.filter ?? ""}">${SC.esc(t.label)}</button>`
-      ).join("");
+      // Filter state
+      let domain = "", regulator = "", query = "";
+
+      // Domain dropdown: keyed on the full domain DESCRIPTION (truthful, authored
+      // from the register section). The bare letter code is not globally unique —
+      // the same letter labels different families across obligation sub-sets — so
+      // filtering on the description avoids mixing unrelated domains.
+      const domainEl = document.getElementById("bo-domain");
+      const domains = [...new Set(all.map(o => o.domainDescription).filter(d => d && d !== "—"))].sort();
+      domainEl.innerHTML = '<option value="">All domains</option>' +
+        domains.map(desc => `<option value="${SC.esc(desc)}">${SC.esc(desc)}</option>`).join("");
+
+      // Regulator dropdown.
+      const regulatorEl = document.getElementById("bo-regulator");
+      const regulators = [...new Set(all.map(o => o.regulator).filter(Boolean))].sort();
+      regulatorEl.innerHTML = '<option value="">All regulators</option>' +
+        regulators.map(r => `<option value="${SC.esc(r)}">${SC.esc(r)} (${sum.byRegulator?.[r] ?? 0})</option>`).join("");
+
+      function policiesCell(o) {
+        const pols = o.policies || [];
+        if (pols.length) {
+          return pols.map(p =>
+            `<a class="bo-pol" href="/policies.html?policy=${encodeURIComponent(p)}" onclick="event.stopPropagation()">${SC.esc(p)}</a>`
+          ).join("<br>");
+        }
+        const free = (o.fulfilmentPolicy || "").trim();
+        return free ? `<span class="bo-req">${SC.esc(free.slice(0,60))}</span>` : `<span class="bo-muted">—</span>`;
+      }
 
       function render() {
         const q = query.trim().toLowerCase();
         const rows = all.filter(o =>
-          (!activeStatus || o.status === activeStatus) &&
-          (!q || [o.id,o.owner,o.requirement,o.fulfilmentPolicy,o.domain].some(v => (v||"").toLowerCase().includes(q)))
+          (!domain || o.domainDescription === domain) &&
+          (!regulator || o.regulator === regulator) &&
+          (!q || [o.title,o.id,o.requirement,o.citation,o.fulfilmentPolicy].some(v => (v||"").toLowerCase().includes(q)))
         );
         SC.renderTable({
           container: document.getElementById("bo-table"),
-          headers: ["ID", "Domain", "Owner", "Status", "Fulfilment policy", "Source"],
+          headers: ["Short title", "Requirement", "Source doc", "Verbatim", "Domain", "Policies"],
           rows: rows.map(o => ({ data: o, cells: [
-            `<a href="/obligation.html?id=${encodeURIComponent(o.id)}" style="font-family:var(--font-mono);font-size:0.82em;color:var(--color-accent);text-decoration:none" onclick="event.stopPropagation()">${SC.esc(o.id)}</a>`,
-            `<span style="font-size:12px">${SC.esc((o.domain||"").replace(/^Domain\s+/, ""))}</span>`,
-            SC.esc(o.owner || "—"),
-            SC.renderBadge(o.status || ""),
-            `<span style="font-size:12px;color:var(--color-text-secondary)">${SC.esc((o.fulfilmentPolicy||"").slice(0,60) || "—")}</span>`,
-            (o.derivesFrom && o.derivesFrom.length)
-              ? `<span class="bo-derives">${SC.esc(o.derivesFrom[0])}${o.derivesFrom.length>1?` +${o.derivesFrom.length-1}`:""}</span>`
-              : `<span class="bo-muted">—</span>`,
+            `<a href="/obligation.html?id=${encodeURIComponent(o.id)}" style="color:var(--color-accent);text-decoration:none;font-weight:600" onclick="event.stopPropagation()">${SC.esc(o.title || o.id)}</a><span class="bo-title-id">${SC.esc(o.id)}</span>`,
+            `<span class="bo-req">${SC.esc((o.requirement||"").slice(0,140))}${(o.requirement||"").length>140?"…":""}</span>`,
+            `<span style="font-size:12px">${SC.esc(o.citation || "—")}</span>`,
+            o.hasVerbatim ? `<span class="bo-yes" title="Verbatim quote available on drill-down">✓</span>` : `<span class="bo-muted">—</span>`,
+            `<span style="font-size:12px">${SC.esc(o.domainDescription || o.domainCode || "—")}</span>`,
+            policiesCell(o),
           ]})),
           onRowClick: o => { location.href = "/obligation.html?id=" + encodeURIComponent(o.id); },
           emptyMessage: "No obligations match",
         });
       }
-      tabsEl.addEventListener("click", e => {
-        const b = e.target.closest(".tab-btn"); if (!b) return;
-        activeStatus = b.dataset.filter || null;
-        tabsEl.querySelectorAll(".tab-btn").forEach(x => x.classList.toggle("active",(x.dataset.filter||null)===activeStatus));
-        render();
-      });
+      domainEl.addEventListener("change", e => { domain = e.target.value; render(); });
+      regulatorEl.addEventListener("change", e => { regulator = e.target.value; render(); });
       document.getElementById("bo-search").addEventListener("input", e => { query = e.target.value; render(); });
       render();
     })();
