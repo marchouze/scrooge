@@ -322,6 +322,10 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:expected-event-watchdog",
     "recon:clients-entityname-uniqueness",
     "recon:mandate-coverage",
+    // D-DOMAIN-OWNERSHIP-MAP — Agent⟺Domain⟺Obligation ownership coherence
+    // (advisory; C1 obligation→domain, C2 domain→seat→agent, C3 every top-level
+    // domain owned, C4 owner alignment). Flips enforcing after Slice-3 remediation.
+    "recon:domain-ownership-coherence",
     "recon:procedure-actor",
     "recon:compliance-obligation-tracing",
     "recon:posting-source-id-canonical",

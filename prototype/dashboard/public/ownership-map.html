@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ownership Map — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <style>
+    .om-banner { font: var(--text-caption); color: var(--color-text-secondary);
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-left: 3px solid var(--color-accent); border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4); margin-bottom: var(--space-5); }
+    .om-tiles { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-5); }
+    .om-tile { flex: 1 1 130px; background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg); padding: var(--space-4); }
+    .om-tile-label { font: var(--text-caption); color: var(--color-text-secondary);
+      text-transform: uppercase; letter-spacing: 0.04em; }
+    .om-tile-value { font: var(--text-display); color: var(--color-text-primary); margin-top: 4px; }
+    .om-tile.warn .om-tile-value { color: #b45309; }
+    .om-tile.bad .om-tile-value { color: #dc2626; }
+    .om-tabs { display:flex; gap:var(--space-2); margin-bottom:var(--space-4); }
+    .om-card { background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5); margin-bottom: var(--space-3); }
+    .om-card-head { display:flex; justify-content:space-between; align-items:baseline; gap:var(--space-3); margin-bottom:var(--space-3); flex-wrap:wrap; }
+    .om-card-title { font: var(--text-h2); color: var(--color-text-primary); margin:0; }
+    .om-card-sub { font: var(--text-caption); color: var(--color-text-secondary); }
+    .om-count { font-family: var(--font-mono); font-size: 0.9em; color: var(--color-accent); font-weight:600; }
+    .om-subs { display:flex; flex-wrap:wrap; gap:var(--space-2); }
+    .om-chip { display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:3px 10px;
+      border:1px solid var(--color-border); border-radius:12px; background:var(--color-bg); }
+    .om-chip-n { font-family:var(--font-mono); color:var(--color-text-secondary); }
+    .om-chip-0 { opacity:0.5; }
+    .om-agent-link { color:var(--color-accent); text-decoration:none; }
+    .om-agent-link:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header"><h1 class="page-title">Ownership Map</h1></div>
+    <div class="page-body">
+      <div class="om-banner">
+        <strong>Agent ⟺ Domain ⟺ Obligation.</strong> Every obligation is classified to a normalised
+        domain (<code>domain-ownership-map.ts</code>, <code>D-DOMAIN-OWNERSHIP-MAP</code>) and routed to its
+        accountable agent. Coverage is enforced on two axes: every obligation owned, every domain owned
+        (<code>recon:domain-ownership-coherence</code>). <strong>Owner-drift</strong> = obligations whose authored
+        <code>owner</code> disagrees with their domain's accountable seat (remediation pending).
+      </div>
+      <div class="om-tiles" id="om-tiles"></div>
+      <div class="om-tabs" id="om-tabs">
+        <button class="tab-btn active" data-view="agent">By agent</button>
+        <button class="tab-btn" data-view="domain">By domain</button>
+      </div>
+      <div id="om-body"></div>
+    </div>
+  </main>
+
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script>
+    initShell({ title: "Ownership Map" });
+    (async () => {
+      const esc = SC.esc;
+      const d = await fetch("/api/ownership-map", { headers: { Accept: "application/json" } })
+        .then(r => r.ok ? r.json() : null).catch(() => null);
+      const body = document.getElementById("om-body");
+      if (!d) { body.innerHTML = "<p>Failed to load ownership map.</p>"; return; }
+      const c = d.coverage;
+
+      document.getElementById("om-tiles").innerHTML = [
+        ["Obligations", c.totalObligations, ""],
+        ["Classified", c.classified, ""],
+        ["Orphans", c.orphans, c.orphans ? "bad" : ""],
+        ["Domains owned", `${c.topLevelDomains - c.uncoveredTopLevels}/${c.topLevelDomains}`, c.uncoveredTopLevels ? "bad" : ""],
+        ["Accountable agents", c.accountableSeats, ""],
+        ["Owner-drift", c.ownerDrift, c.ownerDrift ? "warn" : ""],
+      ].map(([l, v, cls]) =>
+        `<div class="om-tile ${cls}"><div class="om-tile-label">${esc(String(l))}</div><div class="om-tile-value">${esc(String(v))}</div></div>`
+      ).join("");
+
+      function chip(label, n) {
+        return `<span class="om-chip ${n === 0 ? "om-chip-0" : ""}">${esc(label)} <span class="om-chip-n">${n}</span></span>`;
+      }
+
+      function renderAgent() {
+        body.innerHTML = d.byAgent.map(a => `
+          <div class="om-card">
+            <div class="om-card-head">
+              <h3 class="om-card-title"><a class="om-agent-link" href="/bank-obligations.html">${esc(a.agent.name)}</a>
+                <span class="om-card-sub">${esc(a.agent.position)} · ${esc(a.seat)}</span></h3>
+              <span class="om-count">${a.obligationCount} obligations</span>
+            </div>
+            <div class="om-subs">${a.subDomains.map(s => chip(s.label, s.count)).join("")}</div>
+          </div>`).join("");
+      }
+
+      function renderDomain() {
+        body.innerHTML = d.byDomain.map(t => `
+          <div class="om-card">
+            <div class="om-card-head">
+              <h3 class="om-card-title">${t.topLevel}. ${esc(t.label)}
+                <span class="om-card-sub">${t.accountableAgents.map(x => esc(x.name)).join(", ")}</span></h3>
+              <span class="om-count">${t.obligationCount} obligations</span>
+            </div>
+            <div class="om-subs">${t.subDomains.map(s =>
+              `<span class="om-chip ${s.count === 0 ? "om-chip-0" : ""}">${esc(s.label)} <span class="om-chip-n">${s.count} · ${esc(s.agent)}</span></span>`
+            ).join("")}</div>
+          </div>`).join("");
+      }
+
+      const tabs = document.getElementById("om-tabs");
+      tabs.addEventListener("click", e => {
+        const b = e.target.closest(".tab-btn"); if (!b) return;
+        tabs.querySelectorAll(".tab-btn").forEach(x => x.classList.toggle("active", x === b));
+        b.dataset.view === "agent" ? renderAgent() : renderDomain();
+      });
+      renderAgent();
+    })();
+  </script>
+</body>
+</html>

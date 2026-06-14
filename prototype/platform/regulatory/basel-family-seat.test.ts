@@ -29,17 +29,19 @@ describe("baselFamilyOf", () => {
 describe("seatForBcbsObligationId", () => {
   // Family → expected seat per the PR #1139 seat vocabulary
   // (cco | cfo | cro | company-secretary | operational | head-of-global-markets).
+  // Seats reconciled to the v3 taxonomy (D-DOMAIN-OWNERSHIP-MAP): capital
+  // framework → cfo; risk-measurement → cro; liquidity → treasurer.
   const cases: Array<{ id: string; seat: string; why: string }> = [
-    { id: "BCBS-CRE20", seat: "cro", why: "credit RWA" },
-    { id: "BCBS-LEV10", seat: "cro", why: "leverage" },
-    { id: "BCBS-LEX30", seat: "cro", why: "large exposures" },
+    { id: "BCBS-CRE20", seat: "cro", why: "credit RWA (risk)" },
+    { id: "BCBS-LEV10", seat: "cfo", why: "leverage (capital framework)" },
+    { id: "BCBS-LEX30", seat: "cro", why: "large exposures (concentration risk)" },
     { id: "BCBS-MAR21", seat: "cro", why: "market risk" },
-    { id: "BCBS-RBC20", seat: "cro", why: "risk-based capital" },
-    { id: "BCBS-CAP10", seat: "cro", why: "capital definition" },
-    { id: "BCBS-LCR10", seat: "cfo", why: "liquidity coverage" },
-    { id: "BCBS-NSF10", seat: "cfo", why: "net stable funding" },
-    { id: "BCBS-DIS10", seat: "cfo", why: "Pillar 3 disclosure" },
-    { id: "BCBS-OPE25", seat: "operational", why: "operational risk" },
+    { id: "BCBS-RBC20", seat: "cfo", why: "risk-based capital (capital framework)" },
+    { id: "BCBS-CAP10", seat: "cfo", why: "capital definition" },
+    { id: "BCBS-LCR10", seat: "treasurer", why: "liquidity coverage" },
+    { id: "BCBS-NSF10", seat: "treasurer", why: "net stable funding" },
+    { id: "BCBS-DIS10", seat: "cfo", why: "Pillar 3 disclosure / returns" },
+    { id: "BCBS-OPE25", seat: "cro", why: "operational risk" },
     { id: "BCBS-BCP01", seat: "company-secretary", why: "core principles" },
     { id: "BCBS-SCO60", seat: "company-secretary", why: "scope/governance" },
   ];
@@ -58,13 +60,17 @@ describe("seatForBcbsObligationId", () => {
     expect(seatForBcbsObligationId("ORG-PR-0001")).toBe("");
   });
 
-  it("every seat produced is in the PR #1139 seat vocabulary", () => {
+  it("every seat produced is a governance seat (v3 vocabulary)", () => {
     const allowed = new Set([
       "cco",
       "cfo",
       "cro",
+      "coo",
+      "ciso",
+      "cae",
+      "treasurer",
       "company-secretary",
-      "operational",
+      "information-officer",
       "head-of-global-markets",
     ]);
     for (const seat of Object.values(BASEL_FAMILY_TO_SEAT)) {
