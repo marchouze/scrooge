@@ -23,6 +23,7 @@ import {
 } from "../platform/accounting/fx-subledger-trade-reconciliation";
 import { buildGlView } from "../platform/accounting/gl-projection";
 import { clock, eventStore } from "../platform/composition";
+import { amountToMinorUnits } from "../platform/core/decimal-money";
 import {
   type ManualJournalEntryPayload,
   makeManualJournalEntry,
@@ -140,7 +141,7 @@ function main(): void {
         `    fix    : ${r.correctionLegs
           .map(
             (l) =>
-              `${l.accountId} ${l.currency} ${l.debitCredit === "debit" ? "Dr" : "Cr"} ${zar(l.amountMinor)}`,
+              `${l.accountId} ${l.currency} ${l.debitCredit === "debit" ? "Dr" : "Cr"} ${zar(Number(amountToMinorUnits(l.amount)))}`,
           )
           .join("; ")}`,
       );

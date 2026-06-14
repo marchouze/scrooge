@@ -640,7 +640,9 @@ describe("assertZeroBalance", () => {
     expect(result.ok).toBe(false);
     expect(result.failed.length).toBe(1);
     expect(result.failed[0]?.accountId).toBe("ACC-1100-004");
-    expect(result.failed[0]?.amountMinor).toBe(25_000);
+    // amount is decimal-native Money; minor units = 25_000 → ZAR 250
+    expect(String(result.failed[0]?.amount.currency)).toBe("ZAR");
+    expect(result.failed[0]?.amount.amount).toBe("250");
     expect(result.failed[0]?.reason).toBe("non-zero-suspense");
   });
 
