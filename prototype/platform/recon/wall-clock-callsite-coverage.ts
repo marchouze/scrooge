@@ -219,6 +219,14 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 //   Authority: D-FIL-ATTRIBUTION-A1-BUILD (A2/A3 FX work);
 //     D-PROACTIVE-ESCALATION-SURFACING (surface inherited main-red, don't hide).
 //   Author: Atlas (Core banking platform architect, engineering), 2026-06-13.
+// 2026-06-14 — Removed wall-clock defaults from onboarding functions (no-float gate PR):
+//   - `platform/lifecycle/onboarding-orchestrator.ts` — `nowIso` made required (no default)
+//   - `dashboard/onboarding-view.ts` — `nowIso` made required; server.ts passes `nowUtc()`
+//   These were the source of the CI "grew to 66" error on this PR. After removal the
+//   count is 65 (market-data-view.ts:89 TTL cache is still in baseline). Snapshot stays
+//   at 65 — no net change from the prior floor; the cleanup prevents 66 on a rebase.
+//   Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (CEO-approved 2026-06-14).
+//   Author: Scrooge (Chief of Staff, orchestration), 2026-06-14.
 // ---------------------------------------------------------------------------
 const KNOWN_VIOLATIONS_SNAPSHOT = 65;
 

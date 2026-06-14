@@ -31,7 +31,7 @@ import type { OnboardingBoardView } from "../platform/lifecycle/onboarding-orche
  */
 export function buildOnboardingView(
   store: Pick<EventStore, "replay">,
-  nowIso: string = new Date().toISOString(), // wall-clock: default; pass nowIso for deterministic scenarios
+  nowIso: string,
 ): OnboardingBoardView {
   return buildOnboardingBoardView(store, nowIso);
 }
