@@ -53,6 +53,8 @@
 //   CFO; BA-returns sourcing owner).
 
 import { COA_BY_ID } from "../accounting/coa-registry";
+import { amountToMinorUnits } from "../core/decimal-money";
+import { legAmountMoney } from "../core/money-codec";
 import type { EventStore } from "../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 import {
@@ -188,6 +190,7 @@ function foldGrossIncome(
       legs?: Array<{
         accountId?: string;
         debitCredit?: "debit" | "credit";
+        amount?: unknown;
         amountMinor?: number;
         currency?: string;
       }>;
@@ -222,7 +225,7 @@ function foldGrossIncome(
         continue;
       }
       eventTouchedPnl = true;
-      const amount = leg.amountMinor ?? 0;
+      const amount = Number(amountToMinorUnits(legAmountMoney(leg)));
       // Credit increases income (+creditSign); debit decreases it (−creditSign).
       const signed = leg.debitCredit === "credit" ? creditSign * amount : -creditSign * amount;
       const key = lineYearKey(blKey, fiscalYear);

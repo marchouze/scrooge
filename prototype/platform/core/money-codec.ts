@@ -183,8 +183,12 @@ export { scaleFor };
 export interface RawLegMoney {
   /** Decimal amount source of truth (present on emitted legs). */
   readonly amount?: MoneyWire | unknown;
-  /** Legacy derived minor-unit compat field (legacy events only). */
-  readonly amountMinor?: number;
+  /**
+   * Legacy derived minor-unit compat field (legacy events only).
+   * Accepts `number` (SubLedgerLeg on-wire) or `string` (ProposedLeg internal
+   * form — bigint magnitude serialised as a decimal string).
+   */
+  readonly amountMinor?: number | string;
   /** ISO 4217 currency. */
   readonly currency?: string;
 }
@@ -200,7 +204,9 @@ export function legAmountMoney<C extends Currency = Currency>(leg: RawLegMoney):
   if (isMoneyWire(leg.amount)) {
     return decodeMoney<C>(leg.amount);
   }
-  const minor = typeof leg.amountMinor === "number" ? leg.amountMinor : 0;
+  const rawMinor = leg.amountMinor;
+  const minor =
+    typeof rawMinor === "number" ? rawMinor : typeof rawMinor === "string" ? Number(rawMinor) : 0;
   const currency = typeof leg.currency === "string" ? leg.currency : "ZAR";
   return decodeMoney<C>(moneyWireFromMinor(minor, currency));
 }

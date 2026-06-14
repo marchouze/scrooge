@@ -29,6 +29,9 @@
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (CEO-approved 2026-06-05).
 // Citations: Principles/1-events-are-truth.md, Principles/5-multi-currency-entity-country.md.
 
+import { amountToMinorUnits, moneyFromMinorUnits } from "../../core/decimal-money";
+import { type MoneyWire, encodeMoney, legAmountMoney } from "../../core/money-codec";
+import type { Currency } from "../../core/types";
 import { makeSubstrateAlert } from "../../event-store/event-types/platform";
 import type { Actor, Event } from "../../event-store/types";
 
@@ -144,9 +147,9 @@ export interface InterpreterEvent {
 export interface ProposedLeg {
   readonly accountId: AccountId;
   readonly debitCredit: "debit" | "credit";
-  /** Minor units, always positive (matches SubLedgerLeg). Stored as string
-   *  to survive >2^53 BigInt magnitudes losslessly; the leg-construction
-   *  helpers (e.g. fx-spot.ts) use `number`. */
+  /** Decimal amount source of truth (D-DECIMAL-NATIVE-CONSUMER-MIGRATION-BEFORE-WAVE-3). */
+  readonly amount: MoneyWire;
+  /** Minor units, always positive. Kept for backward-compat; `amount` is canonical. */
   readonly amountMinor: string;
   readonly currency: string;
 }
@@ -607,7 +610,7 @@ function assertBalanced(
 ): { balanced: true } | { balanced: false; detail: string } {
   const byCcy = new Map<string, bigint>();
   for (const leg of legs) {
-    const amt = BigInt(leg.amountMinor);
+    const amt = amountToMinorUnits(legAmountMoney(leg));
     const signed = leg.debitCredit === "debit" ? amt : -amt;
     byCcy.set(leg.currency, (byCcy.get(leg.currency) ?? 0n) + signed);
   }
@@ -871,7 +874,13 @@ function emitLine(
     const physical = physicalRaw as AccountId;
     const magnitude = absMinor(evaluateAmount(line.amount, scope));
     return {
-      leg: { accountId: physical, debitCredit: side, amountMinor: magnitude.toString(), currency },
+      leg: {
+        accountId: physical,
+        debitCredit: side,
+        amount: encodeMoney(moneyFromMinorUnits(magnitude, currency as Currency)),
+        amountMinor: magnitude.toString(),
+        currency,
+      },
       decision: {
         logical: line.account.logical,
         key: {
@@ -948,7 +957,13 @@ function emitLine(
 
   const magnitude = absMinor(evaluateAmount(line.amount, scope));
   return {
-    leg: { accountId: physical, debitCredit: side, amountMinor: magnitude.toString(), currency },
+    leg: {
+      accountId: physical,
+      debitCredit: side,
+      amount: encodeMoney(moneyFromMinorUnits(magnitude, currency as Currency)),
+      amountMinor: magnitude.toString(),
+      currency,
+    },
     decision: { logical: line.account.logical, key, physical, via },
     ...(urgent ? { urgent } : {}),
   };

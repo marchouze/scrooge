@@ -39,7 +39,7 @@
 
 import {
   type SubLedgerLeg,
-  subLedgerLegFromMinor,
+  subLedgerLegFromMoney,
 } from "../../platform/accounting/fx-accounting-types";
 import type { Representation } from "../../platform/accounting/sla/generated/sla-types";
 import {
@@ -49,6 +49,7 @@ import {
   interpret,
 } from "../../platform/accounting/sla/interpreter";
 import { PAYMENTS_IFRS_RULES } from "../../platform/accounting/sla/rules/payments-index";
+import { legAmountMoney } from "../../platform/core/money-codec";
 import type { Event } from "../../platform/event-store/types";
 
 // ---------------------------------------------------------------------------
@@ -96,14 +97,13 @@ export type PaymentsInterpretOutcome =
   | { readonly kind: "reject"; readonly detail: string };
 
 function toSubLedgerLegs(post: ProposedPosting): SubLedgerLeg[] {
-  // ProposedLeg.amountMinor is an EXACT integer minor-unit magnitude (the SLA
-  // bigint engine never introduces a fraction); lift it losslessly to the
-  // decimal `amount` source of truth, then derive `amountMinor` back from it
-  // (D-DECIMAL-NATIVE-MONEY-ARITHMETIC slice 1 — one source, no float).
+  // ProposedLeg.amount is the decimal MoneyWire source of truth emitted by the
+  // SLA bigint engine (D-DECIMAL-NATIVE-CONSUMER-MIGRATION-BEFORE-WAVE-3);
+  // lift it directly to SubLedgerLeg via subLedgerLegFromMoney — no amountMinor read.
   return post.legs.map((l) =>
-    subLedgerLegFromMinor(
-      { accountId: l.accountId, debitCredit: l.debitCredit, currency: l.currency },
-      BigInt(l.amountMinor),
+    subLedgerLegFromMoney(
+      { accountId: l.accountId, debitCredit: l.debitCredit },
+      legAmountMoney(l),
     ),
   );
 }

@@ -51,6 +51,8 @@
 // Author: Atlas (Core banking platform architect, engineering — Gap 3 recon).
 
 import { eventStore } from "../composition";
+import { amountToMinorUnits } from "../core/decimal-money";
+import { legAmountMoney } from "../core/money-codec";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 
 // ---------------------------------------------------------------------------
@@ -128,6 +130,7 @@ function foldGlTier2(entity: string, asOf: string, untilSequence: number | undef
       legs?: Array<{
         accountId?: string;
         debitCredit?: "debit" | "credit";
+        amount?: unknown;
         amountMinor?: number;
         currency?: string;
       }>;
@@ -137,7 +140,7 @@ function foldGlTier2(entity: string, asOf: string, untilSequence: number | undef
       if (!leg.accountId || !T2_ACCOUNT_IDS.has(leg.accountId)) continue;
       // ZAR-only for now; Slice 6+ multi-currency fold will extend this.
       if (leg.currency && leg.currency !== "ZAR") continue;
-      const amount = leg.amountMinor ?? 0;
+      const amount = Number(amountToMinorUnits(legAmountMoney(leg)));
       if (leg.debitCredit === "credit") credits += amount;
       else debits += amount;
     }
