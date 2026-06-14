@@ -115,6 +115,12 @@
 //   + Atlas (Core banking platform architect, engineering — P1 fix).
 
 import { buildRateMap, convertMinor } from "../accounting/fx-rate-projection";
+import {
+  type Money,
+  amountToMinorUnits,
+  moneyFromMinorUnits,
+} from "../core/decimal-money";
+import type { Currency } from "../core/types";
 import { newEventId } from "../core/types";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
 import type {} from "../event-store/event-types/fx-accounting";
@@ -341,6 +347,8 @@ export interface Ba300LcrLineItem {
   readonly lineId: string;
   readonly lineLabel: string;
   readonly amountMinor: number;
+  /** Decimal-native money — exact major-unit form. Primary source; amountMinor kept for compat. */
+  readonly amount: Money<Currency>;
   readonly currency: string;
   /** Line provenance — which trial-balance rows or event IDs fed this line. */
   readonly contributingAccounts: readonly string[];
@@ -664,6 +672,8 @@ interface SettlementCashFlow {
   readonly tradeId: string;
   /** Amount in the settlement currency (minor units). Positive = inflow; negative = outflow. */
   readonly amountMinor: number;
+  /** Decimal-native money — exact major-unit form. Primary source; amountMinor kept for compat. */
+  readonly amount: Money<Currency>;
   readonly currency: string;
   readonly asOf: string;
 }
@@ -757,11 +767,14 @@ function foldSettlementCashFlows(args: {
       // Citation: Regulations Relating to Banks Reg 26; BCBS D295.
       const payload = event.payload as EquitySettlementInstructedPayload;
       if (payload.netCash.amountMinor !== 0) {
+        const netCashCcy = payload.netCash.currency as Currency;
         flows.push({
           eventId: event.event_id,
           eventType: "EquitySettlementInstructed",
           tradeId: `${payload.tradeId.scheme}:${payload.tradeId.value}`,
           amountMinor: payload.netCash.amountMinor,
+          // Convert at ingestion — event payload still carries *Minor (emitter migration is later).
+          amount: moneyFromMinorUnits(BigInt(payload.netCash.amountMinor), netCashCcy),
           currency: payload.netCash.currency,
           asOf: event.as_of,
         });
@@ -769,11 +782,14 @@ function foldSettlementCashFlows(args: {
     } else if (event.type === "FxSettlementInstructed") {
       const payload = event.payload as FxSettlementInstructedPayload;
       if (payload.netCash.amountMinor !== 0) {
+        const netCashCcy = payload.netCash.currency as Currency;
         flows.push({
           eventId: event.event_id,
           eventType: "FxSettlementInstructed",
           tradeId: normaliseTradeId(payload.tradeId as string | Identifier),
           amountMinor: payload.netCash.amountMinor,
+          // Convert at ingestion — event payload still carries *Minor (emitter migration is later).
+          amount: moneyFromMinorUnits(BigInt(payload.netCash.amountMinor), netCashCcy),
           currency: payload.netCash.currency,
           asOf: event.as_of,
         });
@@ -782,22 +798,28 @@ function foldSettlementCashFlows(args: {
       const payload = event.payload as TradeMaturedFxSpotPayload;
       // Base leg.
       if (payload.settledBaseCurrencyMinor !== 0) {
+        const baseCcy = (payload.currencyPair.split("/")[0] ?? "ZZZ") as Currency;
         flows.push({
           eventId: event.event_id,
           eventType: "TradeMatured",
           tradeId: normaliseTradeId(payload.tradeId),
           amountMinor: payload.settledBaseCurrencyMinor,
+          // Convert at ingestion — event payload still carries *Minor (emitter migration is later).
+          amount: moneyFromMinorUnits(BigInt(payload.settledBaseCurrencyMinor), baseCcy),
           currency: payload.currencyPair.split("/")[0] ?? "ZZZ",
           asOf: event.as_of,
         });
       }
       // Quote leg.
       if (payload.settledQuoteCurrencyMinor !== 0) {
+        const quoteCcy = (payload.currencyPair.split("/")[1] ?? "ZZZ") as Currency;
         flows.push({
           eventId: event.event_id,
           eventType: "TradeMatured",
           tradeId: normaliseTradeId(payload.tradeId),
           amountMinor: payload.settledQuoteCurrencyMinor,
+          // Convert at ingestion — event payload still carries *Minor (emitter migration is later).
+          amount: moneyFromMinorUnits(BigInt(payload.settledQuoteCurrencyMinor), quoteCcy),
           currency: payload.currencyPair.split("/")[1] ?? "ZZZ",
           asOf: event.as_of,
         });
@@ -910,6 +932,7 @@ function foldProductMaturityOutflows(args: {
         lineId: `product-maturity.deposit.${p.depositId}`,
         lineLabel: `DepositTaken run-off (${p.depositCategory}) — ${p.depositId}`,
         amountMinor: outflowMinor,
+        amount: moneyFromMinorUnits(BigInt(outflowMinor), "ZAR" as Currency),
         currency: "ZAR",
         contributingAccounts: [event.event_id],
         note: `source=event; category=${p.depositCategory}; runOffRate=${rate * 100}%; principal=${p.principalZar}`,
@@ -924,6 +947,7 @@ function foldProductMaturityOutflows(args: {
         lineId: `product-maturity.funding.${p.fundingLineId}`,
         lineLabel: `FundingLineDrawn — ${p.fundingLineId}`,
         amountMinor: outflowMinor,
+        amount: moneyFromMinorUnits(BigInt(outflowMinor), "ZAR" as Currency),
         currency: "ZAR",
         contributingAccounts: [event.event_id],
         note: `source=event; runOffRate=100%; drawn=${p.drawnAmountZar}`,
@@ -945,6 +969,7 @@ function foldProductMaturityOutflows(args: {
         lineId: `product-maturity.repo.${p.tradeId}`,
         lineLabel: `RepoTradeOpened end-leg run-off — ${p.tradeId}`,
         amountMinor: outflowMinor,
+        amount: moneyFromMinorUnits(BigInt(outflowMinor), "ZAR" as Currency),
         currency: "ZAR",
         contributingAccounts: [event.event_id],
         note: `source=event; collateral=${p.collateralIsin ?? "unknown"}; runOffRate=${rate * 100}%; repurchasePrice=${p.repurchasePriceZar}`,
@@ -961,6 +986,7 @@ function foldProductMaturityOutflows(args: {
         lineId: `product-maturity.irs-coupon.${event.event_id}`,
         lineLabel: `IrdSwapCouponSettled outflow — trade ${p.tradeId}`,
         amountMinor: outflowMinor,
+        amount: moneyFromMinorUnits(BigInt(outflowMinor), "ZAR" as Currency),
         currency: "ZAR",
         contributingAccounts: [event.event_id],
         note: `source=event; tradeId=${p.tradeId}; netCash=${p.netCashMinor}; settlementDate=${p.settlementDate}`,
@@ -977,6 +1003,7 @@ function foldProductMaturityOutflows(args: {
         lineId: `product-maturity.ibl.${p.placementId}`,
         lineLabel: `InterbankLoanPlaced maturity inflow — ${p.placementId}`,
         amountMinor: inflowMinor,
+        amount: moneyFromMinorUnits(BigInt(inflowMinor), "ZAR" as Currency),
         currency: "ZAR",
         contributingAccounts: [event.event_id],
         note: `source=event; maturityDate=${p.maturityDate}; principal=${p.principalZar}`,
@@ -1073,11 +1100,12 @@ export interface Ba300LcrOpts {
  * - `amountMinor` is the post-haircut `adjustedMinor` value.
  * - `note` carries the haircut percentage for auditability.
  */
-function hqlaStockLineToLineItem(line: HqlaStockLine, ccy: string): Ba300LcrLineItem {
+function hqlaStockLineToLineItem(line: HqlaStockLine, ccy: Currency): Ba300LcrLineItem {
   return {
     lineId: `hqla.${line.hqlaLevel}.${line.instrumentId}`,
     lineLabel: line.instrumentName ?? line.isin ?? line.instrumentId,
     amountMinor: line.adjustedMinor,
+    amount: moneyFromMinorUnits(BigInt(line.adjustedMinor), ccy),
     currency: ccy,
     contributingAccounts: [],
     ...(line.isin ? { subCategory: line.hqlaLevel } : {}),
@@ -1096,7 +1124,7 @@ export function generateBa300Lcr(
     );
   }
 
-  const ccy = input.functionalCurrency;
+  const ccy = input.functionalCurrency as Currency;
   const placeholders: string[] = [];
 
   // -------------------------------------------------------------------------
@@ -1190,6 +1218,7 @@ export function generateBa300Lcr(
         lineId: `hqla.${line.hqlaLevel}.cash.${line.instrumentId}`,
         lineLabel: line.instrumentName ?? line.instrumentId,
         amountMinor: line.adjustedMinor,
+        amount: moneyFromMinorUnits(BigInt(line.adjustedMinor), ccy),
         currency: ccy,
         contributingAccounts: [line.instrumentId],
         note: `haircut=${line.haircut * 100}%; basis=${line.valuationBasis}; cash-custodian-derived`,
@@ -1323,6 +1352,7 @@ export function generateBa300Lcr(
         lineId: `${effectiveHqlaLevel}.${row.leafAccountId}`,
         lineLabel: c.subCategory ?? `HQLA ${effectiveHqlaLevel} — ${row.leafAccountId}`,
         amountMinor: stockMinor,
+        amount: moneyFromMinorUnits(BigInt(stockMinor), ccy),
         currency: ccy,
         contributingAccounts: [row.leafAccountId],
         ...(c.subCategory ? { subCategory: c.subCategory } : {}),
@@ -1436,6 +1466,7 @@ export function generateBa300Lcr(
       lineId,
       lineLabel,
       amountMinor: absAmount,
+      amount: moneyFromMinorUnits(BigInt(absAmount), ccy),
       currency: ccy,
       contributingAccounts: eventIds,
       note: `source=event; eventIds=${eventIds.join(",")}; raw=${totalMinor}`,
@@ -1444,12 +1475,13 @@ export function generateBa300Lcr(
     if (totalMinor < 0) {
       // Outflow — bank pays.
       outflowLines.push(lineItem);
-      grossOutflows += absAmount;
+      // Switch accumulation to amountToMinorUnits(lineItem.amount) — exact bigint, then Number for integer arithmetic.
+      grossOutflows += Number(amountToMinorUnits(lineItem.amount));
       for (const id of eventIds) outflowEventIds.add(id);
     } else {
       // Inflow — bank receives.
       inflowLines.push(lineItem);
-      grossInflows += absAmount;
+      grossInflows += Number(amountToMinorUnits(lineItem.amount));
       for (const id of eventIds) inflowEventIds.add(id);
     }
   }
@@ -1469,14 +1501,15 @@ export function generateBa300Lcr(
   for (const line of productOutflowLines) {
     if (line.currency === ccy) {
       outflowLines.push(line);
-      grossOutflows += line.amountMinor;
+      // Switch accumulation to amountToMinorUnits(line.amount) — exact bigint, then Number for integer arithmetic.
+      grossOutflows += Number(amountToMinorUnits(line.amount));
       for (const id of line.contributingAccounts) outflowEventIds.add(id);
     }
   }
   for (const line of productInflowLines) {
     if (line.currency === ccy) {
       inflowLines.push(line);
-      grossInflows += line.amountMinor;
+      grossInflows += Number(amountToMinorUnits(line.amount));
       for (const id of line.contributingAccounts) inflowEventIds.add(id);
     }
   }
