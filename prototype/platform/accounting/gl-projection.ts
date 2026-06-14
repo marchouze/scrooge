@@ -24,6 +24,7 @@ import { join } from "node:path";
 
 import { type Money, amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
 import { legAmountMoney } from "../core/money-codec";
+import type { Currency } from "../core/types";
 import type { Event } from "../event-store/types";
 import { eventInOperatingBook } from "../projections/filter";
 import { buildRateMap, convertMinor } from "./fx-rate-projection";
@@ -94,7 +95,7 @@ export interface GlLedgerEntry {
   /** Amount in minor currency units */
   amountMinor: number;
   /** Amount as exact decimal Money — source of truth (decimal-native consumer migration) */
-  amount: Money<string>;
+  amount: Money;
   /** ISO 4217 currency */
   currency: string;
   /** For ManualJournalEntry: the journal ID */
@@ -369,7 +370,7 @@ export function buildGlView(
       const amountMinor = typeof p.amountMinor === "number" ? p.amountMinor : 0;
       const tradeId = typeof p.tradeId === "string" ? p.tradeId : event.event_id;
 
-      const journalAmount = moneyFromMinorUnits(amountMinor, currency);
+      const journalAmount = moneyFromMinorUnits(BigInt(amountMinor), currency as Currency);
       if (accountDebit) {
         const coa = getCoaEntry(accountDebit);
         ledgerEntries.push({
