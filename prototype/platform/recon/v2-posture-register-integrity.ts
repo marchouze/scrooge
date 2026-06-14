@@ -197,9 +197,7 @@ export function run(): ReconResult {
     if (!covered) {
       violations.push({
         subject: key,
-        message:
-          `required posture dimension key has no active posture: ${key} — ` +
-          "run scripts/seed-v2-posture-dimensions.ts",
+        message: `required posture dimension key has no active posture: ${key} — run scripts/seed-v2-posture-dimensions.ts`,
         severity: "warn", // advisory pending seed (W8 Slice B coverage floor)
       });
     }
