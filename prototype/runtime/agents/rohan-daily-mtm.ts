@@ -322,7 +322,6 @@ function revalueOnePosition(args: {
       notionalQuoteMinor = qLeg.counterNotional.amountMinor;
     } else {
       // Fallback: derive from notional × book rate (decimal-native, HALF_EVEN).
-      // Replaces Math.round(notionalBaseMinor * bookRate).
       // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
       notionalQuoteMinor = Number(
         roundDecimal(
@@ -342,7 +341,6 @@ function revalueOnePosition(args: {
 
     // P&L = base_leg_pnl − quote_leg_pnl (quote is a contra-leg).
     // Decimal-native: HALF_EVEN at the ZAR minor boundary.
-    // Replaces Math.round(sideSign * notionalBaseMinor * (zarRateBase - zarRateBase_book)) etc.
     // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
     const basePnl = Number(
       roundDecimal(
@@ -448,7 +446,6 @@ function revalueOnePosition(args: {
       : prior.rateSource;
     const staleSource = `stale-mark:${originalSource}`;
     // Decimal-native stale-mark P&L: HALF_EVEN at the ZAR minor boundary.
-    // Replaces Math.round(sideSign * notionalBaseMinor * (prior.revalRate - bookRate)).
     // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
     const unrealisedPnlZarMinor = Number(
       roundDecimal(

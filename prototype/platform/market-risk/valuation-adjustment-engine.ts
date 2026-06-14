@@ -236,7 +236,6 @@ export function computeCloseOutReserve(args: {
       continue;
     }
     // Decimal-native close-out reserve per position: HALF_EVEN at the ZAR minor boundary.
-    // Replaces Math.round(halfSpread * pos.zarNotionalMinor)
     // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
     reserveMinor += Number(
       roundDecimal(

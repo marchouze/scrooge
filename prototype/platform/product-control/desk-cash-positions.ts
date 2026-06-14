@@ -120,15 +120,11 @@ function priceRow(row: CurrencyPositionRow, zarRates: Map<string, number>): Desk
     };
   }
   // Decimal-native FCY→ZAR mark-to-market: HALF_EVEN at the ZAR minor boundary.
-  // Replaces Math.round(fcyQuantityMinor * markRate) and
-  //          Math.round(fcyQuantityMinor * (markRate - avgCostZarRate))
   // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
   const fcyDec = toDecimal(String(row.fcyQuantityMinor));
   const markDec = toDecimal(String(markRate));
   const costDec = toDecimal(String(row.avgCostZarRate));
-  const zarValueMinor = Number(
-    roundDecimal(mulD(fcyDec, markDec), 0, "HALF_EVEN").toFixed(0),
-  );
+  const zarValueMinor = Number(roundDecimal(mulD(fcyDec, markDec), 0, "HALF_EVEN").toFixed(0));
   const unrealised = Number(
     roundDecimal(mulD(fcyDec, subD(markDec, costDec)), 0, "HALF_EVEN").toFixed(0),
   );

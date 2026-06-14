@@ -129,7 +129,6 @@ function resolveToleranceZarMinor(grossLiveNotionalZarMinor: number): number {
   // bps → fraction: 1 bp = 0.0001. bandBps is in basis points (unit
   // percentage-points carries the bps figure directly; 0.5 == 0.5 bp here).
   // Decimal-native tolerance band: HALF_EVEN at the ZAR minor boundary.
-  // Replaces Math.round((Math.abs(grossLiveNotionalZarMinor) * bandBps) / 10_000)
   // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
   const bandMinor = Number(
     roundDecimal(
@@ -480,7 +479,6 @@ function resolveCarry(
         p.tenors.find((t) => t.tenor === "ON") ?? p.tenors.find((t) => t.tenor === "1D");
       if (!overnight) continue;
       // Decimal-native carry computation: HALF_EVEN at the ZAR minor boundary.
-      // Replaces Math.round(fundedNotionalZarMinor * overnight.rate * (1 / 365))
       // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
       const carryZarMinor = Number(
         roundDecimal(

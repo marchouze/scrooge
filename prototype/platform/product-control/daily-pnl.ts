@@ -443,7 +443,6 @@ export function computeDailyPnL(
         const total = notionalBaseMinor + notionalQuoteMinor;
         if (total === 0) return unrealisedForReporting;
         // Decimal-native pro-rata split: HALF_EVEN at the ZAR minor boundary.
-        // Replaces Math.round((unrealisedForReporting * notionalBaseMinor) / total)
         // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
         return Number(
           roundDecimal(

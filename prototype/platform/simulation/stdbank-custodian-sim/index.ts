@@ -24,8 +24,8 @@
 
 import { createHash } from "node:crypto";
 
-import { nowUtc } from "../../core/types";
 import { moneyWireFromMinor } from "../../core/money-codec";
+import { nowUtc } from "../../core/types";
 import {
   makeBondCustodianSettlementConfirmed,
   makeBondCustodianSettlementFailed,
