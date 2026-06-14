@@ -119,7 +119,6 @@ describe("CcrEadComputed event factory", () => {
         entity: ENTITY,
         actor: ACTOR,
         citations: CITATIONS,
-        // biome-ignore lint/suspicious/noExplicitAny: deliberate schema-rejection test
         payload: {
           nettingSetId: "NS-X-ZAR",
           counterpartyId: "CP-X",

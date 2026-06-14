@@ -78,6 +78,8 @@ import {
 } from "../../platform/accounting/sla/interpreter";
 import { FX_ALL_REPRESENTATION_RULES, FX_IFRS_RULES } from "../../platform/accounting/sla/rules";
 import { logger } from "../../platform/composition";
+import { amountToMinorUnits } from "../../platform/core/decimal-money";
+import { legAmountMoney } from "../../platform/core/money-codec";
 import type { FxSettlementFailedPayload } from "../../platform/event-store/event-types/fx-accounting";
 import type { Event } from "../../platform/event-store/types";
 import type { FxTradeExecutedPayload } from "../../platform/markets/cdm/fx";
@@ -316,7 +318,7 @@ function toSubLedgerLegs(post: ProposedPosting): SubLedgerLeg[] {
   return post.legs.map((l) =>
     subLedgerLegFromMinor(
       { accountId: l.accountId, debitCredit: l.debitCredit, currency: l.currency },
-      BigInt(l.amountMinor),
+      amountToMinorUnits(legAmountMoney(l)),
     ),
   );
 }
