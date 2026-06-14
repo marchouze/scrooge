@@ -29,6 +29,7 @@
 
 import { z } from "zod";
 
+import { amountToMinorUnits, money } from "../../core/decimal-money";
 import { newEventId } from "../../core/types";
 import { type Actor, type Event, eventSchema } from "../types";
 
@@ -299,13 +300,13 @@ export const subLedgerPostingEmittedPayloadSchema = z
   })
   .passthrough()
   .superRefine((p, ctx) => {
-    // Validate: debits = credits per currency (using MoneyWire decimal amounts).
-    const totals = new Map<string, { debit: number; credit: number }>();
+    // Validate: debits = credits per currency (using exact decimal minor units).
+    const totals = new Map<string, { debit: bigint; credit: bigint }>();
     for (const leg of p.legs) {
-      const t = totals.get(leg.currency) ?? { debit: 0, credit: 0 };
-      const legAmount = Math.round(parseFloat(leg.amount.amount) * 100);
-      if (leg.debitCredit === "debit") t.debit += legAmount;
-      else t.credit += legAmount;
+      const t = totals.get(leg.currency) ?? { debit: 0n, credit: 0n };
+      const legMinor = amountToMinorUnits(money(leg.amount.amount, leg.currency as never));
+      if (leg.debitCredit === "debit") t.debit += legMinor;
+      else t.credit += legMinor;
       totals.set(leg.currency, t);
     }
     for (const [ccy, t] of totals.entries()) {
@@ -349,8 +350,8 @@ export function makeSubLedgerPostingEmitted(args: {
   payload: Omit<SubLedgerPostingEmittedPayload, "legs"> & { legs: readonly EmitLegInput[] };
   eventId?: string;
 }): Event {
-  // Encode each leg's decimal `amount` source-of-truth to MoneyWire on the wire;
-  // the derived `amountMinor` rides along for the not-yet-migrated consumers.
+  // Encode each leg's decimal `amount` to MoneyWire on the wire.
+  // (amountMinor DROP complete — D-DECIMAL-NATIVE-CONSUMER-MIGRATION-BEFORE-WAVE-3)
   const legs = args.payload.legs.map(encodeLegForWire);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),

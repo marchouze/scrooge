@@ -95,7 +95,7 @@ function legsToFootprint(legs: Iterable<SubLedgerLeg>): Map<string, FootprintEnt
   const map = new Map<string, FootprintEntry>();
   for (const leg of legs) {
     const k = key(leg.accountId, leg.currency);
-    const legMinor = Number(amountToMinorUnits(legAmountMoney(leg)));
+    const legMinor = Number(amountToMinorUnits(leg.amount));
     const signed = leg.debitCredit === "debit" ? legMinor : -legMinor;
     const existing = map.get(k);
     map.set(k, {
@@ -584,7 +584,7 @@ export function computeFxMisroutedCashRestate(events: readonly Event[]): CashLeg
     for (const raw of Array.isArray(p.legs) ? p.legs : []) {
       for (const leg of normaliseLeg(raw)) {
         if (leg.accountId !== FX_MISROUTED_RESERVE) continue;
-        const legMinor = Number(amountToMinorUnits(legAmountMoney(leg)));
+        const legMinor = Number(amountToMinorUnits(leg.amount));
         const signed = leg.debitCredit === "debit" ? legMinor : -legMinor;
         byCcy.set(leg.currency, (byCcy.get(leg.currency) ?? 0) + signed);
       }

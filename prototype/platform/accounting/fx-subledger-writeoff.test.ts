@@ -6,6 +6,7 @@
 
 import { describe, expect, it } from "bun:test";
 
+import { amountToMinorUnits } from "../core/decimal-money";
 import { makeSubLedgerPostingEmitted } from "../event-store/event-types/fx-accounting";
 import { simulatedTag } from "../event-store/provenance";
 import type { Event } from "../event-store/types";
@@ -105,8 +106,9 @@ describe("computeFxSubledgerWriteoff", () => {
     const totals = new Map<string, { debit: number; credit: number }>();
     for (const l of r.clearingLegs) {
       const t = totals.get(l.currency) ?? { debit: 0, credit: 0 };
-      if (l.debitCredit === "debit") t.debit += l.amountMinor;
-      else t.credit += l.amountMinor;
+      const minor = Number(amountToMinorUnits(l.amount));
+      if (l.debitCredit === "debit") t.debit += minor;
+      else t.credit += minor;
       totals.set(l.currency, t);
     }
     for (const [, t] of totals) {

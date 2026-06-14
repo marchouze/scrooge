@@ -21,6 +21,7 @@
 
 import { describe, expect, it } from "bun:test";
 
+import { amountToMinorUnits } from "../platform/core/decimal-money";
 import {
   FX_ACCOUNTING_EVENT_TYPES,
   fxPositionRevaluedPayloadSchema,
@@ -180,13 +181,13 @@ describe("FX accounting event types", () => {
         {
           accountId: "ACC-2100-001",
           debitCredit: "debit" as const,
-          amountMinor: 100,
+          amount: { __money: "v1" as const, amount: "1", currency: "ZAR" },
           currency: "ZAR",
         },
         {
           accountId: "ACC-2100-003",
           debitCredit: "credit" as const,
-          amountMinor: 100,
+          amount: { __money: "v1" as const, amount: "1", currency: "ZAR" },
           currency: "ZAR",
         },
       ],
@@ -349,8 +350,9 @@ describe("FX posting rules — balance invariant (debits = credits per currency)
     const totals = new Map<string, { debit: number; credit: number }>();
     for (const leg of legs) {
       const t = totals.get(leg.currency) ?? { debit: 0, credit: 0 };
-      if (leg.debitCredit === "debit") t.debit += leg.amountMinor;
-      else t.credit += leg.amountMinor;
+      const legMinor = Number(amountToMinorUnits(leg.amount));
+      if (leg.debitCredit === "debit") t.debit += legMinor;
+      else t.credit += legMinor;
       totals.set(leg.currency, t);
     }
     for (const [, t] of totals.entries()) {

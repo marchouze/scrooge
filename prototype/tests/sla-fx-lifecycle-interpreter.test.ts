@@ -34,6 +34,7 @@ import {
   type SubLedgerLeg,
   subLedgerLegFromMinor,
 } from "../platform/accounting/fx-accounting-types";
+import { amountToMinorUnits } from "../platform/core/decimal-money";
 
 /** Test fixture helper: build a SubLedgerLeg from an integer minor magnitude
  *  (decimal `amount` derived) — keeps fixtures decimal-native (slice 1). */
@@ -576,7 +577,7 @@ function cancelEnrichment(cumPnl: number) {
     reversalBookingLegs: BOOKING_LEGS.map((l) => ({
       accountId: l.accountId,
       debitCredit: l.debitCredit === "debit" ? "credit" : "debit",
-      amountMinor: l.amountMinor,
+      amountMinor: Number(amountToMinorUnits(l.amount)),
       currency: l.currency,
     })),
     cumulativeUnrealisedPnlZarMinor: cumPnl,
@@ -725,7 +726,7 @@ describe("Stage: cancel (PR-FX-CANCEL) — for_each reversal", () => {
       reversalBookingLegs: eurBooking.map((l) => ({
         accountId: l.accountId,
         debitCredit: l.debitCredit === "debit" ? "credit" : "debit",
-        amountMinor: l.amountMinor,
+        amountMinor: Number(amountToMinorUnits(l.amount)),
         currency: l.currency,
       })),
       cumulativeUnrealisedPnlZarMinor: 0,

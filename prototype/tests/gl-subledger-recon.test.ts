@@ -8,6 +8,8 @@
 
 import { describe, expect, it } from "bun:test";
 
+import { moneyWireFromMinor } from "../platform/core/money-codec";
+
 import type { ChartOfAccountsEntry } from "../platform/accounting/gl-subledger-recon";
 import {
   assertZeroBalance,
@@ -22,6 +24,21 @@ import type { SubLedgerPostingEmittedPayload } from "../platform/event-store/eve
 // ---------------------------------------------------------------------------
 // Test fixtures
 // ---------------------------------------------------------------------------
+
+/** Build a SubLedgerLeg-shaped object for fixtures. */
+function leg(
+  accountId: string,
+  debitCredit: "debit" | "credit",
+  amountMinor: number,
+  currency: string,
+) {
+  return {
+    accountId,
+    debitCredit,
+    currency,
+    amount: moneyWireFromMinor(amountMinor, currency),
+  };
+}
 
 function makeTB(
   rows: Array<{ leafAccountId: string; currency: string; amountMinor: number }>,
@@ -112,7 +129,7 @@ function makePosting(
       accountId: l.accountId,
       debitCredit: l.debitCredit,
       currency: l.currency,
-      amountMinor: l.amountMinor,
+      amount: moneyWireFromMinor(l.amountMinor, l.currency),
     })),
   };
 }
@@ -152,8 +169,8 @@ describe("tracePostingToSourceEvent", () => {
       postingType: "trade-booking",
       postedAt: "2026-05-01T10:00:00.000Z",
       legs: [
-        { accountId: "ACC-2100-001", debitCredit: "debit", currency: "ZAR", amountMinor: 50_000 },
-        { accountId: "ACC-2100-001", debitCredit: "credit", currency: "ZAR", amountMinor: 50_000 },
+        leg("ACC-2100-001", "debit", 50_000, "ZAR"),
+        leg("ACC-2100-001", "credit", 50_000, "ZAR"),
       ],
     };
     const result = tracePostingToSourceEvent({
@@ -444,18 +461,8 @@ describe("checkAgedItems", () => {
       postingType: "fx-principal-payment",
       postedAt: "2026-05-06T12:00:00.000Z", // 9 days before asOf
       legs: [
-        {
-          accountId: "ACC-1100-002",
-          debitCredit: "debit",
-          currency: "USD",
-          amountMinor: 1_000_000,
-        },
-        {
-          accountId: "ACC-2100-001",
-          debitCredit: "credit",
-          currency: "ZAR",
-          amountMinor: 1_000_000,
-        },
+        leg("ACC-1100-002", "debit", 1_000_000, "USD"),
+        leg("ACC-2100-001", "credit", 1_000_000, "ZAR"),
       ],
     };
     const result = checkAgedItems({
@@ -479,18 +486,8 @@ describe("checkAgedItems", () => {
       postingType: "trade-booking",
       postedAt: "2026-05-06T12:00:00.000Z", // 9 days before asOf
       legs: [
-        {
-          accountId: "ACC-1100-002",
-          debitCredit: "debit",
-          currency: "USD",
-          amountMinor: 1_000_000,
-        },
-        {
-          accountId: "ACC-2100-001",
-          debitCredit: "credit",
-          currency: "ZAR",
-          amountMinor: 1_000_000,
-        },
+        leg("ACC-1100-002", "debit", 1_000_000, "USD"),
+        leg("ACC-2100-001", "credit", 1_000_000, "ZAR"),
       ],
     };
     const result = checkAgedItems({
@@ -514,18 +511,8 @@ describe("checkAgedItems", () => {
       postingType: "trade-booking",
       postedAt: "2026-05-06T12:00:00.000Z", // 9 days before asOf, horizon 0
       legs: [
-        {
-          accountId: "ACC-1100-002",
-          debitCredit: "debit",
-          currency: "USD",
-          amountMinor: 1_000_000,
-        },
-        {
-          accountId: "ACC-2100-001",
-          debitCredit: "credit",
-          currency: "ZAR",
-          amountMinor: 1_000_000,
-        },
+        leg("ACC-1100-002", "debit", 1_000_000, "USD"),
+        leg("ACC-2100-001", "credit", 1_000_000, "ZAR"),
       ],
     };
     const result = checkAgedItems({
@@ -551,18 +538,8 @@ describe("checkAgedItems", () => {
       postingType: "settlement-confirmation",
       postedAt: "2026-05-06T12:00:00.000Z",
       legs: [
-        {
-          accountId: "ACC-1100-002",
-          debitCredit: "debit",
-          currency: "USD",
-          amountMinor: 1_000_000,
-        },
-        {
-          accountId: "ACC-2100-001",
-          debitCredit: "credit",
-          currency: "ZAR",
-          amountMinor: 1_000_000,
-        },
+        leg("ACC-1100-002", "debit", 1_000_000, "USD"),
+        leg("ACC-2100-001", "credit", 1_000_000, "ZAR"),
       ],
     };
     const open: SubLedgerPostingEmittedPayload = {
@@ -570,8 +547,8 @@ describe("checkAgedItems", () => {
       postingType: "trade-booking",
       postedAt: "2026-05-04T12:00:00.000Z", // 11 days before asOf
       legs: [
-        { accountId: "ACC-1100-002", debitCredit: "credit", currency: "USD", amountMinor: 100_000 },
-        { accountId: "ACC-2100-001", debitCredit: "debit", currency: "ZAR", amountMinor: 100_000 },
+        leg("ACC-1100-002", "credit", 100_000, "USD"),
+        leg("ACC-2100-001", "debit", 100_000, "ZAR"),
       ],
     };
     const result = checkAgedItems({

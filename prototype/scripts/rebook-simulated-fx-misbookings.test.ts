@@ -11,7 +11,12 @@
 import { describe, expect, it } from "bun:test";
 
 import type { SubLedgerLeg } from "../platform/accounting/fx-accounting-types";
+import { amountToMinorUnits } from "../platform/core/decimal-money";
 import type { Event } from "../platform/event-store/types";
+
+function legMinor(l: SubLedgerLeg): number {
+  return Number(amountToMinorUnits(l.amount));
+}
 import {
   type MisbookedLeg,
   alreadyRebookedKeysFrom,
@@ -160,22 +165,18 @@ describe("buildCorrectionEvent — reverse-out + re-book-in, balanced, accounts-
     const legs = (ev.payload as { legs: SubLedgerLeg[] }).legs;
     expect(legs.length).toBe(2);
     // (1) reverse out of USD slot — opposite side
-    expect(legs[0]).toMatchObject({
-      accountId: "ACC-2100-002",
-      debitCredit: "credit",
-      amountMinor: 50_000_000,
-      currency: "GBP",
-    });
+    expect(legs[0]?.accountId).toBe("ACC-2100-002");
+    expect(legs[0]?.debitCredit).toBe("credit");
+    expect(legs[0] ? legMinor(legs[0]) : undefined).toBe(50_000_000);
+    expect(legs[0]?.currency).toBe("GBP");
     // (2) re-book into GBP receivable — same side
-    expect(legs[1]).toMatchObject({
-      accountId: "ACC-2100-010",
-      debitCredit: "debit",
-      amountMinor: 50_000_000,
-      currency: "GBP",
-    });
+    expect(legs[1]?.accountId).toBe("ACC-2100-010");
+    expect(legs[1]?.debitCredit).toBe("debit");
+    expect(legs[1] ? legMinor(legs[1]) : undefined).toBe(50_000_000);
+    expect(legs[1]?.currency).toBe("GBP");
     // balanced within GBP
     const net = legs.reduce(
-      (acc, l) => acc + (l.debitCredit === "debit" ? l.amountMinor : -l.amountMinor),
+      (acc, l) => acc + (l.debitCredit === "debit" ? legMinor(l) : -legMinor(l)),
       0,
     );
     expect(net).toBe(0);
