@@ -218,10 +218,7 @@ export function run(): ReconResult {
     if (!subjectsWithConcludedAssessment.has(ob.id)) {
       violations.push({
         subject: ob.id,
-        message:
-          `obligation adopted on/after Slice-C baseline ${SLICE_C_BASELINE_AS_OF} ` +
-          `(adoptedAt ${(ob.adoptedAt ?? "").slice(0, 10)}) but has no concluded applicability ` +
-          "assessment — the W8 Slice C adopt-route loop should have auto-assessed it",
+        message: `obligation adopted on/after Slice-C baseline ${SLICE_C_BASELINE_AS_OF} (adoptedAt ${(ob.adoptedAt ?? "").slice(0, 10)}) but has no concluded applicability assessment — the W8 Slice C adopt-route loop should have auto-assessed it`,
         severity: "fail",
       });
     }

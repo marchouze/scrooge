@@ -35,11 +35,11 @@
 // Author: Mira (Chief Obligations & Regulatory Officer, compliance).
 
 import {
-  type AppliesToScope,
   type AssessedContext,
   type AssessmentEngineResult,
   assessApplicability,
 } from "../../v2-core/applicability";
+import type { AppliesToScope } from "../../v2-core/posture";
 import { type PostureRegister, foldPostureRegister } from "../../v2-core/posture/projection";
 import type { EventStore } from "../event-store/store";
 
@@ -160,7 +160,11 @@ export interface ObligationApplicabilityResult {
  * `appliesToScope`; v1 ignores them and returns the flat jurisdiction predicate.
  */
 export function assessObligationApplicability(
-  args: { obligationId: string; derivesFrom: string[]; domain: string },
+  // v1 ignores the subject args (see file-header LIMITATION); they are accepted
+  // for forward-compat so per-provision scope extraction can inform a richer
+  // appliesToScope without changing the call sites. Underscore-prefixed to mark
+  // intentionally-unused under noUnusedParameters.
+  _args: { obligationId: string; derivesFrom: string[]; domain: string },
   contexts: AssessedContext[],
 ): ObligationApplicabilityResult {
   // v1 scope: flat ZA jurisdiction. (See file-header LIMITATION — richer
