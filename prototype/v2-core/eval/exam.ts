@@ -120,6 +120,9 @@ export interface Exam {
   readonly expectation: ExamExpectation;
   readonly citation: CitationRef;
   readonly description: string;
+  /** True if this exam is adversarial — a known-failure / negative-invariant scenario.
+   * D-W8-EXAM-GOVERNANCE mandates ≥1 adversarial exam per exam-set. */
+  readonly adversarial?: boolean;
 }
 
 export const examSchema = z.object({
@@ -130,6 +133,7 @@ export const examSchema = z.object({
   expectation: examExpectationSchema,
   citation: citationRefSchema,
   description: z.string().min(1),
+  adversarial: z.boolean().optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -172,7 +176,9 @@ export const examSetSchema = z.object({
 /** A well-formedness finding for an exam-set (structural validity). */
 export interface ExamSetWellFormednessFinding {
   readonly examSetId: string;
+  readonly kind: string;
   readonly message: string;
+  readonly severity: "error" | "warn";
 }
 
 /**
@@ -193,9 +199,11 @@ export function checkExamSetWellFormed(raw: unknown): ExamSetWellFormednessFindi
         : "<unparseable>";
     findings.push({
       examSetId: id,
+      kind: "schema-parse-failure",
       message: `exam-set failed schema parse: ${parsed.error.issues
         .map((i) => `${i.path.join(".")}: ${i.message}`)
         .join("; ")}`,
+      severity: "error",
     });
     return findings;
   }
@@ -205,22 +213,39 @@ export function checkExamSetWellFormed(raw: unknown): ExamSetWellFormednessFindi
     if (exam.subjectKind !== set.subjectKind) {
       findings.push({
         examSetId: set.examSetId,
+        kind: "subject-kind-mismatch",
         message: `exam ${exam.examId} subjectKind '${exam.subjectKind}' != set subjectKind '${set.subjectKind}'`,
+        severity: "error",
       });
     }
     if (exam.subjectScope !== set.subjectScope) {
       findings.push({
         examSetId: set.examSetId,
+        kind: "subject-scope-mismatch",
         message: `exam ${exam.examId} subjectScope '${exam.subjectScope}' != set subjectScope '${set.subjectScope}'`,
+        severity: "error",
       });
     }
     if (seen.has(exam.examId)) {
       findings.push({
         examSetId: set.examSetId,
+        kind: "duplicate-exam-id",
         message: `duplicate examId '${exam.examId}' within set`,
+        severity: "error",
       });
     }
     seen.add(exam.examId);
+  }
+  // D-W8-EXAM-GOVERNANCE: every exam-set must include at least one adversarial exam.
+  const hasAdversarial = set.exams.some((e) => e.adversarial === true);
+  if (!hasAdversarial) {
+    findings.push({
+      examSetId: set.examSetId,
+      kind: "no-adversarial-exam",
+      message:
+        "exam-set must include at least one adversarial exam (adversarial: true) per D-W8-EXAM-GOVERNANCE",
+      severity: "error",
+    });
   }
   return findings;
 }

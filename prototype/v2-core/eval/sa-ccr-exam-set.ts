@@ -358,6 +358,7 @@ function buildSaCcrExams(): Exam[] {
     // ── Exam 6: latest-per-trade MtM (the v1 defect) ───────────────────────
     {
       examId: "exam:sa-ccr:latest-per-trade-mtm",
+      adversarial: true,
       subjectKind: "fil-model",
       subjectScope: SA_CCR_MODEL_ID,
       description:

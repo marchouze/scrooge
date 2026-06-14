@@ -1666,6 +1666,18 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
       "Schedules two threshold-currency recon builds after this bank's first ICAAP cycle. Tenant gate-scheduling tied to its ICAAP cadence.",
   },
   {
+    decisionId: "D-W8-EXAM-GOVERNANCE",
+    class: "directional",
+    rationale:
+      "Assigns frozen-exam authorship by seat (Nadia=FIL-Models, Helena=posture/RAS, Vera=agent-behaviour), sets refresh cadence triggers, and mandates the adversarial-pass rule (≥1 negative-invariant exam per set). Tenant-specific governance of the W8 eval harness.",
+  },
+  {
+    decisionId: "D-W8-PARAMETRIC-TRAINING-POSITION",
+    class: "directional",
+    rationale:
+      "Records the standing 'weights propose, events dispose' constraint: parametric training permitted only as a proposer layer trained from the corpus; system of record is always the event log. The corpus-first design preserves the fine-tune option one-way; LoRA-first forecloses structured citation permanently.",
+  },
+  {
     decisionId: "D-WS-JS-NUMBER-RECONCILIATION",
     class: "directional",
     rationale:
@@ -1674,10 +1686,10 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
 ];
 
 /** Snapshot count of approved decisionIds covered at authoring time. */
-export const DECISION_CLASSIFICATION_COUNT = 266;
+export const DECISION_CLASSIFICATION_COUNT = 268;
 
 export const DECISION_CLASSIFICATION_COUNTS = {
   foundational: 98,
-  directional: 143,
+  directional: 145,
   obsolete: 25,
 } as const;
