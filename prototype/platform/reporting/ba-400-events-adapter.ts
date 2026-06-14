@@ -53,8 +53,8 @@
 //   CFO; BA-returns sourcing owner).
 
 import { COA_BY_ID } from "../accounting/coa-registry";
-import { legAmountMoney } from "../core/money-codec";
 import { amountToMinorUnits } from "../core/decimal-money";
+import { legAmountMoney } from "../core/money-codec";
 import type { EventStore } from "../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 import {

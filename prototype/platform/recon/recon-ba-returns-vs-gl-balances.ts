@@ -51,8 +51,8 @@
 // Author: Atlas (Core banking platform architect, engineering — Gap 3 recon).
 
 import { eventStore } from "../composition";
-import { legAmountMoney } from "../core/money-codec";
 import { amountToMinorUnits } from "../core/decimal-money";
+import { legAmountMoney } from "../core/money-codec";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 
 // ---------------------------------------------------------------------------

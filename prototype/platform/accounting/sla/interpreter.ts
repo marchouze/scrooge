@@ -29,11 +29,11 @@
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (CEO-approved 2026-06-05).
 // Citations: Principles/1-events-are-truth.md, Principles/5-multi-currency-entity-country.md.
 
+import { amountToMinorUnits, moneyFromMinorUnits } from "../../core/decimal-money";
+import { type MoneyWire, encodeMoney, legAmountMoney } from "../../core/money-codec";
+import type { Currency } from "../../core/types";
 import { makeSubstrateAlert } from "../../event-store/event-types/platform";
 import type { Actor, Event } from "../../event-store/types";
-import { type MoneyWire, encodeMoney, legAmountMoney } from "../../core/money-codec";
-import { amountToMinorUnits, moneyFromMinorUnits } from "../../core/decimal-money";
-import type { Currency } from "../../core/currency";
 
 // ---------------------------------------------------------------------------
 // Product-to-Basel-business-line map (BCBS d188 §§652-654 / BA 400 Op-Risk)

@@ -46,9 +46,9 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { eventStore } from "../composition";
-import type { FxPositionRevaluedPayload } from "../event-store/event-types/fx-accounting";
-import { legAmountMoney } from "../core/money-codec";
 import { amountToMinorUnits } from "../core/decimal-money";
+import { legAmountMoney } from "../core/money-codec";
+import type { FxPositionRevaluedPayload } from "../event-store/event-types/fx-accounting";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "mtm-vs-gl-amount-delta";

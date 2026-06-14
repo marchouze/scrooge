@@ -44,7 +44,6 @@ import {
   type SubLedgerLeg,
   subLedgerLegFromMoney,
 } from "../../platform/accounting/fx-accounting-types";
-import { legAmountMoney } from "../../platform/core/money-codec";
 import type { Representation } from "../../platform/accounting/sla/generated/sla-types";
 import {
   type InterpretResult,
@@ -53,6 +52,7 @@ import {
   interpret,
 } from "../../platform/accounting/sla/interpreter";
 import { IRD_IFRS_RULES } from "../../platform/accounting/sla/rules/ird-index";
+import { legAmountMoney } from "../../platform/core/money-codec";
 import type { Event } from "../../platform/event-store/types";
 
 // ---------------------------------------------------------------------------
