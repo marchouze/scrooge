@@ -9,7 +9,7 @@ import { describe, expect, it } from "bun:test";
 import { makeSubLedgerPostingEmitted } from "../event-store/event-types/fx-accounting";
 import { simulatedTag } from "../event-store/provenance";
 import type { Event } from "../event-store/types";
-import type { SubLedgerLeg } from "./fx-accounting-types";
+import { type SubLedgerLeg, subLedgerLegFromMinor } from "./fx-accounting-types";
 import { FX_WRITEOFF_ACCOUNT, computeFxSubledgerWriteoff } from "./fx-subledger-writeoff";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
@@ -23,7 +23,7 @@ function leg(
   amountMinor: number,
   currency: string,
 ): SubLedgerLeg {
-  return { accountId, debitCredit: dc, amountMinor, currency };
+  return subLedgerLegFromMinor({ accountId, debitCredit: dc, currency }, amountMinor);
 }
 
 /** A balanced posting that lands `legs` on the GL (contra outside ACC-2100). */

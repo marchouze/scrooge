@@ -82,7 +82,7 @@
 //   Scrooge-coordinated run.
 
 import type { Event } from "../event-store/types";
-import type { SubLedgerLeg } from "./fx-accounting-types";
+import { type SubLedgerLeg, subLedgerLegFromMinor } from "./fx-accounting-types";
 import { computeFxSubledgerReconciliation } from "./fx-subledger-trade-reconciliation";
 import { buildGlView } from "./gl-projection";
 
@@ -234,12 +234,14 @@ export function computeFxSubledgerLegacyReconciliation(
     const [accountId, currency] = k.split("|") as [string, string];
     const delta = (target.get(k) ?? 0) - (current.get(k) ?? 0);
     if (delta === 0) continue;
-    closingLegs.push({
-      accountId,
-      currency,
-      debitCredit: delta > 0 ? "debit" : "credit",
-      amountMinor: Math.abs(delta),
-    });
+    // `Math.abs(delta)` is an EXACT integer minor-unit balance — lifted to the
+    // decimal `amount` source of truth, amountMinor derived (decimal-native s1).
+    closingLegs.push(
+      subLedgerLegFromMinor(
+        { accountId, currency, debitCredit: delta > 0 ? "debit" : "credit" },
+        Math.abs(delta),
+      ),
+    );
     perCcyDelta.set(currency, (perCcyDelta.get(currency) ?? 0) + delta);
   }
 
@@ -247,12 +249,12 @@ export function computeFxSubledgerLegacyReconciliation(
   for (const [currency, delta] of [...perCcyDelta].sort((a, b) => a[0].localeCompare(b[0]))) {
     if (delta === 0) continue;
     // Suspense balances the per-ccy delta: posts the opposite sign.
-    closingLegs.push({
-      accountId: FX_REMEDIATION_SUSPENSE,
-      currency,
-      debitCredit: delta > 0 ? "credit" : "debit",
-      amountMinor: Math.abs(delta),
-    });
+    closingLegs.push(
+      subLedgerLegFromMinor(
+        { accountId: FX_REMEDIATION_SUSPENSE, currency, debitCredit: delta > 0 ? "credit" : "debit" },
+        Math.abs(delta),
+      ),
+    );
     // Residue now sitting in suspense (Dr positive) = the amount swept off the
     // trading accounts. Equals −delta because the trading accounts moved by
     // +delta toward target.

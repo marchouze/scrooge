@@ -7,7 +7,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import type { SubLedgerLeg } from "../accounting/fx-accounting-types";
+import { type SubLedgerLeg, subLedgerLegFromMinor } from "../accounting/fx-accounting-types";
 import {
   makeFxTradeCancelled,
   makeSubLedgerPostingEmitted,
@@ -91,7 +91,7 @@ function leg(
   amountMinor: number,
   currency: string,
 ): SubLedgerLeg {
-  return { accountId, debitCredit: dc, amountMinor, currency };
+  return subLedgerLegFromMinor({ accountId, debitCredit: dc, currency }, amountMinor);
 }
 
 function writeoffDecision(phase: "requested" | "approved"): Event {

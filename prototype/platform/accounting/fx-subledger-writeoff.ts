@@ -53,7 +53,7 @@
 //   Scrooge-coordinated run.
 
 import type { Event } from "../event-store/types";
-import type { SubLedgerLeg } from "./fx-accounting-types";
+import { type SubLedgerLeg, subLedgerLegFromMinor } from "./fx-accounting-types";
 import {
   FX_REMEDIATION_SUSPENSE,
   type LegacyFootprintEntry,
@@ -126,34 +126,36 @@ export function computeFxSubledgerWriteoff(events: readonly Event[], asOf: strin
     if (net === 0) continue;
     suspenseBefore.push({ accountId: FX_REMEDIATION_SUSPENSE, currency, netDebitMinor: net });
     const amountMinor = Math.abs(net);
+    // `amountMinor` (= Math.abs(net)) is an EXACT integer minor-unit balance —
+    // lifted to the decimal `amount` source of truth (decimal-native slice 1).
     if (net > 0) {
       // Suspense holds a net DEBIT → credit it out, charge P&L (debit).
-      clearingLegs.push({
-        accountId: FX_REMEDIATION_SUSPENSE,
-        currency,
-        debitCredit: "credit",
-        amountMinor,
-      });
-      clearingLegs.push({
-        accountId: FX_WRITEOFF_ACCOUNT,
-        currency,
-        debitCredit: "debit",
-        amountMinor,
-      });
+      clearingLegs.push(
+        subLedgerLegFromMinor(
+          { accountId: FX_REMEDIATION_SUSPENSE, currency, debitCredit: "credit" },
+          amountMinor,
+        ),
+      );
+      clearingLegs.push(
+        subLedgerLegFromMinor(
+          { accountId: FX_WRITEOFF_ACCOUNT, currency, debitCredit: "debit" },
+          amountMinor,
+        ),
+      );
     } else {
       // Suspense holds a net CREDIT → debit it out, credit P&L.
-      clearingLegs.push({
-        accountId: FX_REMEDIATION_SUSPENSE,
-        currency,
-        debitCredit: "debit",
-        amountMinor,
-      });
-      clearingLegs.push({
-        accountId: FX_WRITEOFF_ACCOUNT,
-        currency,
-        debitCredit: "credit",
-        amountMinor,
-      });
+      clearingLegs.push(
+        subLedgerLegFromMinor(
+          { accountId: FX_REMEDIATION_SUSPENSE, currency, debitCredit: "debit" },
+          amountMinor,
+        ),
+      );
+      clearingLegs.push(
+        subLedgerLegFromMinor(
+          { accountId: FX_WRITEOFF_ACCOUNT, currency, debitCredit: "credit" },
+          amountMinor,
+        ),
+      );
     }
   }
 
