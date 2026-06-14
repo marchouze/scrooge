@@ -147,6 +147,7 @@ export function extractGlLegs(events: Iterable<Event>): ExtractedGlLeg[] {
           postingType: "journal-entry",
           accountId,
           currency,
+          debitCredit,
           amount,
           amountMinor,
           postedAt,
