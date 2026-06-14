@@ -57,15 +57,9 @@
 //
 // Author: Atlas (Core banking platform architect, engineering).
 
-import {
-  existsSync,
-  readFileSync,
-  readdirSync,
-  statSync,
-  writeFileSync,
-} from "node:fs";
-import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -83,7 +77,10 @@ function findRepoRoot(start: string): string {
 
 const REPO_ROOT = findRepoRoot(import.meta.dir);
 const PROTOTYPE_DIR = resolve(REPO_ROOT, "prototype");
-const ALLOWLIST_PATH = resolve(PROTOTYPE_DIR, "scripts/recon/no-float-money-arithmetic-allowlist.json");
+const ALLOWLIST_PATH = resolve(
+  PROTOTYPE_DIR,
+  "scripts/recon/no-float-money-arithmetic-allowlist.json",
+);
 
 // ---------------------------------------------------------------------------
 // Excluded file paths (relative to prototype/)
@@ -115,11 +112,7 @@ const MONEY_MULTDIV_RE = /\b\w*(?:Minor|minor|Money|money|Amount|amount)\w*\s*[*
 // File walker
 // ---------------------------------------------------------------------------
 
-const ALWAYS_EXCLUDE: ReadonlySet<string> = new Set([
-  "node_modules",
-  ".local",
-  ".git",
-]);
+const ALWAYS_EXCLUDE: ReadonlySet<string> = new Set(["node_modules", ".local", ".git"]);
 
 function walk(dir: string, protoDir: string, out: string[]): void {
   if (!existsSync(dir)) return;
@@ -135,13 +128,8 @@ function walk(dir: string, protoDir: string, out: string[]): void {
     }
     if (st.isDirectory()) {
       walk(full, protoDir, out);
-    } else if (
-      st.isFile() &&
-      (name.endsWith(".ts") || name.endsWith(".tsx"))
-    ) {
-      const rel = full.startsWith(`${protoDir}/`)
-        ? full.slice(protoDir.length + 1)
-        : full;
+    } else if (st.isFile() && (name.endsWith(".ts") || name.endsWith(".tsx"))) {
+      const rel = full.startsWith(`${protoDir}/`) ? full.slice(protoDir.length + 1) : full;
       out.push(rel);
     }
   }
@@ -198,7 +186,7 @@ export function scanFile(rel: string, protoDir: string): FloatMoneyFinding[] {
   // Keyed file:line to deduplicate (Math.round may also match pattern 2).
   const seenKey = new Set<string>();
 
-  function addFinding(idx: number, pattern: string, matchedText: string): void {
+  function addFinding(idx: number, pattern: string, _matchedText: string): void {
     const lineNum = content.slice(0, idx).split("\n").length;
     const lineStart = content.lastIndexOf("\n", idx - 1) + 1;
     const col = idx - lineStart + 1;
@@ -332,9 +320,7 @@ export function run(opts: RunOpts = {}): ReconResult & {
   for (const f of findings) {
     byFile.set(f.file, (byFile.get(f.file) ?? 0) + 1);
   }
-  const topFiles = [...byFile.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
+  const topFiles = [...byFile.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
 
   const touchedFiles = enforceTouched ? touchedFilesRelativeToMain(protoDir) : new Set<string>();
 
@@ -404,7 +390,7 @@ export function generateAllowlist(
     pattern: f.pattern,
   }));
   const allowlist: Allowlist = { violations };
-  writeFileSync(outPath, JSON.stringify(allowlist, null, 2) + "\n", "utf8");
+  writeFileSync(outPath, `${JSON.stringify(allowlist, null, 2)}\n`, "utf8");
   const files = new Set(findings.map((f) => f.file)).size;
   return { count: findings.length, files };
 }
@@ -436,11 +422,6 @@ if (import.meta.main) {
   }
 
   const r = run({ enforceTouched });
-
-  // Compute file count for summary
-  const distinctFiles = new Set(
-    (r.violations ?? []).map((v) => (v.subject ?? "").split(":")[0]),
-  ).size;
 
   console.log(
     JSON.stringify({
