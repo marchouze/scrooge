@@ -62,10 +62,7 @@ type PostureScenario = PostureContext;
  * fields the exams assert. Pure — a deterministic function of (postureId,
  * register, scenario); no IO, no clock.
  */
-export function makePostureEvalSubject(
-  postureId: string,
-  register: PostureRegister,
-): EvalSubject {
+export function makePostureEvalSubject(postureId: string, register: PostureRegister): EvalSubject {
   return {
     subjectKind: "posture",
     subjectScope: postureId,
@@ -93,7 +90,7 @@ export function makePostureEvalSubject(
       // `dimensionKey` — the posture's measurement-axis tag from parameters, if
       // present; "" otherwise.
       const rawDimensionKey =
-        posture.parameters !== undefined ? posture.parameters["dimensionKey"] : undefined;
+        posture.parameters !== undefined ? posture.parameters.dimensionKey : undefined;
       const dimensionKey = typeof rawDimensionKey === "string" ? rawDimensionKey : "";
 
       return {

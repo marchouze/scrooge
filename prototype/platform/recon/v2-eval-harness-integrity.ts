@@ -32,12 +32,12 @@
 // Author: Vera (Internal Audit Engineer, governance).
 
 import { checkExamSetWellFormed } from "../../v2-core/eval/exam";
+import type { ExamSet } from "../../v2-core/eval/exam";
 import type { EvalSubject } from "../../v2-core/eval/harness";
 import { runEval } from "../../v2-core/eval/harness";
 import { makePostureEvalSubject } from "../../v2-core/eval/posture-eval-subject";
 import { POSTURE_PILOT_EXAM_SET } from "../../v2-core/eval/posture-exam-set";
 import { SA_CCR_PILOT_EXAM_SET, makeSaCcrEvalSubject } from "../../v2-core/eval/sa-ccr-exam-set";
-import type { ExamSet } from "../../v2-core/eval/exam";
 import { foldPostureRegister } from "../../v2-core/posture/projection";
 import { eventStore } from "../composition";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";

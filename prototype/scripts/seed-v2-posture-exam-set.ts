@@ -90,8 +90,7 @@ const register = foldPostureRegister(postureEvents);
 const subjectPosture = register.getPosture(examSet.subjectScope);
 if (subjectPosture === null) {
   process.stderr.write(
-    `seed:v2-posture-exam-set — subject posture '${examSet.subjectScope}' not found in the ` +
-      `live register. Run scripts/seed-v2-helena-ras-postures.ts first.\n`,
+    `seed:v2-posture-exam-set — subject posture '${examSet.subjectScope}' not found in the live register. Run scripts/seed-v2-helena-ras-postures.ts first.\n`,
   );
   process.exit(1);
 }
