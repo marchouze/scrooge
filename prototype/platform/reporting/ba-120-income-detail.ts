@@ -74,6 +74,8 @@
 //   + Ravi (Treasury & ALM engineer, engineering — FTP + ALM banding
 //   substrate consult).
 
+import { type Money, amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
+import type { Currency } from "../core/types";
 import type { Ba610IncomeStatement, Ba610LineItem } from "./ba-120-income-statement";
 
 // ---------------------------------------------------------------------------
@@ -213,6 +215,8 @@ export interface Ba610DetailLineItem {
   readonly lineId: string;
   readonly lineLabel: string;
   readonly amountMinor: number;
+  /** Decimal-native money — source of truth; amountMinor is kept for compat. */
+  readonly amount: Money<Currency>;
   readonly currency: string;
   readonly contributingAccounts: readonly string[];
   readonly subCategory?: string;
@@ -441,12 +445,14 @@ function ba300LineToLineItem(
   item: Ba610LineItem,
   lineIdPrefix: string,
   newAmountMinor: number,
-  currency: string,
+  currency: Currency,
 ): Ba610DetailLineItem {
+  const amount = moneyFromMinorUnits(BigInt(newAmountMinor), currency);
   return {
     lineId: `${lineIdPrefix}.${item.lineId}`,
     lineLabel: item.lineLabel,
     amountMinor: newAmountMinor,
+    amount,
     currency,
     contributingAccounts: [...item.contributingAccounts],
     ...(item.subCategory ? { subCategory: item.subCategory } : {}),
@@ -497,7 +503,7 @@ export function generateBa610DetailIncomeDetail(
     );
   }
 
-  const ccy = ba300Output.meta.functionalCurrency;
+  const ccy = ba300Output.meta.functionalCurrency as Currency;
 
   // Build banding index. Duplicate detection.
   const bandIndex = new Map<string, Ba610DetailBandingEntry>();
@@ -559,22 +565,24 @@ export function generateBa610DetailIncomeDetail(
         item.amountMinor,
         ccy,
       );
+      // Use amount (decimal-native Money) as the source of truth for accumulation.
+      const lineMinor = Number(amountToMinorUnits(lineItem.amount));
 
       const cb = classBuckets.get(entry.instrumentClass);
       const bb = bandBuckets.get(entry.maturityBand);
       if (cb) {
         if (side === "income") {
-          cb.interestIncome += item.amountMinor;
+          cb.interestIncome += lineMinor;
         } else {
-          cb.interestExpense += item.amountMinor;
+          cb.interestExpense += lineMinor;
         }
         cb.lines.push(lineItem);
       }
       if (bb) {
         if (side === "income") {
-          bb.interestIncome += item.amountMinor;
+          bb.interestIncome += lineMinor;
         } else {
-          bb.interestExpense += item.amountMinor;
+          bb.interestExpense += lineMinor;
         }
         bb.volume += entry.volumeMinor;
         bb.lines.push(lineItem);

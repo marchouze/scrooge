@@ -21,6 +21,8 @@
 //   reports to Camille CFO; IFRS line-mapping owner) · Atlas (Core banking
 //   platform architect, engineering — substrate consult).
 
+import { amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
+import type { Currency } from "../core/types";
 import {
   IFRS_AFS_BASE_CITATIONS,
   type IfrsAccountClassification,
@@ -95,7 +97,7 @@ export function generateIfrsCashFlow(input: IfrsGeneratorInput): IfrsCashFlowOut
     );
   }
   const classMap = indexClassifications(input.classifications);
-  const ccy = input.functionalCurrency;
+  const ccy = input.functionalCurrency as Currency;
   const placeholders: string[] = [];
   const hasComparative = input.comparativeTrialBalance !== undefined;
 
@@ -232,15 +234,17 @@ export function generateIfrsCashFlow(input: IfrsGeneratorInput): IfrsCashFlowOut
           `[citation: TBC — Cash Flow account '${accountId}' (${cashFlowClass}) has no IFRS line-label; pending Camille's accounting-policy adoption]`,
         );
       }
+      const lineItemAmount = moneyFromMinorUnits(BigInt(cashEffect), ccy);
       lineItems.push({
         lineId: `${cashFlowClass}.${accountId}`,
         lineLabel,
         amountMinor: cashEffect,
+        amount: lineItemAmount,
         comparativeAmountMinor: compAmount,
         currency: ccy,
         contributingAccounts: [accountId],
       });
-      netCashMinor += cashEffect;
+      netCashMinor += Number(amountToMinorUnits(lineItemAmount));
       if (compAmount !== null) comparativeAvailable = true;
     }
     return {
@@ -322,7 +326,7 @@ export function generateIfrsCashFlow(input: IfrsGeneratorInput): IfrsCashFlowOut
 function buildOperatingSection(
   _input: IfrsGeneratorInput,
   classMap: Map<string, IfrsAccountClassification>,
-  ccy: string,
+  ccy: Currency,
   plMinor: number,
   plComparative: number | null,
   accounts: ReadonlyArray<readonly [string, { current: number; comparative: number | null }]>,
@@ -335,6 +339,7 @@ function buildOperatingSection(
       lineId: "operating.starting-point.profit-or-loss",
       lineLabel: "Profit (loss) for the period — indirect-method starting point",
       amountMinor: plMinor,
+      amount: moneyFromMinorUnits(BigInt(plMinor), ccy),
       comparativeAmountMinor: plComparative,
       currency: ccy,
       contributingAccounts: [],
@@ -367,15 +372,17 @@ function buildOperatingSection(
         `[citation: TBC — Operating-cash-flow account '${accountId}' has no IFRS line-label]`,
       );
     }
+    const wcAmount = moneyFromMinorUnits(BigInt(cashEffect), ccy);
     lineItems.push({
       lineId: `operating.working-capital.${accountId}`,
       lineLabel,
       amountMinor: cashEffect,
+      amount: wcAmount,
       comparativeAmountMinor: compAmount,
       currency: ccy,
       contributingAccounts: [accountId],
     });
-    netCashMinor += cashEffect;
+    netCashMinor += Number(amountToMinorUnits(wcAmount));
     if (compAmount !== null) comparativeAvailable = true;
   }
 

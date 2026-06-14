@@ -23,6 +23,8 @@
 import { describe, expect, it } from "bun:test";
 
 import tree from "../../../seeds/legal-entity-tree.json";
+import { moneyFromMinorUnits } from "../../core/decimal-money";
+import type { Currency } from "../../core/types";
 import type { Ba300LcrOutput } from "../../reporting/ba-300-lcr";
 import { applyHqlaCaps } from "../../reporting/ba-300-lcr";
 import {
@@ -241,6 +243,7 @@ describe("consolidateBa300Lcr — golden reconciliation, synthetic 2nd entity", 
         fromEntityId: "LE-ZA-HOZ-BANK",
         toEntityId: "LE-MU-HOZ-BANK-MU",
         amountMinor: ELIM,
+        amount: moneyFromMinorUnits(BigInt(ELIM), "ZAR" as Currency),
         source: "test:intragroup-deposit",
       },
     ],
@@ -424,6 +427,7 @@ describe("consolidateBa300Lcr — validation", () => {
             fromEntityId: "LE-ZA-HOZ-BANK",
             toEntityId: "LE-ZA-HOZ-BANK",
             amountMinor: 1,
+            amount: moneyFromMinorUnits(1n, "ZAR" as Currency),
             source: "test",
           },
         ],
@@ -441,6 +445,7 @@ describe("consolidateBa300Lcr — validation", () => {
             fromEntityId: "LE-ZA-HOZ-BANK",
             toEntityId: "LE-ZA-HOZ-SECURITIES",
             amountMinor: 1,
+            amount: moneyFromMinorUnits(1n, "ZAR" as Currency),
             source: "test",
           },
         ],
@@ -459,6 +464,10 @@ describe("consolidateBa300Lcr — validation", () => {
             fromEntityId: "LE-ZA-HOZ-BANK",
             toEntityId: "LE-MU-HOZ-BANK-MU",
             amountMinor: HOZ_BANK.solo.cashFlows.outflows.grossMinor + 1,
+            amount: moneyFromMinorUnits(
+              BigInt(HOZ_BANK.solo.cashFlows.outflows.grossMinor + 1),
+              "ZAR" as Currency,
+            ),
             source: "test",
           },
         ],

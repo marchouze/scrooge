@@ -29,6 +29,8 @@
 //   reports to Camille CFO; IFRS line-mapping owner) · Atlas (Core banking
 //   platform architect, engineering — substrate consult).
 
+import { amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
+import type { Currency } from "../core/types";
 import {
   IFRS_AFS_BASE_CITATIONS,
   IfrsGeneratorError,
@@ -96,7 +98,7 @@ export function generateIfrsBalanceSheet(input: IfrsGeneratorInput): IfrsBalance
     }
   }
   const classMap = indexClassifications(input.classifications);
-  const ccy = input.functionalCurrency;
+  const ccy = input.functionalCurrency as Currency;
 
   // Build comparative-amount lookup: account → comparative absolute amount.
   const comparativeByAccount = new Map<string, number>();
@@ -121,6 +123,7 @@ export function generateIfrsBalanceSheet(input: IfrsGeneratorInput): IfrsBalance
 
     for (const { row, classification } of filtered) {
       const stockMinor = Math.abs(row.amountMinor);
+      const amount = moneyFromMinorUnits(BigInt(stockMinor), ccy);
       const note = signWarning(row.amountMinor, expectSign);
       const compAmount = comparativeByAccount.get(row.leafAccountId) ?? null;
       if (compAmount !== null) {
@@ -137,12 +140,13 @@ export function generateIfrsBalanceSheet(input: IfrsGeneratorInput): IfrsBalance
         lineId: `${accountClass}.${row.leafAccountId}`,
         lineLabel,
         amountMinor: stockMinor,
+        amount,
         comparativeAmountMinor: compAmount,
         currency: ccy,
         contributingAccounts: [row.leafAccountId],
         ...(note ? { note } : {}),
       });
-      totalMinor += stockMinor;
+      totalMinor += Number(amountToMinorUnits(amount));
     }
 
     return {
@@ -169,6 +173,7 @@ export function generateIfrsBalanceSheet(input: IfrsGeneratorInput): IfrsBalance
 
   for (const { row, classification } of equityRows) {
     const stockMinor = Math.abs(row.amountMinor);
+    const equityAmount = moneyFromMinorUnits(BigInt(stockMinor), ccy);
     const note = signWarning(row.amountMinor, "credit");
     const compAmount = comparativeByAccount.get(row.leafAccountId) ?? null;
     if (compAmount !== null) {
@@ -183,12 +188,13 @@ export function generateIfrsBalanceSheet(input: IfrsGeneratorInput): IfrsBalance
       lineId: `equity.${classification.equityComponent ?? "unspecified"}.${row.leafAccountId}`,
       lineLabel,
       amountMinor: stockMinor,
+      amount: equityAmount,
       comparativeAmountMinor: compAmount,
       currency: ccy,
       contributingAccounts: [row.leafAccountId],
       ...(note ? { note } : {}),
     });
-    equityClassifiedTotal += stockMinor;
+    equityClassifiedTotal += Number(amountToMinorUnits(equityAmount));
   }
 
   const derivedEquityTotal = assets.totalMinor - liabilities.totalMinor;
@@ -198,6 +204,7 @@ export function generateIfrsBalanceSheet(input: IfrsGeneratorInput): IfrsBalance
       lineId: "equity.derivation-residual",
       lineLabel: "Derivation residual (assets − liabilities − classified equity)",
       amountMinor: residualMinor,
+      amount: moneyFromMinorUnits(BigInt(residualMinor), ccy),
       comparativeAmountMinor: null,
       currency: ccy,
       contributingAccounts: [],

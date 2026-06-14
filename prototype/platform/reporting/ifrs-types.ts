@@ -27,6 +27,8 @@
 //   + Atlas (Core banking platform architect, engineering — substrate
 //   consult; generator-input contract).
 
+import type { Money } from "../core/decimal-money";
+import type { Currency } from "../core/types";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
 
 // ---------------------------------------------------------------------------
@@ -155,6 +157,8 @@ export interface IfrsLineItem {
   readonly lineId: string;
   readonly lineLabel: string;
   readonly amountMinor: number;
+  /** Decimal-native money — source of truth; amountMinor is kept for compat. */
+  readonly amount: Money<Currency>;
   readonly comparativeAmountMinor: number | null;
   readonly currency: string;
   readonly contributingAccounts: readonly string[];
