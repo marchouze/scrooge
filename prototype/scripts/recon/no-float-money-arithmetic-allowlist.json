@@ -957,7 +957,7 @@
     },
     {
       "file": "runtime/agents/bea-gl-fx-interpreter-cutover.ts",
-      "line": 187,
+      "line": 190,
       "pattern": "Math.round(money)"
     },
     {
@@ -967,12 +967,12 @@
     },
     {
       "file": "runtime/agents/bea-gl-securities-interpreter-cutover.ts",
-      "line": 125,
+      "line": 128,
       "pattern": "Math.round(money)"
     },
     {
       "file": "runtime/agents/bea-gl-securities-interpreter-cutover.ts",
-      "line": 131,
+      "line": 134,
       "pattern": "Math.round(money)"
     },
     {
