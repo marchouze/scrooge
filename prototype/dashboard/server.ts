@@ -3236,7 +3236,7 @@ const server = Bun.serve({
       // canonical obligations viewer; the legacy /api/obligations (markdown) is
       // tracked for migration on /obligation-readers.html.
       return jsonResponse({
-        ...getBankObligationsView(eventStore),
+        ...getBankObligationsView(eventStore, REPO_ROOT),
         pageProvenance: productionReferencePageProvenance(),
       });
     }

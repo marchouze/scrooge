@@ -21,6 +21,11 @@ import {
   findKnowledgeBaseObligation,
   listKnowledgeBaseObligations,
 } from "../platform/obligations/knowledge-base";
+import {
+  deriveRegulator,
+  obligationTitle,
+  resolveDomain,
+} from "../platform/obligations/presentation";
 import { type BankObligation, loadBankObligations } from "../platform/obligations/projection";
 import { getDb } from "../platform/regulatory/graph/db";
 import { buildProvisionTree } from "../platform/regulatory/graph/provision-tree";
@@ -55,30 +60,136 @@ export function loadObligationSeed(repoRoot: string): ObligationSeedRow[] {
   return JSON.parse(readFileSync(path, "utf8")) as ObligationSeedRow[];
 }
 
+/**
+ * One adopted obligation enriched with derived PRESENTATION fields for the
+ * list view (the six-column tidy-up + Domain/Regulator filters). The underlying
+ * `BankObligation` projection is unchanged — these fields are read-side
+ * derivations (Principle 1), never stored state.
+ */
+export interface BankObligationRow extends BankObligation {
+  /** Short NAME (not the requirement prose) — see `obligationTitle`. */
+  title: string;
+  /** Administering regulator (for the Regulator filter) — see `deriveRegulator`. */
+  regulator: string;
+  /** The raw domain code (e.g. "A", "A-SACCR"). */
+  domainCode: string;
+  /** Human-readable `"code — label"` (for the Domain filter / cell). */
+  domainDescription: string;
+  /** True when a verbatim quote exists (snapshot or text-bearing provision). */
+  hasVerbatim: boolean;
+  /** Linked POL-* policy node ids (IMPLEMENTED_BY edges), if any. */
+  policies: string[];
+}
+
 export interface BankObligationsView {
-  obligations: BankObligation[];
+  obligations: BankObligationRow[];
   summary: {
     total: number;
     byStatus: Record<string, number>;
     byDomain: Record<string, number>;
+    byRegulator: Record<string, number>;
     withDerivesFrom: number;
   };
 }
 
+/**
+ * Obligation ids (bare, no `OBL-` prefix) that have a verbatim quote available:
+ * either a non-empty `verbatimSourceText` snapshot on the projection, or an
+ * `EXPRESSES`-linked `Provision` node carrying non-empty `metadata.text`.
+ * Resolved in ONE batched graph query rather than per-row.
+ */
+function resolveVerbatimPresence(
+  obligations: readonly BankObligation[],
+  db: Database,
+): Set<string> {
+  const present = new Set<string>();
+  for (const o of obligations) {
+    const snap = o.verbatimSourceText;
+    if (snap && Object.values(snap).some((v) => (v ?? "").trim().length > 0)) present.add(o.id);
+  }
+  const rows = db
+    .prepare(
+      `SELECT e.to_id AS obl, n.metadata AS metadata FROM graph_nodes n
+       JOIN graph_edges e ON e.from_id = n.id
+       WHERE e.edge_type = 'EXPRESSES' AND n.node_type = 'Provision'
+         AND e.to_id LIKE 'OBL-%'`,
+    )
+    .all() as Array<{ obl: string; metadata: string | null }>;
+  for (const r of rows) {
+    if (!r.metadata) continue;
+    const text = (JSON.parse(r.metadata) as { text?: unknown }).text;
+    if (typeof text === "string" && text.trim().length > 0) {
+      present.add(r.obl.replace(/^OBL-/, ""));
+    }
+  }
+  return present;
+}
+
+/**
+ * Map of obligation id (bare) → linked POL-* policy node ids, from the
+ * `IMPLEMENTED_BY` edges (`OBL-<id>` → `POL-*`). One batched query.
+ */
+function resolvePoliciesByObligation(db: Database): Map<string, string[]> {
+  const byObligation = new Map<string, string[]>();
+  const rows = db
+    .prepare(
+      `SELECT from_id, to_id FROM graph_edges
+       WHERE edge_type = 'IMPLEMENTED_BY' AND from_id LIKE 'OBL-%'`,
+    )
+    .all() as Array<{ from_id: string; to_id: string }>;
+  for (const r of rows) {
+    const id = r.from_id.replace(/^OBL-/, "");
+    const list = byObligation.get(id) ?? [];
+    if (!list.includes(r.to_id)) list.push(r.to_id);
+    byObligation.set(id, list);
+  }
+  for (const list of byObligation.values()) list.sort();
+  return byObligation;
+}
+
 /** Currently-adopted obligations (the live bank register). */
-export function getBankObligationsView(store: EventStore): BankObligationsView {
-  const obligations = loadBankObligations(store).filter((o) => o.adopted);
+export function getBankObligationsView(
+  store: EventStore,
+  repoRoot: string,
+  db: Database = getDb(),
+): BankObligationsView {
+  const base = loadBankObligations(store).filter((o) => o.adopted);
+  const verbatimPresent = resolveVerbatimPresence(base, db);
+  const policiesByObligation = resolvePoliciesByObligation(db);
+  // The authored register `section` is the truthful domain (the event-folded
+  // `domain` code has drifted for many rows) — key it by obligation id.
+  const sectionById = new Map(
+    loadObligationSeed(repoRoot)
+      .filter((s) => s.section)
+      .map((s) => [s.id, s.section as string]),
+  );
+
+  const obligations: BankObligationRow[] = base.map((o) => {
+    const domain = resolveDomain({ section: sectionById.get(o.id), domainCode: o.domain });
+    return {
+      ...o,
+      title: obligationTitle(o),
+      regulator: deriveRegulator(o.urn, o.citation),
+      domainCode: domain.code,
+      domainDescription: domain.description,
+      hasVerbatim: verbatimPresent.has(o.id),
+      policies: policiesByObligation.get(o.id) ?? [],
+    };
+  });
+
   const byStatus: Record<string, number> = {};
   const byDomain: Record<string, number> = {};
+  const byRegulator: Record<string, number> = {};
   let withDerivesFrom = 0;
   for (const o of obligations) {
     byStatus[o.status || "(unset)"] = (byStatus[o.status || "(unset)"] ?? 0) + 1;
-    byDomain[o.domain || "(unset)"] = (byDomain[o.domain || "(unset)"] ?? 0) + 1;
+    byDomain[o.domainCode || "(unset)"] = (byDomain[o.domainCode || "(unset)"] ?? 0) + 1;
+    byRegulator[o.regulator] = (byRegulator[o.regulator] ?? 0) + 1;
     if (o.derivesFrom.length > 0) withDerivesFrom++;
   }
   return {
     obligations,
-    summary: { total: obligations.length, byStatus, byDomain, withDerivesFrom },
+    summary: { total: obligations.length, byStatus, byDomain, byRegulator, withDerivesFrom },
   };
 }
 
@@ -245,6 +356,14 @@ export interface ObligationDetail {
    * metadata.sourcePages. Null when not present. WS-REGULATORY-LIBRARY-V1 Slice 3.
    */
   sourcePages: string | null;
+  /** Short NAME (shared with the list view) — see `obligationTitle`. */
+  title: string;
+  /** Administering regulator — see `deriveRegulator`. */
+  regulator: string;
+  /** Human-readable `"code — label"` domain — see `domainDescription`. */
+  domainDescription: string;
+  /** Linked POL-* policy node ids (IMPLEMENTED_BY edges), if any. */
+  policies: string[];
 }
 
 interface BcbsChapterRow {
@@ -636,6 +755,24 @@ export function getObligationDetail(
         : null;
   }
 
+  // Linked fulfilment policies (IMPLEMENTED_BY edges, OBL-<id> → POL-*) for the
+  // drill-down "Fulfilment policies" block — clickable into /policies.html.
+  const policies = (
+    db
+      .prepare(
+        `SELECT to_id FROM graph_edges
+         WHERE edge_type = 'IMPLEMENTED_BY' AND from_id = ?
+         ORDER BY to_id`,
+      )
+      .all(`OBL-${id}`) as Array<{ to_id: string }>
+  ).map((r) => r.to_id);
+
+  // Shared presentation derivations (agree with the list-view row). Domain keys
+  // off the authored `section` (truthful) with the event code as fallback.
+  const urn = projection?.urn ?? seed?.urn ?? "";
+  const citation = projection?.citation ?? seed?.citation ?? "";
+  const domain = resolveDomain({ section: seed?.section, domainCode: projection?.domain });
+
   return {
     id,
     adopted: projection?.adopted ?? false,
@@ -647,5 +784,9 @@ export function getObligationDetail(
     verbatimText,
     goldenSourceHash,
     sourcePages,
+    title: obligationTitle({ id, urn, citation }),
+    regulator: deriveRegulator(urn, citation),
+    domainDescription: domain.description,
+    policies,
   };
 }

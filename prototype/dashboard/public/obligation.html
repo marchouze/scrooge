@@ -143,12 +143,19 @@
         const proj = d.projection || {};
         const adopted = d.adopted;
         const owner = proj.owner || ref.owner || "";
-        const domain = (proj.domain || ref.section || "").replace(/^Domain\s+/, "");
+        const domain = d.domainDescription || (proj.domain || ref.section || "").replace(/^Domain\s+/, "");
+        const regulator = d.regulator || "";
         const status = proj.status || ref.reviewStatus || "";
         const fulfil = proj.fulfilmentPolicy || ref.fulfilmentPolicy || "";
+        const policies = d.policies || [];
         const citation = proj.citation || ref.citation || "";
         const requirement = proj.requirement || ref.requirement || "—";
         const derives = (proj.derivesFrom || []);
+        // Linked fulfilment policies (clickable into the policies register), with
+        // the free-text register cell as a fallback when no edge resolved.
+        const fulfilHtml = policies.length
+          ? policies.map(p => `<a class="od-derives" href="/policies.html?policy=${encodeURIComponent(p)}">${SC.esc(p)}</a>`).join(" ")
+          : (fulfil ? SC.esc(fulfil) : "");
 
         // Succinct page title: the obligation's NAME, not its requirement.
         // Tick-flow obligations: humanise the bank-URN's last segment
@@ -156,9 +163,11 @@
         // "Derivative exposure calculation"). Register-era obligations: the
         // citation's em-dash tail is the instrument's own short title
         // ("… — Use of divisional names"). Never the requirement prose.
+        // Prefer the server-derived short title (shared with the list view);
+        // fall back to the local derivation for older API responses.
         const urn = proj.urn || ref.urn || "";
-        let title = "";
-        if (urn.startsWith("urn:obligation:bank:")) {
+        let title = d.title || "";
+        if (!title && urn.startsWith("urn:obligation:bank:")) {
           const seg = urn.split(":").pop() || "";
           title = seg.replace(/-/g, " ").replace(/^\w/, c => c.toUpperCase());
         }
@@ -191,9 +200,10 @@
           <div class="od-meta">
             ${mi("ID", `<code style="font-family:var(--font-mono);font-size:0.85em">${SC.esc(id)}</code>`)}
             ${mi("Domain", SC.esc(domain))}
+            ${mi("Regulator", SC.esc(regulator))}
             ${mi("Owner", SC.esc(owner))}
             ${mi("Status", SC.esc(status))}
-            ${mi("Fulfilment policy", SC.esc(fulfil))}
+            ${mi("Fulfilment policies", fulfilHtml)}
             ${mi("Citation", SC.esc(citation))}
             ${derives.length?mi("Derives from", derives.map(x=>`<span class="od-derives">${SC.esc(x)}</span>`).join(" ")):""}
           </div>
