@@ -77,6 +77,16 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:no-transactional-sim-events",
     "recon:no-legacy-le-identity",
     "recon:no-residual-minor-encoding",
+    // WS-MONEY-DECIMAL-PURGE-REMEDIATION Wave 1 — CI-visibility companion for
+    // the residual-minor gate. `recon:no-residual-minor-encoding` above runs
+    // against the fresh config-only CI store (no transactional *Minor events),
+    // so it is trivially green and could NOT have caught the slice-4 purge
+    // regression (496 transactional events / 6,212 *Minor violations survived).
+    // This companion builds an EPHEMERAL tmpdir store seeded with a legacy
+    // *Minor event + a clean MoneyWire event and asserts the gate FAILS on the
+    // former and not the latter — making the gate load-bearing in CI regardless
+    // of the ambient store. Authority: D-MONEY-DECIMAL-PURGE-REMEDIATION.
+    "recon:no-residual-minor-encoding-fixture",
     "recon:urn-shape",
     "recon:aggregate-id-coverage",
     "recon:madge-circular-deps",
