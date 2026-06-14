@@ -174,6 +174,8 @@ function canonicalScope(scope: AppliesToScope): string {
       return `regulatory-regime:${scope.regimeId}`;
     case "risk-class":
       return `risk-class:${scope.riskClass}`;
+    case "dimension":
+      return `dimension:${scope.dimensionKey}=${scope.dimensionValue}`;
     case "and":
     case "or": {
       const inner = scope.conditions.map(canonicalScope).sort().join(",");

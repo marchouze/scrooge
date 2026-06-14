@@ -218,6 +218,7 @@ import { tryGenerateNarrativeGemini } from "../runtime/gemini";
 import { runAgent } from "../runtime/run";
 import { getSeedManifestEntry } from "../seeds/manifest";
 import { buildSeedsView } from "../seeds/seeds-view";
+import { type AppliesToScope, appliesToScopeSchema } from "../v2-core/posture";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import {
   getBankObligationsView,
@@ -2247,6 +2248,13 @@ interface ApprovedObligation {
   verbatimSourceText?: Record<string, string>;
   owner: string;
   domain: string;
+  /**
+   * Optional EXPLICIT applicability scope. When supplied (operator-/agent-
+   * reviewed), it WINS over the conservative rule-based extractor in
+   * `assessObligationApplicability`. Validated against `appliesToScopeSchema`
+   * before use; a malformed value is ignored (falls through to the extractor).
+   */
+  appliesToScope?: AppliesToScope;
 }
 
 /**
@@ -2342,11 +2350,23 @@ async function handleRegAdoptObligations(req: Request, slug: string): Promise<Re
     // subjectRef is the obligationId (the detail view folds Concluded events by
     // subjectRef === obligation id; see dashboard/bank-obligations-view.ts).
     const subjectRef = ob.obligationId;
+    // Explicit scope wins over the extractor — but only if it is well-formed.
+    // A malformed client-supplied scope is ignored (falls through to the
+    // conservative extractor) rather than poisoning the assessment.
+    let explicitScope: AppliesToScope | undefined;
+    if (ob.appliesToScope !== undefined) {
+      const parsed = appliesToScopeSchema.safeParse(ob.appliesToScope);
+      if (parsed.success) explicitScope = parsed.data;
+    }
     const { appliesToScope, contextsEvaluated, result } = assessObligationApplicability(
       {
         obligationId: ob.obligationId,
         derivesFrom: ob.derivesFrom ?? [],
         domain: ob.domain ?? "",
+        // citation = the reader slug; the extractor matches it (and derivesFrom)
+        // against the curated allowlist.
+        citation: slug,
+        ...(explicitScope !== undefined ? { appliesToScope: explicitScope } : {}),
       },
       applicabilityContexts,
     );

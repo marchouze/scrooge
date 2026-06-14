@@ -60,6 +60,53 @@ function seedHeldBankEntityClass(store: EventStore, asOf = "2026-06-14T00:00:00Z
   );
 }
 
+/**
+ * Seed a generic held dimension posture (registered + active). `held` controls
+ * whether the bank holds the value; only held=true dimensions enter the context.
+ */
+function seedDimensionPosture(
+  store: EventStore,
+  postureId: string,
+  dimensionKey: string,
+  dimensionValue: string,
+  held: boolean,
+  asOf = "2026-06-14T00:00:00Z",
+): void {
+  store.append(
+    makePostureRegistered({
+      asOf,
+      entity: "LE-ZA-HOZ-BANK",
+      actor: ACTOR,
+      citations: CITES,
+      payload: {
+        postureId,
+        postureClass: "jurisdiction-flag",
+        description: `dimension posture ${dimensionKey}=${dimensionValue} held=${held}`,
+        appliesToScope: { kind: "jurisdiction", jurisdiction: "ZA" },
+        appliesToTier: "all",
+        proposedBy: "agent:test",
+        citations: CITES,
+        parameters: { dimensionKey, dimensionValue, held },
+      },
+    }),
+  );
+  store.append(
+    makePostureActivated({
+      asOf,
+      entity: "LE-ZA-HOZ-BANK",
+      actor: ACTOR,
+      citations: CITES,
+      payload: {
+        postureId,
+        appliesToScope: { kind: "jurisdiction", jurisdiction: "ZA" },
+        activatedAt: asOf,
+        authority: "CEO",
+        citations: CITES,
+      },
+    }),
+  );
+}
+
 describe("buildBankPostureContexts", () => {
   it("derives entityType from the active held entity.class posture", () => {
     const store = new EventStore(":memory:");
@@ -83,6 +130,41 @@ describe("buildBankPostureContexts", () => {
     if (!ctx) throw new Error("expected one context");
     expect(ctx.context.entityType).toBe("bank");
   });
+
+  it("maps each HELD posture's dimensionKey→dimensionValue into context.dimensions and OMITS not-held keys", () => {
+    const store = new EventStore(":memory:");
+    seedHeldBankEntityClass(store);
+    // SA credit-rwa held; advanced-irb NOT held; supervisory permission NOT held.
+    seedDimensionPosture(
+      store,
+      "posture:approach.credit-rwa:standardised-approach",
+      "approach.credit-rwa",
+      "standardised-approach",
+      true,
+    );
+    seedDimensionPosture(
+      store,
+      "posture:approach.credit-rwa:advanced-irb",
+      "approach.credit-rwa",
+      "advanced-irb",
+      false,
+    );
+    seedDimensionPosture(
+      store,
+      "posture:permission.supervisory:irb-permission",
+      "permission.supervisory",
+      "irb-permission",
+      false,
+    );
+    const contexts = buildBankPostureContexts(readPostureRegister(store));
+    const ctx = contexts[0];
+    if (!ctx) throw new Error("expected one context");
+    // held SA value present; entity.class present
+    expect(ctx.context.dimensions?.["approach.credit-rwa"]).toBe("standardised-approach");
+    expect(ctx.context.dimensions?.["entity.class"]).toBe("bank");
+    // not-held dimensionKey is OMITTED entirely (no held value for it)
+    expect(ctx.context.dimensions?.["permission.supervisory"]).toBeUndefined();
+  });
 });
 
 describe("assessObligationApplicability", () => {
@@ -98,6 +180,73 @@ describe("assessObligationApplicability", () => {
     expect(result.verdict).toBe("applies");
     expect(result.matches).toEqual([ANCHOR_CONTEXT_REF]);
     expect(result.rationale.length).toBeGreaterThan(0);
+  });
+
+  it("DEMONSTRATION: an IRB-chapter obligation resolves to 'does-not-apply' against a standardised-approach bank", () => {
+    const store = new EventStore(":memory:");
+    seedHeldBankEntityClass(store);
+    // The bank holds the STANDARDISED credit-rwa approach (not IRB).
+    seedDimensionPosture(
+      store,
+      "posture:approach.credit-rwa:standardised-approach",
+      "approach.credit-rwa",
+      "standardised-approach",
+      true,
+    );
+    const contexts = buildBankPostureContexts(readPostureRegister(store));
+    // Obligation derived from a BCBS IRB chapter → extractor emits a restricting
+    // dimension scope requiring approach.credit-rwa=advanced-irb.
+    const { appliesToScope, result } = assessObligationApplicability(
+      { obligationId: "ORG-PR-IRB", derivesFrom: ["bcbs-cre32"], domain: "B" },
+      contexts,
+    );
+    expect(appliesToScope).toEqual({
+      kind: "and",
+      conditions: [
+        { kind: "jurisdiction", jurisdiction: "ZA" },
+        { kind: "dimension", dimensionKey: "approach.credit-rwa", dimensionValue: "advanced-irb" },
+      ],
+    });
+    expect(result.verdict).toBe("does-not-apply");
+    expect(result.matches).toEqual([]);
+  });
+
+  it("DEMONSTRATION: a generic ZA obligation resolves to 'applies'", () => {
+    const store = new EventStore(":memory:");
+    seedHeldBankEntityClass(store);
+    seedDimensionPosture(
+      store,
+      "posture:approach.credit-rwa:standardised-approach",
+      "approach.credit-rwa",
+      "standardised-approach",
+      true,
+    );
+    const contexts = buildBankPostureContexts(readPostureRegister(store));
+    const { appliesToScope, result } = assessObligationApplicability(
+      { obligationId: "ORG-PR-GENERIC", derivesFrom: ["banks-d7-2020-s2"], domain: "A" },
+      contexts,
+    );
+    expect(appliesToScope).toEqual({ kind: "jurisdiction", jurisdiction: "ZA" });
+    expect(result.verdict).toBe("applies");
+  });
+
+  it("an explicit appliesToScope WINS over the extractor", () => {
+    const store = new EventStore(":memory:");
+    seedHeldBankEntityClass(store);
+    const contexts = buildBankPostureContexts(readPostureRegister(store));
+    // derivesFrom would route to an IRB scope via the extractor, but the explicit
+    // scope (jurisdiction ZA) overrides it → applies.
+    const { appliesToScope, result } = assessObligationApplicability(
+      {
+        obligationId: "ORG-PR-OVERRIDE",
+        derivesFrom: ["bcbs-cre30"],
+        domain: "B",
+        appliesToScope: { kind: "jurisdiction", jurisdiction: "ZA" },
+      },
+      contexts,
+    );
+    expect(appliesToScope).toEqual({ kind: "jurisdiction", jurisdiction: "ZA" });
+    expect(result.verdict).toBe("applies");
   });
 });
 

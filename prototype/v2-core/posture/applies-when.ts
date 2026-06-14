@@ -46,6 +46,15 @@ export interface PostureContext {
   readonly regimeId?: string;
   /** Risk-class token, e.g. "RT-MK", "RT-LQ", "RT-CR". */
   readonly riskClass?: string;
+  /**
+   * Generic posture-dimension map: dimensionKey → dimensionValue for every
+   * posture the bank actively holds (`parameters.held === true`). Lets a scope
+   * test arbitrary posture dimensions (e.g. `approach.credit-rwa` =
+   * `standardised-approach`) without a dedicated context field per dimension.
+   * A dimensionKey the bank does NOT hold is OMITTED — so a scope requiring it
+   * resolves to `false` (correct: the bank lacks that posture).
+   */
+  readonly dimensions?: Readonly<Record<string, string>>;
 }
 
 export const postureContextSchema = z.object({
@@ -54,6 +63,7 @@ export const postureContextSchema = z.object({
   filTaxonomyScope: z.string().optional(),
   regimeId: z.string().optional(),
   riskClass: z.string().optional(),
+  dimensions: z.record(z.string(), z.string()).optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -67,6 +77,7 @@ export const postureContextSchema = z.object({
  *   - `product-scope`       — active for a FIL taxonomy scope pattern
  *   - `regulatory-regime`   — active under a specific regulatory regime
  *   - `risk-class`          — active for a risk-class
+ *   - `dimension`           — active when a posture dimension equals a value
  *   - `always`              — unconditional (active in all contexts)
  *   - `and`                 — conjunction of conditions (all must hold)
  *   - `or`                  — disjunction of conditions (at least one must hold)
@@ -81,6 +92,7 @@ export type AppliesToScope =
   | { readonly kind: "product-scope"; readonly filTaxonomyScope: string }
   | { readonly kind: "regulatory-regime"; readonly regimeId: string }
   | { readonly kind: "risk-class"; readonly riskClass: string }
+  | { readonly kind: "dimension"; readonly dimensionKey: string; readonly dimensionValue: string }
   | { readonly kind: "always" }
   | { readonly kind: "and"; readonly conditions: readonly AppliesToScope[] }
   | { readonly kind: "or"; readonly conditions: readonly AppliesToScope[] };
@@ -93,6 +105,11 @@ const appliesToScopeLeafSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("product-scope"), filTaxonomyScope: z.string().min(1) }),
   z.object({ kind: z.literal("regulatory-regime"), regimeId: z.string().min(1) }),
   z.object({ kind: z.literal("risk-class"), riskClass: z.string().min(1) }),
+  z.object({
+    kind: z.literal("dimension"),
+    dimensionKey: z.string().min(1),
+    dimensionValue: z.string().min(1),
+  }),
   z.object({ kind: z.literal("always") }),
 ]);
 
@@ -145,6 +162,10 @@ export function evaluateAppliesToScope(scope: AppliesToScope, context: PostureCo
       return context.regimeId === scope.regimeId;
     case "risk-class":
       return context.riskClass === scope.riskClass;
+    case "dimension":
+      // Missing dimension key resolves to false: the bank does not hold this
+      // posture, so a scope requiring it does not apply.
+      return context.dimensions?.[scope.dimensionKey] === scope.dimensionValue;
     case "and":
       return scope.conditions.every((c) => evaluateAppliesToScope(c, context));
     case "or":

@@ -13,16 +13,20 @@
 // is minted — the family was registered (F-032) + provenance-categorised
 // (governance) when S8 landed.
 //
-// ─── SCOPE-DERIVATION LIMITATION (v1, deliberate) ─────────────────────────────
-// v1 derives the obligation's `appliesToScope` as a flat
-// `{ kind: "jurisdiction", jurisdiction: "ZA" }` predicate. It does NOT inspect
-// the requirement prose to discriminate e.g. IRB-vs-SA "does-not-apply" cases.
-// That richer discrimination needs per-provision scope extraction (a future
-// LLM-distill slice that emits a typed `appliesToScope` per obligation). Slice C
-// wires the loop so that when obligation-level scope extraction lands, the
-// verdicts sharpen automatically — the engine and lifecycle are already in place
-// and the only change is the predicate this helper returns. We deliberately do
-// NOT regex / keyword-extract from requirement text (false-precision risk).
+// ─── SCOPE DERIVATION ─────────────────────────────────────────────────────────
+// The obligation's `appliesToScope` is resolved with this precedence:
+//   1. an EXPLICIT scope on the obligation (operator-/agent-supplied) wins;
+//   2. else the conservative rule-based EXTRACTOR (obligation-scope-extractor.ts)
+//      maps unambiguous approach-/permission-specific provenance to a restricting
+//      `dimension` scope (e.g. BCBS IRB chapters → approach.credit-rwa=advanced-irb);
+//   3. else the flat `{ kind: "jurisdiction", jurisdiction: "ZA" }` predicate.
+// The bank's posture context now carries `dimensions` (each HELD posture's
+// dimensionKey → dimensionValue), so a dimension-scoped obligation resolves to
+// "does-not-apply" when the bank does not hold that posture (e.g. an IRB-only
+// rule against a standardised-approach bank). CONSERVATIVE-COMPLIANCE DEFAULT:
+// restricting scopes are emitted only when UNAMBIGUOUS — see the extractor.
+// FOLLOW-ON (not built): LLM-distill PROPOSES a typed scope per obligation,
+// reviewed before it disposes — recorded in the extractor header, not here.
 // ──────────────────────────────────────────────────────────────────────────────
 //
 // PACKAGE BOUNDARY: this is a V1-side platform module. It IMPORTS v2-core
@@ -42,6 +46,7 @@ import {
 import type { AppliesToScope } from "../../v2-core/posture";
 import { type PostureRegister, foldPostureRegister } from "../../v2-core/posture/projection";
 import type { EventStore } from "../event-store/store";
+import { deriveObligationScope } from "./obligation-scope-extractor";
 
 // ---------------------------------------------------------------------------
 // Posture-register reader (mirrors platform/recon/v2-posture-register-integrity)
@@ -97,20 +102,58 @@ export const ANCHOR_CONTEXT_REF = "ctx:le-za-hoz-bank";
  * `AssessedContext[]`, the candidate set the engine evaluates an obligation
  * scope over.
  *
- * v1: a single ZA-bank context. `jurisdiction` is fixed "ZA" (build-phase
+ * A single canonical ZA-bank context. `jurisdiction` is fixed "ZA" (build-phase
  * anchor). `entityType` is derived from the ACTIVE `entity.class` dimension
  * posture whose `parameters.held === true` (Slice B seeded
  * `posture:entity.class:bank` with dimensionValue="bank", held=true). If no
  * such held posture is active, fall back to "bank".
+ *
+ * `dimensions` maps each ACTIVE posture's `parameters.dimensionKey` →
+ * `parameters.dimensionValue` for postures the bank HOLDS (`parameters.held ===
+ * true`). A dimensionKey with NO held value (e.g. `permission.supervisory`,
+ * where every value is held=false) is OMITTED — so a scope requiring it
+ * evaluates to `false` → "does-not-apply" (correct: the bank lacks it).
  */
 export function buildBankPostureContexts(register: PostureRegister): AssessedContext[] {
   const entityType = deriveHeldEntityClass(register) ?? "bank";
+  const dimensions = deriveHeldDimensions(register);
   return [
     {
       contextRef: ANCHOR_CONTEXT_REF,
-      context: { jurisdiction: "ZA", entityType },
+      context: { jurisdiction: "ZA", entityType, dimensions },
     },
   ];
+}
+
+/**
+ * Map every ACTIVE+HELD posture's `dimensionKey` → `dimensionValue`. Only
+ * postures with `parameters.held === true` contribute, so a dimensionKey for
+ * which the bank holds no value (every value held=false) is absent from the
+ * map — the conservative "bank lacks this posture" semantics.
+ *
+ * If two held postures share a dimensionKey (should not happen — held values
+ * are mutually exclusive per key), the last-seen wins deterministically by
+ * register iteration order; the posture-register-integrity recon asserts the
+ * single-held-value invariant upstream.
+ */
+function deriveHeldDimensions(register: PostureRegister): Record<string, string> {
+  const dimensions: Record<string, string> = {};
+  for (const posture of register.listPostures()) {
+    if (!posture.active) continue;
+    const params = posture.parameters as
+      | { dimensionKey?: unknown; dimensionValue?: unknown; held?: unknown }
+      | undefined;
+    if (
+      params?.held === true &&
+      typeof params.dimensionKey === "string" &&
+      params.dimensionKey.length > 0 &&
+      typeof params.dimensionValue === "string" &&
+      params.dimensionValue.length > 0
+    ) {
+      dimensions[params.dimensionKey] = params.dimensionValue;
+    }
+  }
+  return dimensions;
 }
 
 /**
@@ -141,7 +184,7 @@ function deriveHeldEntityClass(register: PostureRegister): string | null {
 // ---------------------------------------------------------------------------
 
 export interface ObligationApplicabilityResult {
-  /** The obligation's APPLIES_WHEN predicate (v1: flat ZA jurisdiction). */
+  /** The obligation's resolved APPLIES_WHEN predicate (explicit > extractor > ZA). */
   readonly appliesToScope: AppliesToScope;
   /** The full candidate context set evaluated (the Performed input). */
   readonly contextsEvaluated: AssessedContext[];
@@ -150,26 +193,34 @@ export interface ObligationApplicabilityResult {
 }
 
 /**
- * Derive the obligation's `appliesToScope` (v1: ZA jurisdiction — see the
- * file-header LIMITATION) and run the pure S8 engine over the supplied
- * candidate contexts. The caller (the adopt route) threads the result into the
- * Performed + Concluded lifecycle events.
+ * Resolve the obligation's `appliesToScope` and run the pure S8 engine over the
+ * supplied candidate contexts. The caller (the adopt route) threads the result
+ * into the Performed + Concluded lifecycle events.
  *
- * `derivesFrom` and `domain` are accepted on the args for forward-compatibility
- * — when obligation-level scope extraction lands they will inform a richer
- * `appliesToScope`; v1 ignores them and returns the flat jurisdiction predicate.
+ * Scope-resolution precedence:
+ *   1. `args.appliesToScope` — an EXPLICIT operator-/agent-supplied scope wins;
+ *   2. else the conservative rule-based extractor over `derivesFrom`/`citation`;
+ *   3. (the extractor itself falls back to flat jurisdiction-ZA when ambiguous).
  */
 export function assessObligationApplicability(
-  // v1 ignores the subject args (see file-header LIMITATION); they are accepted
-  // for forward-compat so per-provision scope extraction can inform a richer
-  // appliesToScope without changing the call sites. Underscore-prefixed to mark
-  // intentionally-unused under noUnusedParameters.
-  _args: { obligationId: string; derivesFrom: string[]; domain: string },
+  args: {
+    obligationId: string;
+    derivesFrom: string[];
+    domain: string;
+    citation?: string;
+    /** Explicit scope; when present it WINS over the extractor. */
+    appliesToScope?: AppliesToScope;
+  },
   contexts: AssessedContext[],
 ): ObligationApplicabilityResult {
-  // v1 scope: flat ZA jurisdiction. (See file-header LIMITATION — richer
-  // discrimination awaits per-provision scope extraction.)
-  const appliesToScope: AppliesToScope = { kind: "jurisdiction", jurisdiction: "ZA" };
+  const appliesToScope: AppliesToScope =
+    args.appliesToScope ??
+    deriveObligationScope({
+      obligationId: args.obligationId,
+      derivesFrom: args.derivesFrom,
+      domain: args.domain,
+      ...(args.citation !== undefined ? { citation: args.citation } : {}),
+    });
   const result = assessApplicability(appliesToScope, contexts);
   return { appliesToScope, contextsEvaluated: contexts, result };
 }
