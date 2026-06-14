@@ -242,7 +242,11 @@ export const SA_CCR_PILOT_EXAM_SET: ExamSet = {
   examSetId: "examset:sa-ccr",
   subjectKind: "fil-model",
   subjectScope: SA_CCR_MODEL_ID,
-  version: "1.0",
+  // v1.1 — D-W8-EXAM-GOVERNANCE refresh: exam 6 (latest-per-trade-MtM) marked
+  // adversarial:true per the adversarial-pass rule. The content changed, so the
+  // version increments; re-seeding emits a fresh ExamSetRegistered that becomes
+  // the effective registration (the v1.0 event is superseded, not mutated).
+  version: "1.1",
   citations: [
     C("D-W4-MODEL-LIBRARY-PILOT"),
     C("D-MODEL-BINDING-CONTRACT-V1"),

@@ -32,8 +32,13 @@
 // Author: Vera (Internal Audit Engineer, governance).
 
 import { checkExamSetWellFormed } from "../../v2-core/eval/exam";
+import type { ExamSet } from "../../v2-core/eval/exam";
+import type { EvalSubject } from "../../v2-core/eval/harness";
 import { runEval } from "../../v2-core/eval/harness";
+import { makePostureEvalSubject } from "../../v2-core/eval/posture-eval-subject";
+import { POSTURE_PILOT_EXAM_SET } from "../../v2-core/eval/posture-exam-set";
 import { SA_CCR_PILOT_EXAM_SET, makeSaCcrEvalSubject } from "../../v2-core/eval/sa-ccr-exam-set";
+import { foldPostureRegister } from "../../v2-core/posture/projection";
 import { eventStore } from "../composition";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
@@ -90,21 +95,53 @@ function readEvalRuns(): RecordedEvalRun[] {
   return out;
 }
 
+/** A reconstructable subject the recon can re-run for engine-consistency. */
+interface Reconstructable {
+  readonly subject: EvalSubject;
+  readonly examSet: ExamSet;
+}
+
 /**
- * Reconstructable subjects the recon can re-run for engine-consistency. Keyed by
- * (examSetId → {subject factory, the in-repo exam-set}). At S13 the SA-CCR pilot
- * is the only reconstructable subject; agent-behaviour / posture subjects are
- * skipped (advisory) until their adapters land.
+ * Fold the live posture register from the four posture event kinds so the
+ * posture EvalSubject can be reconstructed for engine-consistency. Pure fold
+ * over the event store (Principle 1) — no stored state.
  */
-const RECONSTRUCTABLE = new Map<
-  string,
-  { subject: () => ReturnType<typeof makeSaCcrEvalSubject>; examSet: typeof SA_CCR_PILOT_EXAM_SET }
->([
-  [
-    SA_CCR_PILOT_EXAM_SET.examSetId,
-    { subject: makeSaCcrEvalSubject, examSet: SA_CCR_PILOT_EXAM_SET },
-  ],
-]);
+function foldLivePostureRegister(): ReturnType<typeof foldPostureRegister> {
+  const events: unknown[] = [];
+  for (const kind of [
+    "PostureRegistered",
+    "PostureActivated",
+    "PostureDeactivated",
+    "PostureRevised",
+  ] as const) {
+    for (const ev of eventStore.replay({ type: kind })) {
+      const p = (ev as { payload: Record<string, unknown> }).payload;
+      events.push({ kind, ...p });
+    }
+  }
+  return foldPostureRegister(events);
+}
+
+/**
+ * Build the reconstructable-subject map. Keyed by examSetId → {subject, exam-set}.
+ * The SA-CCR pilot's subject is a pure no-arg compute; the posture pilot's
+ * subject is bound to the LIVE posture register folded from events. Subjects
+ * skipped from this map are advisory (engine-consistency not asserted) — e.g.
+ * agent-behaviour subjects until their adapter lands.
+ */
+function buildReconstructable(): Map<string, Reconstructable> {
+  const map = new Map<string, Reconstructable>();
+  map.set(SA_CCR_PILOT_EXAM_SET.examSetId, {
+    subject: makeSaCcrEvalSubject(),
+    examSet: SA_CCR_PILOT_EXAM_SET,
+  });
+  const postureRegister = foldLivePostureRegister();
+  map.set(POSTURE_PILOT_EXAM_SET.examSetId, {
+    subject: makePostureEvalSubject(POSTURE_PILOT_EXAM_SET.subjectScope, postureRegister),
+    examSet: POSTURE_PILOT_EXAM_SET,
+  });
+  return map;
+}
 
 export function run(): ReconResult {
   const result = emptyResult("v2-eval-harness-integrity");
@@ -125,9 +162,16 @@ export function run(): ReconResult {
   }
 
   const registeredById = new Map(registered.map((r) => [r.examSetId, r]));
+  const reconstructableById = buildReconstructable();
 
-  // Assertion 2 — every registered exam-set is well-formed.
-  for (const r of registered) {
+  // Assertion 2 — every EFFECTIVE (latest) registered exam-set is well-formed.
+  // We check the latest registration per examSetId (registeredById is sequence-
+  // ordered last-write-wins), NOT every historical registration. A superseded
+  // version is an immutable record of what was registered then; it must not be
+  // retroactively required to satisfy well-formedness rules added after it was
+  // registered (e.g. the D-W8-EXAM-GOVERNANCE adversarial-pass rule). Principle 1:
+  // the effective state is the latest projection; history is append-only.
+  for (const r of registeredById.values()) {
     result.asserted += 1;
     const findings = checkExamSetWellFormed(r.examSet);
     for (const f of findings) {
@@ -179,7 +223,7 @@ export function run(): ReconResult {
     }
 
     // Assertion 3 — engine-consistency: re-run reproduces the recorded verdict.
-    const reconstructable = RECONSTRUCTABLE.get(run.examSetId);
+    const reconstructable = reconstructableById.get(run.examSetId);
     if (reconstructable === undefined) {
       violations.push({
         subject: run.evalRunId,
@@ -192,7 +236,7 @@ export function run(): ReconResult {
     let rerunVerdict: string;
     let rerunOutcomes: Map<string, boolean>;
     try {
-      const rerun = runEval(reconstructable.subject(), reconstructable.examSet);
+      const rerun = runEval(reconstructable.subject, reconstructable.examSet);
       rerunVerdict = rerun.verdict;
       rerunOutcomes = new Map(rerun.examResults.map((r) => [r.examId, r.passed]));
     } catch (err) {

@@ -155,6 +155,7 @@
     "distill:decisions-w1": "bun run scripts/distill-decisions-w1.ts",
     "seed:v2-helena-ras-postures": "bun run scripts/seed-v2-helena-ras-postures.ts",
     "seed:v2-posture-dimensions": "bun run scripts/seed-v2-posture-dimensions.ts",
+    "seed:v2-posture-exam-set": "bun run scripts/seed-v2-posture-exam-set.ts",
     "record:d-v2-bbaas-analysis-launch": "bun run scripts/record-d-v2-bbaas-analysis-launch.ts",
     "file:nadia-v2-saccr-model-validation": "bun run scripts/file-nadia-v2-saccr-model-validation.ts",
     "file:scrooge-roadmap-ws-c-reconciliation": "bun run scripts/file-scrooge-roadmap-ws-c-reconciliation.ts",
