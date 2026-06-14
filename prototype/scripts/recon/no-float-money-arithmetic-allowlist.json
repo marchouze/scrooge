@@ -107,7 +107,7 @@
     },
     {
       "file": "platform/accounting/gl-projection.ts",
-      "line": 161,
+      "line": 163,
       "pattern": "money-multiply/divide"
     },
     {
