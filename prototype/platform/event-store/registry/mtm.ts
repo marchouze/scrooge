@@ -18,7 +18,10 @@
 //   IFRS-9-§5.7.1; ORG-MK-08.
 // Author: Rohan (Market risk engineer, engineering)
 
-import { ipvExceptionRaisedPayloadSchema, mtmRunCompletedPayloadSchema } from "../event-types/mtm";
+import {
+  ipvExceptionRaisedPayloadSchema,
+  mtmRunCompletedPayloadSchemaV2,
+} from "../event-types/mtm";
 import { RETENTION_JSE_TRADE_7Y } from "./types";
 import type { EventTypeMetadata } from "./types";
 
@@ -40,7 +43,7 @@ export const MTM_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     subscribers: ["Rohan", "Helena", "Bea", "Mira", "Atlas"],
     replay: "append-only-audit",
     retention: RETENTION_JSE_TRADE_7Y,
-    payloadSchema: mtmRunCompletedPayloadSchema,
+    payloadSchema: mtmRunCompletedPayloadSchemaV2,
     citationsHint: [
       "D-MARKETS-SCHEMA-FOUNDATION",
       "D-FX-SALES-TRADING-FRONTEND",

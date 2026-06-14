@@ -40,6 +40,7 @@
 import { randomUUID } from "node:crypto";
 
 import { clock } from "../platform/composition";
+import { moneyWireFromMinor } from "../platform/core/money-codec";
 import { newEventId } from "../platform/core/types";
 import {
   type FxPositionRevaluedPayload,
@@ -435,7 +436,7 @@ async function main(): Promise<void> {
         positionsValued,
         positionsSkipped,
         skippedReasons,
-        totalPnlDeltaMinor,
+        totalPnlDelta: moneyWireFromMinor(totalPnlDeltaMinor, "ZAR"),
       },
       eventId: newEventId(),
     }),

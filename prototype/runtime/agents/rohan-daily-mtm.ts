@@ -50,6 +50,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
+import { moneyWireFromMinor } from "../../platform/core/money-codec";
 import { newEventId } from "../../platform/core/types";
 import {
   type FxPositionRevaluedPayload,
@@ -899,7 +900,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
           positionsValued: positionsValued + positionsStaleMark,
           positionsSkipped,
           skippedReasons,
-          totalPnlDeltaMinor,
+          totalPnlDelta: moneyWireFromMinor(totalPnlDeltaMinor, "ZAR"),
         },
         eventId: newEventId(),
       }),

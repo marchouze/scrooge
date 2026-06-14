@@ -17,6 +17,8 @@
 //
 // Author: Atlas (Core banking platform architect, engineering).
 
+import { z } from "zod";
+
 import { fromMinorUnits, mulD, roundDecimal, toCanonicalString, toDecimal } from "./decimal-engine";
 import { type Money, money } from "./decimal-money";
 import { isKnownCurrency, scaleFor } from "./iso4217";
@@ -48,6 +50,24 @@ export interface MoneyWire {
  */
 
 const MONEY_DISCRIMINANT = "v1" as const;
+
+/**
+ * Zod schema for a `MoneyWire` field in an event payload. Use this in V2
+ * payload schemas wherever a legacy `*Minor: z.number().int()` field is being
+ * lifted to decimal money. The `amount` is asserted to be a STRING (never a
+ * JSON number — IEEE-754 floats are banned for money); the `__money`
+ * discriminant must be the literal "v1". Validates structurally so the
+ * `recon:money-codec-no-float` / `recon:no-residual-minor-encoding` gates and
+ * the factory-level parse agree on the wire shape.
+ *
+ * Authority: D-MONEY-DECIMAL-REDENOMINATION; WS-MONEY-DECIMAL-PURGE-REMEDIATION
+ * Wave 2 (D-MONEY-DECIMAL-PURGE-REMEDIATION).
+ */
+export const moneyWireSchema: z.ZodType<MoneyWire> = z.object({
+  __money: z.literal(MONEY_DISCRIMINANT),
+  amount: z.string().min(1),
+  currency: z.string().min(1),
+});
 
 /** Encode a `Money` into its wire form for an event payload. */
 export function encodeMoney(m: Money): MoneyWire {
