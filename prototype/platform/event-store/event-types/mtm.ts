@@ -20,6 +20,7 @@
 
 import { z } from "zod";
 
+import { moneyWireSchema as moneyWireSchemaImport } from "../../core/money-codec";
 import { newEventId } from "../../core/types";
 import { type Actor, type Event, eventSchema } from "../types";
 
@@ -54,12 +55,23 @@ export const mtmRunCompletedPayloadSchema = z.object({
 
 export type MtmRunCompletedPayload = z.infer<typeof mtmRunCompletedPayloadSchema>;
 
+/**
+ * DECIMAL-MIGRATION (Wave 2): V2 Zod schema — `totalPnlDeltaMinor: number` is
+ * lifted to `totalPnlDelta: MoneyWire`. This is the schema the live emitter
+ * (`rohan-daily-mtm`, `mtm:run`) now parses against, so a fresh scheduler run
+ * writes MoneyWire, never a `*Minor` field.
+ * Authority: D-MONEY-DECIMAL-PURGE-REMEDIATION.
+ */
+export const mtmRunCompletedPayloadSchemaV2 = mtmRunCompletedPayloadSchema
+  .omit({ totalPnlDeltaMinor: true })
+  .extend({ totalPnlDelta: moneyWireSchemaImport });
+
 export function makeMtmRunCompleted(args: {
   asOf: string;
   entity: string;
   actor: Actor;
   citations: string[];
-  payload: MtmRunCompletedPayload;
+  payload: MtmRunCompletedPayloadV2;
   eventId?: string;
 }): Event {
   if (!args.citations || args.citations.length === 0) {
@@ -74,7 +86,7 @@ export function makeMtmRunCompleted(args: {
     entity: args.entity,
     actor: args.actor,
     citations: args.citations,
-    payload: mtmRunCompletedPayloadSchema.parse(args.payload),
+    payload: mtmRunCompletedPayloadSchemaV2.parse(args.payload),
   });
 }
 
