@@ -87,6 +87,16 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // former and not the latter — making the gate load-bearing in CI regardless
     // of the ambient store. Authority: D-MONEY-DECIMAL-PURGE-REMEDIATION.
     "recon:no-residual-minor-encoding-fixture",
+    // D-DECIMAL-NATIVE-MONEY-ARITHMETIC slice 1 — SubLedgerLeg decimal-parity
+    // (ENFORCING). For every leg the GL-posting production paths produce,
+    // amountMinor === Number(toMinorUnits(amount, scale)) and the currencies
+    // agree — the decimal `amount` is the single source of truth, amountMinor a
+    // derived compat field. Store-independent: drives the real posting helpers
+    // (fxTradeBookingJournals/Revaluation/SettlementFailed + the constructor) over
+    // deterministic fixtures incl. >2^53 minor units and a scale-0 currency. The
+    // synthetic amountMinor+1 drift is caught sabotage-proof. Authority:
+    // D-DECIMAL-NATIVE-MONEY-ARITHMETIC.
+    "recon:sub-ledger-leg-decimal-parity",
     "recon:urn-shape",
     "recon:aggregate-id-coverage",
     "recon:madge-circular-deps",
