@@ -49,9 +49,11 @@
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
+import { subLedgerLegFromMoney } from "../platform/accounting/fx-accounting-types";
 import type { SubLedgerLeg } from "../platform/accounting/fx-accounting-types";
 import { defaultResolver } from "../platform/accounting/sla/resolver";
 import { eventStore } from "../platform/composition";
+import { legAmountMoney } from "../platform/core/money-codec";
 import { makeSubLedgerPostingEmitted } from "../platform/event-store/event-types/fx-accounting";
 import type { Event } from "../platform/event-store/types";
 import { logger } from "../platform/observability/logger";
@@ -191,21 +193,12 @@ export function alreadyRebookedKeysFrom(events: Iterable<Event>): Set<string> {
  */
 function buildCorrectionLegs(m: MisbookedLeg, target: string): SubLedgerLeg[] {
   const reverseSide = m.leg.debitCredit === "debit" ? "credit" : "debit";
+  const money = legAmountMoney(m.leg);
   return [
     // (1) reverse out of the USD slot
-    {
-      accountId: m.leg.accountId,
-      debitCredit: reverseSide,
-      amountMinor: m.leg.amountMinor,
-      currency: m.leg.currency,
-    },
+    subLedgerLegFromMoney({ accountId: m.leg.accountId, debitCredit: reverseSide }, money),
     // (2) re-book accounts-first into the per-currency home account
-    {
-      accountId: target,
-      debitCredit: m.leg.debitCredit,
-      amountMinor: m.leg.amountMinor,
-      currency: m.leg.currency,
-    },
+    subLedgerLegFromMoney({ accountId: target, debitCredit: m.leg.debitCredit }, money),
   ];
 }
 
@@ -284,7 +277,7 @@ export function runRebook(opts: { apply: boolean }): RebookResult {
         currency: m.leg.currency,
         from: m.leg.accountId,
         to: target,
-        amountMinor: m.leg.amountMinor,
+        amount: legAmountMoney(m.leg),
       },
       opts.apply
         ? "rebook-simulated-fx-misbooking: emitted"
