@@ -18,6 +18,7 @@ import type { GlLedgerEntry } from "../platform/accounting/gl-projection";
 import { clock } from "../platform/composition";
 import { nowUtc } from "../platform/core/types";
 import { makeManualJournalEntry } from "../platform/event-store/event-types/accounting";
+import { moneyWireFromMinor } from "../platform/core/money-codec";
 import type { EventStore } from "../platform/event-store/store";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
 import type { AgentRunContext } from "../runtime/types";
@@ -172,7 +173,12 @@ async function handleGlPostJournal(req: Request, eventStore: EventStore): Promis
     }
   }
 
-  const legs = body.legs as JournalLeg[];
+  // Enrich legs with MoneyWire alongside amountMinor (decimal-native slice 2b).
+  // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
+  const legs = (body.legs as JournalLeg[]).map((l) => ({
+    ...l,
+    amount: moneyWireFromMinor(l.amountMinor, l.currency),
+  }));
 
   const totals = new Map<string, { debit: number; credit: number }>();
   for (const leg of legs) {

@@ -46,6 +46,7 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
 import { getFinancialConstant } from "../config/financial-constants";
+import { absD, divD, mulD, roundDecimal, toDecimal } from "../core/decimal-engine";
 import { newEventId, nowUtc } from "../core/types";
 import type { FtpCurvePublishedPayload } from "../event-store/event-types/ftp";
 import type { FxPositionRevaluedPayload } from "../event-store/event-types/fx-accounting";
@@ -127,7 +128,19 @@ function resolveToleranceZarMinor(grossLiveNotionalZarMinor: number): number {
   const bandBps = getFinancialConstant("product-control.pnl-attribution.residual-band-bps");
   // bps → fraction: 1 bp = 0.0001. bandBps is in basis points (unit
   // percentage-points carries the bps figure directly; 0.5 == 0.5 bp here).
-  const bandMinor = Math.round((Math.abs(grossLiveNotionalZarMinor) * bandBps) / 10_000);
+  // Decimal-native tolerance band: HALF_EVEN at the ZAR minor boundary.
+  // Replaces Math.round((Math.abs(grossLiveNotionalZarMinor) * bandBps) / 10_000)
+  // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
+  const bandMinor = Number(
+    roundDecimal(
+      divD(
+        mulD(absD(toDecimal(String(grossLiveNotionalZarMinor))), toDecimal(String(bandBps))),
+        toDecimal("10000"),
+      ),
+      0,
+      "HALF_EVEN",
+    ).toFixed(0),
+  );
   return floorMinor + bandMinor;
 }
 
@@ -466,7 +479,22 @@ function resolveCarry(
       const overnight =
         p.tenors.find((t) => t.tenor === "ON") ?? p.tenors.find((t) => t.tenor === "1D");
       if (!overnight) continue;
-      const carryZarMinor = Math.round(fundedNotionalZarMinor * overnight.rate * (1 / 365));
+      // Decimal-native carry computation: HALF_EVEN at the ZAR minor boundary.
+      // Replaces Math.round(fundedNotionalZarMinor * overnight.rate * (1 / 365))
+      // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
+      const carryZarMinor = Number(
+        roundDecimal(
+          divD(
+            mulD(
+              mulD(toDecimal(String(fundedNotionalZarMinor)), toDecimal(String(overnight.rate))),
+              toDecimal("1"),
+            ),
+            toDecimal("365"),
+          ),
+          0,
+          "HALF_EVEN",
+        ).toFixed(0),
+      );
       return present(
         carryZarMinor,
         `FtpCurvePublished ZAR carry for ${reportDate}: ${overnight.tenor} @ ${(overnight.rate * 100).toFixed(2)}% × ${fundedNotionalZarMinor} funded ZAR-minor (act/365)`,
