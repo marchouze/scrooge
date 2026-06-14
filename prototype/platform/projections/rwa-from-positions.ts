@@ -70,7 +70,10 @@ import { buildRateMap, convertMinor } from "../accounting/fx-rate-projection";
 import { rwaInstrumentClassWeights } from "../config/financial-constants";
 import { minorFromMoneyWire } from "../core/money-codec";
 import type { BondTradeExecutedPayload } from "../event-store/event-types/bond-accounting";
-import type { CcrEadComputedPayloadV2Type } from "../event-store/event-types/counterparty-credit-risk";
+import {
+  type CcrEadComputedPayloadV2Type,
+  normalizeCcrEadPayload,
+} from "../event-store/event-types/counterparty-credit-risk";
 import type {
   InterbankLoanPlacedPayload,
   RepoTradeOpenedPayload,
@@ -367,7 +370,8 @@ export function computeRwaFromPositions(
   >();
   for (const ev of eventStore.replay({ type: "CcrEadComputed", asOf })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
-    const p = ev.payload as unknown as CcrEadComputedPayloadV2Type;
+    // Mixed-version store: upcast legacy V1 (integer ead) -> V2 MoneyWire.
+    const p = normalizeCcrEadPayload(ev.payload);
     if (!p.nettingSetId) continue;
     const prev = latestEadByNettingSet.get(p.nettingSetId);
     if (prev && prev.p.computationDate >= p.computationDate) continue;
