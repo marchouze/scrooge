@@ -32,6 +32,7 @@ import {
 import { type PostureRegister, foldPostureRegister } from "../../v2-core/posture/projection";
 import { eventStore } from "../composition";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
+import { REQUIRED_POSTURE_DIMENSION_KEYS } from "./v2-posture-dimension-vocab";
 
 // ---------------------------------------------------------------------------
 // Pilot posture IDs that must be present and active
@@ -172,6 +173,34 @@ export function run(): ReconResult {
         subject: id,
         message: `required pilot posture registered but not active: ${id}`,
         severity: "fail",
+      });
+    }
+  }
+
+  // Assertion 4 — structural-dimension coverage floor (W8 Slice B).
+  // Every required structural-applicability dimension key
+  // (entity/approach/permission, per `v2-posture-dimension-vocab.ts`) must have
+  // at least one ACTIVE posture whose `parameters.dimensionKey` matches.
+  //
+  // SEVERITY: "warn" INITIALLY (advisory). The dimension postures are seeded by
+  // `scripts/seed-v2-posture-dimensions.ts`; this floor is advisory pending the
+  // seed running against the live store so that the gate flags missing-dimension
+  // coverage without breaking CI before the seed is wired into the migrate step.
+  // Promote to "fail" once the seed is part of the standing `ci:migrate` chain
+  // and the floor has soaked.
+  for (const key of REQUIRED_POSTURE_DIMENSION_KEYS) {
+    result.asserted += 1;
+    const covered = activePostures.some((p) => {
+      const params = p.parameters as { dimensionKey?: unknown } | undefined;
+      return params?.dimensionKey === key;
+    });
+    if (!covered) {
+      violations.push({
+        subject: key,
+        message:
+          `required posture dimension key has no active posture: ${key} — ` +
+          "run scripts/seed-v2-posture-dimensions.ts",
+        severity: "warn", // advisory pending seed (W8 Slice B coverage floor)
       });
     }
   }
