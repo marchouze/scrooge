@@ -18,12 +18,13 @@ describe("domain-ownership-coherence", () => {
     expect(result.summary.uncoveredTopLevels).toBe(0);
   });
 
-  test("advisory mode keeps the gate green while drift drains", () => {
-    expect(result.summary.mode).toBe("advisory");
+  test("enforcing and green — owner re-author drained drift to zero", () => {
+    expect(result.summary.mode).toBe("enforcing");
+    expect(result.summary.drift).toBe(0);
     expect(result.ok).toBe(true);
   });
 
-  test("C4 drift is surfaced as warn-severity findings", () => {
+  test("C4 owner alignment holds (no drift findings)", () => {
     const driftWarns = result.violations.filter((v) => v.severity === "warn");
     expect(driftWarns.length).toBe(result.summary.drift);
   });

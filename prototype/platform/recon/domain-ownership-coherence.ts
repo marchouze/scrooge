@@ -45,8 +45,8 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "domain-ownership-coherence";
 
-/** Advisory while Slice-3 remediation drains C1 orphans + C4 drift; flip to make blocking. */
-const ADVISORY = true;
+/** ENFORCING since the 2026-06-14 owner re-author drained C1 orphans + C4 drift to zero. */
+const ADVISORY = false;
 
 function findRepoRoot(start: string): string {
   let dir = start;
