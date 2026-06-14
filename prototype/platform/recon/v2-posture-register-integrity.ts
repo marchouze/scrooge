@@ -3,8 +3,7 @@
 // `recon:v2-posture-register-integrity` — the structural gate for the V2 S3
 // posture register.
 //
-// ADVISORY in S3 (exits 0 unless a HARD structural error is found). Becomes
-// enforcing-ready as the register population grows.
+// ENFORCING (exits non-zero on any fail-severity violation).
 //
 // Assertions:
 //   1. Every active posture has a well-formed APPLIES_WHEN predicate that
@@ -40,7 +39,7 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 /**
  * The minimum pilot posture population from the RAS seed script. Any of these
- * missing from the register is an advisory finding in S3.
+ * missing from the register is a hard fail.
  */
 const REQUIRED_PILOT_POSTURE_IDS = [
   "posture:risk-appetite:fx-var",
@@ -166,13 +165,13 @@ export function run(): ReconResult {
       violations.push({
         subject: id,
         message: `required pilot posture not registered: ${id} — run scripts/seed-v2-helena-ras-postures.ts`,
-        severity: "warn", // advisory in S3 (seed may not have run on a fresh install)
+        severity: "fail",
       });
     } else if (!posture.active) {
       violations.push({
         subject: id,
         message: `required pilot posture registered but not active: ${id}`,
-        severity: "warn",
+        severity: "fail",
       });
     }
   }
