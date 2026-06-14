@@ -1,0 +1,1199 @@
+{
+  "violations": [
+    {
+      "file": "dashboard/bond-gateway.ts",
+      "line": 251,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "dashboard/bond-gateway.ts",
+      "line": 250,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "dashboard/instruments-view.ts",
+      "line": 132,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "dashboard/server.ts",
+      "line": 371,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "dashboard/server.ts",
+      "line": 517,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "dashboard/server.ts",
+      "line": 518,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "dashboard/server.ts",
+      "line": 608,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "dashboard/server.ts",
+      "line": 628,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "dashboard/server.ts",
+      "line": 651,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "dashboard/server.ts",
+      "line": 652,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "dashboard/trade-book-view.ts",
+      "line": 1184,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "dashboard/trade-book-view.ts",
+      "line": 1190,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "dashboard/trade-book-view.ts",
+      "line": 1191,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "dashboard/trade-book-view.ts",
+      "line": 789,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/accounting/ecl-engine.ts",
+      "line": 284,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/accounting/ecl-engine.ts",
+      "line": 394,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/accounting/fx-calculators.ts",
+      "line": 129,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/accounting/fx-calculators.ts",
+      "line": 336,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/accounting/fx-calculators.ts",
+      "line": 342,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/accounting/fx-rate-projection.ts",
+      "line": 107,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/accounting/fx-rate-projection.ts",
+      "line": 112,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/accounting/fx-rate-projection.ts",
+      "line": 122,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/accounting/gl-projection.ts",
+      "line": 161,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/accounting/ifrs9-staging.ts",
+      "line": 112,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/accounting/sla/rules/pr-bond.ts",
+      "line": 25,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/alm/eve.ts",
+      "line": 207,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/alm/repricing-gap.ts",
+      "line": 108,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/core/money-codec.ts",
+      "line": 137,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/event-store/event-types/odp-collateral-segregation.ts",
+      "line": 940,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/forward-obligations/views/liquidity.ts",
+      "line": 60,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/ilaap/stress-scenarios.ts",
+      "line": 163,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/ilaap/stress-scenarios.ts",
+      "line": 168,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/ilaap/stress-scenarios.ts",
+      "line": 175,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/liquidity/lcr.ts",
+      "line": 177,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/liquidity/lcr.ts",
+      "line": 235,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/liquidity/lcr.ts",
+      "line": 239,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/liquidity/nsfr.ts",
+      "line": 165,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/liquidity/nsfr.ts",
+      "line": 174,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/market-risk/cva-engine.ts",
+      "line": 349,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/market-risk/cva-engine.ts",
+      "line": 352,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/market-risk/cva-engine.ts",
+      "line": 382,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/market-risk/valuation-adjustment-engine.ts",
+      "line": 237,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/markets/cdm/dcam-actus-mapping.ts",
+      "line": 106,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/markets/eod/bond-revaluation.ts",
+      "line": 246,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/markets/eod/bond-revaluation.ts",
+      "line": 254,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/markets/eod/bond-revaluation.ts",
+      "line": 247,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/markets/eod/bond-revaluation.ts",
+      "line": 255,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/markets/eod/equity-revaluation.ts",
+      "line": 225,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/markets/eod/fx-revaluation.ts",
+      "line": 261,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/markets/eod/fx-valuation-eod.ts",
+      "line": 236,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/markets/eod/fx-valuation-eod.ts",
+      "line": 289,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/markets/eod/fx-valuation-eod.ts",
+      "line": 230,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/markets/eod/fx-valuation-eod.ts",
+      "line": 306,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/markets/eod/irs-revaluation.ts",
+      "line": 335,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/markets/eod/irs-revaluation.ts",
+      "line": 166,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/markets/eod/irs-revaluation.ts",
+      "line": 289,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/markets/eod/irs-revaluation.ts",
+      "line": 303,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/markets/eod/irs-revaluation.ts",
+      "line": 329,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/markets/equity-position.ts",
+      "line": 84,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/markets/ipv-tolerance.ts",
+      "line": 204,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/markets/ipv-tolerance.ts",
+      "line": 348,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/markets/ird/coupon-schedule.ts",
+      "line": 227,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/markets/ird/coupon-schedule.ts",
+      "line": 238,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/markets/products/rwa-delta.ts",
+      "line": 192,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/markets/products/rwa-delta.ts",
+      "line": 198,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/markets/products/rwa-delta.ts",
+      "line": 261,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/markets/products/rwa-delta.ts",
+      "line": 263,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/markets/products/rwa-delta.ts",
+      "line": 299,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/markets/reference/sa-bond-reference.ts",
+      "line": 128,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/odp/trade-report-serialiser.ts",
+      "line": 101,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/payments/iso20022/types.ts",
+      "line": 175,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/payments/swift-mt/types.ts",
+      "line": 111,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/payments/swift-mt/types.ts",
+      "line": 123,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/product-control/daily-pnl.ts",
+      "line": 444,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/product-control/desk-cash-positions.ts",
+      "line": 121,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/product-control/desk-cash-positions.ts",
+      "line": 122,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/product-control/pnl-attribution.ts",
+      "line": 130,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/product-control/pnl-attribution.ts",
+      "line": 469,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/projections/alm-positions.ts",
+      "line": 391,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/projections/alm-positions.ts",
+      "line": 693,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/projections/capital-metrics.ts",
+      "line": 254,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/projections/capital-metrics.ts",
+      "line": 256,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/projections/capital-metrics.ts",
+      "line": 261,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/projections/leverage-ratio-metrics.ts",
+      "line": 229,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/projections/leverage-ratio-metrics.ts",
+      "line": 233,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/projections/markets/currency-position.ts",
+      "line": 347,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/projections/markets/currency-position.ts",
+      "line": 398,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/projections/markets/currency-position.ts",
+      "line": 437,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/projections/markets/limit-utilisation-deps.ts",
+      "line": 35,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/projections/markets/limit-utilisation.ts",
+      "line": 114,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/projections/markets/limit-utilisation.ts",
+      "line": 541,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/projections/markets/limit-utilisation.ts",
+      "line": 568,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/projections/markets/position.ts",
+      "line": 118,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/projections/markets/sub-ledger.ts",
+      "line": 135,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/projections/markets/sub-ledger.ts",
+      "line": 153,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/recon/event-store-no-delete-callsite.ts",
+      "line": 90,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/recon/fx-gateway-threshold-enforcement.ts",
+      "line": 208,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/recon/fx-subledger-reconciliation.ts",
+      "line": 107,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/recon/fx-supported-currency-no-suspense.ts",
+      "line": 150,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/recon/odp-collateral-segregation-engine.ts",
+      "line": 492,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/recon/odp-collateral-segregation-engine.ts",
+      "line": 505,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/recon/odp-collateral-segregation-engine.ts",
+      "line": 642,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/recon/odp-collateral-segregation-engine.ts",
+      "line": 717,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/recon/odp-collateral-segregation-engine.ts",
+      "line": 718,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/recon/recon-liquidity-position-vs-settled-notional.ts",
+      "line": 166,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/recon/recon-liquidity-position-vs-settled-notional.ts",
+      "line": 191,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/reporting/ba-100-balance-sheet.ts",
+      "line": 612,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/reporting/ba-120-income-detail.ts",
+      "line": 643,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/reporting/ba-120-income-detail.ts",
+      "line": 747,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/reporting/ba-210-large-exposures.ts",
+      "line": 316,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/reporting/ba-210-large-exposures.ts",
+      "line": 342,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/reporting/ba-300-lcr.ts",
+      "line": 1217,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/reporting/ba-300-lcr.ts",
+      "line": 1731,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/reporting/ba-300-lcr.ts",
+      "line": 1733,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/reporting/ba-300-lcr.ts",
+      "line": 1348,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/reporting/ba-300-lcr.ts",
+      "line": 1560,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/reporting/ba-300-lcr.ts",
+      "line": 1727,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/reporting/ba-300-nsfr.ts",
+      "line": 546,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/reporting/ba-300-nsfr.ts",
+      "line": 606,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/reporting/ba-320-bond-events-adapter.ts",
+      "line": 185,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/reporting/ba-320-irs-events-adapter.ts",
+      "line": 204,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/reporting/ba-320-market-risk.ts",
+      "line": 368,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/reporting/ba-320-market-risk.ts",
+      "line": 383,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/reporting/ba-320-market-risk.ts",
+      "line": 385,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/reporting/ba-320-market-risk.ts",
+      "line": 424,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/reporting/ba-700-leverage-ratio.ts",
+      "line": 311,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/reporting/hqla-stock.ts",
+      "line": 278,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/reporting/off-balance-sheet.ts",
+      "line": 506,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/returns/ba300/consolidated-lcr.ts",
+      "line": 508,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/returns/ba300/consolidated-lcr.ts",
+      "line": 509,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/returns/ba300/consolidated-lcr.ts",
+      "line": 510,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/returns/ba300/consolidated-lcr.ts",
+      "line": 554,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/credit-limit-engine/breach-detector.ts",
+      "line": 84,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/credit-limit-engine/large-exposure.ts",
+      "line": 54,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/credit-limit-engine/pre-deal-check.ts",
+      "line": 191,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/fx-gateway-thresholds.ts",
+      "line": 263,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/risk/fx-gateway-thresholds.ts",
+      "line": 270,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/fx-gateway-thresholds.ts",
+      "line": 271,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/fx-gateway-thresholds.ts",
+      "line": 272,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/fx-gateway-thresholds.ts",
+      "line": 273,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/fx-gateway-thresholds.ts",
+      "line": 302,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/icaap-narrative-data.ts",
+      "line": 278,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/risk/icaap-narrative-data.ts",
+      "line": 205,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/icaap-narrative-data.ts",
+      "line": 206,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/icaap-narrative-data.ts",
+      "line": 207,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/icaap-narrative-data.ts",
+      "line": 208,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/pillar-2-addon.ts",
+      "line": 207,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/risk/pillar-2-addon.ts",
+      "line": 220,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/rwa-engine.ts",
+      "line": 579,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/risk/rwa-engine.ts",
+      "line": 587,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/risk/rwa-engine.ts",
+      "line": 594,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/risk/rwa-engine.ts",
+      "line": 638,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/risk/rwa-engine.ts",
+      "line": 685,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/risk/rwa-engine.ts",
+      "line": 706,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/risk/rwa-engine.ts",
+      "line": 710,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/risk/rwa-engine.ts",
+      "line": 734,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/risk/rwa-engine.ts",
+      "line": 574,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/sa-ccr/ead.ts",
+      "line": 61,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/sa-ccr/ead.ts",
+      "line": 68,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/sa-ccr/fil-valuable-collateral-feed.ts",
+      "line": 136,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/risk/sa-ccr/fil-valuable-collateral-feed.ts",
+      "line": 155,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/risk/sa-ccr/pfe-addon.ts",
+      "line": 355,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/risk/sa-ccr/pfe-addon.ts",
+      "line": 357,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/risk/sa-ccr/pfe-addon.ts",
+      "line": 304,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/stress-engine.ts",
+      "line": 334,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/stress-engine.ts",
+      "line": 335,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/stress-engine.ts",
+      "line": 336,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/stress-engine.ts",
+      "line": 337,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/stress-engine.ts",
+      "line": 338,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/stress-engine.ts",
+      "line": 339,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/stress-engine.ts",
+      "line": 353,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/stress-engine.ts",
+      "line": 354,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/stress-engine.ts",
+      "line": 355,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/stress-engine.ts",
+      "line": 357,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/stress-engine.ts",
+      "line": 358,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/stress-engine.ts",
+      "line": 359,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/stress-engine.ts",
+      "line": 360,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/stress-engine.ts",
+      "line": 361,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/stress-engine.ts",
+      "line": 362,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/stress-engine.ts",
+      "line": 363,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/risk/stress-engine.ts",
+      "line": 364,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/semantic/risk-weight-entries.ts",
+      "line": 156,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/semantic/risk-weight-entries.ts",
+      "line": 225,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/simulation/fx-sim-generator.ts",
+      "line": 258,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/simulation/fx-sim-generator.ts",
+      "line": 261,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/simulation/fx-sim-generator.ts",
+      "line": 274,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/simulation/fx-sim-generator.ts",
+      "line": 85,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/simulation/fx-sim-generator.ts",
+      "line": 89,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/simulation/fx-sim-generator.ts",
+      "line": 100,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/simulation/fx-sim-generator.ts",
+      "line": 101,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/taxonomies/dcam/layer1-conceptual.ts",
+      "line": 229,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "runtime/agents/bea-gl-fx-interpreter-cutover.ts",
+      "line": 187,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "runtime/agents/bea-gl-securities-interpreter-cutover.ts",
+      "line": 37,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "runtime/agents/bea-gl-securities-interpreter-cutover.ts",
+      "line": 125,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "runtime/agents/bea-gl-securities-interpreter-cutover.ts",
+      "line": 131,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "runtime/agents/bea-m1-ifrs-classification-rules.ts",
+      "line": 541,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "runtime/agents/bea-m1-ifrs-classification-rules.ts",
+      "line": 584,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "runtime/agents/rohan-daily-mtm.ts",
+      "line": 324,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "runtime/agents/rohan-daily-mtm.ts",
+      "line": 335,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "runtime/agents/rohan-daily-mtm.ts",
+      "line": 338,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "runtime/agents/rohan-daily-mtm.ts",
+      "line": 420,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "runtime/agents/rohan-daily-mtm.ts",
+      "line": 421,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "runtime/agents/rohan-daily-mtm.ts",
+      "line": 1019,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "runtime/agents/rohan-daily-mtm.ts",
+      "line": 1059,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "runtime/agents/rohan-daily-mtm.ts",
+      "line": 1080,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "runtime/agents/rohan-market-risk-limit-check.ts",
+      "line": 107,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "runtime/agents/rohan-market-risk-limit-check.ts",
+      "line": 109,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scenarios/08-equity-trade.ts",
+      "line": 250,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scenarios/08-equity-trade.ts",
+      "line": 362,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scenarios/credit-limit-gate.ts",
+      "line": 190,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scenarios/fx-spot-internal-pre-licence-test.ts",
+      "line": 318,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "scenarios/fx-spot-internal-pre-licence-test.ts",
+      "line": 1746,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scenarios/fx-spot-internal-pre-licence-test.ts",
+      "line": 1864,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scenarios/fx-spot-internal-pre-licence-test.ts",
+      "line": 1865,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/audit/fx-pnl-instrument-level-gap.ts",
+      "line": 193,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/audit/fx-pnl-instrument-level-gap.ts",
+      "line": 213,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/decisions/helena-ras-b2-settlement-herstatt-methodology-approve.ts",
+      "line": 128,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/file-atlas-decimal-money-redenomination-design-spec.ts",
+      "line": 201,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/file-atlas-decimal-money-redenomination-design-spec.ts",
+      "line": 202,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/file-atlas-dimensional-metric-attribution-layer-design-spec.ts",
+      "line": 379,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/file-atlas-dimensional-metric-attribution-layer-design-spec.ts",
+      "line": 380,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/file-nadia-v2-a2-fx-model-validation.ts",
+      "line": 215,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/file-vera-pre-purge-backup-verification-and-audit-pre-auth.ts",
+      "line": 83,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/mtm-run.ts",
+      "line": 288,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "scripts/mtm-run.ts",
+      "line": 289,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/mtm-run.ts",
+      "line": 449,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/rebuild-fx-subledger.ts",
+      "line": 37,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/reconcile-fx-subledger-legacy.ts",
+      "line": 48,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/reconcile-fx-subledger.ts",
+      "line": 39,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/restate-fx-cash-leg.ts",
+      "line": 32,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/sim-saskia-unwind-ravi-recompute.ts",
+      "line": 88,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/sim/fx-frontend-trade-specs.ts",
+      "line": 99,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/writeoff-fx-subledger-suspense.ts",
+      "line": 52,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "v2-core/eval/sa-ccr-exam-set.ts",
+      "line": 92,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "v2-core/fil-models/sa-ccr/methodology.ts",
+      "line": 343,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "v2-core/fil-models/sa-ccr/methodology.ts",
+      "line": 345,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "v2-core/fil-models/sa-ccr/methodology.ts",
+      "line": 297,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "v2-core/fil-models/sa-ccr/methodology.ts",
+      "line": 400,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "v2-core/fil-models/sa-ccr/methodology.ts",
+      "line": 406,
+      "pattern": "money-multiply/divide"
+    }
+  ]
+}

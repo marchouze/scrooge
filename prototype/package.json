@@ -16,6 +16,7 @@
     "recon:no-swallowed-errors": "bun run platform/recon/no-swallowed-errors.ts",
     "recon:tracked-todo": "bun run platform/recon/tracked-todo.ts",
     "recon:ratchet-hardening-only": "bun run platform/recon/ratchet-hardening-only.ts",
+    "recon:no-float-money-arithmetic": "bun run platform/recon/no-float-money-arithmetic.ts",
     "file:atlas-ceo-escalation-push-channel-spec": "bun run scripts/file-atlas-ceo-escalation-push-channel-spec.ts",
     "file:atlas-dashboard-consolidation-proposal": "bun run scripts/file-atlas-dashboard-consolidation-proposal.ts",
     "file:scrooge-lra-66-1995-hr-source-map": "bun run scripts/file-scrooge-lra-66-1995-hr-source-map.ts",

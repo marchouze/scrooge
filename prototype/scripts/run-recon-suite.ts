@@ -215,6 +215,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:no-swallowed-errors",
     "recon:tracked-todo",
     "recon:ratchet-hardening-only",
+    // WS-DECIMAL-NATIVE-MONEY-ARITHMETIC step 4 — advisory gate (allowlist applied,
+    // exits 0 today). Blocks only NEW float-money arithmetic expressions added
+    // outside the decimal-engine module. The allowlist shrinks as each engine
+    // file migrates to decimal-native. Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC.
+    "recon:no-float-money-arithmetic",
   ],
   domain: [
     "recon:prose-duplication",
