@@ -58,7 +58,10 @@
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (Phase 3, CEO-approved 2026-06-05).
 // Citations: Principles/1-events-are-truth.md, Principles/5-multi-currency-entity-country.md.
 
-import type { SubLedgerLeg } from "../../platform/accounting/fx-accounting-types";
+import {
+  type SubLedgerLeg,
+  subLedgerLegFromMinor,
+} from "../../platform/accounting/fx-accounting-types";
 import {
   type InterpreterApprovalGate,
   PRODUCTION_REPRESENTATIONS,
@@ -306,12 +309,16 @@ export type FxInterpretOutcome =
  *  (string minor → number). The parity test asserts these are numerically
  *  equal to the legacy `SubLedgerLeg[]`. */
 function toSubLedgerLegs(post: ProposedPosting): SubLedgerLeg[] {
-  return post.legs.map((l) => ({
-    accountId: l.accountId,
-    debitCredit: l.debitCredit,
-    amountMinor: Number(l.amountMinor),
-    currency: l.currency,
-  }));
+  // ProposedLeg.amountMinor is an EXACT integer minor-unit magnitude (the SLA
+  // bigint engine never introduces a fraction); lift it losslessly to the
+  // decimal `amount` source of truth, then derive `amountMinor` back from it
+  // (D-DECIMAL-NATIVE-MONEY-ARITHMETIC slice 1 — one source, no float).
+  return post.legs.map((l) =>
+    subLedgerLegFromMinor(
+      { accountId: l.accountId, debitCredit: l.debitCredit, currency: l.currency },
+      BigInt(l.amountMinor),
+    ),
+  );
 }
 
 /**

@@ -53,7 +53,7 @@
 
 import type { Event } from "../event-store/types";
 import type { FxTradeExecutedPayload, PrincipalPaymentPayload } from "../markets/cdm/fx";
-import type { SubLedgerLeg } from "./fx-accounting-types";
+import { type SubLedgerLeg, subLedgerLegFromMinor } from "./fx-accounting-types";
 import { fxTradeBookingJournals } from "./posting-rules/fx-spot";
 
 export type TradeLifecycleState = "live" | "cancelled" | "settled";
@@ -127,12 +127,14 @@ function correctionLegsFor(
     const delta = c - a;
     if (delta === 0) continue;
     const [accountId, currency] = k.split("|") as [string, string];
-    legs.push({
-      accountId,
-      currency,
-      debitCredit: delta > 0 ? "debit" : "credit",
-      amountMinor: Math.abs(delta),
-    });
+    // `Math.abs(delta)` is an EXACT integer minor-unit balance — lifted to the
+    // decimal `amount` source of truth, amountMinor derived (decimal-native s1).
+    legs.push(
+      subLedgerLegFromMinor(
+        { accountId, currency, debitCredit: delta > 0 ? "debit" : "credit" },
+        Math.abs(delta),
+      ),
+    );
   }
   return legs;
 }
@@ -430,12 +432,12 @@ export function computeFxSubledgerRebuild(
     const c = current.get(k) ?? 0;
     const delta = t - c;
     if (delta !== 0) {
-      restateLegs.push({
-        accountId,
-        currency,
-        debitCredit: delta > 0 ? "debit" : "credit",
-        amountMinor: Math.abs(delta),
-      });
+      restateLegs.push(
+        subLedgerLegFromMinor(
+          { accountId, currency, debitCredit: delta > 0 ? "debit" : "credit" },
+          Math.abs(delta),
+        ),
+      );
     }
     perCcyDelta.set(currency, (perCcyDelta.get(currency) ?? 0) + delta);
   }
@@ -443,12 +445,16 @@ export function computeFxSubledgerRebuild(
   for (const [currency, delta] of perCcyDelta) {
     if (delta === 0) continue;
     // Suspense leg balances the per-ccy delta: posts the opposite sign.
-    restateLegs.push({
-      accountId: FX_REMEDIATION_SUSPENSE,
-      currency,
-      debitCredit: delta > 0 ? "credit" : "debit",
-      amountMinor: Math.abs(delta),
-    });
+    restateLegs.push(
+      subLedgerLegFromMinor(
+        {
+          accountId: FX_REMEDIATION_SUSPENSE,
+          currency,
+          debitCredit: delta > 0 ? "credit" : "debit",
+        },
+        Math.abs(delta),
+      ),
+    );
     // Residue parked in suspense = the corrupt amount removed from the sub-ledger.
     suspenseResidue.push({
       accountId: FX_REMEDIATION_SUSPENSE,
@@ -514,13 +520,25 @@ const FX_POSTING_TYPES = new Set<string>([
  */
 function normaliseLeg(raw: unknown): SubLedgerLeg[] {
   const r = raw as Record<string, unknown>;
-  if (typeof r.accountId === "string") return [r as unknown as SubLedgerLeg];
+  // Legs are read back off persisted SubLedgerPostingEmitted events: their
+  // integer `amountMinor` is the canonical figure. We rehydrate the decimal
+  // `amount` source-of-truth field deterministically from it via
+  // subLedgerLegFromMinor (older events carry no `amount`; this fills it without
+  // changing any figure — decimal-native slice 1).
+  if (typeof r.accountId === "string") {
+    const amt = typeof r.amountMinor === "number" ? r.amountMinor : 0;
+    const ccy = typeof r.currency === "string" ? r.currency : "ZAR";
+    const side: "debit" | "credit" = r.debitCredit === "credit" ? "credit" : "debit";
+    return [
+      subLedgerLegFromMinor({ accountId: r.accountId, debitCredit: side, currency: ccy }, amt),
+    ];
+  }
   if (typeof r.debit === "string" && typeof r.credit === "string") {
     const amt = typeof r.amountMinor === "number" ? r.amountMinor : 0;
     const ccy = typeof r.currency === "string" ? r.currency : "ZAR";
     return [
-      { accountId: r.debit, debitCredit: "debit", amountMinor: amt, currency: ccy },
-      { accountId: r.credit, debitCredit: "credit", amountMinor: amt, currency: ccy },
+      subLedgerLegFromMinor({ accountId: r.debit, debitCredit: "debit", currency: ccy }, amt),
+      subLedgerLegFromMinor({ accountId: r.credit, debitCredit: "credit", currency: ccy }, amt),
     ];
   }
   return [];
@@ -572,18 +590,18 @@ export function computeFxMisroutedCashRestate(events: readonly Event[]): CashLeg
     if (net === 0) continue;
     residue.push({ accountId: FX_MISROUTED_RESERVE, currency, netDebitMinor: net });
     // Sweep the residue off the reserve (post the opposite) and into suspense.
-    restateLegs.push({
-      accountId: FX_MISROUTED_RESERVE,
-      currency,
-      debitCredit: net > 0 ? "credit" : "debit",
-      amountMinor: Math.abs(net),
-    });
-    restateLegs.push({
-      accountId: FX_REMEDIATION_SUSPENSE,
-      currency,
-      debitCredit: net > 0 ? "debit" : "credit",
-      amountMinor: Math.abs(net),
-    });
+    restateLegs.push(
+      subLedgerLegFromMinor(
+        { accountId: FX_MISROUTED_RESERVE, currency, debitCredit: net > 0 ? "credit" : "debit" },
+        Math.abs(net),
+      ),
+    );
+    restateLegs.push(
+      subLedgerLegFromMinor(
+        { accountId: FX_REMEDIATION_SUSPENSE, currency, debitCredit: net > 0 ? "debit" : "credit" },
+        Math.abs(net),
+      ),
+    );
   }
 
   return { residue, restateLegs };

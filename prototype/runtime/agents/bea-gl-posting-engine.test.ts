@@ -152,18 +152,31 @@ describe("GL posting engine — manual-provenance FxTradeExecuted", () => {
       expect(debit).toBe(credit);
     }
 
-    // The posting type would be "trade-booking" — verify via SubLedgerPostingEmitted schema
+    // The posting type would be "trade-booking" — verify via the real emit
+    // boundary (makeSubLedgerPostingEmitted), which encodes each leg's decimal
+    // `amount` source-of-truth to MoneyWire on the wire (decimal-native s1).
     const {
-      subLedgerPostingEmittedPayloadSchema,
+      makeSubLedgerPostingEmitted,
     } = require("../../platform/event-store/event-types/fx-accounting");
-    const postingPayload = subLedgerPostingEmittedPayloadSchema.parse({
-      sourceEventId: "evt-manual-test-001",
-      postingType: "trade-booking",
-      legs,
-      postedAt: "2026-05-19T10:00:00Z",
+    const event = makeSubLedgerPostingEmitted({
+      asOf: "2026-05-19T10:00:00Z",
+      entity: "LE-ZA-HOZ-BANK",
+      actor: { type: "service" as const, id: "agent:bea:gl-posting-engine" },
+      citations: ["urn:obligation:ifrs:ifrs9:3.1.1"],
+      payload: {
+        sourceEventId: "evt-manual-test-001",
+        postingType: "trade-booking",
+        legs,
+        postedAt: "2026-05-19T10:00:00Z",
+      },
     });
+    const postingPayload = event.payload as { postingType: string; legs: unknown[] };
     expect(postingPayload.postingType).toBe("trade-booking");
     expect(postingPayload.legs).toHaveLength(4);
+    // Every emitted leg carries the decimal MoneyWire source of truth.
+    for (const l of postingPayload.legs as Array<{ amount?: { __money?: string } }>) {
+      expect(l.amount?.__money).toBe("v1");
+    }
   });
 });
 

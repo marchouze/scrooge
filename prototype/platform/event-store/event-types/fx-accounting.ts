@@ -149,13 +149,34 @@ export function makeFxPositionRevalued(args: {
 //   "settlement-instruction"— SettlementInstructionReceived; receivable DR / suspense CR
 // ---------------------------------------------------------------------------
 
+// MoneyWire shape for the leg's decimal `amount` on the wire (decimal-native
+// slice 1). The `__money` discriminant + string amount is the canonical money
+// codec form (see money-codec.ts); the integer `amountMinor` below is now a
+// DERIVED compat field. Both are present during the strangler transition.
+const moneyWireSchema = z.object({
+  __money: z.literal("v1"),
+  amount: z.string().min(1),
+  currency: z.string().min(1),
+});
+
 export const subLedgerLegSchema = z.object({
   /** Chart-of-accounts leaf account ID (ACC-NNNN-NNN). */
   accountId: z.string().regex(/^ACC-[0-9]{4}-[0-9]{3}$/, {
     message: "SubLedgerLeg.accountId must match ACC-NNNN-NNN",
   }),
   debitCredit: z.enum(["debit", "credit"]),
-  /** Amount in minor currency units (always positive; debitCredit indicates direction). */
+  /**
+   * Exact-decimal leg amount as MoneyWire — THE source of truth on the wire
+   * (D-DECIMAL-NATIVE-MONEY-ARITHMETIC slice 1). Optional during the transition
+   * so legacy events (which carry only `amountMinor`) still decode; every leg
+   * the production engine emits now carries it.
+   */
+  amount: moneyWireSchema.optional(),
+  /**
+   * Amount in minor currency units (always positive; debitCredit indicates
+   * direction). DERIVED from `amount` for emitted legs; retained as the compat
+   * field the not-yet-migrated 269 consumers read.
+   */
   amountMinor: z.number().int().nonnegative(),
   /** ISO 4217 currency. */
   currency: z
@@ -307,14 +328,37 @@ export const subLedgerPostingEmittedPayloadSchema = z
 
 export type SubLedgerPostingEmittedPayload = z.infer<typeof subLedgerPostingEmittedPayloadSchema>;
 
+/**
+ * The leg shape accepted by `makeSubLedgerPostingEmitted` BEFORE wire-encoding.
+ * Producers build the in-memory `SubLedgerLeg` (fx-accounting-types.ts), whose
+ * `amount` is a decimal `Money` (`{ amount, currency }`); on emit it is encoded
+ * to the canonical `MoneyWire` (`{ __money, amount, currency }`). A leg that
+ * already carries a MoneyWire (or none) passes through unchanged. This is the
+ * decimal-native emit boundary (D-DECIMAL-NATIVE-MONEY-ARITHMETIC slice 1).
+ */
+type EmitLegInput = Omit<z.input<typeof subLedgerLegSchema>, "amount"> & {
+  readonly amount?: Money | MoneyWire;
+};
+
+function encodeLegForWire(leg: EmitLegInput): z.input<typeof subLedgerLegSchema> {
+  const { amount, ...rest } = leg;
+  if (amount === undefined) return rest;
+  // A `Money` lacks the `__money` discriminant; a `MoneyWire` carries it.
+  const wire = "__money" in amount ? amount : encodeMoney(amount);
+  return { ...rest, amount: wire };
+}
+
 export function makeSubLedgerPostingEmitted(args: {
   asOf: string;
   entity: string;
   actor: Actor;
   citations: string[];
-  payload: SubLedgerPostingEmittedPayload;
+  payload: Omit<SubLedgerPostingEmittedPayload, "legs"> & { legs: readonly EmitLegInput[] };
   eventId?: string;
 }): Event {
+  // Encode each leg's decimal `amount` source-of-truth to MoneyWire on the wire;
+  // the derived `amountMinor` rides along for the not-yet-migrated consumers.
+  const legs = args.payload.legs.map(encodeLegForWire);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "SubLedgerPostingEmitted",
@@ -322,7 +366,7 @@ export function makeSubLedgerPostingEmitted(args: {
     entity: args.entity,
     actor: args.actor,
     citations: args.citations,
-    payload: subLedgerPostingEmittedPayloadSchema.parse(args.payload),
+    payload: subLedgerPostingEmittedPayloadSchema.parse({ ...args.payload, legs }),
   });
 }
 

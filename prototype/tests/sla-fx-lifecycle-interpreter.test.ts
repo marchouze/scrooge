@@ -30,7 +30,21 @@
 
 import { describe, expect, it } from "bun:test";
 
-import type { SubLedgerLeg } from "../platform/accounting/fx-accounting-types";
+import {
+  type SubLedgerLeg,
+  subLedgerLegFromMinor,
+} from "../platform/accounting/fx-accounting-types";
+
+/** Test fixture helper: build a SubLedgerLeg from an integer minor magnitude
+ *  (decimal `amount` derived) — keeps fixtures decimal-native (slice 1). */
+function leg(
+  accountId: string,
+  debitCredit: "debit" | "credit",
+  amountMinor: number,
+  currency: string,
+): SubLedgerLeg {
+  return subLedgerLegFromMinor({ accountId, debitCredit, currency }, amountMinor);
+}
 import {
   type InterpretResult,
   type ProposedPosting,
@@ -551,10 +565,10 @@ describe("Stage: settlement-failed (PR-FX-005) — Herstatt + no-GL branches", (
 // ---------------------------------------------------------------------------
 
 const BOOKING_LEGS: SubLedgerLeg[] = [
-  { accountId: "ACC-2100-001", debitCredit: "debit", amountMinor: 1_900_000_000, currency: "ZAR" },
-  { accountId: "ACC-2100-003", debitCredit: "credit", amountMinor: 1_900_000_000, currency: "ZAR" },
-  { accountId: "ACC-2100-002", debitCredit: "debit", amountMinor: 100_000_000, currency: "USD" },
-  { accountId: "ACC-2100-004", debitCredit: "credit", amountMinor: 100_000_000, currency: "USD" },
+  leg("ACC-2100-001", "debit", 1_900_000_000, "ZAR"),
+  leg("ACC-2100-003", "credit", 1_900_000_000, "ZAR"),
+  leg("ACC-2100-002", "debit", 100_000_000, "USD"),
+  leg("ACC-2100-004", "credit", 100_000_000, "USD"),
 ];
 
 function cancelEnrichment(cumPnl: number) {
@@ -702,20 +716,10 @@ describe("Stage: cancel (PR-FX-CANCEL) — for_each reversal", () => {
     // resolver, so it correctly reverses to suspense even though a fresh EUR
     // booking would now route to dedicated accounts.
     const eurBooking: SubLedgerLeg[] = [
-      {
-        accountId: "ACC-2100-001",
-        debitCredit: "debit",
-        amountMinor: 2_050_000_000,
-        currency: "ZAR",
-      },
-      {
-        accountId: "ACC-2100-003",
-        debitCredit: "credit",
-        amountMinor: 2_050_000_000,
-        currency: "ZAR",
-      },
-      { accountId: SUSPENSE, debitCredit: "debit", amountMinor: 100_000_000, currency: "EUR" },
-      { accountId: SUSPENSE, debitCredit: "credit", amountMinor: 100_000_000, currency: "EUR" },
+      leg("ACC-2100-001", "debit", 2_050_000_000, "ZAR"),
+      leg("ACC-2100-003", "credit", 2_050_000_000, "ZAR"),
+      leg(SUSPENSE, "debit", 100_000_000, "EUR"),
+      leg(SUSPENSE, "credit", 100_000_000, "EUR"),
     ];
     const enrichment = {
       reversalBookingLegs: eurBooking.map((l) => ({

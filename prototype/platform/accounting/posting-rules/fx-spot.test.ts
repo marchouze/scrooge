@@ -27,6 +27,7 @@
 import { describe, expect, it } from "bun:test";
 
 import type { FxSettlementFailedPayload } from "../../event-store/event-types/fx-accounting";
+import { subLedgerLegFromMinor } from "../fx-accounting-types";
 import { FX_ACCOUNTS, fxSettlementFailedJournals, fxSettlementJournals } from "./fx-spot";
 
 // ---------------------------------------------------------------------------
@@ -131,33 +132,45 @@ describe("PR-FX-005: fxSettlementFailedJournals (IFRS-9 default-recognition)", (
 
       // (a) USD reclassification: Dr Settlement-Failed Receivable USD /
       //     Cr FX Trading Receivable USD, both 1m USD minor.
-      expect(legs[0]).toEqual({
-        accountId: FX_ACCOUNTS.SETTLEMENT_FAILED_RECEIVABLE_USD,
-        debitCredit: "debit",
-        amountMinor: 1_000_000,
-        currency: "USD",
-      });
-      expect(legs[1]).toEqual({
-        accountId: FX_ACCOUNTS.RECEIVABLE_USD,
-        debitCredit: "credit",
-        amountMinor: 1_000_000,
-        currency: "USD",
-      });
+      // The expected legs are built via subLedgerLegFromMinor, so the assertion
+      // pins BOTH the derived `amountMinor` cents AND the decimal `amount` source
+      // of truth (e.g. 1_000_000 USD minor ⇒ "10000.00"-equivalent decimal) —
+      // proving the decimal-native producer yields the same cents (decimal s1).
+      expect(legs[0]).toEqual(
+        subLedgerLegFromMinor(
+          {
+            accountId: FX_ACCOUNTS.SETTLEMENT_FAILED_RECEIVABLE_USD,
+            debitCredit: "debit",
+            currency: "USD",
+          },
+          1_000_000,
+        ),
+      );
+      expect(legs[1]).toEqual(
+        subLedgerLegFromMinor(
+          { accountId: FX_ACCOUNTS.RECEIVABLE_USD, debitCredit: "credit", currency: "USD" },
+          1_000_000,
+        ),
+      );
 
       // (b) Stage-3 ECL: Dr Credit Loss Expense / Cr ECL Allowance, both
       //     1.8b ZAR minor (100% of receivable, ZAR functional currency).
-      expect(legs[2]).toEqual({
-        accountId: FX_ACCOUNTS.CREDIT_LOSS_EXPENSE_FX,
-        debitCredit: "debit",
-        amountMinor: 18_000_000_00,
-        currency: "ZAR",
-      });
-      expect(legs[3]).toEqual({
-        accountId: FX_ACCOUNTS.ECL_ALLOWANCE_SETTLEMENT_FAILED,
-        debitCredit: "credit",
-        amountMinor: 18_000_000_00,
-        currency: "ZAR",
-      });
+      expect(legs[2]).toEqual(
+        subLedgerLegFromMinor(
+          { accountId: FX_ACCOUNTS.CREDIT_LOSS_EXPENSE_FX, debitCredit: "debit", currency: "ZAR" },
+          18_000_000_00,
+        ),
+      );
+      expect(legs[3]).toEqual(
+        subLedgerLegFromMinor(
+          {
+            accountId: FX_ACCOUNTS.ECL_ALLOWANCE_SETTLEMENT_FAILED,
+            debitCredit: "credit",
+            currency: "ZAR",
+          },
+          18_000_000_00,
+        ),
+      );
 
       assertBalanced(legs);
     });
