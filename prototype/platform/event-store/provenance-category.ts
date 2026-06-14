@@ -175,10 +175,52 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   SettlementInstructionIssued: "settlement",
   SettlementConfirmed: "settlement",
   PrincipalPayment: "settlement",
+  // WS-MONEY-DECIMAL-PURGE-REMEDIATION Wave 1 — money-bearing transactional
+  // event types that were previously UNCATEGORISED (returned <none>), so the
+  // slice-4 config-only purge allow-list silently RETAINED them, leaving 496
+  // financial-transaction events in the canonical store. Each is now mapped to
+  // its correct transactional category so a config-only purge sweeps it and the
+  // residual-minor gate is load-bearing. Authority: D-MONEY-DECIMAL-PURGE-
+  // REMEDIATION (CEO-approved 2026-06-14, be0580ff).
+  //
+  // --- Settlements (settlement instructions / custodian confirmations) ---
+  // FX leg settlement instruction (near/far) — a settlement message.
+  FxSettlementInstructed: "settlement",
+  // Bond settlement instruction (DvP nominal + dirty consideration).
+  BondSettlementInstructed: "settlement",
+  // Bond custodian settlement confirmation (cash leg + securities leg status).
+  BondCustodianSettlementConfirmed: "settlement",
   // A4 — FX book EOD valuation snapshot. Category "accounting" (derived
   // snapshot; must survive config-only purges so the prior-day anchor is
   // preserved). Authority: D-FIL-BOOK-COMPOSITE-VALUATION.
   FxBookValuationSnapshotted: "accounting",
+  // --- Accounting (GL / journal / realised-P&L postings) ---
+  // A manual journal entry (balanced legs into the GL) — an accounting posting.
+  ManualJournalEntry: "accounting",
+  // Realised P&L recognition on FCY disposal — a GL recognition event.
+  RealisedPnlRecognised: "accounting",
+  // --- Market-data / valuation / MtM / AVA / exposure computations ---
+  // Daily MtM run summary (total P&L delta from revaluation) — a valuation run.
+  MtmRunCompleted: "market-data",
+  // Fair-value / prudent-valuation adjustment computation (close-out bid-offer,
+  // CVA, etc.) — a valuation-engine output, not a config seed.
+  ValuationAdjustmentComputed: "market-data",
+  // Prudent-valuation AVA aggregation (Σ of valuation adjustments) — valuation.
+  PrudentValuationAvaAggregated: "market-data",
+  // SA-CCR exposure-at-default computation (rc/pfe/alpha/ead). A valuation /
+  // exposure computation, not a config seed. (No "*Minor"/MoneyWire field so the
+  // structural money-detector does not flag it, but it is a transactional
+  // valuation output the config-only purge must sweep.)
+  CcrEadComputed: "market-data",
+  // --- Product-control P&L reporting / sign-off family (accounting) ---
+  // These are product-control postings/records carrying money figures; they are
+  // operational accounting artefacts, not governance config, so a config-only
+  // purge must sweep them.
+  DailyPnLReportGenerated: "accounting",
+  PnLAttributionGenerated: "accounting",
+  PnLFlashRecorded: "accounting",
+  PnLFlashActualReconciled: "accounting",
+  PnLSignedOff: "accounting",
 };
 
 const PREFIX: ReadonlyArray<[string, ProvenanceCategory]> = [
