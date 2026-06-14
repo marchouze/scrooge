@@ -27,7 +27,7 @@
 //   RC shapes) + Atlas (Core banking platform architect, engineering).
 
 import {
-  ccrEadComputedPayloadSchema,
+  ccrEadComputedPayloadSchemaV2,
   ccrReplacementCostComputedPayloadSchema,
   counterpartyBaselClassAssignedPayloadSchema,
   lexExceptionApprovedPayloadSchema,
@@ -71,7 +71,7 @@ export const COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     subscribers: ["Helena", "Rohan", "Mira", "Atlas"],
     replay: "append-only-audit",
     retention: RETENTION_BANKING_5Y,
-    payloadSchema: ccrEadComputedPayloadSchema,
+    payloadSchema: ccrEadComputedPayloadSchemaV2,
     source: "platform/event-store/event-types/counterparty-credit-risk.ts",
     citationsHint: ["BCBS-279", "POLICY:credit-risk-policy-v1-S3"],
   },

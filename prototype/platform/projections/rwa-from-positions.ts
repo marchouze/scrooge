@@ -68,8 +68,9 @@
 
 import { buildRateMap, convertMinor } from "../accounting/fx-rate-projection";
 import { rwaInstrumentClassWeights } from "../config/financial-constants";
+import { minorFromMoneyWire } from "../core/money-codec";
 import type { BondTradeExecutedPayload } from "../event-store/event-types/bond-accounting";
-import type { CcrEadComputedPayload } from "../event-store/event-types/counterparty-credit-risk";
+import type { CcrEadComputedPayloadV2Type } from "../event-store/event-types/counterparty-credit-risk";
 import type {
   InterbankLoanPlacedPayload,
   RepoTradeOpenedPayload,
@@ -360,23 +361,28 @@ export function computeRwaFromPositions(
   // NO rate path to ZAR is skipped with a logged note (observable, not silent).
   const fxRates = buildRateMap([...eventStore.replay({ type: "FxTradeExecuted", asOf })]);
 
-  const latestEadByNettingSet = new Map<string, { p: CcrEadComputedPayload; eventId: string }>();
+  const latestEadByNettingSet = new Map<
+    string,
+    { p: CcrEadComputedPayloadV2Type; eventId: string }
+  >();
   for (const ev of eventStore.replay({ type: "CcrEadComputed", asOf })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
-    const p = ev.payload as unknown as CcrEadComputedPayload;
+    const p = ev.payload as unknown as CcrEadComputedPayloadV2Type;
     if (!p.nettingSetId) continue;
     const prev = latestEadByNettingSet.get(p.nettingSetId);
     if (prev && prev.p.computationDate >= p.computationDate) continue;
     latestEadByNettingSet.set(p.nettingSetId, { p, eventId: ev.event_id });
   }
   for (const { p, eventId } of latestEadByNettingSet.values()) {
-    if (p.ead <= 0) continue;
+    // DECIMAL-MIGRATION (slice 2): p.ead is MoneyWire — decode to minor units for arithmetic.
+    const eadMinorRaw = minorFromMoneyWire(p.ead);
+    if (eadMinorRaw <= 0) continue;
 
     // Convert non-ZAR EAD to functional currency (ZAR). ZAR passes through.
-    let eadZarMinor = p.ead;
+    let eadZarMinor = eadMinorRaw;
     let conversionNote = "";
     if (p.currency !== FUNCTIONAL_CURRENCY) {
-      const converted = convertMinor(p.ead, p.currency, FUNCTIONAL_CURRENCY, fxRates);
+      const converted = convertMinor(eadMinorRaw, p.currency, FUNCTIONAL_CURRENCY, fxRates);
       if (converted === null) {
         // No rate path ccy→ZAR. Skip — but observable (Vera can assert on a
         // CcrEadComputed with no consuming CreditExposure), not a silent drop.
@@ -392,7 +398,7 @@ export function computeRwaFromPositions(
         continue;
       }
       eadZarMinor = converted;
-      conversionNote = ` [converted ${p.currency} ${p.ead} → ZAR ${eadZarMinor}]`;
+      conversionNote = ` [converted ${p.currency} ${p.ead.amount} → ZAR ${eadZarMinor}]`;
     }
 
     const assigned = classByCounterparty.get(p.counterpartyId);

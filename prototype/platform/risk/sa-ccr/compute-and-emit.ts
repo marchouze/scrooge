@@ -61,6 +61,7 @@ import {
 } from "../../../v2-core/fil-models/sa-ccr";
 import { eventStore } from "../../composition";
 import { type Money, minor } from "../../core/money";
+import { moneyWireFromMinor } from "../../core/money-codec";
 import { type Actor, BANK_ZA_001, type Currency, newEventId } from "../../core/types";
 import {
   makeCcrEadComputed,
@@ -264,6 +265,10 @@ export function computeAndEmit(input: ComputeAndEmitInput): ComputeAndEmitResult
   eventStore.append(event);
 
   // 5. Emit CcrEadComputed alongside RC. Composes EAD = α × (RC + PFE).
+  // DECIMAL-MIGRATION (slice 2): rc / pfe / ead are emitted as MoneyWire
+  // (HALF_UP rounding — SA-CCR regulatory convention, BCBS d317 §10).
+  // moneyWireFromMinor converts the BigInt minor-unit values from the v2 model
+  // to canonical decimal strings without any IEEE-754 float arithmetic.
   const eadEvent = makeCcrEadComputed({
     asOf,
     entity: String(BANK_ZA_001),
@@ -272,10 +277,11 @@ export function computeAndEmit(input: ComputeAndEmitInput): ComputeAndEmitResult
     payload: {
       nettingSetId: input.nettingSet.nettingSetId,
       counterpartyId: input.nettingSet.counterpartyId,
-      rc: Number(rc.rc.minorUnits),
-      pfe: Number(ead.pfe.minorUnits),
+      // HALF_UP: SA-CCR regulatory rounding convention (BCBS d317 §10).
+      rc: moneyWireFromMinor(Number(rc.rc.minorUnits), ccy),
+      pfe: moneyWireFromMinor(Number(ead.pfe.minorUnits), ccy),
       alpha: 1.4,
-      ead: Number(ead.ead.minorUnits),
+      ead: moneyWireFromMinor(Number(ead.ead.minorUnits), ccy),
       currency: ccy,
       computationDate,
       methodology: "sa-ccr",

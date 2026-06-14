@@ -37,6 +37,7 @@
 
 import { z } from "zod";
 
+import { moneyWireSchema } from "../../core/money-codec";
 import { newEventId } from "../../core/types";
 import { type Actor, type Event, eventSchema } from "../types";
 
@@ -188,12 +189,31 @@ export const ccrEadComputedPayloadSchema = z.object({
 
 export type CcrEadComputedPayload = z.infer<typeof ccrEadComputedPayloadSchema>;
 
+/**
+ * DECIMAL-MIGRATION (slice 2): V2 Zod schema for CcrEadComputed.
+ * `rc`, `pfe`, `ead` are lifted from bare integer minor units to MoneyWire.
+ * Rounding: HALF_UP (SA-CCR regulatory convention, BCBS d317 §10).
+ * Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (CEO-approved 2026-06-14).
+ */
+export const ccrEadComputedPayloadSchemaV2 = ccrEadComputedPayloadSchema
+  .omit({ rc: true, pfe: true, ead: true })
+  .extend({
+    /** Replacement cost as MoneyWire (HALF_UP, SA-CCR). */
+    rc: moneyWireSchema,
+    /** Potential future exposure add-on as MoneyWire. */
+    pfe: moneyWireSchema,
+    /** EAD = α × (RC + PFE) as MoneyWire. */
+    ead: moneyWireSchema,
+  });
+
+export type CcrEadComputedPayloadV2Type = z.infer<typeof ccrEadComputedPayloadSchemaV2>;
+
 export function makeCcrEadComputed(args: {
   asOf: string;
   entity: string;
   actor: Actor;
   citations: string[];
-  payload: CcrEadComputedPayload;
+  payload: CcrEadComputedPayloadV2Type;
   eventId?: string;
 }): Event {
   return eventSchema.parse({
@@ -203,7 +223,7 @@ export function makeCcrEadComputed(args: {
     entity: args.entity,
     actor: args.actor,
     citations: args.citations,
-    payload: ccrEadComputedPayloadSchema.parse(args.payload),
+    payload: ccrEadComputedPayloadSchemaV2.parse(args.payload),
   });
 }
 
@@ -629,3 +649,72 @@ export const COUNTERPARTY_CREDIT_RISK_TYPED_EVENT_TYPES = [
 
 export type CounterpartyCreditRiskEventType =
   (typeof COUNTERPARTY_CREDIT_RISK_TYPED_EVENT_TYPES)[number];
+
+// ---------------------------------------------------------------------------
+// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+//
+// CcrEadComputed carries `rc`, `pfe`, `ead` as bare integers (no *Minor suffix,
+// no MoneyWire) — this was an oversight in the original design. The *Minor gate
+// CANNOT see these bare-numeric fields because they have no *Minor suffix.
+// V2 lifts rc/pfe/ead to MoneyWire so the decimal-native gate covers them.
+//
+// Rounding policy: HALF_UP (SA-CCR — regulatory convention per BCBS d317).
+//
+// Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (CEO-approved 2026-06-14, 9232352c).
+// ---------------------------------------------------------------------------
+
+import type { Money } from "../../core/decimal-money";
+import type { MoneyWire } from "../../core/money-codec";
+import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
+
+// ── CcrEadComputed V2 ────────────────────────────────────────────────────────
+
+/** @deprecated DECIMAL-MIGRATION: superseded by CcrEadComputedPayloadV2. */
+export type CcrEadComputedPayloadLegacy = CcrEadComputedPayload;
+
+/**
+ * V2 CcrEadComputed payload: rc / pfe / ead are MoneyWire (decimal string,
+ * HALF_UP rounding — SA-CCR regulatory convention per BCBS d317 §10).
+ */
+export interface CcrEadComputedPayloadV2 extends Omit<CcrEadComputedPayload, "rc" | "pfe" | "ead"> {
+  /** Replacement cost as exact-decimal MoneyWire (HALF_UP rounding, SA-CCR). */
+  readonly rc: MoneyWire;
+  /** Potential future exposure add-on as MoneyWire. */
+  readonly pfe: MoneyWire;
+  /** Exposure-at-default = α × (RC + PFE) as MoneyWire. */
+  readonly ead: MoneyWire;
+}
+
+/**
+ * Encode a CcrEadComputedPayload to V2. `rcMoney`, `pfeMoney`, `eadMoney`
+ * must be exact-decimal `Money` values computed via HALF_UP rounding.
+ */
+export function encodeCcrEadComputed(
+  base: Omit<CcrEadComputedPayload, "rc" | "pfe" | "ead">,
+  rcMoney: Money,
+  pfeMoney: Money,
+  eadMoney: Money,
+): CcrEadComputedPayloadV2 {
+  return {
+    ...base,
+    rc: encodeMoney(rcMoney),
+    pfe: encodeMoney(pfeMoney),
+    ead: encodeMoney(eadMoney),
+  };
+}
+
+/**
+ * Decode a legacy CcrEadComputedPayload (bare integer minor units) to V2.
+ * Uses `moneyWireFromMinor` with the payload's `currency` field.
+ */
+export function decodeCcrEadComputed(raw: CcrEadComputedPayload): CcrEadComputedPayloadV2 {
+  const { rc, pfe, ead, ...rest } = raw;
+  return {
+    ...rest,
+    rc: moneyWireFromMinor(rc, raw.currency),
+    pfe: moneyWireFromMinor(pfe, raw.currency),
+    ead: moneyWireFromMinor(ead, raw.currency),
+  };
+}
+
+export { encodeMoney, moneyWireFromMinor };

@@ -30,6 +30,7 @@
 
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
+import { moneyWireFromMinor } from "../platform/core/money-codec";
 import { newEventId } from "../platform/core/types";
 import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-accounting";
 import { makeCcrEadComputed } from "../platform/event-store/event-types/counterparty-credit-risk";
@@ -220,10 +221,10 @@ function appendCcrEad(
       payload: {
         nettingSetId: opts.nettingSetId,
         counterpartyId: opts.counterpartyId ?? "CP-FX-001",
-        rc: Math.round(opts.ead / 1.4),
-        pfe: 0,
+        rc: moneyWireFromMinor(Math.round(opts.ead / 1.4), opts.currency ?? "ZAR"),
+        pfe: moneyWireFromMinor(0, opts.currency ?? "ZAR"),
         alpha: 1.4,
-        ead: opts.ead,
+        ead: moneyWireFromMinor(opts.ead, opts.currency ?? "ZAR"),
         currency: opts.currency ?? "ZAR",
         computationDate: opts.computationDate ?? AS_OF,
         methodology: "sa-ccr",
