@@ -182,12 +182,11 @@ export function run(): ReconResult {
   // (entity/approach/permission, per `v2-posture-dimension-vocab.ts`) must have
   // at least one ACTIVE posture whose `parameters.dimensionKey` matches.
   //
-  // SEVERITY: "warn" INITIALLY (advisory). The dimension postures are seeded by
-  // `scripts/seed-v2-posture-dimensions.ts`; this floor is advisory pending the
-  // seed running against the live store so that the gate flags missing-dimension
-  // coverage without breaking CI before the seed is wired into the migrate step.
-  // Promote to "fail" once the seed is part of the standing `ci:migrate` chain
-  // and the floor has soaked.
+  // SEVERITY: "fail" (ENFORCING). The dimension postures are seeded by
+  // `scripts/seed-v2-posture-dimensions.ts`, now part of the standing `ci:migrate`
+  // chain, so a clean CI store always carries the six dimension families. A
+  // missing family is therefore a real coverage gap, not a not-yet-seeded state.
+  // Promoted from advisory once the seed landed in ci:migrate (W8 Slice B tidy).
   for (const key of REQUIRED_POSTURE_DIMENSION_KEYS) {
     result.asserted += 1;
     const covered = activePostures.some((p) => {
@@ -198,7 +197,7 @@ export function run(): ReconResult {
       violations.push({
         subject: key,
         message: `required posture dimension key has no active posture: ${key} — run scripts/seed-v2-posture-dimensions.ts`,
-        severity: "warn", // advisory pending seed (W8 Slice B coverage floor)
+        severity: "fail", // ENFORCING (W8 Slice B coverage floor; seed in ci:migrate)
       });
     }
   }
