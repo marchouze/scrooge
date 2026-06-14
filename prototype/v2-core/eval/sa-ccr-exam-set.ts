@@ -49,7 +49,7 @@ import type { EvalSubject, ObservedOutput } from "./harness";
 
 interface SaCcrScenarioTrade {
   readonly assetClass: SaCcrTradeSummary["assetClass"];
-  readonly notionalMinor: number;
+  readonly notionalCents: number;
   readonly currency: string;
   readonly direction?: "long" | "short";
   readonly remainingYears?: number;
@@ -63,11 +63,11 @@ interface SaCcrScenario {
     readonly counterpartyId: string;
     readonly currency: string;
     readonly csaPresent: boolean;
-    readonly thresholdMinor?: number;
-    readonly mtaMinor?: number;
+    readonly thresholdCents?: number;
+    readonly mtaCents?: number;
   };
-  readonly vMtmMinor: number;
-  readonly collateralMinor: number;
+  readonly vMtmCents: number;
+  readonly collateralCents: number;
   readonly trades: readonly SaCcrScenarioTrade[];
   readonly asOf: string;
   /**
@@ -75,11 +75,11 @@ interface SaCcrScenario {
    * present the adapter re-runs the add-on over each value and reports the
    * aggregated-add-on series in `pfeAddOnSeries` (for the monotonicity exam).
    */
-  readonly notionalSweepMinor?: readonly number[];
+  readonly notionalSweepCents?: readonly number[];
   /**
    * Optional latest-per-trade probe: a list of per-trade MtM marks where the
    * LAST mark per trade is canonical. The adapter checks that summing the
-   * latest mark per trade (not all historical marks) equals `vMtmMinor`.
+   * latest mark per trade (not all historical marks) equals `vMtmCents`.
    */
   readonly tradeMarks?: ReadonlyArray<{ tradeId: string; marks: readonly number[] }>;
 }
@@ -102,8 +102,8 @@ function toNettingSet(s: SaCcrScenario): SaCcrNettingSet {
   if (s.nettingSet.csaPresent) {
     return {
       ...base,
-      threshold: money(s.nettingSet.thresholdMinor ?? 0, s.nettingSet.currency),
-      mta: money(s.nettingSet.mtaMinor ?? 0, s.nettingSet.currency),
+      threshold: money(s.nettingSet.thresholdCents ?? 0, s.nettingSet.currency),
+      mta: money(s.nettingSet.mtaCents ?? 0, s.nettingSet.currency),
     };
   }
   return base;
@@ -115,7 +115,7 @@ function toTrades(s: SaCcrScenario): SaCcrTradeSummary[] {
       counterpartyId: s.nettingSet.counterpartyId,
       nettingSetId: s.nettingSet.nettingSetId,
       assetClass: t.assetClass,
-      notional: money(t.notionalMinor, t.currency),
+      notional: money(t.notionalCents, t.currency),
       ...(t.tradeId !== undefined ? { tradeId: t.tradeId } : {}),
       ...(t.direction !== undefined ? { direction: t.direction } : {}),
       ...(t.remainingYears !== undefined ? { remainingYears: t.remainingYears } : {}),
@@ -145,8 +145,8 @@ export function makeSaCcrEvalSubject(): EvalSubject {
       const trades = toTrades(s);
       const result = computeSaCcr({
         nettingSet,
-        vMtm: money(s.vMtmMinor, s.nettingSet.currency),
-        collateralHeld: money(s.collateralMinor, s.nettingSet.currency),
+        vMtm: money(s.vMtmCents, s.nettingSet.currency),
+        collateralHeld: money(s.collateralCents, s.nettingSet.currency),
         trades,
         asOf: s.asOf,
       });
@@ -162,13 +162,13 @@ export function makeSaCcrEvalSubject(): EvalSubject {
       // We compute the expected RC against the correct branch and assert
       // equality — so the exam pins the EXACT d317 floor, including that the
       // V − C term is the load-bearing reading in the margined branch.
-      const vMinusC = s.vMtmMinor - s.collateralMinor;
+      const vMinusC = s.vMtmCents - s.collateralCents;
       let expectedRc: number;
       if (nettingSet.csaPresent) {
-        const mtaPlusTh = (s.nettingSet.mtaMinor ?? 0) + (s.nettingSet.thresholdMinor ?? 0);
+        const mtaPlusTh = (s.nettingSet.mtaCents ?? 0) + (s.nettingSet.thresholdCents ?? 0);
         expectedRc = Math.max(vMinusC, mtaPlusTh, 0);
       } else {
-        expectedRc = Math.max(s.vMtmMinor, 0);
+        expectedRc = Math.max(s.vMtmCents, 0);
       }
       const rcEqualsMaxVMinusCZero = rcMinor === Math.round(expectedRc);
 
@@ -180,12 +180,12 @@ export function makeSaCcrEvalSubject(): EvalSubject {
 
       // Property 2 — PFE add-on monotonicity over a notional sweep.
       let pfeAddOnSeries: number[] | undefined;
-      if (s.notionalSweepMinor && s.notionalSweepMinor.length > 0 && s.trades.length > 0) {
+      if (s.notionalSweepCents && s.notionalSweepCents.length > 0 && s.trades.length > 0) {
         const firstTrade = s.trades[0] as SaCcrScenarioTrade;
-        pfeAddOnSeries = s.notionalSweepMinor.map((notional) => {
+        pfeAddOnSeries = s.notionalSweepCents.map((notional) => {
           const swept = toTrades({
             ...s,
-            trades: [{ ...firstTrade, notionalMinor: notional }, ...s.trades.slice(1)],
+            trades: [{ ...firstTrade, notionalCents: notional }, ...s.trades.slice(1)],
           });
           const addOns = computeAddOn(swept, { margined: nettingSet.csaPresent });
           return addOns.reduce((acc, c) => acc + Number(c.addOn.minorUnits), 0);
@@ -201,7 +201,7 @@ export function makeSaCcrEvalSubject(): EvalSubject {
           const last = tm.marks.length > 0 ? (tm.marks[tm.marks.length - 1] as number) : 0;
           return acc + last;
         }, 0);
-        mtmIsLatestPerTrade = latestPerTradeSum === s.vMtmMinor;
+        mtmIsLatestPerTrade = latestPerTradeSum === s.vMtmCents;
       }
 
       const out: Record<string, unknown> = {
@@ -242,11 +242,11 @@ export const SA_CCR_PILOT_EXAM_SET: ExamSet = {
   examSetId: "examset:sa-ccr",
   subjectKind: "fil-model",
   subjectScope: SA_CCR_MODEL_ID,
-  // v1.1 — D-W8-EXAM-GOVERNANCE refresh: exam 6 (latest-per-trade-MtM) marked
-  // adversarial:true per the adversarial-pass rule. The content changed, so the
-  // version increments; re-seeding emits a fresh ExamSetRegistered that becomes
-  // the effective registration (the v1.0 event is superseded, not mutated).
-  version: "1.1",
+  // v1.2 — rename *Minor scenario fields to *Cents so recon:no-residual-minor-encoding
+  // goes green after Wave-3 purge. The content changed so the version increments;
+  // re-seeding emits a fresh ExamSetRegistered that becomes the effective registration
+  // (the v1.1 event is superseded, not mutated). Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC.
+  version: "1.2",
   citations: [
     C("D-W4-MODEL-LIBRARY-PILOT"),
     C("D-MODEL-BINDING-CONTRACT-V1"),
@@ -264,12 +264,12 @@ function fxScenario(overrides: Partial<SaCcrScenario> = {}): Record<string, unkn
       currency: "ZAR",
       csaPresent: false,
     },
-    vMtmMinor: 5_000_000,
-    collateralMinor: 1_000_000,
+    vMtmCents: 5_000_000,
+    collateralCents: 1_000_000,
     trades: [
       {
         assetClass: "fx",
-        notionalMinor: 100_000_000,
+        notionalCents: 100_000_000,
         currency: "ZAR",
         direction: "long",
         remainingYears: 0.5,
@@ -303,8 +303,8 @@ function buildSaCcrExams(): Exam[] {
           counterpartyId: "CP-DEMO",
           currency: "ZAR",
           csaPresent: true,
-          thresholdMinor: 400_000,
-          mtaMinor: 200_000,
+          thresholdCents: 400_000,
+          mtaCents: 200_000,
         },
       }),
       expectation: { kind: "invariant-holds", field: "rcEqualsMaxVMinusCZero" },
@@ -318,7 +318,7 @@ function buildSaCcrExams(): Exam[] {
       description:
         "RC is floored at zero even when the netting set is adverse: a deeply " +
         "negative MtM yields RC = 0, never a negative replacement cost. BCBS d317 §136.",
-      scenario: fxScenario({ vMtmMinor: -8_000_000, collateralMinor: 0 }),
+      scenario: fxScenario({ vMtmCents: -8_000_000, collateralCents: 0 }),
       expectation: { kind: "numeric-equals", field: "rc.minorUnits", value: 0, tolerance: 0 },
       citation: C("urn:reg:bcbs:d317:§136"),
     },
@@ -354,7 +354,7 @@ function buildSaCcrExams(): Exam[] {
         "The aggregated PFE add-on is non-decreasing in the trade notional — a " +
         "larger directional position never reduces the add-on. BCBS d317 §156–§166.",
       scenario: fxScenario({
-        notionalSweepMinor: [0, 25_000_000, 50_000_000, 100_000_000, 250_000_000],
+        notionalSweepCents: [0, 25_000_000, 50_000_000, 100_000_000, 250_000_000],
       }),
       expectation: { kind: "monotonic-nondecreasing", field: "pfeAddOnSeries" },
       citation: C("urn:reg:bcbs:cre52:§52.5"),
