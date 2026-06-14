@@ -107,7 +107,7 @@
     },
     {
       "file": "platform/accounting/gl-projection.ts",
-      "line": 163,
+      "line": 166,
       "pattern": "money-multiply/divide"
     },
     {
@@ -452,7 +452,7 @@
     },
     {
       "file": "platform/recon/fx-subledger-reconciliation.ts",
-      "line": 107,
+      "line": 108,
       "pattern": "money-multiply/divide"
     },
     {
@@ -1084,6 +1084,16 @@
       "file": "scripts/reconcile-fx-subledger.ts",
       "line": 39,
       "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/record-d-decimal-native-consumer-migration.ts",
+      "line": 63,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scripts/record-d-decimal-native-money-arithmetic.ts",
+      "line": 11,
+      "pattern": "Math.round(money)"
     },
     {
       "file": "scripts/restate-fx-cash-leg.ts",
