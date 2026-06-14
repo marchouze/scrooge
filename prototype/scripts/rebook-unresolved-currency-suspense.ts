@@ -79,12 +79,14 @@
 // default, so this is safe: home-store on Scrooge's run, tmp on every dev run.
 import "../platform/event-store/resolve-event-db-boot";
 
+import { subLedgerLegFromMoney } from "../platform/accounting/fx-accounting-types";
 import type { SubLedgerLeg } from "../platform/accounting/fx-accounting-types";
 import {
   FX_UNRESOLVED_CURRENCY_SUSPENSE,
   defaultResolver,
 } from "../platform/accounting/sla/resolver";
 import { eventStore } from "../platform/composition";
+import { legAmountMoney } from "../platform/core/money-codec";
 import { makeSubLedgerPostingEmitted } from "../platform/event-store/event-types/fx-accounting";
 import type { Event } from "../platform/event-store/types";
 import { logger } from "../platform/observability/logger";
@@ -270,21 +272,12 @@ export function resolveTargetAccount(currency: string): string | undefined {
  */
 function buildCorrectionLegs(m: StrandedLeg, target: string): SubLedgerLeg[] {
   const reverseSide = m.leg.debitCredit === "debit" ? "credit" : "debit";
+  const money = legAmountMoney(m.leg);
   return [
     // (1) reverse out of the suspense account
-    {
-      accountId: m.leg.accountId,
-      debitCredit: reverseSide,
-      amountMinor: m.leg.amountMinor,
-      currency: m.leg.currency,
-    },
+    subLedgerLegFromMoney({ accountId: m.leg.accountId, debitCredit: reverseSide }, money),
     // (2) re-book into the per-currency home account (same side as original)
-    {
-      accountId: target,
-      debitCredit: m.leg.debitCredit,
-      amountMinor: m.leg.amountMinor,
-      currency: m.leg.currency,
-    },
+    subLedgerLegFromMoney({ accountId: target, debitCredit: m.leg.debitCredit }, money),
   ];
 }
 
@@ -327,12 +320,12 @@ export function buildCorrectionEvent(m: StrandedLeg, target: string): Event {
  * is empty in steady state.
  */
 export function buildSupersedeReversalEvent(stale: ExistingCorrection, provenance: unknown): Event {
-  const legs = stale.legs.map((l) => ({
-    accountId: l.accountId,
-    debitCredit: (l.debitCredit === "debit" ? "credit" : "debit") as "debit" | "credit",
-    amountMinor: l.amountMinor,
-    currency: l.currency,
-  }));
+  const legs = stale.legs.map((l) =>
+    subLedgerLegFromMoney(
+      { accountId: l.accountId, debitCredit: l.debitCredit === "debit" ? "credit" : "debit" },
+      legAmountMoney(l),
+    ),
+  );
   const event = makeSubLedgerPostingEmitted({
     asOf: stale.postedAt,
     entity: ENTITY,
@@ -433,7 +426,7 @@ export function runRebook(opts: { apply: boolean }): RebookResult {
         currency: m.leg.currency,
         from: FX_UNRESOLVED_CURRENCY_SUSPENSE,
         to: target,
-        amountMinor: m.leg.amountMinor,
+        amount: legAmountMoney(m.leg),
       },
       opts.apply
         ? "rebook-unresolved-currency-suspense: emitted"

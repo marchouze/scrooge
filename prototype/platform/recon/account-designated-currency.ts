@@ -56,6 +56,7 @@ import {
   mismatchedResiduals,
 } from "../accounting/designated-currency-ledger.ts";
 import { eventStore } from "../composition.ts";
+import { amountToMinorUnits } from "../core/decimal-money";
 import type { Event } from "../event-store/types.ts";
 
 const PIPELINE = "recon:account-designated-currency";
@@ -115,7 +116,7 @@ export function main(opts?: { events?: readonly Event[] }): {
     if (!designated || designated === leg.currency) continue;
     violations.push({
       subject: `${leg.accountId}:${leg.currency}:${leg.eventId}`,
-      message: `SubLedgerPostingEmitted leg posted ${leg.postedAt} (after D-ACCOUNT-DESIGNATED-CURRENCY-REBOOK, ${EFFECTIVE_FROM}) books ${leg.currency} ${leg.debitCredit} ${fmtMinor(leg.amountMinor)} minor into ${leg.accountId}, which is designated ${designated} (coa-registry.ts). A designated-currency account must never receive a contradicting-currency leg — this is a fresh default-to-USD-class resolution defect (postingType "${leg.postingType}", event ${leg.eventId}). Fix the resolver/rule, then re-book via a designated-currency-rebook correction.`,
+      message: `SubLedgerPostingEmitted leg posted ${leg.postedAt} (after D-ACCOUNT-DESIGNATED-CURRENCY-REBOOK, ${EFFECTIVE_FROM}) books ${leg.currency} ${leg.debitCredit} ${fmtMinor(Number(amountToMinorUnits(leg.amount)))} minor into ${leg.accountId}, which is designated ${designated} (coa-registry.ts). A designated-currency account must never receive a contradicting-currency leg — this is a fresh default-to-USD-class resolution defect (postingType "${leg.postingType}", event ${leg.eventId}). Fix the resolver/rule, then re-book via a designated-currency-rebook correction.`,
     });
   }
 
