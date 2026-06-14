@@ -88,6 +88,8 @@
 //   governance) policy v1.2 §2.6.
 
 import { type Ba300LcrOutput, applyHqlaCaps } from "../../reporting/ba-300-lcr";
+import { type Money, amountToMinorUnits } from "../../core/decimal-money";
+import type { Currency } from "../../core/types";
 
 // ---------------------------------------------------------------------------
 // Cited constants — no magic numbers
@@ -214,6 +216,8 @@ export interface IntragroupElimination {
   readonly toEntityId: string;
   /** Stressed 30-day flow amount to eliminate, minor units, ≥ 0. */
   readonly amountMinor: number;
+  /** Decimal-native money — source of truth; amountMinor is kept for compat. */
+  readonly amount: Money<Currency>;
   /** Provenance: which events / arrangement the schedule line derives from. */
   readonly source: string;
 }
@@ -425,13 +429,15 @@ export function consolidateBa300Lcr(input: ConsolidatedLcrInput): Ba300Consolida
   const outflowElimByEntity = new Map<string, number>();
   const inflowElimByEntity = new Map<string, number>();
   for (const el of input.eliminations) {
+    // Use amount (decimal-native Money) as source of truth for accumulation.
+    const elimMinor = Number(amountToMinorUnits(el.amount));
     outflowElimByEntity.set(
       el.fromEntityId,
-      (outflowElimByEntity.get(el.fromEntityId) ?? 0) + el.amountMinor,
+      (outflowElimByEntity.get(el.fromEntityId) ?? 0) + elimMinor,
     );
     inflowElimByEntity.set(
       el.toEntityId,
-      (inflowElimByEntity.get(el.toEntityId) ?? 0) + el.amountMinor,
+      (inflowElimByEntity.get(el.toEntityId) ?? 0) + elimMinor,
     );
   }
 
