@@ -76,6 +76,8 @@
 //   + Atlas (Core banking platform architect, engineering — substrate
 //   consult; snapshot integration + stream-key convention).
 
+import { amountToMinorUnits } from "../core/decimal-money";
+import { type MoneyWire, legAmountMoney } from "../core/money-codec";
 import type { DocumentStore } from "../document-store";
 import {
   type AccountingPeriodClosedPayload,
@@ -227,17 +229,23 @@ export interface TrialBalance {
 //   v1 (legacy, scenario 03): { debit: string, credit: string, currency, amountMinor }
 //   v2 (fx-accounting.ts):    { accountId: string, debitCredit: "debit"|"credit", currency, amountMinor }
 // computeTrialBalance handles both.
+// Each leg carries the decimal `amount` (MoneyWire) source of truth on the wire;
+// `amountMinor` is the legacy compat field, optional here because the readers
+// source value from `amount` via `legAmountMoney` (D-DECIMAL-NATIVE-CONSUMER-
+// MIGRATION-BEFORE-WAVE-3). `legAmountMoney` lifts legacy amountMinor-only legs.
 type SubLedgerLegV1 = {
   readonly debit: string;
   readonly credit: string;
   readonly currency: string;
-  readonly amountMinor: number;
+  readonly amount?: MoneyWire;
+  readonly amountMinor?: number;
 };
 type SubLedgerLegV2 = {
   readonly accountId: string;
   readonly debitCredit: "debit" | "credit";
   readonly currency: string;
-  readonly amountMinor: number;
+  readonly amount?: MoneyWire;
+  readonly amountMinor?: number;
 };
 type SubLedgerLeg = SubLedgerLegV1 | SubLedgerLegV2;
 
@@ -277,6 +285,9 @@ export function computeTrialBalance(args: ComputeTrialBalanceArgs): TrialBalance
     const payload = e.payload as unknown as { legs?: readonly SubLedgerLeg[] };
     if (!payload.legs) continue;
     for (const leg of payload.legs) {
+      // Source the value from the decimal `amount` source of truth (legacy
+      // amountMinor-only legs are lifted by `legAmountMoney`).
+      const legMinor = Number(amountToMinorUnits(legAmountMoney(leg)));
       if (isLegV2(leg)) {
         const key = `${leg.accountId}|${leg.currency}`;
         const row = balances.get(key) ?? {
@@ -284,17 +295,17 @@ export function computeTrialBalance(args: ComputeTrialBalanceArgs): TrialBalance
           currency: leg.currency,
           amount: 0,
         };
-        row.amount += leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+        row.amount += leg.debitCredit === "debit" ? legMinor : -legMinor;
         balances.set(key, row);
       } else {
         // v1 format: one entry covers debit account (+) and credit account (-)
         const dk = `${leg.debit}|${leg.currency}`;
         const dr = balances.get(dk) ?? { account: leg.debit, currency: leg.currency, amount: 0 };
-        dr.amount += leg.amountMinor;
+        dr.amount += legMinor;
         balances.set(dk, dr);
         const ck = `${leg.credit}|${leg.currency}`;
         const cr = balances.get(ck) ?? { account: leg.credit, currency: leg.currency, amount: 0 };
-        cr.amount -= leg.amountMinor;
+        cr.amount -= legMinor;
         balances.set(ck, cr);
       }
     }

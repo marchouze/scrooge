@@ -35,6 +35,8 @@
 //            Principles/5-multi-currency-entity-country.md.
 // Author: Bea (GL engineer, accounting).
 
+import { type Money, amountToMinorUnits } from "../core/decimal-money";
+import { legAmountMoney } from "../core/money-codec";
 import type { Event } from "../event-store/types";
 import { COA_BY_ID } from "./coa-registry";
 
@@ -47,6 +49,10 @@ export interface ExtractedGlLeg {
   readonly accountId: string;
   readonly currency: string;
   readonly debitCredit: "debit" | "credit";
+  /** Exact-decimal leg amount source of truth (lifted from legacy amountMinor). */
+  readonly amount: Money;
+  /** DERIVED from `amount`; retained for the re-book script / recon gate, which
+   *  still take integer minor units. */
   readonly amountMinor: number;
   /** payload.postedAt, falling back to event as_of. */
   readonly postedAt: string;
@@ -76,6 +82,9 @@ export function extractGlLegs(events: Iterable<Event>): ExtractedGlLeg[] {
       for (const raw of rawLegs) {
         const r = raw as Record<string, unknown>;
         if (typeof r.accountId === "string") {
+          // Source value from the decimal `amount` source of truth; legacy
+          // amountMinor-only legs are lifted by `legAmountMoney`.
+          const amount = legAmountMoney(r);
           out.push({
             eventId: e.event_id,
             eventType: e.type,
@@ -83,13 +92,15 @@ export function extractGlLegs(events: Iterable<Event>): ExtractedGlLeg[] {
             accountId: r.accountId,
             currency: typeof r.currency === "string" ? r.currency : "ZAR",
             debitCredit: r.debitCredit === "credit" ? "credit" : "debit",
-            amountMinor: typeof r.amountMinor === "number" ? r.amountMinor : 0,
+            amount,
+            amountMinor: Number(amountToMinorUnits(amount)),
             postedAt,
             provenance: e.provenance,
           });
         } else if (typeof r.debit === "string" && typeof r.credit === "string") {
           // Legacy one-object shape: expand into the two canonical legs.
-          const amountMinor = typeof r.amountMinor === "number" ? r.amountMinor : 0;
+          const amount = legAmountMoney(r);
+          const amountMinor = Number(amountToMinorUnits(amount));
           const currency = typeof r.currency === "string" ? r.currency : "ZAR";
           out.push({
             eventId: e.event_id,
@@ -98,6 +109,7 @@ export function extractGlLegs(events: Iterable<Event>): ExtractedGlLeg[] {
             accountId: r.debit,
             currency,
             debitCredit: "debit",
+            amount,
             amountMinor,
             postedAt,
             provenance: e.provenance,
@@ -109,6 +121,7 @@ export function extractGlLegs(events: Iterable<Event>): ExtractedGlLeg[] {
             accountId: r.credit,
             currency,
             debitCredit: "credit",
+            amount,
             amountMinor,
             postedAt,
             provenance: e.provenance,
@@ -118,7 +131,10 @@ export function extractGlLegs(events: Iterable<Event>): ExtractedGlLeg[] {
     } else if (e.type === "JournalEntryPosted") {
       const postedAt = typeof p.postedAt === "string" ? p.postedAt : e.as_of;
       const currency = typeof p.currency === "string" ? p.currency : "ZAR";
-      const amountMinor = typeof p.amountMinor === "number" ? p.amountMinor : 0;
+      // JournalEntryPosted carries amount as a payload-level MoneyWire/minor
+      // pair; `legAmountMoney` normalises it the same way it does a leg.
+      const amount = legAmountMoney(p);
+      const amountMinor = Number(amountToMinorUnits(amount));
       for (const [field, debitCredit] of [
         ["accountDebit", "debit"],
         ["accountCredit", "credit"],
@@ -132,6 +148,7 @@ export function extractGlLegs(events: Iterable<Event>): ExtractedGlLeg[] {
           accountId,
           currency,
           debitCredit,
+          amount,
           amountMinor,
           postedAt,
           provenance: e.provenance,
@@ -198,7 +215,8 @@ export function mismatchedResiduals(legs: Iterable<ExtractedGlLeg>): MismatchedR
       lastPostedAt: "",
       lastProvenance: undefined as unknown,
     };
-    cur.netMinor += leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+    const legMinor = Number(amountToMinorUnits(leg.amount));
+    cur.netMinor += leg.debitCredit === "debit" ? legMinor : -legMinor;
     cur.legCount += 1;
     if (leg.postedAt >= cur.lastPostedAt) {
       cur.lastPostedAt = leg.postedAt;

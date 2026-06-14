@@ -22,6 +22,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { type Money, amountToMinorUnits } from "../core/decimal-money";
+import { legAmountMoney } from "../core/money-codec";
 import type { Event } from "../event-store/types";
 import { eventInOperatingBook } from "../projections/filter";
 import { buildRateMap, convertMinor } from "./fx-rate-projection";
@@ -306,27 +308,34 @@ export function buildGlView(
       type NormLeg = {
         accountId: string;
         debitCredit: "debit" | "credit";
-        amountMinor: number;
+        // Decimal amount source of truth (lifted from legacy amountMinor).
+        amount: Money;
         currency: string;
       };
       const legs: NormLeg[] = [];
       for (const raw of rawLegs) {
         const r = raw as Record<string, unknown>;
         if (typeof r.accountId === "string") {
-          legs.push(r as unknown as NormLeg);
+          legs.push({
+            accountId: r.accountId,
+            debitCredit: r.debitCredit === "credit" ? "credit" : "debit",
+            amount: legAmountMoney(r),
+            currency: typeof r.currency === "string" ? r.currency : "ZAR",
+          });
         } else if (typeof r.debit === "string" && typeof r.credit === "string") {
-          const amt = typeof r.amountMinor === "number" ? r.amountMinor : 0;
+          const amount = legAmountMoney(r);
           const ccy = typeof r.currency === "string" ? r.currency : "ZAR";
-          legs.push({ accountId: r.debit, debitCredit: "debit", amountMinor: amt, currency: ccy });
+          legs.push({ accountId: r.debit, debitCredit: "debit", amount, currency: ccy });
           legs.push({
             accountId: r.credit,
             debitCredit: "credit",
-            amountMinor: amt,
+            amount,
             currency: ccy,
           });
         }
       }
       for (const l of legs) {
+        const legMinor = Number(amountToMinorUnits(l.amount));
         const coa = getCoaEntry(l.accountId);
         const postingType = String(p.postingType ?? "unknown");
         const sourceEventId = typeof p.sourceEventId === "string" ? p.sourceEventId : undefined;
@@ -343,9 +352,9 @@ export function buildGlView(
           accountName: coa.name,
           accountCategory: coa.category,
           debitCredit: l.debitCredit,
-          amountMinor: l.amountMinor,
+          amountMinor: legMinor,
           currency: l.currency,
-          ...rptFields(l.amountMinor, l.currency),
+          ...rptFields(legMinor, l.currency),
         });
       }
     } else if (event.type === "JournalEntryPosted") {
@@ -397,12 +406,13 @@ export function buildGlView(
       const description =
         typeof p.description === "string" ? p.description : "Manual journal entry";
       for (const leg of legs) {
-        const l = leg as {
-          accountId: string;
-          debitCredit: "debit" | "credit";
-          amountMinor: number;
-          currency: string;
+        const r = leg as Record<string, unknown>;
+        const l = {
+          accountId: typeof r.accountId === "string" ? r.accountId : "",
+          debitCredit: (r.debitCredit === "credit" ? "credit" : "debit") as "debit" | "credit",
+          currency: typeof r.currency === "string" ? r.currency : "ZAR",
         };
+        const legMinor = Number(amountToMinorUnits(legAmountMoney(r)));
         const coa = getCoaEntry(l.accountId);
         ledgerEntries.push({
           eventId: event.event_id,
@@ -413,10 +423,10 @@ export function buildGlView(
           accountName: coa.name,
           accountCategory: coa.category,
           debitCredit: l.debitCredit,
-          amountMinor: l.amountMinor,
+          amountMinor: legMinor,
           currency: l.currency,
           journalId,
-          ...rptFields(l.amountMinor, l.currency),
+          ...rptFields(legMinor, l.currency),
         });
       }
     }

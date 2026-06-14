@@ -51,6 +51,8 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering),
 //   Scrooge-coordinated run.
 
+import { amountToMinorUnits } from "../core/decimal-money";
+import { legAmountMoney } from "../core/money-codec";
 import type { Event } from "../event-store/types";
 import type { FxTradeExecutedPayload, PrincipalPaymentPayload } from "../markets/cdm/fx";
 import { type SubLedgerLeg, subLedgerLegFromMinor } from "./fx-accounting-types";
@@ -93,7 +95,8 @@ function legsToFootprint(legs: Iterable<SubLedgerLeg>): Map<string, FootprintEnt
   const map = new Map<string, FootprintEntry>();
   for (const leg of legs) {
     const k = key(leg.accountId, leg.currency);
-    const signed = leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+    const legMinor = Number(amountToMinorUnits(legAmountMoney(leg)));
+    const signed = leg.debitCredit === "debit" ? legMinor : -legMinor;
     const existing = map.get(k);
     map.set(k, {
       accountId: leg.accountId,
@@ -283,7 +286,8 @@ export function computeFxSubledgerReconciliation(
     const rawLegs = Array.isArray(p.legs) ? (p.legs as SubLedgerLeg[]) : [];
     for (const leg of rawLegs) {
       const k = key(leg.accountId, leg.currency);
-      const signed = leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+      const legMinor = Number(amountToMinorUnits(legAmountMoney(leg)));
+      const signed = leg.debitCredit === "debit" ? legMinor : -legMinor;
       const ex = fp.get(k);
       fp.set(k, {
         accountId: leg.accountId,
@@ -526,7 +530,9 @@ function normaliseLeg(raw: unknown): SubLedgerLeg[] {
   // subLedgerLegFromMinor (older events carry no `amount`; this fills it without
   // changing any figure — decimal-native slice 1).
   if (typeof r.accountId === "string") {
-    const amt = typeof r.amountMinor === "number" ? r.amountMinor : 0;
+    // Source value from the decimal `amount` source of truth; legacy
+    // amountMinor-only legs are lifted by `legAmountMoney`.
+    const amt = Number(amountToMinorUnits(legAmountMoney(r)));
     const ccy = typeof r.currency === "string" ? r.currency : "ZAR";
     const side: "debit" | "credit" = r.debitCredit === "credit" ? "credit" : "debit";
     return [
@@ -534,7 +540,7 @@ function normaliseLeg(raw: unknown): SubLedgerLeg[] {
     ];
   }
   if (typeof r.debit === "string" && typeof r.credit === "string") {
-    const amt = typeof r.amountMinor === "number" ? r.amountMinor : 0;
+    const amt = Number(amountToMinorUnits(legAmountMoney(r)));
     const ccy = typeof r.currency === "string" ? r.currency : "ZAR";
     return [
       subLedgerLegFromMinor({ accountId: r.debit, debitCredit: "debit", currency: ccy }, amt),
@@ -578,7 +584,8 @@ export function computeFxMisroutedCashRestate(events: readonly Event[]): CashLeg
     for (const raw of Array.isArray(p.legs) ? p.legs : []) {
       for (const leg of normaliseLeg(raw)) {
         if (leg.accountId !== FX_MISROUTED_RESERVE) continue;
-        const signed = leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+        const legMinor = Number(amountToMinorUnits(legAmountMoney(leg)));
+        const signed = leg.debitCredit === "debit" ? legMinor : -legMinor;
         byCcy.set(leg.currency, (byCcy.get(leg.currency) ?? 0) + signed);
       }
     }

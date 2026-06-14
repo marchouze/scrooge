@@ -158,6 +158,53 @@ export function minorFromMoneyWire(wire: MoneyWire): number {
  *  second import from iso4217. */
 export { scaleFor };
 
+// ─────────────── SubLedgerLeg amount boundary (read-migration slice 1) ───────
+//
+// D-DECIMAL-NATIVE-CONSUMER-MIGRATION-BEFORE-WAVE-3 (CEO-approved 2026-06-14).
+// The GL-reader consumers must source a leg's value from the decimal `amount`
+// source of truth, not the derived `amountMinor` compat field. But the legs
+// these readers replay come straight off the event store, where the on-wire
+// shape is mixed:
+//   - production/emitted legs carry `amount` (a MoneyWire) — THE source of truth;
+//   - legacy events carry only `amountMinor: number`.
+// `legAmountMoney` is the single boundary that normalises both to the exact
+// decimal `Money`. It prefers the on-wire `amount` (lossless decode) and only
+// lifts `amountMinor` when `amount` is absent (legacy fallback). The parity gate
+// `recon:sub-ledger-leg-decimal-parity` guarantees `amountMinor ===
+// toMinorUnits(amount)` for emitted legs, so the two paths yield identical cents.
+//
+// Consolidating the legacy `amountMinor` read HERE lets the reader files
+// (gl-projection, period-close, suspense-report, designated-currency-ledger,
+// gl-subledger-recon, fx-subledger-trade-reconciliation) drop their textual
+// dependency on `.amountMinor`. `amountMinor` stays on the payload type until a
+// later decider slice (Nadia/Vera) retires it.
+
+/** Minimal structural view of a posted leg as it arrives off the event store. */
+export interface RawLegMoney {
+  /** Decimal amount source of truth (present on emitted legs). */
+  readonly amount?: MoneyWire | unknown;
+  /** Legacy derived minor-unit compat field (legacy events only). */
+  readonly amountMinor?: number;
+  /** ISO 4217 currency. */
+  readonly currency?: string;
+}
+
+/**
+ * Normalise a posted leg's value to the exact decimal `Money`, regardless of
+ * whether it arrived with the decimal `amount` source of truth or only the
+ * legacy `amountMinor` compat field. Prefers `amount`; falls back to lifting
+ * `amountMinor` via `moneyWireFromMinor`. Throws (via `decodeMoney`) on a
+ * float-money violation in the wire `amount`.
+ */
+export function legAmountMoney<C extends Currency = Currency>(leg: RawLegMoney): Money<C> {
+  if (isMoneyWire(leg.amount)) {
+    return decodeMoney<C>(leg.amount);
+  }
+  const minor = typeof leg.amountMinor === "number" ? leg.amountMinor : 0;
+  const currency = typeof leg.currency === "string" ? leg.currency : "ZAR";
+  return decodeMoney<C>(moneyWireFromMinor(minor, currency));
+}
+
 /**
  * Walk an arbitrary payload and report any field whose value is a money wire
  * object carrying a NUMERIC amount (a float-money violation), plus any bare
