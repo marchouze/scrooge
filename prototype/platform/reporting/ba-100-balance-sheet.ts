@@ -75,6 +75,14 @@ import {
   type CounterpartySector,
   sectorForAccountId,
 } from "../accounting/coa-registry";
+import {
+  type Money,
+  amountToMinorUnits,
+  moneyFromMinorUnits,
+} from "../core/decimal-money";
+import type { Currency } from "../core/types";
+import { divD, roundDecimal, toDecimal } from "../core/decimal-engine";
+import Decimal from "decimal.js";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
 
 // ---------------------------------------------------------------------------
@@ -168,6 +176,8 @@ export interface Ba600LineItem {
   readonly lineId: string;
   readonly lineLabel: string;
   readonly amountMinor: number;
+  /** Decimal-native money — exact major-unit form. Primary source; amountMinor kept for compat. */
+  readonly amount: Money<Currency>;
   readonly currency: string;
   readonly contributingAccounts: readonly string[];
   readonly subCategory?: string;
@@ -197,6 +207,8 @@ export interface Ba600ClassificationGap {
   readonly leafAccountId: string;
   readonly currency: string;
   readonly amountMinor: number;
+  /** Decimal-native money — exact major-unit form. Primary source; amountMinor kept for compat. */
+  readonly amount: Money<Currency>;
 }
 
 /**
@@ -371,7 +383,7 @@ export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600Bala
     );
   }
 
-  const ccy = input.functionalCurrency;
+  const ccy = input.functionalCurrency as Currency;
 
   // Index classifications by leafAccountId — duplicate detection.
   const classMap = new Map<string, Ba600LineClassification>();
@@ -409,6 +421,8 @@ export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600Bala
         leafAccountId: row.leafAccountId,
         currency: row.currency,
         amountMinor: row.amountMinor,
+        // Convert at ingestion from trial-balance row (emitter migration is later).
+        amount: moneyFromMinorUnits(BigInt(row.amountMinor), row.currency as Currency),
       });
       continue;
     }
@@ -418,6 +432,8 @@ export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600Bala
       lineId: `${c.section}.${row.leafAccountId}`,
       lineLabel: c.lineLabel,
       amountMinor: stockMinor,
+      // Convert at ingestion from trial-balance row (emitter migration is later).
+      amount: moneyFromMinorUnits(BigInt(stockMinor), ccy),
       currency: ccy,
       contributingAccounts: [row.leafAccountId],
       ...(c.subCategory ? { subCategory: c.subCategory } : {}),
@@ -444,6 +460,7 @@ export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600Bala
         leafAccountId: row.leafAccountId,
         currency: row.currency,
         amountMinor: row.amountMinor,
+        amount: moneyFromMinorUnits(BigInt(row.amountMinor), row.currency as Currency),
       });
     }
   }
@@ -593,31 +610,41 @@ function splitLineBySector(line: Ba600LineItem): Ba600SectorSplit {
   const accounts = line.contributingAccounts;
   if (accounts.length === 0) {
     // No contributing account → attribute the whole line to `other` (surfaced).
-    split.other += line.amountMinor;
+    split.other += Number(amountToMinorUnits(line.amount));
     return split;
   }
   // Single contributing account (the common case): whole magnitude → its sector.
   if (accounts.length === 1) {
     const account = accounts[0];
     if (account === undefined) {
-      split.other += line.amountMinor;
+      split.other += Number(amountToMinorUnits(line.amount));
       return split;
     }
-    split[sectorForAccountId(account)] += line.amountMinor;
+    split[sectorForAccountId(account)] += Number(amountToMinorUnits(line.amount));
     return split;
   }
   // Multi-account line: distribute the magnitude integer-evenly across the
   // contributing accounts, routing the rounding residual to the first account so
   // the per-sector split still reconciles exactly to the line magnitude.
-  const per = Math.trunc(line.amountMinor / accounts.length);
+  //
+  // Rounding mode DOWN (toward zero) = equivalent to Math.trunc for positive values.
+  // Explicit DOWN so the reader can trace the truncation decision.
+  // Authority: D-DECIMAL-NATIVE-CONSUMER-MIGRATION-BEFORE-WAVE-3; brief §"Rounding policy".
+  const perD = roundDecimal(
+    divD(toDecimal(String(amountToMinorUnits(line.amount))), new Decimal(accounts.length)),
+    0,     // integer minor-unit result (no decimal places)
+    "DOWN", // floor-division toward zero — matches prior Math.trunc for positive amounts
+    // Authority: D-DECIMAL-NATIVE-CONSUMER-MIGRATION-BEFORE-WAVE-3; brief §"Rounding policy"
+  );
+  const per = Number(BigInt(perD.toFixed(0)));
   let allocated = 0;
   accounts.forEach((account, idx) => {
-    const share = idx === 0 ? line.amountMinor - per * (accounts.length - 1) : per;
+    const share = idx === 0 ? Number(amountToMinorUnits(line.amount)) - per * (accounts.length - 1) : per;
     allocated += share;
     split[sectorForAccountId(account)] += share;
   });
   // Defensive: any residual (should be 0) routes to `other`.
-  const residual = line.amountMinor - allocated;
+  const residual = Number(amountToMinorUnits(line.amount)) - allocated;
   if (residual !== 0) split.other += residual;
   return split;
 }
@@ -657,7 +684,8 @@ function computeSectorBreakdown(
         lineId: item.lineId,
         lineLabel: item.lineLabel,
         section,
-        amountMinor: item.amountMinor,
+        // Use amountToMinorUnits for accumulation reads — exact bigint.
+        amountMinor: Number(amountToMinorUnits(item.amount)),
         bySector,
       });
       sectionSplits[section] = addSectorSplit(sectionSplits[section], bySector);
@@ -699,7 +727,9 @@ function computePerCurrencyTotals(
       liabilitiesMinor: 0,
       equityMinor: 0,
     };
-    const stock = Math.abs(row.amountMinor);
+    // trial-balance row.amountMinor is the source here; convert via Money for decimal-native path.
+    const rowMoney = moneyFromMinorUnits(BigInt(row.amountMinor), row.currency as Currency);
+    const stock = Number(amountToMinorUnits(rowMoney) < 0n ? -amountToMinorUnits(rowMoney) : amountToMinorUnits(rowMoney));
     if (c.section === "assets") bucket.assetsMinor += stock;
     else if (c.section === "liabilities") bucket.liabilitiesMinor += stock;
     else bucket.equityMinor += stock;
