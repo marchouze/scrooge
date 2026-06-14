@@ -116,6 +116,8 @@ import { FX_ACCOUNTS } from "../../platform/accounting/posting-rules/fx-spot";
 import { seedGrandfatherApprovals } from "../../platform/accounting/sla/grandfather";
 import { urgentCorrectionToSubstrateAlert } from "../../platform/accounting/sla/interpreter";
 import { eventStore, logger } from "../../platform/composition";
+import { amountToMinorUnits } from "../../platform/core/decimal-money";
+import { legAmountMoney } from "../../platform/core/money-codec";
 import { newEventId } from "../../platform/core/types";
 import type {
   BondMaturedPayload,
@@ -397,8 +399,8 @@ function buildFxCancelEnrichmentForTrade(
       if (receivableLeg) {
         const signed =
           receivableLeg.debitCredit === "debit"
-            ? receivableLeg.amountMinor
-            : -receivableLeg.amountMinor;
+            ? Number(amountToMinorUnits(legAmountMoney(receivableLeg)))
+            : -Number(amountToMinorUnits(legAmountMoney(receivableLeg)));
         cumulativeUnrealisedPnlZarMinor += signed;
       }
     }

@@ -225,7 +225,7 @@ export function buildCancelEnrichment(args: {
     reversalBookingLegs: args.bookingLegs.map((l) => ({
       accountId: l.accountId,
       debitCredit: l.debitCredit === "debit" ? "credit" : "debit",
-      amountMinor: l.amountMinor,
+      amountMinor: Number(amountToMinorUnits(legAmountMoney(l))),
       currency: l.currency,
     })),
     cumulativeUnrealisedPnlZarMinor: args.cumulativeUnrealisedPnlZarMinor,
