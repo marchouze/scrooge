@@ -37,6 +37,8 @@ import {
   fingerprintIfrsClassifications,
   indexClassifications,
 } from "./ifrs-types";
+import { amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
+import type { Currency } from "../core/types";
 
 // ---------------------------------------------------------------------------
 // Output
@@ -87,7 +89,7 @@ export function generateIfrsIncomeStatement(input: IfrsGeneratorInput): IfrsInco
     );
   }
   const classMap = indexClassifications(input.classifications);
-  const ccy = input.functionalCurrency;
+  const ccy = input.functionalCurrency as Currency;
 
   const comparativeByAccount = new Map<string, number>();
   if (input.comparativeTrialBalance) {
@@ -111,6 +113,7 @@ export function generateIfrsIncomeStatement(input: IfrsGeneratorInput): IfrsInco
 
     for (const { row, classification } of filtered) {
       const stockMinor = Math.abs(row.amountMinor);
+      const amount = moneyFromMinorUnits(BigInt(stockMinor), ccy);
       const note = signWarning(row.amountMinor, expectSign);
       const compAmount = comparativeByAccount.get(row.leafAccountId) ?? null;
       if (compAmount !== null) {
@@ -127,12 +130,13 @@ export function generateIfrsIncomeStatement(input: IfrsGeneratorInput): IfrsInco
         lineId: `${accountClass}.${row.leafAccountId}`,
         lineLabel,
         amountMinor: stockMinor,
+        amount,
         comparativeAmountMinor: compAmount,
         currency: ccy,
         contributingAccounts: [row.leafAccountId],
         ...(note ? { note } : {}),
       });
-      totalMinor += stockMinor;
+      totalMinor += Number(amountToMinorUnits(amount));
     }
 
     return {
