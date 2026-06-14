@@ -18,6 +18,8 @@
 //   reports to Camille, CFO)
 // Co-author: Devon (COO, governance)
 
+import { amountToMinorUnits } from "../core/decimal-money";
+import { legAmountMoney } from "../core/money-codec";
 import type { SubLedgerPostingEmittedPayload } from "../event-store/event-types/fx-accounting";
 import type { TrialBalance } from "./period-close";
 
@@ -433,7 +435,8 @@ export function checkAgedItems(args: {
       if (!eligibleAccountIds.has(leg.accountId)) continue;
       const key = `${leg.accountId}|${leg.currency}`;
       const state = openByKey.get(key) ?? { netMinor: 0, oldestOpenDate: undefined };
-      state.netMinor += leg.debitCredit === "debit" ? leg.amountMinor : -leg.amountMinor;
+      const legMinor = Number(amountToMinorUnits(legAmountMoney(leg)));
+      state.netMinor += leg.debitCredit === "debit" ? legMinor : -legMinor;
       if (!state.oldestOpenDate || postDate < state.oldestOpenDate) {
         state.oldestOpenDate = postDate;
       }
