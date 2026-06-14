@@ -88,6 +88,12 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
       "Sets this bank's build-phase API + cloud spend envelope (USD 1,500-3,500/month). Pure tenant budget posture.",
   },
   {
+    decisionId: "D-ATTRIBUTION-STRATEGY-PORTFOLIO-TENANCY",
+    class: "foundational",
+    rationale:
+      "Establishes that strategy/portfolio attribution dimensions are tenant-scoped and tenant-owned (option b). Defines the attribution-tenancy model on the shared platform; generalises to any tenant.",
+  },
+  {
     decisionId: "D-AUDIT-FINDING-MASS-CLOSURE",
     class: "directional",
     rationale:
@@ -368,6 +374,18 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
       "Completes the DCAM taxonomy mapping (ProductFamily to L1/L2/L3 scope codes). Industry-standard data-management taxonomy applied to the platform's product model \u2014 reusable across tenants.",
   },
   {
+    decisionId: "D-DECIMAL-NATIVE-CONSUMER-MIGRATION-BEFORE-WAVE-3",
+    class: "foundational",
+    rationale:
+      "Sequences the Wave-3 re-purge behind migrating the legacy *Minor readers to MoneyWire (Nadia validation + Vera audit at the drop). Core money-substrate migration ordering; the strangler-sequencing discipline generalises.",
+  },
+  {
+    decisionId: "D-DECIMAL-NATIVE-MONEY-ARITHMETIC",
+    class: "foundational",
+    rationale:
+      "Completes decimal-money as decimal-native ENGINE arithmetic (exact decimal, no float intermediates, no round-to-cent) across reval/P&L/accounting, not a boundary flip. Core money substrate; holds for any tenant.",
+  },
+  {
     decisionId: "D-DECISIONS-FRAMEWORK-REDESIGN",
     class: "foundational",
     rationale:
@@ -384,6 +402,18 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
     class: "foundational",
     rationale:
       "Reviewer/decider run topology with blocking semantics and a retrospective recon gate. Dispatch-lifecycle mechanics of the agent substrate \u2014 pure backbone.",
+  },
+  {
+    decisionId: "D-DOMAIN-OWNERSHIP-MAP",
+    class: "foundational",
+    rationale:
+      "Adopts the v3 normalised domain taxonomy as the canonical Agent⟺Domain⟺Obligation ownership map. Backbone ownership structure; generalises to any tenant.",
+  },
+  {
+    decisionId: "D-ENGINEERING-INTEGRITY-CHARTER",
+    class: "foundational",
+    rationale:
+      "Embeds the Engineering Charter (correctness before convenience) as standing discipline backed by enforcing recon gates. Cross-cutting platform discipline; holds for any tenant.",
   },
   {
     decisionId: "D-EVENT-STORE-ARCHIVE-GAP-RECOVERY",
@@ -436,11 +466,29 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
     citations: ["D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER"],
   },
   {
+    decisionId: "D-FIL-ATTRIBUTION-A1-BUILD",
+    class: "foundational",
+    rationale:
+      "Approves the dimensional metric-attribution spec + A1–A5 sequence, authorises A1 (kernel), and the assignment-authority model. Core FIL-framework attribution layer; generalises to any tenant.",
+  },
+  {
+    decisionId: "D-FIL-BOOK-COMPOSITE-VALUATION",
+    class: "foundational",
+    rationale:
+      "FX P&L on the FIL Valuable facet + book-as-composite-Valuable aggregate; v1 cutover (value instruments AND books, not accounts). Core FIL valuation model; generalises to any tenant.",
+  },
+  {
     decisionId: "D-FIL-FRAMEWORK-UNIFICATION",
     class: "foundational",
     rationale:
       "Unifies the instrument language and model library into one FIL Framework — facets as interfaces, models as their versioned citable implementations; one boundary spec for any tenant.",
     citations: ["D-V2-BBAAS-W9-FIL", "D-V2-BBAAS-W4-W7-DISPATCH"],
+  },
+  {
+    decisionId: "D-FIL-SHARED-ALIAS-REGISTRY",
+    class: "foundational",
+    rationale:
+      "Consolidates the v2 swappable-seam alias pattern into one shared alias-registry substrate (SA-CCR + composition-factory seams migrate onto it). Platform backbone; generalises to any tenant.",
   },
   {
     decisionId: "D-FINANCIAL-INSTRUMENT-ENTITY",
@@ -608,6 +656,12 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
       "Broadens this bank's FX NPA to the umbrella OTC vanilla product (Spot/Forward/Swap). Tenant product approval.",
   },
   {
+    decisionId: "D-FX-PNL-INSTRUMENT-LEVEL-VALUATION",
+    class: "foundational",
+    rationale:
+      "Re-founds FX realised/unrealised P&L on instrument-level valuation (value instruments, not accounts). The instrument-level valuation principle is foundational FIL doctrine; generalises to any tenant.",
+  },
+  {
     decisionId: "D-FX-QUOTING-CONVENTION",
     class: "directional",
     rationale:
@@ -675,6 +729,12 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
     class: "foundational",
     rationale:
       "Migrates cohort goal-loops onto the shared brief-dispatch path and drains the blocked scopes. Goal-loop/dispatch mechanics of the agent substrate \u2014 backbone plumbing.",
+  },
+  {
+    decisionId: "D-GOLDEN-SOURCE-SHARED-STORE-ASSERTION",
+    class: "foundational",
+    rationale:
+      "Re-frames recon:regulatory-golden-source-integrity as a shared-store assertion + scheduled tick, not a clean-CI gate. Recon-architecture clarification; generalises to any tenant's store.",
   },
   {
     decisionId: "D-GROUP-STRUCTURE",
@@ -800,6 +860,12 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
       "Sets which provenance classes this bank's LCR dashboard tile counts. Tenant build-phase rendering choice on top of the provenance substrate.",
   },
   {
+    decisionId: "D-LEGAL-ENTITY-NAME-HOZ-BANK",
+    class: "directional",
+    rationale:
+      "Confirms this bank's canonical registered legal name 'Hoz Bank Limited' for LE-ZA-HOZ-BANK. Tenant-specific identity.",
+  },
+  {
     decisionId: "D-LEGAL-ENTITY-TREE-V0",
     class: "directional",
     rationale:
@@ -846,10 +912,40 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
       "Lays the markets event-schema foundation (trade/position/lifecycle families). Core backbone schema for any tenant running markets activity; the title's idempotency-test annotation reflects re-emission testing, not content.",
   },
   {
+    decisionId: "D-METRIC-ATTRIBUTION-DIMENSIONAL",
+    class: "foundational",
+    rationale:
+      "Dimensional metric attribution — any metric, any level, any slice — over instrument-level facet outputs. Core FIL attribution capability; generalises to any tenant.",
+  },
+  {
+    decisionId: "D-MODEL-BINDING-CONTRACT-V1",
+    class: "foundational",
+    rationale:
+      "FIL model-binding contract v1 — facets are the sole data-access path; models declare implements/requires/emits/cites. Core FIL-framework contract; generalises to any tenant.",
+  },
+  {
     decisionId: "D-MODEL-REGISTRY-SCOPE-CLOSURE-V1",
     class: "directional",
     rationale:
       "Registers this bank's Tier-1 models (RWA build, IFRS 9 ECL suite) to close a registry scope gap. Tenant model inventory on the foundational model-registry substrate.",
+  },
+  {
+    decisionId: "D-MONEY-DECIMAL-BUILD-PROCEED",
+    class: "foundational",
+    rationale:
+      "Authorises the decimal-money build (non-destructive slices proceed; destructive purge gated; transaction-purity guardrails). Core money-substrate build authorisation; generalises to any tenant.",
+  },
+  {
+    decisionId: "D-MONEY-DECIMAL-PURGE-REMEDIATION",
+    class: "foundational",
+    rationale:
+      "Remediates the WS-MONEY-DECIMAL purge (incomplete classifier left legacy-encoded financial-transaction events; fix root cause then re-purge). Core money-substrate integrity; generalises.",
+  },
+  {
+    decisionId: "D-MONEY-DECIMAL-REDENOMINATION",
+    class: "foundational",
+    rationale:
+      "Adopts exact major-unit decimal money via config-only purge + tenant-bootstrap re-seed (option B). Core money-substrate redenomination; generalises to any tenant.",
   },
   {
     decisionId: "D-MR-PROC-S8-2-APPROVE",
@@ -1351,6 +1447,12 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
     citations: ["Principles/6-autonomous-by-default.md"],
   },
   {
+    decisionId: "D-SACCR-V2-CUTOVER-ACCELERATE",
+    class: "foundational",
+    rationale:
+      "Accelerates the SA-CCR alias-flip to the v2 FIL-Model (v2 becomes source-of-record, v1 retired; corrects the confirmed v1 FX MtM double-count), gated on Nadia independent validation. Shared model-library cutover; generalises.",
+  },
+  {
     decisionId: "D-SAMOS-NON-CLEARING",
     class: "directional",
     rationale:
@@ -1612,6 +1714,12 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
     citations: ["D-V2-BBAAS-ANALYSIS-LAUNCH"],
   },
   {
+    decisionId: "D-V2-BBAAS-TIER-STRUCTURE",
+    class: "foundational",
+    rationale:
+      "V2 BBaaS commercial tier structure = K (anchor/self-hosted) · R (regulated-tenant) · C (commercial SaaS). Defines the product tiering for all tenants on the shared platform.",
+  },
+  {
     decisionId: "D-V2-BBAAS-W1-DECISION-DISTILLATION",
     class: "foundational",
     rationale:
@@ -1654,6 +1762,24 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
     citations: ["D-V2-BBAAS-BLUEPRINT-SYNTHESIS", "D-V2-BBAAS-W9-FIL"],
   },
   {
+    decisionId: "D-V2-TENANCY-ARCHITECTURE",
+    class: "foundational",
+    rationale:
+      "V2 tenancy architecture = Option C — per-tenant event stores + a shared control-plane store. Core multi-tenant backbone; defines the substrate for all tenants.",
+  },
+  {
+    decisionId: "D-V2-WAVE4-COMMERCIAL-POSTURE",
+    class: "directional",
+    rationale:
+      "V2 Wave-4 commercial posture — build mechanics now / gate selling on anchor proof; K→R→C; flat tiered subscription; approval-file held as internal IP. Specific commercial-strategy choices for this venture.",
+  },
+  {
+    decisionId: "D-VAR-APPETITE-RECALIBRATE-STANDING-NOP",
+    class: "directional",
+    rationale:
+      "Re-calibrates this bank's market-risk VaR appetite (appetite:market:trading-var) R350k → R575k vs the standing-NOP base. Tenant RAS calibration.",
+  },
+  {
     decisionId: "D-VAR-EXPOSURE-INCLUDES-STANDING-NOP",
     class: "directional",
     rationale:
@@ -1664,6 +1790,24 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
     class: "directional",
     rationale:
       "Schedules two threshold-currency recon builds after this bank's first ICAAP cycle. Tenant gate-scheduling tied to its ICAAP cadence.",
+  },
+  {
+    decisionId: "D-W4-MODEL-LIBRARY-PILOT",
+    class: "foundational",
+    rationale:
+      "W4 model-library pilot = SA-CCR as the first FIL-Model, parity-gated against the live log. Establishes the shared model-library pattern; generalises to any tenant.",
+  },
+  {
+    decisionId: "D-W7-VENDOR-ENTITY-STRUCTURE",
+    class: "directional",
+    rationale:
+      "Establishes the assignable vendor entity outside the bank consolidation perimeter + CSI blocklist for cross-tenant learning. Commercialisation-path structure specific to the BBaaS vendor arrangement, not the shared platform backbone.",
+  },
+  {
+    decisionId: "D-W8-DECISION-IMPACT-SWEEP",
+    class: "foundational",
+    rationale:
+      "Defines the decision-impact sweep substrate: on every approved Decision, an automated sweep computes downstream-affected artefacts via the citation graph + scope-overlap. Core W8 agent-learning machinery; generalises to any tenant.",
   },
   {
     decisionId: "D-W8-EXAM-GOVERNANCE",
@@ -1678,6 +1822,12 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
       "Records the standing 'weights propose, events dispose' constraint: parametric training permitted only as a proposer layer trained from the corpus; system of record is always the event log. The corpus-first design preserves the fine-tune option one-way; LoRA-first forecloses structured citation permanently.",
   },
   {
+    decisionId: "D-W8-POSTURE-REGISTER-SLICE-1",
+    class: "foundational",
+    rationale:
+      "Defines the posture register substrate: typed Posture* events + the 8-arm APPLIES_WHEN predicate language + applicability assessment. Core W8 agent-learning machinery (structured-first knowledge of what applies where); generalises to any tenant.",
+  },
+  {
     decisionId: "D-WS-JS-NUMBER-RECONCILIATION",
     class: "directional",
     rationale:
@@ -1686,10 +1836,10 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
 ];
 
 /** Snapshot count of approved decisionIds covered at authoring time. */
-export const DECISION_CLASSIFICATION_COUNT = 268;
+export const DECISION_CLASSIFICATION_COUNT = 293;
 
 export const DECISION_CLASSIFICATION_COUNTS = {
-  foundational: 98,
-  directional: 145,
+  foundational: 119,
+  directional: 149,
   obsolete: 25,
 } as const;
