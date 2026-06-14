@@ -1082,7 +1082,7 @@
     },
     {
       "file": "scripts/reconcile-fx-subledger.ts",
-      "line": 39,
+      "line": 40,
       "pattern": "money-multiply/divide"
     },
     {

@@ -21,9 +21,9 @@ import {
   type TradeReconciliation,
   computeFxSubledgerReconciliation,
 } from "../platform/accounting/fx-subledger-trade-reconciliation";
-import { amountToMinorUnits } from "../platform/core/decimal-money";
 import { buildGlView } from "../platform/accounting/gl-projection";
 import { clock, eventStore } from "../platform/composition";
+import { amountToMinorUnits } from "../platform/core/decimal-money";
 import {
   type ManualJournalEntryPayload,
   makeManualJournalEntry,

@@ -20,8 +20,8 @@
 
 import { type Money, amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
 import { legAmountMoney } from "../core/money-codec";
-import type { SubLedgerPostingEmittedPayload } from "../event-store/event-types/fx-accounting";
 import type { Currency } from "../core/types";
+import type { SubLedgerPostingEmittedPayload } from "../event-store/event-types/fx-accounting";
 import type { TrialBalance } from "./period-close";
 
 // ---------------------------------------------------------------------------
