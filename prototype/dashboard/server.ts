@@ -3533,7 +3533,7 @@ const server = Bun.serve({
       //            AML-CFT-POLICY-V1 (PR #261); TRADING-MANDATE-V1 (PR #256).
       // pageProvenance: event-derived → simulated-only in build phase.
       return jsonResponse({
-        ...buildOnboardingView(eventStore),
+        ...buildOnboardingView(eventStore, nowUtc()),
         pageProvenance: eventDerivedPageProvenance(),
       });
     }
