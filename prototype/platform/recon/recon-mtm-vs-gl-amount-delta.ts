@@ -47,6 +47,8 @@ import { join } from "node:path";
 
 import { eventStore } from "../composition";
 import type { FxPositionRevaluedPayload } from "../event-store/event-types/fx-accounting";
+import { legAmountMoney } from "../core/money-codec";
+import { amountToMinorUnits } from "../core/decimal-money";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "mtm-vs-gl-amount-delta";
@@ -187,7 +189,6 @@ function buildGlNetIndex(
         leg === null ||
         typeof leg.accountId !== "string" ||
         typeof leg.debitCredit !== "string" ||
-        typeof leg.amountMinor !== "number" ||
         typeof leg.currency !== "string"
       )
         continue;
@@ -196,11 +197,12 @@ function buildGlNetIndex(
       if (leg.currency !== "ZAR") continue;
       if (!isPnlAccount(leg.accountId)) continue;
 
+      const legMinor = Number(amountToMinorUnits(legAmountMoney(leg)));
       const prior = glNetByKey.get(key) ?? 0;
       if (leg.debitCredit === "credit") {
-        glNetByKey.set(key, prior + leg.amountMinor);
+        glNetByKey.set(key, prior + legMinor);
       } else {
-        glNetByKey.set(key, prior - leg.amountMinor);
+        glNetByKey.set(key, prior - legMinor);
       }
     }
   }
