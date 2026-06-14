@@ -50,6 +50,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
+import { mulD, roundDecimal, subD, toDecimal } from "../../platform/core/decimal-engine";
 import { moneyWireFromMinor } from "../../platform/core/money-codec";
 import { newEventId } from "../../platform/core/types";
 import {
@@ -320,8 +321,15 @@ function revalueOnePosition(args: {
     } else if (qLeg.counterNotional && qLeg.counterNotional.currency === quoteCcy) {
       notionalQuoteMinor = qLeg.counterNotional.amountMinor;
     } else {
-      // Fallback: derive from notional × book rate
-      notionalQuoteMinor = Math.round(notionalBaseMinor * bookRate);
+      // Fallback: derive from notional × book rate (decimal-native, HALF_EVEN).
+      // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
+      notionalQuoteMinor = Number(
+        roundDecimal(
+          mulD(toDecimal(String(notionalBaseMinor)), toDecimal(String(bookRate))),
+          0,
+          "HALF_EVEN",
+        ).toFixed(0),
+      );
     }
 
     // Compute book-time ZAR rates. For ZAR-quoted pairs, zarRateBase_book = bookRate.
@@ -331,11 +339,31 @@ function revalueOnePosition(args: {
     const zarRateBase_book = quoteIsZar ? bookRate : bookRate * zarRateQuote;
     const zarRateQuote_book = quoteIsZar ? 0 : zarRateQuote;
 
-    // P&L = base_leg_pnl − quote_leg_pnl (quote is a contra-leg)
-    const basePnl = Math.round(sideSign * notionalBaseMinor * (zarRateBase - zarRateBase_book));
+    // P&L = base_leg_pnl − quote_leg_pnl (quote is a contra-leg).
+    // Decimal-native: HALF_EVEN at the ZAR minor boundary.
+    // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
+    const basePnl = Number(
+      roundDecimal(
+        mulD(
+          mulD(toDecimal(String(sideSign)), toDecimal(String(notionalBaseMinor))),
+          subD(toDecimal(String(zarRateBase)), toDecimal(String(zarRateBase_book))),
+        ),
+        0,
+        "HALF_EVEN",
+      ).toFixed(0),
+    );
     const quotePnl = quoteIsZar
       ? 0
-      : Math.round(sideSign * notionalQuoteMinor * (zarRateQuote - zarRateQuote_book));
+      : Number(
+          roundDecimal(
+            mulD(
+              mulD(toDecimal(String(sideSign)), toDecimal(String(notionalQuoteMinor))),
+              subD(toDecimal(String(zarRateQuote)), toDecimal(String(zarRateQuote_book))),
+            ),
+            0,
+            "HALF_EVEN",
+          ).toFixed(0),
+        );
     const unrealisedPnlZarMinor = basePnl - quotePnl;
 
     // Synthetic cross-rate for bookRate compat on the event (revalRate ≈ zarRateBase/zarRateQuote if non-ZAR)
@@ -417,8 +445,17 @@ function revalueOnePosition(args: {
       ? prior.rateSource.slice("stale-mark:".length)
       : prior.rateSource;
     const staleSource = `stale-mark:${originalSource}`;
-    const unrealisedPnlZarMinor = Math.round(
-      sideSign * notionalBaseMinor * (prior.revalRate - bookRate),
+    // Decimal-native stale-mark P&L: HALF_EVEN at the ZAR minor boundary.
+    // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
+    const unrealisedPnlZarMinor = Number(
+      roundDecimal(
+        mulD(
+          mulD(toDecimal(String(sideSign)), toDecimal(String(notionalBaseMinor))),
+          subD(toDecimal(String(prior.revalRate)), toDecimal(String(bookRate))),
+        ),
+        0,
+        "HALF_EVEN",
+      ).toFixed(0),
     );
     const revalPayload: FxPositionRevaluedPayload = {
       tradeId,
@@ -966,9 +1003,13 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
               bookId: r.bookId,
               currency: r.currency,
               amountClosedMinor: r.amountClosedMinor,
+              // MoneyWire alongside legacy integer (decimal-native slice 2b).
+              // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC.
+              amountClosed: moneyWireFromMinor(r.amountClosedMinor, r.currency),
               avgCostZarRate: r.avgCostZarRate,
               disposalCostZarRate: r.disposalCostZarRate,
               realisedPnlZarMinor: r.realisedPnlZarMinor,
+              realisedPnlZar: moneyWireFromMinor(r.realisedPnlZarMinor, "ZAR"),
               sourceTradeId: r.sourceTradeId,
               recognisedAt: r.recognisedAt,
             },

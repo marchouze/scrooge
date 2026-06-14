@@ -26,6 +26,8 @@
 
 import { classifyHQLA } from "../platform/collateral/hqla-classifier";
 import { clock, eventStore as defaultEventStore } from "../platform/composition";
+import { divD, mulD, roundDecimal, toDecimal } from "../platform/core/decimal-engine";
+import { moneyWireFromMinor } from "../platform/core/money-codec";
 import { newEventId } from "../platform/core/types";
 import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-accounting";
 import { makeBondSettlementInstructed } from "../platform/event-store/event-types/bond-settlement";
@@ -248,7 +250,16 @@ export async function bookBondTrade(
   // --- Compute derived fields ---
 
   const dirtyPricePercent = cleanPricePct + (accruedInterestMinor / nominalMinor) * 100;
-  const dirtyConsiderationZarMinor = Math.round((nominalMinor * dirtyPricePercent) / 100);
+  const dirtyConsiderationZarMinor = Number(
+    roundDecimal(
+      divD(
+        mulD(toDecimal(String(nominalMinor)), toDecimal(String(dirtyPricePercent))),
+        toDecimal("100"),
+      ),
+      0,
+      "HALF_EVEN",
+    ).toFixed(0),
+  );
 
   // --- Provenance ---
 
@@ -330,7 +341,11 @@ export async function bookBondTrade(
       isin,
       side,
       nominalMinor,
+      // MoneyWire alongside legacy integer fields (decimal-native slice 2b).
+      // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
+      nominal: moneyWireFromMinor(nominalMinor, "ZAR"),
       dirtyConsiderationZarMinor,
+      dirtyConsiderationZar: moneyWireFromMinor(dirtyConsiderationZarMinor, "ZAR"),
       settlementDate,
       custodian: "standard-bank",
       counterpartyLei,

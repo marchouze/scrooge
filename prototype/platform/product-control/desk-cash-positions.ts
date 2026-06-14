@@ -21,6 +21,7 @@
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
+import { mulD, roundDecimal, subD, toDecimal } from "../core/decimal-engine";
 import type { OfficialMarkAdoptedPayload } from "../event-store/event-types/valuation";
 import type { EventStore } from "../event-store/store";
 import {
@@ -118,8 +119,15 @@ function priceRow(row: CurrencyPositionRow, zarRates: Map<string, number>): Desk
       realisedZarMinorCumulative: row.realisedZarMinorCumulative,
     };
   }
-  const zarValueMinor = Math.round(row.fcyQuantityMinor * markRate);
-  const unrealised = Math.round(row.fcyQuantityMinor * (markRate - row.avgCostZarRate));
+  // Decimal-native FCY→ZAR mark-to-market: HALF_EVEN at the ZAR minor boundary.
+  // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
+  const fcyDec = toDecimal(String(row.fcyQuantityMinor));
+  const markDec = toDecimal(String(markRate));
+  const costDec = toDecimal(String(row.avgCostZarRate));
+  const zarValueMinor = Number(roundDecimal(mulD(fcyDec, markDec), 0, "HALF_EVEN").toFixed(0));
+  const unrealised = Number(
+    roundDecimal(mulD(fcyDec, subD(markDec, costDec)), 0, "HALF_EVEN").toFixed(0),
+  );
   return {
     instrumentId: row.instrumentId,
     entity: row.entity,

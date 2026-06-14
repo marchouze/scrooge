@@ -47,6 +47,7 @@
 //   brief:rohan:valuation-adjustment-prudent-valuation-reserve-f:2026-05-31
 //   (WS-PRODUCT-CONTROL).
 
+import { mulD, roundDecimal, toDecimal } from "../core/decimal-engine";
 import { newEventId, nowUtc } from "../core/types";
 import {
   type AvaCategoryLine,
@@ -234,7 +235,15 @@ export function computeCloseOutReserve(args: {
       unpriceable.push(`${pos.tradeId} (${pos.pairKey})`);
       continue;
     }
-    reserveMinor += Math.round(halfSpread * pos.zarNotionalMinor);
+    // Decimal-native close-out reserve per position: HALF_EVEN at the ZAR minor boundary.
+    // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
+    reserveMinor += Number(
+      roundDecimal(
+        mulD(toDecimal(String(halfSpread)), toDecimal(String(pos.zarNotionalMinor))),
+        0,
+        "HALF_EVEN",
+      ).toFixed(0),
+    );
   }
 
   if (unpriceable.length > 0) {

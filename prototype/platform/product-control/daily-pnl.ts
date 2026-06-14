@@ -24,6 +24,7 @@
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
+import { divD, mulD, roundDecimal, toDecimal } from "../core/decimal-engine";
 import { newEventId, nowUtc } from "../core/types";
 import type { FxPositionRevaluedPayload } from "../event-store/event-types/fx-accounting";
 import { makeDailyPnLReportGenerated } from "../event-store/event-types/product-control";
@@ -441,7 +442,18 @@ export function computeDailyPnL(
         // Approximation: base/(base+quote) of total (direction-signed).
         const total = notionalBaseMinor + notionalQuoteMinor;
         if (total === 0) return unrealisedForReporting;
-        return Math.round((unrealisedForReporting * notionalBaseMinor) / total);
+        // Decimal-native pro-rata split: HALF_EVEN at the ZAR minor boundary.
+        // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
+        return Number(
+          roundDecimal(
+            divD(
+              mulD(toDecimal(String(unrealisedForReporting)), toDecimal(String(notionalBaseMinor))),
+              toDecimal(String(total)),
+            ),
+            0,
+            "HALF_EVEN",
+          ).toFixed(0),
+        );
       })();
 
       const quoteUnrealised = (() => {

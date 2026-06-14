@@ -2,12 +2,7 @@
   "violations": [
     {
       "file": "dashboard/bond-gateway.ts",
-      "line": 251,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "dashboard/bond-gateway.ts",
-      "line": 250,
+      "line": 252,
       "pattern": "money-multiply/divide"
     },
     {
@@ -206,11 +201,6 @@
       "pattern": "money-multiply/divide"
     },
     {
-      "file": "platform/market-risk/valuation-adjustment-engine.ts",
-      "line": 237,
-      "pattern": "Math.round(money)"
-    },
-    {
       "file": "platform/markets/cdm/dcam-actus-mapping.ts",
       "line": 106,
       "pattern": "money-multiply/divide"
@@ -364,31 +354,6 @@
       "file": "platform/payments/swift-mt/types.ts",
       "line": 123,
       "pattern": "money-multiply/divide"
-    },
-    {
-      "file": "platform/product-control/daily-pnl.ts",
-      "line": 444,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "platform/product-control/desk-cash-positions.ts",
-      "line": 121,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "platform/product-control/desk-cash-positions.ts",
-      "line": 122,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "platform/product-control/pnl-attribution.ts",
-      "line": 130,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "platform/product-control/pnl-attribution.ts",
-      "line": 469,
-      "pattern": "Math.round(money)"
     },
     {
       "file": "platform/projections/alm-positions.ts",
@@ -987,42 +952,17 @@
     },
     {
       "file": "runtime/agents/rohan-daily-mtm.ts",
-      "line": 324,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "runtime/agents/rohan-daily-mtm.ts",
-      "line": 335,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "runtime/agents/rohan-daily-mtm.ts",
-      "line": 338,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "runtime/agents/rohan-daily-mtm.ts",
-      "line": 420,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "runtime/agents/rohan-daily-mtm.ts",
-      "line": 421,
+      "line": 1060,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "runtime/agents/rohan-daily-mtm.ts",
-      "line": 1019,
+      "line": 1100,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "runtime/agents/rohan-daily-mtm.ts",
-      "line": 1059,
-      "pattern": "money-multiply/divide"
-    },
-    {
-      "file": "runtime/agents/rohan-daily-mtm.ts",
-      "line": 1080,
+      "line": 1121,
       "pattern": "money-multiply/divide"
     },
     {

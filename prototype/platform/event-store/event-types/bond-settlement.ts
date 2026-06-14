@@ -27,6 +27,15 @@ import { z } from "zod";
 import { newEventId } from "../../core/types";
 import { type Actor, type Event, eventSchema } from "../types";
 
+// MoneyWire shape for the decimal `amount` fields (decimal-native slice 2b).
+// Optional during the strangler transition so legacy events still decode.
+// Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
+const bondMoneyWireSchema = z.object({
+  __money: z.literal("v1"),
+  amount: z.string().min(1),
+  currency: z.string().min(1),
+});
+
 // ---------------------------------------------------------------------------
 // BondSettlementInstructed
 //
@@ -47,8 +56,18 @@ export const bondSettlementInstructedPayloadSchema = z.object({
   side: z.enum(["buy", "sell"]),
   /** Nominal / face value in minor currency units. */
   nominalMinor: z.number().int().positive(),
+  /**
+   * Exact-decimal nominal as MoneyWire — THE source of truth on the wire
+   * (D-DECIMAL-NATIVE-MONEY-ARITHMETIC slice 2b). Optional during the transition.
+   */
+  nominal: bondMoneyWireSchema.optional(),
   /** Dirty consideration in ZAR minor units (nominal × dirty price / 100). */
   dirtyConsiderationZarMinor: z.number().int().positive(),
+  /**
+   * Exact-decimal dirty consideration as MoneyWire — THE source of truth on the wire.
+   * Optional during the transition so legacy events still decode.
+   */
+  dirtyConsiderationZar: bondMoneyWireSchema.optional(),
   /** T+3 settlement date per JSE Debt Market Rules (ISO 8601 date). */
   settlementDate: z.string().min(1),
   /** Custodian handling the STRATE instruction on the bank's behalf. */
@@ -102,6 +121,11 @@ export const bondCustodianSettlementConfirmedPayloadSchema = z.object({
   securitiesLegStatus: z.literal("delivered"),
   /** Actual cash settled in ZAR minor units (should equal dirtyConsiderationZarMinor). */
   cashLegZarMinor: z.number().int().positive(),
+  /**
+   * Exact-decimal cash settled as MoneyWire — THE source of truth on the wire
+   * (D-DECIMAL-NATIVE-MONEY-ARITHMETIC slice 2b). Optional during the transition.
+   */
+  cashLegZar: bondMoneyWireSchema.optional(),
   /** ISO 8601 timestamp of Standard Bank confirmation. */
   confirmedAt: z.string().min(1),
 });

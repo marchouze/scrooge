@@ -22,6 +22,17 @@ import { z } from "zod";
 import { newEventId } from "../../core/types";
 import { type Actor, type Event, eventSchema } from "../types";
 
+// MoneyWire shape for the leg's decimal `amount` on the wire (decimal-native
+// slice 2b). The `__money` discriminant + string amount is the canonical money
+// codec form (see money-codec.ts); the integer `amountMinor` below is now a
+// DERIVED compat field. Both are present during the strangler transition.
+// Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
+const manualJournalMoneyWireSchema = z.object({
+  __money: z.literal("v1"),
+  amount: z.string().min(1),
+  currency: z.string().min(1),
+});
+
 // ---------------------------------------------------------------------------
 // BankAccountOpened / BankAccountConfigured / BankAccountClosed
 // ---------------------------------------------------------------------------
@@ -516,6 +527,16 @@ export const manualJournalEntryPayloadSchema = z
             message: "ManualJournalEntry leg.accountId must match ACC-NNNN-NNN",
           }),
           debitCredit: z.enum(["debit", "credit"]),
+          /**
+           * Exact-decimal leg amount as MoneyWire — THE source of truth on the wire
+           * (D-DECIMAL-NATIVE-MONEY-ARITHMETIC slice 2b). Optional during the transition
+           * so legacy events (which carry only `amountMinor`) still decode.
+           */
+          amount: manualJournalMoneyWireSchema.optional(),
+          /**
+           * Amount in minor currency units (always positive). DERIVED from `amount`
+           * for emitted legs; retained as compat field for not-yet-migrated consumers.
+           */
           amountMinor: z.number().int().nonnegative(),
           currency: z
             .string()

@@ -764,6 +764,11 @@ export const realisedPnlRecognisedPayloadSchema = z.object({
    * the magnitude of the reduction).
    */
   amountClosedMinor: z.number().int().nonnegative(),
+  /**
+   * Exact-decimal FCY amount closed as MoneyWire — THE source of truth on the wire
+   * (D-DECIMAL-NATIVE-MONEY-ARITHMETIC slice 2b). Optional during the transition.
+   */
+  amountClosed: moneyWireSchema.optional(),
   /** Weighted-average ZAR cost rate of the position before close-out (ZAR per FCY). */
   avgCostZarRate: z.number(),
   /** ZAR proceeds rate realised on the disposing trade (ZAR per FCY). */
@@ -773,6 +778,11 @@ export const realisedPnlRecognisedPayloadSchema = z.object({
    * (disposalCostZarRate − avgCostZarRate) × amountClosedMinor.
    */
   realisedPnlZarMinor: z.number().int(),
+  /**
+   * Exact-decimal realised P&L as MoneyWire — THE source of truth on the wire
+   * (D-DECIMAL-NATIVE-MONEY-ARITHMETIC slice 2b). Optional during the transition.
+   */
+  realisedPnlZar: moneyWireSchema.optional(),
   /** The settled trade whose settlement disposed of (part of) the position. */
   sourceTradeId: z.string().min(1),
   /** ISO 8601 timestamp the close-out was recognised. */

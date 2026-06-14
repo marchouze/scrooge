@@ -24,6 +24,7 @@
 
 import { createHash } from "node:crypto";
 
+import { moneyWireFromMinor } from "../../core/money-codec";
 import { nowUtc } from "../../core/types";
 import {
   makeBondCustodianSettlementConfirmed,
@@ -278,6 +279,9 @@ export class StdbankCustodianSim implements SimulatorModule {
         custodianRef,
         securitiesLegStatus: "delivered",
         cashLegZarMinor: ia.dirtyConsiderationZarMinor,
+        // MoneyWire alongside legacy integer (decimal-native slice 2b).
+        // Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (WS-DECIMAL-NATIVE-MONEY-ARITHMETIC).
+        cashLegZar: moneyWireFromMinor(ia.dirtyConsiderationZarMinor, "ZAR"),
         confirmedAt: asOf,
       },
     });
