@@ -464,14 +464,16 @@ tbody tr[data-clickable]:hover {
 .badge-success,
 .badge-active,
 .badge-open,
-.badge-populated {
+.badge-populated,
+.badge-applies {
   background: var(--color-success-bg);
   color: var(--color-success);
 }
 .badge-warn,
 .badge-warning,
 .badge-pending,
-.badge-in-progress {
+.badge-in-progress,
+.badge-partially-applies {
   background: var(--color-warning-bg);
   color: var(--color-warning);
 }
@@ -496,7 +498,8 @@ tbody tr[data-clickable]:hover {
 .badge-secondary,
 .badge-closed,
 .badge-retired,
-.badge-paused {
+.badge-paused,
+.badge-does-not-apply {
   background: var(--color-surface-raised);
   color: var(--color-text-secondary);
 }

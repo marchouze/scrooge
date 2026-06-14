@@ -189,6 +189,7 @@
             <div class="od-pills">
               <span class="od-state ${adopted?"adopted":"unadopted"}">${adopted?"ADOPTED":"NOT ADOPTED"}</span>
               ${status?SC.renderBadge(status):""}
+              ${d.applicability ? SC.renderBadge(d.applicability.verdict) : ""}
             </div>
           </div>
           <div class="od-actions">
@@ -208,6 +209,17 @@
             ${derives.length?mi("Derives from", derives.map(x=>`<span class="od-derives">${SC.esc(x)}</span>`).join(" ")):""}
           </div>
           <div class="od-section"><h3>Requirement</h3><div class="od-req">${SC.esc(requirement)}</div></div>
+          ${d.applicability ? `
+          <div class="od-section">
+            <h3>Applicability</h3>
+            <div class="od-pills" style="margin-bottom:var(--space-3)">
+              ${SC.renderBadge(d.applicability.verdict)}
+            </div>
+            ${(d.applicability.matchedContexts && d.applicability.matchedContexts.length)
+              ? `<div class="od-mi"><span class="od-ml">Matched contexts</span><span class="od-mv">${d.applicability.matchedContexts.map(c => `<code>${SC.esc(c)}</code>`).join(" ")}</span></div>`
+              : `<div class="od-mi"><span class="od-ml">Matched contexts</span><span class="od-mv" style="color:var(--color-text-secondary)">none</span></div>`}
+            ${d.applicability.rationale ? `<div class="od-req" style="margin-top:var(--space-2)">${SC.esc(d.applicability.rationale)}</div>` : ""}
+          </div>` : ''}
           ${(d.sourceTextStatus === "image-only" && !(d.headingGroups && d.headingGroups.length)) ? `
           <div class="od-section">
             <h3>Text</h3>

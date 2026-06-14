@@ -165,10 +165,22 @@ import { BondSimEngine } from "../platform/simulation/bond-sim-engine";
 import { getActiveFxCounterparties } from "../platform/simulation/fx-counterparty-registry";
 
 import {
+  makeApplicabilityAssessmentConcluded,
+  makeApplicabilityAssessmentPerformed,
+  makeApplicabilityAssessmentRequested,
+} from "../platform/event-store/event-types/applicability-assessment";
+import {
   makeObligationAdopted,
   makeObligationLifecycleTransitioned,
   makeProvisionScopeAdopted,
 } from "../platform/event-store/event-types/obligation-lifecycle";
+import {
+  assessObligationApplicability,
+  buildBankPostureContexts,
+  concludedAssessmentIds,
+  obligationAssessmentId,
+  readPostureRegister,
+} from "../platform/obligations/applicability";
 import { loadProvisionAdoptionState } from "../platform/obligations/projection";
 import {
   currentBankModePolicy,
@@ -2266,6 +2278,27 @@ async function handleRegAdoptObligations(req: Request, slug: string): Promise<Re
   const approvalDoc = loadStructuredDocForSlug(slug);
   const approvalTree = approvalDoc ? buildProvisionTree(approvalDoc) : null;
 
+  // W8 Slice C — distill → applicability closed loop. Build the candidate
+  // operating context(s) from the bank's active posture register ONCE before
+  // the loop, and snapshot the already-concluded assessment ids for the
+  // idempotency guard. After each ObligationAdopted append we auto-assess the
+  // obligation's applicability and emit the S8 lifecycle (REUSE — no new event
+  // type). A future event-driven bus handler (subscribe ObligationAdopted, like
+  // owen-decision-impact-sweep) would catch non-dashboard adoptions; the inline
+  // path keeps the dashboard adopt action responsive. (Out of scope here.)
+  const postureRegister = readPostureRegister(eventStore);
+  const applicabilityContexts = buildBankPostureContexts(postureRegister);
+  const alreadyAssessed = concludedAssessmentIds(eventStore);
+  const applicabilityActor = {
+    type: "service" as const,
+    id: "agent:mira:obligation-applicability",
+  };
+  const applicabilityCitations = [
+    "D-W8-POSTURE-REGISTER-SLICE-1",
+    "P1-EVENTS-AS-TRUTH",
+    "P2-SINGLE-GRAPH-DISCIPLINE",
+  ];
+
   for (const ob of body.obligations as ApprovedObligation[]) {
     if (!ob.obligationId || !ob.requirement) continue;
     const verbatim: Record<string, string> = {};
@@ -2296,6 +2329,76 @@ async function handleRegAdoptObligations(req: Request, slug: string): Promise<Re
     });
     eventStore.append(evt);
     emitted.push(ob.obligationId);
+
+    // W8 Slice C — auto-assess the adopted obligation's applicability against
+    // the bank's posture-derived contexts and emit the S8 lifecycle. Idempotent:
+    // skip if an ApplicabilityAssessmentConcluded with this assessmentId already
+    // exists (same obligation, same as-of day) — mirrors the
+    // owen-decision-impact-sweep guard.
+    const assessmentId = obligationAssessmentId(ob.obligationId, now);
+    if (alreadyAssessed.has(assessmentId)) continue;
+    alreadyAssessed.add(assessmentId); // guard intra-batch repeats of the same id
+
+    // subjectRef is the obligationId (the detail view folds Concluded events by
+    // subjectRef === obligation id; see dashboard/bank-obligations-view.ts).
+    const subjectRef = ob.obligationId;
+    const { appliesToScope, contextsEvaluated, result } = assessObligationApplicability(
+      {
+        obligationId: ob.obligationId,
+        derivesFrom: ob.derivesFrom ?? [],
+        domain: ob.domain ?? "",
+      },
+      applicabilityContexts,
+    );
+
+    eventStore.append(
+      makeApplicabilityAssessmentRequested({
+        asOf: now,
+        entity: "LE-ZA-HOZ-BANK",
+        actor: applicabilityActor,
+        citations: applicabilityCitations,
+        payload: {
+          assessmentId,
+          subjectRef,
+          subjectKind: "obligation",
+          appliesToScope,
+          requestedBy: applicabilityActor.id,
+          citations: applicabilityCitations,
+        },
+      }),
+    );
+    eventStore.append(
+      makeApplicabilityAssessmentPerformed({
+        asOf: now,
+        entity: "LE-ZA-HOZ-BANK",
+        actor: applicabilityActor,
+        citations: applicabilityCitations,
+        payload: {
+          assessmentId,
+          contextsEvaluated,
+          matches: result.matches,
+          performedBy: applicabilityActor.id,
+          performedAt: now,
+        },
+      }),
+    );
+    eventStore.append(
+      makeApplicabilityAssessmentConcluded({
+        asOf: now,
+        entity: "LE-ZA-HOZ-BANK",
+        actor: applicabilityActor,
+        citations: applicabilityCitations,
+        payload: {
+          assessmentId,
+          verdict: result.verdict,
+          appliesToContexts: result.matches,
+          rationale: result.rationale,
+          concludedBy: applicabilityActor.id,
+          concludedAt: now,
+          citations: applicabilityCitations,
+        },
+      }),
+    );
   }
 
   logger.info({ slug, count: emitted.length }, "ObligationAdopted events emitted from tick-flow");

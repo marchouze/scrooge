@@ -3,17 +3,27 @@
 // `recon:v2-applicability-assessment-integrity` — the structural gate for the
 // V2 S8 applicability-assessment lifecycle.
 //
-// ADVISORY in S8 (exits 0 unless a HARD structural error is found). Becomes
-// enforcing-ready as the assessment population grows.
+// Structural assertions are ENFORCING (orphans / verdict well-formedness /
+// engine-consistency). The W8 Slice C coverage assertion is ENFORCING from the
+// SLICE-C BASELINE (see assertion 4).
 //
 // Assertions:
 //   1. No fold violations (orphan Performed / orphan Concluded — a lifecycle
-//      event with no matching Requested).
+//      event with no matching Requested).                              [fail]
 //   2. Every Concluded assessment has a matching Requested (lifecycle complete).
 //   3. Every concluded verdict is well-formed (one of the closed verdict set)
 //      AND consistent with the recorded scope + contexts: re-running the pure
 //      engine over the recorded appliesToScope and contextsEvaluated reproduces
-//      the recorded verdict and matched-context set.
+//      the recorded verdict and matched-context set.                   [fail]
+//   4. W8 Slice C coverage: every currently-ADOPTED obligation whose
+//      `adoptedAt` is on/after the SLICE-C BASELINE must carry a matching
+//      ApplicabilityAssessmentConcluded (subjectRef === obligation id). The
+//      adopt route auto-assesses every obligation forward, so a post-baseline
+//      gap is a real regression in the distill → applicability loop. ENFORCING.
+//      Pre-baseline obligations (the ~417 backfilled at adoptedAt 2026-06-04 by
+//      `ci:migrate`) are GRANDFATHERED — NOT required to carry an assessment.
+//      This is the decision-impact-sweep-coverage precedent
+//      (`v2-decision-impact-sweep-coverage.ts`).                       [fail]
 //
 // WHY THIS GATE IS V1-SIDE: it needs the event store + recon `types` — both v1
 // infrastructure. The dependency direction v1→v2 is the permitted one.
@@ -33,7 +43,19 @@ import {
 } from "../../v2-core/applicability";
 import type { AppliesToScope } from "../../v2-core/posture";
 import { eventStore } from "../composition";
+import { loadBankObligations } from "../obligations/projection";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
+
+// ---------------------------------------------------------------------------
+// Baseline — W8 Slice C is baseline-forward. Obligations adopted on/after this
+// date must carry an applicability assessment (the adopt route auto-assesses
+// every obligation forward). Pre-baseline obligations (the ~417 backfilled at
+// adoptedAt 2026-06-04 by `ci:migrate`) are grandfathered.
+// Decision-impact-sweep-coverage precedent.
+// ---------------------------------------------------------------------------
+
+/** ISO date on/after which an adopted obligation must carry an assessment. */
+const SLICE_C_BASELINE_AS_OF = "2026-06-14";
 
 // ---------------------------------------------------------------------------
 // Read the register from the live event store
@@ -163,6 +185,43 @@ export function run(): ReconResult {
         message:
           `recorded appliesToContexts [${recordedMatches.join(", ")}] inconsistent with engine ` +
           `matches [${recomputed.matches.join(", ")}]`,
+        severity: "fail",
+      });
+    }
+  }
+
+  // Assertion 4 — W8 Slice C coverage (baseline-grandfathered, ENFORCING).
+  // Every currently-adopted obligation adopted on/after the Slice-C baseline
+  // must carry a concluded applicability assessment keyed by its obligation id.
+  result.asserted += 1;
+  const subjectsWithConcludedAssessment = new Set<string>();
+  for (const a of register.listAssessments()) {
+    if (a.stage === "concluded" && a.subjectKind === "obligation") {
+      subjectsWithConcludedAssessment.add(a.subjectRef);
+    }
+  }
+  let obligations: ReturnType<typeof loadBankObligations>;
+  try {
+    obligations = loadBankObligations(eventStore);
+  } catch (err) {
+    violations.push({
+      subject: "BankObligations",
+      message: `obligation register load failed: ${(err as Error).message}`,
+      severity: "fail",
+    });
+    obligations = [];
+  }
+  for (const ob of obligations) {
+    if (!ob.adopted) continue; // un-adopted/retired/superseded — not bound
+    // Pre-baseline obligations are grandfathered (no assessment required).
+    if ((ob.adoptedAt ?? "").slice(0, 10) < SLICE_C_BASELINE_AS_OF) continue;
+    if (!subjectsWithConcludedAssessment.has(ob.id)) {
+      violations.push({
+        subject: ob.id,
+        message:
+          `obligation adopted on/after Slice-C baseline ${SLICE_C_BASELINE_AS_OF} ` +
+          `(adoptedAt ${(ob.adoptedAt ?? "").slice(0, 10)}) but has no concluded applicability ` +
+          "assessment — the W8 Slice C adopt-route loop should have auto-assessed it",
         severity: "fail",
       });
     }

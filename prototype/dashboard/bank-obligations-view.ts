@@ -364,6 +364,18 @@ export interface ObligationDetail {
   domainDescription: string;
   /** Linked POL-* policy node ids (IMPLEMENTED_BY edges), if any. */
   policies: string[];
+  /**
+   * W8 Slice C — the LATEST applicability verdict for this obligation, folded
+   * from `ApplicabilityAssessmentConcluded` events whose `subjectRef` equals the
+   * obligation id (the distill → applicability closed loop; D-W8-POSTURE-
+   * REGISTER-SLICE-1). Absent when the obligation has no concluded assessment
+   * (e.g. pre-baseline obligations adopted before the loop landed).
+   */
+  applicability?: {
+    verdict: "applies" | "partially-applies" | "does-not-apply";
+    matchedContexts: string[];
+    rationale: string;
+  };
 }
 
 interface BcbsChapterRow {
@@ -773,6 +785,36 @@ export function getObligationDetail(
   const citation = projection?.citation ?? seed?.citation ?? "";
   const domain = resolveDomain({ section: seed?.section, domainCode: projection?.domain });
 
+  // W8 Slice C — fold the obligation's applicability verdict from the S8
+  // ApplicabilityAssessmentConcluded events whose subjectRef === this obligation
+  // id; take the LATEST by as_of (a re-adoption on a later day re-assesses
+  // against a fresh posture snapshot). Principle 1: a query over events.
+  let applicability: ObligationDetail["applicability"] | undefined;
+  let latestAt = "";
+  for (const ev of store.replay({ type: "ApplicabilityAssessmentConcluded" })) {
+    const p = ev.payload as {
+      subjectRef?: string;
+      verdict?: string;
+      appliesToContexts?: string[];
+      rationale?: string;
+    };
+    if (p.subjectRef !== id) continue;
+    const at = ev.as_of ?? "";
+    if (applicability && at <= latestAt) continue;
+    if (
+      p.verdict === "applies" ||
+      p.verdict === "partially-applies" ||
+      p.verdict === "does-not-apply"
+    ) {
+      applicability = {
+        verdict: p.verdict,
+        matchedContexts: p.appliesToContexts ?? [],
+        rationale: p.rationale ?? "",
+      };
+      latestAt = at;
+    }
+  }
+
   return {
     id,
     adopted: projection?.adopted ?? false,
@@ -788,5 +830,6 @@ export function getObligationDetail(
     regulator: deriveRegulator(urn, citation),
     domainDescription: domain.description,
     policies,
+    ...(applicability !== undefined ? { applicability } : {}),
   };
 }
