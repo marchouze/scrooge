@@ -472,9 +472,7 @@ export function evaluateFxTradeConduct(
     } else if (schedule?.referenceRateBasis === "independent-benchmark") {
       // Independent benchmark (FTP mid-rate) path — resolve the FTP curve.
       const ftp =
-        opts.ftpMidRate !== undefined
-          ? opts.ftpMidRate
-          : resolveFtpMidRate(store, opts.asOf);
+        opts.ftpMidRate !== undefined ? opts.ftpMidRate : resolveFtpMidRate(store, opts.asOf);
 
       if (ftp !== null) {
         referenceRate = ftp.onRate;

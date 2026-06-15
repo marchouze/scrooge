@@ -26,8 +26,8 @@ import "../platform/event-store/resolve-event-db-boot";
 
 import { clock, eventStore } from "../platform/composition";
 import {
-  publishFxBestExecutionPolicySchedule,
   publishFxBestExScheduleV2,
+  publishFxBestExecutionPolicySchedule,
 } from "../platform/conduct/fx-bestex-policy-schedule";
 import {
   resolveBestExecutionSchedule,

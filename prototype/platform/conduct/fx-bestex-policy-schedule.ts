@@ -233,7 +233,12 @@ export function publishFxBestExScheduleV2(
   for (const e of store.replay({ type: "BestExecutionPolicySchedule" })) {
     const p = e.payload as { scheduleId?: unknown };
     if (p.scheduleId === "BESTEX-SCHED-2026-002") {
-      return { published: false, skipped: true, scheduleEventId: e.event_id, supersededEventId: v1EventId };
+      return {
+        published: false,
+        skipped: true,
+        scheduleEventId: e.event_id,
+        supersededEventId: v1EventId,
+      };
     }
     if (p.scheduleId === "BESTEX-SCHED-2026-001") {
       v1EventId = e.event_id;

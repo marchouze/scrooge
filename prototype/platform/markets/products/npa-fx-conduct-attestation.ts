@@ -327,7 +327,8 @@ export const FTP_LIVE_FEED_DEFERRED_GAP: ProductDeferredGap = {
     "(ZAR ON rate) as reference proxy. The FTP rate is a ZAR money-market rate, not an FX " +
     "mid-rate — spread comparison is directional until a live FX mid-rate feed lands.",
   owner: "Rohan (Markets risk/quant engineer, engineering)",
-  targetTrigger: "live FTP curve feed active at execution time; live FX mid-rate feed wired as reference",
+  targetTrigger:
+    "live FTP curve feed active at execution time; live FX mid-rate feed wired as reference",
   citations: [
     "D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL",
     "D-NPA-GATE-POLICY-REDESIGN",
@@ -356,9 +357,7 @@ export interface BenchmarkGapClosureResult {
  *
  * Idempotent: skips when the latest attestation already lacks the benchmark gap.
  */
-export function runFxConductBenchmarkGapClosure(
-  store: EventStore,
-): BenchmarkGapClosureResult {
+export function runFxConductBenchmarkGapClosure(store: EventStore): BenchmarkGapClosureResult {
   // 1. Latest conduct attestation for the product.
   let latest: { asOf: string; payload: Record<string, unknown> } | null = null;
   for (const ev of store.replay({ type: "ProductDimensionAttested" })) {
@@ -421,19 +420,20 @@ export function runFxConductBenchmarkGapClosure(
     return {
       closed: false,
       skipped: false,
-      reason:
-        "GATE (b) failed — no FtpCurvePublished event found on the store at or before " +
-        `${CONDUCT_BENCHMARK_GAP_CLOSED_AS_OF}; Ravi must publish an FTP curve first; ` +
-        "NOT closing the gap",
+      reason: `GATE (b) failed — no FtpCurvePublished event found on the store at or before ${CONDUCT_BENCHMARK_GAP_CLOSED_AS_OF}; Ravi must publish an FTP curve first; NOT closing the gap`,
       remainingGapIds: currentGaps.map((g) => g.gapId),
     };
   }
 
   // 4. Re-emit: remove benchmark gap, add live-feed gap (unless already present),
   //    carry all other gaps forward UNCHANGED.
-  const remaining: ProductDeferredGap[] = currentGaps
-    .filter((g) => g.gapId !== BENCHMARK_GAP_ID && g.gapId !== FTP_LIVE_FEED_GAP_ID);
-  remaining.push({ ...FTP_LIVE_FEED_DEFERRED_GAP, citations: [...FTP_LIVE_FEED_DEFERRED_GAP.citations] });
+  const remaining: ProductDeferredGap[] = currentGaps.filter(
+    (g) => g.gapId !== BENCHMARK_GAP_ID && g.gapId !== FTP_LIVE_FEED_GAP_ID,
+  );
+  remaining.push({
+    ...FTP_LIVE_FEED_DEFERRED_GAP,
+    citations: [...FTP_LIVE_FEED_DEFERRED_GAP.citations],
+  });
 
   const priorChain = Array.isArray(latest.payload.citationChain)
     ? latest.payload.citationChain.filter((c): c is string => typeof c === "string")
