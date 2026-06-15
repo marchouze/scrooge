@@ -91,6 +91,7 @@ import {
 import type { EventStore } from "../event-store/store";
 import type { Actor, Event, ProvenanceTag } from "../event-store/types";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
+import { readWithOutputSnapshot } from "../projections/output-snapshot-cache";
 
 // ---------------------------------------------------------------------------
 // Stream-key convention
@@ -267,6 +268,32 @@ function isLegV2(leg: SubLedgerLeg): leg is SubLedgerLegV2 {
  * Pure function — no events appended.
  */
 export function computeTrialBalance(args: ComputeTrialBalanceArgs): TrialBalance {
+  // D-PROJECTION-SNAPSHOT-ADOPTION — read through the byte-identical
+  // output-snapshot cache. `computeTrialBalanceUncached` (below) is the
+  // unchanged pure fold. The cache returns it without recompute only when
+  // the store population (count) is unchanged for this exact (entity, period
+  // window); since the fold bounds on `as_of ∈ [periodStart, periodEnd]`
+  // (not on append-sequence), any new SubLedgerPostingEmitted changes count()
+  // and invalidates the cache — so the cached output is bit-for-bit the
+  // un-cached value. The period window is encoded in the stream key; we use
+  // `periodEnd` as the snapshot asOf.
+  const { output } = readWithOutputSnapshot<TrialBalance>({
+    store: args.eventStore,
+    streamKey: `trial-balance:${args.entity}:${args.periodStart}..${args.periodEnd}`,
+    asOf: args.periodEnd,
+    compute: () => computeTrialBalanceUncached(args),
+    encode: (o) => JSON.stringify(o),
+    decode: (p) => JSON.parse(p) as TrialBalance,
+  });
+  return output;
+}
+
+/**
+ * Unchanged pure trial-balance fold. Kept as the slow path behind the
+ * output-snapshot cache in `computeTrialBalance`. Direct callers wanting to
+ * bypass the cache (e.g. the equality regression test) call this.
+ */
+export function computeTrialBalanceUncached(args: ComputeTrialBalanceArgs): TrialBalance {
   // Per-(account|currency) signed amount in minor units.
   // Sign convention: positive = debit balance; negative = credit balance.
   const balances = new Map<string, { account: string; currency: string; amount: number }>();

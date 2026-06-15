@@ -16,6 +16,10 @@
 
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
+import {
+  computeTrialBalance,
+  computeTrialBalanceUncached,
+} from "../platform/accounting/period-close";
 import { newEventId } from "../platform/core/types";
 import { EventStore } from "../platform/event-store/store";
 import {
@@ -121,6 +125,59 @@ describe("output-snapshot-cache — alm-positions equality", () => {
     expect(getALMPositionSnapshot(store, AS_OF, 90, ENTITY)).toEqual(
       computeALMPositionSnapshot(store, AS_OF, 90, ENTITY),
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// GL trial balance — cached === uncached across the snapshot lifecycle.
+// ---------------------------------------------------------------------------
+
+function appendPosting(store: EventStore, amountMinor: number): void {
+  store.append({
+    event_id: newEventId(),
+    type: "SubLedgerPostingEmitted",
+    as_of: AS_OF,
+    entity: ENTITY,
+    actor: ACTOR,
+    citations: ["D-REPORTING-CAPABILITY-SLICE-2"],
+    payload: {
+      tradeId: `trade-${newEventId()}`,
+      postingType: "trade-date-booking",
+      legs: [
+        {
+          debit: "ACC-1000-001",
+          credit: "ACC-2000-001",
+          currency: "ZAR",
+          amountMinor,
+          memo: "test posting",
+        },
+      ],
+      asOfDate: AS_OF,
+      citations: ["D-REPORTING-CAPABILITY-SLICE-2"],
+    },
+  });
+}
+
+describe("output-snapshot-cache — trial-balance equality", () => {
+  const WINDOW = {
+    periodStart: "2026-06-01T00:00:00.000Z",
+    periodEnd: "2026-06-30T23:59:59.999Z",
+  };
+
+  it("cached output equals uncached on empty, populated, and advanced store", () => {
+    const store = new EventStore(":memory:");
+    const args = { eventStore: store, entity: ENTITY, ...WINDOW };
+
+    expect(computeTrialBalance(args)).toEqual(computeTrialBalanceUncached(args));
+    // Cache hit on the second read — still equal.
+    expect(computeTrialBalance(args)).toEqual(computeTrialBalanceUncached(args));
+
+    appendPosting(store, 25_000_00);
+    expect(computeTrialBalance(args)).toEqual(computeTrialBalanceUncached(args));
+
+    // A different entity must not collide on this entity's snapshot.
+    const otherArgs = { eventStore: store, entity: "LE-ZA-HOZ-SECURITIES", ...WINDOW };
+    expect(computeTrialBalance(otherArgs)).toEqual(computeTrialBalanceUncached(otherArgs));
   });
 });
 
