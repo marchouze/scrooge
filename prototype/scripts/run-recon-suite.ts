@@ -218,14 +218,18 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // outside the decimal-engine module. The allowlist shrinks as each engine
     // file migrates to decimal-native. Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC.
     "recon:no-float-money-arithmetic",
-    // D-V1-REMOVAL-PHASE-1 — V1→V2 cutover ledger + parity harness.
+    // D-V1-REMOVAL-PHASE-1 / D-V1-REMOVAL-PHASE-2 — V1→V2 cutover ledger + parity harness.
     // v2status-coverage: every event type must carry a v2Status field
     //   (ENFORCING — exits 1 if any entry lacks the field).
     // v1-removal-ratchet: v1-only count may not increase vs baseline
     //   (ENFORCING, HARDEN-ONLY — exits 1 if count > baseline).
     // v1-only-count-trend: advisory trend summary line; always exits 0.
-    // fx-v2-parity: FX domain parity proof (ADVISORY in Phase 1;
-    //   becomes enforcing when FX domain flip is approved in Phase 2).
+    // fx-v2-parity: FX domain parity proof (ENFORCING in Phase 2;
+    //   FLIP BLOCKED — see gate output for gap-closure requirements:
+    //   Gap A2: daily-pnl.ts must migrate to FIL instance reads (A4);
+    //   Gap A3: makeVarMetric must emit a typed production event).
+    //   Fails CI intentionally until both gaps are resolved and the flip
+    //   approved by CEO Decision. Authority: D-V1-REMOVAL-PHASE-2.
     "recon:v1-removal-v2status-coverage",
     "recon:v1-removal-ratchet",
     "recon:v1-only-count-trend",
