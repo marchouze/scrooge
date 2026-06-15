@@ -57,6 +57,7 @@ function syntheticRow(args: {
       citationRef: args.citationRef,
     },
     source: "synthetic test fixture",
+    v2Status: "v1-only",
   };
 }
 
