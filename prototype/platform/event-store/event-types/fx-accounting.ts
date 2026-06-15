@@ -1023,6 +1023,212 @@ export function makeFxBookValuationSnapshotted(args: {
 }
 
 // ---------------------------------------------------------------------------
+// NostroDesignationMissing
+//
+// Emitted when a settlement routing step cannot resolve a designated nostro
+// account for a given currency. This is the fail-closed rejection event:
+// rather than routing to a suspense account, the substrate rejects the trade
+// at the settlement-routing step with an explicit typed record.
+//
+// Key invariant (any-pair nostro fail-close): the OTC FX product scope v1.0
+// supports "any currency pair" (D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL). The
+// nostro routing registry must either resolve to a designated correspondent
+// nostro account, OR reject explicitly — never route to suspense.
+//
+// Authority:
+//   - D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL (CEO, 2026-06-15)
+//   - PROC-OPS-SFBCP-01 v0.2 §3.1 — settlement routing prerequisites
+//   - Principle 4 (fail-closed by default — security designed in)
+// Author: Tomas (Operations and payments engineer, engineering)
+// ---------------------------------------------------------------------------
+
+export const nostroDesignationMissingPayloadSchema = z.object({
+  /** Internal trade identifier — links back to the originating FxTradeExecuted. */
+  tradeRef: z.string().min(1),
+  /** ISO 4217 currency code for which no nostro is designated. */
+  currency: z
+    .string()
+    .length(3)
+    .regex(/^[A-Z]{3}$/),
+  /** The settlement leg kind ("near" or "far") that triggered the lookup. */
+  legKind: z.enum(["near", "far"]),
+  /**
+   * Reason the routing failed. Typically "no-designated-nostro" for an
+   * unprovisioned currency.
+   */
+  reason: z.string().min(1),
+});
+
+export type NostroDesignationMissingPayload = z.infer<typeof nostroDesignationMissingPayloadSchema>;
+
+export function makeNostroDesignationMissing(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: NostroDesignationMissingPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "NostroDesignationMissing requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "NostroDesignationMissing",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: nostroDesignationMissingPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// FxForwardDefaulted
+//
+// Emitted when a counterparty defaults on a forward contract at or before
+// maturity. Triggers the ISDA §6 close-out netting calculation. Applies to:
+//   - FX forward contracts (productTaxonomy = "FX-forward"): counterparty
+//     fails to deliver the far leg at the agreed forward value date.
+//   - FX swap far-leg failure: the near leg has already settled; the far leg
+//     defaults. Net exposure = far-leg notional net of near-leg mark-to-market.
+//
+// Handler responsibilities:
+//   1. Update trade/position status to "defaulted" in the sub-ledger.
+//   2. Emit a SubstrateAlert (integrity, high) for ops notification.
+//   3. Trigger close-out netting calculation per ISDA Master Agreement §6.
+//   4. Hold position — do NOT automatically book the recovery; await the
+//      close-out net settlement event (out of scope for this event).
+//
+// Authority:
+//   - ISDA 2002 Master Agreement §6 (Early Termination on default)
+//   - D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL (CEO, 2026-06-15)
+//   - BCBS d226 §4 — credit risk in FX settlement; Herstatt analogue
+// Author: Tomas (Operations and payments engineer, engineering)
+// ---------------------------------------------------------------------------
+
+export const fxForwardDefaultedPayloadSchema = z.object({
+  /** Internal trade identifier — links back to the originating FxTradeExecuted. */
+  tradeRef: z.string().min(1),
+  /** ISO 4217 base currency of the forward contract. */
+  baseCurrency: z
+    .string()
+    .length(3)
+    .regex(/^[A-Z]{3}$/),
+  /** ISO 4217 quote currency of the forward contract. */
+  quoteCurrency: z
+    .string()
+    .length(3)
+    .regex(/^[A-Z]{3}$/),
+  /** Agreed forward settlement date (YYYY-MM-DD). */
+  maturityDate: z.string().min(1),
+  /**
+   * Whether the bank has already delivered its own leg before learning of the
+   * default (true = Herstatt-active on forward; far-leg analogue of
+   * one-leg-delivered). If false, neither leg has settled (mutual fail on
+   * forward/far-leg).
+   */
+  bankLegDelivered: z.boolean(),
+  /**
+   * Counterparty legal entity ID (matches party register).
+   * Required for ISDA §6 close-out netting — the netting set is keyed by
+   * counterparty under the applicable ISDA Master Agreement.
+   */
+  counterpartyId: z.string().min(1),
+  /** Free-form default trigger description (e.g. "payment failure at CLS"). */
+  defaultReason: z.string().min(1),
+});
+
+export type FxForwardDefaultedPayload = z.infer<typeof fxForwardDefaultedPayloadSchema>;
+
+export function makeFxForwardDefaulted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: FxForwardDefaultedPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "FxForwardDefaulted requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "FxForwardDefaulted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: fxForwardDefaultedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// FxForwardExtensionRequested
+//
+// Emitted when a counterparty requests an extension of a forward contract's
+// maturity date. Requires re-booking the trade at the new forward rate for
+// the extended value date (cancelling the original deal and booking a
+// replacement at the current market forward rate for the new maturity).
+//
+// Handler responsibilities:
+//   1. Mark the original trade as pending extension in the sub-ledger.
+//   2. Emit a SubstrateAlert (integrity, medium) for desk notification.
+//   3. The actual re-booking (FxTradeExecuted at new rate) is a separate
+//      downstream step — this event records the request and holds the trade.
+//
+// Authority:
+//   - D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL (CEO, 2026-06-15)
+//   - ISDA 2002 Master Agreement §2(c) (payment netting on extension)
+// Author: Tomas (Operations and payments engineer, engineering)
+// ---------------------------------------------------------------------------
+
+export const fxForwardExtensionRequestedPayloadSchema = z.object({
+  /** Internal trade identifier — links back to the originating FxTradeExecuted. */
+  tradeRef: z.string().min(1),
+  /** Counterparty that requested the extension. */
+  counterpartyId: z.string().min(1),
+  /** Original agreed maturity / value date (YYYY-MM-DD). */
+  originalMaturityDate: z.string().min(1),
+  /** Proposed new maturity date requested by the counterparty (YYYY-MM-DD). */
+  requestedNewMaturityDate: z.string().min(1),
+  /** Free-form reason for the extension request. */
+  extensionReason: z.string().min(1),
+});
+
+export type FxForwardExtensionRequestedPayload = z.infer<
+  typeof fxForwardExtensionRequestedPayloadSchema
+>;
+
+export function makeFxForwardExtensionRequested(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: FxForwardExtensionRequestedPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "FxForwardExtensionRequested requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "FxForwardExtensionRequested",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: fxForwardExtensionRequestedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // FX accounting event-type registry
 // ---------------------------------------------------------------------------
 
@@ -1041,6 +1247,12 @@ export const FX_ACCOUNTING_EVENT_TYPES = [
   "SettlementFailureClassified",
   // A4 — EOD book valuation snapshot (D-FIL-BOOK-COMPOSITE-VALUATION).
   "FxBookValuationSnapshotted",
+  // OTC FX operational-readiness runbook events
+  // (Tomas — Operations and payments engineer, engineering).
+  // Authority: D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL (CEO, 2026-06-15).
+  "NostroDesignationMissing",
+  "FxForwardDefaulted",
+  "FxForwardExtensionRequested",
 ] as const;
 
 export type FxAccountingEventType = (typeof FX_ACCOUNTING_EVENT_TYPES)[number];
