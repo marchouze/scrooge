@@ -58,6 +58,7 @@ import {
   gatewayCheckCompletedPayloadSchema,
   gatewayCheckRequestedPayloadSchema,
   marketRiskMeasureComputedPayloadSchema,
+  marketRiskVarComputedPayloadSchema,
   orderAcceptedPayloadSchema,
   orderApprovedAtGatewayPayloadSchema,
   orderProposedPayloadSchema,
@@ -97,6 +98,7 @@ import { tradeExecutedPayloadSchema } from "../event-types/markets-trading-exten
 import {
   type EventTypeMetadata,
   RETENTION_ACCOUNTING_7Y,
+  RETENTION_BANKING_5Y,
   RETENTION_FIC_5Y,
   RETENTION_GOVERNANCE_7Y,
   RETENTION_JSE_TRADE_7Y,
@@ -684,6 +686,38 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     source:
       "D-B3-5 (R8); platform/market-risk/var-engine.ts; platform/projections/markets/market-risk-measure.ts",
     v2Status: "v1-only",
+  },
+  {
+    // `MarketRiskVarComputed` — V2 parallel event for VaR / SVaR / ES (Phase 2
+    // Gap A3). Emitted by `platform/market-risk/var-engine-v2.ts` in parallel
+    // with the V1 `MarketRiskMeasureComputed` while parity is being proven.
+    // Tagged `v2-parallel` until the CEO-approved flip to `v2-replaced`.
+    //
+    // Schema version 2: VaR figure fields use MoneyWire (decimal-native) +
+    // `tenantId` for multi-tenant discipline (D-V2-CORE-MONEY-DECIMAL-NATIVE).
+    //
+    // Authority: D-V1-REMOVAL-PHASE2-GAP-A3 (CEO-approved 2026-06-15);
+    //            D-V2-CORE-MONEY-DECIMAL-NATIVE; BCBS d457 / MAR33.
+    // Author: Atlas (Substrate Architect, engineering).
+    type: "MarketRiskVarComputed",
+    class: "audit",
+    payloadSchema: marketRiskVarComputedPayloadSchema,
+    issuer: "Rohan",
+    subscribers: ["Helena", "Saskia", "Camille", "Vera", "dashboard"],
+    replay: "latest-wins-per-key",
+    citationsHint: [
+      "D-V1-REMOVAL-PHASE2-GAP-A3",
+      "D-BRC-INTERIM-MR-1-FX",
+      "WS-MARKET-RISK-PROCEDURES",
+      "BCBS-D457-MAR33",
+      "D-V2-CORE-MONEY-DECIMAL-NATIVE",
+    ],
+    // Banking-act 5-year retention: VaR measurement is a daily risk-management
+    // output; Banks Act s.60 requires banking records for 5 years.
+    retention: RETENTION_BANKING_5Y,
+    source:
+      "D-V1-REMOVAL-PHASE2-GAP-A3; platform/market-risk/var-engine-v2.ts; platform/projections/markets/market-risk-measure.ts",
+    v2Status: "v2-parallel",
   },
   // ---------------------------------------------------------------------------
   // M5 OTC IRS lifecycle events — CDM schemas at platform/markets/cdm/ird.ts.

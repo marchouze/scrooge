@@ -274,6 +274,11 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   // structural money-detector does not flag it, but it is a transactional
   // valuation output the config-only purge must sweep.)
   CcrEadComputed: "market-data",
+  // V2 parallel VaR/SVaR/ES measurement event (Phase 2 Gap A3). Same domain
+  // as MarketRiskMeasureComputed (market risk valuation output); decimal-native
+  // MoneyWire figures + tenantId. Third site of the three-site F-032 gotcha.
+  // Authority: D-V1-REMOVAL-PHASE2-GAP-A3; D-V2-CORE-MONEY-DECIMAL-NATIVE.
+  MarketRiskVarComputed: "market-data",
   // --- Product-control P&L reporting / sign-off family (accounting) ---
   // These are product-control postings/records carrying money figures; they are
   // operational accounting artefacts, not governance config, so a config-only

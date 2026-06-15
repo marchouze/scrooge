@@ -461,6 +461,7 @@
     "recon:ras-b6-cyber-severity-coverage": "bun run platform/recon/ras-b6-cyber-severity-coverage.ts",
     "recon:ras-register-parity": "bun run platform/recon/ras-register-parity.ts",
     "recon:var-nop-exposure-parity": "bun run platform/recon/var-nop-exposure-parity.ts",
+    "recon:var-v2-parity": "bun run platform/recon/var-v2-parity.ts",
     "recon:fx-gateway-threshold-enforcement": "bun run platform/recon/fx-gateway-threshold-enforcement.ts",
     "recon:liquidity-limit-breach-unescalated": "bun run platform/recon/liquidity-limit-breach-unescalated.ts",
     "recon:liquidity-limit-coverage": "bun run platform/recon/liquidity-limit-coverage.ts",

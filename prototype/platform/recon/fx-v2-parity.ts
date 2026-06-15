@@ -156,7 +156,7 @@ export function run(): ReconResult {
   if (varEntry && varEntry.v2Status === "v2-replaced") {
     violations.push({
       subject: `fx-v2-parity:premature-v2-replaced:${MARKET_RISK_MEASURE_COMPUTED}`,
-      message: `"${MARKET_RISK_MEASURE_COMPUTED}" is tagged "v2-replaced" but no V2 production VaR event exists to replace it. The A3 VaR metric (makeVarMetric) runs only in recon:attribution-var-diversification. TO RESOLVE: emit a MarketRiskVarComputed (or equivalent) event from the V2 metric on each EOD run, wire market-risk-measure.ts to read it, then promote to v2-replaced after byte-equivalence proof. Authority: D-FIL-ATTRIBUTION-A1-BUILD (A3 build slice).`,
+      message: `"${MARKET_RISK_MEASURE_COMPUTED}" is tagged "v2-replaced" but the A3 parity proof has not been completed. MarketRiskVarComputed is registered (v2-parallel) and the emitter is wired (D-V1-REMOVAL-PHASE2-GAP-A3), but the flip to v2-replaced requires byte-equivalence proof across multiple EOD runs and a CEO Decision. Do not promote before both conditions hold. Authority: D-V1-REMOVAL-PHASE2-GAP-A3; D-FIL-ATTRIBUTION-A1-BUILD (A3 build slice).`,
       severity: "fail",
     });
   }
@@ -174,15 +174,15 @@ export function run(): ReconResult {
   });
 
   violations.push({
-    subject: "fx-v2-parity:gap:A3-no-v2-production-event",
-    message: `GAP A3 (FLIP BLOCKED — advisory): VaR/ES V2 path has no production event. V1 authoritative path: "${MARKET_RISK_MEASURE_COMPUTED}" (emitted by computeMarketRisk in var-engine.ts; read by market-risk-measure.ts). V2 A3 path: makeVarMetric runs ONLY in recon:attribution-var-diversification; it emits no event and is not wired into the production risk dashboard. TO RESOLVE: (1) wire makeVarMetric to emit a typed VaR event (e.g. MarketRiskVarComputed) on each EOD run; (2) register the event type with v2Status: "v2-parallel"; (3) wire market-risk-measure.ts to read from it; (4) prove byte-equivalence vs MarketRiskMeasureComputed; (5) flip to v2-replaced. Authority: D-FIL-ATTRIBUTION-A1-BUILD (A3 build slice); D-V1-REMOVAL-PHASE-2.`,
+    subject: "fx-v2-parity:gap:A3-flip-pending-parity-proof",
+    message: `GAP A3 (FLIP PENDING PARITY PROOF — advisory): MarketRiskVarComputed is now registered (v2Status: "v2-parallel", schemaVersion: 2; D-V1-REMOVAL-PHASE2-GAP-A3) and the V2 emitter (platform/market-risk/var-engine-v2.ts) is wired. The dual-read is live in market-risk-measure.ts (v2Measure field). Parity gate: recon:var-v2-parity asserts V1 MarketRiskMeasureComputed ↔ V2 MarketRiskVarComputed agree within 1 ZAR minor unit. REMAINING STEP: prove parity across multiple EOD production runs → CEO Decision approving the flip to v2-replaced. Authority: D-V1-REMOVAL-PHASE2-GAP-A3; D-FIL-ATTRIBUTION-A1-BUILD (A3 build slice); D-V1-REMOVAL-PHASE-2.`,
     severity: "warn",
   });
 
   result.violations = violations;
   result.ok = violations.every((v) => v.severity !== "fail");
 
-  const summary = `fx-v2-parity [ENFORCING sentinel — Phase 2]: 2 advisory gap warnings; 0 premature-tag violations. Gap A2 (warn): FxPositionRevalued v1-only vs FxBookValuationSnapshotted v2-parallel are incommensurable — A4 completion required before flip. Gap A3 (warn): no V2 production VaR event (makeVarMetric recon-only) — wire MarketRiskVarComputed then prove parity. Tags: FxBookValuationSnapshotted=${fxBookEntry?.v2Status ?? "MISSING"} | FxPositionRevalued=${fxPosEntry?.v2Status ?? "MISSING"} | MarketRiskMeasureComputed=${varEntry?.v2Status ?? "MISSING"}. Harness: ${vacuousViolations.length === 0 ? "OK" : "FAILED"}.`;
+  const summary = `fx-v2-parity [ENFORCING sentinel — Phase 2]: 2 advisory gap warnings; 0 premature-tag violations. Gap A2 (warn): FxPositionRevalued v1-only vs FxBookValuationSnapshotted v2-parallel are incommensurable — A4 completion required before flip. Gap A3 (warn): MarketRiskVarComputed REGISTERED (v2-parallel, schemaVersion:2) + emitter wired (D-V1-REMOVAL-PHASE2-GAP-A3) — parity proof + CEO Decision required before flip to v2-replaced. Tags: FxBookValuationSnapshotted=${fxBookEntry?.v2Status ?? "MISSING"} | FxPositionRevalued=${fxPosEntry?.v2Status ?? "MISSING"} | MarketRiskMeasureComputed=${varEntry?.v2Status ?? "MISSING"}. Harness: ${vacuousViolations.length === 0 ? "OK" : "FAILED"}.`;
 
   result.asOf = summary;
   return result;
