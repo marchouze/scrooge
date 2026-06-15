@@ -44,7 +44,7 @@ function renderHeader(): string {
 async function main(): Promise<number> {
   const registry = new LocalModelRegistry({ eventStore });
   const models = registry.list();
-  const eligible = registry.productionEligible();
+  const eligible = registry.productionEligible(new Date());
 
   const lines: string[] = [];
   lines.push("");

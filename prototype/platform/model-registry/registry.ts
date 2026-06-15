@@ -245,7 +245,7 @@ export interface ModelRegistry {
    *     `now`, defaulting to wall-clock now), AND
    *   - it has zero open `severity: blocking` findings.
    */
-  productionEligible(now?: Date): readonly ModelView[];
+  productionEligible(now: Date): readonly ModelView[];
 }
 
 export interface ModelRegistryConfig {
@@ -513,8 +513,7 @@ export class LocalModelRegistry implements ModelRegistry {
     return views.sort((a, b) => a.modelId.localeCompare(b.modelId));
   }
 
-  productionEligible(now: Date = new Date()): readonly ModelView[] {
-    // wall-clock: default; inject now for deterministic scenarios
+  productionEligible(now: Date): readonly ModelView[] {
     const all = this.list();
     return all.filter((v) => {
       if (v.validationStatus !== "approved") return false;
