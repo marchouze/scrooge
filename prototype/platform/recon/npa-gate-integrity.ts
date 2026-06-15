@@ -92,7 +92,6 @@ export function run(opts: RunOpts = {}): ReconResult {
         severity: "info",
       });
     }
-
   }
 
   // Determine overall ok: fail only if there are blocking failures.

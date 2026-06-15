@@ -251,6 +251,5 @@ export function buildProductRegisterView(events: Event[]): Map<string, ProductRe
     row.pendingDimensions = ALL_NPA_DIMENSION_KEYS.filter((d) => !row.attestedDimensions.has(d));
   }
 
-
   return register;
 }

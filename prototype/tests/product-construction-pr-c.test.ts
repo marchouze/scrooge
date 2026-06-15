@@ -20,8 +20,8 @@ import {
   makeProductLaunched,
   makeProductVersionPublished,
 } from "../platform/event-store/event-types/product";
-import type { NpaGateResult } from "../platform/markets/products/npa-gate";
 import { EventStore } from "../platform/event-store/store";
+import type { NpaGateResult } from "../platform/markets/products/npa-gate";
 import { validateNpaGate } from "../platform/markets/products/npa-gate";
 import {
   ALL_NPA_DIMENSION_KEYS,
