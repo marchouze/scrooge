@@ -303,6 +303,7 @@
     "rehearsal:pre-licence-go-live": "bun run scripts/run-pre-licence-go-live-rehearsal.ts",
     "rehearsal:pre-licence-go-live:v2": "bun run scripts/run-pre-licence-go-live-rehearsal-v2.ts",
     "npa-gate:fx-spot": "bun run scripts/run-npa-gate-fx-spot.ts",
+    "withdraw:fx-otc-approval": "bun run scripts/withdraw-fx-otc-npa-approval.ts",
     "kyc:sim": "bun run scripts/kyc/sim.ts",
     "agent:vera-overnight": "bun run runtime/run.ts --agent Vera --trigger overnight-recon",
     "agent:vera-overnight-recon": "bun run runtime/run.ts --agent Vera --trigger overnight-recon",

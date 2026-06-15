@@ -18,7 +18,10 @@
 //
 // Author: Atlas (substrate authority)
 
-import type { ProductScopeForEvent } from "../../event-store/event-types/product";
+import type {
+  ProductDeferredGap,
+  ProductScopeForEvent,
+} from "../../event-store/event-types/product";
 import type { Event } from "../../event-store/types";
 import { PRODUCT_DIMENSION_VALUES } from "../../markets/products/semantic";
 import type { ProductFamily, ProductLifecycleStage } from "../../markets/products/types";
@@ -26,17 +29,35 @@ import type { ProductFamily, ProductLifecycleStage } from "../../markets/product
 // Re-export for convenience of callers that only import from this module.
 export type { ProductFamily, ProductLifecycleStage };
 
+// Re-export for gate callers.
+export type { ProductDeferredGap };
+
 // ---------------------------------------------------------------------------
 // Public interface
 // ---------------------------------------------------------------------------
+
+/**
+ * Per-dimension attestation record held in the register row.
+ * Tracks both the attestation result and any tracked deferred gaps
+ * (D-NPA-GATE-POLICY-REDESIGN).
+ */
+export interface AttestationRecord {
+  result: "design-attested" | "implementation-attested" | "failed";
+  /** Tracked deferred gaps — present on design-attested dimensions. */
+  deferredGaps: ProductDeferredGap[];
+}
 
 export interface ProductRegisterRow {
   productId: string;
   family: ProductFamily;
   version: string;
   lifecycleStage: ProductLifecycleStage;
-  /** Set of dimension keys that have received at least one ProductDimensionAttested event. */
-  attestedDimensions: Set<string>;
+  /**
+   * Map from dimension key to its most-recent AttestationRecord.
+   * A dimension is "attested" (cleared from pendingDimensions) as soon as it
+   * appears here, regardless of result.
+   */
+  attestedDimensions: Map<string, AttestationRecord>;
   /** All 14 NPA dimensions not yet in attestedDimensions. */
   pendingDimensions: string[];
   /** Latest citations from the most-recent lifecycle event for this product. */
@@ -82,7 +103,7 @@ export function buildProductRegisterView(events: Event[]): Map<string, ProductRe
           family: "fx", // placeholder until ProductConceptualised arrives
           version: "0.0.0",
           lifecycleStage: "proposed",
-          attestedDimensions: new Set(),
+          attestedDimensions: new Map(),
           pendingDimensions: [...ALL_NPA_DIMENSION_KEYS],
           citations: ev.citations,
           updatedAt: ev.as_of,
@@ -199,7 +220,21 @@ export function buildProductRegisterView(events: Event[]): Map<string, ProductRe
       case "ProductDimensionAttested": {
         const r = row();
         if (typeof p.dimension === "string") {
-          r.attestedDimensions.add(p.dimension);
+          const result =
+            p.result === "implementation-attested" || p.result === "failed"
+              ? (p.result as AttestationRecord["result"])
+              : "design-attested";
+          const rawGaps = Array.isArray(p.deferredGaps) ? p.deferredGaps : [];
+          const deferredGaps: ProductDeferredGap[] = rawGaps.filter(
+            (g): g is ProductDeferredGap =>
+              g !== null &&
+              typeof g === "object" &&
+              typeof (g as Record<string, unknown>).title === "string" &&
+              typeof (g as Record<string, unknown>).owner === "string" &&
+              typeof (g as Record<string, unknown>).targetTrigger === "string" &&
+              Array.isArray((g as Record<string, unknown>).citations),
+          );
+          r.attestedDimensions.set(p.dimension, { result, deferredGaps });
         }
         r.updatedAt = ev.as_of;
         break;
@@ -215,6 +250,7 @@ export function buildProductRegisterView(events: Event[]): Map<string, ProductRe
   for (const row of register.values()) {
     row.pendingDimensions = ALL_NPA_DIMENSION_KEYS.filter((d) => !row.attestedDimensions.has(d));
   }
+
 
   return register;
 }

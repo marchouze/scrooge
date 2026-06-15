@@ -46,7 +46,8 @@ function toMinimal(ev: ReturnType<typeof makeProductApproved>) {
 /** Build 14 ProductDimensionAttested events (one per NPA dimension). */
 function makeAllAttestations(
   productId: string,
-  result: "design-attested" | "implementation-attested" | "failed" = "design-attested",
+  result: "design-attested" | "implementation-attested" | "failed" = "implementation-attested",
+  withGaps = false,
 ) {
   return ALL_NPA_DIMENSION_KEYS.map((dimension) =>
     toMinimal(
@@ -60,6 +61,19 @@ function makeAllAttestations(
           dimension,
           result,
           citationChain: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
+          ...(withGaps
+            ? {
+                deferredGaps: [
+                  {
+                    gapId: "test-gap",
+                    title: "Test gap",
+                    owner: "agent:atlas:substrate",
+                    targetTrigger: "go-live",
+                    citations: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
+                  },
+                ],
+              }
+            : {}),
         },
       }),
     ),
@@ -203,6 +217,46 @@ describe("recon:product-approval-attestation-integrity", () => {
     expect(failMsg).toContain("failed dimension attestation");
     expect(failMsg).toContain(failedDimension);
     expect(failMsg).toContain("governance bypass");
+  });
+
+  // -------------------------------------------------------------------------
+  // 3b. D-NPA-GATE-POLICY-REDESIGN: design-attested with no deferred gaps →
+  //     fail violation (approval issued under old policy)
+  // -------------------------------------------------------------------------
+  it("design-attested with no deferred gaps + ProductApproved → fail (D-NPA-GATE-POLICY-REDESIGN)", () => {
+    const productId = "prd:bank:equity:jse-equity-cash-design-no-gaps";
+
+    // All 14 design-attested but NO deferredGaps on any dimension.
+    const attestedEvents = makeAllAttestations(productId, "design-attested", false);
+    const approvedEvents = [makeApproval(productId)];
+
+    const result = run({ approvedEvents, attestedEvents });
+
+    expect(result.ok).toBe(false);
+    const fails = result.violations.filter((v) => v.severity === "fail");
+    expect(fails).toHaveLength(1);
+    expect(fails[0]?.message).toContain("D-NPA-GATE-POLICY-REDESIGN");
+    expect(fails[0]?.message).toContain("design-attested");
+    expect(fails[0]?.message).toContain("no tracked deferred gaps");
+  });
+
+  // -------------------------------------------------------------------------
+  // 3c. design-attested WITH deferred gaps → ok (approved-with-conditions)
+  // -------------------------------------------------------------------------
+  it("design-attested WITH deferred gaps + ProductApproved → ok (approved-with-conditions)", () => {
+    const productId = "prd:bank:equity:jse-equity-cash-design-with-gaps";
+
+    const attestedEvents = makeAllAttestations(productId, "design-attested", true);
+    const approvedEvents = [makeApproval(productId)];
+
+    const result = run({ approvedEvents, attestedEvents });
+
+    expect(result.ok).toBe(true);
+    const fails = result.violations.filter((v) => v.severity === "fail");
+    expect(fails).toHaveLength(0);
+    const infos = result.violations.filter((v) => v.severity === "info");
+    expect(infos).toHaveLength(1);
+    expect(infos[0]?.message).toContain("14/14 attestations present (ok)");
   });
 
   // -------------------------------------------------------------------------

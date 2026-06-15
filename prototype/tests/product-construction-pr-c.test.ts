@@ -20,6 +20,7 @@ import {
   makeProductLaunched,
   makeProductVersionPublished,
 } from "../platform/event-store/event-types/product";
+import type { NpaGateResult } from "../platform/markets/products/npa-gate";
 import { EventStore } from "../platform/event-store/store";
 import { validateNpaGate } from "../platform/markets/products/npa-gate";
 import {
@@ -274,6 +275,134 @@ describe("NPA gate", () => {
     const result = validateNpaGate(row as NonNullable<typeof row>);
     expect(result.ready).toBe(false);
     expect(result.missing.length).toBe(2);
+  });
+
+  // -------------------------------------------------------------------------
+  // D-NPA-GATE-POLICY-REDESIGN tests
+  // -------------------------------------------------------------------------
+
+  it("design-attested with NO deferred gaps → ready: false (D-NPA-GATE-POLICY-REDESIGN)", () => {
+    const productId = makeProductId("gate-04");
+    const conceptualised = makeProductConceptualised({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITATIONS,
+      payload: {
+        productId,
+        version: "1.0.0",
+        cdmComposition: {},
+        lifecycleEventFamily: [],
+      },
+    });
+    // All 14 dimensions design-attested, NO deferredGaps.
+    const attestations = ALL_NPA_DIMENSION_KEYS.map((dimension) =>
+      makeProductDimensionAttested({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          productId,
+          dimension,
+          result: "design-attested",
+          citationChain: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
+          // deferredGaps intentionally absent
+        },
+      }),
+    );
+    const register = buildProductRegisterView([conceptualised, ...attestations]);
+    const row = register.get(productId);
+    expect(row).toBeDefined();
+    const result: NpaGateResult = validateNpaGate(row as NonNullable<typeof row>);
+    // design-attested with no gaps → blocked
+    expect(result.ready).toBe(false);
+    expect(result.missing.length).toBe(14);
+    expect(result.openConditions.length).toBe(0);
+  });
+
+  it("design-attested WITH deferred gaps → ready: true, openConditions populated (D-NPA-GATE-POLICY-REDESIGN)", () => {
+    const productId = makeProductId("gate-05");
+    const conceptualised = makeProductConceptualised({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITATIONS,
+      payload: {
+        productId,
+        version: "1.0.0",
+        cdmComposition: {},
+        lifecycleEventFamily: [],
+      },
+    });
+    const attestations = ALL_NPA_DIMENSION_KEYS.map((dimension) =>
+      makeProductDimensionAttested({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          productId,
+          dimension,
+          result: "design-attested",
+          citationChain: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
+          deferredGaps: [
+            {
+              gapId: "test-gap",
+              title: "Test gap",
+              owner: "agent:atlas:substrate",
+              targetTrigger: "go-live",
+              citations: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
+            },
+          ],
+        },
+      }),
+    );
+    const register = buildProductRegisterView([conceptualised, ...attestations]);
+    const row = register.get(productId);
+    expect(row).toBeDefined();
+    const result: NpaGateResult = validateNpaGate(row as NonNullable<typeof row>);
+    // design-attested with gaps → allowed but conditioned
+    expect(result.ready).toBe(true);
+    expect(result.missing.length).toBe(0);
+    expect(result.openConditions.length).toBe(14);
+  });
+
+  it("failed dimension → ready: false, dimension appears in missing (D-NPA-GATE-POLICY-REDESIGN)", () => {
+    const productId = makeProductId("gate-06");
+    const conceptualised = makeProductConceptualised({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITATIONS,
+      payload: {
+        productId,
+        version: "1.0.0",
+        cdmComposition: {},
+        lifecycleEventFamily: [],
+      },
+    });
+    const attestations = ALL_NPA_DIMENSION_KEYS.map((dimension) =>
+      makeProductDimensionAttested({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITATIONS,
+        payload: {
+          productId,
+          dimension,
+          result: dimension === "market-risk" ? "failed" : "implementation-attested",
+          citationChain: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
+        },
+      }),
+    );
+    const register = buildProductRegisterView([conceptualised, ...attestations]);
+    const row = register.get(productId);
+    expect(row).toBeDefined();
+    const result: NpaGateResult = validateNpaGate(row as NonNullable<typeof row>);
+    expect(result.ready).toBe(false);
+    expect(result.missing).toContain("market-risk");
+    expect(result.missing.length).toBe(1);
   });
 });
 

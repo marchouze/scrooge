@@ -33,6 +33,11 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 const PIPELINE = "product-approval-attestation-integrity";
 const REQUIRED_ATTESTATIONS = 14;
 
+// Under D-NPA-GATE-POLICY-REDESIGN (CEO 2026-06-15): design-attested with no
+// tracked deferred gaps is blocked at approval. A design-attested dimension
+// with at least one deferredGaps entry is allowed (approved-with-conditions).
+const NPA_GATE_POLICY_REDESIGN = "D-NPA-GATE-POLICY-REDESIGN";
+
 interface MinimalEvent {
   readonly event_id: string;
   readonly type: string;
@@ -123,6 +128,25 @@ export function runOnEvents(
       violations.push({
         subject: productId,
         message: `ProductApproved for \`${productId}\` contains a failed dimension attestation: ${dim} — governance bypass (authority: D-NEW-PRODUCT-APPROVAL-POLICY)`,
+        severity: "fail",
+      });
+      continue;
+    }
+
+    // D-NPA-GATE-POLICY-REDESIGN: design-attested with no tracked deferred gaps
+    // is blocked — the approval was issued under the old policy.
+    const designAttestedNoConds = prior.filter((att) => {
+      if (safeString(att.payload.result) !== "design-attested") return false;
+      const gaps = att.payload.deferredGaps;
+      return !Array.isArray(gaps) || gaps.length === 0;
+    });
+    if (designAttestedNoConds.length > 0) {
+      const dims = designAttestedNoConds
+        .map((att) => safeString(att.payload.dimension) ?? "<unknown>")
+        .join(", ");
+      violations.push({
+        subject: productId,
+        message: `ProductApproved for \`${productId}\` contains ${designAttestedNoConds.length} design-attested dimension(s) with no tracked deferred gaps: ${dims} — blocked under D-NPA-GATE-POLICY-REDESIGN (authority: ${NPA_GATE_POLICY_REDESIGN})`,
         severity: "fail",
       });
       continue;

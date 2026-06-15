@@ -159,7 +159,7 @@ const def: ProductNpaDef = {
     executionVenue: "otc",
     fxInstrumentVariants: ["spot", "forward", "swap"],
     currencyPairs: "any",
-    counterpartyEligibility: "all",
+    counterpartyEligibility: "institutional",
   },
   dimensions,
 };
