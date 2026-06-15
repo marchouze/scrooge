@@ -28,6 +28,9 @@ import { dirname, resolve } from "node:path";
 
 import { Database } from "bun:sqlite";
 
+import { V2_ENVELOPE_SCHEMA_VERSION } from "./schema-version";
+import { ANCHOR_TENANT_ID, type TenantId } from "./tenant";
+
 // ---------------------------------------------------------------------------
 // Schema DDL — structurally identical to the v1 EventStore DDL.
 // Keeping parity means the same `PartitionedEventStore`, archive tooling,
@@ -45,6 +48,10 @@ CREATE TABLE IF NOT EXISTS events (
   actor_id    TEXT    NOT NULL,
   citations   TEXT    NOT NULL,   -- JSON array
   payload     TEXT    NOT NULL,   -- JSON object
+  -- First-class tenant + schema-version columns (D-EVENT-ENVELOPE-TENANT-COLUMN,
+  -- D-EVENT-ENVELOPE-SCHEMA-VERSION). Storage-shape only — NOT S10 routing.
+  tenant_id      TEXT    NOT NULL DEFAULT '${ANCHOR_TENANT_ID}',
+  schema_version INTEGER NOT NULL DEFAULT ${V2_ENVELOPE_SCHEMA_VERSION},
   recorded_at TEXT    NOT NULL DEFAULT (datetime('now')),
   provenance      TEXT,
   aggregate_id    TEXT,
@@ -54,6 +61,8 @@ CREATE INDEX IF NOT EXISTS idx_cp_events_type    ON events(type);
 CREATE INDEX IF NOT EXISTS idx_cp_events_entity  ON events(entity);
 CREATE INDEX IF NOT EXISTS idx_cp_events_as_of   ON events(as_of);
 CREATE INDEX IF NOT EXISTS idx_cp_events_type_seq ON events(type, sequence);
+-- Covering index for the tenant axis (D-EVENT-ENVELOPE-TENANT-COLUMN).
+CREATE INDEX IF NOT EXISTS idx_cp_events_tenant_seq ON events(tenant_id, sequence);
 
 -- Incremental recon cursors (mirrors v1 EventStore schema).
 CREATE TABLE IF NOT EXISTS recon_cursors (
@@ -77,10 +86,16 @@ interface CpEventRow {
   actor_id: string;
   citations: string;
   payload: string;
+  tenant_id: string;
+  schema_version: number;
   recorded_at: string;
   provenance: string | null;
   aggregate_id: string | null;
   aggregate_label: string | null;
+}
+
+interface PragmaColumnRow {
+  name: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -106,6 +121,18 @@ export interface CpEvent {
   readonly actor: CpActor;
   readonly citations: readonly string[];
   readonly payload: Record<string, unknown>;
+  /**
+   * Owning tenant — a first-class column (D-EVENT-ENVELOPE-TENANT-COLUMN).
+   * Optional on input; defaults to the anchor tenant on append. Always present
+   * on replay output. Storage-shape only — NOT S10 routing enforcement.
+   */
+  readonly tenantId?: TenantId;
+  /**
+   * Explicit payload schema version — a first-class column
+   * (D-EVENT-ENVELOPE-SCHEMA-VERSION). Optional on input; defaults to
+   * `V2_ENVELOPE_SCHEMA_VERSION` on append. Always present on replay output.
+   */
+  readonly schemaVersion?: number;
 }
 
 export interface CpReplayOpts {
@@ -151,14 +178,45 @@ class ControlPlaneStoreImpl implements ControlPlaneStore {
       `);
     }
     this.db.exec(CP_DDL);
+    this.migrateSchema();
+  }
+
+  /**
+   * Add the first-class `tenant_id` + `schema_version` columns and the
+   * `(tenant_id, sequence)` covering index to a control-plane store created
+   * before D-EVENT-ENVELOPE-TENANT-COLUMN / -SCHEMA-VERSION. Idempotent: on a
+   * fresh store the `CREATE TABLE` already produced the columns and these
+   * ALTERs are skipped. Legacy rows take the anchor-tenant / version-1 default
+   * (fail-closed: a known tenant, never NULL).
+   */
+  private migrateSchema(): void {
+    const cols = this.db
+      .query<PragmaColumnRow, []>("PRAGMA table_info(events)")
+      .all()
+      .map((r) => r.name);
+    if (!cols.includes("tenant_id")) {
+      this.db.exec(
+        `ALTER TABLE events ADD COLUMN tenant_id TEXT NOT NULL DEFAULT '${ANCHOR_TENANT_ID}'`,
+      );
+    }
+    if (!cols.includes("schema_version")) {
+      this.db.exec(
+        `ALTER TABLE events ADD COLUMN schema_version INTEGER NOT NULL DEFAULT ${V2_ENVELOPE_SCHEMA_VERSION}`,
+      );
+    }
+    this.db.exec(
+      "CREATE INDEX IF NOT EXISTS idx_cp_events_tenant_seq ON events(tenant_id, sequence)",
+    );
   }
 
   append(event: CpEvent): void {
+    const tenantId = event.tenantId ?? (ANCHOR_TENANT_ID as TenantId);
+    const schemaVersion = event.schemaVersion ?? V2_ENVELOPE_SCHEMA_VERSION;
     this.db
       .prepare(
         `INSERT OR IGNORE INTO events
-           (event_id, type, as_of, entity, actor_type, actor_id, citations, payload)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+           (event_id, type, as_of, entity, actor_type, actor_id, citations, payload, tenant_id, schema_version)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         event.event_id,
@@ -169,6 +227,8 @@ class ControlPlaneStoreImpl implements ControlPlaneStore {
         event.actor.id,
         JSON.stringify(event.citations),
         JSON.stringify(event.payload),
+        tenantId,
+        schemaVersion,
       );
   }
 
@@ -203,6 +263,8 @@ class ControlPlaneStoreImpl implements ControlPlaneStore {
         actor: { type: row.actor_type as CpActor["type"], id: row.actor_id },
         citations: JSON.parse(row.citations) as string[],
         payload: JSON.parse(row.payload) as Record<string, unknown>,
+        tenantId: row.tenant_id as TenantId,
+        schemaVersion: row.schema_version,
       };
     }
   }
