@@ -121,30 +121,19 @@ export function run(): ReconResult {
   if (!fxBookEntry) {
     violations.push({
       subject: `fx-v2-parity:registry-missing:${FX_BOOK_VALUATION_SNAPSHOTTED}`,
-      message:
-        `Event type "${FX_BOOK_VALUATION_SNAPSHOTTED}" is not in the registry. ` +
-        "Expected v2Status: \"v2-parallel\". The A2 FX book valuation V2 path " +
-        "must be registered. Authority: D-FIL-BOOK-COMPOSITE-VALUATION.",
+      message: `Event type "${FX_BOOK_VALUATION_SNAPSHOTTED}" is not in the registry. Expected v2Status: "v2-parallel". The A2 FX book valuation V2 path must be registered. Authority: D-FIL-BOOK-COMPOSITE-VALUATION.`,
       severity: "fail",
     });
   } else if (fxBookEntry.v2Status === "v2-replaced") {
     violations.push({
       subject: `fx-v2-parity:premature-v2-replaced:${FX_BOOK_VALUATION_SNAPSHOTTED}`,
-      message:
-        `"${FX_BOOK_VALUATION_SNAPSHOTTED}" is tagged "v2-replaced" but the A2→A4 flip ` +
-        "has not been approved. The product-control read path (daily-pnl.ts) still reads " +
-        `"${FX_POSITION_REVALUED}" (v1-only). A flip requires: (1) wire daily-pnl.ts to ` +
-        "read from FIL instance projection + FxBookValuationSnapshotted, (2) byte-equivalence " +
-        "proof across both paths, (3) CEO Decision approving A4. Authority: D-FIL-BOOK-COMPOSITE-VALUATION.",
+      message: `"${FX_BOOK_VALUATION_SNAPSHOTTED}" is tagged "v2-replaced" but the A2→A4 flip has not been approved. The product-control read path (daily-pnl.ts) still reads "${FX_POSITION_REVALUED}" (v1-only). A flip requires: (1) wire daily-pnl.ts to read from FIL instance projection + FxBookValuationSnapshotted, (2) byte-equivalence proof across both paths, (3) CEO Decision approving A4. Authority: D-FIL-BOOK-COMPOSITE-VALUATION.`,
       severity: "fail",
     });
   } else if (fxBookEntry.v2Status !== "v2-parallel") {
     violations.push({
       subject: `fx-v2-parity:unexpected-status:${FX_BOOK_VALUATION_SNAPSHOTTED}`,
-      message:
-        `"${FX_BOOK_VALUATION_SNAPSHOTTED}" is tagged "${fxBookEntry.v2Status}" — ` +
-        'expected "v2-parallel". A2 runs in parallel with V1 but has not been flipped yet. ' +
-        "Authority: D-FIL-BOOK-COMPOSITE-VALUATION.",
+      message: `"${FX_BOOK_VALUATION_SNAPSHOTTED}" is tagged "${fxBookEntry.v2Status}" — expected "v2-parallel". A2 runs in parallel with V1 but has not been flipped yet. Authority: D-FIL-BOOK-COMPOSITE-VALUATION.`,
       severity: "warn",
     });
   }
@@ -155,11 +144,7 @@ export function run(): ReconResult {
   if (fxPosEntry && fxPosEntry.v2Status === "v2-replaced") {
     violations.push({
       subject: `fx-v2-parity:premature-v2-replaced:${FX_POSITION_REVALUED}`,
-      message:
-        `"${FX_POSITION_REVALUED}" is tagged "v2-replaced" but product-control ` +
-        "consumers (daily-pnl.ts) have not been migrated to V2 reads. " +
-        "V2-replaced requires the A4 cutover: wire all consumers to V2 then retire " +
-        "the V1 read path. Authority: D-FIL-BOOK-COMPOSITE-VALUATION.",
+      message: `"${FX_POSITION_REVALUED}" is tagged "v2-replaced" but product-control consumers (daily-pnl.ts) have not been migrated to V2 reads. V2-replaced requires the A4 cutover: wire all consumers to V2 then retire the V1 read path. Authority: D-FIL-BOOK-COMPOSITE-VALUATION.`,
       severity: "fail",
     });
   }
@@ -170,14 +155,7 @@ export function run(): ReconResult {
   if (varEntry && varEntry.v2Status === "v2-replaced") {
     violations.push({
       subject: `fx-v2-parity:premature-v2-replaced:${MARKET_RISK_MEASURE_COMPUTED}`,
-      message:
-        `"${MARKET_RISK_MEASURE_COMPUTED}" is tagged "v2-replaced" but no V2 ` +
-        "production VaR event exists to replace it. The A3 VaR metric " +
-        "(makeVarMetric) runs only in recon:attribution-var-diversification. " +
-        "TO RESOLVE: emit a MarketRiskVarComputed (or equivalent) event from the " +
-        "V2 metric on each EOD run, wire market-risk-measure.ts to read it, then " +
-        "promote to v2-replaced after byte-equivalence proof. " +
-        "Authority: D-FIL-ATTRIBUTION-A1-BUILD (A3 build slice).",
+      message: `"${MARKET_RISK_MEASURE_COMPUTED}" is tagged "v2-replaced" but no V2 production VaR event exists to replace it. The A3 VaR metric (makeVarMetric) runs only in recon:attribution-var-diversification. TO RESOLVE: emit a MarketRiskVarComputed (or equivalent) event from the V2 metric on each EOD run, wire market-risk-measure.ts to read it, then promote to v2-replaced after byte-equivalence proof. Authority: D-FIL-ATTRIBUTION-A1-BUILD (A3 build slice).`,
       severity: "fail",
     });
   }
@@ -189,48 +167,20 @@ export function run(): ReconResult {
 
   violations.push({
     subject: "fx-v2-parity:gap:A2-incommensurable-data-paths",
-    message:
-      "GAP A2 (BLOCKING FLIP): FX valuation V1 and V2 data paths are incommensurable. " +
-      `V1 authoritative path: "${FX_POSITION_REVALUED}" per-trade unrealised P&L deltas ` +
-      "(consumed by daily-pnl.ts, product-control views). " +
-      `V2 A2 path: "${FX_BOOK_VALUATION_SNAPSHOTTED}" aggregate Δ(gross) book snapshot ` +
-      "(GL-posted; not wired into product-control views). " +
-      "Byte-equivalence is impossible between a per-trade delta stream (V1) and an " +
-      "aggregate snapshot (V2). TO RESOLVE: complete A4 — migrate daily-pnl.ts and all " +
-      "product-control consumers to read FIL instance projection + FxBookValuationSnapshotted; " +
-      "then re-run this gate and prove byte-equivalence of totals. " +
-      "Authority: D-FIL-BOOK-COMPOSITE-VALUATION (A4 gate); D-V1-REMOVAL-PHASE-2.",
+    message: `GAP A2 (BLOCKING FLIP): FX valuation V1 and V2 data paths are incommensurable. V1 authoritative path: "${FX_POSITION_REVALUED}" per-trade unrealised P&L deltas (consumed by daily-pnl.ts, product-control views). V2 A2 path: "${FX_BOOK_VALUATION_SNAPSHOTTED}" aggregate Δ(gross) book snapshot (GL-posted; not wired into product-control views). Byte-equivalence is impossible between a per-trade delta stream (V1) and an aggregate snapshot (V2). TO RESOLVE: complete A4 — migrate daily-pnl.ts and all product-control consumers to read FIL instance projection + FxBookValuationSnapshotted; then re-run this gate and prove byte-equivalence of totals. Authority: D-FIL-BOOK-COMPOSITE-VALUATION (A4 gate); D-V1-REMOVAL-PHASE-2.`,
     severity: "fail",
   });
 
   violations.push({
     subject: "fx-v2-parity:gap:A3-no-v2-production-event",
-    message:
-      "GAP A3 (BLOCKING FLIP): VaR/ES V2 path has no production event. " +
-      `V1 authoritative path: "${MARKET_RISK_MEASURE_COMPUTED}" (emitted by ` +
-      "computeMarketRisk in var-engine.ts; read by market-risk-measure.ts). " +
-      "V2 A3 path: makeVarMetric runs ONLY in recon:attribution-var-diversification; " +
-      "it emits no event and is not wired into the production risk dashboard. " +
-      "TO RESOLVE: (1) wire makeVarMetric to emit a typed VaR event (e.g. " +
-      "MarketRiskVarComputed) on each EOD run; (2) register the event type with " +
-      'v2Status: "v2-parallel"; (3) wire market-risk-measure.ts to read from it; ' +
-      "(4) prove byte-equivalence vs MarketRiskMeasureComputed; (5) flip to v2-replaced. " +
-      "Authority: D-FIL-ATTRIBUTION-A1-BUILD (A3 build slice); D-V1-REMOVAL-PHASE-2.",
+    message: `GAP A3 (BLOCKING FLIP): VaR/ES V2 path has no production event. V1 authoritative path: "${MARKET_RISK_MEASURE_COMPUTED}" (emitted by computeMarketRisk in var-engine.ts; read by market-risk-measure.ts). V2 A3 path: makeVarMetric runs ONLY in recon:attribution-var-diversification; it emits no event and is not wired into the production risk dashboard. TO RESOLVE: (1) wire makeVarMetric to emit a typed VaR event (e.g. MarketRiskVarComputed) on each EOD run; (2) register the event type with v2Status: "v2-parallel"; (3) wire market-risk-measure.ts to read from it; (4) prove byte-equivalence vs MarketRiskMeasureComputed; (5) flip to v2-replaced. Authority: D-FIL-ATTRIBUTION-A1-BUILD (A3 build slice); D-V1-REMOVAL-PHASE-2.`,
     severity: "fail",
   });
 
   result.violations = violations;
   result.ok = violations.every((v) => v.severity !== "fail");
 
-  const summary =
-    `fx-v2-parity [ENFORCING — Phase 2]: FLIP BLOCKED. ` +
-    `2 structural gaps prevent V2-authoritative flip for FX valuation (A2) and VaR/ES (A3). ` +
-    `Gap A2: incommensurable data paths (FxPositionRevalued v1-only vs FxBookValuationSnapshotted v2-parallel; A4 completion required). ` +
-    `Gap A3: no V2 production VaR event exists (makeVarMetric recon-only; wire to emit MarketRiskVarComputed then prove parity). ` +
-    `Status checks: FxBookValuationSnapshotted=${fxBookEntry?.v2Status ?? "MISSING"} ` +
-    `| FxPositionRevalued=${fxPosEntry?.v2Status ?? "MISSING"} ` +
-    `| MarketRiskMeasureComputed=${varEntry?.v2Status ?? "MISSING"}. ` +
-    `Harness structural check: ${vacuousViolations.length === 0 ? "OK" : "FAILED"}.`;
+  const summary = `fx-v2-parity [ENFORCING — Phase 2]: FLIP BLOCKED. 2 structural gaps prevent V2-authoritative flip for FX valuation (A2) and VaR/ES (A3). Gap A2: incommensurable data paths (FxPositionRevalued v1-only vs FxBookValuationSnapshotted v2-parallel; A4 completion required). Gap A3: no V2 production VaR event exists (makeVarMetric recon-only; wire to emit MarketRiskVarComputed then prove parity). Status checks: FxBookValuationSnapshotted=${fxBookEntry?.v2Status ?? "MISSING"} | FxPositionRevalued=${fxPosEntry?.v2Status ?? "MISSING"} | MarketRiskMeasureComputed=${varEntry?.v2Status ?? "MISSING"}. Harness structural check: ${vacuousViolations.length === 0 ? "OK" : "FAILED"}.`;
 
   result.asOf = summary;
   return result;
