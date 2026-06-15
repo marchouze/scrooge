@@ -35,11 +35,14 @@
 // Authority: D-RAS (2026-05-06) · D-MARKETS-CAPITAL-TIME-SHAPE (2026-05-12)
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
+import { createHash } from "node:crypto";
+
 import { getFinancialConstant } from "../config/financial-constants";
 import { type Money, minor } from "../core/money";
 import { ZAR } from "../core/types";
 import type { EventStore } from "../event-store/store";
 import { readFilInstanceEvents } from "../risk/sa-ccr/fil-instance-positions";
+import { readWithOutputSnapshot } from "./output-snapshot-cache";
 import { computeRwaFromPositions } from "./rwa-from-positions";
 
 // ---------------------------------------------------------------------------
@@ -223,6 +226,43 @@ function formatPct(ratio: number): string {
  * @param asOf        - ISO 8601 run timestamp.
  */
 export function computeCapitalMetrics(eventStore: EventStore, asOf: string): CapitalMetrics {
+  // D-PROJECTION-SNAPSHOT-ADOPTION — read through the byte-identical
+  // output-snapshot cache. `computeCapitalMetricsUncached` (below) is the
+  // unchanged composite (live-capital fold + RWA-from-positions). RWA folds
+  // FIL-instance events from the SEPARATE v2-anchor DB, which the main
+  // store's `count()` does not witness; we therefore fold a CONTENT digest
+  // of those FIL events into the stream key so any FIL change forces a cache
+  // miss + full recompute. Combined with the count() witness on the main
+  // store, a cache hit is taken only when BOTH input sets are identical —
+  // making the cached output bit-for-bit the un-cached value.
+  const filEvents = readFilInstanceEvents();
+  const filDigest = createHash("sha256")
+    .update(JSON.stringify(filEvents))
+    .digest("hex")
+    .slice(0, 16);
+  const { output } = readWithOutputSnapshot<CapitalMetrics>({
+    store: eventStore,
+    streamKey: `capital-metrics:fil=${filDigest}`,
+    asOf,
+    compute: () => computeCapitalMetricsUncached(eventStore, asOf, filEvents),
+    encode: (o) => JSON.stringify(o),
+    decode: (p) => JSON.parse(p) as CapitalMetrics,
+  });
+  return output;
+}
+
+/**
+ * Unchanged composite capital-metrics computation. Kept as the slow path
+ * behind the output-snapshot cache in `computeCapitalMetrics`. The optional
+ * `filInstanceEvents` lets the cache wrapper hoist the (cross-DB) FIL read so
+ * it can both digest it for the cache key and pass it to the RWA fold —
+ * direct callers omit it and the RWA fold reads it itself (unchanged).
+ */
+export function computeCapitalMetricsUncached(
+  eventStore: EventStore,
+  asOf: string,
+  filInstanceEvents = readFilInstanceEvents(),
+): CapitalMetrics {
   const live = readLiveCapitalPosition(eventStore);
 
   let availableCapitalMinor: number;
@@ -232,7 +272,7 @@ export function computeCapitalMetrics(eventStore: EventStore, asOf: string): Cap
 
   // Live RWA from booked positions (D-RWA-LIVE-POSITIONS-PROJECTION-V1).
   // Falls back to the ICAAP v1 constant when the store has no trade events.
-  const rwaResult = computeRwaFromPositions(eventStore, asOf, undefined, readFilInstanceEvents());
+  const rwaResult = computeRwaFromPositions(eventStore, asOf, undefined, filInstanceEvents);
   const liveRwaMinor = rwaResult.buildPhaseFallback
     ? BUILD_PHASE_TOTAL_RWA_MINOR
     : rwaResult.output.totalRwaMinor;

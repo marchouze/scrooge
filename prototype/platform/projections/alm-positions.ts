@@ -50,7 +50,8 @@ import type { EventStore } from "../event-store/store";
 import type { FundingPosition, HQLAPosition } from "../liquidity/lcr";
 import type { ASFItem, RSFItem } from "../liquidity/nsfr";
 import { computeCapitalMetrics } from "./capital-metrics";
-import { eventInOperatingBook } from "./filter";
+import { eventInOperatingBook, operatingBookFilter } from "./filter";
+import { readWithOutputSnapshot } from "./output-snapshot-cache";
 
 // ---------------------------------------------------------------------------
 // Output types
@@ -850,6 +851,38 @@ function buildRSFItems(
  *                      D-LCR-TILE-PROVENANCE; Reg 26 / 26A (bank-licence-bound).
  */
 export function getALMPositionSnapshot(
+  eventStore: EventStore,
+  asOf: string,
+  horizonDays: number,
+  entity?: string,
+): ALMPositionSnapshot {
+  // D-PROJECTION-SNAPSHOT-ADOPTION — read through the byte-identical
+  // output-snapshot cache. `computeALMPositionSnapshot` (below) is the
+  // unchanged procedural fold; the cache only returns it without recompute
+  // when the store population (count) AND asOf are identical to when the
+  // snapshot was written, so the output is bit-for-bit the un-cached value.
+  // The stream key encodes every parameter that changes the output
+  // (entity + horizon); the provenance digest is appended by the cache.
+  // ALM folds the operating-book inclusion (`liveFlowView`), so we key the
+  // cache rows under `operatingBookFilter()` for honest digest isolation.
+  const { output } = readWithOutputSnapshot<ALMPositionSnapshot>({
+    store: eventStore,
+    streamKey: `alm-positions:${entity ?? "store-wide"}:h${horizonDays}`,
+    asOf,
+    provenanceFilter: operatingBookFilter(),
+    compute: () => computeALMPositionSnapshot(eventStore, asOf, horizonDays, entity),
+    encode: (o) => JSON.stringify(o),
+    decode: (p) => JSON.parse(p) as ALMPositionSnapshot,
+  });
+  return output;
+}
+
+/**
+ * Unchanged procedural ALM fold. Kept as the slow path behind the
+ * output-snapshot cache in `getALMPositionSnapshot`. Direct callers that
+ * want to bypass the cache (e.g. the equality regression test) call this.
+ */
+export function computeALMPositionSnapshot(
   eventStore: EventStore,
   asOf: string,
   horizonDays: number,
