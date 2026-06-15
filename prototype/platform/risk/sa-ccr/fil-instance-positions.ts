@@ -84,11 +84,10 @@ export function readFilInstanceEvents(dbPath = resolveV2AnchorDb()): FilInstance
 
     const events: FilInstanceLifecycleEvent[] = [];
     for (const r of rows) {
+      // DECIMAL-NATIVE (D-V2-CORE-MONEY-DECIMAL-NATIVE): the notional amount is a
+      // canonical decimal STRING — it survives JSON round-trip intact, so no
+      // bigint coercion is needed (the prior `minorUnits` bigint hydration is gone).
       const p = JSON.parse(r.payload) as Record<string, unknown>;
-      const terms = p.economicTerms as { notional?: { minorUnits?: number | string } } | undefined;
-      if (terms?.notional && terms.notional.minorUnits !== undefined) {
-        terms.notional.minorUnits = BigInt(terms.notional.minorUnits) as unknown as number;
-      }
       events.push(p as unknown as FilInstanceLifecycleEvent);
     }
     return events;

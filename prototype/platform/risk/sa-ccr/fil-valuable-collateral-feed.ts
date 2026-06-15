@@ -47,7 +47,11 @@ import type { Instant, Money as V2Money } from "../../../v2-core/fil-core/primit
 import type { ObservableRef, RevaluationRecord } from "../../../v2-core/fil-facets/facets";
 import { getCollateralInventory } from "../../collateral/inventory";
 import type { EventStore } from "../../event-store/store";
-import { minorBigintToMajorString, v2MoneyToMinor } from "./v2-money-bridge";
+import {
+  legacyMinorNumberToMajorString,
+  minorBigintToMajorString,
+  v2MoneyToMinor,
+} from "./v2-money-bridge";
 
 // ---------------------------------------------------------------------------
 // The trade → counterparty membership for a netting set, reconstructed from the
@@ -134,7 +138,7 @@ export function materialiseNettingSetRevaluations(
     // replay is sequence-ordered (monotone in as_of for revaluations) ⇒
     // last assignment is the latest event-of-record.
     latest.set(tid, {
-      value: { currency, amount: minorBigintToMajorString(BigInt(Math.round(p.npvClosingMinor))) },
+      value: { currency, amount: legacyMinorNumberToMajorString(p.npvClosingMinor) },
       asOf: ev.as_of as Instant,
       observablesUsed: [irObservable(currency)],
     });
@@ -155,7 +159,7 @@ export function materialiseNettingSetRevaluations(
       latest.set(tid, {
         value: {
           currency: "ZAR",
-          amount: minorBigintToMajorString(BigInt(Math.round(p.unrealisedPnlZarMinor))),
+          amount: legacyMinorNumberToMajorString(p.unrealisedPnlZarMinor),
         },
         asOf: ev.as_of as Instant,
         observablesUsed: [fxObservable(p.currencyPair ?? "?/ZAR")],

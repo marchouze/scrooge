@@ -16,6 +16,7 @@
 // Author: Atlas (Chief Technology Officer / Core banking platform architect).
 
 import type { Money as V2Money } from "../../../v2-core/fil-core/primitives";
+import { roundDecimal, toCanonicalString, toDecimal } from "../../core/decimal-engine";
 import { type Money as V1Money, minor as v1Minor } from "../../core/money";
 import type { Currency } from "../../core/types";
 
@@ -35,6 +36,19 @@ export function v2ToV1Money(m: V2Money): V1Money {
 /** v2 decimal-native Money → integer minor units (2dp). Fail-closed on >2dp. */
 export function v2MoneyToMinor(m: V2Money): bigint {
   return majorStringToMinorBigint(m.amount);
+}
+
+/**
+ * A legacy event field that carries integer MINOR units as a JS `number`
+ * (e.g. `npvClosingMinor`, `unrealisedPnlZarMinor` on the v1 `*Revalued`
+ * events) → canonical MAJOR-unit decimal string. Routes through the decimal
+ * engine — NO float arithmetic (`recon:no-float-money-arithmetic`): the number
+ * is parsed as a decimal string, rounded to whole minor units (HALF_UP,
+ * defensive against any float representation), then shifted to major units.
+ */
+export function legacyMinorNumberToMajorString(value: number): string {
+  const wholeMinor = roundDecimal(toDecimal(String(value)), 0, "HALF_UP");
+  return minorBigintToMajorString(BigInt(toCanonicalString(wholeMinor)));
 }
 
 /** Integer minor units (2dp) → canonical major-unit decimal string. */
