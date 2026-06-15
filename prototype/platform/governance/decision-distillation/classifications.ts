@@ -201,6 +201,12 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
       "Wires the Basel mandate and objectives over the existing BCBS obligations. Global reference-plane content; the regulator-objective layer generalises across tenants.",
   },
   {
+    decisionId: "D-BCBS-POSTURE-ENRICHMENT-BUILD-PHASE",
+    class: "directional",
+    rationale:
+      "Declares this bank's build-phase BCBS posture (entity.systemic-status=neither, activity.cryptoasset-exposure=none, activity.securitisation=none) and re-scopes the bound obligations to does-not-apply. Tenant prudential-posture declaration.",
+  },
+  {
     decisionId: "D-BOND-RAS-APPETITE",
     class: "directional",
     rationale:
@@ -1866,10 +1872,10 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
 ];
 
 /** Snapshot count of approved decisionIds covered at authoring time. */
-export const DECISION_CLASSIFICATION_COUNT = 298;
+export const DECISION_CLASSIFICATION_COUNT = 299;
 
 export const DECISION_CLASSIFICATION_COUNTS = {
   foundational: 120,
-  directional: 153,
+  directional: 154,
   obsolete: 25,
 } as const;
