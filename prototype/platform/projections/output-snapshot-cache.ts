@@ -58,11 +58,7 @@
 // Author: Atlas (Substrate Architect, engineering)
 
 import type { EventStore } from "../event-store/store";
-import {
-  type ProvenanceFilter,
-  defaultProvenanceFilter,
-  effectiveStreamKey,
-} from "./filter";
+import { type ProvenanceFilter, defaultProvenanceFilter, effectiveStreamKey } from "./filter";
 
 /**
  * Envelope persisted in the snapshot payload. `count` is the event-store
@@ -187,12 +183,7 @@ export function readWithOutputSnapshot<T>(
 function isCachedOutputEnvelope(x: unknown): x is CachedOutputEnvelope {
   if (typeof x !== "object" || x === null) return false;
   const o = x as Record<string, unknown>;
-  return (
-    o.v === 1 &&
-    typeof o.count === "number" &&
-    typeof o.asOf === "string" &&
-    "output" in o
-  );
+  return o.v === 1 && typeof o.count === "number" && typeof o.asOf === "string" && "output" in o;
 }
 
 /**

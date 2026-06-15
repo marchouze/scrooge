@@ -357,27 +357,27 @@
     },
     {
       "file": "platform/projections/alm-positions.ts",
-      "line": 391,
+      "line": 392,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/projections/alm-positions.ts",
-      "line": 693,
+      "line": 694,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/projections/capital-metrics.ts",
-      "line": 255,
+      "line": 295,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/projections/capital-metrics.ts",
-      "line": 257,
+      "line": 297,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/projections/capital-metrics.ts",
-      "line": 262,
+      "line": 302,
       "pattern": "money-multiply/divide"
     },
     {
@@ -761,16 +761,6 @@
       "pattern": "money-multiply/divide"
     },
     {
-      "file": "platform/risk/sa-ccr/fil-valuable-collateral-feed.ts",
-      "line": 136,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "platform/risk/sa-ccr/fil-valuable-collateral-feed.ts",
-      "line": 155,
-      "pattern": "Math.round(money)"
-    },
-    {
       "file": "platform/risk/sa-ccr/pfe-addon.ts",
       "line": 355,
       "pattern": "Math.round(money)"
@@ -1113,36 +1103,6 @@
     {
       "file": "scripts/writeoff-fx-subledger-suspense.ts",
       "line": 52,
-      "pattern": "money-multiply/divide"
-    },
-    {
-      "file": "v2-core/eval/sa-ccr-exam-set.ts",
-      "line": 92,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "v2-core/fil-models/sa-ccr/methodology.ts",
-      "line": 343,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "v2-core/fil-models/sa-ccr/methodology.ts",
-      "line": 345,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "v2-core/fil-models/sa-ccr/methodology.ts",
-      "line": 297,
-      "pattern": "money-multiply/divide"
-    },
-    {
-      "file": "v2-core/fil-models/sa-ccr/methodology.ts",
-      "line": 400,
-      "pattern": "money-multiply/divide"
-    },
-    {
-      "file": "v2-core/fil-models/sa-ccr/methodology.ts",
-      "line": 406,
       "pattern": "money-multiply/divide"
     }
   ]

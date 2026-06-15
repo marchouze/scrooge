@@ -63,7 +63,6 @@ function appendCapital(store: EventStore, amountMinor: number): void {
   });
 }
 
-
 // ---------------------------------------------------------------------------
 // Capital metrics — cached === uncached across the snapshot lifecycle.
 // ---------------------------------------------------------------------------
