@@ -14,3 +14,4 @@ export * from "./methodology";
 export * from "./fx-model";
 export * from "./fcy-cash-model";
 export * from "./fx-pnl-metric";
+export * from "../fx/index.ts";
