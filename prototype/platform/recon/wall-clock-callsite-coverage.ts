@@ -298,6 +298,14 @@ const ALLOWLIST_PREFIXES: ReadonlyArray<string> = [
   // Backtest harness: wall-clock elapsed timing for benchmark performance
   // measurements. Not event timestamps.
   "runtime/agents/rohan-backtest-harness.ts",
+  // Products view: Date.now() used for SLA elapsed-time computation
+  // (daysSince discoveredAt for post-approval finding SLA check) — same
+  // monotonic-comparison rationale as dashboard/substrate-gaps.ts.
+  "dashboard/products-view.ts",
+  // NPA post-approval finding recon gate: `opts.asOfDate ?? new Date()...`
+  // is an injectable-default pattern — callers that need deterministic
+  // time inject an explicit `asOfDate`. Same rationale as dashboard/registry.ts.
+  "platform/recon/npa-post-approval-finding-review.ts",
 ];
 
 // Directories to skip entirely when walking prototype/.
