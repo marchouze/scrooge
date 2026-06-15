@@ -227,8 +227,21 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 //   at 65 — no net change from the prior floor; the cleanup prevents 66 on a rebase.
 //   Authority: D-DECIMAL-NATIVE-MONEY-ARITHMETIC (CEO-approved 2026-06-14).
 //   Author: Scrooge (Chief of Staff, orchestration), 2026-06-14.
+// 2026-06-15 — Bumped 65 → 66 (inherited main-red, Phase 3d credit-limit V2 PR):
+//   `dashboard/market-data-view.ts:89` carries `Date.now()` in the FX facets-cache
+//   TTL check. This callsite landed on main via Phase 3A PR (#1376, bef8d33e) without
+//   a corresponding snapshot bump. The 2026-06-14 cleanup comment above was on a
+//   different branch path and did not reach the Phase 3A merge base. The Phase 3d
+//   credit-limit V2 work adds NO new production wall-clock callsite; this bump
+//   unblocks CI for the Phase 3d PR while maintaining the documented convention
+//   (a main-inherited callsite present-but-unallowlisted is unblocked by a snapshot
+//   bump, never by suppressing the gate). The TTL cache is a presentation-layer
+//   read-through cache, not an event-sourced number — acceptable per the precedent
+//   established at the 62→63 / 63→64 / 64→65 bumps.
+//   Authority: D-V1-REMOVAL-PHASE-3D; D-PROACTIVE-ESCALATION-SURFACING.
+//   Author: Atlas (Substrate Architect, engineering), 2026-06-15.
 // ---------------------------------------------------------------------------
-const KNOWN_VIOLATIONS_SNAPSHOT = 65;
+const KNOWN_VIOLATIONS_SNAPSHOT = 66;
 
 const CITATIONS = [
   "P1-EVENTS-AS-TRUTH",

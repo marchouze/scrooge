@@ -41,6 +41,9 @@
 
 import { z } from "zod";
 
+import { tenantIdSchema } from "../../../v2-core/control-plane/tenant";
+import type { TenantId } from "../../../v2-core/control-plane/tenant";
+import { moneyWireSchema } from "../../core/money-codec";
 import { newEventId } from "../../core/types";
 import { deterministicAggregateId, makeAggregateLabel } from "../aggregate";
 import { type Actor, type Event, eventSchema } from "../types";
@@ -687,6 +690,165 @@ export function makeCreditLimitWithdrawn(args: {
 }
 
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// V2 EVENT TYPES — Phase 3d (D-V1-REMOVAL-PHASE-3D, CEO-approved 2026-06-15)
+//
+// Three approval-registry event types lifted to V2 with MoneyWire amounts
+// and tenantId. The V1 originals remain v1-only; these V2 variants run in
+// parallel. F-032 registration: event-types (here) + registry/credit-limit.ts
+// + provenance-category.ts (3-site rule).
+//
+// Only the approval-registry slice is lifted here: Approved / Loaded /
+// Withdrawn. The remaining 10 lifecycle types (application, extension, analysis,
+// ISDA/CSA, proposal, annual review, breach, breach-disposal, CRC exception,
+// sub-IG approval) stay v1-only until Phase 3e+.
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// CreditLimitApprovedV2 — PROC-RISK-CO-01 Step 5 (V2 parallel)
+//
+// Identical to CreditLimitApproved except:
+//   - limit: MoneyWire (decimal-native major units) replaces limit: number + currency
+//   - tenantId: TenantId added (anchor tenant stamp at emit time)
+//   - schemaVersion: 2
+//
+// Authority: D-V1-REMOVAL-PHASE-3D; D-V2-CORE-MONEY-DECIMAL-NATIVE.
+// ---------------------------------------------------------------------------
+
+export const creditLimitApprovedV2PayloadSchema = z.object({
+  applicationId: z.string().min(1),
+  counterpartyId: z.string().min(1),
+  /** Approved limit as MoneyWire (decimal-native, major units). */
+  limit: moneyWireSchema,
+  tenor: z.string().min(1),
+  approvedBy: z.string().min(1),
+  approvalAuthority: creditApprovalAuthoritySchema,
+  approvedAt: z.string().min(1),
+  conditions: z.array(z.string().min(1)),
+  expiryDate: z.string().min(1).optional(),
+  /** Tenant stamp — ANCHOR_TENANT_ID at emit time. Required on all V2 events. */
+  tenantId: tenantIdSchema,
+  /** Schema version discriminant — always 2 for V2 events. */
+  schemaVersion: z.literal(2),
+});
+
+export type CreditLimitApprovedV2Payload = z.infer<typeof creditLimitApprovedV2PayloadSchema>;
+
+export function makeCreditLimitApprovedV2(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: CreditLimitApprovedV2Payload;
+  eventId?: string;
+}): Event {
+  const aggregateLabel = makeAggregateLabel("credit-limit-app", args.payload.applicationId);
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "CreditLimitApprovedV2",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: creditLimitApprovedV2PayloadSchema.parse(args.payload),
+    aggregateId: deterministicAggregateId(aggregateLabel),
+    aggregateLabel,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// CreditLimitLoadedV2 — PROC-RISK-CO-01 Step 6 (V2 parallel)
+//
+// Identical to CreditLimitLoaded except:
+//   - limit: MoneyWire replaces limit: number + currency
+//   - tenantId: TenantId added
+//   - schemaVersion: 2
+//
+// Authority: D-V1-REMOVAL-PHASE-3D; D-V2-CORE-MONEY-DECIMAL-NATIVE.
+// ---------------------------------------------------------------------------
+
+export const creditLimitLoadedV2PayloadSchema = z.object({
+  counterpartyId: z.string().min(1),
+  /** Loaded limit as MoneyWire (decimal-native, major units). */
+  limit: moneyWireSchema,
+  loadedAt: z.string().min(1),
+  effectiveFrom: z.string().min(1),
+  loadedBy: z.string().min(1),
+  /** Tenant stamp — ANCHOR_TENANT_ID at emit time. Required on all V2 events. */
+  tenantId: tenantIdSchema,
+  /** Schema version discriminant — always 2 for V2 events. */
+  schemaVersion: z.literal(2),
+});
+
+export type CreditLimitLoadedV2Payload = z.infer<typeof creditLimitLoadedV2PayloadSchema>;
+
+export function makeCreditLimitLoadedV2(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: CreditLimitLoadedV2Payload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "CreditLimitLoadedV2",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: creditLimitLoadedV2PayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// CreditLimitWithdrawnV2 — Credit Risk Policy §7 (V2 parallel)
+//
+// Identical to CreditLimitWithdrawn except:
+//   - tenantId: TenantId added (no money fields to migrate in this event)
+//   - schemaVersion: 2
+//
+// Authority: D-V1-REMOVAL-PHASE-3D.
+// ---------------------------------------------------------------------------
+
+export const creditLimitWithdrawnV2PayloadSchema = z.object({
+  counterpartyId: z.string().min(1),
+  withdrawnReason: creditLimitWithdrawnReasonSchema,
+  withdrawnAt: z.string().min(1),
+  withdrawnBy: z.string().min(1),
+  /** Tenant stamp — ANCHOR_TENANT_ID at emit time. Required on all V2 events. */
+  tenantId: tenantIdSchema,
+  /** Schema version discriminant — always 2 for V2 events. */
+  schemaVersion: z.literal(2),
+});
+
+export type CreditLimitWithdrawnV2Payload = z.infer<typeof creditLimitWithdrawnV2PayloadSchema>;
+
+export function makeCreditLimitWithdrawnV2(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: CreditLimitWithdrawnV2Payload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "CreditLimitWithdrawnV2",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: creditLimitWithdrawnV2PayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Re-export TenantId for consumers that fold V2 events.
+// ---------------------------------------------------------------------------
+export type { TenantId };
+
+// ---------------------------------------------------------------------------
 // CREDIT_LIMIT_TYPED_EVENT_TYPES — registry of event types in this module.
 //
 // To add a new credit-limit event type:
@@ -710,6 +872,10 @@ export const CREDIT_LIMIT_TYPED_EVENT_TYPES = [
   "CrcLimitExceptionApproved",
   "SubInvestmentGradeCounterpartyApproved",
   "CreditLimitWithdrawn",
+  // V2 approval-registry types (Phase 3d — D-V1-REMOVAL-PHASE-3D).
+  "CreditLimitApprovedV2",
+  "CreditLimitLoadedV2",
+  "CreditLimitWithdrawnV2",
 ] as const;
 
 export type CreditLimitEventType = (typeof CREDIT_LIMIT_TYPED_EVENT_TYPES)[number];
