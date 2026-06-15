@@ -124,6 +124,7 @@ interface GoldenSourceFiling {
   readonly slug: string;
   readonly instrumentId: string | null;
   readonly documentHash: string;
+  readonly title: string | null;
 }
 
 function replayRegulatorySourceFilings(): Map<string, GoldenSourceFiling> {
@@ -140,6 +141,7 @@ function replayRegulatorySourceFilings(): Map<string, GoldenSourceFiling> {
         slug: meta.slug ?? "",
         instrumentId: meta.instrumentId ?? null,
         documentHash: p.documentHash,
+        title: (meta as { title?: string }).title ?? null,
       };
 
       // Last-write-wins (append-only event log; re-filing supersedes)
@@ -370,6 +372,49 @@ export function buildSourceCoverage(): SourceCoverageReport {
       extracted: true,
       obligationsLinked,
       structuredJsonPath: relPath,
+      reviewedAt: review?.reviewedAt ?? null,
+      reviewStatus,
+      reviewedSourceHash: review?.reviewedSourceHash ?? null,
+    });
+  }
+
+  // Filed-only sources: instruments acquired via RecordFiled{regulatory-source}
+  // with NO structured-doc on disk (e.g. PDFs distilled in co-work, like the IFRS
+  // standards). They belong in the external-reg list as acquired-but-not-extracted
+  // rows so their obligations trace back and a review marker can attach.
+  const seenSlugs = new Set(rows.map((r) => r.slug.toUpperCase()));
+  const distinctFilings = new Map<string, GoldenSourceFiling>();
+  for (const filing of filings.values()) {
+    if (filing.slug) distinctFilings.set(filing.slug.toUpperCase(), filing);
+  }
+  for (const [slugUpper, filing] of distinctFilings) {
+    if (seenSlugs.has(slugUpper)) continue;
+    const slug = filing.slug;
+    const lookupId = filing.instrumentId?.toUpperCase() ?? slugUpper;
+    const rawStatus = getApplicabilityStatus(lookupId, undefined);
+    const applicabilityStatus: ApplicabilityStatus =
+      rawStatus === "direct" || rawStatus === "transposed" || rawStatus === "reference"
+        ? rawStatus
+        : "unknown";
+    const obligationsLinked = adoptedBySlug.get(slug.toLowerCase()) ?? 0;
+    const review =
+      reviews.get(slugUpper) ??
+      (filing.instrumentId ? reviews.get(filing.instrumentId.toUpperCase()) : undefined);
+    let reviewStatus: ReviewStatus = "unreviewed";
+    if (review) {
+      reviewStatus = review.reviewedSourceHash === filing.documentHash ? "reviewed" : "stale";
+    }
+    rows.push({
+      instrumentId: filing.instrumentId,
+      slug,
+      title: filing.title ?? slug,
+      regulator: null,
+      applicabilityStatus,
+      sourceAcquired: true,
+      goldenSourceHash: filing.documentHash,
+      extracted: false,
+      obligationsLinked,
+      structuredJsonPath: "",
       reviewedAt: review?.reviewedAt ?? null,
       reviewStatus,
       reviewedSourceHash: review?.reviewedSourceHash ?? null,
