@@ -7,9 +7,11 @@
 // Authority: D-ENGINEERING-INTEGRITY-CHARTER; brief:atlas:fil-fx-language-phase-1-linear-otc-models:2026-06-15
 // Author: Atlas (Core banking platform architect, engineering).
 
+import { isZeroD, toDecimal } from "../../../fil-core/decimal.ts";
 import type { FilEventRef } from "../../../fil-core/lifecycle.ts";
 import type { Instant, Money } from "../../../fil-core/primitives.ts";
 import type { CitationRef, MethodologyHash } from "../../../fil-core/primitives.ts";
+import { zeroMoney } from "../../../fil-core/primitives.ts";
 import type { FilScopePattern } from "../../../fil-core/urn.ts";
 import type {
   MarketDataSlice,
@@ -20,8 +22,6 @@ import type {
   Valuable,
 } from "../../../fil-facets/facets.ts";
 import type { FilModelImplementationDeclared } from "../../declaration.ts";
-import { isZeroD, toDecimal } from "../../../fil-core/decimal.ts";
-import { zeroMoney } from "../../../fil-core/primitives.ts";
 import { valueFxPosition } from "../../fx-valuation/methodology.ts";
 import { bookCost, computeUnrealisedPnl } from "../performance/fx-performance-methodology.ts";
 import { fxSpotObsRef as spotObservableRef } from "../shared/fx-observables.ts";

@@ -39,8 +39,8 @@ import type {
   MetricRegistry,
   SliceMember,
 } from "../../fil-attribution";
-import type { FilLifecycleStage } from "../../fil-core/lifecycle";
 import { addD, isZeroD, toDecimal } from "../../fil-core/decimal";
+import type { FilLifecycleStage } from "../../fil-core/lifecycle";
 import { type CitationRef, moneyFromDecimal } from "../../fil-core/primitives";
 import type { MarketDataSlice, RevaluationRecord, Valuable } from "../../fil-facets/facets";
 import { FX_REPORTING_CURRENCY } from "./methodology";

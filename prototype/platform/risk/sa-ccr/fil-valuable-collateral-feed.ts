@@ -44,10 +44,10 @@
 // Author: Rohan (Risk Engineer, engineering).
 
 import type { Instant, Money as V2Money } from "../../../v2-core/fil-core/primitives";
-import { minorBigintToMajorString, v2MoneyToMinor } from "./v2-money-bridge";
 import type { ObservableRef, RevaluationRecord } from "../../../v2-core/fil-facets/facets";
 import { getCollateralInventory } from "../../collateral/inventory";
 import type { EventStore } from "../../event-store/store";
+import { minorBigintToMajorString, v2MoneyToMinor } from "./v2-money-bridge";
 
 // ---------------------------------------------------------------------------
 // The trade → counterparty membership for a netting set, reconstructed from the

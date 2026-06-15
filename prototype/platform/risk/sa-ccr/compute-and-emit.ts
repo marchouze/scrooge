@@ -52,7 +52,6 @@
 //   2026-06-13`.
 
 import type { Money as V2Money } from "../../../v2-core/fil-core/primitives";
-import { v1ToV2Money, v2MoneyToMinor, v2ToV1Money } from "./v2-money-bridge";
 import {
   type SaCcrEadComputation as V2Ead,
   type SaCcrNettingSet as V2NettingSet,
@@ -61,7 +60,7 @@ import {
   computeSaCcrViaAlias,
 } from "../../../v2-core/fil-models/sa-ccr";
 import { eventStore } from "../../composition";
-import { type Money } from "../../core/money";
+import type { Money } from "../../core/money";
 import { moneyWireFromMinor } from "../../core/money-codec";
 import { type Actor, BANK_ZA_001, newEventId } from "../../core/types";
 import {
@@ -76,6 +75,7 @@ import {
   sourceVMtmFromValuableFeed,
 } from "./fil-valuable-collateral-feed";
 import type { EadComputation, NettingSet, ReplacementCost, TradeSummary } from "./types";
+import { v1ToV2Money, v2MoneyToMinor, v2ToV1Money } from "./v2-money-bridge";
 
 // ---------------------------------------------------------------------------
 // Default citations for engine-emitted events.
