@@ -192,6 +192,8 @@ const NON_EVENT_TOKEN_ALLOWLIST: ReadonlySet<string> = new Set<string>([
   "EUR",
   "GBP",
   "CIB",
+  // Schema sub-types (not event types) referenced in procedure prose
+  "ProductDeferredGap", // payload sub-type of ProductDimensionAttested; not a standalone event
   // Identity / role tokens that appear unbacktickd in some procedure rows
   // are excluded; we only check backticked tokens.
 ]);
