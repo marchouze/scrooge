@@ -482,6 +482,43 @@ export const IFRS_FX_SPOT_RESOLVER_ROWS: readonly ResolverRow[] = [
     physical: "ACC-2300-004",
     note: "P&L credit-loss expense — FX settlement failures (ZAR, IAS 1 §82(ba)).",
   },
+  // ── fx.forward_points_deferred (IAS 21 §28 forward-premium/discount accrual) ──
+  // Two logical accounts (one per sign direction) — both ZAR-only:
+  //   fx.forward_points_deferred_income  → ACC-2100-025 (credit = unrecognised premium)
+  //   fx.forward_points_deferred_expense → ACC-2100-026 (debit  = unrecognised discount)
+  // The FX-forward product inherits the FX-spot resolver product axis via the
+  // `makeFlatFxContextBuilder` dispatch-axis stamp (instrument-agnostic per-currency).
+  // Authority: D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL (gap closure, 2026-06-15).
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "ZAR",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.forward_points_deferred_income",
+    physical: "ACC-2100-025",
+    note: "Forward-points deferred income (IAS 21 §28) — cumulative premium not yet amortised to P&L.",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "ZAR",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.forward_points_deferred_expense",
+    physical: "ACC-2100-026",
+    note: "Forward-points deferred expense (IAS 21 §28) — cumulative discount not yet amortised to P&L.",
+  },
+  {
+    entity: "LE-ZA-HOZ-BANK",
+    product: "FX-spot",
+    currency: "ZAR",
+    jurisdiction: "ZA",
+    representation: "IFRS",
+    logical: "fx.forward_points_pnl",
+    physical: "ACC-2100-006",
+    note: "Forward-points P&L — recognised daily amortisation slice and maturity clear-down (reuses realised-P&L account; IAS 21 §28).",
+  },
 ];
 
 // ---------------------------------------------------------------------------

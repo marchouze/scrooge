@@ -79,6 +79,7 @@ import {
 import {
   fxForwardDefaultedPayloadSchema,
   fxForwardExtensionRequestedPayloadSchema,
+  fxForwardPointsAccruedPayloadSchema,
   fxPositionRevaluedPayloadSchema,
   fxSettlementFailedPayloadSchema,
   fxTradeCancelledPayloadSchema,
@@ -266,6 +267,25 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "platform/event-store/event-types/fx-accounting.ts (FxBookValuationSnapshottedPayload); D-FIL-BOOK-COMPOSITE-VALUATION",
+  },
+  {
+    // IAS 21 §28 forward-points daily amortisation event. Emitted by Bea's
+    // close engine once per calendar day for each open FX forward or swap
+    // far-leg. Drives straight-line accrual of the forward premium/discount
+    // into P&L via PR-FX-FWD-POINTS-ACCRUAL. Final accrual (isFinalAccrual:true)
+    // also clears the cumulative deferred balance to P&L.
+    // Authority: D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL (CEO 2026-06-15);
+    //            IAS 21 §28; D-FX-OTC-NPA-SCOPE-EXPANSION gap closure.
+    // Author: Nadia (Model validation engineer, engineering).
+    type: "FxForwardPointsAccrued",
+    class: "markets",
+    payloadSchema: fxForwardPointsAccruedPayloadSchema,
+    issuer: "Bea",
+    subscribers: ["Bea", "Camille", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source:
+      "platform/event-store/event-types/fx-accounting.ts (FxForwardPointsAccruedPayload); D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL",
   },
   {
     // Generic lifecycle-terminal event — confirms a trade has matured /

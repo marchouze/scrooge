@@ -269,6 +269,12 @@ export const subLedgerPostingEmittedPayloadSchema = z
       "trade-date-booking",
       // Capital lifecycle posting types (equity issuance, capital injection)
       "capital-injection",
+      // IAS 21 §28 forward-points accrual posting types (D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL
+      // gap closure — Nadia, Model validation engineer, 2026-06-15).
+      // "fx-forward-points-accrual" — daily amortised slice Dr/Cr deferred account + P&L.
+      // "fx-forward-points-clear"   — maturity-date clearing of cumulative deferred balance.
+      "fx-forward-points-accrual",
+      "fx-forward-points-clear",
     ]),
     legs: z.array(subLedgerLegSchema).min(2),
     /** ISO 8601 timestamp when the posting was generated. */
@@ -1061,6 +1067,54 @@ export const nostroDesignationMissingPayloadSchema = z.object({
 
 export type NostroDesignationMissingPayload = z.infer<typeof nostroDesignationMissingPayloadSchema>;
 
+export const fxForwardPointsAccruedPayloadSchema = z.object({
+  /** Internal trade identifier — links back to the originating FxTradeExecuted. */
+  tradeId: z.string().min(1),
+  /**
+   * The leg this accrual covers: "far" for an FX swap far-leg, "outright" for
+   * a standalone FX forward.
+   */
+  legKind: z.enum(["outright", "far"]),
+  /** Currency pair (e.g. "USD/ZAR"). Canonical form: base/quote. */
+  currencyPair: z.string().min(1),
+  /** Contracted forward rate (ZAR per FCY unit) agreed at trade date. */
+  contractedForwardRate: z.number().positive(),
+  /** Spot rate at trade date used to compute forward points. */
+  spotRateAtTradeDate: z.number().positive(),
+  /** FCY notional of the leg, in minor units. */
+  notionalFcyMinor: z.number().int().positive(),
+  /**
+   * Forward-points total for the entire contract (signed ZAR minor units):
+   *   = (contractedForwardRate − spotRateAtTradeDate) × notionalFcyMinor
+   * Positive = premium (bank earns income); negative = discount (bank incurs cost).
+   */
+  totalForwardPointsZarMinor: z.number().int(),
+  /**
+   * Signed ZAR minor units accrued for TODAY — the daily straight-line slice.
+   * = totalForwardPointsZarMinor / tenorCalendarDays (rounded; last day absorbs remainder).
+   */
+  dailyAmortisedZarMinor: z.number().int(),
+  /**
+   * Running cumulative forward-points recognised to date (inclusive of today),
+   * in ZAR minor units. Used for reconciliation; does not drive a separate posting.
+   */
+  accruedToDateZarMinor: z.number().int(),
+  /** Total calendar days in the tenor (from trade date to settlement date inclusive). */
+  tenorCalendarDays: z.number().int().positive(),
+  /** ISO 8601 date of the forward settlement / maturity (YYYY-MM-DD). */
+  settlementDate: z.string().min(1),
+  /**
+   * true when this is the final (maturity-date) accrual. On `isFinalAccrual`,
+   * the PR-FX-FWD-POINTS-ACCRUAL rule must ALSO clear the cumulative
+   * deferred-income/expense balance to the forward-points P&L account.
+   */
+  isFinalAccrual: z.boolean(),
+  /** ISO 8601 date of this accrual computation (YYYY-MM-DD). */
+  accrualDate: z.string().min(1),
+});
+
+export type FxForwardPointsAccruedPayload = z.infer<typeof fxForwardPointsAccruedPayloadSchema>;
+
 export function makeNostroDesignationMissing(args: {
   asOf: string;
   entity: string;
@@ -1229,6 +1283,65 @@ export function makeFxForwardExtensionRequested(args: {
 }
 
 // ---------------------------------------------------------------------------
+// FxForwardPointsAccrued
+//
+// Emitted daily by Bea's close engine for each open FX forward or swap
+// far-leg position. Drives amortisation of the forward premium/discount
+// (forward rate − spot rate at trade date) × notional FCY over the tenor.
+//
+// IAS 21.28 requires the exchange difference arising from the settlement of a
+// monetary item — including forward contracts — to be recognised in profit or
+// loss in the period in which it arises. For derivatives held at FVTPL the
+// time-value component (forward points) must be separated and amortised on a
+// straight-line basis over the contract life, with the cumulative balance
+// cleared on the final settlement date.
+//
+// Forward points = (contractedForwardRate − spotRateAtTradeDate) × notionalFcyMinor
+// Daily portion = total forward points / tenorCalendarDays
+//
+// Payload conventions:
+//   dailyAmortisedZarMinor  — signed ZAR amount for this day's accrual slice
+//                             (positive = forward premium → income; negative =
+//                              forward discount → expense).
+//   accruedToDateZarMinor   — running cumulative forward-points balance
+//                             (for reconciliation; not a separate GL post).
+//   isFinalAccrual          — true on the last accrual day (maturity/settlement).
+//                             The interpreter uses this flag to clear the
+//                             cumulative deferred-income/expense balance to P&L.
+//
+// Authority:
+//   - IAS 21 §28 (exchange differences on settlement)
+//   - D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL (CEO 2026-06-15)
+//   - D-FX-OTC-NPA-SCOPE-EXPANSION (gap closure)
+//
+// Author: Nadia (Model validation engineer, engineering).
+// ---------------------------------------------------------------------------
+
+export function makeFxForwardPointsAccrued(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: FxForwardPointsAccruedPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "FxForwardPointsAccrued requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "FxForwardPointsAccrued",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: fxForwardPointsAccruedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // FX accounting event-type registry
 // ---------------------------------------------------------------------------
 
@@ -1253,6 +1366,9 @@ export const FX_ACCOUNTING_EVENT_TYPES = [
   "NostroDesignationMissing",
   "FxForwardDefaulted",
   "FxForwardExtensionRequested",
+  // IAS 21 §28 forward-points amortisation (D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL gap closure).
+  // Authority: Nadia (Model validation engineer, engineering).
+  "FxForwardPointsAccrued",
 ] as const;
 
 export type FxAccountingEventType = (typeof FX_ACCOUNTING_EVENT_TYPES)[number];

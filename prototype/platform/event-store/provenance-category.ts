@@ -212,6 +212,9 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   ManualJournalEntry: "accounting",
   // Realised P&L recognition on FCY disposal — a GL recognition event.
   RealisedPnlRecognised: "accounting",
+  // IAS 21 §28 forward-points daily amortisation — an accounting accrual event.
+  // (D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL gap closure, 2026-06-15).
+  FxForwardPointsAccrued: "accounting",
   // --- Market-data / valuation / MtM / AVA / exposure computations ---
   // Daily MtM run summary (total P&L delta from revaluation) — a valuation run.
   MtmRunCompleted: "market-data",

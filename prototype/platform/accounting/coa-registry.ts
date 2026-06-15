@@ -675,6 +675,31 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   },
 
   // ------------------------------------------------------------------
+  // 2100-025/026 — IAS 21 §28 forward-points deferred income/expense
+  //
+  // Authority: D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL (CEO 2026-06-15);
+  //   gap closure — Nadia (Model validation engineer, engineering).
+  //
+  // FX forward and swap far-leg contracts carry a forward premium or discount
+  // = (contracted forward rate − spot rate at trade date) × notional FCY.
+  // IAS 21.28 requires this to be amortised into P&L over the contract tenor.
+  // ------------------------------------------------------------------
+  {
+    id: "ACC-2100-025",
+    name: "FX Forward-Points Deferred Income",
+    category: "liability-payable",
+    currency: "ZAR",
+    side: "credit",
+  },
+  {
+    id: "ACC-2100-026",
+    name: "FX Forward-Points Deferred Expense",
+    category: "asset-trading",
+    currency: "ZAR",
+    side: "debit",
+  },
+
+  // ------------------------------------------------------------------
   // 2105 — FX sub-ledger build-phase write-off P&L
   //
   // Authority: D-FX-SUBLEDGER-WRITEOFF-CFO (CFO authority — Bea (Chief Financial
