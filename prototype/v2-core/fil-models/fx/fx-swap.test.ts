@@ -7,10 +7,10 @@
 import { describe, expect, test } from "bun:test";
 import type { Instant } from "../../fil-core/primitives.ts";
 import type { MarketDataSlice } from "../../fil-facets/facets.ts";
-import { FX_SWAP_TYPE } from "./types/fx-type-definitions.ts";
-import { fxSwapValuable, fxSwapPerformable } from "./swap/fx-swap-model.ts";
 import { fxForwardLegValuable } from "./forward/fx-forward-model.ts";
-import type { FxSwapPosition, FxForwardLegPosition } from "./shared/fx-positions.ts";
+import type { FxForwardLegPosition, FxSwapPosition } from "./shared/fx-positions.ts";
+import { fxSwapPerformable, fxSwapValuable } from "./swap/fx-swap-model.ts";
+import { FX_SWAP_TYPE } from "./types/fx-type-definitions.ts";
 
 const ASOF = "2026-06-15T00:00:00.000Z" as Instant;
 
@@ -56,13 +56,21 @@ describe("FX_SWAP_TYPE composition", () => {
   });
 
   test("first leg is 'near' with direction 'receive'", () => {
-    expect(FX_SWAP_TYPE.composition.legs[0].legId).toBe("near");
-    expect(FX_SWAP_TYPE.composition.legs[0].direction).toBe("receive");
+    const legs = FX_SWAP_TYPE.composition.legs;
+    expect(legs.length).toBeGreaterThanOrEqual(1);
+    const nearLeg = legs[0];
+    if (!nearLeg) throw new Error("near leg not found");
+    expect(nearLeg.legId).toBe("near");
+    expect(nearLeg.direction).toBe("receive");
   });
 
   test("second leg is 'far' with direction 'pay'", () => {
-    expect(FX_SWAP_TYPE.composition.legs[1].legId).toBe("far");
-    expect(FX_SWAP_TYPE.composition.legs[1].direction).toBe("pay");
+    const legs = FX_SWAP_TYPE.composition.legs;
+    expect(legs.length).toBeGreaterThanOrEqual(2);
+    const farLeg = legs[1];
+    if (!farLeg) throw new Error("far leg not found");
+    expect(farLeg.legId).toBe("far");
+    expect(farLeg.direction).toBe("pay");
   });
 });
 
@@ -76,9 +84,7 @@ describe("FX Swap Valuable", () => {
     const nearRec = nearValuable.value(marks(FWD_MARKS), ASOF);
     const farRec = farValuable.value(marks(FWD_MARKS), ASOF);
 
-    expect(swapRec.value.minorUnits).toBe(
-      nearRec.value.minorUnits + farRec.value.minorUnits,
-    );
+    expect(swapRec.value.minorUnits).toBe(nearRec.value.minorUnits + farRec.value.minorUnits);
   });
 
   test("when near and far have opposite notional signs, MTM nets correctly", () => {

@@ -60,7 +60,7 @@ const ADDITIVE: AdditiveSemantics<FxPerformanceResult> = {
 // ---------------------------------------------------------------------------
 
 function performableOf(member: SliceMember): Performable | undefined {
-  const handle = member.facets["Performable"];
+  const handle = member.facets.Performable;
   if (handle && typeof (handle as Performable).unrealisedPnl === "function") {
     return handle as Performable;
   }
@@ -68,7 +68,7 @@ function performableOf(member: SliceMember): Performable | undefined {
 }
 
 function valuableOf(member: SliceMember): Valuable | undefined {
-  const handle = member.facets["Valuable"];
+  const handle = member.facets.Valuable;
   if (handle && typeof (handle as Valuable).value === "function") {
     return handle as Valuable;
   }

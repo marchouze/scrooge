@@ -7,8 +7,8 @@
 import { describe, expect, test } from "bun:test";
 import type { Instant } from "../../fil-core/primitives.ts";
 import type { MarketDataSlice } from "../../fil-facets/facets.ts";
-import { fxSpotValuable, fxSpotPerformable } from "./spot/fx-spot-model.ts";
 import type { FxSpotPosition } from "./shared/fx-positions.ts";
+import { fxSpotPerformable, fxSpotValuable } from "./spot/fx-spot-model.ts";
 
 const ASOF = "2026-06-15T00:00:00.000Z" as Instant;
 

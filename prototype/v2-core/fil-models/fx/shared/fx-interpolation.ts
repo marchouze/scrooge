@@ -17,6 +17,11 @@ function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+interface TenorPoint {
+  days: number;
+  value: number;
+}
+
 /**
  * Linearly interpolates a value at targetDays from named curve entries in marks.
  * Discovers all keys matching `curvePrefix + "<N>d"`, extracts N (integer days),
@@ -29,12 +34,12 @@ export function interpolateCurve(
   targetDays: number,
 ): number {
   const tenorRegex = new RegExp(`^${escapeRegex(curvePrefix)}(\\d+)d$`);
-  const points: Array<{ days: number; value: number }> = [];
+  const points: TenorPoint[] = [];
 
   for (const [key, value] of Object.entries(marks.observables)) {
     const m = tenorRegex.exec(key);
-    if (m) {
-      points.push({ days: parseInt(m[1], 10), value });
+    if (m && m[1] !== undefined) {
+      points.push({ days: Number.parseInt(m[1], 10), value });
     }
   }
 
@@ -46,22 +51,32 @@ export function interpolateCurve(
 
   points.sort((a, b) => a.days - b.days);
 
-  // Flat left extrapolation (short end)
-  if (targetDays <= points[0].days) return points[0].value;
-  // Flat right extrapolation (long end)
+  const first = points[0];
   const last = points[points.length - 1];
+
+  // These are always defined — points.length > 0 guaranteed by the check above
+  if (!first || !last) {
+    throw new Error(
+      "interpolateCurve: internal invariant violated — points array empty after check",
+    );
+  }
+
+  // Flat left extrapolation (short end)
+  if (targetDays <= first.days) return first.value;
+  // Flat right extrapolation (long end)
   if (targetDays >= last.days) return last.value;
 
-  // Linear interpolation
+  // Linear interpolation — find the bracketing interval
   for (let i = 0; i < points.length - 1; i++) {
     const lo = points[i];
     const hi = points[i + 1];
+    if (!lo || !hi) continue; // satisfy strict array-bounds check
     if (targetDays >= lo.days && targetDays <= hi.days) {
       const t = (targetDays - lo.days) / (hi.days - lo.days);
       return lo.value + t * (hi.value - lo.value);
     }
   }
 
-  // Unreachable (covers all interior cases above), but TypeScript requires a return.
+  // Unreachable — all interior cases handled above
   return last.value;
 }

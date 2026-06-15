@@ -7,7 +7,10 @@
 // Authority: D-ENGINEERING-INTEGRITY-CHARTER; brief:atlas:fil-fx-language-phase-1-linear-otc-models:2026-06-15
 // Author: Atlas (Core banking platform architect, engineering).
 
+import type { FilEventRef } from "../../../fil-core/lifecycle.ts";
 import type { Instant, Money } from "../../../fil-core/primitives.ts";
+import type { CitationRef, MethodologyHash } from "../../../fil-core/primitives.ts";
+import type { FilScopePattern } from "../../../fil-core/urn.ts";
 import type {
   MarketDataSlice,
   ObservableRef,
@@ -17,12 +20,9 @@ import type {
   Valuable,
 } from "../../../fil-facets/facets.ts";
 import type { FilModelImplementationDeclared } from "../../declaration.ts";
-import type { FilEventRef } from "../../../fil-core/lifecycle.ts";
-import type { CitationRef, MethodologyHash } from "../../../fil-core/primitives.ts";
-import type { FilScopePattern } from "../../../fil-core/urn.ts";
 import { valueFxPosition } from "../../fx-valuation/methodology.ts";
-import { spotObservableRef } from "../shared/fx-observables.ts";
 import { bookCostMinor, computeUnrealisedPnl } from "../performance/fx-performance-methodology.ts";
+import { fxSpotObsRef as spotObservableRef } from "../shared/fx-observables.ts";
 import type { FxSpotPosition } from "../shared/fx-positions.ts";
 
 function zeroMoney(currency: string): Money {
@@ -114,10 +114,7 @@ export const FX_SPOT_MODEL_DECLARATION: FilModelImplementationDeclared = {
     postureDimensions: ["reporting.currency"],
   },
   emits: ["FxPositionRevalued"] as FilEventRef[],
-  cites: [
-    "urn:reg:iasb:ias-21:§23",
-    "D-ENGINEERING-INTEGRITY-CHARTER",
-  ] as CitationRef[],
+  cites: ["urn:reg:iasb:ias-21:§23", "D-ENGINEERING-INTEGRITY-CHARTER"] as CitationRef[],
   methodologyHash: "fil-fx-spot-v1.0" as MethodologyHash,
   validationStatus: "submitted",
 };

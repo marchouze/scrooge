@@ -12,7 +12,10 @@
 // Authority: D-ENGINEERING-INTEGRITY-CHARTER; brief:atlas:fil-fx-language-phase-1-linear-otc-models:2026-06-15
 // Author: Atlas (Core banking platform architect, engineering).
 
+import type { FilEventRef } from "../../../fil-core/lifecycle.ts";
 import type { Instant, Money } from "../../../fil-core/primitives.ts";
+import type { CitationRef, MethodologyHash } from "../../../fil-core/primitives.ts";
+import type { FilScopePattern } from "../../../fil-core/urn.ts";
 import type {
   MarketDataSlice,
   ObservableRef,
@@ -22,18 +25,15 @@ import type {
   Valuable,
 } from "../../../fil-facets/facets.ts";
 import type { FilModelImplementationDeclared } from "../../declaration.ts";
-import type { FilEventRef } from "../../../fil-core/lifecycle.ts";
-import type { CitationRef, MethodologyHash } from "../../../fil-core/primitives.ts";
-import type { FilScopePattern } from "../../../fil-core/urn.ts";
 import { scaleMinorByRate } from "../../fx-valuation/methodology.ts";
-import { ndfCurvePrefix } from "../shared/fx-observables.ts";
-import { interpolateCurve } from "../shared/fx-interpolation.ts";
 import {
   bookCostMinor,
-  computeUnrealisedPnl,
   computeDailyCarry,
   computeTheta,
+  computeUnrealisedPnl,
 } from "../performance/fx-performance-methodology.ts";
+import { interpolateCurve } from "../shared/fx-interpolation.ts";
+import { ndfCurvePrefix } from "../shared/fx-observables.ts";
 import type { FxNdfPosition } from "../shared/fx-positions.ts";
 
 function resolveNdfRate(
@@ -47,9 +47,7 @@ function resolveNdfRate(
   }
   const prefix = ndfCurvePrefix(pos.currency, reporting);
   const ndfRate = interpolateCurve(marks, prefix, pos.remainingDays);
-  const observablesUsed: ObservableRef[] = [
-    { observableId: prefix + "*", kind: "curve" },
-  ];
+  const observablesUsed: ObservableRef[] = [{ observableId: `${prefix}*`, kind: "curve" }];
   return { ndfRate, observablesUsed };
 }
 
@@ -61,7 +59,7 @@ export function fxNdfValuable(pos: FxNdfPosition): Valuable {
     requiredObservables(): readonly ObservableRef[] {
       if (pos.fixingRate !== undefined) return []; // crystallised
       const prefix = ndfCurvePrefix(pos.currency, reporting);
-      return [{ observableId: prefix + "*", kind: "curve" }];
+      return [{ observableId: `${prefix}*`, kind: "curve" }];
     },
     value(marks: MarketDataSlice, asOf: Instant): RevaluationRecord {
       const { ndfRate, observablesUsed } = resolveNdfRate(pos, marks);
@@ -89,9 +87,7 @@ export function fxNdfPerformable(pos: FxNdfPosition): Performable {
       const netRate = ndfRate - pos.bookedNdfRate;
       const mtmValueMinor = scaleMinorByRate(pos.signedNotionalMinor, netRate);
       const bk =
-        bookedCostMinorArg !== 0n
-          ? bookedCostMinorArg
-          : bookCostMinor(pos.signedNotionalMinor, 0); // NDF book cost = 0 at inception
+        bookedCostMinorArg !== 0n ? bookedCostMinorArg : bookCostMinor(pos.signedNotionalMinor, 0); // NDF book cost = 0 at inception
       const unrealisedPnl = computeUnrealisedPnl(mtmValueMinor, bk, settlementCurrency);
 
       // Spot rate for carry computation (use 0 if not in marks — NDF curve is primary)

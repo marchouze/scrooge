@@ -49,8 +49,6 @@ describe("interpolateCurve", () => {
 
   test("empty curve throws fail-closed", () => {
     const m = marks({ "EUR/ZAR:fwd-points:30d": 50 }); // wrong prefix
-    expect(() => interpolateCurve(m, "USD/ZAR:fwd-points:", 30)).toThrow(
-      /no curve entries found/,
-    );
+    expect(() => interpolateCurve(m, "USD/ZAR:fwd-points:", 30)).toThrow(/no curve entries found/);
   });
 });

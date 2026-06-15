@@ -9,7 +9,10 @@
 // Authority: D-ENGINEERING-INTEGRITY-CHARTER; brief:atlas:fil-fx-language-phase-1-linear-otc-models:2026-06-15
 // Author: Atlas (Core banking platform architect, engineering).
 
+import type { FilEventRef } from "../../../fil-core/lifecycle.ts";
 import type { Instant, Money } from "../../../fil-core/primitives.ts";
+import type { CitationRef, MethodologyHash } from "../../../fil-core/primitives.ts";
+import type { FilScopePattern } from "../../../fil-core/urn.ts";
 import type {
   MarketDataSlice,
   ObservableRef,
@@ -19,10 +22,7 @@ import type {
   Valuable,
 } from "../../../fil-facets/facets.ts";
 import type { FilModelImplementationDeclared } from "../../declaration.ts";
-import type { FilEventRef } from "../../../fil-core/lifecycle.ts";
-import type { CitationRef, MethodologyHash } from "../../../fil-core/primitives.ts";
-import type { FilScopePattern } from "../../../fil-core/urn.ts";
-import { fxForwardLegValuable, fxForwardLegPerformable } from "../forward/fx-forward-model.ts";
+import { fxForwardLegPerformable, fxForwardLegValuable } from "../forward/fx-forward-model.ts";
 import type { FxSwapPosition } from "../shared/fx-positions.ts";
 
 function addMoney(a: Money, b: Money): Money {
@@ -41,20 +41,14 @@ export function fxSwapValuable(pos: FxSwapPosition): Valuable {
   return {
     valuationMethod: () => "mark-to-market",
     requiredObservables(): readonly ObservableRef[] {
-      return [
-        ...nearValuable.requiredObservables(),
-        ...farValuable.requiredObservables(),
-      ];
+      return [...nearValuable.requiredObservables(), ...farValuable.requiredObservables()];
     },
     value(marks: MarketDataSlice, asOf: Instant): RevaluationRecord {
       const nearRev = nearValuable.value(marks, asOf);
       const farRev = farValuable.value(marks, asOf);
       // Sum legs — opposite signedNotionalMinor signs net the two legs
       const totalMinor = nearRev.value.minorUnits + farRev.value.minorUnits;
-      const deduped = dedupeObservables([
-        ...nearRev.observablesUsed,
-        ...farRev.observablesUsed,
-      ]);
+      const deduped = dedupeObservables([...nearRev.observablesUsed, ...farRev.observablesUsed]);
       return {
         value: { currency: reporting, minorUnits: totalMinor },
         asOf,

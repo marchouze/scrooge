@@ -148,7 +148,6 @@ export interface PostureRelevant {
   postureDimensions(): readonly PostureDimensionKey[];
 }
 
-
 // ---------------------------------------------------------------------------
 // 8th kernel facet: Performable (FIL FX Language Phase 1)
 //

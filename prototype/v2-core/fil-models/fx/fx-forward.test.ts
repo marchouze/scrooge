@@ -7,7 +7,7 @@
 import { describe, expect, test } from "bun:test";
 import type { Instant } from "../../fil-core/primitives.ts";
 import type { MarketDataSlice } from "../../fil-facets/facets.ts";
-import { fxForwardValuable, fxForwardPerformable } from "./forward/fx-forward-model.ts";
+import { fxForwardPerformable, fxForwardValuable } from "./forward/fx-forward-model.ts";
 import type { FxForwardPosition } from "./shared/fx-positions.ts";
 
 const ASOF = "2026-06-15T00:00:00.000Z" as Instant;
@@ -60,16 +60,16 @@ describe("FX Forward Valuable", () => {
 
   test("missing spot observable throws", () => {
     const valuable = fxForwardValuable(LONG_FWD);
-    expect(() =>
-      valuable.value(marks({ "USD/ZAR:fwd-points:90d": 0.3 }), ASOF),
-    ).toThrow(/missing spot observable/i);
+    expect(() => valuable.value(marks({ "USD/ZAR:fwd-points:90d": 0.3 }), ASOF)).toThrow(
+      /missing spot observable/i,
+    );
   });
 
   test("missing forward curve throws", () => {
     const valuable = fxForwardValuable(LONG_FWD);
-    expect(() =>
-      valuable.value(marks({ "USD/ZAR": 18.0 }), ASOF),
-    ).toThrow(/no curve entries found/i);
+    expect(() => valuable.value(marks({ "USD/ZAR": 18.0 }), ASOF)).toThrow(
+      /no curve entries found/i,
+    );
   });
 
   test("at remainingDays=0, MTM converges toward spot (flat left extrapolation)", () => {

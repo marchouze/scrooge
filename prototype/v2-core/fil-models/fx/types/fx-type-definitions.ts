@@ -7,14 +7,14 @@
 // Authority: D-ENGINEERING-INTEGRITY-CHARTER; brief:atlas:fil-fx-language-phase-1-linear-otc-models:2026-06-15
 // Author: Atlas (Core banking platform architect, engineering).
 
+import { ATOMIC_COMPOSITION } from "../../../fil-core/composition.ts";
 import type { FilTypeDefinition } from "../../../fil-core/type-definition.ts";
 import type { FilTypeUrn } from "../../../fil-core/urn.ts";
-import { ATOMIC_COMPOSITION } from "../../../fil-core/composition.ts";
 import {
-  FX_SPOT_LIFECYCLE,
   FX_FORWARD_LIFECYCLE,
-  FX_SWAP_LIFECYCLE,
   FX_NDF_LIFECYCLE,
+  FX_SPOT_LIFECYCLE,
+  FX_SWAP_LIFECYCLE,
 } from "./fx-lifecycles.ts";
 
 // ---------------------------------------------------------------------------

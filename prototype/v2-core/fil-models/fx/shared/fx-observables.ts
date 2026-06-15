@@ -55,50 +55,39 @@ export function ndfFixingKey(currency: string, reporting = DEFAULT_REPORTING): s
 // ObservableRef constructors
 // ---------------------------------------------------------------------------
 
-export function spotObservableRef(
-  currency: string,
-  reporting?: string,
-): ObservableRef {
+export function fxSpotObsRef(currency: string, reporting?: string): ObservableRef {
   return { observableId: spotKey(currency, reporting), kind: "price" };
 }
 
-export function fwdCurveObservableRef(
-  currency: string,
-  reporting?: string,
-): ObservableRef {
-  return { observableId: fwdCurvePrefix(currency, reporting) + "*", kind: "curve" };
+export function fwdCurveObservableRef(currency: string, reporting?: string): ObservableRef {
+  return { observableId: `${fwdCurvePrefix(currency, reporting)}*`, kind: "curve" };
 }
 
-export function ndfCurveObservableRef(
-  currency: string,
-  reporting?: string,
-): ObservableRef {
-  return { observableId: ndfCurvePrefix(currency, reporting) + "*", kind: "curve" };
+export function ndfCurveObservableRef(currency: string, reporting?: string): ObservableRef {
+  return { observableId: `${ndfCurvePrefix(currency, reporting)}*`, kind: "curve" };
 }
 
 // ---------------------------------------------------------------------------
 // Required-observable resolver by position kind
 // ---------------------------------------------------------------------------
 
-export function requiredObservablesForPosition(
-  pos: FxPosition,
-): readonly ObservableRef[] {
+export function requiredObservablesForPosition(pos: FxPosition): readonly ObservableRef[] {
   switch (pos.kind) {
     case "spot":
-      return [spotObservableRef(pos.currency, pos.reporting)];
+      return [fxSpotObsRef(pos.currency, pos.reporting)];
     case "forward":
       return [
-        spotObservableRef(pos.currency, pos.reporting),
+        fxSpotObsRef(pos.currency, pos.reporting),
         fwdCurveObservableRef(pos.currency, pos.reporting),
       ];
     case "swap":
       return [
-        spotObservableRef(pos.nearLeg.currency, pos.reporting),
+        fxSpotObsRef(pos.nearLeg.currency, pos.reporting),
         fwdCurveObservableRef(pos.nearLeg.currency, pos.reporting),
       ];
     case "ndf":
       return [
-        spotObservableRef(pos.currency, pos.reporting),
+        fxSpotObsRef(pos.currency, pos.reporting),
         ndfCurveObservableRef(pos.currency, pos.reporting),
       ];
   }

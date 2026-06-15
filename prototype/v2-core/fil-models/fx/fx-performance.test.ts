@@ -7,16 +7,16 @@
 import { describe, expect, test } from "bun:test";
 import { MetricRegistry } from "../../fil-attribution/metric.ts";
 import type { Instant } from "../../fil-core/primitives.ts";
-import type { MarketDataSlice } from "../../fil-facets/facets.ts";
 import type { FilInstanceUrn } from "../../fil-core/urn.ts";
+import type { MarketDataSlice } from "../../fil-facets/facets.ts";
 import {
-  registerFxPerformanceMetrics,
-  FX_UNREALISED_PNL_METRIC_ID,
   FX_CARRY_METRIC_ID,
   FX_DELTA_EXPOSURE_METRIC_ID,
+  FX_UNREALISED_PNL_METRIC_ID,
+  registerFxPerformanceMetrics,
 } from "./performance/fx-performance-metrics.ts";
-import { fxSpotPerformable, fxSpotValuable } from "./spot/fx-spot-model.ts";
 import type { FxSpotPosition } from "./shared/fx-positions.ts";
+import { fxSpotPerformable, fxSpotValuable } from "./spot/fx-spot-model.ts";
 
 const ASOF = "2026-06-15T00:00:00.000Z" as Instant;
 
@@ -66,11 +66,10 @@ describe("fx-carry metric on spot position", () => {
       },
     };
 
-    const result = carryMetric.evaluate(
-      [member],
-      marks({ "USD/ZAR": 18.5 }),
-      ASOF,
-    ) as { currency: string; minorUnits: bigint };
+    const result = carryMetric.evaluate([member], marks({ "USD/ZAR": 18.5 }), ASOF) as {
+      currency: string;
+      minorUnits: bigint;
+    };
     expect(result.minorUnits).toBe(0n);
   });
 });

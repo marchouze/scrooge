@@ -7,7 +7,7 @@
 import { describe, expect, test } from "bun:test";
 import type { Instant } from "../../fil-core/primitives.ts";
 import type { MarketDataSlice } from "../../fil-facets/facets.ts";
-import { fxNdfValuable, fxNdfPerformable } from "./ndf/fx-ndf-model.ts";
+import { fxNdfPerformable, fxNdfValuable } from "./ndf/fx-ndf-model.ts";
 import type { FxNdfPosition } from "./shared/fx-positions.ts";
 
 const ASOF = "2026-06-15T00:00:00.000Z" as Instant;
