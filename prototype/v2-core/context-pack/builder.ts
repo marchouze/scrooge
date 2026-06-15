@@ -181,8 +181,8 @@ export function buildContextPack(
       concludedByAssessmentId.set(id, {
         verdict: String(p.verdict ?? ""),
         appliesToContexts: Array.isArray(p.appliesToContexts) ? p.appliesToContexts : [],
-        subjectKind: String(p.subjectKind ?? (requestedByAssessmentId.get(id)?.subjectKind ?? "")),
-        subjectRef: String(p.subjectRef ?? (requestedByAssessmentId.get(id)?.subjectRef ?? "")),
+        subjectKind: String(p.subjectKind ?? requestedByAssessmentId.get(id)?.subjectKind ?? ""),
+        subjectRef: String(p.subjectRef ?? requestedByAssessmentId.get(id)?.subjectRef ?? ""),
       });
     }
   }
@@ -275,10 +275,7 @@ export function buildContextPack(
  * Derive the `ContextPackBuiltPayload` metadata from a built pack and its hash.
  * The payload is suitable for emitting as a `ContextPackBuilt` event.
  */
-export function packToEventPayload(
-  pack: ContextPack,
-  packHash: string,
-): ContextPackBuiltPayload {
+export function packToEventPayload(pack: ContextPack, packHash: string): ContextPackBuiltPayload {
   return {
     seatId: pack.seatId,
     packVersion: packHash.slice(0, 16),

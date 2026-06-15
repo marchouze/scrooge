@@ -15,8 +15,8 @@
 // D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
 
 import { nowUtc } from "../platform/core/types";
-import { EventStore } from "../platform/event-store/store";
 import { makeContextPackBuilt } from "../platform/event-store/event-types/context-pack";
+import { EventStore } from "../platform/event-store/store";
 import { buildContextPack, hashPack, packToEventPayload } from "../v2-core/context-pack/builder";
 import type { RawEvent } from "../v2-core/context-pack/builder";
 
@@ -96,7 +96,7 @@ if (doJson) {
   console.log(JSON.stringify({ ...pack, packHash }, null, 2));
 } else {
   console.log(`\n  Context pack: ${seatId}  (as-of ${asOf})`);
-  console.log(`  ─────────────────────────────────────────────`);
+  console.log("  ─────────────────────────────────────────────");
   console.log(`  Postures:            ${pack.postures.length}`);
   if (pack.postures.length > 0) {
     for (const p of pack.postures) {
@@ -134,7 +134,7 @@ if (doEmit) {
   const event = makeContextPackBuilt({
     asOf,
     entity: "LE-ZA-HOZ-BANK",
-    actor: { kind: "agent", id: "agent:mira:context-pack-builder" },
+    actor: { type: "system", id: "agent:mira:context-pack-builder" },
     citations: [
       "D-W8-PARAMETRIC-TRAINING-POSITION",
       "D-W8-EXAM-GOVERNANCE",
