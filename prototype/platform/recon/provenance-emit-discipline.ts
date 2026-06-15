@@ -108,6 +108,10 @@ export const EXPLICIT_PROVENANCE_ALLOWLIST: Readonly<Record<string, string>> = {
     "build-phase-fixture tag on the FX operational-risk-dimension attestation (same basis as " +
     "npa-fx-conduct-attestation.ts) — the third provenance kind is deliberately not expressible in the " +
     "category policy (real build-phase bank state, not mode-dependent).",
+  "platform/markets/products/npa-fx-operational-readiness-attestation.ts":
+    "build-phase-fixture tag on the FX operational-readiness-dimension attestation (same basis as " +
+    "npa-fx-oprisk-attestation.ts) — the third provenance kind is deliberately not expressible in the " +
+    "category policy (real build-phase bank state, not mode-dependent). Authority: D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL.",
   "platform/markets/products/npa-fx-infosec-gap-closure.ts":
     "build-phase-fixture tag on the FX infosec-dimension gap-closure re-attestation (same basis as " +
     "npa-fx-infosec-attestation.ts) — the third provenance kind is deliberately not expressible in the " +

@@ -77,10 +77,13 @@ import {
   suspiciousAuthEventPayloadSchema,
 } from "../event-types/aml-popia-extended";
 import {
+  fxForwardDefaultedPayloadSchema,
+  fxForwardExtensionRequestedPayloadSchema,
   fxPositionRevaluedPayloadSchema,
   fxSettlementFailedPayloadSchema,
   fxTradeCancelledPayloadSchema,
   missedExpectedReceiptPayloadSchema,
+  nostroDesignationMissingPayloadSchema,
   realisedPnlRecognisedPayloadSchema,
   settlementFailedPayloadSchema,
   settlementFailureClassifiedPayloadSchema,
@@ -712,6 +715,61 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "platform/event-store/event-types/fx-accounting.ts; Procedures/operations/settlement-failure-bcp.md (PR #636) §2; ISDA 2002 Master Agreement §6",
+  },
+  {
+    // Emitted at the settlement-routing step when no designated correspondent
+    // nostro account exists for a given currency. Fail-closed rejection:
+    // the trade is REJECTED rather than routed to suspense. Suspense routing
+    // hides settlement risk; this typed event surfaces it explicitly so the
+    // ops team can either provision a correspondent nostro or decline the trade.
+    // Authority: D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL (CEO, 2026-06-15);
+    // Principle 4 (fail-closed); Principle 5 (multi-currency from day one).
+    type: "NostroDesignationMissing",
+    class: "markets",
+    payloadSchema: nostroDesignationMissingPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Devon", "Helena", "Vera"],
+    replay: "append-only-audit",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source:
+      "platform/event-store/event-types/fx-accounting.ts; platform/markets/fx/nostro-routing-registry.ts; D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL",
+  },
+  {
+    // Emitted when a counterparty defaults on a forward contract at or before
+    // maturity, OR when the far leg of an FX swap defaults after the near leg
+    // has already settled. Triggers the ISDA §6 close-out netting calculation
+    // process. A high-severity SubstrateAlert is emitted by the handler to
+    // notify ops. Covers both deliverable FX-forward and FX-swap far-leg default.
+    // NDF far-leg default is out of scope at v1.0 (see "fx-ndf-runbooks" gap).
+    // Authority: D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL (CEO, 2026-06-15);
+    // ISDA 2002 Master Agreement §6; BCBS d226 §4.
+    type: "FxForwardDefaulted",
+    class: "markets",
+    payloadSchema: fxForwardDefaultedPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Devon", "Helena", "Imani", "Bea", "Rohan", "Owen", "Vera"],
+    replay: "append-only-audit",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source:
+      "platform/event-store/event-types/fx-accounting.ts; platform/markets/fx/otc-failure-handlers.ts; ISDA-2002-§6; BCBS-D226-§4; D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL",
+  },
+  {
+    // Emitted when a counterparty requests an extension of a forward contract's
+    // maturity date. Requires re-booking at the current market forward rate for
+    // the new maturity (cancel original + new FxTradeExecuted). A medium-severity
+    // SubstrateAlert notifies the desk to initiate re-pricing and re-booking.
+    // Extension at the original agreed rate is NOT permitted (off-market transaction).
+    // Authority: D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL (CEO, 2026-06-15);
+    // ISDA 2002 Master Agreement §2(c) (payment netting on extension).
+    type: "FxForwardExtensionRequested",
+    class: "markets",
+    payloadSchema: fxForwardExtensionRequestedPayloadSchema,
+    issuer: "Tomas",
+    subscribers: ["Devon", "Helena", "Bea", "Vera"],
+    replay: "append-only-audit",
+    retention: RETENTION_CONSERVATIVE_DEFAULT,
+    source:
+      "platform/event-store/event-types/fx-accounting.ts; platform/markets/fx/otc-failure-handlers.ts; ISDA-2002-§2(c); D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL",
   },
   {
     // Emitted when a counterparty signs a master agreement (ISDA, GMRA,
