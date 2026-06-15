@@ -36,6 +36,7 @@ import { computePnLAttribution, priorDay } from "../product-control/pnl-attribut
 import { getALMPositionSnapshot } from "../projections/alm-positions";
 import { computeCapitalMetrics } from "../projections/capital-metrics";
 import { computeRwaFromPositions } from "../projections/rwa-from-positions";
+import { readFilInstanceEvents } from "../risk/sa-ccr/fil-instance-positions";
 import type { FinancialInput } from "../types/financial-input";
 import { isPresent } from "../types/financial-input";
 import { checkModelApproved } from "./calculation-binding";
@@ -172,7 +173,12 @@ export function emitAllCalculationProvenance(deps: EmitProvenanceDeps): void {
     // Build phase: pass combined mode so simulated trades (from the sim hub)
     // contribute to RWA alongside any production trades. Fixture events are
     // excluded by the explicit build-phase-fixture guard in computeRwaFromPositions.
-    const rwa = computeRwaFromPositions(eventStore, asOf, { mode: "combined" });
+    const rwa = computeRwaFromPositions(
+      eventStore,
+      asOf,
+      { mode: "combined" },
+      readFilInstanceEvents(),
+    );
     const rwaFallback = rwa.buildPhaseFallback;
     emitOne(
       "rwa",

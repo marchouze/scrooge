@@ -95,6 +95,7 @@ import type {
 } from "../../reporting/ba-700-capital";
 import { generateBa100CapitalFromEvents } from "../../reporting/ba-700-events-adapter";
 import { readRwaDecompositionOfRecord } from "../../risk/rwa-computed-engine";
+import { readFilInstanceEvents } from "../../risk/sa-ccr/fil-instance-positions";
 
 // Re-export for consumers that import from this package.
 export {
@@ -464,7 +465,12 @@ export function generateBA700Return(input: GenerateBA700ReturnInput): {
   } else if (rwaComputed !== null) {
     resolvedRwa = rwaComputed;
   } else {
-    const rwaResult = computeRwaFromPositions(input.eventStore, input.reportingDate);
+    const rwaResult = computeRwaFromPositions(
+      input.eventStore,
+      input.reportingDate,
+      undefined,
+      readFilInstanceEvents(),
+    );
     if (rwaResult.buildPhaseFallback) {
       // No trades in store — use ICAAP v1 total as the build-phase denominator.
       // The generator sums creditRwaMinor + marketRwaMinor + operationalRwaMinor;

@@ -367,17 +367,17 @@
     },
     {
       "file": "platform/projections/capital-metrics.ts",
-      "line": 254,
+      "line": 255,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/projections/capital-metrics.ts",
-      "line": 256,
+      "line": 257,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/projections/capital-metrics.ts",
-      "line": 261,
+      "line": 262,
       "pattern": "money-multiply/divide"
     },
     {
