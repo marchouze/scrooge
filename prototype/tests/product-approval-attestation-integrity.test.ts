@@ -256,7 +256,7 @@ describe("recon:product-approval-attestation-integrity", () => {
     expect(fails).toHaveLength(0);
     const infos = result.violations.filter((v) => v.severity === "info");
     expect(infos).toHaveLength(1);
-    expect(infos[0]?.message).toContain("14/14 attestations present (ok)");
+    expect(infos[0]?.message).toContain("15/15 attestations present (ok)");
   });
 
   // -------------------------------------------------------------------------

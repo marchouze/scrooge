@@ -295,7 +295,7 @@ describe("NPA gate", () => {
         lifecycleEventFamily: [],
       },
     });
-    // All 14 dimensions design-attested, NO deferredGaps.
+    // All 15 dimensions design-attested, NO deferredGaps.
     const attestations = ALL_NPA_DIMENSION_KEYS.map((dimension) =>
       makeProductDimensionAttested({
         asOf: AS_OF,
@@ -317,7 +317,7 @@ describe("NPA gate", () => {
     const result: NpaGateResult = validateNpaGate(row as NonNullable<typeof row>);
     // design-attested with no gaps → blocked
     expect(result.ready).toBe(false);
-    expect(result.missing.length).toBe(14);
+    expect(result.missing.length).toBe(15);
     expect(result.openConditions.length).toBe(0);
   });
 
@@ -365,7 +365,7 @@ describe("NPA gate", () => {
     // design-attested with gaps → allowed but conditioned
     expect(result.ready).toBe(true);
     expect(result.missing.length).toBe(0);
-    expect(result.openConditions.length).toBe(14);
+    expect(result.openConditions.length).toBe(15);
   });
 
   it("failed dimension → ready: false, dimension appears in missing (D-NPA-GATE-POLICY-REDESIGN)", () => {
