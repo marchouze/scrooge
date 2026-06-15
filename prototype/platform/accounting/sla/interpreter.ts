@@ -387,6 +387,13 @@ const CONTEXT_BUILDERS: Readonly<Record<string, ContextBuilder>> = {
   // the rule leaves instrument_type unconstrained so it matches as a wildcard).
   // Authority: D-FIL-BOOK-COMPOSITE-VALUATION; IAS 21 §28; IFRS 9 §5.7.1.
   RealisedPnlRecognised: makeFlatFxContextBuilder(),
+  // IAS 21 §28 forward-points daily amortisation. Uses the flat-FX context builder
+  // (instrument_type = "FX-spot" stamped, but PR-FX-FWD-POINTS-ACCRUAL leaves
+  // instrument_type unconstrained → wildcard match). The resolver product axis is
+  // "FX-spot" (same as the spot rules — forward/swap forward-points logicals
+  // share the FX-spot product key in the resolver table).
+  // Authority: D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL (gap closure 2026-06-15).
+  FxForwardPointsAccrued: makeFlatFxContextBuilder(),
   // Treasury money-market family (full-retirement Batch 1) — flat payloads, one
   // product (instrument_type) per lifecycle. Enrichment is supplied by the
   // caller for the prior-event-dependent rules (maturity/recall/early-unwind).

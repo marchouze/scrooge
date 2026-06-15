@@ -286,6 +286,22 @@
       "side": "credit"
     },
     {
+      "id": "ACC-2100-025",
+      "name": "FX Forward-Points Deferred Income",
+      "currency": "ZAR",
+      "category": "liability",
+      "side": "credit",
+      "note": "Accrued forward premium (IAS 21 §28) — amortised into P&L over contract tenor; cleared at maturity/settlement. Credit = premium income not yet recognised."
+    },
+    {
+      "id": "ACC-2100-026",
+      "name": "FX Forward-Points Deferred Expense",
+      "currency": "ZAR",
+      "category": "asset",
+      "side": "debit",
+      "note": "Accrued forward discount (IAS 21 §28) — amortised into P&L over contract tenor; cleared at maturity/settlement. Debit = discount cost not yet expensed."
+    },
+    {
       "id": "ACC-2105-001",
       "name": "FX Sub-Ledger Build-Phase Write-Off",
       "category": "income",

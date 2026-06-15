@@ -7,14 +7,15 @@
 //
 // Coverage (one rule per posting-producing FX lifecycle event + the two memo
 // rules):
-//   PR-FX-001            FxTradeExecuted        — trade booking
-//   PR-FX-002            FxPositionRevalued     — daily FVTPL revaluation
-//   PR-FX-PRIN           PrincipalPayment       — per-leg cash derecognition
-//   PR-FX-REALISED-PNL   RealisedPnlRecognised  — realised P&L on FCY close-out (A4)
-//   PR-FX-005            FxSettlementFailed      — Stage-3 ECL (Herstatt; enrichment)
-//   PR-FX-CANCEL         FxTradeCancelled        — full reversal (enrichment, for_each)
-//   PR-FX-INSTRUCT       FxSettlementInstructed  — intentional-no-impact memo
-//   PR-FX-REGREPORT      TradeReportSubmitted    — intentional-no-impact memo
+//   PR-FX-001                FxTradeExecuted        — trade booking
+//   PR-FX-002                FxPositionRevalued     — daily FVTPL revaluation
+//   PR-FX-PRIN               PrincipalPayment       — per-leg cash derecognition
+//   PR-FX-REALISED-PNL       RealisedPnlRecognised  — realised P&L on FCY close-out (A4)
+//   PR-FX-FWD-POINTS-ACCRUAL FxForwardPointsAccrued — IAS 21 §28 forward-points accrual
+//   PR-FX-005                FxSettlementFailed      — Stage-3 ECL (Herstatt; enrichment)
+//   PR-FX-CANCEL             FxTradeCancelled        — full reversal (enrichment, for_each)
+//   PR-FX-INSTRUCT           FxSettlementInstructed  — intentional-no-impact memo
+//   PR-FX-REGREPORT          TradeReportSubmitted    — intentional-no-impact memo
 //
 // PR-FX-LIFECYCLE-CLOSE (SettlementConfirmed) is RETIRED in A4 — it posted the
 // wrong (officialMark − bookRate)×notional formula (an asset swap, not realised
@@ -43,6 +44,7 @@ import {
   PR_FX_REGREPORT_BA,
 } from "./pr-fx-ba-lifecycle";
 import { PR_FX_CANCEL } from "./pr-fx-cancel";
+import { PR_FX_FWD_POINTS_ACCRUAL } from "./pr-fx-fwd-points-accrual";
 // PR-FX-LIFECYCLE-CLOSE is RETIRED (A4 — D-FIL-BOOK-COMPOSITE-VALUATION);
 // still imported for export (backward-compat for the SARB-BA side that keeps
 // a parallel PR-FX-CLOSE-BA entry, and for any consumers that reference the
@@ -61,6 +63,10 @@ export const FX_IFRS_RULES: readonly SlaRule[] = [
   // Triggers on RealisedPnlRecognised; posts realised P&L on FCY close-out.
   // Authority: D-FIL-BOOK-COMPOSITE-VALUATION.
   PR_FX_REALISED_PNL,
+  // PR-FX-FWD-POINTS-ACCRUAL: IAS 21 §28 daily forward-premium/discount
+  // amortisation. Triggers on FxForwardPointsAccrued. Closes the accounting
+  // gap for forward/swap contracts (D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL).
+  PR_FX_FWD_POINTS_ACCRUAL,
   PR_FX_005,
   PR_FX_CANCEL,
   PR_FX_INSTRUCT,
@@ -135,4 +141,6 @@ export {
   PR_FX_REGREPORT_BA,
   // A4 — replaces PR-FX-LIFECYCLE-CLOSE. Authority: D-FIL-BOOK-COMPOSITE-VALUATION.
   PR_FX_REALISED_PNL,
+  // IAS 21 §28 forward-points accrual. Authority: D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL.
+  PR_FX_FWD_POINTS_ACCRUAL,
 };
