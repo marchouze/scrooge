@@ -147,6 +147,22 @@ const dimensions: DimMap = {
     notes:
       "FX tax treatment understood for spot. STT/VAT review across all instruments + counterparty types pending.",
   },
+  // Dimension 15 — D-NPA-POST-APPROVAL-FINDING-REVIEW (CEO-approved 2026-06-15).
+  // Owner: Anya (Data & analytics engineer). All data inputs to the product
+  // (rate feeds, trade events, settlement confirmations) have provenance tags
+  // and are traceable to source. Design-attested: provenance architecture in
+  // place (D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE); per-feed lineage metadata
+  // gaps documented as tracked deferred gaps pending Anya's data-quality audit.
+  "data-quality": {
+    result: "design-attested",
+    citationChain: [
+      ...BASE_CHAIN,
+      "D-NPA-POST-APPROVAL-FINDING-REVIEW",
+      "D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE",
+    ],
+    notes:
+      "Data provenance architecture in place (categoryForEventType, provenance-category.ts, bank-mode projection). Per-instrument rate-feed and settlement-confirmation lineage metadata pending Anya data-quality audit (tracked deferred gap). No silent data-quality gap may reach a live product.",
+  },
 };
 
 const def: ProductNpaDef = {

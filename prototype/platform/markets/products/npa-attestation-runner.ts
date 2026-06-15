@@ -49,7 +49,9 @@ export type DimensionKey =
   | "legal"
   | "infosec"
   | "privacy"
-  | "tax";
+  | "tax"
+  // Dimension 15 — D-NPA-POST-APPROVAL-FINDING-REVIEW (CEO-approved 2026-06-15).
+  | "data-quality";
 
 export interface DimensionAssessment {
   result: "design-attested" | "implementation-attested" | "failed";
@@ -113,6 +115,7 @@ const ALL_DIMENSION_KEYS: DimensionKey[] = [
   "infosec",
   "privacy",
   "tax",
+  "data-quality",
 ];
 
 // ---------------------------------------------------------------------------
@@ -176,7 +179,7 @@ function isDueDiligenceAlreadyCompleted(store: EventStore, productId: string): b
  * Otherwise emits, in order:
  *   1. ProductProposalRegistered
  *   2. ProductConceptualised
- *   3. 14 × ProductDimensionAttested (one per DimensionKey)
+ *   3. 15 × ProductDimensionAttested (one per DimensionKey)
  *   4. ProductDueDiligenceCompleted
  *   5. ProductApproved OR ProductWithheld depending on gate results
  *
@@ -248,7 +251,7 @@ export function runNpaAttestation(
     eventsEmitted.push("ProductConceptualised");
   }
 
-  // Step 3: 14 × ProductDimensionAttested.
+  // Step 3: 15 × ProductDimensionAttested.
   for (const dimensionKey of ALL_DIMENSION_KEYS) {
     if (!isDimensionAlreadyAttested(store, productId, dimensionKey)) {
       const assessment = dimensions[dimensionKey];

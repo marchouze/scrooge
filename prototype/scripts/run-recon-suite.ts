@@ -311,6 +311,10 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:obligation-policy-coverage",
     "recon:npa-coverage",
     "recon:npa-deferred-gap-tracking",
+    // D-NPA-POST-APPROVAL-FINDING-REVIEW (CEO-approved 2026-06-15): every
+    // ProductPostApprovalFinding must have a ProductDimensionRetrospectiveReview
+    // within SLA. BLOCKING. No licence-day deferral.
+    "recon:npa-post-approval-finding-review",
     "recon:dsar-sla",
     "recon:counterparty-basel-classification-coverage",
     "recon:calc-no-silent-zero",

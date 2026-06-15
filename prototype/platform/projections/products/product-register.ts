@@ -47,6 +47,26 @@ export interface AttestationRecord {
   deferredGaps: ProductDeferredGap[];
 }
 
+export interface PostApprovalFindingRecord {
+  findingId: string;
+  severity: "critical" | "high" | "medium";
+  title: string;
+  missedDimension: string;
+  discoveredBy: string;
+  discoveredAt: string;
+  findingTrigger: string;
+}
+
+export interface RetrospectiveReviewRecord {
+  findingId: string;
+  dimension: string;
+  reviewedBy: string;
+  reviewedAt: string;
+  rootCause: string;
+  correctiveAction: string;
+  revisedAttestation: "strengthened" | "scope-adjusted" | "deferred-gap-added";
+}
+
 export interface ProductRegisterRow {
   productId: string;
   family: ProductFamily;
@@ -58,7 +78,7 @@ export interface ProductRegisterRow {
    * appears here, regardless of result.
    */
   attestedDimensions: Map<string, AttestationRecord>;
-  /** All 14 NPA dimensions not yet in attestedDimensions. */
+  /** All NPA dimensions not yet in attestedDimensions. */
   pendingDimensions: string[];
   /** Latest citations from the most-recent lifecycle event for this product. */
   citations: string[];
@@ -66,6 +86,15 @@ export interface ProductRegisterRow {
   scope?: ProductScopeForEvent;
   /** ISO 8601 as_of of the last event that modified this row. */
   updatedAt: string;
+  /**
+   * Post-approval findings (D-NPA-POST-APPROVAL-FINDING-REVIEW). Latest per findingId.
+   * Present in the register so the dashboard and recon gate can surface open findings.
+   */
+  postApprovalFindings: Map<string, PostApprovalFindingRecord>;
+  /**
+   * Retrospective reviews per findingId. Latest per findingId.
+   */
+  retrospectiveReviews: Map<string, RetrospectiveReviewRecord>;
 }
 
 // ---------------------------------------------------------------------------
@@ -107,6 +136,8 @@ export function buildProductRegisterView(events: Event[]): Map<string, ProductRe
           pendingDimensions: [...ALL_NPA_DIMENSION_KEYS],
           citations: ev.citations,
           updatedAt: ev.as_of,
+          postApprovalFindings: new Map(),
+          retrospectiveReviews: new Map(),
         };
         register.set(productId, r);
       }
@@ -235,6 +266,57 @@ export function buildProductRegisterView(events: Event[]): Map<string, ProductRe
               Array.isArray((g as Record<string, unknown>).citations),
           );
           r.attestedDimensions.set(p.dimension, { result, deferredGaps });
+        }
+        r.updatedAt = ev.as_of;
+        break;
+      }
+
+      case "ProductPostApprovalFinding": {
+        const r = row();
+        if (
+          typeof p.findingId === "string" &&
+          typeof p.severity === "string" &&
+          typeof p.title === "string" &&
+          typeof p.missedDimension === "string" &&
+          typeof p.discoveredBy === "string" &&
+          typeof p.discoveredAt === "string" &&
+          typeof p.findingTrigger === "string"
+        ) {
+          r.postApprovalFindings.set(p.findingId, {
+            findingId: p.findingId,
+            severity: p.severity as PostApprovalFindingRecord["severity"],
+            title: p.title,
+            missedDimension: p.missedDimension,
+            discoveredBy: p.discoveredBy,
+            discoveredAt: p.discoveredAt,
+            findingTrigger: p.findingTrigger,
+          });
+        }
+        r.updatedAt = ev.as_of;
+        break;
+      }
+
+      case "ProductDimensionRetrospectiveReview": {
+        const r = row();
+        if (
+          typeof p.findingId === "string" &&
+          typeof p.dimension === "string" &&
+          typeof p.reviewedBy === "string" &&
+          typeof p.reviewedAt === "string" &&
+          typeof p.rootCause === "string" &&
+          typeof p.correctiveAction === "string" &&
+          typeof p.revisedAttestation === "string"
+        ) {
+          r.retrospectiveReviews.set(p.findingId, {
+            findingId: p.findingId,
+            dimension: p.dimension,
+            reviewedBy: p.reviewedBy,
+            reviewedAt: p.reviewedAt,
+            rootCause: p.rootCause,
+            correctiveAction: p.correctiveAction,
+            revisedAttestation:
+              p.revisedAttestation as RetrospectiveReviewRecord["revisedAttestation"],
+          });
         }
         r.updatedAt = ev.as_of;
         break;

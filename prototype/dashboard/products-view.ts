@@ -3,7 +3,7 @@
 // Cross-family product-list projection for the /products page.
 //
 // Folds:
-//   - Seven canonical fixtures (M1 JSE equity, M2 SAGB bond, M4 FX Spot,
+//   - Six canonical fixtures (M1 JSE equity, M2 SAGB bond, M4 OTC Vanilla FX,
 //     M5 Repo, M6 MMD Deposit, M7 Funding Line, M8 IBL) as the always-present baseline.
 //   - Any `ProductProposalRegistered` events as proposed-but-not-fixture
 //     products. Latest-by-asOf wins per productId.
@@ -33,7 +33,6 @@ import {
   M1_JSE_EQUITY_CASH_FIXTURE,
   M2_SAGB_FIXED_COUPON_FIXTURE,
   M4_FX_OTC_VANILLA_FIXTURE,
-  M4_FX_SPOT_FIXTURE,
   M5_REPO_FIXTURE,
   M6_MMD_DEPOSIT_FIXTURE,
   M7_FUNDING_LINE_FIXTURE,
@@ -74,6 +73,8 @@ export const NPA_DIMENSIONS = [
   "infosec",
   "privacy",
   "tax",
+  // Dimension 15 — D-NPA-POST-APPROVAL-FINDING-REVIEW (CEO-approved 2026-06-15).
+  "data-quality",
 ] as const;
 export type NpaDimension = (typeof NPA_DIMENSIONS)[number];
 
@@ -111,10 +112,16 @@ export interface ProductListEntry {
     ready: boolean;
     missing: string[];
     attestedCount: number;
-    totalDimensions: 14;
+    totalDimensions: 15;
   };
   /** Source: "fixture" (baseline) or "proposal" (registered via UI). */
   origin: "fixture" | "proposal";
+  /**
+   * True when the product has at least one open or overdue ProductPostApprovalFinding
+   * with severity critical or high (D-NPA-POST-APPROVAL-FINDING-REVIEW).
+   * The list view renders a warning badge when this is true.
+   */
+  hasOpenCriticalFinding: boolean;
 }
 
 export interface ProductListView {
@@ -130,7 +137,6 @@ const BASELINE_FIXTURES: readonly Product[] = [
   M1_JSE_EQUITY_CASH_FIXTURE,
   M2_SAGB_FIXED_COUPON_FIXTURE,
   M4_FX_OTC_VANILLA_FIXTURE,
-  M4_FX_SPOT_FIXTURE,
   M5_REPO_FIXTURE,
   M6_MMD_DEPOSIT_FIXTURE,
   M7_FUNDING_LINE_FIXTURE,
@@ -248,6 +254,8 @@ export function buildProductListView(
   }
   for (const proposal of proposals.values()) {
     if (entries.some((e) => e.productId === proposal.productId)) continue;
+    const regRow = productRegister.get(proposal.productId);
+    if (regRow?.lifecycleStage === "retired") continue;
     entries.push(buildEntryFromProposal(proposal, approvals, dimensionFolds, productRegister));
   }
 
@@ -297,6 +305,28 @@ function collectDeferredGaps(
   return out;
 }
 
+function hasOpenCriticalOrHighFinding(
+  productId: string,
+  productRegister: ReturnType<typeof buildProductRegisterView>,
+): boolean {
+  const row = productRegister.get(productId);
+  if (!row || row.postApprovalFindings.size === 0) return false;
+  const SLA_DAYS: Record<string, number> = { critical: 30, high: 30, medium: 90 };
+  const msPerDay = 86_400_000;
+  const now = Date.now();
+  for (const [fid, f] of row.postApprovalFindings) {
+    if (f.severity !== "critical" && f.severity !== "high") continue;
+    const hasReview = row.retrospectiveReviews.has(fid);
+    if (!hasReview) {
+      const slaDays = SLA_DAYS[f.severity] ?? 30;
+      const daysSince = (now - Date.parse(f.discoveredAt)) / msPerDay;
+      if (daysSince <= slaDays + 7) return true; // within SLA window or recently overdue
+      return true; // overdue = also a warning
+    }
+  }
+  return false;
+}
+
 function buildNpaGateStatus(
   productId: string,
   productRegister: ReturnType<typeof buildProductRegisterView>,
@@ -308,7 +338,7 @@ function buildNpaGateStatus(
       ready: false,
       missing: [...ALL_NPA_DIMENSION_KEYS],
       attestedCount: 0,
-      totalDimensions: 14,
+      totalDimensions: 15,
     };
   }
   const gateResult = validateNpaGate(row);
@@ -316,7 +346,7 @@ function buildNpaGateStatus(
     ready: gateResult.ready,
     missing: [...gateResult.missing],
     attestedCount: row.attestedDimensions.size,
-    totalDimensions: 14,
+    totalDimensions: 15,
   };
 }
 
@@ -357,6 +387,7 @@ function buildEntryFromFixture(
     deferredGaps: collectDeferredGaps(fx.productId, dimensionFolds),
     npaGateStatus: buildNpaGateStatus(fx.productId, productRegister),
     origin: "fixture",
+    hasOpenCriticalFinding: hasOpenCriticalOrHighFinding(fx.productId, productRegister),
   };
 }
 
@@ -401,6 +432,7 @@ function buildEntryFromProposal(
     deferredGaps: collectDeferredGaps(proposal.productId, dimensionFolds),
     npaGateStatus: buildNpaGateStatus(proposal.productId, productRegister),
     origin: "proposal",
+    hasOpenCriticalFinding: hasOpenCriticalOrHighFinding(proposal.productId, productRegister),
   };
 }
 

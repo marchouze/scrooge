@@ -88,6 +88,12 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   AgentEscalation: "governance",
   AgentEscalationDecided: "governance",
   ProductApproved: "governance",
+  // D-NPA-POST-APPROVAL-FINDING-REVIEW (CEO-approved 2026-06-15). Post-approval
+  // finding + retrospective review are governance records — mandatory in the
+  // pre-licence phase with no deferral allowed. Third site of the three-site
+  // registration gotcha (event-types + registry + provenance-category).
+  ProductPostApprovalFinding: "governance",
+  ProductDimensionRetrospectiveReview: "governance",
   // WS-V2-BBAAS S3 (W8 Slice 1) — agent operating-posture register. A posture
   // is real governance configuration (a typed risk-appetite stance / procedure
   // variant / jurisdictional toggle), not simulated market activity: structured-
