@@ -121,6 +121,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // Decision forward; the merge window was backfilled. Authority:
     // D-W8-DECISION-IMPACT-SWEEP.
     "recon:v2-decision-impact-sweep-coverage",
+    // WS-V2-BBAAS W8 Slice D — context-pack freshness (advisory). For each
+    // seat with postures, asserts a ContextPackBuilt event exists within the
+    // last 30 days. Advisory: never fails CI; surfaces warn-severity findings.
+    // Authority: D-W8-PARAMETRIC-TRAINING-POSITION; D-W8-EXAM-GOVERNANCE.
+    "recon:context-pack-freshness",
     // WS-V2-BBAAS S1 — control-plane tenant registry (advisory in S1).
     "recon:v2-control-plane-tenant-registry",
     // WS-V2-BBAAS S14 — operational fleet integrity (advisory→enforcing): every

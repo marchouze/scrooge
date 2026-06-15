@@ -484,7 +484,7 @@ describe("ModelRegistry — empty registry", () => {
   it("list() and productionEligible() are empty when no events have been emitted", () => {
     const { registry, store } = newRegistry();
     expect(registry.list().length).toBe(0);
-    expect(registry.productionEligible().length).toBe(0);
+    expect(registry.productionEligible(new Date("2026-01-01T00:00:00.000Z")).length).toBe(0);
     store.close();
   });
 });

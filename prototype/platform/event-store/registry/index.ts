@@ -182,6 +182,14 @@ export { APPLICABILITY_ASSESSMENT_EVENT_TYPES_REGISTRY } from "./applicability-a
 // governance keystone of the W8 layer (structured-first; S9 recommends, agents
 // dispose). Authority: D-W8-DECISION-IMPACT-SWEEP; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
 export { DECISION_IMPACT_SWEEP_EVENT_TYPES_REGISTRY } from "./decision-impact-sweep";
+// WS-V2-BBAAS W8 Slice D — ContextPackBuilt.
+// Per-seat context pack builder: records what a seat "knew" when it acted
+// (posture slice, applicable obligations, open assessment queue, decision-impact
+// items). Makes "what did the agent know?" answerable from the event log.
+// Advisory recon gate: `recon:context-pack-freshness`.
+// Authority: D-W8-PARAMETRIC-TRAINING-POSITION; D-W8-EXAM-GOVERNANCE;
+// D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
+export { CONTEXT_PACK_EVENT_TYPES_REGISTRY } from "./context-pack";
 // D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
 // events (Defined / Classified / Decomposed / Reconstituted).
 // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
@@ -282,6 +290,7 @@ import { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
 import { CLOSE_MANAGEMENT_EVENT_TYPES_REGISTRY } from "./close-management";
 import { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
 import { CONDUCT_EVENT_TYPES } from "./conduct";
+import { CONTEXT_PACK_EVENT_TYPES_REGISTRY } from "./context-pack";
 import { CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY } from "./correspondent-settlement";
 import { COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY } from "./counterparty-credit-risk";
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
@@ -527,6 +536,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Decision touches via the citation graph + S3 APPLIES_WHEN scope overlap).
   // Authority: D-W8-DECISION-IMPACT-SWEEP; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
   ...DECISION_IMPACT_SWEEP_EVENT_TYPES_REGISTRY,
+  // WS-V2-BBAAS W8 Slice D — per-seat context pack builder.
+  // Authority: D-W8-PARAMETRIC-TRAINING-POSITION; D-W8-EXAM-GOVERNANCE.
+  ...CONTEXT_PACK_EVENT_TYPES_REGISTRY,
   // D-FINANCIAL-INSTRUMENT-ENTITY — FinancialInstrument master-record lifecycle
   // events (Defined / Classified / Decomposed / Reconstituted).
   // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
