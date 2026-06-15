@@ -40,5 +40,6 @@ export const FIL_MODELS_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     >,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/fil-models.ts",
+    v2Status: "v2-parallel",
   },
 ];

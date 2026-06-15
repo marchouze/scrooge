@@ -69,6 +69,7 @@ export const OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
     payloadSchema: obligationReviewMatchedPayloadSchema,
     citationsHint: SHARED_CITATIONS,
     source: "platform/event-store/event-types/obligation-review.ts",
+    v2Status: "v1-only",
   },
   {
     type: "ObligationReviewConflict",
@@ -80,6 +81,7 @@ export const OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
     payloadSchema: obligationReviewConflictPayloadSchema,
     citationsHint: SHARED_CITATIONS,
     source: "platform/event-store/event-types/obligation-review.ts",
+    v2Status: "v1-only",
   },
   {
     type: "ObligationCandidateProposed",
@@ -91,6 +93,7 @@ export const OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
     payloadSchema: obligationCandidateProposedPayloadSchema,
     citationsHint: SHARED_CITATIONS,
     source: "platform/event-store/event-types/obligation-review.ts",
+    v2Status: "v1-only",
   },
   {
     type: "ObligationReviewCompleted",
@@ -108,5 +111,6 @@ export const OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
     payloadSchema: obligationReviewCompletedPayloadSchema,
     citationsHint: SHARED_CITATIONS,
     source: "platform/event-store/event-types/obligation-review.ts",
+    v2Status: "v1-only",
   },
 ];

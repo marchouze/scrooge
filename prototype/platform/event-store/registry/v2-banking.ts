@@ -48,6 +48,7 @@ export const V2_BANKING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: v2ProductRegisteredSchema as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: [...CITATIONS],
     source: "v2-core/banking/events.ts — V2ProductRegistered",
+    v2Status: "v1-only",
   },
   {
     type: "V2ProductDeprecated",
@@ -59,6 +60,7 @@ export const V2_BANKING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: v2ProductDeprecatedSchema as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: [...CITATIONS],
     source: "v2-core/banking/events.ts — V2ProductDeprecated",
+    v2Status: "v1-only",
   },
   {
     type: "V2AccountTypeRegistered",
@@ -70,6 +72,7 @@ export const V2_BANKING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: v2AccountTypeRegisteredSchema as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: [...CITATIONS],
     source: "v2-core/banking/events.ts — V2AccountTypeRegistered",
+    v2Status: "v1-only",
   },
   {
     type: "V2RiskAppetiteSet",
@@ -81,5 +84,6 @@ export const V2_BANKING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: v2RiskAppetiteSetSchema as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: [...CITATIONS],
     source: "v2-core/banking/events.ts — V2RiskAppetiteSet",
+    v2Status: "v1-only",
   },
 ];

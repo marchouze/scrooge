@@ -45,6 +45,7 @@ export const EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
     payloadSchema: equityDividendAccruedPayloadSchema,
     citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "IFRS9-5-7-1A"],
     source: "platform/event-store/event-types/equity-accounting.ts",
+    v2Status: "v1-only",
   },
   {
     type: "EquitySold",
@@ -56,5 +57,6 @@ export const EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
     payloadSchema: equitySoldPayloadSchema,
     citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "IFRS9-3-2-3", "IFRS9-5-7-5"],
     source: "platform/event-store/event-types/equity-accounting.ts",
+    v2Status: "v1-only",
   },
 ];

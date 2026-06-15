@@ -46,6 +46,7 @@ export const CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     payloadSchema: correspondentSettlementInstructionSentPayloadSchema,
     source: "platform/event-store/event-types/correspondent-settlement.ts",
     citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
+    v2Status: "v1-only",
   },
   // -------------------------------------------------------------------------
   // CorrespondentSettlementStatusReceived
@@ -65,6 +66,7 @@ export const CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     payloadSchema: correspondentSettlementStatusReceivedPayloadSchema,
     source: "platform/event-store/event-types/correspondent-settlement.ts",
     citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
+    v2Status: "v1-only",
   },
   // -------------------------------------------------------------------------
   // NostroStatementReceived
@@ -84,5 +86,6 @@ export const CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     payloadSchema: nostroStatementReceivedPayloadSchema,
     source: "platform/event-store/event-types/correspondent-settlement.ts",
     citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
+    v2Status: "v1-only",
   },
 ];

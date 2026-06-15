@@ -62,5 +62,6 @@ export const CLOSE_MANAGEMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[]
     ],
     source: "platform/event-store/event-types/close-management.ts",
     status: "active",
+    v2Status: "v1-only",
   },
 ];

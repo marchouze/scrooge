@@ -47,6 +47,7 @@ export const IRD_ACCOUNTING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] =
     payloadSchema: irdSwapTradeExecutedPayloadSchema,
     citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "IFRS9-4-1-4"],
     source: "platform/event-store/event-types/ird-accounting.ts",
+    v2Status: "v1-only",
   },
   {
     type: "IrdSwapPositionRevalued",
@@ -58,6 +59,7 @@ export const IRD_ACCOUNTING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] =
     payloadSchema: irdSwapPositionRevaluedPayloadSchema,
     citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "IFRS9-5-7-1"],
     source: "platform/event-store/event-types/ird-accounting.ts",
+    v2Status: "v1-only",
   },
   {
     type: "IrdSwapCouponSettled",
@@ -69,6 +71,7 @@ export const IRD_ACCOUNTING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] =
     payloadSchema: irdSwapCouponSettledPayloadSchema,
     citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "IFRS9-5-7-1"],
     source: "platform/event-store/event-types/ird-accounting.ts",
+    v2Status: "v1-only",
   },
   {
     type: "IrdSwapTerminated",
@@ -80,5 +83,6 @@ export const IRD_ACCOUNTING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] =
     payloadSchema: irdSwapTerminatedPayloadSchema,
     citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "IFRS9-3-2-3"],
     source: "platform/event-store/event-types/ird-accounting.ts",
+    v2Status: "v1-only",
   },
 ];

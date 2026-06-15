@@ -55,6 +55,7 @@ export const FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     payloadSchema: financialInstrumentDefinedPayloadSchema,
     citationsHint: ["D-FINANCIAL-INSTRUMENT-ENTITY", "IFRS9-4-1", "ACTUS-V1-1"],
     source: "platform/markets/cdm/instrument.ts",
+    v2Status: "v1-only",
   },
   {
     type: "FinancialInstrumentClassified",
@@ -66,6 +67,7 @@ export const FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     payloadSchema: financialInstrumentClassifiedPayloadSchema,
     citationsHint: ["D-FINANCIAL-INSTRUMENT-ENTITY", "IFRS9-4-1", "BA-110", "BCBS-279"],
     source: "platform/markets/cdm/instrument.ts",
+    v2Status: "v1-only",
   },
   {
     type: "FinancialInstrumentDecomposed",
@@ -77,6 +79,7 @@ export const FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     payloadSchema: financialInstrumentDecomposedPayloadSchema,
     citationsHint: ["D-FINANCIAL-INSTRUMENT-ENTITY", "ACTUS-V1-1-ZCB"],
     source: "platform/markets/cdm/instrument.ts",
+    v2Status: "v1-only",
   },
   {
     type: "FinancialInstrumentReconstituted",
@@ -88,5 +91,6 @@ export const FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     payloadSchema: financialInstrumentReconstitutedPayloadSchema,
     citationsHint: ["D-FINANCIAL-INSTRUMENT-ENTITY", "ACTUS-V1-1-ZCB"],
     source: "platform/markets/cdm/instrument.ts",
+    v2Status: "v1-only",
   },
 ];

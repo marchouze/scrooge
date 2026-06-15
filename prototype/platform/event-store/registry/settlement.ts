@@ -37,5 +37,6 @@ export const SETTLEMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: settlementInstructionIssuedPayloadSchema,
     citationsHint: ["BA-110-S23", "BANKS-REG-26", "D-TREASURY-GAPS-WAVE1"],
     source: "platform/event-store/event-types/settlement.ts",
+    v2Status: "v1-only",
   },
 ];

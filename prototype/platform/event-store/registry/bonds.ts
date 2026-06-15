@@ -51,6 +51,7 @@ export const BOND_ACCOUNTING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: bondTradeExecutedPayloadSchema,
     citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "IFRS9-3-1-1", "IFRS9-5-1-1"],
     source: "platform/event-store/event-types/bond-accounting.ts",
+    v2Status: "v1-only",
   },
   {
     type: "BondInterestAccrued",
@@ -62,6 +63,7 @@ export const BOND_ACCOUNTING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: bondInterestAccruedPayloadSchema,
     citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "IFRS9-5-4-1"],
     source: "platform/event-store/event-types/bond-accounting.ts",
+    v2Status: "v1-only",
   },
   {
     type: "BondPositionRevalued",
@@ -73,6 +75,7 @@ export const BOND_ACCOUNTING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: bondPositionRevaluedPayloadSchema,
     citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "IFRS9-5-7-1"],
     source: "platform/event-store/event-types/bond-accounting.ts",
+    v2Status: "v1-only",
   },
   {
     type: "BondMatured",
@@ -84,6 +87,7 @@ export const BOND_ACCOUNTING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: bondMaturedPayloadSchema,
     citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "IFRS9-3-2-3"],
     source: "platform/event-store/event-types/bond-accounting.ts",
+    v2Status: "v1-only",
   },
   {
     type: "BondSold",
@@ -95,6 +99,7 @@ export const BOND_ACCOUNTING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: bondSoldPayloadSchema,
     citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "IFRS9-3-2-3"],
     source: "platform/event-store/event-types/bond-accounting.ts",
+    v2Status: "v1-only",
   },
   // -------------------------------------------------------------------------
   // Bond settlement lifecycle (Standard Bank custodian / STRATE DvP)
@@ -110,6 +115,7 @@ export const BOND_ACCOUNTING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: bondSettlementInstructedPayloadSchema,
     citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "D-NPA-SAGB-BOND-INTERNAL-TEST"],
     source: "platform/event-store/event-types/bond-settlement.ts",
+    v2Status: "v1-only",
   },
   {
     type: "BondCustodianSettlementConfirmed",
@@ -121,6 +127,7 @@ export const BOND_ACCOUNTING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: bondCustodianSettlementConfirmedPayloadSchema,
     citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "D-NPA-SAGB-BOND-INTERNAL-TEST"],
     source: "platform/event-store/event-types/bond-settlement.ts",
+    v2Status: "v1-only",
   },
   {
     type: "BondCustodianSettlementFailed",
@@ -132,5 +139,6 @@ export const BOND_ACCOUNTING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: bondCustodianSettlementFailedPayloadSchema,
     citationsHint: ["D-TRADE-LIFECYCLE-IFRS-CHAIN", "D-NPA-SAGB-BOND-INTERNAL-TEST"],
     source: "platform/event-store/event-types/bond-settlement.ts",
+    v2Status: "v1-only",
   },
 ];

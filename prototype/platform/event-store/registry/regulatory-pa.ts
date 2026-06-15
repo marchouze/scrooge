@@ -56,5 +56,6 @@ export const REGULATORY_PA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
       "JS2-2024",
       "POLICY:credit-risk-policy-v1-S8",
     ],
+    v2Status: "v1-only",
   },
 ];

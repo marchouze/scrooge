@@ -49,6 +49,7 @@ export const FIL_INSTANCES_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     payloadSchema: filInstrumentCreatedPayload as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "v2-core/fil-instances/events.ts — FilInstrumentCreated",
+    v2Status: "v2-parallel",
   },
   {
     type: "FilInstrumentAmended",
@@ -60,6 +61,7 @@ export const FIL_INSTANCES_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     payloadSchema: filInstrumentAmendedPayload as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "v2-core/fil-instances/events.ts — FilInstrumentAmended",
+    v2Status: "v2-parallel",
   },
   {
     type: "FilInstrumentTerminated",
@@ -71,5 +73,6 @@ export const FIL_INSTANCES_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     payloadSchema: filInstrumentTerminatedPayload as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "v2-core/fil-instances/events.ts — FilInstrumentTerminated",
+    v2Status: "v2-parallel",
   },
 ];

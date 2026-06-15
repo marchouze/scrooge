@@ -44,6 +44,7 @@ export const CAE_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] =
     citationsHint: ["D-CAE-QUARTERLY-RUN-G5", "IIA-STANDARDS-2010", "Banks Act 94/1990 §73"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "scripts/governance/cae-periodic-run.ts (quarterly batch runner)",
+    v2Status: "v1-only",
   },
   {
     // AuditIssueTrackerReviewed — open findings review.
@@ -62,6 +63,7 @@ export const CAE_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] =
     citationsHint: ["D-CAE-QUARTERLY-RUN-G5", "IIA-STANDARDS-2010", "Banks Act 94/1990 §73"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "scripts/governance/cae-periodic-run.ts (quarterly batch runner)",
+    v2Status: "v1-only",
   },
   {
     // QaipAttestationFiled — QAIP conformance attestation (IIA §1300).
@@ -84,6 +86,7 @@ export const CAE_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] =
     ],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "scripts/governance/cae-periodic-run.ts (quarterly batch runner)",
+    v2Status: "v1-only",
   },
   {
     // ThirdLineOpinionFiled — CAE independent assurance opinion (IIA §2600).
@@ -106,5 +109,6 @@ export const CAE_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] =
     ],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "scripts/governance/cae-periodic-run.ts (quarterly batch runner)",
+    v2Status: "v1-only",
   },
 ];

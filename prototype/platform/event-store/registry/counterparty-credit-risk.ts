@@ -63,6 +63,7 @@ export const COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     payloadSchema: ccrReplacementCostComputedPayloadSchema,
     source: "platform/event-store/event-types/counterparty-credit-risk.ts",
     citationsHint: ["BCBS-279", "POLICY:credit-risk-policy-v1-S3"],
+    v2Status: "v2-parallel",
   },
   {
     type: "CcrEadComputed",
@@ -74,6 +75,7 @@ export const COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     payloadSchema: ccrEadComputedPayloadSchemaV2,
     source: "platform/event-store/event-types/counterparty-credit-risk.ts",
     citationsHint: ["BCBS-279", "POLICY:credit-risk-policy-v1-S3"],
+    v2Status: "v2-parallel",
   },
   {
     type: "LexUtilisationComputed",
@@ -90,6 +92,7 @@ export const COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMe
       "BCBS-283",
       "POLICY:credit-risk-policy-v1-S2",
     ],
+    v2Status: "v1-only",
   },
   {
     type: "LexExceptionApproved",
@@ -101,6 +104,7 @@ export const COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     payloadSchema: lexExceptionApprovedPayloadSchema,
     source: "platform/event-store/event-types/counterparty-credit-risk.ts",
     citationsHint: ["RRB-REG-23", "POLICY:credit-risk-policy-v1-S2"],
+    v2Status: "v1-only",
   },
   {
     // IFRS 9 §5.5.3 Significant-Increase-in-Credit-Risk (SICR) memo.
@@ -125,6 +129,7 @@ export const COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMe
       "POLICY:credit-risk-policy-v1-S4",
       "POLICY:ifrs9-ecl-provisioning-policy-v1-S51",
     ],
+    v2Status: "v1-only",
   },
   {
     // Authoritative Basel counterparty-class assignment (CRE20 taxonomy).
@@ -143,5 +148,6 @@ export const COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     payloadSchema: counterpartyBaselClassAssignedPayloadSchema,
     source: "platform/event-store/event-types/counterparty-credit-risk.ts",
     citationsHint: ["BCBS-CRE20", "RRB-REG-38", "POLICY:credit-risk-policy-v1-S3"],
+    v2Status: "v1-only",
   },
 ];

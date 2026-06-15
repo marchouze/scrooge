@@ -75,6 +75,7 @@ export const ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY: readonly EventType
       "BCBS-D317",
     ],
     source: "platform/event-store/event-types/odp-collateral-segregation.ts",
+    v2Status: "v1-only",
   },
 
   {
@@ -87,6 +88,7 @@ export const ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY: readonly EventType
     payloadSchema: collateralSegregationReleasedPayloadSchema,
     citationsHint: ["ORG-ODP-COND-010", "urn:regulation:odp:cs-2-2018", "ISDA-CSA-2016-VM"],
     source: "platform/event-store/event-types/odp-collateral-segregation.ts",
+    v2Status: "v1-only",
   },
 
   // --------------------------------------------------------------------------
@@ -108,6 +110,7 @@ export const ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY: readonly EventType
       "ISDA-CSA-2016-VM",
     ],
     source: "platform/event-store/event-types/odp-collateral-segregation.ts",
+    v2Status: "v1-only",
   },
 
   {
@@ -125,6 +128,7 @@ export const ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY: readonly EventType
       "ISDA-CSA-2016-VM",
     ],
     source: "platform/event-store/event-types/odp-collateral-segregation.ts",
+    v2Status: "v1-only",
   },
 
   {
@@ -142,6 +146,7 @@ export const ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY: readonly EventType
       "ISDA-CSA-2016-VM",
     ],
     source: "platform/event-store/event-types/odp-collateral-segregation.ts",
+    v2Status: "v1-only",
   },
 
   // --------------------------------------------------------------------------
@@ -163,6 +168,7 @@ export const ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY: readonly EventType
       "BCBS-D317",
     ],
     source: "platform/event-store/event-types/odp-collateral-segregation.ts",
+    v2Status: "v1-only",
   },
 
   // --------------------------------------------------------------------------
@@ -184,5 +190,6 @@ export const ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY: readonly EventType
       "BCBS-D317",
     ],
     source: "platform/event-store/event-types/odp-collateral-segregation.ts",
+    v2Status: "v1-only",
   },
 ];

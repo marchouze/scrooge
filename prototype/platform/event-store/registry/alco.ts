@@ -50,6 +50,7 @@ export const ALCO_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: alcoPackGeneratedPayloadSchema,
     citationsHint: ["D-TREASURY-GAPS-WAVE1", "BA-110", "BA-120", "BCBS-D365-IRRBB"],
     source: "platform/event-store/event-types/alco.ts",
+    v2Status: "v1-only",
   },
   {
     type: "IntradayHQLAStressProjection",
@@ -61,5 +62,6 @@ export const ALCO_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: intradayHQLAStressProjectionPayloadSchema,
     citationsHint: ["BA-110", "BANKS-ACT-94-1990", "D-TREASURY-GAPS-WAVE1"],
     source: "platform/event-store/event-types/alco.ts",
+    v2Status: "v1-only",
   },
 ];

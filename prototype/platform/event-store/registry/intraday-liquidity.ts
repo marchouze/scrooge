@@ -68,6 +68,7 @@ export const INTRADAY_LIQUIDITY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata
     payloadSchema: intradayLiquidityReportedPayloadSchema,
     source: "platform/event-store/event-types/intraday-liquidity.ts",
     citationsHint: INTRADAY_LIQUIDITY_CITATIONS_HINT,
+    v2Status: "v1-only",
   },
   {
     type: "IntradayLiquidityMetricsComputed",
@@ -79,5 +80,6 @@ export const INTRADAY_LIQUIDITY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata
     payloadSchema: intradayLiquidityMetricsComputedPayloadSchema,
     source: "platform/event-store/event-types/intraday-liquidity.ts",
     citationsHint: INTRADAY_LIQUIDITY_CITATIONS_HINT,
+    v2Status: "v1-only",
   },
 ];

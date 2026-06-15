@@ -48,5 +48,6 @@ export const IFRS9_STAGING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     retention: RETENTION_ACCOUNTING_7Y,
     source:
       "scripts/ifrs9-staging-run.ts (build-phase batch); real-time credit-assessment engine (post-licence)",
+    v2Status: "v1-only",
   },
 ];

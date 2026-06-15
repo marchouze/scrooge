@@ -25,6 +25,7 @@ export type {
   ReplayFold,
   RetentionMetadata,
   SnapshotCadence,
+  V2CutoverStatus,
 } from "./types";
 
 export {

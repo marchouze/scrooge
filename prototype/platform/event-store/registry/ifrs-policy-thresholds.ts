@@ -81,6 +81,7 @@ export const IFRS_POLICY_THRESHOLDS_EVENT_TYPES_REGISTRY: readonly EventTypeMeta
       "P1-EVENTS-AS-TRUTH",
     ],
     source: "platform/event-store/event-types/ifrs-policy-thresholds.ts",
+    v2Status: "v1-only",
   },
   {
     type: "MaterialityBenchmarkApproved",
@@ -102,5 +103,6 @@ export const IFRS_POLICY_THRESHOLDS_EVENT_TYPES_REGISTRY: readonly EventTypeMeta
       "P1-EVENTS-AS-TRUTH",
     ],
     source: "platform/event-store/event-types/ifrs-policy-thresholds.ts",
+    v2Status: "v1-only",
   },
 ];

@@ -44,6 +44,7 @@ export const ILAAP_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: ilaapScenarioRunPayloadSchema,
     citationsHint: ["D-TREASURY-GAPS-WAVE1", "BANKS-ACT-94-1990", "BA-110"],
     source: "platform/event-store/event-types/ilaap.ts",
+    v2Status: "v1-only",
   },
   {
     type: "ILAAPSummaryCompleted",
@@ -55,5 +56,6 @@ export const ILAAP_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: ilaapSummaryCompletedPayloadSchema,
     citationsHint: ["D-TREASURY-GAPS-WAVE1", "BANKS-ACT-94-1990", "BA-110"],
     source: "platform/event-store/event-types/ilaap.ts",
+    v2Status: "v1-only",
   },
 ];

@@ -48,6 +48,7 @@ export const V2_CONTROL_PLANE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-V2-TENANCY-ARCHITECTURE", "D-V2-BBAAS-BLUEPRINT-SYNTHESIS"],
     source:
       "brief:atlas:v2-s1-control-plane-store-tenant-registry-fleet-:2026-06-12 §1 TenantRegistered",
+    v2Status: "v1-only",
   },
   {
     type: "TenantSurfaceGranted",
@@ -62,6 +63,7 @@ export const V2_CONTROL_PLANE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-V2-TENANCY-ARCHITECTURE", "D-V2-BBAAS-BLUEPRINT-SYNTHESIS"],
     source:
       "brief:atlas:v2-s1-control-plane-store-tenant-registry-fleet-:2026-06-12 §1 TenantSurfaceGranted",
+    v2Status: "v1-only",
   },
   {
     type: "TenantUpgradeLedgerEntry",
@@ -76,6 +78,7 @@ export const V2_CONTROL_PLANE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-V2-TENANCY-ARCHITECTURE", "D-V2-BBAAS-BLUEPRINT-SYNTHESIS"],
     source:
       "brief:atlas:v2-s1-control-plane-store-tenant-registry-fleet-:2026-06-12 §1 TenantUpgradeLedgerEntry",
+    v2Status: "v1-only",
   },
   {
     type: "TenantMeterEvent",
@@ -90,5 +93,6 @@ export const V2_CONTROL_PLANE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-V2-TENANCY-ARCHITECTURE", "D-V2-BBAAS-BLUEPRINT-SYNTHESIS"],
     source:
       "brief:atlas:v2-s1-control-plane-store-tenant-registry-fleet-:2026-06-12 §1 TenantMeterEvent",
+    v2Status: "v1-only",
   },
 ];

@@ -78,6 +78,7 @@ export const ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     payloadSchema: tradeUtiAllocatedPayloadSchema,
     citationsHint: ["ORG-ODP-RPT-003", "urn:regulation:odp:jn-2-2024", "ISO-23602-2020"],
     source: "platform/event-store/event-types/odp-umoja-uti.ts",
+    v2Status: "v1-only",
   },
 
   // --------------------------------------------------------------------------
@@ -93,6 +94,7 @@ export const ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     payloadSchema: odpTradeReportPreparedPayloadSchema,
     citationsHint: ["ORG-ODP-RPT-003", "urn:regulation:odp:cs-3-2018"],
     source: "platform/event-store/event-types/odp-umoja-uti.ts",
+    v2Status: "v1-only",
   },
 
   // --------------------------------------------------------------------------
@@ -108,6 +110,7 @@ export const ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     payloadSchema: odpReportSubmissionAttemptedPayloadSchema,
     citationsHint: ["ORG-ODP-RPT-003", "urn:regulation:odp:cs-3-2018"],
     source: "platform/event-store/event-types/odp-umoja-uti.ts",
+    v2Status: "v1-only",
   },
 
   {
@@ -120,6 +123,7 @@ export const ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     payloadSchema: odpReportSubmissionAcceptedPayloadSchema,
     citationsHint: ["ORG-ODP-RPT-003", "urn:regulation:odp:cs-3-2018"],
     source: "platform/event-store/event-types/odp-umoja-uti.ts",
+    v2Status: "v1-only",
   },
 
   {
@@ -132,6 +136,7 @@ export const ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     payloadSchema: odpReportSubmissionRejectedPayloadSchema,
     citationsHint: ["ORG-ODP-RPT-003", "urn:regulation:odp:cs-3-2018"],
     source: "platform/event-store/event-types/odp-umoja-uti.ts",
+    v2Status: "v1-only",
   },
 
   {
@@ -144,6 +149,7 @@ export const ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     payloadSchema: odpReportAmendmentRequestedPayloadSchema,
     citationsHint: ["ORG-ODP-RPT-003", "urn:regulation:odp:cs-3-2018"],
     source: "platform/event-store/event-types/odp-umoja-uti.ts",
+    v2Status: "v1-only",
   },
 
   {
@@ -156,6 +162,7 @@ export const ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     payloadSchema: odpReportAmendmentSubmittedPayloadSchema,
     citationsHint: ["ORG-ODP-RPT-003", "urn:regulation:odp:cs-3-2018"],
     source: "platform/event-store/event-types/odp-umoja-uti.ts",
+    v2Status: "v1-only",
   },
 
   // --------------------------------------------------------------------------
@@ -171,6 +178,7 @@ export const ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     payloadSchema: odpRepoReconRunPayloadSchema,
     citationsHint: ["ORG-ODP-RPT-003", "urn:regulation:odp:cs-3-2018"],
     source: "platform/event-store/event-types/odp-umoja-uti.ts",
+    v2Status: "v1-only",
   },
 
   {
@@ -183,6 +191,7 @@ export const ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     payloadSchema: odpRepoReconBreakRaisedPayloadSchema,
     citationsHint: ["ORG-ODP-RPT-003", "urn:regulation:odp:cs-3-2018"],
     source: "platform/event-store/event-types/odp-umoja-uti.ts",
+    v2Status: "v1-only",
   },
 
   {
@@ -195,6 +204,7 @@ export const ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     payloadSchema: odpRepoReconDisputeOpenedPayloadSchema,
     citationsHint: ["ORG-ODP-RPT-003", "urn:regulation:odp:cs-3-2018"],
     source: "platform/event-store/event-types/odp-umoja-uti.ts",
+    v2Status: "v1-only",
   },
 
   {
@@ -207,6 +217,7 @@ export const ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     payloadSchema: odpRepoReconDisputeResolvedPayloadSchema,
     citationsHint: ["ORG-ODP-RPT-003", "urn:regulation:odp:cs-3-2018"],
     source: "platform/event-store/event-types/odp-umoja-uti.ts",
+    v2Status: "v1-only",
   },
 
   // --------------------------------------------------------------------------
@@ -222,5 +233,6 @@ export const ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     payloadSchema: umojaPortalTokenRefreshedPayloadSchema,
     citationsHint: ["ORG-ODP-RPT-003"],
     source: "platform/event-store/event-types/odp-umoja-uti.ts",
+    v2Status: "v1-only",
   },
 ];

@@ -51,6 +51,7 @@ export const DECISION_IMPACT_SWEEP_EVENT_TYPES_REGISTRY: readonly EventTypeMetad
     >,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/decision-impact-sweep.ts",
+    v2Status: "v1-only",
   },
   {
     type: "DecisionImpactAssessed",
@@ -64,5 +65,6 @@ export const DECISION_IMPACT_SWEEP_EVENT_TYPES_REGISTRY: readonly EventTypeMetad
     >,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/decision-impact-sweep.ts",
+    v2Status: "v1-only",
   },
 ];

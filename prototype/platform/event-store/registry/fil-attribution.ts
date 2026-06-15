@@ -53,6 +53,7 @@ export const FIL_ATTRIBUTION_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     >,
     citationsHint: CITATIONS,
     source: "v2-core/fil-attribution/events.ts — InstrumentDimensionAssigned",
+    v2Status: "v2-parallel",
   },
   {
     type: "SliceDefined",
@@ -66,6 +67,7 @@ export const FIL_ATTRIBUTION_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: sliceDefinedPayload as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "v2-core/fil-attribution/events.ts — SliceDefined",
+    v2Status: "v2-parallel",
   },
   {
     type: "OrgHierarchyEdgeAssigned",
@@ -80,5 +82,6 @@ export const FIL_ATTRIBUTION_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: orgHierarchyEdgeAssignedPayload as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "v2-core/fil-attribution/events.ts — OrgHierarchyEdgeAssigned",
+    v2Status: "v1-only",
   },
 ];

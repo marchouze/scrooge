@@ -230,6 +230,25 @@ export type ReplayFold =
   | "append-only-audit";
 
 /**
+ * V1→V2 migration status for a registered event type. Tracks the journey
+ * from V1/platform store authority to V2/v2-core authority for each type.
+ * Authority: D-V1-REMOVAL-PHASE-1 (CEO-approved, session-delegation 2026-06-15).
+ *
+ *   - "v1-only"      — no V2 equivalent exists; the V1 event-store path is the
+ *                      sole authority for this type. The ratchet gate
+ *                      (`recon:v1-removal-ratchet`) ensures this count can
+ *                      only shrink (never grow) without a recorded Decision.
+ *   - "v2-parallel"  — a V2 model/projection runs in parallel; V1 is still
+ *                      the authoritative emitter. Parity gates validate that
+ *                      both paths produce byte-equivalent outputs before a
+ *                      domain flip is approved.
+ *   - "v2-replaced"  — the V2 path is authoritative; the V1 version of this
+ *                      type is retired. No event types hold this status in
+ *                      Phase 1 — it is the target state for Phase 2+ flips.
+ */
+export type V2CutoverStatus = "v1-only" | "v2-parallel" | "v2-replaced";
+
+/**
  * Lifecycle status for a registered event type.
  *
  *   - "active"     — the current canonical type; producers should emit it.
@@ -309,4 +328,24 @@ export interface EventTypeMetadata {
   readonly citationsHint?: readonly string[];
   /** Source-spec reference (A0 freeze entry, persona spec section, etc.). */
   readonly source: string;
+  /**
+   * V1→V2 migration journey for this event type. Required on every row so
+   * TypeScript enforces coverage across the full registry. The
+   * `recon:v1-removal-v2status-coverage` gate asserts this at runtime.
+   * The `recon:v1-removal-ratchet` gate tracks the count of `"v1-only"`
+   * rows — the ratchet may only decrease (harden-only; D-V1-REMOVAL-PHASE-1).
+   *
+   * Tagging guide:
+   *   - "v2-parallel"  — CCR-EAD family (SA-CCR runs in parallel on V2);
+   *                      FIL-instance / FIL-model events whose V2 projections
+   *                      are live read-only alongside the V1 book.
+   *   - "v2-replaced"  — none yet in Phase 1. Set when the domain flip is
+   *                      approved by Decision and V1 is retired.
+   *   - "v1-only"      — everything else. The conservative default: the
+   *                      ratchet only prevents the count from *increasing*,
+   *                      so tagging v1-only is always safe.
+   *
+   * Authority: D-V1-REMOVAL-PHASE-1 (CEO-approved 2026-06-15).
+   */
+  readonly v2Status: V2CutoverStatus;
 }

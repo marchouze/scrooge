@@ -63,6 +63,7 @@ export const MARKET_DATA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: marketDataStaleAlertPayloadSchema,
     source: "platform/event-store/event-types/market-data.ts; Policies/valuation-policy-v1.md §5",
     citationsHint: ["BCBS-239-2013", "D-MARKETS-SCHEMA-FOUNDATION"],
+    v2Status: "v1-only",
   },
   {
     type: "ModelValidationApproved",
@@ -74,6 +75,7 @@ export const MARKET_DATA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: modelValidationApprovedPayloadSchema,
     source: "platform/event-store/event-types/model-risk.ts; Policies/valuation-policy-v1.md §5",
     citationsHint: ["BCBS-239-2013", "D-MARKETS-SCHEMA-FOUNDATION"],
+    v2Status: "v1-only",
   },
   // -------------------------------------------------------------------------
   // FTP / ALM market-data feed events (W2.3, D-TREASURER-WAVE2-SUBSTRATE)
@@ -88,6 +90,7 @@ export const MARKET_DATA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: zaroniaRatePublishedPayloadSchema,
     source: "platform/event-store/event-types/market-data.ts",
     citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
+    v2Status: "v1-only",
   },
   {
     type: "ZaroniaTermRatePublished",
@@ -99,6 +102,7 @@ export const MARKET_DATA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: zaroniaTermRatePublishedPayloadSchema,
     source: "platform/event-store/event-types/market-data.ts",
     citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
+    v2Status: "v1-only",
   },
   {
     type: "JibarFixingPublished",
@@ -110,6 +114,7 @@ export const MARKET_DATA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: jibarFixingPublishedPayloadSchema,
     source: "platform/event-store/event-types/market-data.ts",
     citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
+    v2Status: "v1-only",
   },
   {
     type: "OisCurvePublished",
@@ -121,6 +126,7 @@ export const MARKET_DATA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: oisCurvePublishedPayloadSchema,
     source: "platform/event-store/event-types/market-data.ts",
     citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
+    v2Status: "v1-only",
   },
   {
     type: "SagbYieldsPublished",
@@ -132,5 +138,6 @@ export const MARKET_DATA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: sagbYieldsPublishedPayloadSchema,
     source: "platform/event-store/event-types/market-data.ts",
     citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
+    v2Status: "v1-only",
   },
 ];

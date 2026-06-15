@@ -62,5 +62,6 @@ export const VALUATION_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
       "IFRS-13",
     ],
     source: "platform/event-store/event-types/valuation.ts",
+    v2Status: "v1-only",
   },
 ];
