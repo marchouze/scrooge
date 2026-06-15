@@ -119,6 +119,20 @@ export interface InstrumentSummary {
   obligationCount: number;
   sectionCount: number;
   hasFullText: boolean;
+  /**
+   * Number of bank obligations traced back to this source, sourced from
+   * `_source-coverage.json` (which counts both graph EXPRESSES edges and
+   * adopted-obligation citation matches). Falls back to the graph-only
+   * `obligationCount` when the coverage row is absent.
+   */
+  obligationsLinked: number;
+  /**
+   * Review-marker state from the latest `RegulatorySourceReviewed` event,
+   * surfaced via `_source-coverage.json`.
+   */
+  reviewStatus: "reviewed" | "stale" | "unreviewed";
+  /** ISO timestamp of the latest review, or null when never reviewed. */
+  reviewedAt: string | null;
 }
 
 export interface InstrumentsListView {
@@ -518,8 +532,58 @@ function getInstrumentWideObligations(
 // Public API
 // ---------------------------------------------------------------------------
 
+/** Per-slug review + traceback markers loaded from `_source-coverage.json`. */
+interface CoverageMarker {
+  obligationsLinked: number;
+  reviewStatus: "reviewed" | "stale" | "unreviewed";
+  reviewedAt: string | null;
+}
+
+/**
+ * Load `Regulations/_source-coverage.json` and index its rows by slug. The
+ * file is generated post-merge by `scripts/regulatory/build-source-coverage.ts`
+ * (committed, not run in CI). Absent or malformed → empty map (view degrades to
+ * graph-only counts + "unreviewed").
+ */
+function loadCoverageMarkers(repoRoot: string): Map<string, CoverageMarker> {
+  const bySlug = new Map<string, CoverageMarker>();
+  const path = resolve(repoRoot, "Regulations", "_source-coverage.json");
+  if (!existsSync(path)) return bySlug;
+
+  let report: unknown;
+  try {
+    report = JSON.parse(readFileSync(path, "utf-8"));
+  } catch {
+    return bySlug;
+  }
+
+  const rows = (report as { rows?: unknown }).rows;
+  if (!Array.isArray(rows)) return bySlug;
+
+  for (const raw of rows) {
+    const row = raw as {
+      slug?: unknown;
+      obligationsLinked?: unknown;
+      reviewStatus?: unknown;
+      reviewedAt?: unknown;
+    };
+    if (typeof row.slug !== "string") continue;
+    const reviewStatus =
+      row.reviewStatus === "reviewed" || row.reviewStatus === "stale"
+        ? row.reviewStatus
+        : "unreviewed";
+    bySlug.set(row.slug, {
+      obligationsLinked: typeof row.obligationsLinked === "number" ? row.obligationsLinked : 0,
+      reviewStatus,
+      reviewedAt: typeof row.reviewedAt === "string" ? row.reviewedAt : null,
+    });
+  }
+  return bySlug;
+}
+
 export function buildInstrumentsListView(repoRoot: string): InstrumentsListView {
   const instruments: InstrumentSummary[] = [];
+  const coverage = loadCoverageMarkers(repoRoot);
 
   for (const slug of discoverSlugPaths(repoRoot).keys()) {
     const doc = loadStructuredDoc(repoRoot, slug);
@@ -531,6 +595,7 @@ export function buildInstrumentsListView(repoRoot: string): InstrumentsListView 
     }
 
     const obligationCount = getObligationCountForDocument(`DOC-${slug.toUpperCase()}`);
+    const marker = coverage.get(doc.slug);
 
     instruments.push({
       slug: doc.slug,
@@ -542,6 +607,11 @@ export function buildInstrumentsListView(repoRoot: string): InstrumentsListView 
       obligationCount,
       sectionCount,
       hasFullText: doc.chapters.some((ch) => ch.sections.some((s) => s.verbatim)),
+      obligationsLinked: marker
+        ? Math.max(marker.obligationsLinked, obligationCount)
+        : obligationCount,
+      reviewStatus: marker?.reviewStatus ?? "unreviewed",
+      reviewedAt: marker?.reviewedAt ?? null,
     });
   }
 

@@ -32,6 +32,8 @@ import { join, resolve as pathResolve, relative } from "node:path";
 
 import { clock } from "../../platform/composition";
 import { eventStore } from "../../platform/composition";
+import type { ObligationAdoptedPayload } from "../../platform/event-store/event-types/obligation-lifecycle";
+import type { RegulatorySourceReviewedPayload } from "../../platform/event-store/event-types/regulatory";
 import type { RecordFiledPayload } from "../../platform/event-store/event-types/rms";
 import { getDb } from "../../platform/regulatory/graph/db";
 import { getApplicabilityStatus } from "../../platform/regulatory/graph/seed-projection";
@@ -42,6 +44,8 @@ import type { StructuredSourceDocument } from "../../platform/regulatory/structu
 // ---------------------------------------------------------------------------
 
 type ApplicabilityStatus = "direct" | "transposed" | "reference" | "unknown";
+
+type ReviewStatus = "reviewed" | "stale" | "unreviewed";
 
 export interface SourceCoverageRow {
   instrumentId: string | null;
@@ -54,6 +58,16 @@ export interface SourceCoverageRow {
   extracted: boolean;
   obligationsLinked: number;
   structuredJsonPath: string;
+  /** ISO timestamp of the latest RegulatorySourceReviewed event, or null. */
+  reviewedAt: string | null;
+  /**
+   * "reviewed" when a RegulatorySourceReviewed exists for the current source
+   * hash; "stale" when one exists but for a superseded hash; "unreviewed" when
+   * none exists.
+   */
+  reviewStatus: ReviewStatus;
+  /** The reviewedSourceHash carried by the latest review event, or null. */
+  reviewedSourceHash: string | null;
 }
 
 export interface SourceCoverageReport {
@@ -63,6 +77,9 @@ export interface SourceCoverageReport {
   acquired: number;
   extracted: number;
   fullyLinked: number;
+  reviewed: number;
+  stale: number;
+  unreviewed: number;
   rows: SourceCoverageRow[];
 }
 
@@ -137,6 +154,91 @@ function replayRegulatorySourceFilings(): Map<string, GoldenSourceFiling> {
 }
 
 // ---------------------------------------------------------------------------
+// Event store: count adopted obligations whose citation === slug
+// ---------------------------------------------------------------------------
+//
+// Fresh imports set `ObligationAdopted.citation` to the instrument slug (e.g.
+// "bcbs-cre", "ifrs-9"). The graph EXPRESSES count misses these because the
+// obligations are not yet materialised as Provision→Obligation EXPRESSES edges
+// in the graph DB. We therefore count adopted obligations by citation slug and
+// union/max with the EXPRESSES count so the coverage row reflects the real
+// traceback. Latest-per-obligationId wins (append-only fold); only obligations
+// that resolve to an *adopted* (not withdrawn) latest state are counted.
+
+interface LatestObligation {
+  readonly citation: string;
+  /** Most recent as_of seen for this obligationId. */
+  readonly asOf: string;
+}
+
+/** Map: slug.toLowerCase() → count of adopted obligations citing that slug. */
+function countAdoptedObligationsByCitationSlug(): Map<string, number> {
+  const latestById = new Map<string, LatestObligation>();
+
+  try {
+    for (const event of eventStore.replay({ type: "ObligationAdopted" })) {
+      const p = event.payload as ObligationAdoptedPayload;
+      const id = p.obligationId;
+      if (!id) continue;
+      const asOf = event.as_of;
+      const existing = latestById.get(id);
+      if (!existing || asOf > existing.asOf) {
+        latestById.set(id, { citation: p.citation ?? "", asOf });
+      }
+    }
+  } catch {
+    // Event store unavailable — return empty (all counts 0)
+    return new Map<string, number>();
+  }
+
+  const bySlug = new Map<string, number>();
+  for (const { citation } of latestById.values()) {
+    const key = citation.trim().toLowerCase();
+    if (!key) continue;
+    bySlug.set(key, (bySlug.get(key) ?? 0) + 1);
+  }
+  return bySlug;
+}
+
+// ---------------------------------------------------------------------------
+// Event store: latest RegulatorySourceReviewed per instrument
+// ---------------------------------------------------------------------------
+
+interface LatestReview {
+  readonly reviewedAt: string;
+  readonly reviewedSourceHash: string;
+}
+
+/** Map: slug.toUpperCase() AND instrumentId.toUpperCase() → latest review. */
+function replayLatestReviews(): Map<string, LatestReview> {
+  const byKey = new Map<string, LatestReview>();
+
+  const consider = (key: string, review: LatestReview): void => {
+    const existing = byKey.get(key);
+    if (!existing || review.reviewedAt > existing.reviewedAt) {
+      byKey.set(key, review);
+    }
+  };
+
+  try {
+    for (const event of eventStore.replay({ type: "RegulatorySourceReviewed" })) {
+      const p = event.payload as RegulatorySourceReviewedPayload;
+      const review: LatestReview = {
+        reviewedAt: p.reviewedAt,
+        reviewedSourceHash: p.reviewedSourceHash,
+      };
+      if (p.slug) consider(p.slug.toUpperCase(), review);
+      if (p.instrumentId) consider(p.instrumentId.toUpperCase(), review);
+    }
+  } catch {
+    // Event store unavailable — return empty (all unreviewed)
+    return new Map<string, LatestReview>();
+  }
+
+  return byKey;
+}
+
+// ---------------------------------------------------------------------------
 // Graph DB: count EXPRESSES edges per document slug
 // ---------------------------------------------------------------------------
 
@@ -184,6 +286,8 @@ export function buildSourceCoverage(): SourceCoverageReport {
   const root = repoRoot();
   const paths = findStructuredJsonPaths();
   const filings = replayRegulatorySourceFilings();
+  const adoptedBySlug = countAdoptedObligationsByCitationSlug();
+  const reviews = replayLatestReviews();
 
   const rows: SourceCoverageRow[] = [];
 
@@ -209,6 +313,9 @@ export function buildSourceCoverage(): SourceCoverageReport {
         extracted: false,
         obligationsLinked: 0,
         structuredJsonPath: relPath,
+        reviewedAt: null,
+        reviewStatus: "unreviewed",
+        reviewedSourceHash: null,
       });
       continue;
     }
@@ -234,7 +341,23 @@ export function buildSourceCoverage(): SourceCoverageReport {
         ? rawStatus
         : "unknown";
 
-    const obligationsLinked = countExpressesEdgesForSlug(slugUpper, goldenSourceHash);
+    // obligationsLinked = max of (graph EXPRESSES edges, adopted-obligation
+    // citation-slug matches). The two measures count the same underlying
+    // traceback from different projections; taking the max avoids double-
+    // counting while still reflecting fresh imports (which the graph misses).
+    const expressesCount = countExpressesEdgesForSlug(slugUpper, goldenSourceHash);
+    const adoptedCount = adoptedBySlug.get(slug.toLowerCase()) ?? 0;
+    const obligationsLinked = Math.max(expressesCount, adoptedCount);
+
+    // Review marker — latest RegulatorySourceReviewed for this instrument.
+    const review =
+      reviews.get(slugUpper) ??
+      (filing?.instrumentId ? reviews.get(filing.instrumentId.toUpperCase()) : undefined);
+    let reviewStatus: ReviewStatus = "unreviewed";
+    if (review) {
+      reviewStatus =
+        goldenSourceHash && review.reviewedSourceHash === goldenSourceHash ? "reviewed" : "stale";
+    }
 
     rows.push({
       instrumentId: filing?.instrumentId ?? null,
@@ -247,6 +370,9 @@ export function buildSourceCoverage(): SourceCoverageReport {
       extracted: true,
       obligationsLinked,
       structuredJsonPath: relPath,
+      reviewedAt: review?.reviewedAt ?? null,
+      reviewStatus,
+      reviewedSourceHash: review?.reviewedSourceHash ?? null,
     });
   }
 
@@ -267,12 +393,18 @@ export function buildSourceCoverage(): SourceCoverageReport {
   let acquired = 0;
   let extracted = 0;
   let fullyLinked = 0;
+  let reviewed = 0;
+  let stale = 0;
+  let unreviewed = 0;
 
   for (const row of rows) {
     byStatus[row.applicabilityStatus]++;
     if (row.sourceAcquired) acquired++;
     if (row.extracted) extracted++;
     if (row.sourceAcquired && row.extracted && row.obligationsLinked > 0) fullyLinked++;
+    if (row.reviewStatus === "reviewed") reviewed++;
+    else if (row.reviewStatus === "stale") stale++;
+    else unreviewed++;
   }
 
   return {
@@ -282,6 +414,9 @@ export function buildSourceCoverage(): SourceCoverageReport {
     acquired,
     extracted,
     fullyLinked,
+    reviewed,
+    stale,
+    unreviewed,
     rows,
   };
 }
@@ -292,7 +427,8 @@ if (import.meta.main) {
   const outPath = join(repoRoot(), "Regulations", "_source-coverage.json");
   writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`, "utf-8");
 
-  const { totalInstruments, byStatus, acquired, extracted, fullyLinked } = report;
+  const { totalInstruments, byStatus, acquired, extracted, fullyLinked, reviewed, stale, unreviewed } =
+    report;
   console.log(
     JSON.stringify({
       level: "info",
@@ -304,8 +440,11 @@ if (import.meta.main) {
       acquired,
       extracted,
       fullyLinked,
+      reviewed,
+      stale,
+      unreviewed,
       outPath,
-      msg: `source-coverage register written: ${totalInstruments} instruments, ${acquired} acquired, ${fullyLinked} fully-linked`,
+      msg: `source-coverage register written: ${totalInstruments} instruments, ${acquired} acquired, ${fullyLinked} fully-linked, ${reviewed} reviewed (${stale} stale, ${unreviewed} unreviewed)`,
     }),
   );
   process.exit(0);
