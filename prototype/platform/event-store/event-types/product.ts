@@ -557,6 +557,110 @@ export function makeProductDimensionNarrativeRecorded(args: {
   });
 }
 
+// ---------------------------------------------------------------------------
+// 15. ProductPostApprovalFinding
+//
+// Emitted when a defect, gap, or recon failure is discovered after a
+// ProductApproved event for the same productId — including in the pre-licence
+// build phase. Must not be deferred to licence-day. The dimension that should
+// have caught it is recorded so the responsible agent can be held to account.
+//
+// Authority: D-NPA-POST-APPROVAL-FINDING-REVIEW (CEO-approved 2026-06-15);
+//            D-NEW-PRODUCT-APPROVAL-POLICY §5; PROC-NPA-GATE-01 Step 14.
+// ---------------------------------------------------------------------------
+
+export const productPostApprovalFindingPayloadSchema = z.object({
+  productId: z.string().min(1),
+  /** Stable slug unique per (productId, dimension). E.g. "PAF-001". */
+  findingId: z.string().min(1),
+  severity: z.enum(["critical", "high", "medium"]),
+  title: z.string().min(1),
+  description: z.string().min(1),
+  /** Name + position of the discovering agent (identity discipline). */
+  discoveredBy: z.string().min(1),
+  discoveredAt: z.string().min(1),
+  /** The NPA dimension that should have caught this finding. */
+  missedDimension: z.string().min(1),
+  /** What surfaced it — e.g. "recon:npa-coverage", "live-test", "Vera audit". */
+  findingTrigger: z.string().min(1),
+  citations: z.array(z.string().min(1)).min(1),
+});
+
+export type ProductPostApprovalFindingPayload = z.infer<
+  typeof productPostApprovalFindingPayloadSchema
+>;
+
+export function makeProductPostApprovalFinding(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductPostApprovalFindingPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductPostApprovalFinding",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productPostApprovalFindingPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 16. ProductDimensionRetrospectiveReview
+//
+// Emitted by the responsible agent for the missedDimension after reviewing
+// why the finding was not caught at NPA approval time. Required within the
+// SLA window defined in D-NPA-POST-APPROVAL-FINDING-REVIEW:
+//   - critical/high: 30 calendar days from discoveredAt
+//   - medium: 90 calendar days from discoveredAt
+//
+// Authority: D-NPA-POST-APPROVAL-FINDING-REVIEW (CEO-approved 2026-06-15);
+//            PROC-NPA-GATE-01 Step 14; D-PROACTIVE-ESCALATION-SURFACING.
+// ---------------------------------------------------------------------------
+
+export const productDimensionRetrospectiveReviewPayloadSchema = z.object({
+  productId: z.string().min(1),
+  /** Links back to the ProductPostApprovalFinding.findingId. */
+  findingId: z.string().min(1),
+  dimension: z.string().min(1),
+  /** Name + position of the reviewing agent (should be the original attestor). */
+  reviewedBy: z.string().min(1),
+  reviewedAt: z.string().min(1),
+  /** Why the original attestation did not catch this finding. */
+  rootCause: z.string().min(1),
+  /** What changes as a result — substrate, recon gate, attestation scope. */
+  correctiveAction: z.string().min(1),
+  revisedAttestation: z.enum(["strengthened", "scope-adjusted", "deferred-gap-added"]),
+  citations: z.array(z.string().min(1)).min(1),
+});
+
+export type ProductDimensionRetrospectiveReviewPayload = z.infer<
+  typeof productDimensionRetrospectiveReviewPayloadSchema
+>;
+
+export function makeProductDimensionRetrospectiveReview(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductDimensionRetrospectiveReviewPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductDimensionRetrospectiveReview",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productDimensionRetrospectiveReviewPayloadSchema.parse(args.payload),
+  });
+}
+
 export const PRODUCT_TYPED_EVENT_TYPES = [
   "ProductProposalRegistered",
   "ProductConceptualised",
@@ -572,5 +676,7 @@ export const PRODUCT_TYPED_EVENT_TYPES = [
   "ProductVersionPublished",
   "ProductDimensionNarrativeRequested",
   "ProductDimensionNarrativeRecorded",
+  "ProductPostApprovalFinding",
+  "ProductDimensionRetrospectiveReview",
 ] as const;
 export type ProductEventType = (typeof PRODUCT_TYPED_EVENT_TYPES)[number];

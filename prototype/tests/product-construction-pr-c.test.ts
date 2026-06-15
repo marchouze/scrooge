@@ -52,7 +52,7 @@ describe("Product Register projection", () => {
     expect(register.size).toBe(0);
   });
 
-  it("ProductConceptualised → row with lifecycleStage 'conceptualised' and pendingDimensions.length === 14", () => {
+  it("ProductConceptualised → row with lifecycleStage 'conceptualised' and pendingDimensions.length === 15", () => {
     const productId = makeProductId("irs-01");
     const ev = makeProductConceptualised({
       asOf: AS_OF,
@@ -71,7 +71,7 @@ describe("Product Register projection", () => {
     expect(row).toBeDefined();
     expect(row?.lifecycleStage).toBe("conceptualised");
     expect(row?.version).toBe("1.0.0");
-    expect(row?.pendingDimensions.length).toBe(14);
+    expect(row?.pendingDimensions.length).toBe(15);
     expect(row?.attestedDimensions.size).toBe(0);
   });
 
@@ -106,7 +106,7 @@ describe("Product Register projection", () => {
     expect(row).toBeDefined();
     expect(row?.attestedDimensions.has("market-risk")).toBe(true);
     expect(row?.pendingDimensions).not.toContain("market-risk");
-    expect(row?.pendingDimensions.length).toBe(13);
+    expect(row?.pendingDimensions.length).toBe(14);
   });
 
   it("ProductLaunched → lifecycleStage 'controlled-launch'", () => {
@@ -181,7 +181,7 @@ describe("Product Register projection", () => {
 // ---------------------------------------------------------------------------
 
 describe("NPA gate", () => {
-  it("no attestations → ready: false, missing.length === 14", () => {
+  it("no attestations → ready: false, missing.length === 15", () => {
     const productId = makeProductId("gate-01");
     const conceptualised = makeProductConceptualised({
       asOf: AS_OF,
@@ -200,10 +200,10 @@ describe("NPA gate", () => {
     expect(row).toBeDefined();
     const result = validateNpaGate(row as NonNullable<typeof row>);
     expect(result.ready).toBe(false);
-    expect(result.missing.length).toBe(14);
+    expect(result.missing.length).toBe(15);
   });
 
-  it("all 14 attested → ready: true, missing: []", () => {
+  it("all 15 attested → ready: true, missing: []", () => {
     const productId = makeProductId("gate-02");
     const conceptualised = makeProductConceptualised({
       asOf: AS_OF,
@@ -239,7 +239,7 @@ describe("NPA gate", () => {
     expect(result.missing.length).toBe(0);
   });
 
-  it("12 attested → ready: false, missing.length === 2", () => {
+  it("13 attested → ready: false, missing.length === 2", () => {
     const productId = makeProductId("gate-03");
     const conceptualised = makeProductConceptualised({
       asOf: AS_OF,
@@ -253,8 +253,8 @@ describe("NPA gate", () => {
         lifecycleEventFamily: [],
       },
     });
-    // Attest 12 of the 14 dimensions (all except the last two).
-    const dimensionsToAttest = ALL_NPA_DIMENSION_KEYS.slice(0, 12);
+    // Attest 13 of the 15 dimensions (all except the last two).
+    const dimensionsToAttest = ALL_NPA_DIMENSION_KEYS.slice(0, 13);
     const attestations = dimensionsToAttest.map((dimension) =>
       makeProductDimensionAttested({
         asOf: AS_OF,

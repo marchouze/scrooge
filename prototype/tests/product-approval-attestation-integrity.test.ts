@@ -105,7 +105,7 @@ describe("recon:product-approval-attestation-integrity", () => {
   // -------------------------------------------------------------------------
   // 1. Happy path
   // -------------------------------------------------------------------------
-  it("happy path: 14 attestations before ProductApproved → 0 violations, 1 info row", () => {
+  it("happy path: 15 attestations before ProductApproved → 0 violations, 1 info row", () => {
     const productId = PRODUCT_ID;
 
     // Proposal + DueDiligence events are contextual — the recon only looks at
@@ -121,14 +121,14 @@ describe("recon:product-approval-attestation-integrity", () => {
     expect(fails).toHaveLength(0);
     expect(infos).toHaveLength(1);
     const infoMsg = infos[0]?.message ?? "";
-    expect(infoMsg).toContain("14/14 attestations present (ok)");
+    expect(infoMsg).toContain("15/15 attestations present (ok)");
     expect(result.asserted).toBe(1);
   });
 
   // -------------------------------------------------------------------------
   // 2. Missing attestations
   // -------------------------------------------------------------------------
-  it("missing attestations: only 10/14 → fail violation mentioning 10/14", () => {
+  it("missing attestations: only 10/15 → fail violation mentioning 10/15", () => {
     const productId = "prd:bank:equity:jse-equity-cash-missing";
 
     // Only 10 attestations.
@@ -157,7 +157,7 @@ describe("recon:product-approval-attestation-integrity", () => {
     const fails = result.violations.filter((v) => v.severity === "fail");
     expect(fails).toHaveLength(1);
     const failMsg = fails[0]?.message ?? "";
-    expect(failMsg).toContain("10/14");
+    expect(failMsg).toContain("10/15");
     expect(failMsg).toContain(productId);
     expect(failMsg).toContain("audit integrity violation");
   });
@@ -168,10 +168,10 @@ describe("recon:product-approval-attestation-integrity", () => {
   it("failed dimension + ProductApproved → fail violation mentioning the failed dimension", () => {
     const productId = "prd:bank:equity:jse-equity-cash-failed";
 
-    // 13 good attestations + 1 with result:"failed".
-    const goodDimensions = ALL_NPA_DIMENSION_KEYS.slice(0, 13);
-    // ALL_NPA_DIMENSION_KEYS has exactly 14 elements; index 13 is always defined.
-    const failedDimension = ALL_NPA_DIMENSION_KEYS[13] as string;
+    // 14 good attestations + 1 with result:"failed" (15 total).
+    const goodDimensions = ALL_NPA_DIMENSION_KEYS.slice(0, 14);
+    // ALL_NPA_DIMENSION_KEYS has exactly 15 elements; index 14 is always defined.
+    const failedDimension = ALL_NPA_DIMENSION_KEYS[14] as string;
 
     const attestedEvents = [
       ...goodDimensions.map((dimension) =>
@@ -275,10 +275,10 @@ describe("recon:product-approval-attestation-integrity", () => {
   // -------------------------------------------------------------------------
   // 5. Attestation after approval does not count
   // -------------------------------------------------------------------------
-  it("attestations AFTER ProductApproved.as_of are not counted (chronological integrity)", () => {
+  it("attestations AFTER ProductApproved.as_of are not counted — 0/15 chronological integrity", () => {
     const productId = "prd:bank:equity:jse-equity-cash-late";
 
-    // All 14 attestations — but emitted AFTER the approval timestamp.
+    // All 15 attestations — but emitted AFTER the approval timestamp.
     const attestedEvents = ALL_NPA_DIMENSION_KEYS.map((dimension) =>
       toMinimal(
         makeProductDimensionAttested({
@@ -304,6 +304,6 @@ describe("recon:product-approval-attestation-integrity", () => {
     const fails = result.violations.filter((v) => v.severity === "fail");
     expect(fails).toHaveLength(1);
     const failMsg = fails[0]?.message ?? "";
-    expect(failMsg).toContain("0/14");
+    expect(failMsg).toContain("0/15");
   });
 });

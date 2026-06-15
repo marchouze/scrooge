@@ -55,9 +55,11 @@ import {
   productDimensionAttestedPayloadSchema,
   productDimensionNarrativeRecordedPayloadSchema,
   productDimensionNarrativeRequestedPayloadSchema,
+  productDimensionRetrospectiveReviewPayloadSchema,
   productDueDiligenceCompletedPayloadSchema,
   productDueDiligenceWithheldPayloadSchema,
   productLaunchedPayloadSchema,
+  productPostApprovalFindingPayloadSchema,
   productPostImplementationReviewCompletedPayloadSchema,
   productProposalRegisteredPayloadSchema,
   productRetiredPayloadSchema,
@@ -925,6 +927,46 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #12; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2 (Q5 same-productId resolution)",
+  },
+  {
+    // Post-approval finding (D-NPA-POST-APPROVAL-FINDING-REVIEW, CEO-approved
+    // 2026-06-15). Emitted when a defect or gap is discovered after a
+    // ProductApproved event — mandatory in pre-licence phase, no deferral.
+    // Triggers a retrospective review by the dimension's responsible agent.
+    type: "ProductPostApprovalFinding",
+    class: "governance",
+    payloadSchema: productPostApprovalFindingPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Saskia", "Owen", "Helena", "Camille", "Zara", "Vera", "Thandiwe", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: [
+      "D-NPA-POST-APPROVAL-FINDING-REVIEW",
+      "D-NEW-PRODUCT-APPROVAL-POLICY",
+      "PROC-NPA-GATE-01",
+    ],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "PROC-NPA-GATE-01 Step 14; D-NPA-POST-APPROVAL-FINDING-REVIEW (CEO-approved 2026-06-15)",
+  },
+  {
+    // Retrospective review by the dimension's responsible agent
+    // (D-NPA-POST-APPROVAL-FINDING-REVIEW). Required within SLA:
+    // 30 days (critical/high) or 90 days (medium) from finding.discoveredAt.
+    // Enforced by recon:npa-post-approval-finding-review (BLOCKING).
+    type: "ProductDimensionRetrospectiveReview",
+    class: "governance",
+    payloadSchema: productDimensionRetrospectiveReviewPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Saskia", "Owen", "Helena", "Camille", "Zara", "Vera", "Thandiwe", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: [
+      "D-NPA-POST-APPROVAL-FINDING-REVIEW",
+      "D-NEW-PRODUCT-APPROVAL-POLICY",
+      "PROC-NPA-GATE-01",
+    ],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "PROC-NPA-GATE-01 Step 14; D-NPA-POST-APPROVAL-FINDING-REVIEW (CEO-approved 2026-06-15)",
   },
   {
     // Narrative-request marker. Raised when the Products page (or any

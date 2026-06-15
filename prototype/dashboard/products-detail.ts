@@ -557,6 +557,26 @@ export interface LifecycleEventJournalRow {
   rule?: PostingRuleSummary;
 }
 
+export interface PostApprovalFindingRow {
+  findingId: string;
+  severity: "critical" | "high" | "medium";
+  title: string;
+  missedDimension: string;
+  discoveredBy: string;
+  discoveredAt: string;
+  findingTrigger: string;
+  /** Populated when a ProductDimensionRetrospectiveReview exists for this findingId. */
+  review?: {
+    reviewedBy: string;
+    reviewedAt: string;
+    rootCause: string;
+    correctiveAction: string;
+    revisedAttestation: "strengthened" | "scope-adjusted" | "deferred-gap-added";
+  };
+  /** "open" = no review; "reviewed" = review present within SLA; "overdue" = SLA elapsed, no review */
+  status: "open" | "reviewed" | "overdue";
+}
+
 export interface ProductDetailView {
   product: Product;
   dimensions: DimensionCard[];
@@ -569,6 +589,8 @@ export interface ProductDetailView {
    * system-capability).
    */
   productChain: DimensionPolicyChain;
+  /** Post-approval findings for this product (D-NPA-POST-APPROVAL-FINDING-REVIEW). */
+  postApprovalFindings: PostApprovalFindingRow[];
   asOf: string;
 }
 
@@ -712,11 +734,95 @@ export function buildProductDetailView(
   // the lifecycle event family) + product-relevance filter on procedures.
   const productChain = buildProductChain(product, journalEntries, repoRoot);
 
+  // Fold post-approval findings and retrospective reviews.
+  const findingsFold = new Map<
+    string,
+    {
+      severity: "critical" | "high" | "medium";
+      title: string;
+      missedDimension: string;
+      discoveredBy: string;
+      discoveredAt: string;
+      findingTrigger: string;
+    }
+  >();
+  const reviewsFold = new Map<
+    string,
+    {
+      reviewedBy: string;
+      reviewedAt: string;
+      rootCause: string;
+      correctiveAction: string;
+      revisedAttestation: "strengthened" | "scope-adjusted" | "deferred-gap-added";
+    }
+  >();
+
+  for (const ev of store.replay({ type: "ProductPostApprovalFinding" })) {
+    const p = ev.payload as Record<string, unknown>;
+    if (String(p.productId ?? "") !== productId) continue;
+    const fid = String(p.findingId ?? "");
+    if (!fid) continue;
+    findingsFold.set(fid, {
+      severity: (p.severity as "critical" | "high" | "medium") ?? "medium",
+      title: String(p.title ?? fid),
+      missedDimension: String(p.missedDimension ?? ""),
+      discoveredBy: String(p.discoveredBy ?? ""),
+      discoveredAt: String(p.discoveredAt ?? ev.as_of),
+      findingTrigger: String(p.findingTrigger ?? ""),
+    });
+  }
+
+  for (const ev of store.replay({ type: "ProductDimensionRetrospectiveReview" })) {
+    const p = ev.payload as Record<string, unknown>;
+    if (String(p.productId ?? "") !== productId) continue;
+    const fid = String(p.findingId ?? "");
+    if (!fid) continue;
+    const prev = reviewsFold.get(fid);
+    if (prev) continue; // latest wins handled by first seen (events are in order)
+    reviewsFold.set(fid, {
+      reviewedBy: String(p.reviewedBy ?? ""),
+      reviewedAt: String(p.reviewedAt ?? ev.as_of),
+      rootCause: String(p.rootCause ?? ""),
+      correctiveAction: String(p.correctiveAction ?? ""),
+      revisedAttestation:
+        (p.revisedAttestation as "strengthened" | "scope-adjusted" | "deferred-gap-added") ??
+        "scope-adjusted",
+    });
+  }
+
+  const SLA_DAYS: Record<string, number> = { critical: 30, high: 30, medium: 90 };
+  const postApprovalFindings: PostApprovalFindingRow[] = [...findingsFold.entries()].map(
+    ([fid, f]) => {
+      const review = reviewsFold.get(fid);
+      let status: PostApprovalFindingRow["status"];
+      if (review) {
+        status = "reviewed";
+      } else {
+        const slaDays = SLA_DAYS[f.severity] ?? 90;
+        const msPerDay = 86_400_000;
+        const daysSince = (Date.parse(nowIso) - Date.parse(f.discoveredAt)) / msPerDay;
+        status = daysSince > slaDays ? "overdue" : "open";
+      }
+      return {
+        findingId: fid,
+        severity: f.severity,
+        title: f.title,
+        missedDimension: f.missedDimension,
+        discoveredBy: f.discoveredBy,
+        discoveredAt: f.discoveredAt,
+        findingTrigger: f.findingTrigger,
+        ...(review ? { review } : {}),
+        status,
+      };
+    },
+  );
+
   return {
     product,
     dimensions,
     journalEntries,
     productChain,
+    postApprovalFindings,
     asOf: nowIso,
   };
 }

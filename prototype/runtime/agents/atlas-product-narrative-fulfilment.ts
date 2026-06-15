@@ -42,17 +42,12 @@ import type { Product } from "../../platform/markets/products";
 import {
   M1_JSE_EQUITY_CASH_FIXTURE,
   M2_SAGB_FIXED_COUPON_FIXTURE,
-  M4_FX_SPOT_FIXTURE,
 } from "../../platform/markets/products/fixtures";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const SUBSCRIBED_EVENTS = ["ProductDimensionNarrativeRequested"] as const;
 
-const FIXTURES: readonly Product[] = [
-  M1_JSE_EQUITY_CASH_FIXTURE,
-  M2_SAGB_FIXED_COUPON_FIXTURE,
-  M4_FX_SPOT_FIXTURE,
-];
+const FIXTURES: readonly Product[] = [M1_JSE_EQUITY_CASH_FIXTURE, M2_SAGB_FIXED_COUPON_FIXTURE];
 
 // ---------------------------------------------------------------------------
 // Dimension citation chains (mirrors dashboard/products-detail.ts metadata).

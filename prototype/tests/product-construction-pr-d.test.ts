@@ -85,6 +85,10 @@ function fullyAttestedDimensions(): ProductNpaDef["dimensions"] {
       result: "design-attested",
       citationChain: ["D-NEW-PRODUCT-APPROVAL-POLICY"],
     },
+    "data-quality": {
+      result: "design-attested",
+      citationChain: ["D-NEW-PRODUCT-APPROVAL-POLICY", "D-NPA-POST-APPROVAL-FINDING-REVIEW"],
+    },
   };
 }
 
@@ -127,7 +131,7 @@ describe("runNpaAttestation — M1 equity", () => {
     const dimensionCount = result.eventsEmitted.filter(
       (t) => t === "ProductDimensionAttested",
     ).length;
-    expect(dimensionCount).toBe(14);
+    expect(dimensionCount).toBe(15);
 
     // ProductApproved event exists in store.
     expect(countEventsOfType(store, "ProductApproved")).toBe(1);

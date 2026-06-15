@@ -238,6 +238,10 @@ export const PRODUCT_DIMENSION_VALUES: readonly {
     value: "tax",
     note: "Camille (CFO) governance / Yael engineering. VAT + STT + FATCA/CRS + transfer-pricing + s.24J. Policy §5 row 14.",
   },
+  {
+    value: "data-quality",
+    note: "Anya (Data & analytics engineer) governance + engineering. All data inputs to the product (rate feeds, trade events, settlement confirmations) have provenance tags and are traceable to source. Ensures no silent data-quality gap reaches a live product. Policy §5 row 15 (D-NPA-POST-APPROVAL-FINDING-REVIEW, CEO-approved 2026-06-15).",
+  },
 ];
 
 /**
@@ -308,10 +312,6 @@ export const PRODUCT_SEMANTIC_LAYER_ENTRIES: readonly ProductSemanticLayerEntry[
       {
         value: "prd:bank:ird:vanilla-zar-fix-zaronia",
         note: "M3 — vanilla ZAR fixed-vs-ZARONIA IRS. Source brief §3.4.",
-      },
-      {
-        value: "prd:bank:fx:fx-swap-usdzar",
-        note: "M4 — FX swap (USD/ZAR). Source brief §3.5.",
       },
     ],
     multiX: {

@@ -86,24 +86,4 @@ export const MODEL_RISK_SUBSTRATE_GAPS: readonly ModelRiskSubstrateGap[] = [
     targetMPhase: "M3",
     citations: ["D-NEW-PRODUCT-APPROVAL-POLICY", "D-PRODUCT-CONSTRUCTION-SUBSTRATE"],
   },
-  {
-    productId: "prd:bank:fx:fx-swap-usdzar",
-    modelTier: "tier-3",
-    modelDescription:
-      "Forward FX pricing via interest-rate parity (covered IRP). " +
-      "Near and far legs priced from USD and ZAR overnight rates; " +
-      "no optionality or complex curve construction. Tier-3 under SR 11-7 " +
-      "(standard textbook methodology; well-understood market convention).",
-    blockers: [
-      "Nadia validation-methodology library: Tier-3 methodology version " +
-        "published (ValidationMethodologyPublished event)",
-      "Pricing-model registry entry for FX forward IRP model " +
-        "(Rohan + Anya, ModelRegistered event)",
-      "Nadia ModelValidationApproved event for the FX forward model",
-    ],
-    engineeringOwner: "Rohan (Risk systems engineer, engineering)",
-    governanceOwner: "Nadia (Independent-validation engineer) / Helena (CRO, governance)",
-    targetMPhase: "M4",
-    citations: ["D-NEW-PRODUCT-APPROVAL-POLICY", "D-PRODUCT-CONSTRUCTION-SUBSTRATE"],
-  },
 ] as const;

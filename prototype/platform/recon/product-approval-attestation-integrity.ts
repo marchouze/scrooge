@@ -31,7 +31,7 @@ import { EventStore } from "@platform/event-store/store";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "product-approval-attestation-integrity";
-const REQUIRED_ATTESTATIONS = 14;
+const REQUIRED_ATTESTATIONS = 15; // 14 original + data-quality (D-NPA-POST-APPROVAL-FINDING-REVIEW, 2026-06-15)
 
 // Under D-NPA-GATE-POLICY-REDESIGN (CEO 2026-06-15): design-attested with no
 // tracked deferred gaps is blocked at approval. A design-attested dimension

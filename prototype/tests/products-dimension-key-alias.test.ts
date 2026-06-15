@@ -41,7 +41,7 @@ const ACTOR = { type: "system" as const, id: "test:Atlas" };
 const ENTITY = "LE-TEST-BANK-ZA";
 const CITATIONS = ["D-NEW-PRODUCT-APPROVAL-POLICY", "D-FX-HELD-DIMS-SEAT-SWEEP"];
 // An always-present baseline fixture (M4 FX Spot) — guaranteed in both views.
-const PRODUCT_ID = "prd:bank:fx:fx-spot-zar-usd";
+const PRODUCT_ID = "prd:bank:fx:otc-vanilla";
 const AS_OF = "2026-06-12T09:00:00Z";
 
 function stubStore(events: Event[]): { replay: (opts?: { type?: string }) => Generator<Event> } {
@@ -157,7 +157,7 @@ describe("dimension-key drift — products-detail view", () => {
 describe("dimension-key-alias coherence", () => {
   it("the canonical key set matches the event-of-record / projection set", () => {
     expect([...CANONICAL_DIMENSION_KEYS]).toEqual([...ALL_NPA_DIMENSION_KEYS]);
-    expect(CANONICAL_DIMENSION_KEYS).toHaveLength(14);
+    expect(CANONICAL_DIMENSION_KEYS).toHaveLength(15);
   });
 
   it("the view's NPA_DIMENSIONS set IS the canonical short-key set", () => {
