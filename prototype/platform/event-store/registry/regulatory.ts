@@ -95,8 +95,7 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     citationsHint: ["D-REGULATORY-LIBRARY-V1", "ORG-CD-01"],
     retention: RETENTION_GOVERNANCE_7Y,
-    source:
-      "scripts/backfill-regulatory-reviews.ts; platform/regulatory review-marker (Phase 1)",
+    source: "scripts/backfill-regulatory-reviews.ts; platform/regulatory review-marker (Phase 1)",
   },
   {
     type: "GraphNodeAsserted",

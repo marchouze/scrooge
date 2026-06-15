@@ -427,8 +427,16 @@ if (import.meta.main) {
   const outPath = join(repoRoot(), "Regulations", "_source-coverage.json");
   writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`, "utf-8");
 
-  const { totalInstruments, byStatus, acquired, extracted, fullyLinked, reviewed, stale, unreviewed } =
-    report;
+  const {
+    totalInstruments,
+    byStatus,
+    acquired,
+    extracted,
+    fullyLinked,
+    reviewed,
+    stale,
+    unreviewed,
+  } = report;
   console.log(
     JSON.stringify({
       level: "info",

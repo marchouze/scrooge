@@ -271,6 +271,7 @@
     "recon:golden-source-integrity-tick": "bun run scripts/regulatory/golden-source-integrity-tick.ts",
     "recon:regulatory-source-coverage": "bun run platform/recon/regulatory-source-coverage.ts",
     "recon:regulatory-source-extract-quality": "bun run platform/recon/regulatory-source-extract-quality.ts",
+    "recon:regulatory-review-freshness": "bun run platform/recon/regulatory-review-freshness.ts",
     "build:source-coverage": "bun run scripts/regulatory/build-source-coverage.ts",
     "recon:dispatch-sync-integrity": "bun run platform/recon/dispatch-sync-integrity.ts",
     "recon:conduct-surveillance-coverage": "bun run platform/recon/conduct-surveillance-coverage.ts",

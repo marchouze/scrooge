@@ -360,6 +360,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:regulatory-golden-source-integrity",
     "recon:regulatory-source-coverage",
     "recon:regulatory-source-extract-quality",
+    // WS-REGULATORY-REVIEW-MARKER (Phase 1) — review-marker freshness (advisory).
+    // For each acquired direct/transposed instrument, warn if it has never been
+    // reviewed or its review is stale (source re-acquired since). Advisory:
+    // never fails CI; surfaces warn-severity findings.
+    "recon:regulatory-review-freshness",
     // WS-V2-BBAAS S4 — advisory gate: v2 anchor store standing-data seed parity.
     // ok=true (advisory) unless store is absent; CI never fails on this alone.
     // Authority: D-V2-BBAAS-BLUEPRINT-SYNTHESIS; D-MODEL-BINDING-CONTRACT-V1.

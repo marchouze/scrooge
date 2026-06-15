@@ -30,7 +30,7 @@ export const regulatoryInstrumentRegisteredPayloadSchema = z.object({
   title: z.string().min(1),
 
   /** Body that issued the instrument. */
-  issuingBody: z.enum(["Parliament", "FSCA", "SARB", "PA", "National Treasury", "BCBS"]),
+  issuingBody: z.enum(["Parliament", "FSCA", "SARB", "PA", "National Treasury", "BCBS", "IASB"]),
 
   /** Type of the legal instrument. */
   instrumentType: z.enum([
@@ -486,9 +486,7 @@ export const regulatorySourceReviewedPayloadSchema = z.object({
   reviewedBy: z.string().min(1),
 });
 
-export type RegulatorySourceReviewedPayload = z.infer<
-  typeof regulatorySourceReviewedPayloadSchema
->;
+export type RegulatorySourceReviewedPayload = z.infer<typeof regulatorySourceReviewedPayloadSchema>;
 
 export function makeRegulatorySourceReviewed(args: {
   asOf: string;
