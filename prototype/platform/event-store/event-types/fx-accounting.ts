@@ -1067,42 +1067,6 @@ export const nostroDesignationMissingPayloadSchema = z.object({
 
 export type NostroDesignationMissingPayload = z.infer<typeof nostroDesignationMissingPayloadSchema>;
 
-export function makeNostroDesignationMissing(args: {
-=======
-// FxForwardPointsAccrued
-//
-// Emitted daily by Bea's close engine for each open FX forward or swap
-// far-leg position. Drives amortisation of the forward premium/discount
-// (forward rate − spot rate at trade date) × notional FCY over the tenor.
-//
-// IAS 21.28 requires the exchange difference arising from the settlement of a
-// monetary item — including forward contracts — to be recognised in profit or
-// loss in the period in which it arises. For derivatives held at FVTPL the
-// time-value component (forward points) must be separated and amortised on a
-// straight-line basis over the contract life, with the cumulative balance
-// cleared on the final settlement date.
-//
-// Forward points = (contractedForwardRate − spotRateAtTradeDate) × notionalFcyMinor
-// Daily portion = total forward points / tenorCalendarDays
-//
-// Payload conventions:
-//   dailyAmortisedZarMinor  — signed ZAR amount for this day's accrual slice
-//                             (positive = forward premium → income; negative =
-//                              forward discount → expense).
-//   accruedToDateZarMinor   — running cumulative forward-points balance
-//                             (for reconciliation; not a separate GL post).
-//   isFinalAccrual          — true on the last accrual day (maturity/settlement).
-//                             The interpreter uses this flag to clear the
-//                             cumulative deferred-income/expense balance to P&L.
-//
-// Authority:
-//   - IAS 21 §28 (exchange differences on settlement)
-//   - D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL (CEO 2026-06-15)
-//   - D-FX-OTC-NPA-SCOPE-EXPANSION (gap closure)
-//
-// Author: Nadia (Model validation engineer, engineering).
-// ---------------------------------------------------------------------------
-
 export const fxForwardPointsAccruedPayloadSchema = z.object({
   /** Internal trade identifier — links back to the originating FxTradeExecuted. */
   tradeId: z.string().min(1),
