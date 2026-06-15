@@ -48,8 +48,11 @@ export function computeDailyCarry(
   currency: string,
 ): Money {
   if (remainingDays <= 0) return minorMoney(0n, currency);
-  const totalPremiumMinor = scaleMinorByRate(signedNotionalMinor, forwardRate - spotRate);
-  const dailyMinor = totalPremiumMinor / BigInt(Math.max(1, Math.round(remainingDays)));
+  // Carry per day = notional × (forward premium ÷ remaining days).
+  // The ÷ is rate-level (plain numbers), never money-level; the single money
+  // scaling runs through scaleMinorByRate (the sanctioned v2 minor-unit primitive).
+  const dailyPremiumRate = (forwardRate - spotRate) / Math.max(1, Math.round(remainingDays));
+  const dailyMinor = scaleMinorByRate(signedNotionalMinor, dailyPremiumRate);
   return minorMoney(dailyMinor, currency);
 }
 
