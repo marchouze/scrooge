@@ -121,10 +121,16 @@ export function run(deps: SourceCoverageDeps = {}): ReconResult & {
     }
 
     if (!row.extracted) {
+      // A structured `*-structured.json` is ONE extraction path. Obligations can
+      // also be linked via the event-sourced co-work-distill path (citation-slug
+      // match) with no structured doc — a legitimate extractor under the two-plane
+      // contract. So extracted:false is only a hard gap when NOTHING is linked; if
+      // obligationsLinked>0 the source is covered (structured extraction optional).
+      const distillLinked = row.obligationsLinked > 0;
       violations.push({
         subject,
-        message: `Instrument \`${row.slug}\` (${row.applicabilityStatus}) has no structured JSON (\`extracted:false\`). Remediation: run extraction pipeline for this slug. Citation: D-REGULATORY-LIBRARY-V1.`,
-        severity: postAdvisory ? "fail" : "warn",
+        message: `Instrument \`${row.slug}\` (${row.applicabilityStatus}) has no structured JSON (\`extracted:false\`).${distillLinked ? " Obligations are linked via the event-sourced distill path; structured extraction is optional." : " Remediation: run extraction pipeline for this slug."} Citation: D-REGULATORY-LIBRARY-V1.`,
+        severity: distillLinked ? "warn" : postAdvisory ? "fail" : "warn",
       });
     }
 
