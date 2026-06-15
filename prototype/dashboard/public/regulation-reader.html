@@ -91,6 +91,19 @@
       background: color-mix(in srgb, var(--color-text-muted) 15%, transparent);
       color: var(--color-text-muted);
     }
+    /* Review-marker badges (RegulatorySourceReviewed). */
+    .rr-badge-reviewed {
+      background: color-mix(in srgb, var(--color-success, #22c55e) 15%, transparent);
+      color: color-mix(in srgb, var(--color-success, #22c55e) 80%, black);
+    }
+    .rr-badge-stale {
+      background: color-mix(in srgb, var(--color-warning, #f59e0b) 18%, transparent);
+      color: color-mix(in srgb, var(--color-warning, #f59e0b) 75%, black);
+    }
+    .rr-badge-unreviewed {
+      background: color-mix(in srgb, var(--color-text-muted) 12%, transparent);
+      color: var(--color-text-muted);
+    }
 
     /* Main content area */
     .rr-main {
@@ -674,11 +687,12 @@
                 <th>Regulator</th>
                 <th class="rr-num-cell">Sections</th>
                 <th class="rr-num-cell">Obls</th>
+                <th>Review</th>
                 <th>Priority</th>
               </tr>
             </thead>
             <tbody id="rr-inst-body">
-              <tr><td colspan="6" class="rr-skeleton" style="padding:var(--space-4)">Loading…</td></tr>
+              <tr><td colspan="7" class="rr-skeleton" style="padding:var(--space-4)">Loading…</td></tr>
             </tbody>
           </table>
         </div>

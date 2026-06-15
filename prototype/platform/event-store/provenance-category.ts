@@ -148,6 +148,16 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   // governance record (real seat decision, not simulated market activity).
   // Authority: D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH; FAIS §16.
   BestExecutionPolicySchedule: "governance",
+  // WS-REGULATORY-REVIEW-MARKER (Phase 1) — a RegulatorySourceReviewed event is
+  // a real governance assurance record: it attests that a regulator's acquired
+  // source text was read / LLM-reviewed and its obligations traced into the
+  // bank's register, keyed to the exact source hash reviewed. Never simulated
+  // market activity. Third site of the three-site-registration gotcha
+  // (event-types + registry + provenance-category) so the type resolves to a
+  // production category (governance) rather than "simulated"/scenario-required.
+  // Authority: brief:atlas:phase-1-regulatory-review-marker-foundation-regu:2026-06-15;
+  // D-REGULATORY-LIBRARY-V1; Principle 1.
+  RegulatorySourceReviewed: "governance",
   // WS-V2-BBAAS S7-FIL — a FIL-Model implementation declaration (e.g. SA-CCR as
   // the first FIL-Model) is a governance record: a versioned, citable model
   // binding minted through the governed process, never simulated market

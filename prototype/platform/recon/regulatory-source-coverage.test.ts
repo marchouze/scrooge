@@ -36,6 +36,9 @@ function makeRow(overrides: Partial<SourceCoverageRow> = {}): SourceCoverageRow 
     extracted: true,
     obligationsLinked: 42,
     structuredJsonPath: "Regulations/FSCA/source-docs/fais-act-structured.json",
+    reviewedAt: null,
+    reviewStatus: "unreviewed",
+    reviewedSourceHash: null,
     ...overrides,
   };
 }

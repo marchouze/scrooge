@@ -62,6 +62,22 @@
       .replace(/"/g, "&quot;");
   }
 
+  // Review-marker badge from RegulatorySourceReviewed (via _source-coverage.json).
+  //   reviewed   → green  "Reviewed <date>"
+  //   stale      → amber  "stale — re-review"
+  //   unreviewed → grey   "not reviewed"
+  function reviewBadge(inst) {
+    const status = inst.reviewStatus || "unreviewed";
+    if (status === "reviewed") {
+      const date = inst.reviewedAt ? String(inst.reviewedAt).slice(0, 10) : "";
+      return `<span class="rr-badge rr-badge-reviewed" title="Source reviewed${date ? ` on ${esc(date)}` : ""}">Reviewed${date ? ` ${esc(date)}` : ""}</span>`;
+    }
+    if (status === "stale") {
+      return '<span class="rr-badge rr-badge-stale" title="Source re-acquired since last review — re-review needed">stale — re-review</span>';
+    }
+    return '<span class="rr-badge rr-badge-unreviewed" title="No RegulatorySourceReviewed event for this instrument">not reviewed</span>';
+  }
+
   function statusClass(status) {
     if (!status) return "";
     const s = status.toLowerCase().replace(/[^a-z]/g, "-");
@@ -160,9 +176,13 @@
         const textChip = inst.hasFullText
           ? '<span class="rr-badge rr-badge-text">Full text</span>'
           : '<span class="rr-badge rr-badge-summary">Summary</span>';
+        const linked =
+          typeof inst.obligationsLinked === "number"
+            ? inst.obligationsLinked
+            : inst.obligationCount;
         const oblChip =
-          inst.obligationCount > 0
-            ? `<span class="rr-badge rr-badge-obl">${inst.obligationCount} obligation${inst.obligationCount !== 1 ? "s" : ""}</span>`
+          linked > 0
+            ? `<span class="rr-badge rr-badge-obl">${linked} obligation${linked !== 1 ? "s" : ""}</span>`
             : "";
 
         return `<div class="rr-instrument-item" data-slug="${esc(inst.slug)}" role="button" tabindex="0" aria-label="${esc(inst.shortTitle)}">
@@ -170,6 +190,7 @@
   <div class="rr-instrument-meta">
     <span class="rr-year">${esc(String(inst.year))}</span>
     ${oblChip}
+    ${reviewBadge(inst)}
     ${textChip}
   </div>
 </div>`;
@@ -867,7 +888,7 @@
     if (!body) return;
     if (countEl) countEl.textContent = `${instruments.length} of ${allInstruments.length}`;
     if (instruments.length === 0) {
-      body.innerHTML = `<tr><td colspan="6" style="padding:var(--space-4);text-align:center;color:var(--color-text-muted);font:var(--text-small)">No instruments match the current filter.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="7" style="padding:var(--space-4);text-align:center;color:var(--color-text-muted);font:var(--text-small)">No instruments match the current filter.</td></tr>`;
       return;
     }
     body.innerHTML = instruments
@@ -877,13 +898,18 @@
             ? `<span class="rr-badge rr-badge-obl">P${inst.priority}</span>`
             : `<span style="color:var(--color-text-muted);font-size:0.82em">P${inst.priority}</span>`;
         const isActive = inst.slug === activeDrillSlug;
-        const oblCell = (inst.obligationCount || 0) > 0 ? inst.obligationCount : "—";
+        const linked =
+          typeof inst.obligationsLinked === "number"
+            ? inst.obligationsLinked
+            : inst.obligationCount || 0;
+        const oblCell = linked > 0 ? linked : "—";
         return `<tr class="rr-inst-row${isActive ? " rr-row-active" : ""}" data-slug="${esc(inst.slug)}">
   <td><div class="rr-inst-name">${esc(inst.shortTitle)}</div>${inst.shortTitle !== inst.title ? `<div class="rr-inst-short">${esc(inst.title)}</div>` : ""}</td>
   <td>${esc(String(inst.year))}</td>
   <td style="max-width:200px">${esc(inst.regulator)}</td>
   <td class="rr-num-cell">${inst.sectionCount ?? "—"}</td>
   <td class="rr-num-cell">${oblCell}</td>
+  <td>${reviewBadge(inst)}</td>
   <td>${pCell}</td>
 </tr>`;
       })

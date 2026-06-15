@@ -21,6 +21,7 @@ import {
   regulatoryInstrumentAmendedPayloadSchema,
   regulatoryInstrumentContextualisedPayloadSchema,
   regulatoryInstrumentRegisteredPayloadSchema,
+  regulatorySourceReviewedPayloadSchema,
 } from "../event-types/regulatory";
 import { type EventTypeMetadata, RETENTION_GOVERNANCE_7Y } from "./types";
 
@@ -82,6 +83,19 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["FAIS-ACT-37-2002", "ORG-CD-01"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/regulatory/obligation-linker.ts; Mira horizon-scan pilot",
+  },
+  {
+    type: "RegulatorySourceReviewed",
+    class: "governance",
+    payloadSchema: regulatorySourceReviewedPayloadSchema,
+    issuer: "Mira",
+    subscribers: ["Mira", "Vera", "dashboard"],
+    // Each review is a new fact keyed to the source hash at review time —
+    // append-only (drift between reviews is a recon concern, not a mutation).
+    replay: "append-only-audit",
+    citationsHint: ["D-REGULATORY-LIBRARY-V1", "ORG-CD-01"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source: "scripts/backfill-regulatory-reviews.ts; platform/regulatory review-marker (Phase 1)",
   },
   {
     type: "GraphNodeAsserted",
