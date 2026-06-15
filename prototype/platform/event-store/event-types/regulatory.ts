@@ -441,12 +441,81 @@ export function makeObligationConceptLinked(args: {
   });
 }
 
+// ---------------------------------------------------------------------------
+// RegulatorySourceReviewed — WS-REGULATORY-REVIEW-MARKER (Phase 1)
+// ---------------------------------------------------------------------------
+//
+// Marks that a regulator's acquired source text has been read / LLM-reviewed
+// and its obligations traced back into the bank's register. The review marker
+// is keyed to the *exact source bytes reviewed* via `reviewedSourceHash`
+// (the instrument's goldenSourceHash at review time), so the freshness recon
+// can detect when the source has since been re-acquired (hash drift → stale).
+//
+// Authority: brief:atlas:phase-1-regulatory-review-marker-foundation-regu:2026-06-15.
+// Author: Atlas (Core Banking Platform Architect, engineering).
+
+export const regulatorySourceReviewedPayloadSchema = z.object({
+  /** Structured-document slug of the reviewed instrument (e.g. "bcbs-cre"). */
+  slug: z.string().min(1),
+
+  /** Stable instrument id (e.g. "BCBS-CRE", "IFRS-9"). */
+  instrumentId: z.string().min(1),
+
+  /** ISO 8601 UTC timestamp the review was performed. */
+  reviewedAt: z.string().min(1),
+
+  /**
+   * BLAKE3 document hash of the exact source bytes that were reviewed. The
+   * freshness recon flags a review as `stale` once the instrument's current
+   * goldenSourceHash diverges from this value. Free-form string (the source
+   * filing's `documentHash`), not constrained to a `blake3:` prefix because
+   * the RecordFiled document store may hash with or without the prefix.
+   */
+  reviewedSourceHash: z.string().min(1),
+
+  /** How the review was carried out. */
+  method: z.enum(["llm-distill", "accepted-existing", "manual-expert"]),
+
+  /** LLM model used (when method === "llm-distill"). */
+  model: z.string().min(1).optional(),
+
+  /** Number of bank obligations traced back to this source at review time. */
+  obligationCount: z.number().int().nonnegative(),
+
+  /** Agent / person who is accountable for the review. */
+  reviewedBy: z.string().min(1),
+});
+
+export type RegulatorySourceReviewedPayload = z.infer<
+  typeof regulatorySourceReviewedPayloadSchema
+>;
+
+export function makeRegulatorySourceReviewed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: RegulatorySourceReviewedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "RegulatorySourceReviewed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: regulatorySourceReviewedPayloadSchema.parse(args.payload),
+  });
+}
+
 export const REGULATORY_TYPED_EVENT_TYPES = [
   "RegulatoryInstrumentRegistered",
   "RegulatoryInstrumentAmended",
   "RegulatoryInstrumentContextualised",
   "RegulatoryConceptExtracted",
   "ObligationConceptLinked",
+  "RegulatorySourceReviewed",
 ] as const;
 export type RegulatoryEventType = (typeof REGULATORY_TYPED_EVENT_TYPES)[number];
 
