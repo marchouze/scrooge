@@ -94,6 +94,14 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:aggregate-id-coverage",
     "recon:madge-circular-deps",
     "recon:v2-no-v1-import",
+    // WS-EVENT-SUBSTRATE-SCALING — envelope hardening (ENFORCING, harden-only).
+    // no-untagged-tenant-append: every INSERT INTO v2_events lists tenant_id
+    // (the first-class indexed tenant column); multi-version-type-upcaster:
+    // every event type with registry schemaVersion > 1 has a declared,
+    // version-keyed upcaster (no silent payload-shape sniff for new versions).
+    // Authority: D-EVENT-ENVELOPE-TENANT-COLUMN; D-EVENT-ENVELOPE-SCHEMA-VERSION.
+    "recon:v2-no-untagged-tenant-append",
+    "recon:v2-multi-version-type-upcaster",
     "recon:v2-tenant-axis-present",
     "recon:v2-released-surface-clean-core",
     // WS-V2-BBAAS S16 — tier-entitlement coherence (ENFORCING): the K/R/C

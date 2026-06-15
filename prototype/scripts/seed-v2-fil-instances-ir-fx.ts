@@ -39,6 +39,7 @@ import { dirname, resolve } from "node:path";
 
 import { Database } from "bun:sqlite";
 
+import { appendAnchorEvent, ensureAnchorStoreSchema } from "../v2-core/control-plane/anchor-store";
 import { divD, roundDecimal, toDecimal } from "../v2-core/fil-core/decimal";
 import { type Money, moneyFromDecimal } from "../v2-core/fil-core/primitives";
 import { formatInstanceUrn, formatTypeUrn } from "../v2-core/fil-core/urn";
@@ -149,23 +150,9 @@ function replayV1(type: string): V1Row[] {
 const parentDir = dirname(V2_DB_PATH);
 if (!existsSync(parentDir)) mkdirSync(parentDir, { recursive: true });
 const v2 = new Database(V2_DB_PATH);
-v2.exec(`
-CREATE TABLE IF NOT EXISTS v2_events (
-  sequence    INTEGER PRIMARY KEY AUTOINCREMENT,
-  event_id    TEXT    UNIQUE NOT NULL,
-  type        TEXT    NOT NULL,
-  as_of       TEXT    NOT NULL,
-  entity      TEXT    NOT NULL,
-  actor_type  TEXT    NOT NULL,
-  actor_id    TEXT    NOT NULL,
-  citations   TEXT    NOT NULL,
-  payload     TEXT    NOT NULL,
-  recorded_at TEXT    NOT NULL DEFAULT (datetime('now'))
-);
-CREATE INDEX IF NOT EXISTS idx_v2_type   ON v2_events(type);
-CREATE INDEX IF NOT EXISTS idx_v2_entity ON v2_events(entity);
-CREATE INDEX IF NOT EXISTS idx_v2_as_of  ON v2_events(as_of);
-`);
+// Canonical V2 anchor-store schema (shared module) — incl. the first-class
+// tenant_id + schema_version columns and the (tenant_id, sequence) index.
+ensureAnchorStoreSchema(v2);
 
 /** Has a lifecycle event of `type` already been emitted for this instance URN? */
 function alreadyEmitted(type: string, instanceUrn: string): boolean {
@@ -184,20 +171,16 @@ function alreadyEmitted(type: string, instanceUrn: string): boolean {
 }
 
 function append(type: string, asOf: string, payload: Record<string, unknown>): void {
-  v2.query(
-    `INSERT OR IGNORE INTO v2_events
-       (event_id, type, as_of, entity, actor_type, actor_id, citations, payload)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(
-    randomUUID(),
+  appendAnchorEvent(v2, {
+    eventId: randomUUID(),
     type,
     asOf,
-    ENTITY,
-    ACTOR.type,
-    ACTOR.id,
-    JSON.stringify(CITATIONS),
-    JSON.stringify(payload),
-  );
+    entity: ENTITY,
+    actorType: ACTOR.type,
+    actorId: ACTOR.id,
+    citations: CITATIONS,
+    payload,
+  });
 }
 
 // ---------------------------------------------------------------------------

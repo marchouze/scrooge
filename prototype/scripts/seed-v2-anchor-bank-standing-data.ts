@@ -48,6 +48,7 @@ import type {
   V2ProductRegistered,
   V2RiskAppetiteSet,
 } from "../v2-core/banking/events";
+import { appendAnchorEvent, ensureAnchorStoreSchema } from "../v2-core/control-plane/anchor-store";
 
 // ---------------------------------------------------------------------------
 // Resolve the v2 anchor store path — NEVER the v1 store
@@ -69,24 +70,9 @@ if (!existsSync(parentDir)) {
 
 const db = new Database(DB_PATH);
 
-// Simple schema — same DDL as the v1 store so replays work the same way.
-db.exec(`
-CREATE TABLE IF NOT EXISTS v2_events (
-  sequence    INTEGER PRIMARY KEY AUTOINCREMENT,
-  event_id    TEXT    UNIQUE NOT NULL,
-  type        TEXT    NOT NULL,
-  as_of       TEXT    NOT NULL,
-  entity      TEXT    NOT NULL,
-  actor_type  TEXT    NOT NULL,
-  actor_id    TEXT    NOT NULL,
-  citations   TEXT    NOT NULL,
-  payload     TEXT    NOT NULL,
-  recorded_at TEXT    NOT NULL DEFAULT (datetime('now'))
-);
-CREATE INDEX IF NOT EXISTS idx_v2_type   ON v2_events(type);
-CREATE INDEX IF NOT EXISTS idx_v2_entity ON v2_events(entity);
-CREATE INDEX IF NOT EXISTS idx_v2_as_of  ON v2_events(as_of);
-`);
+// Canonical V2 anchor-store schema (shared module) — incl. the first-class
+// tenant_id + schema_version columns and the (tenant_id, sequence) index.
+ensureAnchorStoreSchema(db);
 
 // ---------------------------------------------------------------------------
 // Idempotency helpers
@@ -127,21 +113,16 @@ function alreadySeeded(type: string, naturalKey: string): boolean {
 }
 
 function append(type: string, payload: Record<string, unknown>): void {
-  const eventId = randomUUID();
-  db.query(
-    `INSERT OR IGNORE INTO v2_events
-       (event_id, type, as_of, entity, actor_type, actor_id, citations, payload)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(
-    eventId,
+  appendAnchorEvent(db, {
+    eventId: randomUUID(),
     type,
-    AS_OF,
-    ENTITY,
-    ACTOR.type,
-    ACTOR.id,
-    JSON.stringify(CITATIONS),
-    JSON.stringify(payload),
-  );
+    asOf: AS_OF,
+    entity: ENTITY,
+    actorType: ACTOR.type,
+    actorId: ACTOR.id,
+    citations: CITATIONS,
+    payload,
+  });
 }
 
 // ---------------------------------------------------------------------------

@@ -76,6 +76,12 @@ export const COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     source: "platform/event-store/event-types/counterparty-credit-risk.ts",
     citationsHint: ["BCBS-279", "POLICY:credit-risk-policy-v1-S3"],
     v2Status: "v2-parallel",
+    // V1 (integer minor rc/pfe/ead) → V2 (MoneyWire decimal-native). The
+    // version-keyed upcaster is declared in upcaster-registry.ts; the legacy
+    // shape-sniff is retained there ONLY as the permanent fallback for the
+    // immutable, un-stamped V1 events already in the store.
+    // (D-EVENT-ENVELOPE-SCHEMA-VERSION.)
+    schemaVersion: 2,
   },
   {
     type: "LexUtilisationComputed",

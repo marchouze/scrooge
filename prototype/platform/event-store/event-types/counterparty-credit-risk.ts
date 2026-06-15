@@ -718,17 +718,37 @@ export function decodeCcrEadComputed(raw: CcrEadComputedPayload): CcrEadComputed
 }
 
 /**
+ * The PERMANENT legacy shape-sniff for `CcrEadComputed`: a legacy V1 event
+ * carries `rc`/`pfe`/`ead` as bare integer MINOR units, so a numeric `ead`
+ * discriminates the un-stamped V1 shape from a V2 (MoneyWire) payload.
+ *
+ * This sniff is RETAINED — but its role is now strictly bounded: it is the
+ * fallback for pre-existing, UN-stamped legacy events in the immutable store
+ * (events that pre-date the explicit `schema_version` envelope field). It is
+ * NEVER the discriminator for a new, stamped version. The version-explicit
+ * upcaster registry (`platform/event-store/upcaster-registry.ts`) references
+ * THIS predicate as the `CcrEadComputed` declaration's `legacyShapeSniff`, so
+ * the sniff lives in exactly one place. (D-EVENT-ENVELOPE-SCHEMA-VERSION.)
+ */
+export function isLegacyCcrEadShape(payload: unknown): boolean {
+  return typeof (payload as { ead?: unknown }).ead === "number";
+}
+
+/**
  * Normalise a replayed `CcrEadComputed` payload to V2 (MoneyWire rc/pfe/ead).
  * The event store is mixed-version (events are immutable): legacy V1 events
- * carry rc/pfe/ead as integer minor units. A numeric `ead` is the V1
- * discriminator -> upcast via `decodeCcrEadComputed`; V2 payloads pass through.
- * Every read-side consumer of `CcrEadComputed` MUST funnel payloads through this
- * - a raw V2 cast crashes on a legacy event (`toDecimal(undefined)` on the
- * integer `ead`). DECIMAL-MIGRATION (D-DECIMAL-NATIVE-CONSUMER-MIGRATION).
+ * carry rc/pfe/ead as integer minor units. This is the NO-EXPLICIT-VERSION
+ * entry point — it applies the retained legacy shape-sniff
+ * (`isLegacyCcrEadShape`); V2 payloads pass through. Every read-side consumer of
+ * `CcrEadComputed` MUST funnel payloads through this (or, when it has the
+ * envelope's explicit `schema_version`, through `upcastCcrEadComputed` in the
+ * upcaster registry) — a raw V2 cast crashes on a legacy event
+ * (`toDecimal(undefined)` on the integer `ead`). DECIMAL-MIGRATION
+ * (D-DECIMAL-NATIVE-CONSUMER-MIGRATION); D-EVENT-ENVELOPE-SCHEMA-VERSION.
  */
 export function normalizeCcrEadPayload(payload: unknown): CcrEadComputedPayloadV2Type {
   return (
-    typeof (payload as { ead?: unknown }).ead === "number"
+    isLegacyCcrEadShape(payload)
       ? decodeCcrEadComputed(payload as CcrEadComputedPayload)
       : (payload as CcrEadComputedPayloadV2Type)
   ) as CcrEadComputedPayloadV2Type;

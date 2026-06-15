@@ -348,4 +348,17 @@ export interface EventTypeMetadata {
    * Authority: D-V1-REMOVAL-PHASE-1 (CEO-approved 2026-06-15).
    */
   readonly v2Status: V2CutoverStatus;
+  /**
+   * The CURRENT payload schema version for this event type
+   * (D-EVENT-ENVELOPE-SCHEMA-VERSION). The registry is the authority for
+   * "what version do new events of this type carry"; the go-forward V2 envelope
+   * stamps this number, and version-explicit upcaster dispatch switches on it.
+   *
+   * **Optional**: a row without this field is version 1 by convention (a single,
+   * never-changed payload shape). Set it to an integer >1 ONLY when the payload
+   * shape has changed — and when it is >1 the type MUST declare a version-keyed
+   * upcaster, asserted (fail-closed) by `recon:v2-multi-version-type-upcaster`.
+   * This replaces inferring version from incidental payload shape.
+   */
+  readonly schemaVersion?: number;
 }

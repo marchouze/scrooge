@@ -45,6 +45,7 @@ import { resolve } from "node:path";
 
 import { Database } from "bun:sqlite";
 
+import { appendAnchorEvent, ensureAnchorStoreSchema } from "../v2-core/control-plane/anchor-store";
 import { ANCHOR_TENANT_ID, type TenantId } from "../v2-core/control-plane/tenant";
 import {
   type TenantEventStore,
@@ -69,24 +70,6 @@ interface V2EventRow {
   citations: string; // JSON string
   payload: string; // JSON string
 }
-
-const V2_DDL = `
-CREATE TABLE IF NOT EXISTS v2_events (
-  sequence    INTEGER PRIMARY KEY AUTOINCREMENT,
-  event_id    TEXT    UNIQUE NOT NULL,
-  type        TEXT    NOT NULL,
-  as_of       TEXT    NOT NULL,
-  entity      TEXT    NOT NULL,
-  actor_type  TEXT    NOT NULL,
-  actor_id    TEXT    NOT NULL,
-  citations   TEXT    NOT NULL,
-  payload     TEXT    NOT NULL,
-  recorded_at TEXT    NOT NULL DEFAULT (datetime('now'))
-);
-CREATE INDEX IF NOT EXISTS idx_v2_type   ON v2_events(type);
-CREATE INDEX IF NOT EXISTS idx_v2_entity ON v2_events(entity);
-CREATE INDEX IF NOT EXISTS idx_v2_as_of  ON v2_events(as_of);
-`;
 
 /**
  * Canonical per-event hash over the columns that define the event's identity
@@ -232,25 +215,25 @@ function makeSqliteTenantStore(
   close: () => void;
 } {
   const db = new Database(dbPath);
-  db.exec(V2_DDL);
-  const insert = db.prepare(
-    `INSERT OR IGNORE INTO v2_events
-       (event_id, type, as_of, entity, actor_type, actor_id, citations, payload)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  );
+  // Canonical V2 anchor-store schema (shared module) — incl. tenant_id +
+  // schema_version columns and the (tenant_id, sequence) index.
+  ensureAnchorStoreSchema(db);
   const store: TenantEventStore = {
     append(e: TenantTaggedEvent) {
       const extra = e.extra ?? {};
-      insert.run(
-        e.eventId,
-        e.type,
-        e.asOf,
-        e.entity,
-        String(extra.actor_type ?? "service"),
-        String(extra.actor_id ?? "agent:atlas:v2-anchor-migration-rehearsal"),
-        String(extra.citations ?? "[]"),
-        JSON.stringify(e.payload),
-      );
+      appendAnchorEvent(db, {
+        eventId: e.eventId,
+        type: e.type,
+        asOf: e.asOf,
+        entity: e.entity,
+        actorType: String(extra.actor_type ?? "service"),
+        actorId: String(extra.actor_id ?? "agent:atlas:v2-anchor-migration-rehearsal"),
+        // citations carried opaque through `extra` as a JSON string; the helper
+        // re-stringifies, so parse it back to the array shape it expects.
+        citations: JSON.parse(String(extra.citations ?? "[]")) as string[],
+        payload: e.payload,
+        tenantId: e.tenantId,
+      });
     },
     *replayAll() {
       const rows = db

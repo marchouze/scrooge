@@ -221,6 +221,8 @@
     "recon:agent-perf-eval-staleness": "bun run platform/recon/agent-perf-eval-staleness.ts",
     "recon:madge-circular-deps": "bun run platform/recon/madge-circular-deps.ts",
     "recon:v2-no-v1-import": "bun run platform/recon/v2-no-v1-import.ts",
+    "recon:v2-no-untagged-tenant-append": "bun run platform/recon/v2-no-untagged-tenant-append.ts",
+    "recon:v2-multi-version-type-upcaster": "bun run platform/recon/v2-multi-version-type-upcaster.ts",
     "recon:v2-released-surface-clean-core": "bun run platform/recon/v2-released-surface-gate.ts",
     "recon:v2-tier-entitlement-coherence": "bun run platform/recon/v2-tier-entitlement-coherence.ts",
     "recon:v2-standing-data-seed-parity": "bun run platform/recon/v2-standing-data-seed-parity.ts",
