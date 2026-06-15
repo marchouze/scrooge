@@ -29,6 +29,7 @@
 
 import { z } from "zod";
 
+import { tenantIdSchema } from "../../../v2-core/control-plane/tenant";
 import { amountToMinorUnits, money } from "../../core/decimal-money";
 import { newEventId } from "../../core/types";
 import { type Actor, type Event, eventSchema } from "../types";
@@ -1342,6 +1343,73 @@ export function makeFxForwardPointsAccrued(args: {
 }
 
 // ---------------------------------------------------------------------------
+// GlPostingEmitted — V2 GL posting event (Phase 3A, D-V1-REMOVAL-PHASE-3A)
+//
+// The V2 successor to SubLedgerPostingEmitted. Key differences:
+//   1. Single flat leg per event (one DR or CR) — double-entry is preserved
+//      by emitting pairs; not an array of legs.
+//   2. `tenantId` (V2 mandatory field — uses TenantId from v2-core).
+//   3. `iasRule` — direct IFRS/IAS citation on the event payload.
+//   4. `amount` is MoneyWire (decimal-native; NEVER amountMinor: number).
+//   5. `postingRuleId` — matches the V2 posting-rule registry entry.
+//
+// V2 status: v2-parallel (V1 SubLedgerPostingEmitted is still authoritative).
+// Becomes authoritative (v2-replaced) when the GL parity gate passes
+// byte-equivalent on all covered accounts.
+//
+// Authority: D-V1-REMOVAL-PHASE-3A (CEO-approved 2026-06-15).
+// Author: Atlas (Substrate Architect, engineering).
+// Citations: IFRS-9-§3.1.1; IAS-21-§23; P1-EVENTS-AS-TRUTH; P2-SINGLE-GRAPH-DISCIPLINE.
+// ---------------------------------------------------------------------------
+
+export const glPostingEmittedPayloadSchema = z.object({
+  /** COA account ID (e.g. "ACC-2100-001"). */
+  accountCode: z.string().min(1),
+  /** Debit or credit leg direction. */
+  creditDebit: z.enum(["credit", "debit"]),
+  /** Exact-decimal amount — MoneyWire; NEVER amountMinor. */
+  amount: moneyWireSchema,
+  /** ISO 8601 date (YYYY-MM-DD) the posting is effective. */
+  postingDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  /** V2 tenant axis — required for all V2 events. */
+  tenantId: tenantIdSchema,
+  /** event_id of the V2 trigger event (FilInstrumentCreated, FilInstrumentAmended, etc.). */
+  sourceEventId: z.string().min(1),
+  /** Direct IFRS/IAS citation for this posting (e.g. "IFRS 9 §3.1.1"). */
+  iasRule: z.string().min(1),
+  /** Posting-rule identifier from the V2 posting-rule registry (e.g. "PR-FX-001-V2"). */
+  postingRuleId: z.string().min(1),
+  /** Optional human-readable description. */
+  description: z.string().optional(),
+});
+
+export type GlPostingEmittedPayload = z.infer<typeof glPostingEmittedPayloadSchema>;
+
+export function makeGlPostingEmitted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: GlPostingEmittedPayload;
+  eventId?: string;
+}): Event {
+  if (!args.citations || args.citations.length === 0) {
+    throw new Error(
+      "GlPostingEmitted requires at least one citation (Principle 2). Use '[citation: TBC]' if the URN is not yet curated.",
+    );
+  }
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "GlPostingEmitted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: glPostingEmittedPayloadSchema.parse(args.payload),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // FX accounting event-type registry
 // ---------------------------------------------------------------------------
 
@@ -1369,6 +1437,9 @@ export const FX_ACCOUNTING_EVENT_TYPES = [
   // IAS 21 §28 forward-points amortisation (D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL gap closure).
   // Authority: Nadia (Model validation engineer, engineering).
   "FxForwardPointsAccrued",
+  // Phase 3A — V2 GL posting event (D-V1-REMOVAL-PHASE-3A). V2 parallel to SubLedgerPostingEmitted.
+  // v2Status: "v2-parallel". See platform/event-store/registry/markets.ts.
+  "GlPostingEmitted",
 ] as const;
 
 export type FxAccountingEventType = (typeof FX_ACCOUNTING_EVENT_TYPES)[number];

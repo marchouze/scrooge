@@ -83,6 +83,7 @@ import {
   fxPositionRevaluedPayloadSchema,
   fxSettlementFailedPayloadSchema,
   fxTradeCancelledPayloadSchema,
+  glPostingEmittedPayloadSchema,
   missedExpectedReceiptPayloadSchema,
   nostroDesignationMissingPayloadSchema,
   realisedPnlRecognisedPayloadSchema,
@@ -216,7 +217,11 @@ import {
   vendorSecurityReviewPayloadSchema,
 } from "../event-types/security-devops-extended";
 import { tradeMaturedPayloadSchema } from "../event-types/trade-matured";
-import { type EventTypeMetadata, RETENTION_CONSERVATIVE_DEFAULT } from "./types";
+import {
+  type EventTypeMetadata,
+  RETENTION_ACCOUNTING_7Y,
+  RETENTION_CONSERVATIVE_DEFAULT,
+} from "./types";
 
 // ---------------------------------------------------------------------------
 // A — FX / markets / trading events
@@ -290,6 +295,31 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     source:
       "platform/event-store/event-types/fx-accounting.ts (FxForwardPointsAccruedPayload); D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL",
     v2Status: "v1-only",
+  },
+  {
+    // Phase 3A — V2 GL posting event, parallel to V1 SubLedgerPostingEmitted.
+    //
+    // Single-leg double-entry (one DR or CR per event); pairs form balanced
+    // accounting entries. Carries tenantId (V2 mandatory), iasRule (direct IFRS
+    // citation), and MoneyWire decimal-native amount (no amountMinor). Emitted by
+    // gl-posting-engine-v2.ts from V2 FIL instance events (FilInstrumentCreated /
+    // FilInstrumentAmended / FilInstrumentTerminated).
+    //
+    // Provenance category: "accounting" (via Gl* prefix heuristic in
+    // provenance-category.ts line ~282). Survives config-only purges.
+    //
+    // Authority: D-V1-REMOVAL-PHASE-3A (CEO-approved 2026-06-15).
+    // Citations: IFRS-9-§3.1.1; IAS-21-§23; P1-EVENTS-AS-TRUTH; P2-SINGLE-GRAPH-DISCIPLINE.
+    type: "GlPostingEmitted",
+    class: "markets",
+    payloadSchema: glPostingEmittedPayloadSchema,
+    issuer: "Atlas",
+    subscribers: ["Bea", "Camille", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    retention: RETENTION_ACCOUNTING_7Y,
+    source:
+      "platform/event-store/event-types/fx-accounting.ts (GlPostingEmittedPayload); D-V1-REMOVAL-PHASE-3A",
+    v2Status: "v2-parallel",
   },
   {
     // Generic lifecycle-terminal event — confirms a trade has matured /
