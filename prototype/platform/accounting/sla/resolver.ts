@@ -497,8 +497,7 @@ export const IFRS_FX_SPOT_RESOLVER_ROWS: readonly ResolverRow[] = [
     representation: "IFRS",
     logical: "fx.forward_points_deferred_income",
     physical: "ACC-2100-025",
-    note:
-      "Forward-points deferred income (IAS 21 §28) — cumulative premium not yet amortised to P&L.",
+    note: "Forward-points deferred income (IAS 21 §28) — cumulative premium not yet amortised to P&L.",
   },
   {
     entity: "LE-ZA-HOZ-BANK",
@@ -508,8 +507,7 @@ export const IFRS_FX_SPOT_RESOLVER_ROWS: readonly ResolverRow[] = [
     representation: "IFRS",
     logical: "fx.forward_points_deferred_expense",
     physical: "ACC-2100-026",
-    note:
-      "Forward-points deferred expense (IAS 21 §28) — cumulative discount not yet amortised to P&L.",
+    note: "Forward-points deferred expense (IAS 21 §28) — cumulative discount not yet amortised to P&L.",
   },
   {
     entity: "LE-ZA-HOZ-BANK",
@@ -519,8 +517,7 @@ export const IFRS_FX_SPOT_RESOLVER_ROWS: readonly ResolverRow[] = [
     representation: "IFRS",
     logical: "fx.forward_points_pnl",
     physical: "ACC-2100-006",
-    note:
-      "Forward-points P&L — recognised daily amortisation slice and maturity clear-down (reuses realised-P&L account; IAS 21 §28).",
+    note: "Forward-points P&L — recognised daily amortisation slice and maturity clear-down (reuses realised-P&L account; IAS 21 §28).",
   },
 ];
 

@@ -62,8 +62,7 @@ export const PR_FX_FWD_POINTS_ACCRUAL: SlaRule = {
   },
   condition: {
     kind: "non-zero-delta",
-    detail:
-      "IAS 21 §28 — forward-points daily amortisation slice; zero slice → no posting.",
+    detail: "IAS 21 §28 — forward-points daily amortisation slice; zero slice → no posting.",
     delta_path: "event.dailyAmortisedZarMinor",
   },
   lines: [
