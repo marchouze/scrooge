@@ -86,6 +86,7 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
       "POLICY:credit-risk-policy-v1",
       "PROC-RISK-CO-01",
     ],
+    v2Status: "v1-only",
   },
   {
     type: "CreditLimitExtensionRequested",
@@ -97,6 +98,7 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: creditLimitExtensionRequestedPayloadSchema,
     source: "platform/event-store/event-types/credit-limit.ts",
     citationsHint: ["POLICY:credit-risk-policy-v1", "PROC-RISK-CO-01"],
+    v2Status: "v1-only",
   },
   // -------------------------------------------------------------------------
   // Analysis + ISDA/CSA assessment
@@ -111,6 +113,7 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: creditAnalysisCompletedPayloadSchema,
     source: "platform/event-store/event-types/credit-limit.ts",
     citationsHint: ["BCBS-283", "POLICY:credit-risk-policy-v1", "PROC-RISK-CO-01"],
+    v2Status: "v1-only",
   },
   {
     type: "ISDACSAAssessmentCompleted",
@@ -127,6 +130,7 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
       "POLICY:credit-risk-policy-v1",
       "PROC-RISK-CO-01",
     ],
+    v2Status: "v1-only",
   },
   // -------------------------------------------------------------------------
   // Proposal + approval
@@ -141,6 +145,7 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: creditLimitProposedPayloadSchema,
     source: "platform/event-store/event-types/credit-limit.ts",
     citationsHint: ["RRB-REG-23", "POLICY:credit-risk-policy-v1", "PROC-RISK-CO-01"],
+    v2Status: "v1-only",
   },
   {
     type: "CreditLimitApproved",
@@ -157,6 +162,7 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
       "POLICY:credit-risk-policy-v1",
       "PROC-RISK-CO-01",
     ],
+    v2Status: "v1-only",
   },
   // -------------------------------------------------------------------------
   // Load + annual review
@@ -171,6 +177,7 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: creditLimitLoadedPayloadSchema,
     source: "platform/event-store/event-types/credit-limit.ts",
     citationsHint: ["POLICY:credit-risk-policy-v1", "PROC-RISK-CO-01"],
+    v2Status: "v1-only",
   },
   {
     type: "CreditLimitAnnualReviewCompleted",
@@ -182,6 +189,7 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: creditLimitAnnualReviewCompletedPayloadSchema,
     source: "platform/event-store/event-types/credit-limit.ts",
     citationsHint: ["POLICY:credit-risk-policy-v1", "PROC-RISK-CO-01"],
+    v2Status: "v1-only",
   },
   // -------------------------------------------------------------------------
   // Breach + disposal
@@ -196,6 +204,7 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: creditLimitBreachedPayloadSchema,
     source: "platform/event-store/event-types/credit-limit.ts",
     citationsHint: ["RRB-REG-23", "POLICY:credit-risk-policy-v1-S1.4", "PROC-RISK-CO-01"],
+    v2Status: "v1-only",
   },
   {
     type: "CreditLimitBreachDisposed",
@@ -207,6 +216,7 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: creditLimitBreachDisposedPayloadSchema,
     source: "platform/event-store/event-types/credit-limit.ts",
     citationsHint: ["POLICY:credit-risk-policy-v1", "PROC-RISK-CO-01"],
+    v2Status: "v1-only",
   },
   // -------------------------------------------------------------------------
   // Governance exceptions
@@ -221,6 +231,7 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: crcLimitExceptionApprovedPayloadSchema,
     source: "platform/event-store/event-types/credit-limit.ts",
     citationsHint: ["POLICY:credit-risk-policy-v1-S7"],
+    v2Status: "v1-only",
   },
   {
     type: "SubInvestmentGradeCounterpartyApproved",
@@ -232,6 +243,7 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: subInvestmentGradeCounterpartyApprovedPayloadSchema,
     source: "platform/event-store/event-types/credit-limit.ts",
     citationsHint: ["POLICY:credit-risk-policy-v1-S3"],
+    v2Status: "v1-only",
   },
   // -------------------------------------------------------------------------
   // Withdrawal — explicit decommissioning of a loaded / approved limit
@@ -246,5 +258,6 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: creditLimitWithdrawnPayloadSchema,
     source: "platform/event-store/event-types/credit-limit.ts",
     citationsHint: ["POLICY:credit-risk-policy-v1-S7", "PROC-RISK-CO-01"],
+    v2Status: "v1-only",
   },
 ];

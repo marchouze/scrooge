@@ -46,6 +46,7 @@ export const PAYMENTS_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: settlementInstructionReceivedPayloadSchema,
     source: "platform/event-store/event-types/payments.ts; PROC-PAY-RBH-01",
+    v2Status: "v1-only",
   },
   {
     type: "PaymentInitiated",
@@ -56,6 +57,7 @@ export const PAYMENTS_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: paymentInitiatedPayloadSchema,
     source: "platform/event-store/event-types/payments.ts; PROC-PAY-RBH-01",
+    v2Status: "v1-only",
   },
   {
     type: "PaymentSettled",
@@ -66,6 +68,7 @@ export const PAYMENTS_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: paymentSettledPayloadSchema,
     source: "platform/event-store/event-types/payments.ts; PROC-PAY-RBH-01",
+    v2Status: "v1-only",
   },
   {
     type: "JournalEntryPosted",
@@ -76,6 +79,7 @@ export const PAYMENTS_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: journalEntryPostedPayloadSchema,
     source: "platform/event-store/event-types/payments.ts; PROC-PAY-RBH-01",
+    v2Status: "v1-only",
   },
   {
     type: "ReconciliationBreak",
@@ -86,6 +90,7 @@ export const PAYMENTS_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: reconciliationBreakPayloadSchema,
     source: "platform/event-store/event-types/payments.ts; PROC-PAY-RBH-01",
+    v2Status: "v1-only",
   },
   {
     type: "DailyReconciliationReport",
@@ -96,6 +101,7 @@ export const PAYMENTS_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: dailyReconciliationReportPayloadSchema,
     source: "platform/event-store/event-types/payments.ts; PROC-PAY-RBH-01",
+    v2Status: "v1-only",
   },
   // -------------------------------------------------------------------------
   // D-FX-MESSAGE-EVENTS (CEO-approved 2026-05-19)
@@ -112,6 +118,7 @@ export const PAYMENTS_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: outboundMessageDispatchedPayloadSchema,
     source:
       "platform/event-store/event-types/payments.ts; D-FX-MESSAGE-EVENTS; D-FX-CLS-MEMBERSHIP",
+    v2Status: "v1-only",
   },
   {
     type: "InboundMessageReceived",
@@ -123,6 +130,7 @@ export const PAYMENTS_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: inboundMessageReceivedPayloadSchema,
     source:
       "platform/event-store/event-types/payments.ts; D-FX-MESSAGE-EVENTS; D-FX-CLS-MEMBERSHIP",
+    v2Status: "v1-only",
   },
   {
     type: "MessageCorrelated",
@@ -133,5 +141,6 @@ export const PAYMENTS_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: messageCorrelatedPayloadSchema,
     source: "platform/event-store/event-types/payments.ts; D-FX-MESSAGE-EVENTS; PROC-PAY-RBH-01",
+    v2Status: "v1-only",
   },
 ];

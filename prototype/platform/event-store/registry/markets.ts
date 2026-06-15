@@ -132,6 +132,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // JSE trade record — 7y per JSE Equities Rules retention norms.
     retention: RETENTION_JSE_TRADE_7Y,
     source: "A0 freeze §5 #2; per-product variants in platform/markets/cdm/events/",
+    v2Status: "v1-only",
   },
   // Pre-trade gateway family — gates Saskia+Kai's S7-Targeted #5 envelope.
   // Per `Owner Inbox/2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md`
@@ -148,6 +149,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "Owner Inbox/2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md §3; Team/Kai.md §11",
+    v2Status: "v1-only",
   },
   {
     type: "GatewayCheckRequested",
@@ -159,6 +161,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["JSE-RULES-EQUITIES", "FMA-S5"],
     retention: RETENTION_JSE_TRADE_7Y,
     source: "Owner Inbox/2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md §3, §5.1",
+    v2Status: "v1-only",
   },
   {
     type: "GatewayCheckCompleted",
@@ -170,6 +173,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["JSE-RULES-EQUITIES", "FMA-S5"],
     retention: RETENTION_JSE_TRADE_7Y,
     source: "Owner Inbox/2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md §3, §5.1",
+    v2Status: "v1-only",
   },
   {
     type: "OrderApprovedAtGateway",
@@ -181,6 +185,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["JSE-RULES-EQUITIES", "FMA-S5", "GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_JSE_TRADE_7Y,
     source: "Owner Inbox/2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md §3, §5.1",
+    v2Status: "v1-only",
   },
   {
     type: "OrderRejectedAtGateway",
@@ -192,6 +197,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["JSE-RULES-EQUITIES", "FMA-S5", "FIC-ACT-38-2001"],
     retention: RETENTION_JSE_TRADE_7Y,
     source: "Owner Inbox/2026-05-09_saskia-kai_pre-trade-gateway-envelope-v0-scoping.md §3, §5.1",
+    v2Status: "v1-only",
   },
   {
     // OrderAccepted — counterparty-facing acceptance event emitted after
@@ -213,6 +219,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     ],
     retention: RETENTION_JSE_TRADE_7Y,
     source: "platform/event-store/event-types/trading.ts",
+    v2Status: "v1-only",
   },
   {
     type: "PreTradeLimitChanged",
@@ -226,6 +233,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // trading franchise — Companies Act / RAS retention 7y.
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Team/Kai.md §11, §15",
+    v2Status: "v1-only",
   },
   // CRM lifecycle — counterparty institutional-eligibility screening
   // (Niko, v0). D-FSP-LICENCE-NECESSITY confirm-A binds Posture A:
@@ -250,6 +258,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_FIC_5Y,
     source:
       "Procedures/by-policy/counterparty-institutional-eligibility-screening.md (PROC-CRM-CIE-01); Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-fsp-licence-necessity-confirm-a.md (PR #62)",
+    v2Status: "v1-only",
   },
   {
     type: "CounterpartyEligibilityRevalidated",
@@ -267,6 +276,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_FIC_5Y,
     source:
       "Procedures/by-policy/counterparty-institutional-eligibility-screening.md (PROC-CRM-CIE-01)",
+    v2Status: "v1-only",
   },
   {
     type: "CounterpartyEligibilityBreached",
@@ -284,6 +294,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_FIC_5Y,
     source:
       "Procedures/by-policy/counterparty-institutional-eligibility-screening.md (PROC-CRM-CIE-01)",
+    v2Status: "v1-only",
   },
   // Switch-test event family — opens/closes/reports the quarterly +
   // triggered switch-test window during which a configurable fraction
@@ -302,6 +313,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Operational-resilience attestations — governance retention 7y.
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Owner Inbox/2026-05-09_devon-tomas_named-correspondent-pair-proposal.md §4 (PR #58)",
+    v2Status: "v1-only",
   },
   {
     type: "SwitchTestEnded",
@@ -313,6 +325,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["BCBS-239-2013"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Owner Inbox/2026-05-09_devon-tomas_named-correspondent-pair-proposal.md §4 (PR #58)",
+    v2Status: "v1-only",
   },
   {
     type: "SwitchTestReport",
@@ -324,6 +337,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["BCBS-239-2013", "RAS-B7"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Owner Inbox/2026-05-09_devon-tomas_named-correspondent-pair-proposal.md §4 (PR #58)",
+    v2Status: "v1-only",
   },
   // M1 IFRS-classification + sub-ledger family — emitted by Bea's
   // m1-ifrs-classification-rules handler under D-MARKETS-SCHEMA-FOUNDATION
@@ -366,6 +380,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // the 7-year floor is the regulator-mandated minimum.
     source:
       "runtime/agents/bea-m1-ifrs-classification-rules.ts; Team Inbox/2026-05-07_brief_bea_m1-ifrs-classification-rules.md; D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md §5 (retention floor: Companies Act 71/2008 s.24 accounting records, ≥7y)",
+    v2Status: "v1-only",
   },
   {
     type: "SubLedgerPostingEmitted",
@@ -395,6 +410,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // cache. Principle-1 default keeps the log indefinitely.
     source:
       "runtime/agents/bea-m1-ifrs-classification-rules.ts; Team Inbox/2026-05-07_brief_bea_m1-ifrs-classification-rules.md; D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md §5 (retention floor: Companies Act 71/2008 s.24 accounting records, ≥7y)",
+    v2Status: "v1-only",
   },
   // M1 CDM equity events — schemas live at platform/markets/cdm/equity.ts
   // (their natural domain home); referenced from the registry to satisfy
@@ -413,6 +429,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/markets/cdm/equity.ts (Kai M1 bindings); D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md §5",
+    v2Status: "v1-only",
   },
   {
     type: "EquitySettlementInstructed",
@@ -425,6 +442,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/markets/cdm/equity.ts (Kai M1 bindings); D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md §5",
+    v2Status: "v1-only",
   },
   {
     type: "EquityCorporateActionApplied",
@@ -437,6 +455,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/markets/cdm/equity.ts (Kai M1 bindings); D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md §5",
+    v2Status: "v1-only",
   },
   // M3 CDM Equity events (M3 slice, Kai 2026-05-17) — extended equity lifecycle:
   // EquityTradeExecuted, EquitySettlementConfirmed, EquityPositionRevalued.
@@ -452,6 +471,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/markets/cdm/equity.ts (Kai M3 equity lifecycle); D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); scenarios/08-equity-trade.ts",
+    v2Status: "v1-only",
   },
   {
     type: "EquitySettlementConfirmed",
@@ -464,6 +484,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/markets/cdm/equity.ts (Kai M3 equity lifecycle); D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); scenarios/08-equity-trade.ts",
+    v2Status: "v1-only",
   },
   {
     type: "EquityPositionRevalued",
@@ -476,6 +497,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/markets/cdm/equity.ts (Kai M3 equity lifecycle); D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); scenarios/08-equity-trade.ts",
+    v2Status: "v1-only",
   },
   // M3 CDM FX events — schemas at platform/markets/cdm/fx.ts. Today
   // exercised by the FX end-to-end rehearsal scenario + dashboard widget;
@@ -492,6 +514,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/markets/cdm/fx.ts (Kai M3 FX bindings); scenarios/03-fx-end-to-end-rehearsal.ts; Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md §5",
+    v2Status: "v1-only",
   },
   {
     type: "FxSettlementInstructed",
@@ -504,6 +527,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/markets/cdm/fx.ts (Kai M3 FX bindings); scenarios/03-fx-end-to-end-rehearsal.ts; Owner Inbox/2026-05-07_atlas-kai_a0-event-schema-freeze.md §5",
+    v2Status: "v1-only",
   },
   // PrincipalPayment — emitted when the correspondent actions a settlement leg
   // (deliver or receive). Two per FX Spot trade (one per currency leg). Closes
@@ -520,6 +544,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/markets/cdm/fx.ts (Kai M4 FX settlement lifecycle); scenarios/06-fx-spot-trade.ts; D-FX-CLS-MEMBERSHIP; D-MARKETS-SCHEMA-FOUNDATION",
+    v2Status: "v1-only",
   },
   // SettlementConfirmed — final lifecycle event for an FX Spot (or Forward/Swap)
   // trade; closes the trade lifecycle once both principal payments are confirmed.
@@ -540,6 +565,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/markets/cdm/fx.ts (Kai M4 FX settlement lifecycle); scenarios/06-fx-spot-trade.ts; D-FX-CLS-MEMBERSHIP; D-MARKETS-SCHEMA-FOUNDATION",
+    v2Status: "v1-only",
   },
   // SettlementRealisedPnlCorrected — corrective event for SettlementConfirmed
   // events that were historically emitted with realisedPnlDelta: 0 (substrate
@@ -561,6 +587,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "scripts/backfill-fx-settlement-realised-pnl.ts; platform/product-control/daily-pnl.ts; IAS 21 §28",
+    v2Status: "v1-only",
   },
   // NdfFixingObserved — FX-Forward NDF variant only. Records the observed
   // fixing rate and the resulting net cash settlement amount on the fixing
@@ -578,6 +605,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/markets/cdm/fx.ts (Saskia M4 FX forwards lifecycle); scenarios/07-fx-forward-trade.ts; D-MARKETS-SCHEMA-FOUNDATION",
+    v2Status: "v1-only",
   },
   // CDM substrate — bindings-regeneration self-test, emitted by Kai's
   // m1-cdm-typescript-bindings handler after inventory + round-trip. The
@@ -594,6 +622,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/event-store/event-types-cdm.ts; runtime/agents/kai-m1-cdm-typescript-bindings.ts; D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07)",
+    v2Status: "v1-only",
   },
   // ---------------------------------------------------------------------------
   // Slice 5 — pre-trade risk controls
@@ -621,6 +650,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "D-MARKETS-SCHEMA-FOUNDATION Slice 5; platform/projections/markets/limit-utilisation.ts; ORG-JSE-IRC-01",
+    v2Status: "v1-only",
   },
   {
     type: "RasLimitSchedulePublished",
@@ -633,6 +663,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "D-MARKETS-SCHEMA-FOUNDATION Slice 5; platform/projections/markets/limit-utilisation.ts; Helena RAS mandate",
+    v2Status: "v1-only",
   },
   {
     // `MarketRiskMeasureComputed` — VaR / SVaR / ES surfaced from the market-risk
@@ -652,6 +683,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "D-B3-5 (R8); platform/market-risk/var-engine.ts; platform/projections/markets/market-risk-measure.ts",
+    v2Status: "v1-only",
   },
   // ---------------------------------------------------------------------------
   // M5 OTC IRS lifecycle events — CDM schemas at platform/markets/cdm/ird.ts.
@@ -673,6 +705,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "platform/markets/cdm/ird.ts (Eitan M5 IRS lifecycle); D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); scenarios/10-irs-trade.ts",
+    v2Status: "v1-only",
   },
   {
     type: "IrsCouponScheduleGenerated",
@@ -690,6 +723,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "platform/markets/cdm/ird.ts (Eitan M5 IRS lifecycle); platform/markets/ird/coupon-schedule.ts; scenarios/10-irs-trade.ts",
+    v2Status: "v1-only",
   },
   {
     type: "IrsCouponPaymentInstructed",
@@ -701,6 +735,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-MARKETS-SCHEMA-FOUNDATION", "ISDA-2002-MASTER", "ORG-PR-11"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/markets/cdm/ird.ts (Eitan M5 IRS lifecycle); scenarios/10-irs-trade.ts",
+    v2Status: "v1-only",
   },
   {
     type: "IrsCouponSettlementConfirmed",
@@ -712,6 +747,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-MARKETS-SCHEMA-FOUNDATION", "ISDA-2002-MASTER"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/markets/cdm/ird.ts (Eitan M5 IRS lifecycle); scenarios/10-irs-trade.ts",
+    v2Status: "v1-only",
   },
   {
     type: "IrsPositionRevalued",
@@ -724,6 +760,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "platform/markets/cdm/ird.ts (Eitan M5 IRS lifecycle); platform/markets/eod/irs-revaluation.ts; scenarios/10-irs-trade.ts",
+    v2Status: "v1-only",
   },
 ];
 
@@ -769,6 +806,7 @@ export const BANK_ACCOUNT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_saskia-bea-mira-helena_first-dry-run-scenario-design.md §6 #A1; D-BANK-ACCOUNT-SUBSTRATE",
+    v2Status: "v1-only",
   },
   {
     type: "BankAccountConfigured",
@@ -781,6 +819,7 @@ export const BANK_ACCOUNT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_saskia-bea-mira-helena_first-dry-run-scenario-design.md §6 #A1; D-BANK-ACCOUNT-SUBSTRATE",
+    v2Status: "v1-only",
   },
   {
     type: "BankAccountClosed",
@@ -793,6 +832,7 @@ export const BANK_ACCOUNT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_saskia-bea-mira-helena_first-dry-run-scenario-design.md §6 #A1; D-BANK-ACCOUNT-SUBSTRATE",
+    v2Status: "v1-only",
   },
 ];
 
@@ -822,6 +862,7 @@ export const PERIOD_CLOSE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_ACCOUNTING_7Y,
     source:
       "Owner Inbox/2026-05-10_bea-atlas_reporting-capability-m2-m3-build-proposal.md §6 Slice 2; D-REPORTING-CAPABILITY-SLICE-2",
+    v2Status: "v1-only",
   },
   {
     type: "AccountingPeriodClosed",
@@ -839,6 +880,7 @@ export const PERIOD_CLOSE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_ACCOUNTING_7Y,
     source:
       "Owner Inbox/2026-05-10_bea-atlas_reporting-capability-m2-m3-build-proposal.md §6 Slice 2; D-REPORTING-CAPABILITY-SLICE-2",
+    v2Status: "v1-only",
   },
   {
     type: "TrialBalanceSnapshotted",
@@ -856,6 +898,7 @@ export const PERIOD_CLOSE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_ACCOUNTING_7Y,
     source:
       "Owner Inbox/2026-05-10_bea-atlas_reporting-capability-m2-m3-build-proposal.md §6 Slice 2; D-REPORTING-CAPABILITY-SLICE-2",
+    v2Status: "v1-only",
   },
   {
     // Emitted by Bea (Accounting & financial reporting engineer) at the end
@@ -880,6 +923,7 @@ export const PERIOD_CLOSE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_ACCOUNTING_7Y,
     source:
       "platform/event-store/event-types/accounting.ts (factory); PROC-FIN-BSS-01 — Procedures/balance-sheet-substantiation.md",
+    v2Status: "v1-only",
   },
   {
     // MC14 trigger — emitted by the month-end close engine after PeriodClosed
@@ -902,6 +946,7 @@ export const PERIOD_CLOSE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_ACCOUNTING_7Y,
     source:
       "platform/accounting/ba-return-trigger.ts; PROC-FIN-MC-01 §5 MC14; D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN",
+    v2Status: "v1-only",
   },
   {
     // ManualJournalEntry — an authorised agent or human posts a manual
@@ -921,6 +966,7 @@ export const PERIOD_CLOSE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["IAS-1", "IAS-8", "PROC-FIN-MC-01"],
     retention: RETENTION_ACCOUNTING_7Y,
     source: "platform/accounting/gl-projection.ts; dashboard/gl-view.ts",
+    v2Status: "v1-only",
   },
   {
     // SubLedgerPostingRemediationRecorded — append-only remediation record that
@@ -943,6 +989,7 @@ export const PERIOD_CLOSE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_ACCOUNTING_7Y,
     source:
       "platform/event-store/event-types/accounting.ts (factory); scripts/remediate-seed-orphan-postings.ts; PROC-FIN-BSS-01 §3a",
+    v2Status: "v1-only",
   },
 ];
 
@@ -977,6 +1024,7 @@ export const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // FAIS classification record: 5y per FIC Act s.22 CDD-equivalent floor.
     retention: RETENTION_FIC_5Y,
     source: "platform/lifecycle/onboarding-orchestrator.ts; D-LIFECYCLE-SLICE-2",
+    v2Status: "v1-only",
   },
   {
     type: "BeneficialOwnerResolved",
@@ -989,6 +1037,7 @@ export const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // UBO chain is a FIC Act s.22 CDD record — 5y minimum floor.
     retention: RETENTION_FIC_5Y,
     source: "platform/lifecycle/onboarding-orchestrator.ts; D-LIFECYCLE-SLICE-2",
+    v2Status: "v1-only",
   },
   {
     type: "SanctionsClearancePassed",
@@ -1002,6 +1051,7 @@ export const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // treated as governance-grade 7y for audit-trail integrity.
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/lifecycle/onboarding-orchestrator.ts; D-LIFECYCLE-SLICE-2",
+    v2Status: "v1-only",
   },
   {
     type: "FatcaCrsClassified",
@@ -1015,6 +1065,7 @@ export const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // reporting obligations — governance-grade 7y.
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/lifecycle/onboarding-orchestrator.ts; D-LIFECYCLE-SLICE-2",
+    v2Status: "v1-only",
   },
   {
     type: "PopiaConsentRecorded",
@@ -1028,6 +1079,7 @@ export const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // integrity (POPIA s.14 right of access; deletion challenge window).
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/lifecycle/onboarding-orchestrator.ts; D-LIFECYCLE-SLICE-2",
+    v2Status: "v1-only",
   },
   {
     type: "CreditAssessmentCompleted",
@@ -1041,6 +1093,7 @@ export const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // director-decision retention; RT-CR.CP audit trail).
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/lifecycle/onboarding-orchestrator.ts; D-LIFECYCLE-SLICE-2",
+    v2Status: "v1-only",
   },
   {
     type: "AccountsSetupCompleted",
@@ -1054,6 +1107,7 @@ export const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // retention under Companies Act s.24).
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/lifecycle/onboarding-orchestrator.ts; D-LIFECYCLE-SLICE-2",
+    v2Status: "v1-only",
   },
   // ---------------------------------------------------------------------------
   // FTP (Funds Transfer Pricing) event family.
@@ -1080,6 +1134,7 @@ export const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // FTP curve: governance-grade 7y (ALCO decision record; NII-at-risk audit trail).
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/platform/ftp/; D-MARKETS-SCHEMA-FOUNDATION; Team/Ravi.md",
+    v2Status: "v1-only",
   },
   {
     type: "FtpAttributionRecorded",
@@ -1092,6 +1147,7 @@ export const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Attribution record: governance-grade 7y (ALCO / NII-at-risk audit trail).
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/ftp/attribution.ts; D-MARKETS-SCHEMA-FOUNDATION; Team/Ravi.md",
+    v2Status: "v1-only",
   },
   // ---------------------------------------------------------------------------
   // FX desk Slice 3 — RFQ lifecycle events (Kai, 2026-05-18)
@@ -1120,6 +1176,7 @@ export const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "dashboard/markets-fx-trade.ts; D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10); Slice 3",
+    v2Status: "v1-only",
   },
   {
     type: "QuoteResponded",
@@ -1134,5 +1191,6 @@ export const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "dashboard/markets-fx-trade.ts; D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10); Slice 3",
+    v2Status: "v1-only",
   },
 ];

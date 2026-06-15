@@ -50,6 +50,7 @@ export const CISO_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
       "Banks Act 94/1990 §73",
     ],
     source: "scripts/governance/ciso-periodic-run.ts (CISO quarterly run)",
+    v2Status: "v1-only",
   },
   {
     // SbomReviewCompleted — Software Bill of Materials quarterly review.
@@ -69,6 +70,7 @@ export const CISO_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     retention: RETENTION_GOVERNANCE_7Y,
     citationsHint: ["PA-FSCA-JS2-2024-§4.3", "POPIA-s19-22", "Banks Act 94/1990 §73"],
     source: "scripts/governance/ciso-periodic-run.ts (CISO quarterly run)",
+    v2Status: "v1-only",
   },
   {
     // ThreatModelGateCompleted — quarterly threat-model gate.
@@ -93,6 +95,7 @@ export const CISO_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
       "Principle-4-security-designed-in",
     ],
     source: "scripts/governance/ciso-periodic-run.ts (CISO quarterly run)",
+    v2Status: "v1-only",
   },
   {
     // KeyCeremonyAttested — HSM / key-ceremony attestation.
@@ -116,5 +119,6 @@ export const CISO_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
       "Banks Act 94/1990 §73",
     ],
     source: "scripts/governance/ciso-periodic-run.ts (CISO quarterly run)",
+    v2Status: "v1-only",
   },
 ];

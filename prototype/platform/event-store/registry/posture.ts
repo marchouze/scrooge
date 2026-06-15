@@ -45,6 +45,7 @@ export const POSTURE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: postureRegisteredPayloadSchema as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/posture.ts",
+    v2Status: "v1-only",
   },
   {
     type: "PostureActivated",
@@ -56,6 +57,7 @@ export const POSTURE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: postureActivatedPayloadSchema as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/posture.ts",
+    v2Status: "v1-only",
   },
   {
     type: "PostureDeactivated",
@@ -67,6 +69,7 @@ export const POSTURE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: postureDeactivatedPayloadSchema as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/posture.ts",
+    v2Status: "v1-only",
   },
   {
     type: "PostureRevised",
@@ -78,5 +81,6 @@ export const POSTURE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: postureRevisedPayloadSchema as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/posture.ts",
+    v2Status: "v1-only",
   },
 ];

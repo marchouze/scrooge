@@ -22,6 +22,7 @@ export const SEED_MANAGEMENT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-TRUSTED-FIGURES-PROGRAM-V1"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "seeds/manifest.ts; platform/event-store/event-types/seed-management.ts",
+    v2Status: "v1-only",
   },
   {
     type: "SeedPromotedToSimulated",
@@ -33,5 +34,6 @@ export const SEED_MANAGEMENT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-TRUSTED-FIGURES-PROGRAM-V1"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "seeds/manifest.ts; platform/event-store/event-types/seed-management.ts",
+    v2Status: "v1-only",
   },
 ];

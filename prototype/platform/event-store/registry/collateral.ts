@@ -39,5 +39,6 @@ export const COLLATERAL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: collateralInventorySnapshotPayloadSchema,
     citationsHint: ["BA-110-ANNEX-1", "BANKS-REG-26", "D-TREASURY-GAPS-WAVE1"],
     source: "platform/event-store/event-types/collateral.ts",
+    v2Status: "v1-only",
   },
 ];

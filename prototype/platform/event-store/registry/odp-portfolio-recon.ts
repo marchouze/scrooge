@@ -71,6 +71,7 @@ export const ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY: readonly EventTypeMetadat
       "D-IPV-TOLERANCE-SCHEDULE-FX-SPOT",
     ],
     source: "platform/event-store/event-types/odp-portfolio-recon.ts",
+    v2Status: "v1-only",
   },
 
   // --------------------------------------------------------------------------
@@ -91,6 +92,7 @@ export const ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY: readonly EventTypeMetadat
       "BCBS-D317",
     ],
     source: "platform/event-store/event-types/odp-portfolio-recon.ts",
+    v2Status: "v1-only",
   },
 
   // --------------------------------------------------------------------------
@@ -106,6 +108,7 @@ export const ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY: readonly EventTypeMetadat
     payloadSchema: odpCollateralVsCustodyReconRunPayloadSchema,
     citationsHint: ["ORG-ODP-COND-007", "urn:regulation:odp:cs-2-2018", "ORG-ODP-COND-005"],
     source: "platform/event-store/event-types/odp-portfolio-recon.ts",
+    v2Status: "v1-only",
   },
 
   // --------------------------------------------------------------------------
@@ -126,6 +129,7 @@ export const ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY: readonly EventTypeMetadat
       "RRB-REG-23",
     ],
     source: "platform/event-store/event-types/odp-portfolio-recon.ts",
+    v2Status: "v1-only",
   },
 
   // --------------------------------------------------------------------------
@@ -146,6 +150,7 @@ export const ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY: readonly EventTypeMetadat
       "ISDA-2002-MA",
     ],
     source: "platform/event-store/event-types/odp-portfolio-recon.ts",
+    v2Status: "v1-only",
   },
 
   // --------------------------------------------------------------------------
@@ -162,6 +167,7 @@ export const ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY: readonly EventTypeMetadat
     payloadSchema: odpReconBreakRaisedPayloadSchema,
     citationsHint: ["ORG-ODP-COND-007", "urn:regulation:odp:cs-2-2018", "ISDA-EMIR-RECON-2013"],
     source: "platform/event-store/event-types/odp-portfolio-recon.ts",
+    v2Status: "v1-only",
   },
 
   {
@@ -174,6 +180,7 @@ export const ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY: readonly EventTypeMetadat
     payloadSchema: odpReconDisputeOpenedPayloadSchema,
     citationsHint: ["ORG-ODP-COND-007", "urn:regulation:odp:cs-2-2018", "ISDA-EMIR-RECON-2013"],
     source: "platform/event-store/event-types/odp-portfolio-recon.ts",
+    v2Status: "v1-only",
   },
 
   {
@@ -186,5 +193,6 @@ export const ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY: readonly EventTypeMetadat
     payloadSchema: odpReconDisputeResolvedPayloadSchema,
     citationsHint: ["ORG-ODP-COND-007", "urn:regulation:odp:cs-2-2018", "ISDA-EMIR-RECON-2013"],
     source: "platform/event-store/event-types/odp-portfolio-recon.ts",
+    v2Status: "v1-only",
   },
 ];

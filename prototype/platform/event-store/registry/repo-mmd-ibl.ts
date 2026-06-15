@@ -80,6 +80,7 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: repoTradeOpenedPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION", "IAS39-27", "IFRS9-3-2-4"],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 
   {
@@ -92,6 +93,7 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: repoStartLegSettledPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION"],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 
   {
@@ -104,6 +106,7 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: repoInterestAccruedPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION", "IFRS9-B5-4-1"],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 
   {
@@ -116,6 +119,7 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: repoMarginCallIssuedPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION", "BCBS-d365"],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 
   {
@@ -128,6 +132,7 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: repoEndLegSettledPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION", "IFRS9-3-2-3"],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 
   {
@@ -140,6 +145,7 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: repoTradeTerminatedEarlyPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION", "IFRS9-3-2-3"],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 
   // ── MMD / Money Market Deposit ────────────────────────────────────────────
@@ -154,6 +160,7 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: depositTakenPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION", "IFRS9-4-2-1", "BA325"],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 
   {
@@ -166,6 +173,7 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: depositInterestAccruedPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION", "IFRS9-B5-4-1"],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 
   {
@@ -178,6 +186,7 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: depositMaturedPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION", "IFRS9-3-3-1"],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 
   {
@@ -190,6 +199,7 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: depositWithdrawnEarlyPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION", "IFRS9-3-3-1"],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 
   {
@@ -202,6 +212,7 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: depositRolledOverPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION"],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 
   // ── Funding Line ──────────────────────────────────────────────────────────
@@ -216,6 +227,7 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: fundingLineDrawnPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION", "IFRS9-4-2-1", "BA325"],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 
   {
@@ -228,6 +240,7 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: fundingLineRepaidPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION", "IFRS9-3-3-1"],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 
   // ── Interbank Loan ────────────────────────────────────────────────────────
@@ -242,6 +255,7 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: interbankLoanPlacedPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION", "IFRS9-4-1-2", "BA326"],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 
   {
@@ -254,6 +268,7 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: interbankLoanInterestAccruedPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION", "IFRS9-B5-4-1"],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 
   {
@@ -266,6 +281,7 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: interbankLoanMaturedPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION", "IFRS9-3-2-3"],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 
   {
@@ -278,6 +294,7 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: interbankLoanRecalledEarlyPayloadSchema,
     citationsHint: ["WS1-PR1a", "D-MARKETS-SCHEMA-FOUNDATION", "IFRS9-3-2-3"],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 
   // ── BA 110 off-balance-sheet — undrawn committed funding facilities ────────
@@ -297,5 +314,6 @@ export const REPO_MMD_IBL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
       "Reg23-contingent-liabilities",
     ],
     source: SOURCE,
+    v2Status: "v1-only",
   },
 ];

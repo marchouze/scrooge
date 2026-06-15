@@ -78,6 +78,7 @@ export const CFP_TRIGGER_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: intradayStressDetectedPayloadSchema,
     source: "platform/event-store/event-types/cfp-triggers.ts",
     citationsHint: [...CFP_TRIGGER_CITATIONS_HINT, "BCBS-248-INTRADAY"],
+    v2Status: "v1-only",
   },
   {
     type: "CriticalSettlementObligationAtRisk",
@@ -89,6 +90,7 @@ export const CFP_TRIGGER_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: criticalSettlementObligationAtRiskPayloadSchema,
     source: "platform/event-store/event-types/cfp-triggers.ts",
     citationsHint: [...CFP_TRIGGER_CITATIONS_HINT, "BCBS-248-INTRADAY"],
+    v2Status: "v1-only",
   },
   {
     type: "LcrRatioBreach",
@@ -100,6 +102,7 @@ export const CFP_TRIGGER_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: lcrRatioBreachPayloadSchema,
     source: "platform/event-store/event-types/cfp-triggers.ts",
     citationsHint: [...CFP_TRIGGER_CITATIONS_HINT, "BCBS-D295"],
+    v2Status: "v1-only",
   },
   {
     type: "NsfrRatioBreach",
@@ -111,6 +114,7 @@ export const CFP_TRIGGER_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: nsfrRatioBreachPayloadSchema,
     source: "platform/event-store/event-types/cfp-triggers.ts",
     citationsHint: [...CFP_TRIGGER_CITATIONS_HINT, "BCBS-D335", "RRB-REG-26A"],
+    v2Status: "v1-only",
   },
   {
     type: "FundingConcentrationAlertTriggered",
@@ -122,6 +126,7 @@ export const CFP_TRIGGER_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: fundingConcentrationAlertTriggeredPayloadSchema,
     source: "platform/event-store/event-types/cfp-triggers.ts",
     citationsHint: CFP_TRIGGER_CITATIONS_HINT,
+    v2Status: "v1-only",
   },
   {
     type: "ExternalCreditEventDetected",
@@ -133,6 +138,7 @@ export const CFP_TRIGGER_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: externalCreditEventDetectedPayloadSchema,
     source: "platform/event-store/event-types/cfp-triggers.ts",
     citationsHint: CFP_TRIGGER_CITATIONS_HINT,
+    v2Status: "v1-only",
   },
   {
     type: "RecoveryEarlyWarningTriggered",
@@ -144,6 +150,7 @@ export const CFP_TRIGGER_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: recoveryEarlyWarningTriggeredPayloadSchema,
     source: "platform/event-store/event-types/cfp-triggers.ts",
     citationsHint: [...CFP_TRIGGER_CITATIONS_HINT, "ICAAP-ILAAP-RECOVERY-FRAMEWORK-S3.3.5"],
+    v2Status: "v1-only",
   },
   {
     type: "RehearsalEvidenceCollected",
@@ -160,5 +167,6 @@ export const CFP_TRIGGER_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
       "D-TREASURER-WAVE2-SUBSTRATE",
       "PROC-RISK-CFP-01",
     ],
+    v2Status: "v1-only",
   },
 ];

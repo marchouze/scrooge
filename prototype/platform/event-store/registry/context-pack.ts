@@ -39,5 +39,6 @@ export const CONTEXT_PACK_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: contextPackBuiltPayloadSchema as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/context-pack.ts",
+    v2Status: "v1-only",
   },
 ];

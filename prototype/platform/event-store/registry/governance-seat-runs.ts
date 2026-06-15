@@ -44,6 +44,7 @@ export const GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "scripts/governance/cco-periodic-run.ts (CCO quarterly run); future CISO and CAE analogues",
+    v2Status: "v1-only",
   },
   {
     // RMCP quarterly attestation filed by the CCO under FIC Act §42.
@@ -62,6 +63,7 @@ export const GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     ],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "scripts/governance/cco-periodic-run.ts",
+    v2Status: "v1-only",
   },
   {
     // STR / CTR queue review emitted by the CCO (or MLRO delegate).
@@ -83,6 +85,7 @@ export const GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     ],
     retention: RETENTION_FIC_5Y,
     source: "scripts/governance/cco-periodic-run.ts",
+    v2Status: "v1-only",
   },
   {
     // AML/CFT risk assessment cycle close. 7-year retention per governance
@@ -101,6 +104,7 @@ export const GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     ],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "scripts/governance/cco-periodic-run.ts",
+    v2Status: "v1-only",
   },
   {
     // EDD queue sign-off by CCO. FIC Act 5-year minimum; mandatory for
@@ -119,5 +123,6 @@ export const GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     ],
     retention: RETENTION_FIC_5Y,
     source: "scripts/governance/cco-periodic-run.ts",
+    v2Status: "v1-only",
   },
 ];

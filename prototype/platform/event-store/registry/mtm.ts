@@ -51,6 +51,7 @@ export const MTM_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
       "ORG-MK-08",
     ],
     source: "platform/event-store/event-types/mtm.ts",
+    v2Status: "v1-only",
   },
   {
     type: "IpvExceptionRaised",
@@ -62,5 +63,6 @@ export const MTM_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: ipvExceptionRaisedPayloadSchema,
     citationsHint: ["D-MARKETS-SCHEMA-FOUNDATION", "D-FX-SALES-TRADING-FRONTEND", "ORG-MK-08"],
     source: "platform/event-store/event-types/mtm.ts",
+    v2Status: "v1-only",
   },
 ];

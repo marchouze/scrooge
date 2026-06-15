@@ -78,6 +78,7 @@ export const LIQUIDITY_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
       "POLICY:liquidity-risk-management-policy-v1-S9.1",
       "PROC-RISK-LLM-01",
     ],
+    v2Status: "v1-only",
   },
   {
     type: "LiquidityLimitBreachDisposed",
@@ -89,5 +90,6 @@ export const LIQUIDITY_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: liquidityLimitBreachDisposedPayloadSchema,
     source: "platform/event-store/event-types/liquidity-limit.ts",
     citationsHint: ["POLICY:liquidity-risk-management-policy-v1-S9.3", "PROC-RISK-LLM-01"],
+    v2Status: "v1-only",
   },
 ];

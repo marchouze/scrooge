@@ -70,6 +70,7 @@ export const ISDA_SCHEDULE_CSA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
     payloadSchema: isdaScheduleElectedPayloadSchema,
     citationsHint: ["ORG-ODP-COND-005", "urn:regulation:odp:cs-2-2018", "ISDA-2002-MA"],
     source: "platform/event-store/event-types/isda-schedule-csa.ts",
+    v2Status: "v1-only",
   },
   {
     type: "IsdaCsaElected",
@@ -87,6 +88,7 @@ export const ISDA_SCHEDULE_CSA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
       "BCBS-D317",
     ],
     source: "platform/event-store/event-types/isda-schedule-csa.ts",
+    v2Status: "v1-only",
   },
   {
     type: "IsdaCsaSuperseded",
@@ -98,6 +100,7 @@ export const ISDA_SCHEDULE_CSA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
     payloadSchema: isdaCsaSupersededPayloadSchema,
     citationsHint: ["ORG-ODP-COND-005", "urn:regulation:odp:cs-2-2018"],
     source: "platform/event-store/event-types/isda-schedule-csa.ts",
+    v2Status: "v1-only",
   },
 ];
 
@@ -122,6 +125,7 @@ export const OTC_CONFIRMATIONS_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
     payloadSchema: fraTradeBookedPayloadSchema,
     citationsHint: ["ORG-ODP-COND-005", "urn:regulation:odp:cs-2-2018", "ISDA-2006-DEFINITIONS"],
     source: "platform/event-store/event-types/otc-confirmations.ts",
+    v2Status: "v1-only",
   },
   {
     type: "SwaptionTradeBooked",
@@ -133,6 +137,7 @@ export const OTC_CONFIRMATIONS_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
     payloadSchema: swaptionTradeBookedPayloadSchema,
     citationsHint: ["ORG-ODP-COND-005", "urn:regulation:odp:cs-2-2018", "ISDA-2006-DEFINITIONS"],
     source: "platform/event-store/event-types/otc-confirmations.ts",
+    v2Status: "v1-only",
   },
   {
     type: "BasisSwapTradeBooked",
@@ -144,6 +149,7 @@ export const OTC_CONFIRMATIONS_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
     payloadSchema: basisSwapTradeBookedPayloadSchema,
     citationsHint: ["ORG-ODP-COND-005", "urn:regulation:odp:cs-2-2018", "ISDA-2006-DEFINITIONS"],
     source: "platform/event-store/event-types/otc-confirmations.ts",
+    v2Status: "v1-only",
   },
   {
     type: "CrossCurrencySwapTradeBooked",
@@ -155,5 +161,6 @@ export const OTC_CONFIRMATIONS_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
     payloadSchema: crossCurrencySwapTradeBookedPayloadSchema,
     citationsHint: ["ORG-ODP-COND-005", "urn:regulation:odp:cs-2-2018", "ISDA-2000-DEFINITIONS"],
     source: "platform/event-store/event-types/otc-confirmations.ts",
+    v2Status: "v1-only",
   },
 ];

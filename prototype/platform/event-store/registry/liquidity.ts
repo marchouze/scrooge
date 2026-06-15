@@ -42,6 +42,7 @@ export const LIQUIDITY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: lcrComputedPayloadSchema,
     citationsHint: ["D-TREASURY-GAPS-WAVE1", "BANKS-ACT-94-1990", "BA-110"],
     source: "platform/event-store/event-types/liquidity.ts",
+    v2Status: "v1-only",
   },
   {
     type: "NSFRComputed",
@@ -53,5 +54,6 @@ export const LIQUIDITY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: nsfrComputedPayloadSchema,
     citationsHint: ["D-TREASURY-GAPS-WAVE1", "BANKS-ACT-94-1990", "BA-120"],
     source: "platform/event-store/event-types/liquidity.ts",
+    v2Status: "v1-only",
   },
 ];

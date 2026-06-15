@@ -31,6 +31,7 @@ export const INTRANET_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     citationsHint: ["P1-EVENTS-AS-TRUTH"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/intranet.ts",
+    v2Status: "v1-only",
   },
   {
     type: "DesignReviewComplete",
@@ -42,6 +43,7 @@ export const INTRANET_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     citationsHint: ["P1-EVENTS-AS-TRUTH"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/intranet.ts",
+    v2Status: "v1-only",
   },
   {
     type: "UXFindingRaised",
@@ -53,5 +55,6 @@ export const INTRANET_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     citationsHint: ["P1-EVENTS-AS-TRUTH"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/intranet.ts",
+    v2Status: "v1-only",
   },
 ];

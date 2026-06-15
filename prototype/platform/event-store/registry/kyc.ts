@@ -73,6 +73,7 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: kycIdentityCollectedPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["FIC-ACT-38-2001", "AML-CFT-POLICY-V1", "FATF-REC-10"],
+    v2Status: "v1-only",
   },
   {
     type: "KYCIdentityVerified",
@@ -84,6 +85,7 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: kycIdentityVerifiedPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["FIC-ACT-38-2001", "AML-CFT-POLICY-V1"],
+    v2Status: "v1-only",
   },
   {
     type: "KYCIdentityVerificationFailed",
@@ -95,6 +97,7 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: kycIdentityVerificationFailedPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["FIC-ACT-38-2001", "AML-CFT-POLICY-V1"],
+    v2Status: "v1-only",
   },
   // ---------------------------------------------------------------------------
   // Sanctions and PEP screening
@@ -109,6 +112,7 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: kycSanctionsPEPScreenedPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["FIC-ACT-38-2001", "FATF-REC-12", "AML-CFT-POLICY-V1"],
+    v2Status: "v1-only",
   },
   // ---------------------------------------------------------------------------
   // UBO resolution
@@ -123,6 +127,7 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: kycUBOResolvedPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["FIC-ACT-38-2001-S21B", "FATF-REC-10", "AML-CFT-POLICY-V1"],
+    v2Status: "v1-only",
   },
   // ---------------------------------------------------------------------------
   // Risk rating
@@ -137,6 +142,7 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: kycRiskRatedPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["FIC-ACT-38-2001", "FATF-REC-10", "AML-CFT-POLICY-V1"],
+    v2Status: "v1-only",
   },
   // ---------------------------------------------------------------------------
   // Enhanced due diligence
@@ -151,6 +157,7 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: kycEDDInitiatedPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["FIC-ACT-38-2001", "FATF-REC-12", "AML-CFT-POLICY-V1"],
+    v2Status: "v1-only",
   },
   {
     type: "KYCEDDCompleted",
@@ -162,6 +169,7 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: kycEDDCompletedPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["FIC-ACT-38-2001", "FATF-REC-12", "AML-CFT-POLICY-V1"],
+    v2Status: "v1-only",
   },
   // ---------------------------------------------------------------------------
   // Onboarding decision
@@ -176,6 +184,7 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: kycDecisionMadePayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["FIC-ACT-38-2001", "AML-CFT-POLICY-V1"],
+    v2Status: "v1-only",
   },
   {
     type: "ClientAccepted",
@@ -187,6 +196,7 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: clientAcceptedPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["FIC-ACT-38-2001", "AML-CFT-POLICY-V1", "FAIS-ACT-37-2002"],
+    v2Status: "v1-only",
   },
   {
     type: "ClientRejected",
@@ -198,6 +208,7 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: clientRejectedPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["FIC-ACT-38-2001", "AML-CFT-POLICY-V1"],
+    v2Status: "v1-only",
   },
   // ---------------------------------------------------------------------------
   // POPIA lawful processing
@@ -212,6 +223,7 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: lawfulProcessingRegisteredPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["POPIA-S11", "POPIA-S55"],
+    v2Status: "v1-only",
   },
   // ---------------------------------------------------------------------------
   // Periodic refresh lifecycle
@@ -226,6 +238,7 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: kycRefreshScheduledPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["FIC-ACT-38-2001", "AML-CFT-POLICY-V1"],
+    v2Status: "v1-only",
   },
   {
     type: "KYCRefreshCompleted",
@@ -237,6 +250,7 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: kycRefreshCompletedPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["FIC-ACT-38-2001", "AML-CFT-POLICY-V1"],
+    v2Status: "v1-only",
   },
   {
     type: "KYCRatingRevised",
@@ -248,6 +262,7 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: kycRatingRevisedPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["FIC-ACT-38-2001", "AML-CFT-POLICY-V1"],
+    v2Status: "v1-only",
   },
   // ---------------------------------------------------------------------------
   // FAIS counterparty categorisation
@@ -262,6 +277,7 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: counterpartyCategorisedPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["FAIS-ACT-37-2002", "FAIS-GCC-S2"],
+    v2Status: "v1-only",
   },
   {
     type: "CounterpartyDeclined",
@@ -273,6 +289,7 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: counterpartyDeclinedPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["FAIS-ACT-37-2002", "FAIS-GCC-S2"],
+    v2Status: "v1-only",
   },
   // ---------------------------------------------------------------------------
   // ODP client / counterparty categorisation — CS 2/2018 §4 + ORG-ODP-COND-002
@@ -291,5 +308,6 @@ export const KYC_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: odpCounterpartyCategorisedPayloadSchema,
     source: "platform/event-store/event-types/kyc.ts",
     citationsHint: ["CS-2-2018-S4", "ORG-ODP-COND-002", "FAIS-ACT-37-2002"],
+    v2Status: "v1-only",
   },
 ];

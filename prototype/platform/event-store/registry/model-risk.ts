@@ -46,6 +46,7 @@ export const MODEL_REGISTRY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // SR 11-7 / SS 1/23 + Companies Act decision-trail norms.
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Team/Nadia.md §11; Team/Rohan.md §11; platform/model-registry/registry.ts",
+    v2Status: "v1-only",
   },
   {
     type: "ModelTierClassified",
@@ -57,6 +58,7 @@ export const MODEL_REGISTRY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["RAS-B7", "SR-11-7"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Team/Nadia.md §9; platform/model-registry/registry.ts",
+    v2Status: "v1-only",
   },
   {
     type: "ModelValidationApproved",
@@ -68,6 +70,7 @@ export const MODEL_REGISTRY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["RAS-B7", "SR-11-7", "SS-1-23"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Team/Nadia.md §9; platform/model-registry/registry.ts",
+    v2Status: "v1-only",
   },
   {
     type: "ModelValidationWithheld",
@@ -79,6 +82,7 @@ export const MODEL_REGISTRY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["RAS-B7", "SR-11-7", "SS-1-23"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Team/Nadia.md §9; platform/model-registry/registry.ts",
+    v2Status: "v1-only",
   },
   {
     type: "ValidationFindingRaised",
@@ -90,6 +94,7 @@ export const MODEL_REGISTRY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["SR-11-7", "SS-1-23"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Team/Nadia.md §9; platform/model-registry/registry.ts",
+    v2Status: "v1-only",
   },
   {
     type: "ValidationFindingClosed",
@@ -101,6 +106,7 @@ export const MODEL_REGISTRY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["SR-11-7", "SS-1-23"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Team/Nadia.md §9; platform/model-registry/registry.ts",
+    v2Status: "v1-only",
   },
   // Backtest family — gates Rohan's S7-Targeted #4 backtest harness.
   // Co-evolved with Nadia's validation-event family; BacktestRun is the
@@ -115,6 +121,7 @@ export const MODEL_REGISTRY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["SR-11-7", "SS-1-23", "BANKS-ACT-94-1990"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Owner Inbox/2026-05-09_rohan_backtest-harness-v0-scoping.md §4.1; Team/Rohan.md §11",
+    v2Status: "v1-only",
   },
   {
     type: "BacktestRun",
@@ -126,6 +133,7 @@ export const MODEL_REGISTRY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["SR-11-7", "SS-1-23", "BCBS-VAR-BACKTEST-1996"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Owner Inbox/2026-05-09_rohan_backtest-harness-v0-scoping.md §4.2; Team/Rohan.md §11",
+    v2Status: "v1-only",
   },
   // Validation methodology family — gates Nadia's S7-Targeted #3
   // methodology library. Per Nadia §5.3 + §6 #3/#5 and Team/Nadia.md §11.
@@ -140,6 +148,7 @@ export const MODEL_REGISTRY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-09_nadia_validation-methodology-library-v0-scoping.md §5.3; Team/Nadia.md §11",
+    v2Status: "v1-only",
   },
   {
     type: "BacktestBreachDisposed",
@@ -152,6 +161,7 @@ export const MODEL_REGISTRY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-09_rohan_backtest-harness-v0-scoping.md §7 Q3+Q5; Team/Nadia.md §9, §11",
+    v2Status: "v1-only",
   },
   {
     type: "ModelDriftDetected",
@@ -163,6 +173,7 @@ export const MODEL_REGISTRY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["SR-11-7", "SS-1-23"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Team/Nadia.md §11",
+    v2Status: "v1-only",
   },
   {
     type: "ProductionUseRequested",
@@ -174,6 +185,7 @@ export const MODEL_REGISTRY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["SR-11-7", "SS-1-23"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Team/Nadia.md §11, §16",
+    v2Status: "v1-only",
   },
   {
     type: "MethodologyChangeRequested",
@@ -185,6 +197,7 @@ export const MODEL_REGISTRY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["SR-11-7", "SS-1-23"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Team/Nadia.md §11",
+    v2Status: "v1-only",
   },
   // Calculation-history provenance (D-TRUSTED-FIGURES-PROGRAM-V1). Emitted
   // whenever a surfaced regulatory figure is computed, binding it to an
@@ -200,5 +213,6 @@ export const MODEL_REGISTRY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-TRUSTED-FIGURES-PROGRAM-V1", "BANKS-ACT-94-1990"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/model-registry/calculation-binding.ts; D-TRUSTED-FIGURES-PROGRAM-V1",
+    v2Status: "v1-only",
   },
 ];

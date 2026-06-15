@@ -45,6 +45,7 @@ export const CLIMATE_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: climateScenarioRunPayloadSchema,
     citationsHint: ["D-RAS-CLIMATE-SCENARIO-FRAMEWORK", "PA-GN1-2024", "PROC-RISK-CR-01"],
     source: "platform/event-store/event-types/climate-risk.ts",
+    v2Status: "v1-only",
   },
   {
     type: "ClimateExposureRevalued",
@@ -56,5 +57,6 @@ export const CLIMATE_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: climateExposureRevaluedPayloadSchema,
     citationsHint: ["D-RAS-CLIMATE-SCENARIO-FRAMEWORK", "PA-GN1-2024", "PROC-RISK-CR-01"],
     source: "platform/event-store/event-types/climate-risk.ts",
+    v2Status: "v1-only",
   },
 ];

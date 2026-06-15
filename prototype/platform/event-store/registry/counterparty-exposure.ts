@@ -48,5 +48,6 @@ export const COUNTERPARTY_EXPOSURE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: counterpartyExposureCalculatedPayloadSchema,
     source: "platform/event-store/event-types/counterparty-exposure.ts",
+    v2Status: "v1-only",
   },
 ];

@@ -57,6 +57,7 @@ export const PRODUCT_CONTROL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: dailyPnLReportGeneratedPayloadSchema,
     citationsHint: ["D-FX-SALES-TRADING-FRONTEND", "IFRS-9-§5.7.1", "D-MARKETS-SCHEMA-FOUNDATION"],
     source: "platform/event-store/event-types/product-control.ts",
+    v2Status: "v1-only",
   },
   {
     type: "PnLAttributionGenerated",
@@ -68,6 +69,7 @@ export const PRODUCT_CONTROL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: pnlAttributionGeneratedPayloadSchema,
     citationsHint: ["D-TRUSTED-FIGURES-PROGRAM-V1", "IFRS-9-§5.7.1", "FRTB-PLA"],
     source: "platform/event-store/event-types/product-control.ts",
+    v2Status: "v1-only",
   },
   {
     type: "PnLAttributionExceptionRaised",
@@ -79,6 +81,7 @@ export const PRODUCT_CONTROL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: pnlAttributionExceptionRaisedPayloadSchema,
     citationsHint: ["D-TRUSTED-FIGURES-PROGRAM-V1", "IFRS-9-§5.7.1", "FRTB-PLA"],
     source: "platform/event-store/event-types/product-control.ts",
+    v2Status: "v1-only",
   },
   {
     type: "PnLSignedOff",
@@ -90,6 +93,7 @@ export const PRODUCT_CONTROL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: pnlSignedOffPayloadSchema,
     citationsHint: ["D-TRUSTED-FIGURES-PROGRAM-V1", "IFRS-9-§5.7.1", "FIN-BSS-01"],
     source: "platform/event-store/event-types/product-control.ts",
+    v2Status: "v1-only",
   },
   {
     type: "PnLCommentaryRecorded",
@@ -101,6 +105,7 @@ export const PRODUCT_CONTROL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: pnlCommentaryRecordedPayloadSchema,
     citationsHint: ["D-TRUSTED-FIGURES-PROGRAM-V1", "FRTB-PLA", "FIN-BSS-01"],
     source: "platform/event-store/event-types/product-control.ts",
+    v2Status: "v1-only",
   },
   {
     type: "PnLFlashRecorded",
@@ -112,6 +117,7 @@ export const PRODUCT_CONTROL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: pnlFlashRecordedPayloadSchema,
     citationsHint: ["D-TRUSTED-FIGURES-PROGRAM-V1", "IFRS-9-§5.7.1", "FIN-BSS-01"],
     source: "platform/event-store/event-types/product-control.ts",
+    v2Status: "v1-only",
   },
   {
     type: "PnLFlashActualReconciled",
@@ -123,5 +129,6 @@ export const PRODUCT_CONTROL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: pnlFlashActualReconciledPayloadSchema,
     citationsHint: ["D-TRUSTED-FIGURES-PROGRAM-V1", "IFRS-9-§5.7.1", "FIN-BSS-01"],
     source: "platform/event-store/event-types/product-control.ts",
+    v2Status: "v1-only",
   },
 ];

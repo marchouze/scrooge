@@ -137,6 +137,7 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE (CEO-approved 2026-06-03)",
+    v2Status: "v1-only",
   },
   {
     type: "CeoDecision",
@@ -152,6 +153,7 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
+    v2Status: "v1-only",
   },
   {
     type: "WorkstreamStarted",
@@ -163,6 +165,7 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Workstream lifecycle (pre-A0)",
+    v2Status: "v1-only",
   },
   {
     type: "WorkstreamCompleted",
@@ -174,6 +177,7 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Workstream lifecycle (pre-A0)",
+    v2Status: "v1-only",
   },
   // D-POLICY-DOCUMENT-HOME Option C (CEO-approved 2026-05-12).
   // Emitted once per versioned policy/charter/procedure/report registered in
@@ -190,6 +194,7 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // matches the Companies Act / BCBS-239 governance record floor.
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/recon/document-registration.ts",
+    v2Status: "v1-only",
   },
   // D-DECISIONS-FRAMEWORK-REDESIGN (CEO-approved 2026-05-16). Unified
   // Decision event family. Slice A adds the type alongside CeoDecision;
@@ -204,6 +209,7 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-DECISIONS-FRAMEWORK-REDESIGN", "GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/decision.ts",
+    v2Status: "v1-only",
   },
 ];
 
@@ -218,6 +224,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/audit.ts",
     payloadSchema: auditFindingPayloadSchema,
+    v2Status: "v1-only",
   },
   {
     type: "AuditFindingClosed",
@@ -229,6 +236,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/audit.ts",
     payloadSchema: auditFindingClosedPayloadSchema,
+    v2Status: "v1-only",
   },
   {
     type: "AuditIssueOpened",
@@ -240,6 +248,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/audit.ts",
     payloadSchema: auditIssueOpenedPayloadSchema,
+    v2Status: "v1-only",
   },
   {
     type: "AuditIssueClosed",
@@ -251,6 +260,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/audit.ts",
     payloadSchema: auditIssueClosedPayloadSchema,
+    v2Status: "v1-only",
   },
   {
     type: "ReconResult",
@@ -262,6 +272,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
+    v2Status: "v1-only",
   },
   // D-PROVENANCE-BUILD-PHASE-CLASS Slice 2 — audit event for envelope-axis
   // provenance re-tagging. Emitted by the build-phase-fixture backfill
@@ -277,6 +288,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-PROVENANCE-BUILD-PHASE-CLASS", "D-DATA-PROVENANCE-SUBSTRATE"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/provenance-reclassified.ts",
+    v2Status: "v1-only",
   },
   // D-G2-ENTITY-ID-BACKFILL — audit event for envelope-axis entity re-tagging.
   // Emitted by the entity-id-g2 backfill migrating BANK-ZA-001 → LE-ZA-HOZ-BANK.
@@ -292,6 +304,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-G2-ENTITY-ID-BACKFILL"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/entity-reclassified.ts",
+    v2Status: "v1-only",
   },
   {
     type: "CitationGatePassed",
@@ -303,6 +316,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["P2-CITATION-DISCIPLINE", "FIC-ACT-38-2001"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "runtime/agents/mira-citation-gate.ts",
+    v2Status: "v1-only",
   },
   {
     type: "CitationGateFailed",
@@ -314,6 +328,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["P2-CITATION-DISCIPLINE", "FIC-ACT-38-2001"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "runtime/agents/mira-citation-gate.ts",
+    v2Status: "v1-only",
   },
   {
     type: "SubstrateStateSnapshot",
@@ -326,6 +341,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Substrate-state is operational telemetry — runtime tier.
     retention: RETENTION_RUNTIME_1Y,
     source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
+    v2Status: "v1-only",
   },
   {
     type: "DashboardProjectionRefreshed",
@@ -337,6 +353,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_RUNTIME_1Y,
     source: "runtime/agents/anya-projection-refresh.ts",
+    v2Status: "v1-only",
   },
   {
     type: "DataProjectionSnapshot",
@@ -348,6 +365,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_RUNTIME_1Y,
     source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
+    v2Status: "v1-only",
   },
   {
     type: "DecisionComment",
@@ -359,6 +377,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "dashboard decision-comments thread (Phase 1 slice 2)",
+    v2Status: "v1-only",
   },
   {
     type: "GovernanceCyclePrep",
@@ -370,6 +389,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["COMPANIES-ACT-71-2008", "GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
+    v2Status: "v1-only",
   },
   {
     type: "ObligationsRegisterSnapshot",
@@ -383,6 +403,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // governance retention 7y for audit-trail integrity.
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
+    v2Status: "v1-only",
   },
   // M1 obligations-register family — emitted by Mira's
   // m1-regulator-citation-urns handler under D-MARKETS-SCHEMA-FOUNDATION
@@ -407,6 +428,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // 5-year record-keeping on CDD/EDD/transactions/STRs).
     source:
       "runtime/agents/mira-m1-regulator-citation-urns.ts; Team Inbox/2026-05-07_brief_mira_m1-regulator-citation-urns.md; D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md §5 (retention floor: ORG-CS3-009 + ORG-FC-05, ≥5y)",
+    v2Status: "v1-only",
   },
   {
     type: "M1CitationTrancheRegistered",
@@ -428,6 +450,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // for the per-run registration cohort).
     source:
       "runtime/agents/mira-m1-regulator-citation-urns.ts; Team Inbox/2026-05-07_brief_mira_m1-regulator-citation-urns.md; D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md §5 (retention floor: ORG-CS3-009 + ORG-FC-05, ≥5y)",
+    v2Status: "v1-only",
   },
   {
     type: "SecuritySubstrateSnapshot",
@@ -439,6 +462,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["JOINT-STANDARD-2-2024", "POPIA-S19-22"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
+    v2Status: "v1-only",
   },
   {
     type: "InboxHygieneSweep",
@@ -451,6 +475,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Inbox-hygiene sweeps are operational housekeeping — runtime tier.
     retention: RETENTION_RUNTIME_1Y,
     source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
+    v2Status: "v1-only",
   },
   // M1 markets-projection family — emitted by Anya's
   // m1-projection-runtime-mapping handler. Envelope-only at v0;
@@ -467,6 +492,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "runtime/agents/anya-m1-projection-runtime-mapping.ts; Team Inbox/2026-05-07_brief_anya_m1-projection-runtime-mapping.md",
+    v2Status: "v1-only",
   },
   {
     type: "MarketsProjectionRefreshed",
@@ -479,6 +505,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // High-cadence refresh — runtime tier.
     retention: RETENTION_RUNTIME_1Y,
     source: "runtime/agents/anya-m1-projection-runtime-mapping.ts",
+    v2Status: "v1-only",
   },
   // M1 security family — emitted by Senna's m1-trading-stack-threat-model handler.
   {
@@ -491,6 +518,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["ORG-CY-01", "ORG-CY-03", "ORG-CY-05", "ORG-PR(IV)-06"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "runtime/agents/senna-m1-trading-stack-threat-model.ts",
+    v2Status: "v1-only",
   },
   {
     type: "SecurityGateRegistered",
@@ -502,6 +530,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["ORG-CY-01", "ORG-CY-03", "GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "runtime/agents/senna-m1-trading-stack-threat-model.ts",
+    v2Status: "v1-only",
   },
 ];
 
@@ -537,6 +566,7 @@ export const LEGAL_ENTITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md §6; Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-legal-entity-tree-v0.md (PR #82); Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md (PR #85); Regulations/_legal-entity-tree.md",
+    v2Status: "v1-only",
   },
   {
     type: "LegalEntityChanged",
@@ -549,6 +579,7 @@ export const LEGAL_ENTITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md §6.2; Regulations/_legal-entity-tree.md",
+    v2Status: "v1-only",
   },
   {
     type: "IntraGroupArrangementSigned",
@@ -568,6 +599,7 @@ export const LEGAL_ENTITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_ACCOUNTING_7Y,
     source:
       "Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md §2 (intra-group arrangement stubs); Regulations/_legal-entity-tree.md §2",
+    v2Status: "v1-only",
   },
 ];
 
@@ -598,6 +630,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/types.ts; domains/party/schemas.ts",
+    v2Status: "v1-only",
   },
   {
     type: "PartyAttributeChanged",
@@ -615,6 +648,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts",
+    v2Status: "v1-only",
   },
   {
     type: "PartyClassified",
@@ -632,6 +666,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts",
+    v2Status: "v1-only",
   },
   {
     type: "PartyDeclassified",
@@ -649,6 +684,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts",
+    v2Status: "v1-only",
   },
   {
     type: "PartyScreeningCompleted",
@@ -668,6 +704,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_FIC_5Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts",
+    v2Status: "v1-only",
   },
   {
     type: "PartyRelationshipAsserted",
@@ -689,6 +726,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-relationship-kinds-v0.md; domains/party/schemas.ts (RELATIONSHIP_KIND_CONSTRAINTS)",
+    v2Status: "v1-only",
   },
   {
     type: "PartyRelationshipChanged",
@@ -706,6 +744,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-relationship-kinds-v0.md; domains/party/schemas.ts",
+    v2Status: "v1-only",
   },
   {
     type: "PartyRelationshipRevoked",
@@ -723,6 +762,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-relationship-kinds-v0.md; domains/party/schemas.ts",
+    v2Status: "v1-only",
   },
   {
     type: "BeneficialOwnerChainAsserted",
@@ -741,6 +781,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_FIC_5Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts (chain-shape enforcement)",
+    v2Status: "v1-only",
   },
   {
     type: "PartyDeactivated",
@@ -758,6 +799,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts",
+    v2Status: "v1-only",
   },
 ];
 
@@ -776,6 +818,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #1; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+    v2Status: "v1-only",
   },
   {
     type: "ProductConceptualised",
@@ -788,6 +831,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #2; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+    v2Status: "v1-only",
   },
   {
     type: "ProductDueDiligenceCompleted",
@@ -800,6 +844,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #3; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+    v2Status: "v1-only",
   },
   {
     type: "ProductDueDiligenceWithheld",
@@ -812,6 +857,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #4; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+    v2Status: "v1-only",
   },
   {
     // Per Q2 resolution: per-dimension agent emits its own attestation —
@@ -827,6 +873,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #5 + §5; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2 (Q2 + Q3 resolutions)",
+    v2Status: "v1-only",
   },
   {
     type: "ProductApproved",
@@ -853,6 +900,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #6; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+    v2Status: "v1-only",
   },
   {
     type: "ProductWithheld",
@@ -865,6 +913,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #7; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2 (Q4 explicit-decision resolution)",
+    v2Status: "v1-only",
   },
   {
     type: "ProductLaunched",
@@ -877,6 +926,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #8; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+    v2Status: "v1-only",
   },
   {
     type: "ProductPostImplementationReviewCompleted",
@@ -889,6 +939,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #9; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+    v2Status: "v1-only",
   },
   {
     type: "ProductReviewCompleted",
@@ -901,6 +952,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #10 (annual cadence); D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+    v2Status: "v1-only",
   },
   {
     type: "ProductRetired",
@@ -913,6 +965,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #11 (binds Imani migration-clause); D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
+    v2Status: "v1-only",
   },
   {
     // Per Q5 resolution: material change increments version on the same
@@ -927,6 +980,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #12; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2 (Q5 same-productId resolution)",
+    v2Status: "v1-only",
   },
   {
     // Post-approval finding (D-NPA-POST-APPROVAL-FINDING-REVIEW, CEO-approved
@@ -947,6 +1001,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "PROC-NPA-GATE-01 Step 14; D-NPA-POST-APPROVAL-FINDING-REVIEW (CEO-approved 2026-06-15)",
+    v2Status: "v1-only",
   },
   {
     // Retrospective review by the dimension's responsible agent
@@ -967,6 +1022,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "PROC-NPA-GATE-01 Step 14; D-NPA-POST-APPROVAL-FINDING-REVIEW (CEO-approved 2026-06-15)",
+    v2Status: "v1-only",
   },
   {
     // Narrative-request marker. Raised when the Products page (or any
@@ -984,6 +1040,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "NPA Policy v1.0 §5 (dimension owners); Products page narrative slot per the per-dimension agent-authored position requirement.",
+    v2Status: "v1-only",
   },
   {
     // Narrative-recorded canonical artefact (Principle 1: narrative-as-event).
@@ -998,6 +1055,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "NPA Policy v1.0 §5 (dimension owners); Products page narrative slot per the per-dimension agent-authored position requirement.",
+    v2Status: "v1-only",
   },
 ];
 
@@ -1021,6 +1079,7 @@ export const RMS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_RUNTIME_1Y,
     source:
       "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.1; D-RMS-PHASE-1 Slice 2",
+    v2Status: "v1-only",
   },
   {
     type: "DecisionRequested",
@@ -1036,6 +1095,7 @@ export const RMS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.4; D-RMS-PHASE-1 Slice 2",
+    v2Status: "v1-only",
   },
   {
     type: "Feedback",
@@ -1051,6 +1111,7 @@ export const RMS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.6; D-RMS-PHASE-1 Slice 2",
+    v2Status: "v1-only",
   },
   {
     type: "BriefSuperseded",
@@ -1063,6 +1124,7 @@ export const RMS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_RUNTIME_1Y,
     source:
       "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.7; D-RMS-PHASE-1 Slice 2",
+    v2Status: "v1-only",
   },
   {
     type: "RecordFiled",
@@ -1081,6 +1143,7 @@ export const RMS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.8; D-RMS-PHASE-1 Slice 2",
+    v2Status: "v1-only",
   },
 ];
 
@@ -1109,6 +1172,7 @@ export const RAS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_zara-helena_regulatory-readiness-gate-plan.md §3 W2 Slice 2; D-REGULATORY-READINESS-W2-SLICE-2",
+    v2Status: "v1-only",
   },
 ];
 
@@ -1130,6 +1194,7 @@ export const READINESS_SNAPSHOT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_FIC_5Y,
     source:
       "runtime/agents/zara-mlro-supervision.ts; D-REGULATORY-READINESS-GATE-PLAN; Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-032)",
+    v2Status: "v1-only",
   },
   {
     type: "AccountingReadinessSnapshot",
@@ -1142,6 +1207,7 @@ export const READINESS_SNAPSHOT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_ACCOUNTING_7Y,
     source:
       "runtime/agents/bea-accounting-readiness.ts; D-REGULATORY-READINESS-GATE-PLAN; Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-032)",
+    v2Status: "v1-only",
   },
   {
     type: "AgentOpsReadinessSnapshot",
@@ -1154,6 +1220,7 @@ export const READINESS_SNAPSHOT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "runtime/agents/sade-agentops-readiness.ts; D-REGULATORY-READINESS-GATE-PLAN; Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-032)",
+    v2Status: "v1-only",
   },
 ];
 
@@ -1168,6 +1235,7 @@ export const PERFORMANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-GV-21"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/agents/performance-evaluator.ts; platform/agents/performance-runner.ts",
+    v2Status: "v1-only",
   },
   {
     type: "AgentFeedbackIssued",
@@ -1179,6 +1247,7 @@ export const PERFORMANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/agents/performance-feedback.ts; platform/agents/performance-runner.ts",
+    v2Status: "v1-only",
   },
 ];
 
@@ -1207,5 +1276,6 @@ export const ANALYTICS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     source:
       "platform/event-store/event-types/analytics.ts (factory); platform/semantic-layer/seed.ts (boot-time emission)",
+    v2Status: "v1-only",
   },
 ];

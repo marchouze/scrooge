@@ -46,5 +46,6 @@ export const OPERATIONAL_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[]
     payloadSchema: operationalLossEventPayloadSchema,
     citationsHint: ["D-FX-HELD-DIMS-SEAT-SWEEP", "BCBS-D196-§644", "REG-33"],
     source: "platform/event-store/event-types/operational-risk.ts",
+    v2Status: "v1-only",
   },
 ];

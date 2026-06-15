@@ -59,5 +59,6 @@ export const POLICY_ACTIVATION_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
       "P1-EVENTS-AS-TRUTH",
     ],
     source: "platform/event-store/event-types/policy-activation.ts",
+    v2Status: "v1-only",
   },
 ];

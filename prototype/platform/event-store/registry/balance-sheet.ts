@@ -37,5 +37,6 @@ export const BALANCE_SHEET_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     payloadSchema: balanceSheetProjectedPayloadSchema,
     citationsHint: ["BA-120", "BCBS-D396", "BANKS-ACT-REG-26A", "D-TREASURY-GAPS-WAVE1"],
     source: "platform/event-store/event-types/balance-sheet.ts",
+    v2Status: "v1-only",
   },
 ];

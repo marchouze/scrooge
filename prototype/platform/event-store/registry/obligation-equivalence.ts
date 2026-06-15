@@ -56,5 +56,6 @@ export const OBLIGATION_EQUIVALENCE_EVENT_TYPES_REGISTRY: readonly EventTypeMeta
     payloadSchema: obligationEquivalenceClassifiedPayloadSchema,
     citationsHint: SHARED_CITATIONS,
     source: "platform/event-store/event-types/obligation-equivalence.ts",
+    v2Status: "v1-only",
   },
 ];

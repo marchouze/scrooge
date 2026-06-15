@@ -48,6 +48,7 @@ export const VALUATION_ADJUSTMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     payloadSchema: valuationAdjustmentComputedPayloadSchema,
     citationsHint: ["IFRS-13", "accounting-policies-ifrs-v1-§3.3", "D-TRUSTED-FIGURES-PROGRAM-V1"],
     source: "platform/event-store/event-types/valuation-adjustment.ts",
+    v2Status: "v1-only",
   },
   {
     type: "Day1PnLDeferralRecorded",
@@ -59,6 +60,7 @@ export const VALUATION_ADJUSTMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     payloadSchema: day1PnLDeferralRecordedPayloadSchema,
     citationsHint: ["IFRS-13", "accounting-policies-ifrs-v1-§3.3"],
     source: "platform/event-store/event-types/valuation-adjustment.ts",
+    v2Status: "v1-only",
   },
   {
     type: "PrudentValuationAvaAggregated",
@@ -70,5 +72,6 @@ export const VALUATION_ADJUSTMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     payloadSchema: prudentValuationAvaAggregatedPayloadSchema,
     citationsHint: ["CRR-Art-105", "valuation-policy-v1-§7", "D-TRUSTED-FIGURES-PROGRAM-V1"],
     source: "platform/event-store/event-types/valuation-adjustment.ts",
+    v2Status: "v1-only",
   },
 ];

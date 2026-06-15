@@ -37,6 +37,7 @@ export const OBLIGATION_LIFECYCLE_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     payloadSchema: obligationAdoptedPayloadSchema,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/obligation-lifecycle.ts",
+    v2Status: "v1-only",
   },
   {
     type: "ObligationLifecycleTransitioned",
@@ -48,6 +49,7 @@ export const OBLIGATION_LIFECYCLE_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     payloadSchema: obligationLifecycleTransitionedPayloadSchema,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/obligation-lifecycle.ts",
+    v2Status: "v1-only",
   },
   {
     type: "ProvisionScopeAdopted",
@@ -59,5 +61,6 @@ export const OBLIGATION_LIFECYCLE_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     payloadSchema: provisionScopeAdoptedPayloadSchema,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/obligation-lifecycle.ts",
+    v2Status: "v1-only",
   },
 ];

@@ -38,6 +38,7 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // consistent with FSCA inspection / Banks Act s.91 audit requirements.
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/regulatory/concept-extractor.ts; Mira horizon-scan pilot",
+    v2Status: "v1-only",
   },
   {
     type: "RegulatoryInstrumentAmended",
@@ -49,6 +50,7 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["FAIS-ACT-37-2002", "ORG-CD-01"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/regulatory/concept-extractor.ts; Mira horizon-scan pilot",
+    v2Status: "v1-only",
   },
   {
     type: "RegulatoryInstrumentContextualised",
@@ -60,6 +62,7 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["FAIS-ACT-37-2002", "ORG-CD-01"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/regulatory/concept-extractor.ts; Mira horizon-scan pilot",
+    v2Status: "v1-only",
   },
   {
     type: "RegulatoryConceptExtracted",
@@ -72,6 +75,7 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["FAIS-ACT-37-2002", "ORG-CD-01"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/regulatory/concept-extractor.ts; Mira horizon-scan pilot",
+    v2Status: "v1-only",
   },
   {
     type: "ObligationConceptLinked",
@@ -83,6 +87,7 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["FAIS-ACT-37-2002", "ORG-CD-01"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/regulatory/obligation-linker.ts; Mira horizon-scan pilot",
+    v2Status: "v1-only",
   },
   {
     type: "RegulatorySourceReviewed",
@@ -96,6 +101,7 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-REGULATORY-LIBRARY-V1", "ORG-CD-01"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "scripts/backfill-regulatory-reviews.ts; platform/regulatory review-marker (Phase 1)",
+    v2Status: "v1-only",
   },
   {
     type: "GraphNodeAsserted",
@@ -107,6 +113,7 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["ORG-CD-01"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/regulatory/graph/seed-projection.ts; Mira regulatory knowledge graph",
+    v2Status: "v1-only",
   },
   {
     type: "GraphEdgeAsserted",
@@ -118,5 +125,6 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["ORG-CD-01"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/regulatory/graph/seed-projection.ts; Mira regulatory knowledge graph",
+    v2Status: "v1-only",
   },
 ];

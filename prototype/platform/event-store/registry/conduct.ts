@@ -63,6 +63,7 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: conductComplaintFiledPayloadSchema,
     source: "platform/event-store/event-types/conduct.ts",
+    v2Status: "v1-only",
   },
   {
     type: "ConductComplaintResolved",
@@ -73,6 +74,7 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: conductComplaintResolvedPayloadSchema,
     source: "platform/event-store/event-types/conduct.ts",
+    v2Status: "v1-only",
   },
   {
     type: "ConductIncidentLogged",
@@ -83,6 +85,7 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: conductIncidentLoggedPayloadSchema,
     source: "platform/event-store/event-types/conduct.ts",
+    v2Status: "v1-only",
   },
   {
     type: "BestExecutionAnalysisCompleted",
@@ -93,6 +96,7 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: bestExecutionAnalysisCompletedPayloadSchema,
     source: "platform/event-store/event-types/conduct.ts",
+    v2Status: "v1-only",
   },
   {
     type: "ConductDisclosureEmitted",
@@ -103,6 +107,7 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: conductDisclosureEmittedPayloadSchema,
     source: "platform/event-store/event-types/conduct.ts",
+    v2Status: "v1-only",
   },
   // ---------------------------------------------------------------------------
   // Trade-level conduct risk event types (M3 Slice 9 extension)
@@ -121,6 +126,7 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: conductObligationFlaggedPayloadSchema,
     source: "platform/event-store/event-types/conduct.ts",
+    v2Status: "v1-only",
   },
   {
     type: "BestExecutionVerified",
@@ -131,6 +137,7 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: bestExecutionVerifiedPayloadSchema,
     source: "platform/event-store/event-types/conduct.ts",
+    v2Status: "v1-only",
   },
   {
     type: "BestExecutionBreached",
@@ -141,6 +148,7 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: bestExecutionBreachedPayloadSchema,
     source: "platform/event-store/event-types/conduct.ts",
+    v2Status: "v1-only",
   },
   {
     type: "MarketConductAlertRaised",
@@ -151,6 +159,7 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: marketConductAlertRaisedPayloadSchema,
     source: "platform/event-store/event-types/conduct.ts",
+    v2Status: "v1-only",
   },
   {
     type: "FaisClassificationSuitabilityChecked",
@@ -161,6 +170,7 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: faisClassificationSuitabilityCheckedPayloadSchema,
     source: "platform/event-store/event-types/conduct.ts",
+    v2Status: "v1-only",
   },
   {
     type: "ConflictOfInterestDisclosed",
@@ -171,6 +181,7 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: conflictOfInterestDisclosedPayloadSchema,
     source: "platform/event-store/event-types/conduct.ts",
+    v2Status: "v1-only",
   },
   // ---------------------------------------------------------------------------
   // ConductEventRecorded — counterparty conduct surveillance observation record.
@@ -201,6 +212,7 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
       "FINANCIAL-MARKETS-ACT-19-2012-S78",
       "FSRA-S131",
     ],
+    v2Status: "v1-only",
   },
   // ---------------------------------------------------------------------------
   // FeeDisclosureEvent — fee / spread transparency disclosure record.
@@ -232,6 +244,7 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
       "D-FX-SALES-TRADING-FRONTEND",
       "PROC-PAY-RBH-01",
     ],
+    v2Status: "v1-only",
   },
   // ---------------------------------------------------------------------------
   // BestExecutionPolicySchedule — CCO-published best-execution tolerance
@@ -269,5 +282,6 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
       "D-MARKET-CONDUCT",
       "D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH",
     ],
+    v2Status: "v1-only",
   },
 ];
