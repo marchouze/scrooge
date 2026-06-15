@@ -96,6 +96,18 @@ No trade may be executed in any product before `ProductApproved` exists in the e
   8. **Scope enforcement — no silent out-of-scope absorption (NPA Policy v2 §1 / Item 9, Amendment D).** No trade-execution event may reference a `productId` with a currency / tenor / leg-type / counterparty / venue outside that product's `ProductApproved.scope`; an out-of-scope trade must be rejected pre-booking, never booked-and-routed to a suspense / default account (e.g. `ACC-2100-007`). A booked out-of-scope trade absorbed into suspense is a reportable NPA-gate breach.
   9. **`ProductApproved` = fully approved.** `ProductApproved` signals that all 14 NPA dimensions satisfy the gate (either `implementation-attested` or `design-attested` with explicit tracked conditions). Design-attested alone — without at least one `ProductDeferredGap` entry carrying owner + targetTrigger + citations — is insufficient for `ProductApproved`. Authority: D-NPA-GATE-POLICY-REDESIGN (CEO 2026-06-15).
   10. **Every design-attested dimension at approval must carry at least one tracked deferred gap (owner + trigger + citations).** This invariant is enforced pre-approval by `validateNpaGate` (returns `ready: false` when the condition is absent) and post-approval by `recon:product-approval-attestation-integrity` (severity: fail). A `ProductApproved` preceded by a `design-attested`-no-gaps dimension is a governance bypass, surfaced by Vera on every CI run. Authority: D-NPA-GATE-POLICY-REDESIGN (CEO 2026-06-15); enforced by `recon:npa-gate-integrity`.
+  11. **Post-approval finding SLA (D-NPA-POST-APPROVAL-FINDING-REVIEW, CEO-approved 2026-06-15).** Every `ProductPostApprovalFinding` (critical or high) must have a matching `ProductDimensionRetrospectiveReview` within 30 calendar days of `discoveredAt`; medium severity within 90 days. This obligation is active immediately — **no licence-day deferral**. Enforced by `recon:npa-post-approval-finding-review` (BLOCKING).
+
+- **Step 14 — Post-approval finding protocol (standing; effective immediately in pre-licence phase).**
+
+  If any agent, recon gate, or audit review surfaces a defect traceable to this product after `ProductApproved` has been emitted — including during the pre-licence build phase:
+
+  1. The discovering agent emits `ProductPostApprovalFinding { productId, findingId, severity, title, description, discoveredBy, discoveredAt, missedDimension, findingTrigger, citations }`. This is mandatory and may not be deferred to licence-day.
+  2. Scrooge surfaces the open finding at the start of the next status report (per `D-PROACTIVE-ESCALATION-SURFACING`); a `SubstrateAlert { alertClass:"integrity", severity:"high" }` is also emitted.
+  3. The responsible agent for `missedDimension` emits `ProductDimensionRetrospectiveReview { productId, findingId, dimension, reviewedBy, reviewedAt, rootCause, correctiveAction, revisedAttestation }` within the SLA (30 days critical/high; 90 days medium).
+  4. If `revisedAttestation: "strengthened"`, the agent emits a new `ProductDimensionAttested` with updated conditions. If the approved scope was wrong, a `ProductWithheld` + re-gate cycle is triggered.
+
+  Authority: D-NPA-POST-APPROVAL-FINDING-REVIEW (CEO-approved 2026-06-15); PROC-NPA-GATE-01 §6 invariant 11.
 
 - **Failure mode:** if the product-register substrate is unavailable, the gate cannot be convened. No workaround path exists — the gate is a hard dependency (fail-closed).
 
