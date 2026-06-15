@@ -404,6 +404,12 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
       "Reviewer/decider run topology with blocking semantics and a retrospective recon gate. Dispatch-lifecycle mechanics of the agent substrate \u2014 pure backbone.",
   },
   {
+    decisionId: "D-DOMAIN-OWNER-REAUTHOR",
+    class: "directional",
+    rationale:
+      "Re-authors this bank's obligation owners to the v3 accountable seats (ownership-drift remediation). Tenant-specific application of the domain-ownership map.",
+  },
+  {
     decisionId: "D-DOMAIN-OWNERSHIP-MAP",
     class: "foundational",
     rationale:
@@ -656,6 +662,12 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
       "Broadens this bank's FX NPA to the umbrella OTC vanilla product (Spot/Forward/Swap). Tenant product approval.",
   },
   {
+    decisionId: "D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL",
+    class: "directional",
+    rationale:
+      "Withdraws this bank's current ProductApproved for prd:bank:fx:otc-vanilla pending NPA-gap remediation. Tenant product-approval lifecycle decision.",
+  },
+  {
     decisionId: "D-FX-PNL-INSTRUMENT-LEVEL-VALUATION",
     class: "foundational",
     rationale:
@@ -802,6 +814,12 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
     rationale:
       "Ingests IASB/IFRS instruments into the objective layer. Global accounting-standards reference content reusable by any tenant.",
     citations: ["D-REGULATORY-INTELLIGENCE-OBJECTIVE-LAYER"],
+  },
+  {
+    decisionId: "D-IFRS-ACCOUNTING-POSTURE-BUILD-PHASE",
+    class: "directional",
+    rationale:
+      "This bank's build-phase IFRS accounting-policy elections (hedge accounting not applied; FVOCI-equity, fair-value option, puttable-as-equity not held) seeded as posture dimensions to discriminate IFRS obligation applicability. Tenant accounting-policy posture.",
   },
   {
     decisionId: "D-IFRS-THRESHOLDS-CFO-RATIFY-NEXT-ICAAP",
@@ -981,6 +999,18 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
     decisionId: "D-NPA-FX-SPOT-INTERNAL-TEST",
     class: "directional",
     rationale: "Approves FX-spot for internal pre-licence test scope. Tenant product approval.",
+  },
+  {
+    decisionId: "D-NPA-GATE-POLICY-REDESIGN",
+    class: "foundational",
+    rationale:
+      "Redesigns the new-product-approval gate semantics (approved = fully approved; gate manages pre-approval requirements; approved-with-conditions allowed with active tracking). Platform NPA-gate mechanism; generalises to any tenant.",
+  },
+  {
+    decisionId: "D-NPA-SCOPE-FIX-COUNTERPARTY-ELIGIBILITY",
+    class: "directional",
+    rationale:
+      "Fixes this bank's OTC FX counterpartyEligibility scope to 'institutional' at v1.0. Tenant product-scope correction.",
   },
   {
     decisionId: "D-OBLIGATION-DECOMPOSITION-PARAGRAPH-LEVEL",
@@ -1836,10 +1866,10 @@ export const DECISION_CLASSIFICATIONS: readonly DecisionClassification[] = [
 ];
 
 /** Snapshot count of approved decisionIds covered at authoring time. */
-export const DECISION_CLASSIFICATION_COUNT = 293;
+export const DECISION_CLASSIFICATION_COUNT = 298;
 
 export const DECISION_CLASSIFICATION_COUNTS = {
-  foundational: 119,
-  directional: 149,
+  foundational: 120,
+  directional: 153,
   obsolete: 25,
 } as const;
