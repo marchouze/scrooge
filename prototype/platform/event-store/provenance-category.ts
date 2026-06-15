@@ -120,6 +120,13 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   // D-W8-DECISION-IMPACT-SWEEP; D-V2-BBAAS-BLUEPRINT-SYNTHESIS; Principle 1.
   DecisionImpactSweepRequested: "governance",
   DecisionImpactAssessed: "governance",
+  // WS-V2-BBAAS W8 Slice D — per-seat context pack builder. A ContextPackBuilt
+  // event records what a seat "knew" when it acted (posture slice, applicable
+  // obligations, open queue, decision-impact items). Real governance audit
+  // record — makes "what did the agent know?" answerable from the event log
+  // (Principle 1). Authority: D-W8-PARAMETRIC-TRAINING-POSITION;
+  // D-W8-EXAM-GOVERNANCE; D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
+  ContextPackBuilt: "governance",
   // WS-V2-BBAAS S12 — cross-tenant CSI gate (competition-law keystone). The CSI
   // blocklist register + every cross-tenant learning crossing are real
   // governance / competition-law records (Competition Act 89/1998 s.4(1)),

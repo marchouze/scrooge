@@ -5240,6 +5240,51 @@ const server = Bun.serve({
       return new Response(null, { status: 302, headers: { Location: "/sim-hub" } });
     }
 
+    // ----- W8 Slice D: per-seat context pack -----
+    // GET /api/context-pack/:seatId — returns the latest ContextPackBuilt
+    // payload for a seat, together with the full pack details projected from
+    // the live event store. Read-only; emits no events.
+    // Authority: D-W8-PARAMETRIC-TRAINING-POSITION; D-W8-EXAM-GOVERNANCE.
+    if (url.pathname.startsWith("/api/context-pack/") && req.method === "GET") {
+      const seatId = url.pathname.slice("/api/context-pack/".length).split("/")[0];
+      if (!seatId) {
+        return new Response(JSON.stringify({ error: "seatId required" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      // Load all relevant events.
+      const RELEVANT_CP_TYPES = [
+        "PostureRegistered",
+        "ApplicabilityAssessmentRequested",
+        "ApplicabilityAssessmentConcluded",
+        "DecisionImpactAssessed",
+      ];
+      const cpRawEvents: Array<{ type: string; as_of?: string; payload: unknown }> = [];
+      for (const evType of RELEVANT_CP_TYPES) {
+        for (const ev of eventStore.replay({ type: evType })) {
+          cpRawEvents.push(ev as { type: string; as_of?: string; payload: unknown });
+        }
+      }
+      // Also fetch the latest ContextPackBuilt event for this seat.
+      let latestBuiltPayload: Record<string, unknown> | null = null;
+      for (const ev of eventStore.replay({ type: "ContextPackBuilt" })) {
+        const p = (ev as { payload: Record<string, unknown> }).payload;
+        if (String(p.seatId ?? "") === seatId) {
+          latestBuiltPayload = p;
+        }
+      }
+      const { buildContextPack: cpBuild } = await import("../v2-core/context-pack/builder");
+      const asOf = nowUtc().slice(0, 10);
+      const pack = cpBuild(seatId, cpRawEvents as Parameters<typeof cpBuild>[1], asOf);
+      return jsonResponse({
+        seatId,
+        asOf,
+        latestBuiltEvent: latestBuiltPayload,
+        pack,
+      });
+    }
+
     // ----- 3rd-party simulator hub routes -----
     if (url.pathname.startsWith("/api/sim/")) {
       const hubResponse = await registerSimHubRoutes(
