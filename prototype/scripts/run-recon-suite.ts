@@ -234,6 +234,12 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:v1-removal-ratchet",
     "recon:v1-only-count-trend",
     "recon:fx-v2-parity",
+    // D-V1-REMOVAL-PHASE-3A — V2 GL posting engine parity gate (advisory).
+    // Compares V1 SubLedgerPostingEmitted trial balance with V2 GlPostingEmitted
+    // trial balance. Advisory (ok: true even with warn violations) until V2 covers
+    // all 42 posting rules. V1-only accounts produce expected warn violations;
+    // V2-only accounts (if any) or amount mismatches on common accounts fail.
+    "recon:gl-v2-parity",
   ],
   domain: [
     "recon:prose-duplication",

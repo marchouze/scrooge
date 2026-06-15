@@ -225,6 +225,11 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   // IAS 21 §28 forward-points daily amortisation — an accounting accrual event.
   // (D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL gap closure, 2026-06-15).
   FxForwardPointsAccrued: "accounting",
+  // Phase 3A — V2 GL posting event (D-V1-REMOVAL-PHASE-3A). V2 parallel to
+  // SubLedgerPostingEmitted. GL postings are accounting artefacts; must survive
+  // config-only purges. The Gl* prefix heuristic (line ~282) already covers this
+  // type name, but explicit listing takes precedence over heuristics.
+  GlPostingEmitted: "accounting",
   // --- Market-data / valuation / MtM / AVA / exposure computations ---
   // Daily MtM run summary (total P&L delta from revaluation) — a valuation run.
   MtmRunCompleted: "market-data",
