@@ -66,14 +66,11 @@
 //   D-REGULATORY-READINESS-GATE-PLAN (CEO-approved 2026-05-10)
 // Author: Bea (Accounting & financial reporting engineer, engineering)
 
+import type { FilInstanceLifecycleEvent } from "../../v2-core/fil-instances";
+import { type SaCcrNettingSet, computeSaCcr } from "../../v2-core/fil-models/sa-ccr";
 import { buildRateMap, convertMinor } from "../accounting/fx-rate-projection";
 import { rwaInstrumentClassWeights } from "../config/financial-constants";
-import { minorFromMoneyWire } from "../core/money-codec";
 import type { BondTradeExecutedPayload } from "../event-store/event-types/bond-accounting";
-import {
-  type CcrEadComputedPayloadV2Type,
-  normalizeCcrEadPayload,
-} from "../event-store/event-types/counterparty-credit-risk";
 import type {
   InterbankLoanPlacedPayload,
   RepoTradeOpenedPayload,
@@ -82,6 +79,7 @@ import type { EventStore } from "../event-store/store";
 import { isLiveInstance, resolveTradeLifecycle } from "../lifecycle/trade-lifecycle-state";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import type { IrsTradeBookedPayload } from "../markets/cdm/ird";
+import { resolveNettingSet } from "../markets/netting-sets";
 import { logger } from "../observability/logger";
 import { resolveAllCounterpartyClasses } from "../risk/counterparty-classification";
 import {
@@ -91,6 +89,11 @@ import {
   type TradingBookPosition,
   computeRwa,
 } from "../risk/rwa-engine";
+import { buildSaCcrTradeSummariesFromFilInstances } from "../risk/sa-ccr/fil-instance-positions";
+import {
+  sourceCollateralFromRegister,
+  sourceVMtmFromValuableFeed,
+} from "../risk/sa-ccr/fil-valuable-collateral-feed";
 import { requireWeight } from "../types/financial-input";
 import {
   type ProvenanceFilter,
@@ -190,6 +193,7 @@ export function computeRwaFromPositions(
   eventStore: EventStore,
   asOf: string,
   filter?: ProvenanceFilter,
+  filInstanceEvents?: FilInstanceLifecycleEvent[],
 ): RwaFromPositionsResult {
   // Load market-risk weights from the canonical registry (CRO-owned,
   // cited — same pattern as rwa-delta.ts).
@@ -326,26 +330,18 @@ export function computeRwaFromPositions(
   }
 
   // -------------------------------------------------------------------------
-  // 3b. CcrEadComputed → CreditExposure (FX/IRS derivative counterparty default
-  //     risk). SA-CCR EAD is correctly counterparty-class-AGNOSTIC (BCBS CRE52);
-  //     the counterparty class is applied HERE at the risk-weight step
-  //     (CreditRWA = EAD × RW). Pending an authoritative counterparty Basel-
-  //     classification, this uses the most-punitive standard performing class
-  //     (corporate-non-ig, unrated → 100% RW) as a PRUDENT interim — it OVER-
-  //     states capital and refines DOWN as classification lands. Latest EAD per
-  //     netting set wins (SA-CCR re-emits at each close).
-  //
-  //     UPSTREAM DEPENDENCY (this path is READY but currently INERT): SA-CCR has
-  //     no production emitter yet (`computeAndEmitFor` is unwired), so there are
-  //     no CcrEadComputed events to consume today and this contributes 0 to
-  //     CreditRWA until SA-CCR is invoked to emit (Rohan). Currency: the RWA
-  //     engine sums eadMinor in functional currency without FX conversion, so
-  //     only ZAR-denominated netting sets are consumed (FX/IRS netting sets are
-  //     ZAR today: FX MTM = unrealisedPnlZarMinor; ZARONIA IRS = ZAR). Non-ZAR
-  //     EAD is skipped pending a conversion step (follow-up), never mis-summed.
+  // 3b. FIL SA-CCR → CreditExposure (FX/IRS derivative counterparty default
+  //     risk). Trade/netting structure sourced from the FIL instance register
+  //     (buildSaCcrTradeSummariesFromFilInstances); vMtm from the Valuable feed
+  //     (latest *Revalued event-of-record per trade); collateral from the
+  //     collateral-inventory register. EAD is converted to ZAR when non-ZAR.
+  //     Counterparty class from the CRO-assigned register; prudent interim
+  //     (corporate-non-ig, unrated, 100% RW) when unclassified.
   //
   //     Authority: D-FX-CCR-INTERIM-CONSERVATIVE-RWA (CEO 2026-06-10);
-  //     D-FX-COUNTERPARTY-SCOPE-INSTITUTIONAL; BCBS-SA-CCR-CRE52.
+  //     D-FX-COUNTERPARTY-SCOPE-INSTITUTIONAL; BCBS-SA-CCR-CRE52;
+  //     D-FIL-FRAMEWORK-UNIFICATION (FIL SA-CCR flip — replaces CcrEadComputed
+  //     event-stream fold; recon:v2-saccr-parity proved byte-equivalence).
   // -------------------------------------------------------------------------
 
   // Authoritative counterparty Basel-class register (D-FX-COUNTERPARTY-BASEL-
@@ -355,62 +351,85 @@ export function computeRwaFromPositions(
   // recon:counterparty-basel-classification-coverage so the residual is visible.
   const classByCounterparty = resolveAllCounterpartyClasses(eventStore, asOf);
 
-  // Event-sourced FX rate map (D-FX-EAD-FX-CONVERSION). A non-ZAR netting set's
-  // EAD is converted to functional currency (ZAR) before it enters CreditRWA —
-  // the RWA engine sums eadMinor without FX conversion, so a non-ZAR amount must
-  // be converted HERE or it would be mis-summed. Previously non-ZAR EAD was
-  // silently dropped; now it converts via the canonical buildRateMap/convertMinor
-  // (P1 — rates derived from FxTradeExecuted). A netting set whose currency has
-  // NO rate path to ZAR is skipped with a logged note (observable, not silent).
+  // FX rate map for non-ZAR EAD → ZAR conversion (D-FX-EAD-FX-CONVERSION).
   const fxRates = buildRateMap([...eventStore.replay({ type: "FxTradeExecuted", asOf })]);
 
-  const latestEadByNettingSet = new Map<
-    string,
-    { p: CcrEadComputedPayloadV2Type; eventId: string }
-  >();
-  for (const ev of eventStore.replay({ type: "CcrEadComputed", asOf })) {
-    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
-    // Mixed-version store: upcast legacy V1 (integer ead) -> V2 MoneyWire.
-    const p = normalizeCcrEadPayload(ev.payload);
-    if (!p.nettingSetId) continue;
-    const prev = latestEadByNettingSet.get(p.nettingSetId);
-    if (prev && prev.p.computationDate >= p.computationDate) continue;
-    latestEadByNettingSet.set(p.nettingSetId, { p, eventId: ev.event_id });
-  }
-  for (const { p, eventId } of latestEadByNettingSet.values()) {
-    // DECIMAL-MIGRATION (slice 2): p.ead is MoneyWire — decode to minor units for arithmetic.
-    const eadMinorRaw = minorFromMoneyWire(p.ead);
+  const filGroups = buildSaCcrTradeSummariesFromFilInstances(asOf, filInstanceEvents ?? []);
+  for (const [nettingSetId, grp] of filGroups) {
+    const v1Ns = resolveNettingSet(grp.counterpartyId, grp.currency, asOf);
+    const ns: SaCcrNettingSet = v1Ns
+      ? {
+          nettingSetId: v1Ns.nettingSetId,
+          counterpartyId: v1Ns.counterpartyId,
+          csaPresent: v1Ns.csaPresent,
+          currency: v1Ns.currency,
+          ...(v1Ns.threshold !== undefined
+            ? {
+                threshold: {
+                  currency: String(v1Ns.threshold.currency),
+                  minorUnits: v1Ns.threshold.amount,
+                },
+              }
+            : {}),
+          ...(v1Ns.mta !== undefined
+            ? {
+                mta: {
+                  currency: String(v1Ns.mta.currency),
+                  minorUnits: v1Ns.mta.amount,
+                },
+              }
+            : {}),
+        }
+      : {
+          nettingSetId,
+          counterpartyId: grp.counterpartyId,
+          csaPresent: false,
+          currency: grp.currency,
+        };
+
+    const vMtm = sourceVMtmFromValuableFeed(eventStore, {
+      counterpartyId: grp.counterpartyId,
+      currency: grp.currency,
+      asOf,
+    });
+    const collateral = sourceCollateralFromRegister({ currency: grp.currency, asOf });
+    const { ead } = computeSaCcr({
+      nettingSet: ns,
+      vMtm,
+      collateralHeld: collateral,
+      trades: grp.trades,
+      asOf,
+    });
+
+    const eadMinorRaw = Number(ead.ead.minorUnits);
     if (eadMinorRaw <= 0) continue;
 
-    // Convert non-ZAR EAD to functional currency (ZAR). ZAR passes through.
     let eadZarMinor = eadMinorRaw;
     let conversionNote = "";
-    if (p.currency !== FUNCTIONAL_CURRENCY) {
-      const converted = convertMinor(eadMinorRaw, p.currency, FUNCTIONAL_CURRENCY, fxRates);
+    if (grp.currency !== FUNCTIONAL_CURRENCY) {
+      const converted = convertMinor(eadMinorRaw, grp.currency, FUNCTIONAL_CURRENCY, fxRates);
       if (converted === null) {
-        // No rate path ccy→ZAR. Skip — but observable (Vera can assert on a
-        // CcrEadComputed with no consuming CreditExposure), not a silent drop.
         logger.warn(
           {
-            component: "rwa-from-positions.ccr-ead",
-            nettingSetId: p.nettingSetId,
-            currency: p.currency,
+            component: "rwa-from-positions.fil-saccr",
+            nettingSetId,
+            currency: grp.currency,
             asOf,
           },
-          "CcrEadComputed in a non-ZAR currency with no FX rate path to ZAR; EAD excluded from CreditRWA pending a rate.",
+          "FIL SA-CCR EAD in a non-ZAR currency with no FX rate path to ZAR; EAD excluded from CreditRWA pending a rate.",
         );
         continue;
       }
       eadZarMinor = converted;
-      conversionNote = ` [converted ${p.currency} ${p.ead.amount} → ZAR ${eadZarMinor}]`;
+      conversionNote = ` [converted ${grp.currency} ${eadMinorRaw} → ZAR ${eadZarMinor}]`;
     }
 
-    const assigned = classByCounterparty.get(p.counterpartyId);
+    const assigned = classByCounterparty.get(grp.counterpartyId);
     const note = assigned
-      ? `SA-CCR EAD nettingSet=${p.nettingSetId} — authoritative class ${assigned.baselClass} (CRO-assigned ${assigned.sourceEventId}; D-FX-COUNTERPARTY-BASEL-CLASSIFICATION)${conversionNote}`
-      : `SA-CCR EAD nettingSet=${p.nettingSetId} — interim conservative class (corporate-non-ig, 100%) pending authoritative counterparty classification (D-FX-CCR-INTERIM-CONSERVATIVE-RWA)${conversionNote}`;
+      ? `FIL SA-CCR EAD nettingSet=${nettingSetId} — authoritative class ${assigned.baselClass} (CRO-assigned ${assigned.sourceEventId}; D-FX-COUNTERPARTY-BASEL-CLASSIFICATION)${conversionNote}`
+      : `FIL SA-CCR EAD nettingSet=${nettingSetId} — interim conservative class (corporate-non-ig, 100%) pending authoritative counterparty classification (D-FX-CCR-INTERIM-CONSERVATIVE-RWA)${conversionNote}`;
     creditExposures.push({
-      counterpartyId: p.counterpartyId,
+      counterpartyId: grp.counterpartyId,
       counterpartyType: assigned?.baselClass ?? "corporate-non-ig",
       eadMinor: eadZarMinor,
       currency: FUNCTIONAL_CURRENCY,
@@ -418,7 +437,6 @@ export function computeRwaFromPositions(
       residualMaturity: assigned?.residualMaturity ?? "long-term",
       note,
     });
-    sourceEventIds.push(eventId);
   }
 
   // -------------------------------------------------------------------------

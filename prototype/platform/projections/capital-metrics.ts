@@ -39,6 +39,7 @@ import { getFinancialConstant } from "../config/financial-constants";
 import { type Money, minor } from "../core/money";
 import { ZAR } from "../core/types";
 import type { EventStore } from "../event-store/store";
+import { readFilInstanceEvents } from "../risk/sa-ccr/fil-instance-positions";
 import { computeRwaFromPositions } from "./rwa-from-positions";
 
 // ---------------------------------------------------------------------------
@@ -231,7 +232,7 @@ export function computeCapitalMetrics(eventStore: EventStore, asOf: string): Cap
 
   // Live RWA from booked positions (D-RWA-LIVE-POSITIONS-PROJECTION-V1).
   // Falls back to the ICAAP v1 constant when the store has no trade events.
-  const rwaResult = computeRwaFromPositions(eventStore, asOf);
+  const rwaResult = computeRwaFromPositions(eventStore, asOf, undefined, readFilInstanceEvents());
   const liveRwaMinor = rwaResult.buildPhaseFallback
     ? BUILD_PHASE_TOTAL_RWA_MINOR
     : rwaResult.output.totalRwaMinor;

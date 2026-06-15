@@ -30,10 +30,8 @@
 
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
-import { moneyWireFromMinor } from "../platform/core/money-codec";
 import { newEventId } from "../platform/core/types";
 import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-accounting";
-import { makeCcrEadComputed } from "../platform/event-store/event-types/counterparty-credit-risk";
 import { makeFxTradeCancelled } from "../platform/event-store/event-types/fx-accounting";
 import { makeIrdSwapTerminated } from "../platform/event-store/event-types/ird-accounting";
 import {
@@ -52,6 +50,11 @@ import {
   computeRwaFromPositions,
   toRwaDecomposition,
 } from "../platform/projections/rwa-from-positions";
+import type { FilEventRef } from "../v2-core/fil-core/lifecycle";
+import type { Instant } from "../v2-core/fil-core/primitives";
+import type { FilInstanceUrn, FilTypeUrn } from "../v2-core/fil-core/urn";
+import type { FilInstanceLifecycleEvent } from "../v2-core/fil-instances";
+import { computeSaCcr } from "../v2-core/fil-models/sa-ccr";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const AS_OF = "2026-05-30T12:00:00.000Z";
@@ -202,36 +205,37 @@ function appendFxTrade(store: EventStore, opts: { notionalMinor?: number } = {})
   );
 }
 
-function appendCcrEad(
-  store: EventStore,
-  opts: {
-    nettingSetId: string;
-    counterpartyId?: string;
-    ead: number;
-    currency?: string;
-    computationDate?: string;
-  },
-): void {
-  store.append(
-    makeCcrEadComputed({
-      asOf: AS_OF,
-      entity: ENTITY,
-      actor: ACTOR,
-      citations: CITATIONS,
-      payload: {
-        nettingSetId: opts.nettingSetId,
-        counterpartyId: opts.counterpartyId ?? "CP-FX-001",
-        rc: moneyWireFromMinor(Math.round(opts.ead / 1.4), opts.currency ?? "ZAR"),
-        pfe: moneyWireFromMinor(0, opts.currency ?? "ZAR"),
-        alpha: 1.4,
-        ead: moneyWireFromMinor(opts.ead, opts.currency ?? "ZAR"),
-        currency: opts.currency ?? "ZAR",
-        computationDate: opts.computationDate ?? AS_OF,
-        methodology: "sa-ccr",
-        sourceEvents: { rcEventId: newEventId(), pfeComponents: 0 },
-      },
-    }),
-  );
+// ---------------------------------------------------------------------------
+// FIL instance helper — builds a minimal FilInstrumentCreated event for a
+// long FX trade. Used by the SA-CCR → CreditRWA integration tests.
+// ---------------------------------------------------------------------------
+
+function makeFilFxInstance(opts: {
+  tradeId: string;
+  nettingSetId: string;
+  counterpartyId: string;
+  currency: string;
+  notionalMinorUnits: bigint;
+  settlementDate?: string;
+}): FilInstanceLifecycleEvent {
+  return {
+    kind: "FilInstrumentCreated",
+    instance: `fil:inst:LE-ZA-HOZ-BANK:${opts.tradeId}` as FilInstanceUrn,
+    type: "fil:type:fx:vanilla:v1.0@1.0" as FilTypeUrn,
+    tenant: "LE-ZA-HOZ-BANK",
+    asOf: "2026-05-01T00:00:00.000Z" as Instant,
+    originatingEvent: { eventType: "FxTradeExecuted" as FilEventRef, eventId: opts.tradeId },
+    initialStage: "active",
+    economicTerms: {
+      assetClass: "fx",
+      notional: { currency: opts.currency, minorUnits: opts.notionalMinorUnits },
+      direction: "long",
+      counterpartyId: opts.counterpartyId,
+      nettingSetId: opts.nettingSetId,
+      currency: opts.currency,
+      settlementDate: opts.settlementDate ?? "2030-12-31",
+    },
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -923,54 +927,89 @@ describe("rwa-from-positions — partial settlement netting", () => {
 });
 
 // ---------------------------------------------------------------------------
-// SA-CCR EAD → CreditExposure (interim conservative class)
-// D-FX-CCR-INTERIM-CONSERVATIVE-RWA. SA-CCR EAD is counterparty-class-agnostic
-// (CRE52); the class applies here at the risk-weight step. Pending authoritative
-// classification, EAD books at corporate-non-ig unrated = 100% RW (prudent).
+// FIL SA-CCR → CreditExposure integration tests (post-flip).
+// The production path now calls computeSaCcr() via FIL instances, replacing
+// the retired CcrEadComputed event-stream fold.
+// D-FIL-FRAMEWORK-UNIFICATION; D-FX-CCR-INTERIM-CONSERVATIVE-RWA.
 // ---------------------------------------------------------------------------
 
-describe("rwa-from-positions — SA-CCR EAD → credit RWA (conservative 100%)", () => {
-  // ZAG bond gives tradeCount>0 with ZERO credit RWA → isolates the CcrEad contribution.
-  it("ZAR EAD books at 100% RW (corporate-non-ig unrated)", () => {
-    const store = new EventStore(":memory:");
-    appendBondTrade(store, { isin: "ZAG000149037", nominalMinor: 10_000_000_00 }); // 0% credit
-    appendCcrEad(store, { nettingSetId: "NS-CP-FX-001-ZAR", ead: 4_000_000_00 }); // R4m EAD
+describe("rwa-from-positions — FIL SA-CCR → credit RWA", () => {
+  const NS_ID = "NS-CP-FX-001-ZAR";
+  const CP_ID = "CP-FX-001";
+  const NOTIONAL = 100_000_000_00n; // R100m notional
 
-    const result = computeRwaFromPositions(store, AS_OF);
-    // corporate-non-ig unrated → 100% → credit RWA == EAD
-    expect(result.output.credit.totalMinor).toBe(4_000_000_00);
+  function expectedEad(notional: bigint): number {
+    // Compute expected EAD via the same FIL SA-CCR model used in production —
+    // no vMtm, no collateral (none in memory store), unmargined, long FX.
+    const ns = { nettingSetId: NS_ID, counterpartyId: CP_ID, csaPresent: false, currency: "ZAR" };
+    const trade = {
+      tradeId: "T-001",
+      counterpartyId: CP_ID,
+      nettingSetId: NS_ID,
+      assetClass: "fx" as const,
+      notional: { currency: "ZAR", minorUnits: notional },
+      direction: "long" as const,
+      remainingYears: 4.6,
+      currency: "ZAR",
+    };
+    const { ead } = computeSaCcr({
+      nettingSet: ns,
+      vMtm: { currency: "ZAR", minorUnits: 0n },
+      collateralHeld: { currency: "ZAR", minorUnits: 0n },
+      trades: [trade],
+      asOf: AS_OF,
+    });
+    return Number(ead.ead.minorUnits);
+  }
+
+  it("FIL instance routes through SA-CCR → non-zero credit RWA (corporate-non-ig 100% RW)", () => {
+    const store = new EventStore(":memory:");
+    appendBondTrade(store, { isin: "ZAG000149037", nominalMinor: 10_000_000_00 }); // 0% credit RWA anchor
+    const instances = [
+      makeFilFxInstance({
+        tradeId: "T-001",
+        nettingSetId: NS_ID,
+        counterpartyId: CP_ID,
+        currency: "ZAR",
+        notionalMinorUnits: NOTIONAL,
+      }),
+    ];
+    const result = computeRwaFromPositions(store, AS_OF, undefined, instances);
+    // corporate-non-ig unrated → 100% RW → credit RWA == FIL SA-CCR EAD
+    const expected = expectedEad(NOTIONAL);
+    expect(expected).toBeGreaterThan(0);
+    expect(result.output.credit.totalMinor).toBe(expected);
+    expect(result.output.credit.lines.map((l) => l.label).join(" ")).toContain("corporate-non-ig");
   });
 
-  it("latest EAD per netting set wins (SA-CCR re-emits at each close)", () => {
+  it("no FIL instances → SA-CCR contributes 0 to credit RWA", () => {
     const store = new EventStore(":memory:");
     appendBondTrade(store, { isin: "ZAG000149037", nominalMinor: 10_000_000_00 });
-    appendCcrEad(store, {
-      nettingSetId: "NS-CP-FX-001-ZAR",
-      ead: 9_000_000_00,
-      computationDate: "2026-05-29T12:00:00.000Z",
-    });
-    appendCcrEad(store, {
-      nettingSetId: "NS-CP-FX-001-ZAR",
-      ead: 2_000_000_00,
-      computationDate: "2026-05-30T12:00:00.000Z", // later → wins
-    });
-    const result = computeRwaFromPositions(store, AS_OF);
-    expect(result.output.credit.totalMinor).toBe(2_000_000_00);
-  });
-
-  it("non-ZAR EAD is skipped (RWA engine sums functional ZAR; no FX conversion)", () => {
-    const store = new EventStore(":memory:");
-    appendBondTrade(store, { isin: "ZAG000149037", nominalMinor: 10_000_000_00 });
-    appendCcrEad(store, { nettingSetId: "NS-CP-FX-002-USD", ead: 5_000_000_00, currency: "USD" });
-    const result = computeRwaFromPositions(store, AS_OF);
+    const result = computeRwaFromPositions(store, AS_OF, undefined, []); // empty — no file read
     expect(result.output.credit.totalMinor).toBe(0);
   });
 
-  it("zero EAD contributes nothing", () => {
+  it("two netting sets sum independently (each at 100% RW)", () => {
     const store = new EventStore(":memory:");
     appendBondTrade(store, { isin: "ZAG000149037", nominalMinor: 10_000_000_00 });
-    appendCcrEad(store, { nettingSetId: "NS-CP-FX-003-ZAR", ead: 0 });
-    const result = computeRwaFromPositions(store, AS_OF);
-    expect(result.output.credit.totalMinor).toBe(0);
+    const instances = [
+      makeFilFxInstance({
+        tradeId: "T-001",
+        nettingSetId: "NS-CP-A-ZAR",
+        counterpartyId: "CP-A",
+        currency: "ZAR",
+        notionalMinorUnits: NOTIONAL,
+      }),
+      makeFilFxInstance({
+        tradeId: "T-002",
+        nettingSetId: "NS-CP-B-ZAR",
+        counterpartyId: "CP-B",
+        currency: "ZAR",
+        notionalMinorUnits: NOTIONAL,
+      }),
+    ];
+    const result = computeRwaFromPositions(store, AS_OF, undefined, instances);
+    const eadA = expectedEad(NOTIONAL);
+    expect(result.output.credit.totalMinor).toBe(eadA * 2);
   });
 });

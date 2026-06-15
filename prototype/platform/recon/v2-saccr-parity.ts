@@ -1,13 +1,14 @@
 // platform/recon/v2-saccr-parity.ts
 //
-// recon:v2-saccr-parity — the V2 S7-FIL byte-equivalence gate.
+// recon:v2-saccr-parity — FIL SA-CCR self-consistency gate (post-flip).
 //
-// SA-CCR is the FIRST cross-package FIL-Model (V2 S7-FIL). The live v1 engine
-// (`platform/risk/sa-ccr/*`) stays LIVE; the v2 FIL-Model
-// (`v2-core/fil-models/sa-ccr/*`) is a faithful, no-v1-import port. This gate
-// proves they produce BYTE-IDENTICAL `CcrReplacementCostComputed` +
-// `CcrEadComputed` event payloads per netting set over the full anchor IR + FX
-// history, so a future slice can flip the alias / retire v1 with confidence.
+// PRODUCTION PATH NOW FIL: `computeRwaFromPositions()` sources SA-CCR EAD
+// directly from the FIL SA-CCR model (D-FIL-FRAMEWORK-UNIFICATION). The
+// CcrEadComputed event-stream fold has been retired; this gate now validates
+// that the FIL model's output is self-consistent with the v1 oracle over the
+// recorded history — any divergence surfaces a finding (warn), not a hard fail,
+// since the feed-sourced vMtm is the correct Principle-1 basis and must not be
+// bent to match the pre-flip oracle's drift-prone resolveMtm basis.
 //
 // BOUNDARY NOTE: this gate is V1-SIDE infrastructure and MAY import BOTH the v1
 // engine AND the v2 model — the `recon:v2-no-v1-import` boundary forbids only
@@ -466,7 +467,7 @@ export function run(): ReconResult {
 
   result.ok = violations.filter((v) => v.severity === "fail").length === 0;
   const oracleDivergences = violations.filter((v) => v.severity === "warn").length;
-  result.asOf = `saccr-parity: ${nettingSetsChecked} netting set(s) checked over recorded history, ${byteDiffs} hard byte-diff(s) (v1-recompute vs v2 over identical FIL-mediated inputs); ${oracleDivergences} recorded-RC oracle divergence(s) surfaced (warn). FULLY FIL-MEDIATED: vMtm from the Valuable feed (latest *Revalued event-of-record), collateral from the register; recorded-RC pin RETIRED (oracle-only).`;
+  result.asOf = `saccr-parity: ${nettingSetsChecked} netting set(s) checked over recorded history, ${byteDiffs} hard byte-diff(s) (v1-recompute vs v2 over identical FIL-mediated inputs); ${oracleDivergences} recorded-RC oracle divergence(s) surfaced (warn). PRODUCTION PATH = FIL SA-CCR (D-FIL-FRAMEWORK-UNIFICATION); CcrEadComputed event-fold retired. Self-consistency gate: FIL model vs v1 oracle over feed-sourced inputs.`;
   return result;
 }
 
