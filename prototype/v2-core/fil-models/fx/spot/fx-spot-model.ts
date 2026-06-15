@@ -20,14 +20,12 @@ import type {
   Valuable,
 } from "../../../fil-facets/facets.ts";
 import type { FilModelImplementationDeclared } from "../../declaration.ts";
+import { isZeroD, toDecimal } from "../../../fil-core/decimal.ts";
+import { zeroMoney } from "../../../fil-core/primitives.ts";
 import { valueFxPosition } from "../../fx-valuation/methodology.ts";
-import { bookCostMinor, computeUnrealisedPnl } from "../performance/fx-performance-methodology.ts";
+import { bookCost, computeUnrealisedPnl } from "../performance/fx-performance-methodology.ts";
 import { fxSpotObsRef as spotObservableRef } from "../shared/fx-observables.ts";
 import type { FxSpotPosition } from "../shared/fx-positions.ts";
-
-function zeroMoney(currency: string): Money {
-  return { currency, minorUnits: 0n };
-}
 
 export function fxSpotValuable(pos: FxSpotPosition): Valuable {
   const reporting = pos.reporting ?? "ZAR";
@@ -46,7 +44,7 @@ export function fxSpotValuable(pos: FxSpotPosition): Valuable {
       }
       const { value } = valueFxPosition({
         currency: pos.currency,
-        signedNotionalMinor: pos.signedNotionalMinor,
+        signedNotional: pos.signedNotional,
         allInRate: spot,
         reporting,
       });
@@ -65,7 +63,7 @@ export function fxSpotPerformable(pos: FxSpotPosition): Performable {
     unrealisedPnl(
       marks: MarketDataSlice,
       asOf: Instant,
-      bookedCostMinorArg: bigint,
+      bookedCost: Money,
     ): PerformanceRecord {
       const spotId = `${pos.currency}/${reporting}`;
       const spot = marks.observables[spotId];
@@ -76,15 +74,14 @@ export function fxSpotPerformable(pos: FxSpotPosition): Performable {
       }
       const { value } = valueFxPosition({
         currency: pos.currency,
-        signedNotionalMinor: pos.signedNotionalMinor,
+        signedNotional: pos.signedNotional,
         allInRate: spot,
         reporting,
       });
-      const bk =
-        bookedCostMinorArg !== 0n
-          ? bookedCostMinorArg
-          : bookCostMinor(pos.signedNotionalMinor, pos.bookedSpotRate);
-      const unrealisedPnl = computeUnrealisedPnl(value.minorUnits, bk, reporting);
+      const bk = !isZeroD(toDecimal(bookedCost.amount))
+        ? bookedCost
+        : bookCost(pos.signedNotional, pos.bookedSpotRate, reporting);
+      const unrealisedPnl = computeUnrealisedPnl(value, bk);
       return {
         unrealisedPnl,
         carry: zeroMoney(reporting),

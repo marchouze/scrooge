@@ -40,41 +40,46 @@ import type {
   SliceMember,
 } from "../../fil-attribution";
 import type { FilLifecycleStage } from "../../fil-core/lifecycle";
-import type { CitationRef } from "../../fil-core/primitives";
+import { addD, isZeroD, toDecimal } from "../../fil-core/decimal";
+import { type CitationRef, moneyFromDecimal } from "../../fil-core/primitives";
 import type { MarketDataSlice, RevaluationRecord, Valuable } from "../../fil-facets/facets";
 import { FX_REPORTING_CURRENCY } from "./methodology";
 
 // ---------------------------------------------------------------------------
-// The metric result — reporting-currency P&L as bigint minor units (exact; no
-// float accumulation). Carried with its currency so the `add` can guard a
-// cross-currency mix (a book P&L is single-currency: the reporting currency).
+// The metric result — reporting-currency P&L as a DECIMAL-NATIVE amount (canonical
+// decimal string, major units; exact, no float accumulation). Carried with its
+// currency so the `add` can guard a cross-currency mix (a book P&L is single-
+// currency: the reporting currency).
 // ---------------------------------------------------------------------------
 
 export interface FxPnlResult {
   readonly currency: string;
-  readonly minorUnits: bigint;
+  /** Canonical decimal string, MAJOR units. NEVER a number; NEVER minor units. */
+  readonly amount: string;
 }
 
 export const FX_PNL_METRIC_ID = "fx-pnl" as const;
 
 /** The reporting-currency zero for the additive fold. */
-export const FX_PNL_ZERO: FxPnlResult = { currency: FX_REPORTING_CURRENCY, minorUnits: 0n };
+export const FX_PNL_ZERO: FxPnlResult = { currency: FX_REPORTING_CURRENCY, amount: "0" };
 
 /**
  * Additive combination of two reporting-currency P&L results. A cross-currency
  * mix is a hard error — book P&L is single-currency (the reporting currency);
  * a member valued in a different reporting currency is a projection defect.
+ * Decimal-exact (D-V2-CORE-MONEY-DECIMAL-NATIVE).
  */
 function addFxPnl(a: FxPnlResult, b: FxPnlResult): FxPnlResult {
   // Treat the zero element's currency as neutral so `zero + x == x`.
-  if (a.minorUnits === 0n && a.currency === FX_REPORTING_CURRENCY) return b;
-  if (b.minorUnits === 0n && b.currency === FX_REPORTING_CURRENCY) return a;
+  if (isZeroD(toDecimal(a.amount)) && a.currency === FX_REPORTING_CURRENCY) return b;
+  if (isZeroD(toDecimal(b.amount)) && b.currency === FX_REPORTING_CURRENCY) return a;
   if (a.currency !== b.currency) {
     throw new Error(
       `fx-pnl: cannot add P&L across reporting currencies (${a.currency} + ${b.currency}) — book P&L is single-currency`,
     );
   }
-  return { currency: a.currency, minorUnits: a.minorUnits + b.minorUnits };
+  const sum = moneyFromDecimal(a.currency, addD(toDecimal(a.amount), toDecimal(b.amount)));
+  return { currency: sum.currency, amount: sum.amount };
 }
 
 const FX_PNL_AGGREGATION: AdditiveSemantics<FxPnlResult> = {
@@ -127,7 +132,7 @@ export const fxPnlMetric: AttributionMetric<FxPnlResult> & {
         );
       }
       const rec: RevaluationRecord = valuable.value(marks, asOf);
-      acc = addFxPnl(acc, { currency: rec.value.currency, minorUnits: rec.value.minorUnits });
+      acc = addFxPnl(acc, { currency: rec.value.currency, amount: rec.value.amount });
     }
     return acc;
   },

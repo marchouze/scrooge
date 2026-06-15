@@ -146,8 +146,8 @@ export function fxScopePatternsValid(): boolean {
 export interface FxValuablePosition {
   /** Position currency (the foreign leg), ISO-4217 alpha-3. */
   readonly currency: string;
-  /** Notional in the position currency's minor units, SIGNED (long +, short −). */
-  readonly signedNotionalMinor: bigint;
+  /** Notional in the position currency's MAJOR units, SIGNED decimal string (long +, short −). */
+  readonly signedNotional: string;
   /** Spot vs forward — a forward additionally consumes the forward-points mark. */
   readonly isForward: boolean;
   /** Reporting currency the value is expressed in (default ZAR). */
@@ -183,7 +183,7 @@ export function fxValuable(position: FxValuablePosition): Valuable {
       });
       const { value } = valueFxPosition({
         currency: position.currency,
-        signedNotionalMinor: position.signedNotionalMinor,
+        signedNotional: position.signedNotional,
         allInRate,
         ...(position.reporting !== undefined ? { reporting: position.reporting } : {}),
       });

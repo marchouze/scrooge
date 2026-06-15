@@ -24,9 +24,10 @@ import type {
   Valuable,
 } from "../../../fil-facets/facets.ts";
 import type { FilModelImplementationDeclared } from "../../declaration.ts";
+import { isZeroD, toDecimal } from "../../../fil-core/decimal.ts";
 import { valueFxPosition } from "../../fx-valuation/methodology.ts";
 import {
-  bookCostMinor,
+  bookCost,
   computeDailyCarry,
   computeTheta,
   computeUnrealisedPnl,
@@ -86,7 +87,7 @@ export function fxForwardLegValuable(pos: FxForwardLegPosition): Valuable {
       );
       const { value } = valueFxPosition({
         currency: pos.currency,
-        signedNotionalMinor: pos.signedNotionalMinor,
+        signedNotional: pos.signedNotional,
         allInRate: forwardRate,
         reporting,
       });
@@ -101,7 +102,7 @@ export function fxForwardLegPerformable(pos: FxForwardLegPosition): Performable 
     unrealisedPnl(
       marks: MarketDataSlice,
       asOf: Instant,
-      bookedCostMinorArg: bigint,
+      bookedCost: Money,
     ): PerformanceRecord {
       const { forwardRate, observablesUsed } = resolveFwdRate(
         marks,
@@ -111,26 +112,25 @@ export function fxForwardLegPerformable(pos: FxForwardLegPosition): Performable 
       );
       const { value } = valueFxPosition({
         currency: pos.currency,
-        signedNotionalMinor: pos.signedNotionalMinor,
+        signedNotional: pos.signedNotional,
         allInRate: forwardRate,
         reporting,
       });
-      const bk =
-        bookedCostMinorArg !== 0n
-          ? bookedCostMinorArg
-          : bookCostMinor(pos.signedNotionalMinor, pos.bookedForwardRate);
-      const unrealisedPnl = computeUnrealisedPnl(value.minorUnits, bk, reporting);
+      const bk = !isZeroD(toDecimal(bookedCost.amount))
+        ? bookedCost
+        : bookCost(pos.signedNotional, pos.bookedForwardRate, reporting);
+      const unrealisedPnl = computeUnrealisedPnl(value, bk);
       const spotId = `${pos.currency}/${reporting}`;
       const spot = marks.observables[spotId] ?? 0;
       const carry = computeDailyCarry(
-        pos.signedNotionalMinor,
+        pos.signedNotional,
         spot,
         forwardRate,
         pos.remainingDays,
         reporting,
       );
       const theta = computeTheta(
-        pos.signedNotionalMinor,
+        pos.signedNotional,
         spot,
         forwardRate,
         pos.remainingDays,
@@ -147,7 +147,7 @@ export function fxForwardLegPerformable(pos: FxForwardLegPosition): Performable 
         pos.remainingDays,
       );
       return computeDailyCarry(
-        pos.signedNotionalMinor,
+        pos.signedNotional,
         spot,
         forwardRate,
         pos.remainingDays,
@@ -161,7 +161,7 @@ export function fxForwardLegPerformable(pos: FxForwardLegPosition): Performable 
       const spot = marks.observables[spotId] ?? 0;
       const forwardPoints = interpolateCurve(marks, prefix, remainingDays);
       const forwardRate = spot + forwardPoints;
-      return computeTheta(pos.signedNotionalMinor, spot, forwardRate, remainingDays, reporting);
+      return computeTheta(pos.signedNotional, spot, forwardRate, remainingDays, reporting);
     },
   };
 }

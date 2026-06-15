@@ -22,17 +22,10 @@ import type {
   Valuable,
 } from "../../../fil-facets/facets.ts";
 import type { FilModelImplementationDeclared } from "../../declaration.ts";
+import { addMoney, moneyFromDecimal, zeroMoney } from "../../../fil-core/primitives.ts";
+import { addD, toDecimal } from "../../../fil-core/decimal.ts";
 import { fxForwardLegPerformable, fxForwardLegValuable } from "../forward/fx-forward-model.ts";
 import type { FxSwapPosition } from "../shared/fx-positions.ts";
-
-function addMoney(a: Money, b: Money): Money {
-  if (a.currency !== b.currency) {
-    throw new Error(
-      `fxSwapModel: cannot add Money across currencies (${a.currency} + ${b.currency})`,
-    );
-  }
-  return { currency: a.currency, minorUnits: a.minorUnits + b.minorUnits };
-}
 
 export function fxSwapValuable(pos: FxSwapPosition): Valuable {
   const reporting = pos.reporting ?? "ZAR";
@@ -46,11 +39,14 @@ export function fxSwapValuable(pos: FxSwapPosition): Valuable {
     value(marks: MarketDataSlice, asOf: Instant): RevaluationRecord {
       const nearRev = nearValuable.value(marks, asOf);
       const farRev = farValuable.value(marks, asOf);
-      // Sum legs — opposite signedNotionalMinor signs net the two legs
-      const totalMinor = nearRev.value.minorUnits + farRev.value.minorUnits;
+      // Sum legs — opposite signedNotional signs net the two legs (decimal-exact).
+      const total = moneyFromDecimal(
+        reporting,
+        addD(toDecimal(nearRev.value.amount), toDecimal(farRev.value.amount)),
+      );
       const deduped = dedupeObservables([...nearRev.observablesUsed, ...farRev.observablesUsed]);
       return {
-        value: { currency: reporting, minorUnits: totalMinor },
+        value: total,
         asOf,
         observablesUsed: deduped,
       };
@@ -66,11 +62,13 @@ export function fxSwapPerformable(pos: FxSwapPosition): Performable {
     unrealisedPnl(
       marks: MarketDataSlice,
       asOf: Instant,
-      _bookedCostMinor: bigint,
+      _bookedCost: Money,
     ): PerformanceRecord {
-      // Each leg passes 0n so it computes from its own bookedForwardRate
-      const nearPerf = nearPerformable.unrealisedPnl(marks, asOf, 0n);
-      const farPerf = farPerformable.unrealisedPnl(marks, asOf, 0n);
+      // Each leg passes a zero-amount Money so it derives book cost from its own
+      // bookedForwardRate (the decimal-native sentinel, D-V2-CORE-MONEY-DECIMAL-NATIVE).
+      const zero = zeroMoney(reporting);
+      const nearPerf = nearPerformable.unrealisedPnl(marks, asOf, zero);
+      const farPerf = farPerformable.unrealisedPnl(marks, asOf, zero);
       return {
         unrealisedPnl: addMoney(nearPerf.unrealisedPnl, farPerf.unrealisedPnl),
         carry: addMoney(nearPerf.carry, farPerf.carry),

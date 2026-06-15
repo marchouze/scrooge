@@ -88,8 +88,28 @@ interface SaCcrScenario {
 // Adapter helpers
 // ---------------------------------------------------------------------------
 
-function money(minorUnits: number, currency: string): Money {
-  return { currency, minorUnits: BigInt(Math.round(minorUnits)) };
+// DECIMAL-NATIVE (D-V2-CORE-MONEY-DECIMAL-NATIVE): the exam scenarios are
+// expressed in CENTS (integer minor units). Convert cents → decimal-native Money
+// (major-unit decimal string) and back, at 2dp. These are the SOLE cents↔decimal
+// boundary in the exam adapter; the asserted invariants run on integer cents.
+function centsToMoney(cents: number, currency: string): Money {
+  const minor = BigInt(Math.round(cents));
+  const neg = minor < 0n;
+  const abs = (neg ? -minor : minor).toString().padStart(3, "0");
+  const whole = abs.slice(0, abs.length - 2);
+  const frac = abs.slice(abs.length - 2);
+  return { currency, amount: `${neg ? "-" : ""}${whole}.${frac}` };
+}
+
+function moneyToCents(m: Money): number {
+  const t = m.amount.trim();
+  const neg = t.startsWith("-");
+  const unsigned = neg ? t.slice(1) : t;
+  const parts = unsigned.split(".");
+  const whole = parts[0] ?? "0";
+  const frac = (parts[1] ?? "").padEnd(2, "0").slice(0, 2);
+  const magnitude = Number(whole) * 100 + Number(frac);
+  return neg ? -magnitude : magnitude;
 }
 
 function toNettingSet(s: SaCcrScenario): SaCcrNettingSet {
@@ -102,8 +122,8 @@ function toNettingSet(s: SaCcrScenario): SaCcrNettingSet {
   if (s.nettingSet.csaPresent) {
     return {
       ...base,
-      threshold: money(s.nettingSet.thresholdCents ?? 0, s.nettingSet.currency),
-      mta: money(s.nettingSet.mtaCents ?? 0, s.nettingSet.currency),
+      threshold: centsToMoney(s.nettingSet.thresholdCents ?? 0, s.nettingSet.currency),
+      mta: centsToMoney(s.nettingSet.mtaCents ?? 0, s.nettingSet.currency),
     };
   }
   return base;
@@ -115,7 +135,7 @@ function toTrades(s: SaCcrScenario): SaCcrTradeSummary[] {
       counterpartyId: s.nettingSet.counterpartyId,
       nettingSetId: s.nettingSet.nettingSetId,
       assetClass: t.assetClass,
-      notional: money(t.notionalCents, t.currency),
+      notional: centsToMoney(t.notionalCents, t.currency),
       ...(t.tradeId !== undefined ? { tradeId: t.tradeId } : {}),
       ...(t.direction !== undefined ? { direction: t.direction } : {}),
       ...(t.remainingYears !== undefined ? { remainingYears: t.remainingYears } : {}),
@@ -145,15 +165,15 @@ export function makeSaCcrEvalSubject(): EvalSubject {
       const trades = toTrades(s);
       const result = computeSaCcr({
         nettingSet,
-        vMtm: money(s.vMtmCents, s.nettingSet.currency),
-        collateralHeld: money(s.collateralCents, s.nettingSet.currency),
+        vMtm: centsToMoney(s.vMtmCents, s.nettingSet.currency),
+        collateralHeld: centsToMoney(s.collateralCents, s.nettingSet.currency),
         trades,
         asOf: s.asOf,
       });
 
-      const rcMinor = Number(result.rc.rc.minorUnits);
-      const pfeMinor = Number(result.ead.pfe.minorUnits);
-      const eadMinor = Number(result.ead.ead.minorUnits);
+      const rcMinor = moneyToCents(result.rc.rc);
+      const pfeMinor = moneyToCents(result.ead.pfe);
+      const eadMinor = moneyToCents(result.ead.ead);
 
       // Invariant 1 — the replacement-cost floor. Per BCBS d317 §136 the RC
       // formula branches on the CSA:
@@ -174,7 +194,7 @@ export function makeSaCcrEvalSubject(): EvalSubject {
 
       // Invariant 3 — EAD = round(1.4 × (RC + PFE)) (half-up; bigint path).
       const alphaScaled = BigInt(Math.round(1.4 * 10_000));
-      const rcPlusPfe = result.rc.rc.minorUnits + result.ead.pfe.minorUnits;
+      const rcPlusPfe = BigInt(moneyToCents(result.rc.rc)) + BigInt(moneyToCents(result.ead.pfe));
       const expectedEad = Number((rcPlusPfe * alphaScaled + 5_000n) / 10_000n);
       const eadEqualsAlphaTimesRcPlusPfe = eadMinor === expectedEad;
 
@@ -188,7 +208,7 @@ export function makeSaCcrEvalSubject(): EvalSubject {
             trades: [{ ...firstTrade, notionalCents: notional }, ...s.trades.slice(1)],
           });
           const addOns = computeAddOn(swept, { margined: nettingSet.csaPresent });
-          return addOns.reduce((acc, c) => acc + Number(c.addOn.minorUnits), 0);
+          return addOns.reduce((acc, c) => acc + moneyToCents(c.addOn), 0);
         });
       }
 

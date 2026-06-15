@@ -95,11 +95,10 @@ function readFilInstanceEvents(dbPath = resolveV2AnchorDb()): FilInstanceLifecyc
       .all();
     const events: FilInstanceLifecycleEvent[] = [];
     for (const r of rows) {
+      // DECIMAL-NATIVE (D-V2-CORE-MONEY-DECIMAL-NATIVE): the notional amount is a
+      // canonical decimal STRING — it survives JSON round-trip intact, so no
+      // bigint coercion is needed (the prior `minorUnits` bigint hydration is gone).
       const p = JSON.parse(r.payload) as Record<string, unknown>;
-      const terms = p.economicTerms as { notional?: { minorUnits?: number | string } } | undefined;
-      if (terms?.notional && terms.notional.minorUnits !== undefined) {
-        terms.notional.minorUnits = BigInt(terms.notional.minorUnits) as unknown as number;
-      }
       events.push(p as unknown as FilInstanceLifecycleEvent);
     }
     return events;
@@ -117,7 +116,16 @@ function singleRate(currency: string, rate: number, asOf: string): MarketDataSli
 }
 
 function sameMoney(a: Money, b: Money): boolean {
-  return a.currency === b.currency && a.minorUnits === b.minorUnits;
+  // Decimal-native: compare the canonical amount strings (both already
+  // canonicalised by moneyFromDecimal, so string equality is value equality).
+  return a.currency === b.currency && a.amount === b.amount;
+}
+
+/** Flip the sign of a canonical decimal string (for short-direction notionals). */
+function negateDecimalString(amount: string): string {
+  const t = amount.trim();
+  if (t === "0" || t === "-0") return "0";
+  return t.startsWith("-") ? t.slice(1) : `-${t}`;
 }
 
 export interface RunOpts {
@@ -135,29 +143,29 @@ export function run(opts: RunOpts = {}): ReconResult {
   //     sweep. Non-vacuous: a divergence is a model drift this gate catches.
   // -------------------------------------------------------------------------
   const asOf = "2026-06-13T00:00:00.000Z";
-  const sweep: Array<{ ccy: string; notional: bigint; rate: number }> = [
-    { ccy: "USD", notional: 100_000n, rate: 18.5 },
-    { ccy: "USD", notional: -100_000n, rate: 19.1 },
-    { ccy: "EUR", notional: 50_000n, rate: 20.0 },
-    { ccy: "GBP", notional: -30_000n, rate: 23.4 },
-    { ccy: "JPY", notional: 1_000_000n, rate: 0.124 },
+  const sweep: Array<{ ccy: string; notional: string; rate: number }> = [
+    { ccy: "USD", notional: "100000", rate: 18.5 },
+    { ccy: "USD", notional: "-100000", rate: 19.1 },
+    { ccy: "EUR", notional: "50000", rate: 20.0 },
+    { ccy: "GBP", notional: "-30000", rate: 23.4 },
+    { ccy: "JPY", notional: "1000000", rate: 0.124 },
   ];
   for (const s of sweep) {
     result.asserted += 1;
     const pos: FxValuablePosition = {
       currency: s.ccy,
-      signedNotionalMinor: s.notional,
+      signedNotional: s.notional,
       isForward: false,
     };
     const marks = singleRate(s.ccy, s.rate, asOf);
     const valuePre = fxValuable(pos).value(marks, asOf as Instant).value;
     const valuePost = fcyCashValuable(
-      fcyCashFromSettledReceivable({ currency: s.ccy, signedNotionalMinor: s.notional }),
+      fcyCashFromSettledReceivable({ currency: s.ccy, signedNotional: s.notional }),
     ).value(marks, asOf as Instant).value;
     if (!sameMoney(valuePre, valuePost)) {
       violations.push({
         subject: `structural:${s.ccy}:${s.notional}@${s.rate}`,
-        message: `settlement-continuity STRUCTURAL breach: value_pre (FX position) ${valuePre.minorUnits} ${valuePre.currency} != value_post (FCY cash) ${valuePost.minorUnits} ${valuePost.currency} at the same rate — the two Valuable models diverged`,
+        message: `settlement-continuity STRUCTURAL breach: value_pre (FX position) ${valuePre.amount} ${valuePre.currency} != value_post (FCY cash) ${valuePost.amount} ${valuePost.currency} at the same rate — the two Valuable models diverged`,
         severity: "fail",
       });
     }
@@ -182,8 +190,8 @@ export function run(opts: RunOpts = {}): ReconResult {
     result.asserted += 1;
 
     const terms = row.economicTerms;
-    const signedNotionalMinor =
-      terms.direction === "short" ? -terms.notional.minorUnits : terms.notional.minorUnits;
+    const signedNotional =
+      terms.direction === "short" ? negateDecimalString(terms.notional.amount) : terms.notional.amount;
     // The settlement-date closing rate is not stored on the gate; the invariant
     // is rate-INDEPENDENT (both sides apply the SAME rate), so we assert equality
     // at a representative settlement-date rate. A real rate feed makes no
@@ -193,18 +201,18 @@ export function run(opts: RunOpts = {}): ReconResult {
 
     const valuePre = fxValuable({
       currency: terms.currency,
-      signedNotionalMinor,
+      signedNotional,
       isForward: false,
     }).value(marks, row.lastAsOf as Instant).value;
 
     const valuePost = fcyCashValuable(
-      fcyCashFromSettledReceivable({ currency: terms.currency, signedNotionalMinor }),
+      fcyCashFromSettledReceivable({ currency: terms.currency, signedNotional }),
     ).value(marks, row.lastAsOf as Instant).value;
 
     if (!sameMoney(valuePre, valuePost)) {
       violations.push({
         subject: `history:${row.instance}`,
-        message: `settlement-continuity breach for settled FX instance ${row.instance}: value_pre ${valuePre.minorUnits} != value_post ${valuePost.minorUnits} at the settlement-date rate`,
+        message: `settlement-continuity breach for settled FX instance ${row.instance}: value_pre ${valuePre.amount} != value_post ${valuePost.amount} at the settlement-date rate`,
         severity: "fail",
       });
     }

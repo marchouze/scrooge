@@ -55,6 +55,10 @@ import {
 import { eventStore } from "../composition";
 import type { Event } from "../event-store/types";
 import { deriveNetFxPositionByCurrency } from "../projections/markets/limit-utilisation";
+import {
+  majorStringToMinorBigint,
+  minorBigintToMajorString,
+} from "../risk/sa-ccr/v2-money-bridge";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "fx-book-nop-parity";
@@ -90,7 +94,7 @@ function buildFxTradingBookMembers(net: Map<string, number>): {
     if (signedMinor === 0n) continue;
     perCurrencyNetMinor.set(ccy, signedMinor);
     const valuable = fcyCashValuable(
-      fcyCashFromSettledReceivable({ currency: ccy, signedNotionalMinor: signedMinor }),
+      fcyCashFromSettledReceivable({ currency: ccy, signedNotional: minorBigintToMajorString(signedMinor) }),
     );
     const member: ResolvedMember = {
       instanceUrn:
@@ -145,7 +149,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     };
     const evaluation = evaluateSlice(fxPnlMetric, slice, [member], unitMarks, asOf as Instant);
     const cell = evaluation.cells[0];
-    const v2BookNetMinor = cell ? cell.value.minorUnits : 0n;
+    const v2BookNetMinor = cell ? majorStringToMinorBigint(cell.value.amount) : 0n;
 
     const nopNetMinor = perCurrencyNetMinor.get(ccy) ?? 0n;
     const deltaMinor = v2BookNetMinor - nopNetMinor;

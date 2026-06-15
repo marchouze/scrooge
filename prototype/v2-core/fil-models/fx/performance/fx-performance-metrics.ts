@@ -14,8 +14,9 @@ import type {
   MetricRegistry,
   SliceMember,
 } from "../../../fil-attribution/metric.ts";
+import { addD, isZeroD, toDecimal } from "../../../fil-core/decimal.ts";
 import type { FilLifecycleStage } from "../../../fil-core/lifecycle.ts";
-import type { Instant } from "../../../fil-core/primitives.ts";
+import { type Instant, moneyFromDecimal, zeroMoney } from "../../../fil-core/primitives.ts";
 import type {
   MarketDataSlice,
   Performable,
@@ -25,28 +26,30 @@ import type {
 import { FX_REPORTING_CURRENCY } from "../../fx-valuation/methodology.ts";
 
 // ---------------------------------------------------------------------------
-// Result type — shared by all three metrics
+// Result type — shared by all three metrics. DECIMAL-NATIVE
+// (D-V2-CORE-MONEY-DECIMAL-NATIVE): amount = MAJOR-unit canonical decimal string.
 // ---------------------------------------------------------------------------
 
 export interface FxPerformanceResult {
   readonly currency: string;
-  readonly minorUnits: bigint;
+  readonly amount: string;
 }
 
 const ZERO_RESULT: FxPerformanceResult = {
   currency: FX_REPORTING_CURRENCY,
-  minorUnits: 0n,
+  amount: "0",
 };
 
 function addResults(a: FxPerformanceResult, b: FxPerformanceResult): FxPerformanceResult {
-  if (a.minorUnits === 0n && a.currency === FX_REPORTING_CURRENCY) return b;
-  if (b.minorUnits === 0n && b.currency === FX_REPORTING_CURRENCY) return a;
+  if (isZeroD(toDecimal(a.amount)) && a.currency === FX_REPORTING_CURRENCY) return b;
+  if (isZeroD(toDecimal(b.amount)) && b.currency === FX_REPORTING_CURRENCY) return a;
   if (a.currency !== b.currency) {
     throw new Error(
       `fx-performance: cannot add across currencies (${a.currency} + ${b.currency}) — single-currency book required`,
     );
   }
-  return { currency: a.currency, minorUnits: a.minorUnits + b.minorUnits };
+  const sum = moneyFromDecimal(a.currency, addD(toDecimal(a.amount), toDecimal(b.amount)));
+  return { currency: sum.currency, amount: sum.amount };
 }
 
 const ADDITIVE: AdditiveSemantics<FxPerformanceResult> = {
@@ -104,10 +107,10 @@ export const fxUnrealisedPnlMetric: AttributionMetric<FxPerformanceResult> & {
           `${FX_UNREALISED_PNL_METRIC_ID}: member "${m.instanceUrn}" exposes no Performable facet`,
         );
       }
-      const rec = perf.unrealisedPnl(marks, asOf, 0n);
+      const rec = perf.unrealisedPnl(marks, asOf, zeroMoney(FX_REPORTING_CURRENCY));
       acc = addResults(acc, {
         currency: rec.unrealisedPnl.currency,
-        minorUnits: rec.unrealisedPnl.minorUnits,
+        amount: rec.unrealisedPnl.amount,
       });
     }
     return acc;
@@ -145,7 +148,7 @@ export const fxCarryMetric: AttributionMetric<FxPerformanceResult> & {
         );
       }
       const carry = perf.carry(marks, asOf);
-      acc = addResults(acc, { currency: carry.currency, minorUnits: carry.minorUnits });
+      acc = addResults(acc, { currency: carry.currency, amount: carry.amount });
     }
     return acc;
   },
@@ -181,7 +184,7 @@ export const fxDeltaExposureMetric: AttributionMetric<FxPerformanceResult> & {
         );
       }
       const rec: RevaluationRecord = valuable.value(marks, asOf);
-      acc = addResults(acc, { currency: rec.value.currency, minorUnits: rec.value.minorUnits });
+      acc = addResults(acc, { currency: rec.value.currency, amount: rec.value.amount });
     }
     return acc;
   },

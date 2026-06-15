@@ -25,9 +25,10 @@ import type {
   Valuable,
 } from "../../../fil-facets/facets.ts";
 import type { FilModelImplementationDeclared } from "../../declaration.ts";
-import { scaleMinorByRate } from "../../fx-valuation/methodology.ts";
+import { mulD, roundDecimal, toDecimal } from "../../../fil-core/decimal.ts";
+import { type Money as MoneyT, moneyFromDecimal } from "../../../fil-core/primitives.ts";
 import {
-  bookCostMinor,
+  bookCost,
   computeDailyCarry,
   computeTheta,
   computeUnrealisedPnl,
@@ -35,6 +36,13 @@ import {
 import { interpolateCurve } from "../shared/fx-interpolation.ts";
 import { ndfCurvePrefix } from "../shared/fx-observables.ts";
 import type { FxNdfPosition } from "../shared/fx-positions.ts";
+
+// NDF value = signedNotional (MAJOR) × netRate, rounded HALF-UP to 2dp display.
+// Decimal-exact (D-V2-CORE-MONEY-DECIMAL-NATIVE) — never a float multiply.
+function ndfValue(signedNotional: string, netRate: number, currency: string): MoneyT {
+  const valued = mulD(toDecimal(signedNotional), toDecimal(String(netRate)));
+  return moneyFromDecimal(currency, roundDecimal(valued, 2, "HALF_UP"));
+}
 
 function resolveNdfRate(
   pos: FxNdfPosition,
@@ -64,9 +72,9 @@ export function fxNdfValuable(pos: FxNdfPosition): Valuable {
     value(marks: MarketDataSlice, asOf: Instant): RevaluationRecord {
       const { ndfRate, observablesUsed } = resolveNdfRate(pos, marks);
       const netRate = ndfRate - pos.bookedNdfRate;
-      const valueMinor = scaleMinorByRate(pos.signedNotionalMinor, netRate);
+      const value = ndfValue(pos.signedNotional, netRate, settlementCurrency);
       return {
-        value: { currency: settlementCurrency, minorUnits: valueMinor },
+        value,
         asOf,
         observablesUsed,
       };
@@ -81,27 +89,30 @@ export function fxNdfPerformable(pos: FxNdfPosition): Performable {
     unrealisedPnl(
       marks: MarketDataSlice,
       asOf: Instant,
-      bookedCostMinorArg: bigint,
+      _bookedCost: Money,
     ): PerformanceRecord {
       const { ndfRate, observablesUsed } = resolveNdfRate(pos, marks);
       const netRate = ndfRate - pos.bookedNdfRate;
-      const mtmValueMinor = scaleMinorByRate(pos.signedNotionalMinor, netRate);
-      const bk =
-        bookedCostMinorArg !== 0n ? bookedCostMinorArg : bookCostMinor(pos.signedNotionalMinor, 0); // NDF book cost = 0 at inception
-      const unrealisedPnl = computeUnrealisedPnl(mtmValueMinor, bk, settlementCurrency);
+      const mtmValue = ndfValue(pos.signedNotional, netRate, settlementCurrency);
+      // NDF book cost is structurally 0 in settlementCurrency: the booked rate
+      // enters `netRate` above, so the MTM value already nets the booked cost. The
+      // `_bookedCost` parameter is therefore unused for an NDF (the rate-spread
+      // formula subsumes it).
+      const bk = bookCost(pos.signedNotional, 0, settlementCurrency);
+      const unrealisedPnl = computeUnrealisedPnl(mtmValue, bk);
 
       // Spot rate for carry computation (use 0 if not in marks — NDF curve is primary)
       const spotId = `${pos.currency}/${reporting}`;
       const spot = marks.observables[spotId] ?? 0;
       const carry = computeDailyCarry(
-        pos.signedNotionalMinor,
+        pos.signedNotional,
         spot,
         ndfRate,
         pos.remainingDays,
         settlementCurrency,
       );
       const theta = computeTheta(
-        pos.signedNotionalMinor,
+        pos.signedNotional,
         spot,
         ndfRate,
         pos.remainingDays,
@@ -115,7 +126,7 @@ export function fxNdfPerformable(pos: FxNdfPosition): Performable {
       const spotId = `${pos.currency}/${reporting}`;
       const spot = marks.observables[spotId] ?? 0;
       return computeDailyCarry(
-        pos.signedNotionalMinor,
+        pos.signedNotional,
         spot,
         ndfRate,
         pos.remainingDays,
@@ -128,7 +139,7 @@ export function fxNdfPerformable(pos: FxNdfPosition): Performable {
       const spotId = `${pos.currency}/${reporting}`;
       const spot = marks.observables[spotId] ?? 0;
       return computeTheta(
-        pos.signedNotionalMinor,
+        pos.signedNotional,
         spot,
         ndfRate,
         remainingDays,

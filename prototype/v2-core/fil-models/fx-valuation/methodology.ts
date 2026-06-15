@@ -20,16 +20,25 @@
 // Author: Atlas (Core banking platform architect, engineering) ·
 //         Bea (Accounting & financial reporting engineer, engineering — Accountable facet).
 
-import type { Instant, Money } from "../../fil-core/primitives";
+import { mulD, roundDecimal, toDecimal } from "../../fil-core/decimal";
+import {
+  type Instant,
+  type Money,
+  moneyFromDecimal,
+} from "../../fil-core/primitives";
 import type { MarketDataSlice, ObservableRef } from "../../fil-facets/facets";
 
 // ---------------------------------------------------------------------------
-// Money helper — v2-native bigint minor-unit arithmetic (mirrors the SA-CCR
-// model's local helper; no v1 import).
+// Currency display precision (decimal places). The anchor book is
+// ZAR/USD/EUR/GBP/JPY; all are carried at 2dp for byte-parity with the v1 FX
+// book (JPY is 0dp at the ISO level but the v1 book carries it as 2dp minor
+// units — a dp-aware refinement is a named substrate gap). Default 2dp.
 // ---------------------------------------------------------------------------
 
-export function minorMoney(minorUnits: bigint, currency: string): Money {
-  return { currency, minorUnits };
+const DEFAULT_DISPLAY_DP = 2;
+
+function displayDp(_currency: string): number {
+  return DEFAULT_DISPLAY_DP;
 }
 
 // ---------------------------------------------------------------------------
@@ -65,28 +74,26 @@ export function forwardPointsObservableRef(currency: string, reporting?: string)
 }
 
 // ---------------------------------------------------------------------------
-// The valuation kernel — signed notional × all-in rate, in reporting minor units.
+// The valuation kernel — signed notional × all-in rate, in the reporting ccy.
 //
-// `signedNotionalMinor` is the position's notional in its OWN currency's minor
-// units, SIGNED (long +, short −). The all-in rate (spot, plus forward points
-// for a forward) translates one MAJOR unit of the position currency into MAJOR
-// units of the reporting currency. The product is the reporting-currency value,
-// converted back to reporting minor units.
+// `signedNotional` is the position's notional in its OWN currency's MAJOR units,
+// as a SIGNED canonical decimal string (long +, short −). The all-in rate (spot,
+// plus forward points for a forward) translates one MAJOR unit of the position
+// currency into MAJOR units of the reporting currency. Value = notional × rate,
+// rounded HALF-UP (half-away-from-zero) to the reporting currency's display dp.
 //
-// Minor-unit convention: both legs use 2dp minor units (cents). A rate in major
-// units (ZAR per CCY) maps `notionalMinor × rate` straight to reporting minor
-// units (the minor-unit scale cancels because both currencies are 2dp). The
-// kernel pins 2dp; instruments whose currency is not 2dp are out of A2 scope
-// (the anchor book is ZAR/USD/EUR/GBP/JPY — JPY is 0dp at the ISO level but the
-// v1 FX book already carries it as 2dp minor units, which this port matches for
-// byte-parity; a dp-aware refinement is a named A2 substrate gap).
+// DECIMAL-NATIVE (D-V2-CORE-MONEY-DECIMAL-NATIVE): all arithmetic goes through
+// the v2 decimal helper — never `amount * rate`. The rate enters as its decimal
+// string (`toDecimal(String(rate))`). The previous minor-unit `scaleMinorByRate`
+// (Number × Number float-multiply) is DELETED — that float-multiply was the
+// exact hazard the decimal-native cutover eliminates.
 // ---------------------------------------------------------------------------
 
 export interface FxValuationInput {
   /** Position currency (the foreign leg), ISO-4217 alpha-3. */
   readonly currency: string;
-  /** Notional in the position currency's minor units, SIGNED (long +, short −). */
-  readonly signedNotionalMinor: bigint;
+  /** Notional in the position currency's MAJOR units, SIGNED decimal string. */
+  readonly signedNotional: string;
   /** All-in rate: reporting-currency MAJOR units per 1 MAJOR unit of `currency`. */
   readonly allInRate: number;
   /** Reporting currency (default ZAR). */
@@ -94,7 +101,7 @@ export interface FxValuationInput {
 }
 
 export interface FxValuation {
-  /** Mark-to-market value in the REPORTING currency (minor units). */
+  /** Mark-to-market value in the REPORTING currency (decimal-native Money). */
   readonly value: Money;
   /** The all-in rate applied. */
   readonly rateApplied: number;
@@ -109,22 +116,20 @@ export function valueFxPosition(input: FxValuationInput): FxValuation {
   const reporting = input.reporting ?? FX_REPORTING_CURRENCY;
   if (input.currency === reporting) {
     // A reporting-currency leg is its own value at rate 1 (no translation).
-    return { value: minorMoney(input.signedNotionalMinor, reporting), rateApplied: 1 };
+    return {
+      value: moneyFromDecimal(
+        reporting,
+        roundDecimal(toDecimal(input.signedNotional), displayDp(reporting), "HALF_UP"),
+      ),
+      rateApplied: 1,
+    };
   }
-  // notionalMinor (CCY cents) × rate (ZAR/CCY) = reporting cents (2dp cancels).
-  const valueMinor = scaleMinorByRate(input.signedNotionalMinor, input.allInRate);
-  return { value: minorMoney(valueMinor, reporting), rateApplied: input.allInRate };
-}
-
-/**
- * Multiply a signed minor-unit amount by a real rate and round half-away-from-
- * zero to an integer minor unit. Deterministic (no float drift in the sign
- * decision); the rounding boundary is pinned so the methodology hash is stable.
- */
-export function scaleMinorByRate(signedMinor: bigint, rate: number): bigint {
-  const product = Number(signedMinor) * rate;
-  const rounded = product >= 0 ? Math.floor(product + 0.5) : Math.ceil(product - 0.5);
-  return BigInt(rounded);
+  // value (reporting major) = notional (CCY major) × rate (reporting/CCY).
+  const valued = mulD(toDecimal(input.signedNotional), toDecimal(String(input.allInRate)));
+  return {
+    value: moneyFromDecimal(reporting, roundDecimal(valued, displayDp(reporting), "HALF_UP")),
+    rateApplied: input.allInRate,
+  };
 }
 
 // ---------------------------------------------------------------------------

@@ -168,7 +168,10 @@ export interface PerformanceRecord {
 }
 
 export interface Performable {
-  unrealisedPnl(marks: MarketDataSlice, asOf: Instant, bookedCostMinor: bigint): PerformanceRecord;
+  /** `bookedCost` is the decimal-native Money book cost; a zero-amount Money
+   *  signals "derive the book cost from the position's booked rate" (the prior
+   *  bigint-0 sentinel, now decimal-native — D-V2-CORE-MONEY-DECIMAL-NATIVE). */
+  unrealisedPnl(marks: MarketDataSlice, asOf: Instant, bookedCost: Money): PerformanceRecord;
   carry(marks: MarketDataSlice, asOf: Instant): Money;
   theta(marks: MarketDataSlice, asOf: Instant, remainingDays: number): Money;
 }
