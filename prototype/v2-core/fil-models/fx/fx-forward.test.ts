@@ -26,7 +26,7 @@ const FWD_MARKS = {
 const LONG_FWD: FxForwardPosition = {
   kind: "forward",
   currency: "USD",
-  signedNotionalMinor: 100_000_00n, // 100,000 USD
+  signedNotional: "100000.00",
   bookedForwardRate: 18.2,
   maturityDate: "2026-09-15",
   remainingDays: 92,
@@ -40,10 +40,10 @@ describe("FX Forward Valuable", () => {
     // At 92d: interpolated between 90d (0.3) and 180d (0.6)
     // t = (92-90)/(180-90) = 2/90 ≈ 0.0222; pts = 0.3 + 0.0222×0.3 ≈ 0.3067
     // allInRate ≈ 18.0 + 0.3067 = 18.3067
-    // value ≈ 10,000,000 × 18.3067 = 183,067,000 cents (approx)
+    // value ≈ 100,000 × 18.3067 = 1,830,670 ZAR (approx)
     expect(rec.value.currency).toBe("ZAR");
-    // Verify it differs from pure spot (18.0 → 180,000,000 cents)
-    expect(rec.value.minorUnits).toBeGreaterThan(180_000_000n);
+    // Verify it differs from pure spot (18.0 → 1,800,000 ZAR)
+    expect(Number(rec.value.amount)).toBeGreaterThan(1800000);
   });
 
   test("valuationMethod is mark-to-market", () => {
@@ -78,8 +78,7 @@ describe("FX Forward Valuable", () => {
     // At 0d, flat-left-extrapolation gives the 30d point value (0.1)
     const rec = valuable.value(marks(FWD_MARKS), ASOF);
     // allInRate = 18.0 + 0.1 = 18.1
-    const expected = BigInt(Math.round(10_000_000 * 18.1));
-    expect(rec.value.minorUnits).toBe(expected);
+    expect(Number(rec.value.amount)).toBe(1810000);
   });
 });
 
@@ -88,20 +87,20 @@ describe("FX Forward Performable", () => {
     const perf = fxForwardPerformable(LONG_FWD);
     const carry = perf.carry(marks(FWD_MARKS), ASOF);
     // Forward rate > spot → positive carry for long position
-    expect(carry.minorUnits).toBeGreaterThan(0n);
+    expect(Number(carry.amount)).toBeGreaterThan(0);
   });
 
   test("theta ≈ −carry for linear instruments", () => {
     const perf = fxForwardPerformable(LONG_FWD);
     const carry = perf.carry(marks(FWD_MARKS), ASOF);
     const theta = perf.theta(marks(FWD_MARKS), ASOF, LONG_FWD.remainingDays);
-    expect(theta.minorUnits).toBe(-carry.minorUnits);
+    expect(Number(theta.amount)).toBe(-Number(carry.amount));
   });
 
   test("unrealised P&L accounts for forward-point difference", () => {
     const perf = fxForwardPerformable(LONG_FWD);
-    const rec = perf.unrealisedPnl(marks(FWD_MARKS), ASOF, 0n);
+    const rec = perf.unrealisedPnl(marks(FWD_MARKS), ASOF, { currency: "ZAR", amount: "0" });
     // bookedRate = 18.2, marketRate ≈ 18.307, so positive PnL on long
-    expect(rec.unrealisedPnl.minorUnits).toBeGreaterThan(0n);
+    expect(Number(rec.unrealisedPnl.amount)).toBeGreaterThan(0);
   });
 });

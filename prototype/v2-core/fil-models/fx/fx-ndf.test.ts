@@ -26,7 +26,7 @@ const NDF_MARKS = {
 const PRE_FIXING_NDF: FxNdfPosition = {
   kind: "ndf",
   currency: "USD",
-  signedNotionalMinor: 100_000_00n, // 100,000 USD
+  signedNotional: "100000.00",
   bookedNdfRate: 18.2,
   fixingDate: "2026-09-12",
   settlementDate: "2026-09-15",
@@ -40,9 +40,9 @@ describe("FX NDF Valuable — pre-fixing", () => {
     const valuable = fxNdfValuable(PRE_FIXING_NDF);
     const rec = valuable.value(marks(NDF_MARKS), ASOF);
     // At exactly 90d: ndfRate = 18.3, netRate = 18.3 - 18.2 = 0.1
-    // value = 10,000,000 cents × 0.1 = 1,000,000 cents
+    // value = 100,000 × 0.1 = 10,000 ZAR
     expect(rec.value.currency).toBe("ZAR");
-    expect(rec.value.minorUnits).toBe(1_000_000n);
+    expect(Number(rec.value.amount)).toBe(10000);
   });
 
   test("valuationMethod is mark-to-model", () => {
@@ -74,8 +74,8 @@ describe("FX NDF Valuable — post-fixing", () => {
     const valuable = fxNdfValuable(POST_FIXING_NDF);
     const rec = valuable.value(marks(NDF_MARKS), ASOF);
     // fixingRate = 18.4, bookedRate = 18.2, netRate = 0.2
-    // value = 10,000,000 × 0.2 = 2,000,000 cents
-    expect(rec.value.minorUnits).toBe(2_000_000n);
+    // value = 100,000 × 0.2 = 20,000 ZAR
+    expect(Number(rec.value.amount)).toBe(20000);
   });
 
   test("requiredObservables is empty (crystallised)", () => {
@@ -90,7 +90,7 @@ describe("FX NDF Performable", () => {
     // Book at exact market rate → zero unrealised PnL
     const atMarket: FxNdfPosition = { ...PRE_FIXING_NDF, bookedNdfRate: 18.3 };
     const perf = fxNdfPerformable(atMarket);
-    const rec = perf.unrealisedPnl(marks(NDF_MARKS), ASOF, 0n);
-    expect(rec.unrealisedPnl.minorUnits).toBe(0n);
+    const rec = perf.unrealisedPnl(marks(NDF_MARKS), ASOF, { currency: "ZAR", amount: "0" });
+    expect(Number(rec.unrealisedPnl.amount)).toBe(0);
   });
 });

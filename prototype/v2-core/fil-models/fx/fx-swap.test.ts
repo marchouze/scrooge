@@ -27,7 +27,7 @@ const FWD_MARKS = {
 
 const NEAR_LEG: FxForwardLegPosition = {
   currency: "USD",
-  signedNotionalMinor: 100_000_00n, // long USD near
+  signedNotional: "100000.00", // long USD near (major units)
   bookedForwardRate: 18.05,
   maturityDate: "2026-07-15",
   remainingDays: 30,
@@ -36,7 +36,7 @@ const NEAR_LEG: FxForwardLegPosition = {
 
 const FAR_LEG: FxForwardLegPosition = {
   currency: "USD",
-  signedNotionalMinor: -100_000_00n, // short USD far (opposite sign = FX swap)
+  signedNotional: "-100000.00", // short USD far (opposite sign = FX swap)
   bookedForwardRate: 18.3,
   maturityDate: "2026-09-15",
   remainingDays: 90,
@@ -84,7 +84,9 @@ describe("FX Swap Valuable", () => {
     const nearRec = nearValuable.value(marks(FWD_MARKS), ASOF);
     const farRec = farValuable.value(marks(FWD_MARKS), ASOF);
 
-    expect(swapRec.value.minorUnits).toBe(nearRec.value.minorUnits + farRec.value.minorUnits);
+    expect(Number(swapRec.value.amount)).toBe(
+      Number(nearRec.value.amount) + Number(farRec.value.amount),
+    );
   });
 
   test("when near and far have opposite notional signs, MTM nets correctly", () => {
@@ -92,12 +94,12 @@ describe("FX Swap Valuable", () => {
     const symmetricNear: FxForwardLegPosition = {
       ...NEAR_LEG,
       remainingDays: 90,
-      signedNotionalMinor: 100_000_00n,
+      signedNotional: "100000.00",
     };
     const symmetricFar: FxForwardLegPosition = {
       ...FAR_LEG,
       remainingDays: 90,
-      signedNotionalMinor: -100_000_00n,
+      signedNotional: "-100000.00",
     };
     const symmetricSwap: FxSwapPosition = {
       kind: "swap",
@@ -108,7 +110,7 @@ describe("FX Swap Valuable", () => {
     const swapValuable = fxSwapValuable(symmetricSwap);
     const rec = swapValuable.value(marks(FWD_MARKS), ASOF);
     // Exactly opposite notionals at same rate → net = 0
-    expect(rec.value.minorUnits).toBe(0n);
+    expect(Number(rec.value.amount)).toBe(0);
   });
 });
 

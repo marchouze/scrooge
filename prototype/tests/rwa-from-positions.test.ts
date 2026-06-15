@@ -228,7 +228,10 @@ function makeFilFxInstance(opts: {
     initialStage: "active",
     economicTerms: {
       assetClass: "fx",
-      notional: { currency: opts.currency, minorUnits: opts.notionalMinorUnits },
+      notional: {
+        currency: opts.currency,
+        amount: (Number(opts.notionalMinorUnits) / 100).toFixed(2),
+      },
       direction: "long",
       counterpartyId: opts.counterpartyId,
       nettingSetId: opts.nettingSetId,
@@ -947,19 +950,19 @@ describe("rwa-from-positions — FIL SA-CCR → credit RWA", () => {
       counterpartyId: CP_ID,
       nettingSetId: NS_ID,
       assetClass: "fx" as const,
-      notional: { currency: "ZAR", minorUnits: notional },
+      notional: { currency: "ZAR", amount: (Number(notional) / 100).toFixed(2) },
       direction: "long" as const,
       remainingYears: 4.6,
       currency: "ZAR",
     };
     const { ead } = computeSaCcr({
       nettingSet: ns,
-      vMtm: { currency: "ZAR", minorUnits: 0n },
-      collateralHeld: { currency: "ZAR", minorUnits: 0n },
+      vMtm: { currency: "ZAR", amount: "0" },
+      collateralHeld: { currency: "ZAR", amount: "0" },
       trades: [trade],
       asOf: AS_OF,
     });
-    return Number(ead.ead.minorUnits);
+    return Math.round(Number(ead.ead.amount) * 100);
   }
 
   it("FIL instance routes through SA-CCR → non-zero credit RWA (corporate-non-ig 100% RW)", () => {

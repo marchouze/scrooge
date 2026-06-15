@@ -27,7 +27,7 @@ function marks(observables: Record<string, number>): MarketDataSlice {
 const SPOT_POS: FxSpotPosition = {
   kind: "spot",
   currency: "USD",
-  signedNotionalMinor: 100_000_00n,
+  signedNotional: "100000.00",
   bookedSpotRate: 18.0,
   settlementDate: "2026-06-17",
   reporting: "ZAR",
@@ -68,8 +68,8 @@ describe("fx-carry metric on spot position", () => {
 
     const result = carryMetric.evaluate([member], marks({ "USD/ZAR": 18.5 }), ASOF) as {
       currency: string;
-      minorUnits: bigint;
+      amount: string;
     };
-    expect(result.minorUnits).toBe(0n);
+    expect(Number(result.amount)).toBe(0);
   });
 });

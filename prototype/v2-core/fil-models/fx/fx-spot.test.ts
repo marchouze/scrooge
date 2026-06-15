@@ -19,7 +19,7 @@ function marks(observables: Record<string, number>): MarketDataSlice {
 const LONG_USD: FxSpotPosition = {
   kind: "spot",
   currency: "USD",
-  signedNotionalMinor: 100_000_00n, // 100,000 USD in cents
+  signedNotional: "100000.00",
   bookedSpotRate: 18.0,
   settlementDate: "2026-06-17",
   reporting: "ZAR",
@@ -29,9 +29,9 @@ describe("FX Spot Valuable", () => {
   test("MTM value = notional × spot rate", () => {
     const valuable = fxSpotValuable(LONG_USD);
     const rec = valuable.value(marks({ "USD/ZAR": 18.5 }), ASOF);
-    // 100,000 × 100 (cents) × 18.5 = 185,000 ZAR = 18,500,000 cents
+    // 100,000 × 18.5 = 1,850,000 ZAR
     expect(rec.value.currency).toBe("ZAR");
-    expect(rec.value.minorUnits).toBe(1_850_000_00n);
+    expect(Number(rec.value.amount)).toBe(1850000);
   });
 
   test("valuationMethod is mark-to-market", () => {
@@ -54,31 +54,39 @@ describe("FX Spot Valuable", () => {
 describe("FX Spot Performable", () => {
   test("unrealised P&L positive when spot > booked rate (long position)", () => {
     const perf = fxSpotPerformable(LONG_USD);
-    const rec = perf.unrealisedPnl(marks({ "USD/ZAR": 19.0 }), ASOF, 0n);
-    // MTM = 190,000,000 cents; book = 180,000,000 cents; PnL = +10,000,000 cents
-    expect(rec.unrealisedPnl.minorUnits).toBeGreaterThan(0n);
+    const rec = perf.unrealisedPnl(marks({ "USD/ZAR": 19.0 }), ASOF, {
+      currency: "ZAR",
+      amount: "0",
+    });
+    // MTM = 1,900,000 ZAR; book = 1,800,000 ZAR; PnL = +100,000 ZAR
+    expect(Number(rec.unrealisedPnl.amount)).toBeGreaterThan(0);
   });
 
   test("unrealised P&L negative when spot < booked rate (long position)", () => {
     const perf = fxSpotPerformable(LONG_USD);
-    const rec = perf.unrealisedPnl(marks({ "USD/ZAR": 17.0 }), ASOF, 0n);
-    expect(rec.unrealisedPnl.minorUnits).toBeLessThan(0n);
+    const rec = perf.unrealisedPnl(marks({ "USD/ZAR": 17.0 }), ASOF, {
+      currency: "ZAR",
+      amount: "0",
+    });
+    expect(Number(rec.unrealisedPnl.amount)).toBeLessThan(0);
   });
 
   test("carry is zero for spot", () => {
     const perf = fxSpotPerformable(LONG_USD);
     const carry = perf.carry(marks({ "USD/ZAR": 18.5 }), ASOF);
-    expect(carry.minorUnits).toBe(0n);
+    expect(Number(carry.amount)).toBe(0);
   });
 
   test("theta is zero for spot", () => {
     const perf = fxSpotPerformable(LONG_USD);
     const theta = perf.theta(marks({ "USD/ZAR": 18.5 }), ASOF, 0);
-    expect(theta.minorUnits).toBe(0n);
+    expect(Number(theta.amount)).toBe(0);
   });
 
   test("missing spot observable throws in unrealisedPnl", () => {
     const perf = fxSpotPerformable(LONG_USD);
-    expect(() => perf.unrealisedPnl(marks({}), ASOF, 0n)).toThrow(/missing.*spot observable/i);
+    expect(() => perf.unrealisedPnl(marks({}), ASOF, { currency: "ZAR", amount: "0" })).toThrow(
+      /missing.*spot observable/i,
+    );
   });
 });

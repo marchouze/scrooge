@@ -135,7 +135,10 @@ function makeFilFxInstance(opts: {
     initialStage: "active",
     economicTerms: {
       assetClass: "fx",
-      notional: { currency: opts.currency, minorUnits: opts.notionalMinorUnits },
+      notional: {
+        currency: opts.currency,
+        amount: (Number(opts.notionalMinorUnits) / 100).toFixed(2),
+      },
       direction: "long",
       counterpartyId: opts.counterpartyId,
       nettingSetId,
@@ -159,15 +162,18 @@ function computeExpectedEad(opts: {
   };
   const { ead } = computeSaCcr({
     nettingSet: ns,
-    vMtm: { currency: opts.currency, minorUnits: 0n },
-    collateralHeld: { currency: opts.currency, minorUnits: 0n },
+    vMtm: { currency: opts.currency, amount: "0" },
+    collateralHeld: { currency: opts.currency, amount: "0" },
     trades: [
       {
         tradeId: "T-001",
         counterpartyId: opts.counterpartyId,
         nettingSetId: ns.nettingSetId,
         assetClass: "fx",
-        notional: { currency: opts.currency, minorUnits: opts.notionalMinorUnits },
+        notional: {
+          currency: opts.currency,
+          amount: (Number(opts.notionalMinorUnits) / 100).toFixed(2),
+        },
         direction: "long",
         remainingYears: 4.6,
         currency: opts.currency,
@@ -175,7 +181,7 @@ function computeExpectedEad(opts: {
     ],
     asOf: opts.asOf,
   });
-  return Number(ead.ead.minorUnits);
+  return Math.round(Number(ead.ead.amount) * 100);
 }
 
 describe("rwa-from-positions uses the authoritative class over the fallback (FIL SA-CCR path)", () => {

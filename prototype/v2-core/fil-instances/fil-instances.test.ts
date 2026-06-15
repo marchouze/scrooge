@@ -26,7 +26,7 @@ const INST = formatInstanceUrn({ tenant: TENANT, instanceId: "MAN-ABC-001" });
 
 const TERMS: FilEconomicTerms = {
   assetClass: "fx",
-  notional: { currency: "ZAR", minorUnits: 8679278603n },
+  notional: { currency: "ZAR", amount: "86792786.03" },
   direction: "short",
   counterpartyId: "urn:party:legal-entity:investec-bank-za",
   nettingSetId: "NS-urn:party:legal-entity:investec-bank-za-ZAR",
@@ -95,7 +95,7 @@ describe("FIL instance projection", () => {
     expect(liveInstances(reg)).toHaveLength(1);
     // economic terms carried through
     expect(row?.economicTerms.nettingSetId).toBe(TERMS.nettingSetId);
-    expect(row?.economicTerms.notional.minorUnits).toBe(8679278603n);
+    expect(row?.economicTerms.notional.amount).toBe("86792786.03");
   });
 
   it("derives remaining-years from settlement date at as_of (>0 before settlement, 0 after)", () => {
