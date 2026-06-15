@@ -284,3 +284,200 @@ export function runFxConductScheduleGapClosure(store: EventStore): ScheduleGapCl
     remainingGapIds: remaining.map((g) => g.gapId),
   };
 }
+
+// ---------------------------------------------------------------------------
+// fx-best-execution-reference-benchmark gap closure (2026-06-15)
+//
+// The gap's targetTrigger — "independent FX benchmark / mid-rate feed wired as
+// the best-execution reference" — is satisfied at the build-phase level once:
+//
+//   1. BESTEX-SCHED-2026-002 (referenceRateBasis = "independent-benchmark") is
+//      on the store (published by scripts/publish-fx-bestex-ftp-benchmark.ts).
+//   2. resolveFtpMidRate() can resolve a FtpCurvePublished event from the store
+//      (Ravi's treasury system has published a curve).
+//   3. The evaluation path in platform/conduct/fx-trade-conduct-evaluation.ts
+//      uses the FTP mid-rate as reference when the in-force schedule so directs.
+//
+// A new deferred gap `fx-best-ex-ftp-live-feed` is introduced to track the
+// remaining build-out: the FTP curve is a ZAR money-market proxy, not a live
+// FX mid-rate feed; the live feed must be active at execution time before
+// spread enforcement is fully calibrated.
+//
+// Over-closure is the failure mode; the closure GATES on:
+//   (a) BESTEX-SCHED-2026-002 being in force, AND
+//   (b) at least one FtpCurvePublished event being on the store.
+//
+// Authority: D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL (CEO 2026-06-15);
+//   D-NPA-GATE-POLICY-REDESIGN; D-FX-HELD-DIMS-SEAT-SWEEP.
+// Author: Zara (Chief Compliance Officer, governance).
+// ---------------------------------------------------------------------------
+
+export const BENCHMARK_GAP_ID = "fx-best-execution-reference-benchmark";
+export const FTP_LIVE_FEED_GAP_ID = "fx-best-ex-ftp-live-feed";
+
+/** Later than CONDUCT_SCHEDULE_GAP_CLOSED_AS_OF so latest-wins picks up. */
+export const CONDUCT_BENCHMARK_GAP_CLOSED_AS_OF = "2026-06-15T00:00:00.000Z";
+
+/** The new deferred gap that replaces fx-best-execution-reference-benchmark. */
+export const FTP_LIVE_FEED_DEFERRED_GAP: ProductDeferredGap = {
+  gapId: FTP_LIVE_FEED_GAP_ID,
+  title:
+    "FTP curve feed must be live and real-time before best-ex spread can be enforced on " +
+    "live trades at execution time; build-phase uses the latest FtpCurvePublished event " +
+    "(ZAR ON rate) as reference proxy. The FTP rate is a ZAR money-market rate, not an FX " +
+    "mid-rate — spread comparison is directional until a live FX mid-rate feed lands.",
+  owner: "Rohan (Markets risk/quant engineer, engineering)",
+  targetTrigger:
+    "live FTP curve feed active at execution time; live FX mid-rate feed wired as reference",
+  citations: [
+    "D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL",
+    "D-NPA-GATE-POLICY-REDESIGN",
+    "FAIS-ACT-37-2002-S16",
+    "platform/conduct/fx-trade-conduct-evaluation.ts",
+    "platform/conduct/fx-bestex-policy-schedule.ts",
+  ],
+};
+
+export interface BenchmarkGapClosureResult {
+  readonly closed: boolean;
+  readonly skipped: boolean;
+  readonly reason?: string;
+  readonly remainingGapIds: readonly string[];
+}
+
+/**
+ * Re-emit the conduct dimension attestation with the
+ * fx-best-execution-reference-benchmark gap REMOVED and the new
+ * fx-best-ex-ftp-live-feed gap ADDED (replacing it with the more precise
+ * build-phase residual). All other existing gaps are carried forward unchanged.
+ *
+ * GATES on:
+ *   (a) BESTEX-SCHED-2026-002 (independent-benchmark basis) being in force.
+ *   (b) At least one FtpCurvePublished event being on the store.
+ *
+ * Idempotent: skips when the latest attestation already lacks the benchmark gap.
+ */
+export function runFxConductBenchmarkGapClosure(store: EventStore): BenchmarkGapClosureResult {
+  // 1. Latest conduct attestation for the product.
+  let latest: { asOf: string; payload: Record<string, unknown> } | null = null;
+  for (const ev of store.replay({ type: "ProductDimensionAttested" })) {
+    const p = ev.payload as Record<string, unknown>;
+    if (p.productId !== CONDUCT_PRODUCT_ID || p.dimension !== "conduct") continue;
+    if (latest === null || ev.as_of >= latest.asOf) {
+      latest = { asOf: ev.as_of, payload: p };
+    }
+  }
+
+  if (latest === null) {
+    return {
+      closed: false,
+      skipped: true,
+      reason:
+        "no conduct ProductDimensionAttested exists for the product — run the conduct attestation first",
+      remainingGapIds: [],
+    };
+  }
+
+  const currentGaps = Array.isArray(latest.payload.deferredGaps)
+    ? latest.payload.deferredGaps.map((g) => productDeferredGapSchema.parse(g))
+    : [];
+
+  // 2. Idempotency: if benchmark gap already absent and live-feed gap already present.
+  const hasBenchmarkGap = currentGaps.some((g) => g.gapId === BENCHMARK_GAP_ID);
+  const hasLiveFeedGap = currentGaps.some((g) => g.gapId === FTP_LIVE_FEED_GAP_ID);
+  if (!hasBenchmarkGap && hasLiveFeedGap) {
+    return {
+      closed: false,
+      skipped: true,
+      reason: `latest conduct attestation (as_of ${latest.asOf}) already has ${FTP_LIVE_FEED_GAP_ID} and lacks ${BENCHMARK_GAP_ID}`,
+      remainingGapIds: currentGaps.map((g) => g.gapId),
+    };
+  }
+
+  // 3a. GATE: BESTEX-SCHED-2026-002 must be in force.
+  const schedule = resolveBestExecutionSchedule(store, CONDUCT_BENCHMARK_GAP_CLOSED_AS_OF);
+  if (schedule === null || schedule.referenceRateBasis !== "independent-benchmark") {
+    return {
+      closed: false,
+      skipped: false,
+      reason:
+        "GATE (a) failed — no BestExecutionPolicySchedule with referenceRateBasis=independent-benchmark " +
+        "in force; publish BESTEX-SCHED-2026-002 first (scripts/publish-fx-bestex-ftp-benchmark.ts); " +
+        "NOT closing the gap",
+      remainingGapIds: currentGaps.map((g) => g.gapId),
+    };
+  }
+
+  // 3b. GATE: at least one FtpCurvePublished event must be on the store.
+  let ftpAvailable = false;
+  for (const e of store.replay({ type: "FtpCurvePublished" })) {
+    if (e.as_of <= CONDUCT_BENCHMARK_GAP_CLOSED_AS_OF) {
+      ftpAvailable = true;
+      break;
+    }
+  }
+  if (!ftpAvailable) {
+    return {
+      closed: false,
+      skipped: false,
+      reason: `GATE (b) failed — no FtpCurvePublished event found on the store at or before ${CONDUCT_BENCHMARK_GAP_CLOSED_AS_OF}; Ravi must publish an FTP curve first; NOT closing the gap`,
+      remainingGapIds: currentGaps.map((g) => g.gapId),
+    };
+  }
+
+  // 4. Re-emit: remove benchmark gap, add live-feed gap (unless already present),
+  //    carry all other gaps forward UNCHANGED.
+  const remaining: ProductDeferredGap[] = currentGaps.filter(
+    (g) => g.gapId !== BENCHMARK_GAP_ID && g.gapId !== FTP_LIVE_FEED_GAP_ID,
+  );
+  remaining.push({
+    ...FTP_LIVE_FEED_DEFERRED_GAP,
+    citations: [...FTP_LIVE_FEED_DEFERRED_GAP.citations],
+  });
+
+  const priorChain = Array.isArray(latest.payload.citationChain)
+    ? latest.payload.citationChain.filter((c): c is string => typeof c === "string")
+    : [...CONDUCT_CITATION_CHAIN];
+
+  const provenance = buildPhaseFixtureTag({
+    sourceLineage: "platform:npa-attestation-runner",
+    variant: `npa-dimension-upgrade:${CONDUCT_PRODUCT_ID}:conduct:bestex-benchmark-gap-closure`,
+    tags: ["npa-gate", "deferred-gap-closure", "conduct", CONDUCT_PRODUCT_ID],
+  });
+
+  store.append({
+    ...makeProductDimensionAttested({
+      asOf: CONDUCT_BENCHMARK_GAP_CLOSED_AS_OF,
+      entity: "LE-ZA-HOZ-BANK",
+      actor: CONDUCT_ACTOR,
+      citations: [
+        ...CONDUCT_CITATIONS,
+        "D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL",
+        "D-NPA-GATE-POLICY-REDESIGN",
+        "D-NPA-SCOPE-FIX-COUNTERPARTY-ELIGIBILITY",
+        "dimension:conduct",
+      ],
+      payload: {
+        productId: CONDUCT_PRODUCT_ID,
+        dimension: "conduct",
+        result: "implementation-attested",
+        citationChain: [
+          ...new Set([
+            ...priorChain,
+            `bestex-schedule:${schedule.scheduleId}`,
+            "platform/conduct/fx-trade-conduct-evaluation.ts:resolveFtpMidRate",
+            "scripts/publish-fx-bestex-ftp-benchmark.ts",
+          ]),
+        ],
+        deferredGaps: remaining,
+      },
+    }),
+    provenance,
+  });
+
+  return {
+    closed: true,
+    skipped: false,
+    remainingGapIds: remaining.map((g) => g.gapId),
+  };
+}

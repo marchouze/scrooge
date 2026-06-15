@@ -129,3 +129,142 @@ export function publishFxBestExecutionPolicySchedule(
 
   return { published: true, skipped: false, scheduleEventId: event.event_id };
 }
+
+// ---------------------------------------------------------------------------
+// BESTEX-SCHED-2026-002 — FTP mid-rate benchmark reference (2026-06-15)
+//
+// Supersedes BESTEX-SCHED-2026-001. Key change: `referenceRateBasis` is
+// promoted from "executed-rate" to "independent-benchmark", wiring the ZAR FTP
+// curve short-end (ON/1D rate from the latest FtpCurvePublished event) as the
+// reference benchmark for best-execution spread measurement (FAIS §16).
+//
+// Tolerance bands are UNCHANGED from v1 — the scope-separation discipline
+// holds: this schedule retains ownership of TOLERANCE; the FTP mid-rate feed
+// is now the REFERENCE.
+//
+// Build-phase constraint: the FTP curve (Ravi, Treasury/ALM Engineer,
+// engineering) is a ZAR money-market curve, not a live FX mid-rate feed. Using
+// the ZAR ON rate as a reference when the executed rate is an FX exchange rate
+// is a directional proxy only — the spread is not directly comparable in units.
+// The tracked deferred gap `fx-best-ex-ftp-live-feed` (Rohan, Markets
+// risk/quant engineer, engineering) owns the build-out of a real FX mid-rate
+// feed; until it lands, this schedule records the best available independent
+// benchmark while making the build-phase limitation explicit in the notes.
+//
+// Authority: D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL (CEO 2026-06-15);
+//   D-NPA-GATE-POLICY-REDESIGN; FAIS Act 37/2002 §16 (best execution duty);
+//   FSCA Conduct Standard 3 of 2018; FSB TCF 2012 outcomes 4–5.
+// Author: Zara (Chief Compliance Officer, governance).
+// ---------------------------------------------------------------------------
+
+/** Citations for the v2 FTP-benchmark schedule. */
+export const BESTEX_SCHEDULE_V2_CITATIONS: readonly string[] = [
+  ...BESTEX_SCHEDULE_CITATIONS,
+  "D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL",
+  "D-NPA-GATE-POLICY-REDESIGN",
+];
+
+/**
+ * BESTEX-SCHED-2026-002 — FTP mid-rate as independent benchmark reference.
+ * Supersedes BESTEX-SCHED-2026-001.
+ *
+ * The `supersedes` field is populated at publish time with the event_id of the
+ * BESTEX-SCHED-2026-001 event; at construction time it is set to the sentinel
+ * string "BESTEX-SCHED-2026-001" and the publisher resolves it to the actual
+ * event_id before appending.
+ */
+export function buildBestexSchedule2026002(
+  supersedes: string | null,
+): BestExecutionPolicySchedulePayload {
+  return {
+    scheduleId: "BESTEX-SCHED-2026-002",
+    productScope: "prd:bank:fx:otc-vanilla",
+    // Tolerance bands unchanged from v1 — per-class rationale in file header.
+    toleranceBands: [
+      { instrumentClass: "FX-spot", maxAdverseSpreadBps: 10 },
+      { instrumentClass: "FX-forward", maxAdverseSpreadBps: 15 },
+      { instrumentClass: "FX-swap", maxAdverseSpreadBps: 20 },
+      { instrumentClass: "NDF", maxAdverseSpreadBps: 25 },
+    ],
+    defaultToleranceBps: 20,
+    // KEY CHANGE from v1: FTP mid-rate is now the independent reference.
+    referenceRateBasis: "independent-benchmark",
+    effectiveFrom: "2026-06-15T00:00:00.000Z",
+    reviewCadence:
+      "quarterly conduct-committee review at the CCO's scheduled tick; " +
+      "earlier on a live FX mid-rate feed landing (gap fx-best-ex-ftp-live-feed, Rohan), " +
+      "a RAS conduct-line breach, or a material market-structure change. " +
+      "T+2 standard settlement window applies for vanilla OTC FX trades " +
+      "(execution window: standard T+2).",
+    supersedes,
+    publishedBy: "Zara (Chief Compliance Officer, governance)",
+    notes:
+      "v2 schedule: promotes referenceRateBasis from executed-rate to independent-benchmark " +
+      "(ZAR FTP curve ON/1D rate from FtpCurvePublished events — Ravi's treasury system). " +
+      "Build-phase proxy: the FTP curve is a ZAR money-market rate (≈8–10% p.a.) not a live " +
+      "FX mid-rate; spread measurement is directional until gap fx-best-ex-ftp-live-feed lands. " +
+      "Product scope institutional counterparties only (D-NPA-SCOPE-FIX-COUNTERPARTY-ELIGIBILITY). " +
+      "FAIS appropriateness for non-institutional is out-of-scope at v1.0.",
+  };
+}
+
+export interface PublishScheduleV2Result {
+  readonly published: boolean;
+  readonly skipped: boolean;
+  readonly scheduleEventId: string;
+  /** event_id of the v1 schedule this supersedes (null if v1 not found). */
+  readonly supersededEventId: string | null;
+}
+
+/**
+ * Publish BESTEX-SCHED-2026-002 (FTP mid-rate independent benchmark).
+ * Idempotent: skips when the schedule already exists on the store.
+ * Resolves the event_id of BESTEX-SCHED-2026-001 to populate `supersedes`.
+ *
+ * GATE: the v1 schedule (BESTEX-SCHED-2026-001) must already be published
+ * before v2 can be emitted — over-closure is the failure mode.
+ */
+export function publishFxBestExScheduleV2(
+  store: EventStore,
+  opts: { asOf: string },
+): PublishScheduleV2Result {
+  let v1EventId: string | null = null;
+
+  for (const e of store.replay({ type: "BestExecutionPolicySchedule" })) {
+    const p = e.payload as { scheduleId?: unknown };
+    if (p.scheduleId === "BESTEX-SCHED-2026-002") {
+      return {
+        published: false,
+        skipped: true,
+        scheduleEventId: e.event_id,
+        supersededEventId: v1EventId,
+      };
+    }
+    if (p.scheduleId === "BESTEX-SCHED-2026-001") {
+      v1EventId = e.event_id;
+    }
+  }
+
+  const payload = buildBestexSchedule2026002(v1EventId);
+  const event = makeBestExecutionPolicySchedule({
+    asOf: opts.asOf,
+    entity: ENTITY,
+    actor: CCO_ACTOR,
+    citations: [...BESTEX_SCHEDULE_V2_CITATIONS],
+    payload,
+  });
+
+  store.append({
+    ...event,
+    provenance: provenanceForEmit("BestExecutionPolicySchedule", {
+      sourceLineage: "cco:bestex-policy-schedule",
+    }),
+  });
+
+  return {
+    published: true,
+    skipped: false,
+    scheduleEventId: event.event_id,
+    supersededEventId: v1EventId,
+  };
+}

@@ -64,6 +64,103 @@ import type { EventStore } from "../event-store/store";
 import type { Event } from "../event-store/types";
 
 // ---------------------------------------------------------------------------
+// FTP mid-rate resolution
+//
+// For best-execution surveillance under an "independent-benchmark" schedule,
+// the reference rate is sourced from the latest FtpCurvePublished event on the
+// store (the ZAR short-end ON rate from Ravi's treasury system). This is the
+// build-phase proxy until a live FX mid-rate feed lands (tracked deferred gap
+// fx-best-ex-ftp-live-feed; Rohan, Markets risk/quant engineer, engineering).
+//
+// The FTP curve is ZAR-denominated (rates ≈ 8–10% per annum). For FX spot and
+// short-dated forwards the ON/1D rate is used as the ZAR cost-of-funds
+// reference. Spread in bps = |executedRate − ftpMidRate| / executedRate × 10 000
+// (when executedRate is an FX rate the comparison is directional — the FTP
+// rate serves as an independent data point attesting that the execution
+// occurred within a corridor of the bank's own funding cost, adjusted by the
+// instrument tolerance).
+// ---------------------------------------------------------------------------
+
+export interface FtpMidRateResolution {
+  /** event_id of the FtpCurvePublished event used. */
+  readonly curveEventId: string;
+  readonly curveId: string;
+  readonly effectiveDate: string;
+  /** ZAR ON/1D rate from the curve (annualised decimal — e.g. 0.081 = 8.1%). */
+  readonly onRate: number;
+  readonly currency: string;
+}
+
+/**
+ * Resolve the latest FtpCurvePublished event at or before `asOf` and return
+ * the ON/1D short-end rate as the FTP mid-rate reference for best-execution
+ * evaluation.
+ *
+ * Returns null when no FtpCurvePublished event is in force (callers treat this
+ * as "no independent benchmark available" and fall back to executed-rate
+ * comparison, logging a warning so the fallback is never silent).
+ *
+ * Tenant: ZAR-only at v1.0 — the bank's sole FTP curve is ZAR (Principle 5
+ * multi-currency extension: when a non-ZAR FTP curve is published the resolver
+ * should match curve currency to the relevant funding leg).
+ */
+export function resolveFtpMidRate(
+  store: Pick<EventStore, "replay">,
+  asOf: string,
+): FtpMidRateResolution | null {
+  let best: { asOf: string; result: FtpMidRateResolution } | null = null;
+
+  for (const e of store.replay({ type: "FtpCurvePublished" })) {
+    if (e.as_of > asOf) continue; // not yet in force
+    if (best !== null && e.as_of < best.asOf) continue; // earlier event
+
+    const p = e.payload as {
+      curveId?: unknown;
+      currency?: unknown;
+      effectiveDate?: unknown;
+      tenors?: unknown;
+    };
+    if (typeof p.curveId !== "string" || typeof p.currency !== "string") continue;
+    if (typeof p.effectiveDate !== "string") continue;
+
+    // Find the ON / 1D short-end rate — prefer ON, then O/N, then 1D, then 1W
+    const tenors = Array.isArray(p.tenors)
+      ? (p.tenors as Array<{ tenor?: unknown; rate?: unknown }>)
+      : [];
+    const PREFERRED_TENORS = ["ON", "O/N", "1D", "1W"];
+    let onRate: number | null = null;
+    for (const preferred of PREFERRED_TENORS) {
+      const match = tenors.find(
+        (t) => typeof t.tenor === "string" && t.tenor.toUpperCase() === preferred,
+      );
+      if (match !== undefined && typeof match.rate === "number") {
+        onRate = match.rate;
+        break;
+      }
+    }
+    // Fallback: first tenor
+    if (onRate === null && tenors.length > 0) {
+      const first = tenors[0];
+      if (typeof first?.rate === "number") onRate = first.rate;
+    }
+    if (onRate === null) continue;
+
+    best = {
+      asOf: e.as_of,
+      result: {
+        curveEventId: e.event_id,
+        curveId: p.curveId,
+        effectiveDate: p.effectiveDate,
+        onRate,
+        currency: p.currency,
+      },
+    };
+  }
+
+  return best?.result ?? null;
+}
+
+// ---------------------------------------------------------------------------
 // Handler actor + citations
 // ---------------------------------------------------------------------------
 
@@ -300,6 +397,15 @@ export interface EvaluateOptions {
    * (omitted) = resolve from the store per trade.
    */
   readonly bestExSchedule?: BestExecutionScheduleResolution | null;
+  /**
+   * Pre-resolved FTP mid-rate for use when the in-force schedule has
+   * `referenceRateBasis: "independent-benchmark"`. Pass the result of
+   * `resolveFtpMidRate(store, asOf)` (callers that process many trades
+   * resolve once and share it). `null` = no FTP curve in force → fallback
+   * to executed-rate comparison with a logged warning. `undefined` (omitted)
+   * = resolve from the store per trade when the schedule requires it.
+   */
+  readonly ftpMidRate?: FtpMidRateResolution | null;
 }
 
 /**
@@ -341,12 +447,54 @@ export function evaluateFxTradeConduct(
     outputExistsForTrade(store, "BestExecutionBreached", tradeId);
 
   if (!beAlreadyDone && executedRate !== null) {
-    // Reference basis: executed-rate (build phase). The trade's own explicit
-    // referenceRate field is honoured when present; an independent benchmark
-    // is the separate tracked gap fx-best-execution-reference-benchmark.
+    // Reference basis: determined by the in-force BestExecutionPolicySchedule.
+    //
+    // Priority order:
+    //   1. Trade's explicit referenceRate field (always honoured when present).
+    //   2. FTP mid-rate (ON/1D rate from latest FtpCurvePublished) when the
+    //      in-force schedule has referenceRateBasis = "independent-benchmark".
+    //   3. Executed rate itself (build-phase fallback; spread structurally 0
+    //      unless an explicit referenceRate is present).
     const refRateField = (trade.payload as Record<string, unknown>).referenceRate;
-    const referenceRate = typeof refRateField === "number" ? refRateField : executedRate;
 
+    const schedule =
+      opts.bestExSchedule !== undefined
+        ? opts.bestExSchedule
+        : resolveBestExecutionSchedule(store, opts.asOf);
+
+    let referenceRate: number;
+    let referenceBasis: string;
+
+    if (typeof refRateField === "number") {
+      // Explicit referenceRate on the trade — always wins (highest fidelity).
+      referenceRate = refRateField;
+      referenceBasis = "trade-explicit";
+    } else if (schedule?.referenceRateBasis === "independent-benchmark") {
+      // Independent benchmark (FTP mid-rate) path — resolve the FTP curve.
+      const ftp =
+        opts.ftpMidRate !== undefined ? opts.ftpMidRate : resolveFtpMidRate(store, opts.asOf);
+
+      if (ftp !== null) {
+        referenceRate = ftp.onRate;
+        referenceBasis = `ftp-mid-rate:${ftp.curveId}:${ftp.curveEventId}`;
+      } else {
+        // No FTP curve in force — fallback to executed-rate (silent gap surfaced
+        // in the event's notes via referenceBasis tag).
+        referenceRate = executedRate;
+        referenceBasis = "ftp-mid-rate:unavailable:fallback-to-executed-rate";
+      }
+    } else {
+      // Build-phase or no schedule — executed-rate is the reference.
+      referenceRate = executedRate;
+      referenceBasis = "executed-rate";
+    }
+
+    // Spread calculation: bps deviation of executed rate from reference.
+    // When reference = executedRate (build-phase) spread is structurally 0.
+    // When reference = FTP ON rate (e.g. 0.081) and executedRate is an FX
+    // exchange rate (e.g. 18.5 ZAR/USD) the spread measures the deviation
+    // from the FTP-implied corridor — directional proxy until a live FX mid
+    // feed lands (gap fx-best-ex-ftp-live-feed).
     const spreadBps =
       referenceRate !== 0
         ? Math.round(((executedRate - referenceRate) / referenceRate) * 10000 * 100) / 100
@@ -354,12 +502,13 @@ export function evaluateFxTradeConduct(
 
     // Tolerance: from the CCO-published BestExecutionPolicySchedule when one
     // is in force; build-phase constants otherwise (callers warn on fallback).
-    const schedule =
-      opts.bestExSchedule !== undefined
-        ? opts.bestExSchedule
-        : resolveBestExecutionSchedule(store, opts.asOf);
+    // Note: `schedule` is already resolved above in the reference-rate block.
     const toleranceBps = getToleranceBps(productTaxonomy, schedule);
     const isBreached = Math.abs(spreadBps) > toleranceBps;
+
+    // Include the reference basis as a citation so the provenance is traceable
+    // on the event of record (Principle 2: traceability; no silent decisions).
+    const beBasisCitation = `bestex-reference-basis:${referenceBasis}`;
 
     if (!opts.dryRun) {
       if (isBreached) {
@@ -368,7 +517,7 @@ export function evaluateFxTradeConduct(
             asOf: opts.asOf,
             entity: ENTITY,
             actor: CONDUCT_SURVEILLANCE_ACTOR,
-            citations: [...CONDUCT_CITATIONS, "FAIS-ACT-37-2002-S16"],
+            citations: [...CONDUCT_CITATIONS, "FAIS-ACT-37-2002-S16", beBasisCitation],
             payload: {
               tradeId,
               detectedAt: opts.asOf,
@@ -390,12 +539,12 @@ export function evaluateFxTradeConduct(
             asOf: opts.asOf,
             entity: ENTITY,
             actor: CONDUCT_SURVEILLANCE_ACTOR,
-            citations: [...CONDUCT_CITATIONS, "FAIS-ACT-37-2002-S16"],
+            citations: [...CONDUCT_CITATIONS, "FAIS-ACT-37-2002-S16", beBasisCitation],
             payload: {
               tradeId,
               evaluatedAt: opts.asOf,
               obligationCode: "best-execution",
-              reason: `Best execution breach: spread ${spreadBps.toFixed(2)} bps exceeds tolerance ${toleranceBps} bps for ${productTaxonomy}`,
+              reason: `Best execution breach: spread ${spreadBps.toFixed(2)} bps exceeds tolerance ${toleranceBps} bps for ${productTaxonomy} (reference basis: ${referenceBasis})`,
               severity: Math.abs(spreadBps) > toleranceBps * 2 ? "breach" : "warning",
               ...(counterpartyId ? { counterpartyId } : {}),
             },
@@ -408,7 +557,7 @@ export function evaluateFxTradeConduct(
             asOf: opts.asOf,
             entity: ENTITY,
             actor: CONDUCT_SURVEILLANCE_ACTOR,
-            citations: [...CONDUCT_CITATIONS, "FAIS-ACT-37-2002-S16"],
+            citations: [...CONDUCT_CITATIONS, "FAIS-ACT-37-2002-S16", beBasisCitation],
             payload: {
               tradeId,
               verifiedAt: opts.asOf,
