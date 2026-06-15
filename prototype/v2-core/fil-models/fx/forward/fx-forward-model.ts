@@ -99,11 +99,7 @@ export function fxForwardLegValuable(pos: FxForwardLegPosition): Valuable {
 export function fxForwardLegPerformable(pos: FxForwardLegPosition): Performable {
   const reporting = pos.reporting ?? "ZAR";
   return {
-    unrealisedPnl(
-      marks: MarketDataSlice,
-      asOf: Instant,
-      bookedCost: Money,
-    ): PerformanceRecord {
+    unrealisedPnl(marks: MarketDataSlice, asOf: Instant, bookedCost: Money): PerformanceRecord {
       const { forwardRate, observablesUsed } = resolveFwdRate(
         marks,
         pos.currency,
@@ -146,13 +142,7 @@ export function fxForwardLegPerformable(pos: FxForwardLegPosition): Performable 
         reporting,
         pos.remainingDays,
       );
-      return computeDailyCarry(
-        pos.signedNotional,
-        spot,
-        forwardRate,
-        pos.remainingDays,
-        reporting,
-      );
+      return computeDailyCarry(pos.signedNotional, spot, forwardRate, pos.remainingDays, reporting);
     },
     theta(marks: MarketDataSlice, asOf: Instant, remainingDays: number): Money {
       void asOf;

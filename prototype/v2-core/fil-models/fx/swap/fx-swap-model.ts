@@ -59,11 +59,7 @@ export function fxSwapPerformable(pos: FxSwapPosition): Performable {
   const nearPerformable = fxForwardLegPerformable({ ...pos.nearLeg, reporting });
   const farPerformable = fxForwardLegPerformable({ ...pos.farLeg, reporting });
   return {
-    unrealisedPnl(
-      marks: MarketDataSlice,
-      asOf: Instant,
-      _bookedCost: Money,
-    ): PerformanceRecord {
+    unrealisedPnl(marks: MarketDataSlice, asOf: Instant, _bookedCost: Money): PerformanceRecord {
       // Each leg passes a zero-amount Money so it derives book cost from its own
       // bookedForwardRate (the decimal-native sentinel, D-V2-CORE-MONEY-DECIMAL-NATIVE).
       const zero = zeroMoney(reporting);

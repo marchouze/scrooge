@@ -191,7 +191,9 @@ export function run(opts: RunOpts = {}): ReconResult {
 
     const terms = row.economicTerms;
     const signedNotional =
-      terms.direction === "short" ? negateDecimalString(terms.notional.amount) : terms.notional.amount;
+      terms.direction === "short"
+        ? negateDecimalString(terms.notional.amount)
+        : terms.notional.amount;
     // The settlement-date closing rate is not stored on the gate; the invariant
     // is rate-INDEPENDENT (both sides apply the SAME rate), so we assert equality
     // at a representative settlement-date rate. A real rate feed makes no

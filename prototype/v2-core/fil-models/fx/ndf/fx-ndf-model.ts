@@ -86,11 +86,7 @@ export function fxNdfPerformable(pos: FxNdfPosition): Performable {
   const reporting = pos.reporting ?? "ZAR";
   const settlementCurrency = pos.settlementCurrency;
   return {
-    unrealisedPnl(
-      marks: MarketDataSlice,
-      asOf: Instant,
-      _bookedCost: Money,
-    ): PerformanceRecord {
+    unrealisedPnl(marks: MarketDataSlice, asOf: Instant, _bookedCost: Money): PerformanceRecord {
       const { ndfRate, observablesUsed } = resolveNdfRate(pos, marks);
       const netRate = ndfRate - pos.bookedNdfRate;
       const mtmValue = ndfValue(pos.signedNotional, netRate, settlementCurrency);
@@ -138,13 +134,7 @@ export function fxNdfPerformable(pos: FxNdfPosition): Performable {
       const { ndfRate } = resolveNdfRate(pos, marks);
       const spotId = `${pos.currency}/${reporting}`;
       const spot = marks.observables[spotId] ?? 0;
-      return computeTheta(
-        pos.signedNotional,
-        spot,
-        ndfRate,
-        remainingDays,
-        settlementCurrency,
-      );
+      return computeTheta(pos.signedNotional, spot, ndfRate, remainingDays, settlementCurrency);
     },
   };
 }

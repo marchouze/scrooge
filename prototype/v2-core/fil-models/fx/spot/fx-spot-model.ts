@@ -60,11 +60,7 @@ export function fxSpotValuable(pos: FxSpotPosition): Valuable {
 export function fxSpotPerformable(pos: FxSpotPosition): Performable {
   const reporting = pos.reporting ?? "ZAR";
   return {
-    unrealisedPnl(
-      marks: MarketDataSlice,
-      asOf: Instant,
-      bookedCost: Money,
-    ): PerformanceRecord {
+    unrealisedPnl(marks: MarketDataSlice, asOf: Instant, bookedCost: Money): PerformanceRecord {
       const spotId = `${pos.currency}/${reporting}`;
       const spot = marks.observables[spotId];
       if (spot === undefined) {

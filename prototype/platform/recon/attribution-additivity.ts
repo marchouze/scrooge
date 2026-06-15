@@ -141,9 +141,7 @@ export function run(): ReconResult {
     );
     const b = mkMember(
       "b",
-      fcyCashValuable(
-        fcyCashFromSettledReceivable({ currency: "EUR", signedNotional: "50000" }),
-      ),
+      fcyCashValuable(fcyCashFromSettledReceivable({ currency: "EUR", signedNotional: "50000" })),
     );
     const c = mkMember(
       "c",

@@ -109,11 +109,7 @@ const ROUNDING_MODE_MAP: Record<DecimalRoundingMode, Decimal.Rounding> = {
  * Round an exact decimal to `dp` decimal places using `mode`. The ONLY function
  * that reduces precision. Pure — returns a new value.
  */
-export function roundDecimal(
-  d: DecimalValue,
-  dp: number,
-  mode: DecimalRoundingMode,
-): DecimalValue {
+export function roundDecimal(d: DecimalValue, dp: number, mode: DecimalRoundingMode): DecimalValue {
   if (!Number.isInteger(dp) || dp < 0) {
     throw new RangeError(`v2 decimal: dp must be a non-negative integer, got ${dp}`);
   }

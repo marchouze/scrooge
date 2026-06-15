@@ -12,13 +12,7 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { z } from "zod";
-import {
-  type DecimalValue,
-  addD,
-  decimalToString,
-  subD,
-  toDecimal,
-} from "./decimal";
+import { type DecimalValue, addD, decimalToString, subD, toDecimal } from "./decimal";
 
 /**
  * An ISO-8601 instant. Kept as a branded string at the kernel level — the v2
@@ -54,11 +48,9 @@ const DECIMAL_STRING = /^-?(?:0|[1-9]\d*)(?:\.\d+)?$|^-?0?\.\d+$/;
 
 export const moneySchema: z.ZodType<Money> = z.object({
   currency: z.string().length(3),
-  amount: z
-    .string()
-    .refine((s) => DECIMAL_STRING.test(s.trim()), {
-      message: "Money.amount must be a canonical decimal string (major units), never a number",
-    }),
+  amount: z.string().refine((s) => DECIMAL_STRING.test(s.trim()), {
+    message: "Money.amount must be a canonical decimal string (major units), never a number",
+  }),
 });
 
 // ---------------------------------------------------------------------------

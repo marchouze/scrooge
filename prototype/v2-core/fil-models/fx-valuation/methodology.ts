@@ -21,11 +21,7 @@
 //         Bea (Accounting & financial reporting engineer, engineering — Accountable facet).
 
 import { mulD, roundDecimal, toDecimal } from "../../fil-core/decimal";
-import {
-  type Instant,
-  type Money,
-  moneyFromDecimal,
-} from "../../fil-core/primitives";
+import { type Instant, type Money, moneyFromDecimal } from "../../fil-core/primitives";
 import type { MarketDataSlice, ObservableRef } from "../../fil-facets/facets";
 
 // ---------------------------------------------------------------------------

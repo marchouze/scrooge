@@ -76,10 +76,7 @@ import type { Event } from "../event-store/types";
 import { resolveMarketDataDbPath } from "../market-data/resolve-market-data-db";
 import { MarketDataStore } from "../market-data/store";
 import { computeMarketRisk, deriveRiskFactorExposures } from "../market-risk/var-engine";
-import {
-  majorStringToMinorBigint,
-  minorBigintToMajorString,
-} from "../risk/sa-ccr/v2-money-bridge";
+import { majorStringToMinorBigint, minorBigintToMajorString } from "../risk/sa-ccr/v2-money-bridge";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "attribution-var-diversification";
@@ -151,7 +148,10 @@ function buildVarMembers(
         // The RiskMeasurable reports the REAL factor (C/ZAR), so the VaR metric
         // keys the exposure to the right currency's return window.
         RiskMeasurable: fcyCashRiskMeasurable(
-          fcyCashFromSettledReceivable({ currency: ccy, signedNotional: minorBigintToMajorString(exposureMinor) }),
+          fcyCashFromSettledReceivable({
+            currency: ccy,
+            signedNotional: minorBigintToMajorString(exposureMinor),
+          }),
         ),
       },
       groupKey: desk,

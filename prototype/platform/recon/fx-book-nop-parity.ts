@@ -55,10 +55,7 @@ import {
 import { eventStore } from "../composition";
 import type { Event } from "../event-store/types";
 import { deriveNetFxPositionByCurrency } from "../projections/markets/limit-utilisation";
-import {
-  majorStringToMinorBigint,
-  minorBigintToMajorString,
-} from "../risk/sa-ccr/v2-money-bridge";
+import { majorStringToMinorBigint, minorBigintToMajorString } from "../risk/sa-ccr/v2-money-bridge";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "fx-book-nop-parity";
@@ -94,7 +91,10 @@ function buildFxTradingBookMembers(net: Map<string, number>): {
     if (signedMinor === 0n) continue;
     perCurrencyNetMinor.set(ccy, signedMinor);
     const valuable = fcyCashValuable(
-      fcyCashFromSettledReceivable({ currency: ccy, signedNotional: minorBigintToMajorString(signedMinor) }),
+      fcyCashFromSettledReceivable({
+        currency: ccy,
+        signedNotional: minorBigintToMajorString(signedMinor),
+      }),
     );
     const member: ResolvedMember = {
       instanceUrn:
