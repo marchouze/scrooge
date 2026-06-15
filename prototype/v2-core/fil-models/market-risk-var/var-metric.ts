@@ -156,8 +156,10 @@ export function makeVarMetric(returnMatrix: VarReturnMatrix): VarMetric {
         }
         const rec: RevaluationRecord = valuable.value(marks, asOf);
         // The signed ZAR exposure is the member's mark-to-market value in the
-        // reporting currency (minor units → major ZAR).
-        const exposureZar = Number(rec.value.minorUnits) / 100;
+        // reporting currency. The decimal-native Money amount is ALREADY in major
+        // units (D-V2-CORE-MONEY-DECIMAL-NATIVE) — parse the canonical string into
+        // the float working basis the historical-simulation VaR operates in.
+        const exposureZar = Number.parseFloat(rec.value.amount);
         exposureByFactor.set(factor, (exposureByFactor.get(factor) ?? 0) + exposureZar);
       }
 

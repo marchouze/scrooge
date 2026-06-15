@@ -39,12 +39,29 @@ import { dirname, resolve } from "node:path";
 
 import { Database } from "bun:sqlite";
 
+import { divD, roundDecimal, toDecimal } from "../v2-core/fil-core/decimal";
+import { type Money, moneyFromDecimal } from "../v2-core/fil-core/primitives";
 import { formatInstanceUrn, formatTypeUrn } from "../v2-core/fil-core/urn";
 import {
   type FilEconomicTerms,
   filInstrumentCreatedPayloadSchema,
   filInstrumentTerminatedPayloadSchema,
 } from "../v2-core/fil-instances/events";
+
+// ---------------------------------------------------------------------------
+// Decimal-native Money (D-V2-CORE-MONEY-DECIMAL-NATIVE): the v1 source store
+// carries notionals as integer MINOR units; the v2 FIL economic terms carry
+// decimal-native Money (`amount` = canonical MAJOR-unit string). This boundary
+// converts integer-minor numbers → major Money through the v2 decimal engine —
+// NO float arithmetic (`recon:no-float-money-arithmetic`): the minor count is
+// rounded to a whole integer (defensive) then shifted to major units via
+// `divD`, never the `/` operator.
+// ---------------------------------------------------------------------------
+
+function minorNumberToMajorMoney(minorUnits: number, currency: string): Money {
+  const wholeMinor = roundDecimal(toDecimal(String(minorUnits)), 0, "HALF_UP");
+  return moneyFromDecimal(currency, roundDecimal(divD(wholeMinor, toDecimal("100")), 2, "HALF_UP"));
+}
 
 // ---------------------------------------------------------------------------
 // Store resolution — v1 (read-only source) and v2 anchor (write target).
@@ -312,7 +329,7 @@ function materialiseFx(): { created: number; terminated: number; skipped: number
 
     const economicTerms: FilEconomicTerms = {
       assetClass: "fx",
-      notional: { currency: "ZAR", minorUnits: BigInt(Math.abs(zarMinor)) },
+      notional: minorNumberToMajorMoney(Math.abs(zarMinor), "ZAR"),
       direction: side === "sell" ? "short" : "long",
       counterpartyId,
       nettingSetId: `NS-${counterpartyId}-ZAR`,
@@ -389,7 +406,7 @@ function materialiseIr(): { created: number; terminated: number; skipped: number
 
     const economicTerms: FilEconomicTerms = {
       assetClass: "ir",
-      notional: { currency, minorUnits: BigInt(Math.abs(notionalMinor)) },
+      notional: minorNumberToMajorMoney(Math.abs(notionalMinor), currency),
       direction: role.includes("pay-fixed") ? "short" : "long",
       counterpartyId,
       nettingSetId: `NS-${counterpartyId}-${currency}`,
@@ -433,9 +450,10 @@ function materialiseIr(): { created: number; terminated: number; skipped: number
 }
 
 // ---------------------------------------------------------------------------
-// JSON serialisation — bigint Money.minorUnits → number (the v2 anchor store
-// holds JSON; the FIL instance projection re-reads minorUnits as bigint). The
-// stored JSON mirrors the v1 minor-unit integers exactly.
+// JSON serialisation — decimal-native Money is a `{ currency, amount: string }`
+// struct that survives JSON round-trip intact (D-V2-CORE-MONEY-DECIMAL-NATIVE),
+// so notionals need no special handling. The bigint→number replacer is retained
+// defensively for any other bigint-valued field a future payload may carry.
 // ---------------------------------------------------------------------------
 
 function serialise(payload: Record<string, unknown>): Record<string, unknown> {

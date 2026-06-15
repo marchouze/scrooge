@@ -137,27 +137,25 @@ export function run(): ReconResult {
     });
     const a = mkMember(
       "a",
-      fxValuable({ currency: "USD", signedNotionalMinor: 100_000n, isForward: false }),
+      fxValuable({ currency: "USD", signedNotional: "100000", isForward: false }),
     );
     const b = mkMember(
       "b",
-      fcyCashValuable(
-        fcyCashFromSettledReceivable({ currency: "EUR", signedNotionalMinor: 50_000n }),
-      ),
+      fcyCashValuable(fcyCashFromSettledReceivable({ currency: "EUR", signedNotional: "50000" })),
     );
     const c = mkMember(
       "c",
-      fxValuable({ currency: "GBP", signedNotionalMinor: -30_000n, isForward: false }),
+      fxValuable({ currency: "GBP", signedNotional: "-30000", isForward: false }),
     );
 
     const joint = fxPnlMetric.evaluate([a, b, c], marks, marks.asOf);
     const left = fxPnlMetric.evaluate([a, b], marks, marks.asOf);
     const right = fxPnlMetric.evaluate([c], marks, marks.asOf);
     const childrenSum = sumChildren(fxPnlMetric, [left, right]);
-    if (joint.minorUnits !== childrenSum.minorUnits || joint.currency !== childrenSum.currency) {
+    if (joint.amount !== childrenSum.amount || joint.currency !== childrenSum.currency) {
       violations.push({
         subject: fxPnlMetric.metricId,
-        message: `fx-pnl children-sum (${childrenSum.minorUnits} ${childrenSum.currency}) != joint recompute (${joint.minorUnits} ${joint.currency}) — additive optimisation diverged on the real FX P&L metric`,
+        message: `fx-pnl children-sum (${childrenSum.amount} ${childrenSum.currency}) != joint recompute (${joint.amount} ${joint.currency}) — additive optimisation diverged on the real FX P&L metric`,
         severity: "fail",
       });
     }

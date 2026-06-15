@@ -33,7 +33,28 @@ import {
   scopePatternsValid,
 } from "./model";
 
-const zar = (minorUnits: bigint): Money => ({ currency: "ZAR", minorUnits });
+// DECIMAL-NATIVE (D-V2-CORE-MONEY-DECIMAL-NATIVE): scenarios are authored in
+// CENTS for continuity with the d317 worked examples; `zar(cents)` converts to
+// a decimal-native Money (major-unit decimal string, 2dp). `cents(m)` reads it
+// back to integer cents so the byte-locked d317 assertions stay in cents.
+const zar = (centsAmount: bigint): Money => {
+  const neg = centsAmount < 0n;
+  const abs = (neg ? -centsAmount : centsAmount).toString().padStart(3, "0");
+  const whole = abs.slice(0, abs.length - 2);
+  const frac = abs.slice(abs.length - 2);
+  return { currency: "ZAR", amount: `${neg ? "-" : ""}${whole}.${frac}` };
+};
+
+const cents = (m: Money | undefined): bigint | undefined => {
+  if (m === undefined) return undefined;
+  const t = m.amount.trim();
+  const neg = t.startsWith("-");
+  const unsigned = neg ? t.slice(1) : t;
+  const [whole = "0", fracRaw = ""] = unsigned.split(".");
+  const frac = fracRaw.padEnd(2, "0").slice(0, 2);
+  const mag = BigInt(whole) * 100n + BigInt(frac === "" ? "0" : frac);
+  return neg ? -mag : mag;
+};
 
 describe("SA-CCR FIL-Model registry fold", () => {
   it("folds the empty register → exactly 1 row for the SA-CCR declaration", () => {
@@ -120,9 +141,9 @@ describe("SA-CCR methodology math (d317)", () => {
 
   it("unmargined RC = max(V, 0)", () => {
     const rcPos = computeReplacementCost(ns, zar(50_000n), zar(0n), asOf);
-    expect(rcPos.rc.minorUnits).toBe(50_000n);
+    expect(cents(rcPos.rc)).toBe(50_000n);
     const rcNeg = computeReplacementCost(ns, zar(-50_000n), zar(0n), asOf);
-    expect(rcNeg.rc.minorUnits).toBe(0n);
+    expect(cents(rcNeg.rc)).toBe(0n);
   });
 
   it("PFE add-on for a single FX trade = |notional| × SF(fx=0.04)", () => {
@@ -139,7 +160,7 @@ describe("SA-CCR methodology math (d317)", () => {
     const addOns = computeAddOn([trade], { margined: false });
     expect(addOns.length).toBe(1);
     // MF for 1y unmargined = sqrt(min(1,1)) = 1.0; addOn = 1_000_000 × 0.04
-    expect(addOns[0]?.addOn.minorUnits).toBe(40_000n);
+    expect(cents(addOns[0]?.addOn)).toBe(40_000n);
   });
 
   it("EAD = α × (RC + PFE)", () => {
@@ -162,9 +183,9 @@ describe("SA-CCR methodology math (d317)", () => {
     });
     // RC = 50_000; aggAddOn = 40_000; V−C = 50_000 > 0 ⇒ multiplier ≈ 1.0 ⇒
     // PFE = 40_000; EAD = 1.4 × (50_000 + 40_000) = 126_000.
-    expect(result.rc.rc.minorUnits).toBe(50_000n);
-    expect(result.ead.pfe.minorUnits).toBe(40_000n);
-    expect(result.ead.ead.minorUnits).toBe(126_000n);
+    expect(cents(result.rc.rc)).toBe(50_000n);
+    expect(cents(result.ead.pfe)).toBe(40_000n);
+    expect(cents(result.ead.ead)).toBe(126_000n);
     expect(result.ead.alpha).toBe(1.4);
   });
 
@@ -182,7 +203,7 @@ describe("SA-CCR methodology math (d317)", () => {
     const short: SaCcrTradeSummary = { ...long, direction: "short", notional: zar(400_000n) };
     const addOns = computeAddOn([long, short], { margined: false });
     // net = 1_000_000 − 400_000 = 600_000; addOn = 600_000 × 0.04 = 24_000
-    expect(addOns[0]?.addOn.minorUnits).toBe(24_000n);
+    expect(cents(addOns[0]?.addOn)).toBe(24_000n);
   });
 
   it("the declaration emits the two CCR events of record", () => {
@@ -213,9 +234,10 @@ describe("SA-CCR methodology math (d317)", () => {
     const rc = computeReplacementCost(ns2, zar(0n), zar(0n), asOf);
     const addOns = computeAddOn([trade], { margined: false });
     const ead = computeEad(rc, addOns, { counterpartyId: "CP-1", asOf });
-    expect(ead.ead.minorUnits).toBeGreaterThanOrEqual(0n);
+    expect(cents(ead.ead)).toBeGreaterThanOrEqual(0n);
     // EAD = round(1.4 × (RC + PFE)); RC = 0 here so EAD = round(1.4 × PFE).
-    const expectedEad = (ead.pfe.minorUnits * 14_000n + 5_000n) / 10_000n;
-    expect(ead.ead.minorUnits).toBe(expectedEad);
+    const pfeCents = cents(ead.pfe) ?? 0n;
+    const expectedEad = (pfeCents * 14_000n + 5_000n) / 10_000n;
+    expect(cents(ead.ead)).toBe(expectedEad);
   });
 });

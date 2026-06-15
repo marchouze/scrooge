@@ -38,6 +38,7 @@ export const FIL_FACET_NAMES = [
   "RiskMeasurable",
   "Reportable",
   "PostureRelevant",
+  "Performable",
 ] as const;
 
 export type FilFacetName = (typeof FIL_FACET_NAMES)[number];

@@ -47,6 +47,11 @@ import type { Instant, Money as V2Money } from "../../../v2-core/fil-core/primit
 import type { ObservableRef, RevaluationRecord } from "../../../v2-core/fil-facets/facets";
 import { getCollateralInventory } from "../../collateral/inventory";
 import type { EventStore } from "../../event-store/store";
+import {
+  legacyMinorNumberToMajorString,
+  minorBigintToMajorString,
+  v2MoneyToMinor,
+} from "./v2-money-bridge";
 
 // ---------------------------------------------------------------------------
 // The trade → counterparty membership for a netting set, reconstructed from the
@@ -133,7 +138,7 @@ export function materialiseNettingSetRevaluations(
     // replay is sequence-ordered (monotone in as_of for revaluations) ⇒
     // last assignment is the latest event-of-record.
     latest.set(tid, {
-      value: { currency, minorUnits: BigInt(Math.round(p.npvClosingMinor)) },
+      value: { currency, amount: legacyMinorNumberToMajorString(p.npvClosingMinor) },
       asOf: ev.as_of as Instant,
       observablesUsed: [irObservable(currency)],
     });
@@ -152,7 +157,10 @@ export function materialiseNettingSetRevaluations(
       if (!tid || !tradeIds.has(tid)) continue;
       if (typeof p.unrealisedPnlZarMinor !== "number") continue;
       latest.set(tid, {
-        value: { currency: "ZAR", minorUnits: BigInt(Math.round(p.unrealisedPnlZarMinor)) },
+        value: {
+          currency: "ZAR",
+          amount: legacyMinorNumberToMajorString(p.unrealisedPnlZarMinor),
+        },
         asOf: ev.as_of as Instant,
         observablesUsed: [fxObservable(p.currencyPair ?? "?/ZAR")],
       });
@@ -178,8 +186,8 @@ export function sourceVMtmFromValuableFeed(
 ): V2Money {
   const revals = materialiseNettingSetRevaluations(store, args);
   let total = 0n;
-  for (const r of revals) total += r.record.value.minorUnits;
-  return { currency: args.currency, minorUnits: total };
+  for (const r of revals) total += v2MoneyToMinor(r.record.value);
+  return { currency: args.currency, amount: minorBigintToMajorString(total) };
 }
 
 // ---------------------------------------------------------------------------
@@ -200,8 +208,8 @@ export function sourceCollateralFromRegister(args: {
   asOf: string;
 }): V2Money {
   const { currency, asOf } = args;
-  if (currency !== "ZAR") return { currency, minorUnits: 0n };
+  if (currency !== "ZAR") return { currency, amount: "0" };
   const inv = getCollateralInventory(asOf);
   const minorUnits = BigInt(Math.round(inv.totalHQLAZar * 100)); // major rand → minor cents
-  return { currency, minorUnits };
+  return { currency, amount: minorBigintToMajorString(minorUnits) };
 }

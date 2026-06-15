@@ -29,7 +29,7 @@ describe("recon:fx-settlement-continuity", () => {
       initialStage: "active",
       economicTerms: {
         assetClass: "fx",
-        notional: { currency: "USD", minorUnits: 100_000n },
+        notional: { currency: "USD", amount: "1000.00" },
         direction: "long",
         counterpartyId: "CP1",
         nettingSetId: "NS-CP1-USD",

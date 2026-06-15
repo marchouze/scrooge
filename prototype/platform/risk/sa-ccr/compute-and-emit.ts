@@ -60,9 +60,9 @@ import {
   computeSaCcrViaAlias,
 } from "../../../v2-core/fil-models/sa-ccr";
 import { eventStore } from "../../composition";
-import { type Money, minor } from "../../core/money";
+import type { Money } from "../../core/money";
 import { moneyWireFromMinor } from "../../core/money-codec";
-import { type Actor, BANK_ZA_001, type Currency, newEventId } from "../../core/types";
+import { type Actor, BANK_ZA_001, newEventId } from "../../core/types";
 import {
   makeCcrEadComputed,
   makeCcrReplacementCostComputed,
@@ -75,6 +75,7 @@ import {
   sourceVMtmFromValuableFeed,
 } from "./fil-valuable-collateral-feed";
 import type { EadComputation, NettingSet, ReplacementCost, TradeSummary } from "./types";
+import { v1ToV2Money, v2MoneyToMinor, v2ToV1Money } from "./v2-money-bridge";
 
 // ---------------------------------------------------------------------------
 // Default citations for engine-emitted events.
@@ -85,20 +86,14 @@ const DEFAULT_CITATIONS = ["D-CREDIT-LIMIT-ENGINE-BUILD", "Policies/credit-risk-
 // ---------------------------------------------------------------------------
 // v1 ↔ v2 Money + shape conversions at the v2-model boundary.
 //
-// v1 Money is `{ amount: bigint, currency }`; v2 Money is `{ minorUnits: bigint,
-// currency }`. Both are bigint minor-units — the conversion is lossless. The
-// emitted CCR event payloads coerce the minor-unit bigints to Number EXACTLY as
-// before (schema unchanged); the v1-shaped return value is rebuilt from the v2
-// results so existing callers / tests observe an unchanged result contract.
+// v1 Money is `{ amount: bigint, currency }` (INTEGER MINOR units). v2 Money is
+// now DECIMAL-NATIVE (D-V2-CORE-MONEY-DECIMAL-NATIVE): `{ amount: string }` in
+// MAJOR units. The shared `v2-money-bridge` converts between the two. The emitted
+// CCR event payloads still coerce the minor-unit value to Number EXACTLY as
+// before (schema unchanged) via `v2MoneyToMinor`; the v1-shaped return value is
+// rebuilt via `v2ToV1Money` so existing callers / tests observe an unchanged
+// result contract.
 // ---------------------------------------------------------------------------
-
-function v1ToV2Money(m: Money): V2Money {
-  return { currency: String(m.currency), minorUnits: m.amount };
-}
-
-function v2ToV1Money(m: V2Money): Money {
-  return minor(m.minorUnits, m.currency as Currency);
-}
 
 function v1ToV2NettingSet(ns: NettingSet): V2NettingSet {
   return {
@@ -252,12 +247,12 @@ export function computeAndEmit(input: ComputeAndEmitInput): ComputeAndEmitResult
     payload: {
       nettingSetId: input.nettingSet.nettingSetId,
       counterpartyId: input.nettingSet.counterpartyId,
-      rc: Number(rc.rc.minorUnits),
+      rc: Number(v2MoneyToMinor(rc.rc)),
       currency: ccy,
       computationDate,
       methodology: "sa-ccr",
-      vMtm: Number(vMtmV2.minorUnits),
-      collateralHeld: Number(collateralV2.minorUnits),
+      vMtm: Number(v2MoneyToMinor(vMtmV2)),
+      collateralHeld: Number(v2MoneyToMinor(collateralV2)),
     },
     eventId: newEventId(),
   });
@@ -278,10 +273,10 @@ export function computeAndEmit(input: ComputeAndEmitInput): ComputeAndEmitResult
       nettingSetId: input.nettingSet.nettingSetId,
       counterpartyId: input.nettingSet.counterpartyId,
       // HALF_UP: SA-CCR regulatory rounding convention (BCBS d317 §10).
-      rc: moneyWireFromMinor(Number(rc.rc.minorUnits), ccy),
-      pfe: moneyWireFromMinor(Number(ead.pfe.minorUnits), ccy),
+      rc: moneyWireFromMinor(Number(v2MoneyToMinor(rc.rc)), ccy),
+      pfe: moneyWireFromMinor(Number(v2MoneyToMinor(ead.pfe)), ccy),
       alpha: 1.4,
-      ead: moneyWireFromMinor(Number(ead.ead.minorUnits), ccy),
+      ead: moneyWireFromMinor(Number(v2MoneyToMinor(ead.ead)), ccy),
       currency: ccy,
       computationDate,
       methodology: "sa-ccr",

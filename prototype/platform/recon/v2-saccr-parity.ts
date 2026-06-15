@@ -86,19 +86,20 @@ import { computeAddOn as v1ComputeAddOn } from "../risk/sa-ccr/pfe-addon";
 import { buildFxSaCcrTradeSummaries } from "../risk/sa-ccr/positions-to-summaries";
 import { computeReplacementCost as v1ComputeReplacementCost } from "../risk/sa-ccr/replacement-cost";
 import type { TradeSummary as V1TradeSummary } from "../risk/sa-ccr/types";
+import { v1ToV2Money, v2MoneyToMinor } from "../risk/sa-ccr/v2-money-bridge";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "v2-saccr-parity";
 
 // ---------------------------------------------------------------------------
 // Money conversions at the harness boundary (v1 Money ↔ v2 Money). v1 Money is
-// `{ amount: bigint, currency }`; v2 Money is `{ minorUnits: bigint, currency }`.
-// Pure, lossless (both are bigint minor units).
+// `{ amount: bigint, currency }` (INTEGER MINOR units); v2 Money is now
+// DECIMAL-NATIVE (D-V2-CORE-MONEY-DECIMAL-NATIVE): `{ amount: string }` in MAJOR
+// units. The shared `v2-money-bridge` converts between the two. The parity
+// PAYLOAD fields below are the integer minor-unit Number (matching the v1 event
+// schema) on BOTH sides — `v2MoneyToMinor` converts the v2 decimal Money back to
+// the integer minor unit so byte-equivalence of the payloads is preserved.
 // ---------------------------------------------------------------------------
-
-function v1ToV2Money(m: V1Money): V2Money {
-  return { currency: String(m.currency), minorUnits: m.amount };
-}
 
 function v1ToV2Trade(t: V1TradeSummary): V2TradeSummary {
   return {
@@ -146,13 +147,13 @@ function v1Payloads(args: {
     ...(ns.threshold !== undefined
       ? {
           threshold: {
-            amount: ns.threshold.minorUnits,
+            amount: v2MoneyToMinor(ns.threshold),
             currency: ns.threshold.currency as Currency,
           },
         }
       : {}),
     ...(ns.mta !== undefined
-      ? { mta: { amount: ns.mta.minorUnits, currency: ns.mta.currency as Currency } }
+      ? { mta: { amount: v2MoneyToMinor(ns.mta), currency: ns.mta.currency as Currency } }
       : {}),
   };
   const rc = v1ComputeReplacementCost(v1Ns, vMtm, collateral, asOf);
@@ -205,20 +206,20 @@ function v2Payloads(args: {
     rc: {
       nettingSetId: ns.nettingSetId,
       counterpartyId: ns.counterpartyId,
-      rc: Number(rc.rc.minorUnits),
+      rc: Number(v2MoneyToMinor(rc.rc)),
       currency: ns.currency,
       computationDate,
       methodology: "sa-ccr",
-      vMtm: Number(vMtm.minorUnits),
-      collateralHeld: Number(collateral.minorUnits),
+      vMtm: Number(v2MoneyToMinor(vMtm)),
+      collateralHeld: Number(v2MoneyToMinor(collateral)),
     },
     ead: {
       nettingSetId: ns.nettingSetId,
       counterpartyId: ns.counterpartyId,
-      rc: Number(rc.rc.minorUnits),
-      pfe: Number(ead.pfe.minorUnits),
+      rc: Number(v2MoneyToMinor(rc.rc)),
+      pfe: Number(v2MoneyToMinor(ead.pfe)),
       alpha: 1.4,
-      ead: Number(ead.ead.minorUnits),
+      ead: Number(v2MoneyToMinor(ead.ead)),
       currency: ns.currency,
       computationDate,
       methodology: "sa-ccr",
@@ -386,8 +387,8 @@ export function run(): ReconResult {
       asOf,
     });
     // v1 oracle side consumes the SAME feed-sourced inputs (lossless v2→v1 Money).
-    const vMtm: V1Money = v1Minor(vMtmV2.minorUnits, ns.currency as Currency);
-    const collateral: V1Money = v1Minor(collateralV2.minorUnits, ns.currency as Currency);
+    const vMtm: V1Money = v1Minor(v2MoneyToMinor(vMtmV2), ns.currency as Currency);
+    const collateral: V1Money = v1Minor(v2MoneyToMinor(collateralV2), ns.currency as Currency);
 
     const v1Out = v1Payloads({ ns, vMtm, collateral, trades, asOf });
     const v2Out = v2Payloads({
@@ -437,7 +438,7 @@ export function run(): ReconResult {
     const recRc = normaliseRecorded(rec.rcPayload, false);
     if (stableJson(v2Out.rc) !== stableJson(recRc)) {
       const recVMtm = Number(rec.rcPayload.vMtm);
-      const feedVMtm = Number(vMtmV2.minorUnits);
+      const feedVMtm = Number(v2MoneyToMinor(vMtmV2));
       violations.push({
         subject: `${rec.nettingSetId}:CcrReplacementCostComputed:vs-recorded-oracle`,
         message: `Feed-sourced RC diverges from the RECORDED oracle for ${rec.nettingSetId} (recorded-RC pin retired; divergence SURFACED, not forced):\n  recorded vMtm=${recVMtm} (as-of ${rec.asOf} — basis: the pre-flip v1 resolveMtm cumulative-delta walk for the original EOD events, OR a post-flip v2 restatement whose valuation date differs from its computationDate stamp)\n  feed vMtm=${feedVMtm} (basis: latest *Revalued event-of-record per trade; reconstructed as-of ${asOf})\n  recorded=${stableJson(recRc)}\n  feed-sourced=${stableJson(v2Out.rc)}`,

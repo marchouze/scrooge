@@ -109,12 +109,12 @@ export interface FcyCashPosition {
   /** FCY balance currency, ISO-4217 alpha-3. */
   readonly currency: string;
   /**
-   * Balance in the FCY's minor units, SIGNED. This is the notional carried from
-   * the derecognised receivable — NOT a contracted/trade-date cost. The reporting-
-   * currency carrying amount is `balanceMinor × settlement-date rate` at
+   * Balance in the FCY's MAJOR units, SIGNED decimal string. This is the notional
+   * carried from the derecognised receivable — NOT a contracted/trade-date cost.
+   * The reporting-currency carrying amount is `balance × settlement-date rate` at
    * recognition; subsequent reporting dates retranslate at the then-current rate.
    */
-  readonly balanceMinor: bigint;
+  readonly balance: string;
   /** Reporting currency (default ZAR). */
   readonly reporting?: string;
 }
@@ -133,12 +133,12 @@ export interface FcyCashPosition {
  */
 export function fcyCashFromSettledReceivable(args: {
   currency: string;
-  signedNotionalMinor: bigint;
+  signedNotional: string;
   reporting?: string;
 }): FcyCashPosition {
   return {
     currency: args.currency,
-    balanceMinor: args.signedNotionalMinor,
+    balance: args.signedNotional,
     ...(args.reporting !== undefined ? { reporting: args.reporting } : {}),
   };
 }
@@ -164,7 +164,7 @@ export function fcyCashValuable(position: FcyCashPosition): Valuable {
       });
       const { value } = valueFxPosition({
         currency: position.currency,
-        signedNotionalMinor: position.balanceMinor,
+        signedNotional: position.balance,
         allInRate,
         ...(position.reporting !== undefined ? { reporting: position.reporting } : {}),
       });

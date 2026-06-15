@@ -40,33 +40,30 @@ function marks(observables: Record<string, number>): MarketDataSlice {
 
 // ---------------------------------------------------------------------------
 // The CHALLENGER reference kernel — re-implemented from the documented
-// methodology (value = signedNotionalMinor × allInRate, half-away-from-zero to a
-// whole minor unit, 2dp-cancels translation) WITHOUT importing the model's own
-// `scaleMinorByRate`. A deliberately different code path: it composes the
-// rounding from `Math` primitives spelled out longhand, so a silent change to
-// the model's rounding boundary would diverge here.
+// methodology (value = signedNotional × allInRate, half-away-from-zero to 2dp)
+// WITHOUT importing the model's own arithmetic. A deliberately different code
+// path: it composes the rounding from `Math` primitives spelled out longhand,
+// so a silent change to the model's rounding boundary would diverge here.
 // ---------------------------------------------------------------------------
 
-function challengerScale(signedMinor: bigint, rate: number): bigint {
-  const product = Number(signedMinor) * rate;
-  // Half-away-from-zero, spelled out independently of the model's branch.
-  const mag = Math.abs(product);
-  const roundedMag = Math.trunc(mag + 0.5);
-  const signed = product < 0 ? -roundedMag : roundedMag;
-  return BigInt(signed);
-}
-
-function challengerValueMinor(args: {
+function challengerValue(args: {
   currency: string;
-  signedNotionalMinor: bigint;
+  signedNotional: string;
   spot: number;
   fwdPoints?: number;
   reporting?: string;
-}): bigint {
+}): string {
   const reporting = args.reporting ?? "ZAR";
-  if (args.currency === reporting) return args.signedNotionalMinor;
+  if (args.currency === reporting) return args.signedNotional;
   const allIn = args.spot + (args.fwdPoints ?? 0);
-  return challengerScale(args.signedNotionalMinor, allIn);
+  const product = Number(args.signedNotional) * allIn;
+  // Half-away-from-zero to 2dp — a different arithmetic path from the model.
+  const factor = 100;
+  const mag = Math.abs(product * factor);
+  const roundedMag = Math.trunc(mag + 0.5) / factor;
+  const signed = product < 0 ? -roundedMag : roundedMag;
+  // Strip trailing zeros to match decimalToString's canonical form (no .00 noise).
+  return signed.toFixed(2).replace(/\.?0+$/, "") || "0";
 }
 
 // ---------------------------------------------------------------------------
@@ -74,14 +71,14 @@ function challengerValueMinor(args: {
 // ---------------------------------------------------------------------------
 
 describe("Nadia challenger — parallel run vs model", () => {
-  const sweep: Array<{ ccy: string; notional: bigint; spot: number; fwd?: number }> = [
-    { ccy: "USD", notional: 100_000n, spot: 18.5 },
-    { ccy: "USD", notional: -100_000n, spot: 19.1 },
-    { ccy: "EUR", notional: 50_000n, spot: 20.0 },
-    { ccy: "GBP", notional: -30_000n, spot: 23.4 },
-    { ccy: "USD", notional: 100_000n, spot: 18.5, fwd: 0.25 },
-    { ccy: "GBP", notional: 7_777_777n, spot: 23.137 },
-    { ccy: "EUR", notional: -1n, spot: 19.999 },
+  const sweep: Array<{ ccy: string; notional: string; spot: number; fwd?: number }> = [
+    { ccy: "USD", notional: "1000.00", spot: 18.5 },
+    { ccy: "USD", notional: "-1000.00", spot: 19.1 },
+    { ccy: "EUR", notional: "500.00", spot: 20.0 },
+    { ccy: "GBP", notional: "-300.00", spot: 23.4 },
+    { ccy: "USD", notional: "1000.00", spot: 18.5, fwd: 0.25 },
+    { ccy: "GBP", notional: "77777.77", spot: 23.137 },
+    { ccy: "EUR", notional: "-0.01", spot: 19.999 },
   ];
 
   for (const s of sweep) {
@@ -90,17 +87,17 @@ describe("Nadia challenger — parallel run vs model", () => {
       if (s.fwd !== undefined) obs[`${s.ccy}/ZAR:fwd-points`] = s.fwd;
       const modelVal = fxValuable({
         currency: s.ccy,
-        signedNotionalMinor: s.notional,
+        signedNotional: s.notional,
         isForward: s.fwd !== undefined,
       }).value(marks(obs), ASOF).value;
-      const challenger = challengerValueMinor({
+      const challenger = challengerValue({
         currency: s.ccy,
-        signedNotionalMinor: s.notional,
+        signedNotional: s.notional,
         spot: s.spot,
         ...(s.fwd !== undefined ? { fwdPoints: s.fwd } : {}),
       });
       expect(modelVal.currency).toBe("ZAR");
-      expect(modelVal.minorUnits).toBe(challenger);
+      expect(modelVal.amount).toBe(challenger);
     });
   }
 });
@@ -112,22 +109,26 @@ describe("Nadia challenger — parallel run vs model", () => {
 describe("Nadia challenger — sensitivity", () => {
   test("value is linear in rate (doubling the rate doubles the value)", () => {
     const v = (rate: number) =>
-      fxValuable({ currency: "USD", signedNotionalMinor: 1_000_000n, isForward: false }).value(
-        marks({ "USD/ZAR": rate }),
-        ASOF,
-      ).value.minorUnits;
+      Number(
+        fxValuable({ currency: "USD", signedNotional: "10000.00", isForward: false }).value(
+          marks({ "USD/ZAR": rate }),
+          ASOF,
+        ).value.amount,
+      );
     // Pick rates with exact 2dp products to avoid rounding noise in the ratio.
-    expect(v(20) * 2n).toBe(v(40));
-    expect(v(10) * 3n).toBe(v(30));
+    expect(v(20) * 2).toBe(v(40));
+    expect(v(10) * 3).toBe(v(30));
   });
 
   test("value is linear in notional (3× notional ⇒ 3× value)", () => {
-    const v = (n: bigint) =>
-      fxValuable({ currency: "USD", signedNotionalMinor: n, isForward: false }).value(
-        marks({ "USD/ZAR": 18 }),
-        ASOF,
-      ).value.minorUnits;
-    expect(v(100_000n) * 3n).toBe(v(300_000n));
+    const v = (n: string) =>
+      Number(
+        fxValuable({ currency: "USD", signedNotional: n, isForward: false }).value(
+          marks({ "USD/ZAR": 18 }),
+          ASOF,
+        ).value.amount,
+      );
+    expect(v("1000.00") * 3).toBe(v("3000.00"));
   });
 });
 
@@ -137,55 +138,59 @@ describe("Nadia challenger — sensitivity", () => {
 
 describe("Nadia challenger — boundary / edge", () => {
   test("zero notional ⇒ zero value", () => {
-    const rec = fxValuable({ currency: "USD", signedNotionalMinor: 0n, isForward: false }).value(
+    const rec = fxValuable({ currency: "USD", signedNotional: "0.00", isForward: false }).value(
       marks({ "USD/ZAR": 18.5 }),
       ASOF,
     );
-    expect(rec.value.minorUnits).toBe(0n);
+    expect(Number(rec.value.amount)).toBe(0);
   });
 
   test("sign symmetry — value(−n) == −value(n)", () => {
-    const pos = fxValuable({
-      currency: "USD",
-      signedNotionalMinor: 333_333n,
-      isForward: false,
-    }).value(marks({ "USD/ZAR": 17.77 }), ASOF).value.minorUnits;
-    const neg = fxValuable({
-      currency: "USD",
-      signedNotionalMinor: -333_333n,
-      isForward: false,
-    }).value(marks({ "USD/ZAR": 17.77 }), ASOF).value.minorUnits;
+    const pos = Number(
+      fxValuable({
+        currency: "USD",
+        signedNotional: "3333.33",
+        isForward: false,
+      }).value(marks({ "USD/ZAR": 17.77 }), ASOF).value.amount,
+    );
+    const neg = Number(
+      fxValuable({
+        currency: "USD",
+        signedNotional: "-3333.33",
+        isForward: false,
+      }).value(marks({ "USD/ZAR": 17.77 }), ASOF).value.amount,
+    );
     expect(neg).toBe(-pos);
   });
 
   test("rounding is half-away-from-zero at the .5 boundary, symmetric in sign", () => {
-    // Construct a product whose fractional part is exactly .5:
-    // 1 minor unit × 2.5 = 2.5 → 3 (away from zero); −1 × 2.5 = −2.5 → −3.
-    const up = fxValuable({ currency: "USD", signedNotionalMinor: 1n, isForward: false }).value(
+    // Construct a product whose fractional part is exactly .5 at the 2dp level:
+    // 0.01 major unit × 2.5 = 0.025 → 0.03 (away from zero); −0.01 × 2.5 = −0.025 → −0.03.
+    const up = fxValuable({ currency: "USD", signedNotional: "0.01", isForward: false }).value(
       marks({ "USD/ZAR": 2.5 }),
       ASOF,
-    ).value.minorUnits;
-    const down = fxValuable({ currency: "USD", signedNotionalMinor: -1n, isForward: false }).value(
+    ).value.amount;
+    const down = fxValuable({ currency: "USD", signedNotional: "-0.01", isForward: false }).value(
       marks({ "USD/ZAR": 2.5 }),
       ASOF,
-    ).value.minorUnits;
-    expect(up).toBe(3n);
-    expect(down).toBe(-3n);
+    ).value.amount;
+    expect(Number(up)).toBe(0.03);
+    expect(Number(down)).toBe(-0.03);
   });
 
   test("reporting-currency leg values at rate 1 (no translation)", () => {
     const rec = fxValuable({
       currency: "ZAR",
-      signedNotionalMinor: 1_234_567n,
+      signedNotional: "12345.67",
       isForward: false,
     }).value(marks({}), ASOF); // no observable needed for the home leg
     expect(rec.value.currency).toBe("ZAR");
-    expect(rec.value.minorUnits).toBe(1_234_567n);
+    expect(rec.value.amount).toBe("12345.67");
   });
 
   test("missing spot observable is a hard error (no silent zero)", () => {
     expect(() =>
-      fxValuable({ currency: "USD", signedNotionalMinor: 100_000n, isForward: false }).value(
+      fxValuable({ currency: "USD", signedNotional: "1000.00", isForward: false }).value(
         marks({}),
         ASOF,
       ),
@@ -195,14 +200,14 @@ describe("Nadia challenger — boundary / edge", () => {
   test("forward with missing points defaults points to zero (spot-only all-in)", () => {
     const withFwdFlagNoPoints = fxValuable({
       currency: "USD",
-      signedNotionalMinor: 100_000n,
+      signedNotional: "1000.00",
       isForward: true,
-    }).value(marks({ "USD/ZAR": 18.5 }), ASOF).value.minorUnits;
+    }).value(marks({ "USD/ZAR": 18.5 }), ASOF).value.amount;
     const spotOnly = fxValuable({
       currency: "USD",
-      signedNotionalMinor: 100_000n,
+      signedNotional: "1000.00",
       isForward: false,
-    }).value(marks({ "USD/ZAR": 18.5 }), ASOF).value.minorUnits;
+    }).value(marks({ "USD/ZAR": 18.5 }), ASOF).value.amount;
     expect(withFwdFlagNoPoints).toBe(spotOnly);
   });
 });
@@ -216,62 +221,64 @@ describe("Nadia challenger — boundary / edge", () => {
 // ---------------------------------------------------------------------------
 
 describe("Nadia challenger — JPY non-2dp deferred-gap probe", () => {
-  test("JPY value = (2dp-minor JPY notional) × rate, in ZAR minor units — consistent with the kernel's stated 2dp pin", () => {
-    // 89,130,000 JPY carried as 2dp minor = 8_913_000_000n minor units.
-    // At JPY/ZAR = 0.124 → 8_913_000_000 × 0.124 = 1_105_212_000 ZAR minor
-    // (= ZAR 11,052,120.00). The point: the SAME 2dp scale is used on the JPY
-    // notional and the ZAR result, so the per-unit translation is internally
-    // consistent — the ERROR is not in the multiply, it is in the EXTERNAL
-    // contract of what "JPY minor units" means (cents vs whole yen).
-    const jpyNotionalAs2dpMinor = 8_913_000_000n;
+  test("JPY value = JPY notional × rate, in ZAR major units — consistent with the kernel's stated 2dp pin", () => {
+    // 89,130,000.00 JPY (expressed as major-unit decimal string).
+    // At JPY/ZAR = 0.124 → 89,130,000 × 0.124 = 11,052,120.00 ZAR.
+    // The point: the SAME major-unit convention is used on both sides — the ERROR
+    // is in the EXTERNAL contract of what "JPY notional" means (2dp vs whole yen).
+    const jpyNotional = "89130000.00";
     const rec = fxValuable({
       currency: "JPY",
-      signedNotionalMinor: jpyNotionalAs2dpMinor,
+      signedNotional: jpyNotional,
       isForward: false,
     }).value(marks({ "JPY/ZAR": 0.124 }), ASOF);
     expect(rec.value.currency).toBe("ZAR");
-    expect(rec.value.minorUnits).toBe(challengerScale(jpyNotionalAs2dpMinor, 0.124));
+    expect(rec.value.amount).toBe(
+      challengerValue({ currency: "JPY", signedNotional: jpyNotional, spot: 0.124 }),
+    );
   });
 
   test("settlement-continuity holds for JPY DESPITE the 0-dp deferral (the dp convention cancels on both sides)", () => {
-    // Whatever the JPY minor-unit convention, value_pre (FX position) and
+    // Whatever the JPY notional convention, value_pre (FX position) and
     // value_post (FCY cash) carry the SAME notional through the SAME kernel at
     // the SAME rate — so the deferral cannot break settlement continuity. This is
     // the load-bearing assurance for the cutover: JPY's dp gap is a UNIT-LABEL
     // issue, not a continuity issue.
-    const notional = 8_913_000_000n;
+    const notional = "89130000.00";
     for (const rate of [0.0001, 0.124, 0.13, 1]) {
       const pre = fxValuable({
         currency: "JPY",
-        signedNotionalMinor: notional,
+        signedNotional: notional,
         isForward: false,
-      }).value(marks({ "JPY/ZAR": rate }), ASOF).value.minorUnits;
+      }).value(marks({ "JPY/ZAR": rate }), ASOF).value.amount;
       const post = fcyCashValuable(
-        fcyCashFromSettledReceivable({ currency: "JPY", signedNotionalMinor: notional }),
-      ).value(marks({ "JPY/ZAR": rate }), ASOF).value.minorUnits;
+        fcyCashFromSettledReceivable({ currency: "JPY", signedNotional: notional }),
+      ).value(marks({ "JPY/ZAR": rate }), ASOF).value.amount;
       expect(post).toBe(pre);
     }
   });
 
   test("DOCUMENTED ERROR SURFACE: if JPY notionals were ever supplied in WHOLE YEN (0-dp) the value would be understated 100×", () => {
     // This test PROVES the gap is real and bounds it: the kernel multiplies
-    // whatever integer it is handed by the rate. If a caller passes whole-yen
-    // (the ISO-correct 0-dp count) into a field the kernel treats as 2dp-minor,
-    // the ZAR value is 100× too small. The mitigation is that the live v1 FX
-    // book feeds 2dp-minor consistently (byte-parity), so the gap is DORMANT on
-    // the anchor book — but it is a live trap for any non-2dp-consistent feed.
-    const wholeYen = 89_130_000n; // ISO-correct 0-dp count of the same 89.13m JPY
-    const as2dp = 8_913_000_000n; // the same amount as 2dp-minor
-    const vWhole = fxValuable({
-      currency: "JPY",
-      signedNotionalMinor: wholeYen,
-      isForward: false,
-    }).value(marks({ "JPY/ZAR": 0.124 }), ASOF).value.minorUnits;
-    const v2dp = fxValuable({
-      currency: "JPY",
-      signedNotionalMinor: as2dp,
-      isForward: false,
-    }).value(marks({ "JPY/ZAR": 0.124 }), ASOF).value.minorUnits;
-    expect(v2dp).toBe(vWhole * 100n);
+    // whatever decimal it is handed by the rate. If a caller passes whole-yen
+    // (the ISO-correct 0-dp count, e.g. "891300.00") into a field the caller
+    // intends as 2dp-major (i.e. 89,130,000 JPY), the ZAR value is 100× too small.
+    const wholeYenStr = "891300.00"; // ISO-correct 0-dp count treated as major
+    const as2dpStr = "89130000.00"; // the same amount with the 2dp convention
+    const vWhole = Number(
+      fxValuable({
+        currency: "JPY",
+        signedNotional: wholeYenStr,
+        isForward: false,
+      }).value(marks({ "JPY/ZAR": 0.124 }), ASOF).value.amount,
+    );
+    const v2dp = Number(
+      fxValuable({
+        currency: "JPY",
+        signedNotional: as2dpStr,
+        isForward: false,
+      }).value(marks({ "JPY/ZAR": 0.124 }), ASOF).value.amount,
+    );
+    expect(v2dp).toBe(vWhole * 100);
   });
 });

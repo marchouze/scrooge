@@ -24,8 +24,13 @@ import {
   resolveSaCcrModel,
 } from "./model-alias";
 
-function zar(minorUnits: bigint): Money {
-  return { currency: "ZAR", minorUnits };
+// DECIMAL-NATIVE (D-V2-CORE-MONEY-DECIMAL-NATIVE): sentinel cents → decimal Money.
+function zar(centsAmount: bigint): Money {
+  const neg = centsAmount < 0n;
+  const abs = (neg ? -centsAmount : centsAmount).toString().padStart(3, "0");
+  const whole = abs.slice(0, abs.length - 2);
+  const frac = abs.slice(abs.length - 2);
+  return { currency: "ZAR", amount: `${neg ? "-" : ""}${whole}.${frac}` };
 }
 
 const sampleInput = {
@@ -87,7 +92,7 @@ describe("SA-CCR model alias seam", () => {
     try {
       expect(resolveSaCcrModel()).toBe(sentinel);
       const out = computeSaCcrViaAlias(sampleInput);
-      expect(out.ead.ead.minorUnits).toBe(999n); // sentinel's behaviour, not the real model's
+      expect(out.ead.ead.amount).toBe("9.99"); // sentinel's behaviour (999 cents), not the real model's
     } finally {
       handle.restore();
     }

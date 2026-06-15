@@ -61,12 +61,12 @@ function varMember(args: {
   exposureZar: number;
   desk: string;
 }): ResolvedMember {
-  const minor = BigInt(Math.round(args.exposureZar * 100));
+  const signedNotional = (Math.round(args.exposureZar * 100) / 100).toFixed(2);
   // Value the member in ZAR at a unit rate (exposure already in ZAR).
-  const zarPos = fcyCashFromSettledReceivable({ currency: "ZAR", signedNotionalMinor: minor });
+  const zarPos = fcyCashFromSettledReceivable({ currency: "ZAR", signedNotional });
   const ccyPos = fcyCashFromSettledReceivable({
     currency: args.currency,
-    signedNotionalMinor: minor,
+    signedNotional,
   });
   return {
     instanceUrn: inst(args.id),

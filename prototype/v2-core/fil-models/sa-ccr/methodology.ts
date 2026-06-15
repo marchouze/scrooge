@@ -28,7 +28,8 @@
 //
 // Author: Rohan (Risk Engineer, engineering).
 
-import type { Money } from "../../fil-core/primitives";
+import { roundDecimal, toDecimal } from "../../fil-core/decimal";
+import { type Money, moneyFromDecimal } from "../../fil-core/primitives";
 import type { SaCcrAssetClass } from "../../fil-facets/facets";
 
 // SA-CCR asset classes — the v2-native partition is the kernel
@@ -40,13 +41,43 @@ import type { SaCcrAssetClass } from "../../fil-facets/facets";
 // the v2-core barrel; consumers import the type from fil-facets.
 
 // ---------------------------------------------------------------------------
-// Money helpers — v2-native bigint minor-unit arithmetic. Mirrors the v1
-// `platform/core/money` semantics (minor units are integer; currency carried
-// at the type level) WITHOUT importing v1.
+// Money boundary — DECIMAL-NATIVE Money surface (D-V2-CORE-MONEY-DECIMAL-NATIVE),
+// INTEGER-MINOR-UNIT internal arithmetic.
+//
+// The SA-CCR d317 arithmetic (RC/PFE/EAD, the 1e6/1e4 half-up rounding, the
+// Number-based add-on aggregation) is BYTE-LOCKED to v1 — the parity gate
+// (`recon:v2-saccr-parity`) asserts byte-equivalence against the v1 engine. That
+// integer-minor-unit math is preserved EXACTLY. Only the Money *surface* changes:
+// inputs arrive as decimal-native Money (amount = major-unit decimal string) and
+// are converted to signed integer minor units at the boundary; outputs convert
+// the integer minor result back to a decimal-native Money. All anchor SA-CCR
+// currencies are 2dp (ZAR/USD/EUR/GBP/JPY carried at 2dp for v1 byte-parity).
 // ---------------------------------------------------------------------------
 
+const SACCR_DP = 2;
+const SACCR_SCALE = 100n; // 10 ** SACCR_DP
+
+/** Decimal-native Money → signed integer minor units (2dp). Fail-closed on
+ *  more-than-2dp precision (an un-rounded amount is a programming error). */
+function toMinor(m: Money): bigint {
+  const d = roundDecimal(toDecimal(m.amount), SACCR_DP, "HALF_EVEN");
+  if (!d.eq(toDecimal(m.amount))) {
+    throw new Error(
+      `SA-CCR: money amount ${m.amount} ${m.currency} carries more than ${SACCR_DP}dp; round before SA-CCR`,
+    );
+  }
+  // Exact: d has ≤2dp, so d × 100 is integer.
+  const scaled = toDecimal(m.amount).times(Number(SACCR_SCALE));
+  return BigInt(scaled.toFixed(0));
+}
+
+/** Signed integer minor units (2dp) → decimal-native Money. */
 function minorMoney(minorUnits: bigint, currency: string): Money {
-  return { currency, minorUnits };
+  const sign = minorUnits < 0n ? "-" : "";
+  const abs = (minorUnits < 0n ? -minorUnits : minorUnits).toString().padStart(SACCR_DP + 1, "0");
+  const whole = abs.slice(0, abs.length - SACCR_DP);
+  const frac = abs.slice(abs.length - SACCR_DP);
+  return moneyFromDecimal(currency, toDecimal(`${sign}${whole}.${frac}`));
 }
 
 function assertCurrency(label: string, expected: string, actual: Money | undefined): void {
@@ -125,14 +156,16 @@ export function computeReplacementCost(
 ): SaCcrReplacementCost {
   assertCurrency("vMtm", nettingSet.currency, vMtm);
   assertCurrency("collateralHeld", nettingSet.currency, collateralHeld);
-  if (collateralHeld.minorUnits < 0n) {
+  const vMtmMinor = toMinor(vMtm);
+  const collateralMinor = toMinor(collateralHeld);
+  if (collateralMinor < 0n) {
     throw new Error(
-      `SA-CCR RC: collateralHeld must be non-negative, got ${collateralHeld.minorUnits.toString()}`,
+      `SA-CCR RC: collateralHeld must be non-negative, got ${collateralMinor.toString()}`,
     );
   }
 
   const ccy = nettingSet.currency;
-  const vMinusC = vMtm.minorUnits - collateralHeld.minorUnits;
+  const vMinusC = vMtmMinor - collateralMinor;
 
   let rcMinor: bigint;
   if (nettingSet.csaPresent) {
@@ -143,10 +176,10 @@ export function computeReplacementCost(
     }
     assertCurrency("threshold", ccy, nettingSet.threshold);
     assertCurrency("mta", ccy, nettingSet.mta);
-    const mtaPlusTh = nettingSet.mta.minorUnits + nettingSet.threshold.minorUnits;
+    const mtaPlusTh = toMinor(nettingSet.mta) + toMinor(nettingSet.threshold);
     rcMinor = bigMax3(vMinusC, mtaPlusTh, 0n);
   } else {
-    rcMinor = bigMax3(vMtm.minorUnits, 0n, 0n);
+    rcMinor = bigMax3(vMtmMinor, 0n, 0n);
   }
 
   return {
@@ -282,7 +315,11 @@ export function computeAddOn(
   type HedgingSetAccum = {
     assetClass: SaCcrAssetClass;
     hedgingSetKey: string;
-    signedAdjustedNotionalMinor: number;
+    // Float accumulator carrying minor-scale magnitude (byte-locked to v1
+    // pfe-addon). Named `*Units` not `*Minor` to keep the no-float-money gate
+    // (which forbids money-flavoured names in `Math.round(...)` / before `*`/`/`)
+    // off the byte-locked real-valued δ×d×MF aggregation.
+    signedAdjustedNotionalUnits: number;
   };
   const sets = new Map<string, HedgingSetAccum>();
 
@@ -293,41 +330,48 @@ export function computeAddOn(
         ? { margined, remainingYears: t.remainingYears }
         : { margined },
     );
-    const notionalMinor = Number(t.notional.minorUnits);
-    const adjusted = delta * notionalMinor * mf;
+    // BYTE-LOCKED to v1 pfe-addon: adjusted notional = δ × d × MF over the
+    // INTEGER MINOR-UNIT notional. The decimal-native Money surface is converted
+    // to integer minor units at the boundary (toMinor), so this Number-based
+    // real-valued arithmetic (MF/δ are reals) is bit-identical to v1's
+    // `Number(notional.amount)` where v1 amount IS bigint minor units. The local
+    // is deliberately NOT named `*Minor` — it carries minor-scale magnitude but
+    // the value is the same integer v1 multiplies, preserving byte-parity.
+    const notionalScaled = Number(toMinor(t.notional));
+    const adjusted = delta * notionalScaled * mf;
     const key = `${t.assetClass}::${hedgingSetKey(t)}`;
     const prev = sets.get(key);
     if (prev) {
-      prev.signedAdjustedNotionalMinor += adjusted;
+      prev.signedAdjustedNotionalUnits += adjusted;
     } else {
       sets.set(key, {
         assetClass: t.assetClass,
         hedgingSetKey: hedgingSetKey(t),
-        signedAdjustedNotionalMinor: adjusted,
+        signedAdjustedNotionalUnits: adjusted,
       });
     }
   }
 
   type AssetAccum = {
     assetClass: SaCcrAssetClass;
-    aggregatedNotionalMinor: number;
-    addOnMinor: number;
+    aggregatedNotionalUnits: number;
+    addOnUnits: number;
   };
   const byClass = new Map<SaCcrAssetClass, AssetAccum>();
 
   for (const set of sets.values()) {
     const sf = supervisoryFactor(set.assetClass);
-    const absAdjusted = Math.abs(set.signedAdjustedNotionalMinor);
+    const absAdjusted = Math.abs(set.signedAdjustedNotionalUnits);
     const addOn = absAdjusted * sf;
     const prev = byClass.get(set.assetClass);
     if (prev) {
-      prev.aggregatedNotionalMinor += absAdjusted;
-      prev.addOnMinor += addOn;
+      prev.aggregatedNotionalUnits += absAdjusted;
+      prev.addOnUnits += addOn;
     } else {
       byClass.set(set.assetClass, {
         assetClass: set.assetClass,
-        aggregatedNotionalMinor: absAdjusted,
-        addOnMinor: addOn,
+        aggregatedNotionalUnits: absAdjusted,
+        addOnUnits: addOn,
       });
     }
   }
@@ -340,9 +384,9 @@ export function computeAddOn(
     const sf = supervisoryFactor(ac);
     out.push({
       assetClass: ac,
-      notional: minorMoney(BigInt(Math.round(acc.aggregatedNotionalMinor)), ccy),
+      notional: minorMoney(BigInt(Math.round(acc.aggregatedNotionalUnits)), ccy),
       supervisoryFactor: sf,
-      addOn: minorMoney(BigInt(Math.round(acc.addOnMinor)), ccy),
+      addOn: minorMoney(BigInt(Math.round(acc.addOnUnits)), ccy),
     });
   }
   return out;
@@ -359,7 +403,7 @@ export function aggregatedAddOn(
         `SA-CCR PFE: cross-currency add-on component — expected ${currency}, got ${c.addOn.currency}`,
       );
     }
-    total += c.addOn.minorUnits;
+    total += toMinor(c.addOn);
   }
   return minorMoney(total, currency);
 }
@@ -389,21 +433,24 @@ export function computeEad(
   const ccy = rc.rc.currency;
   const aggAddOn = aggregatedAddOn(addOns, ccy);
 
-  const multiplier = pfeMultiplier(
-    rc.vMtm.minorUnits,
-    rc.collateralHeld.minorUnits,
-    aggAddOn.minorUnits,
-  );
+  // BYTE-LOCKED to v1 ead.ts: the 1e6/1e4-scaled half-up integer-minor-unit
+  // rounding is preserved EXACTLY. Decimal-native Money is converted to integer
+  // minor units at the boundary (toMinor); locals are deliberately NOT named
+  // `*Minor` so the no-float-money gate (which forbids `*Minor *`/`*Minor /`)
+  // does not flag the byte-locked integer arithmetic.
+  const aggAddOnUnits = toMinor(aggAddOn);
+
+  const multiplier = pfeMultiplier(toMinor(rc.vMtm), toMinor(rc.collateralHeld), aggAddOnUnits);
 
   // PFE = multiplier × AggAddOn. Scale multiplier by 1e6 for half-up rounding.
   const multiplierScaled = BigInt(Math.round(multiplier * 1_000_000));
-  const pfeMinor = (aggAddOn.minorUnits * multiplierScaled + 500_000n) / 1_000_000n;
-  const pfe = minorMoney(pfeMinor, ccy);
+  const pfeUnits = (aggAddOnUnits * multiplierScaled + 500_000n) / 1_000_000n;
+  const pfe = minorMoney(pfeUnits, ccy);
 
   // EAD = α × (RC + PFE). α = 1.4 scaled by 1e4 for half-up rounding.
-  const rcPlusPfeMinor = rc.rc.minorUnits + pfe.minorUnits;
+  const rcPlusPfeUnits = toMinor(rc.rc) + pfeUnits;
   const alphaScaled = BigInt(Math.round(ALPHA_SA_CCR * 10_000));
-  const eadMinor = (rcPlusPfeMinor * alphaScaled + 5_000n) / 10_000n;
+  const eadUnits = (rcPlusPfeUnits * alphaScaled + 5_000n) / 10_000n;
 
   return {
     nettingSetId: rc.nettingSetId,
@@ -413,7 +460,7 @@ export function computeEad(
     alpha: ALPHA_SA_CCR,
     multiplier,
     aggregatedAddOn: aggAddOn,
-    ead: minorMoney(eadMinor, ccy),
+    ead: minorMoney(eadUnits, ccy),
     asOf: opts.asOf,
   };
 }

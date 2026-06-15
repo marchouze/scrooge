@@ -104,7 +104,7 @@ describe("FIL-mediated vMtm Valuable feed", () => {
       currency: "ZAR",
       asOf: "2026-06-11T17:00:00.000Z",
     });
-    expect(v.minorUnits).toBe(300n); // latest event-of-record, NOT 600 (cumulative)
+    expect(v.amount).toBe("3"); // 300 minor cents → 3 ZAR major; latest NOT 600 (cumulative)
     expect(v.currency).toBe("ZAR");
   });
 
@@ -119,7 +119,7 @@ describe("FIL-mediated vMtm Valuable feed", () => {
       currency: "ZAR",
       asOf: "2026-06-09T17:00:00.000Z",
     });
-    expect(v.minorUnits).toBe(100n); // the 06-12 reval is excluded
+    expect(v.amount).toBe("1"); // 100 minor cents → 1 ZAR major; 06-12 reval excluded
   });
 
   it("sums the latest mark across multiple trades in the netting set", () => {
@@ -134,7 +134,7 @@ describe("FIL-mediated vMtm Valuable feed", () => {
       currency: "ZAR",
       asOf: "2026-06-11T17:00:00.000Z",
     });
-    expect(v.minorUnits).toBe(300n); // 500 + (-200)
+    expect(v.amount).toBe("3"); // 500 + (-200) = 300 minor cents → 3 ZAR major
   });
 
   it("materialises one Valuable RevaluationRecord per trade, carrying lineage", () => {
@@ -150,7 +150,7 @@ describe("FIL-mediated vMtm Valuable feed", () => {
     });
     expect(records).toHaveLength(1);
     expect(records[0]?.tradeId).toBe("T-1");
-    expect(records[0]?.record.value.minorUnits).toBe(250n); // latest
+    expect(records[0]?.record.value.amount).toBe("2.50"); // 250 minor cents → 2.50 ZAR; latest
     expect(String(records[0]?.record.asOf)).toBe("2026-06-10T18:00:00.000Z");
     expect(records[0]?.record.observablesUsed[0]?.kind).toBe("fixing");
   });
@@ -165,7 +165,7 @@ describe("FIL-mediated vMtm Valuable feed", () => {
       currency: "USD", // non-ZAR netting set
       asOf: "2026-06-11T17:00:00.000Z",
     });
-    expect(v.minorUnits).toBe(0n);
+    expect(v.amount).toBe("0"); // FX revals only contribute to ZAR netting sets
   });
 
   it("returns zero vMtm when the counterparty has no trades", () => {
@@ -175,7 +175,7 @@ describe("FIL-mediated vMtm Valuable feed", () => {
       currency: "ZAR",
       asOf: "2026-06-11T17:00:00.000Z",
     });
-    expect(v.minorUnits).toBe(0n);
+    expect(v.amount).toBe("0");
   });
 });
 
@@ -242,7 +242,7 @@ describe("FIL-mediated vMtm Valuable feed — IRS arm", () => {
       currency: "ZAR",
       asOf: "2026-06-11T17:00:00.000Z",
     });
-    expect(v.minorUnits).toBe(1_750_000n); // latest, not 1_000_000 + 1_750_000
+    expect(v.amount).toBe("17500"); // 1_750_000 minor → 17500 ZAR; latest, not sum
   });
 
   it("skips IRS revaluations whose currency differs from the netting-set currency", () => {
@@ -255,22 +255,22 @@ describe("FIL-mediated vMtm Valuable feed — IRS arm", () => {
       currency: "ZAR",
       asOf: "2026-06-11T17:00:00.000Z",
     });
-    expect(v.minorUnits).toBe(0n);
+    expect(v.amount).toBe("0"); // cross-ccy IRS excluded from ZAR netting set
   });
 });
 
 describe("collateral register feed", () => {
   it("returns zero for non-ZAR netting sets (inventory is a ZAR pool)", () => {
     const c = sourceCollateralFromRegister({ currency: "USD", asOf: "2026-06-11T17:00:00.000Z" });
-    expect(c.minorUnits).toBe(0n);
+    expect(c.amount).toBe("0");
     expect(c.currency).toBe("USD");
   });
 
-  it("returns a ZAR minor-unit amount for ZAR netting sets (zero on an empty pool)", () => {
+  it("returns a ZAR major-unit amount for ZAR netting sets (zero on an empty pool)", () => {
     // With no CollateralInventorySnapshotted events in the ambient store the pool
     // is empty → zero, matching v1 resolveCollateral's build-phase default.
     const c = sourceCollateralFromRegister({ currency: "ZAR", asOf: "2026-06-11T17:00:00.000Z" });
     expect(c.currency).toBe("ZAR");
-    expect(c.minorUnits >= 0n).toBe(true);
+    expect(Number(c.amount) >= 0).toBe(true);
   });
 });

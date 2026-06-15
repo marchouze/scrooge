@@ -148,6 +148,34 @@ export interface PostureRelevant {
   postureDimensions(): readonly PostureDimensionKey[];
 }
 
+// ---------------------------------------------------------------------------
+// 8th kernel facet: Performable (FIL FX Language Phase 1)
+//
+// A generic performance-attribution contract applicable to any asset class:
+//   - unrealisedPnl: MTM value − book cost
+//   - carry: daily accrual (forward premium for FX, coupon for IRD, dividend for equity)
+//   - theta: ∂V/∂t per day (linear approx for forwards; exact GK for options in Phase 2)
+//
+// Authority: D-ENGINEERING-INTEGRITY-CHARTER; brief:atlas:fil-fx-language-phase-1-linear-otc-models:2026-06-15
+// ---------------------------------------------------------------------------
+
+export interface PerformanceRecord {
+  readonly unrealisedPnl: Money;
+  readonly carry: Money;
+  readonly theta: Money;
+  readonly asOf: Instant;
+  readonly observablesUsed: readonly ObservableRef[];
+}
+
+export interface Performable {
+  /** `bookedCost` is the decimal-native Money book cost; a zero-amount Money
+   *  signals "derive the book cost from the position's booked rate" (the prior
+   *  bigint-0 sentinel, now decimal-native — D-V2-CORE-MONEY-DECIMAL-NATIVE). */
+  unrealisedPnl(marks: MarketDataSlice, asOf: Instant, bookedCost: Money): PerformanceRecord;
+  carry(marks: MarketDataSlice, asOf: Instant): Money;
+  theta(marks: MarketDataSlice, asOf: Instant, remainingDays: number): Money;
+}
+
 /**
  * The mapping from facet NAME (the kernel vocabulary) to its interface. Used by
  * the FIL-Models registry and `recon:fil-conformance` to reason about which
@@ -161,6 +189,7 @@ export interface FilFacetInterfaces {
   RiskMeasurable: RiskMeasurable;
   Reportable: Reportable;
   PostureRelevant: PostureRelevant;
+  Performable: Performable;
 }
 
 /** Compile-time guarantee that every facet name has an interface and vice-versa. */
@@ -173,5 +202,6 @@ const _facetNameExhaustive: Record<FilFacetName, FilFacetInterfaceName> = {
   RiskMeasurable: "RiskMeasurable",
   Reportable: "Reportable",
   PostureRelevant: "PostureRelevant",
+  Performable: "Performable",
 };
 void _facetNameExhaustive;

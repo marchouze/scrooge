@@ -76,6 +76,7 @@ import type { Event } from "../event-store/types";
 import { resolveMarketDataDbPath } from "../market-data/resolve-market-data-db";
 import { MarketDataStore } from "../market-data/store";
 import { computeMarketRisk, deriveRiskFactorExposures } from "../market-risk/var-engine";
+import { majorStringToMinorBigint, minorBigintToMajorString } from "../risk/sa-ccr/v2-money-bridge";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "attribution-var-diversification";
@@ -127,7 +128,7 @@ function buildVarMembers(
     const exposureMinor = BigInt(Math.round(e.exposureZar * 100));
     const position = fcyCashFromSettledReceivable({
       currency: "ZAR",
-      signedNotionalMinor: exposureMinor,
+      signedNotional: minorBigintToMajorString(exposureMinor),
     });
     // Partition currencies across two desks BY EXPOSURE SIGN — a "long desk"
     // (net-long currencies) and a "short desk" (net-short currencies). This is a
@@ -147,7 +148,10 @@ function buildVarMembers(
         // The RiskMeasurable reports the REAL factor (C/ZAR), so the VaR metric
         // keys the exposure to the right currency's return window.
         RiskMeasurable: fcyCashRiskMeasurable(
-          fcyCashFromSettledReceivable({ currency: ccy, signedNotionalMinor: exposureMinor }),
+          fcyCashFromSettledReceivable({
+            currency: ccy,
+            signedNotional: minorBigintToMajorString(exposureMinor),
+          }),
         ),
       },
       groupKey: desk,
@@ -388,7 +392,7 @@ export function run(opts: RunOpts = {}): ReconResult {
 /** Additive fold of FX P&L results (mirrors the metric's `add`, for the control). */
 function sumPnl(values: readonly FxPnlResult[]): bigint {
   let acc = 0n;
-  for (const v of values) acc += v.minorUnits;
+  for (const v of values) acc += majorStringToMinorBigint(v.amount);
   return acc;
 }
 

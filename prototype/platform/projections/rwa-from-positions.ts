@@ -94,6 +94,7 @@ import {
   sourceCollateralFromRegister,
   sourceVMtmFromValuableFeed,
 } from "../risk/sa-ccr/fil-valuable-collateral-feed";
+import { minorBigintToMajorString, v2MoneyToMinor } from "../risk/sa-ccr/v2-money-bridge";
 import { requireWeight } from "../types/financial-input";
 import {
   type ProvenanceFilter,
@@ -367,7 +368,7 @@ export function computeRwaFromPositions(
             ? {
                 threshold: {
                   currency: String(v1Ns.threshold.currency),
-                  minorUnits: v1Ns.threshold.amount,
+                  amount: minorBigintToMajorString(v1Ns.threshold.amount),
                 },
               }
             : {}),
@@ -375,7 +376,7 @@ export function computeRwaFromPositions(
             ? {
                 mta: {
                   currency: String(v1Ns.mta.currency),
-                  minorUnits: v1Ns.mta.amount,
+                  amount: minorBigintToMajorString(v1Ns.mta.amount),
                 },
               }
             : {}),
@@ -401,7 +402,7 @@ export function computeRwaFromPositions(
       asOf,
     });
 
-    const eadMinorRaw = Number(ead.ead.minorUnits);
+    const eadMinorRaw = Number(v2MoneyToMinor(ead.ead));
     if (eadMinorRaw <= 0) continue;
 
     let eadZarMinor = eadMinorRaw;
