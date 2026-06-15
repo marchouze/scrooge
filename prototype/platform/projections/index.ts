@@ -15,6 +15,14 @@ export type {
 export { acceptAll, acceptType } from "./types";
 export { LocalProjector } from "./runtime";
 
+// D-PROJECTION-SNAPSHOT-ADOPTION — byte-identical output-snapshot cache for
+// heavy procedural read projections.
+export type {
+  OutputSnapshotCacheOpts,
+  OutputSnapshotCacheResult,
+} from "./output-snapshot-cache";
+export { readWithOutputSnapshot } from "./output-snapshot-cache";
+
 // D-DATA-PROVENANCE-SUBSTRATE Slice 2 — provenance filter surface.
 export type { ProvenanceFilter, ProvenanceMode } from "./filter";
 export {
