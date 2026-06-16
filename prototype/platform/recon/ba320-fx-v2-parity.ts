@@ -28,10 +28,13 @@
 // Citations: Reg 28(5); BCBS D352 §718(xiii); P1-EVENTS-AS-TRUTH.
 // Author: Atlas (Substrate Architect, engineering).
 
+import { spotObservableId } from "../../v2-core/fil-models/fx-valuation/methodology";
 import { fxPositionCalculator } from "../accounting/fx-calculators";
 import { eventStore } from "../composition";
 import { EVENT_TYPE_REGISTRY } from "../event-store/registry/index";
 import { anchorFunctionalCurrency } from "../identity/functional-currency";
+import { MarketDataStore, lookupQuoteWithInverse } from "../market-data/store";
+import { resolveMarketDataDbPath } from "../market-data/resolve-market-data-db";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import { computeBA320V2 } from "../projections/ba320-fx-v2";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
@@ -55,9 +58,40 @@ const AS_OF = "2099-12-31";
 // Gate implementation
 // ---------------------------------------------------------------------------
 
-export function run(): ReconResult {
+export interface RunOpts {
+  /** Override the market-data store — used by tests. Defaults to the resolved
+   *  MarketDataStore (the same source daily-pnl-v2 / var-engine read). */
+  marketData?: MarketDataStore;
+}
+
+/**
+ * Build ONE shared rate map (base currency → functional-units-per-base, MAJOR
+ * units) from the MarketDataStore production fx-quote ticks, currency-agnostic
+ * via spotObservableId(ccy, functional). This is the SAME rate source the V2
+ * BA-320 projection wires; feeding BOTH the V1 fxPositionCalculator and the V2
+ * computeBA320V2 from it makes the charge comparison apples-to-apples (Charter
+ * cmd 4 — source, don't duplicate).
+ */
+function buildSharedRateMap(
+  marketData: MarketDataStore,
+  currencies: Iterable<string>,
+  functional: string,
+): Map<string, number> {
+  const rates = new Map<string, number>();
+  for (const ccy of currencies) {
+    if (ccy === functional || rates.has(ccy)) continue;
+    const quote = lookupQuoteWithInverse(marketData, spotObservableId(ccy, functional), {
+      provenance: "production",
+    });
+    if (quote !== null && quote.rate > 0) rates.set(ccy, quote.rate);
+  }
+  return rates;
+}
+
+export function run(opts: RunOpts = {}): ReconResult {
   const result = emptyResult(PIPELINE);
   const violations: ReconViolation[] = [];
+  const marketData = opts.marketData ?? new MarketDataStore(resolveMarketDataDbPath().path);
 
   // (1) Structural self-test.
   const vacuousViolations = runParityCheck({
@@ -114,10 +148,17 @@ export function run(): ReconResult {
     });
   }
 
-  // (3) Compute V1 FX positions from FxTradeExecuted + TradeMatured.
+  // (3) Compute V1 FX positions from FxTradeExecuted + TradeMatured, on the
+  //     SHARED rate map (same MarketDataStore production fx-quote source the V2
+  //     projection reads) so the V1↔V2 charge comparison is apples-to-apples.
   let v1CurrencyCount = 0;
   let v1OpenTradeCount = 0;
   const v1PositionsByCurrency = new Map<string, number>(); // baseCurrency → netMinor
+  let v1OpenPositionChargeMinor: number | null = null;
+  // The shared rate map (base ccy → functional-units-per-base, MAJOR units),
+  // built once from the recorded FX-instance population's currencies + the
+  // MarketDataStore. Fed to BOTH paths below.
+  const sharedRates = new Map<string, number>();
 
   try {
     const provenanceFilter = defaultProvenanceFilter();
@@ -153,18 +194,40 @@ export function run(): ReconResult {
       if (p.tradeId) settledTradeIds.add(p.tradeId);
     }
 
+    // Candidate currencies from the V1 trade pairs (base + quote legs).
+    const candidateCurrencies = new Set<string>();
+    for (const t of trades) {
+      if (t.currencyPair?.base) candidateCurrencies.add(t.currencyPair.base);
+      if (t.currencyPair?.quote) candidateCurrencies.add(t.currencyPair.quote);
+    }
+    for (const [ccy, rate] of buildSharedRateMap(
+      marketData,
+      candidateCurrencies,
+      FUNCTIONAL_CURRENCY,
+    )) {
+      sharedRates.set(ccy, rate);
+    }
+
     const positions = fxPositionCalculator({
       trades,
       settledTradeIds,
-      zarRates: new Map<string, number>(),
+      zarRates: sharedRates,
       asOf: AS_OF,
     });
 
     const ba310Rows = fxPositionsToBa310Input(positions, FUNCTIONAL_CURRENCY);
     v1CurrencyCount = ba310Rows.length;
     v1OpenTradeCount = trades.length - settledTradeIds.size;
+    let v1SumLong = 0;
+    let v1SumShort = 0;
     for (const row of ba310Rows) {
       v1PositionsByCurrency.set(row.currency, row.netPositionFunctionalMinor);
+      if (row.netPositionFunctionalMinor >= 0) v1SumLong += row.netPositionFunctionalMinor;
+      else v1SumShort += Math.abs(row.netPositionFunctionalMinor);
+    }
+    if (ba310Rows.length > 0) {
+      // Reg 28(5) / BCBS §718(xiii): 8% × max(Σ|long|, Σ|short|).
+      v1OpenPositionChargeMinor = Math.round(0.08 * Math.max(v1SumLong, v1SumShort));
     }
     result.asserted += 1;
   } catch (err) {
@@ -176,10 +239,13 @@ export function run(): ReconResult {
     result.asserted += 1;
   }
 
-  // (4) Compute V2 FX positions from FilInstrumentCreated + FilInstrumentTerminated.
+  // (4) Compute V2 FX positions from FilInstrumentCreated + FilInstrumentTerminated,
+  //     on the SAME shared rate map (passed as an explicit zarRates Record so the
+  //     V1 and V2 charges are computed from one identical rate snapshot).
   let v2CoverageStatus: "no-data" | "partial" | "complete" | "error" = "error";
   let v2OpenInstanceCount = 0;
   let v2CurrencyCount = 0;
+  let v2OpenPositionChargeMinor: number | null = null;
   const v2PositionsByCurrency = new Map<string, number | null>(); // baseCurrency → netMinor (null if no rate)
 
   try {
@@ -188,11 +254,14 @@ export function run(): ReconResult {
       asOf: AS_OF,
       entity: ANCHOR_ENTITY,
       functionalCurrency: FUNCTIONAL_CURRENCY,
+      marketDataStore: marketData,
+      zarRates: Object.fromEntries(sharedRates),
     });
 
     v2CoverageStatus = v2Result.meta.coverageStatus;
     v2OpenInstanceCount = v2Result.meta.openFxInstanceCount;
     v2CurrencyCount = v2Result.fx.positions.length;
+    v2OpenPositionChargeMinor = v2Result.fx.openPositionChargeMinor;
 
     for (const pos of v2Result.fx.positions) {
       v2PositionsByCurrency.set(pos.baseCurrency, pos.netPositionFunctionalMinor);
@@ -211,9 +280,23 @@ export function run(): ReconResult {
   result.asserted += 1;
   violations.push({
     subject: "ba320-fx-v2-parity:gap:phase-3e-fx-coverage",
-    message: `ADVISORY GAP (Phase 3e): V2 BA-320 FX uses FilInstrumentCreated/Terminated (FIL lifecycle) while V1 uses FxTradeExecuted + TradeMatured (raw trade events). V1: ${v1CurrencyCount} currency positions, ${v1OpenTradeCount} open trades. V2: ${v2CurrencyCount} currency positions, ${v2OpenInstanceCount} open FIL instances. Coverage status: ${v2CoverageStatus}. Rate conversion (GAP-3E-005): V2 positions in base-currency minor units; ZAR conversion requires caller-supplied rates (no V2 rate-feed event). Open-position charge is \`null\` when rates unavailable. TO RESOLVE: (a) seed zarRates in computeBA320V2 for covered FX pairs; (b) build V2 rate-feed event type. Authority: D-V1-REMOVAL-PHASE-3E.`,
+    message: `ADVISORY GAP (Phase 3e): V2 BA-320 FX uses FilInstrumentCreated/Terminated (FIL lifecycle) while V1 uses FxTradeExecuted + TradeMatured (raw trade events). V1: ${v1CurrencyCount} currency positions, ${v1OpenTradeCount} open trades. V2: ${v2CurrencyCount} currency positions, ${v2OpenInstanceCount} open FIL instances. Coverage status: ${v2CoverageStatus}. Rate conversion (GAP-3E-005, CLOSED by WS-V2-AUTHORITATIVE S8): BOTH paths now resolve the functional-currency spot rate from the SAME MarketDataStore production fx-quote source (${sharedRates.size} pair(s) resolved). A currency with no production tick is FAIL-CLOSED (charge stays null, no fabricated rate). Authority: D-V1-REMOVAL-PHASE-3E; WS-V2-AUTHORITATIVE S8; D-BANK-WIDE-V2-MIGRATION.`,
     severity: "warn",
   });
+
+  // (5b) Charge parity (advisory) — V1 vs V2 Reg 28(5) open-position charge on
+  // the SAME rate source. PASS when either side sparse (no charge to compare);
+  // byte-clean equality required when BOTH are populated; mismatch → WARN.
+  result.asserted += 1;
+  if (v1OpenPositionChargeMinor !== null && v2OpenPositionChargeMinor !== null) {
+    if (v1OpenPositionChargeMinor !== v2OpenPositionChargeMinor) {
+      violations.push({
+        subject: "ba320-fx-v2-parity:charge-mismatch",
+        message: `V1↔V2 Reg 28(5) open-position charge mismatch on the shared rate source: V1=${v1OpenPositionChargeMinor} functional-ccy minor, V2=${v2OpenPositionChargeMinor} functional-ccy minor. Both paths read the same MarketDataStore fx-quote ticks; a residual gap means the V1 fxPositionCalculator fold and the V2 FIL-instance fold disagree on the net position (e.g. settled-trade retention, pair canonicalisation, or a currency present in one population only). Advisory at Phase 3e. Authority: D-V1-REMOVAL-PHASE-3E.`,
+        severity: "warn",
+      });
+    }
+  }
 
   // (6) Currency-by-currency comparison (advisory, only where V2 has functional-currency data).
   if (v2CoverageStatus !== "no-data" && v2CoverageStatus !== "error") {
@@ -223,7 +306,7 @@ export function run(): ReconResult {
         // Rate not available — document as gap, don't fail.
         violations.push({
           subject: `ba320-fx-v2-parity:gap:rate-missing:${ccy}`,
-          message: `GAP-3E-005: No ZAR rate for ${ccy} — V2 net position in base-currency units only. Cannot compare with V1 ZAR position. To enable comparison: pass zarRates[\"${ccy}\"] to computeBA320V2(). Authority: D-V1-REMOVAL-PHASE-3E.`,
+          message: `GAP-3E-005 (FAIL-CLOSED): no production fx-quote tick for ${ccy}/${FUNCTIONAL_CURRENCY} in the MarketDataStore — V2 net position in base-currency units only; the open-position charge stays null for this currency (no fabricated rate). To enable comparison, ensure the S1 (#1387) backfill seeds a production fx-quote tick for this pair. Authority: D-V1-REMOVAL-PHASE-3E; WS-V2-AUTHORITATIVE S8.`,
           severity: "warn",
         });
         continue;
@@ -269,6 +352,7 @@ export function run(): ReconResult {
     `ba320-fx-v2-parity [ADVISORY — Phase 3e]: ${failCount} fail violations, ${warnCount} warn violations. ` +
     `V1: ${v1CurrencyCount} ccys, ${v1OpenTradeCount} open trades. ` +
     `V2: ${v2CurrencyCount} ccys, ${v2OpenInstanceCount} open FIL instances (coverage: ${v2CoverageStatus}). ` +
+    `Charge (Reg 28(5)): V1=${v1OpenPositionChargeMinor ?? "null"} vs V2=${v2OpenPositionChargeMinor ?? "null"} functional-minor (${sharedRates.size} rate pair(s)). ` +
     `FilInstrumentCreated: ${filCreatedEntry?.v2Status ?? "MISSING"}. ` +
     `FilInstrumentTerminated: ${filTerminatedEntry?.v2Status ?? "MISSING"}. ` +
     `Harness: ${vacuousViolations.length === 0 ? "OK" : "FAILED"}.`;

@@ -26,16 +26,23 @@
 // The FX open-position capital charge (Reg 28(5); BCBS D352 §718(xiii)):
 //   fxCapitalCharge = 8% × max(Σ|netLongs|, Σ|netShorts|) in functional currency
 //
-// ## Rate dependency (GAP-3E-005)
+// ## Rate dependency (GAP-3E-005 — CLOSED by WS-V2-AUTHORITATIVE S8)
 //
 // FIL FX notionals are in the BASE currency (e.g. EUR for EUR/ZAR). Converting
-// to functional-currency (ZAR) minor units requires a ZAR rate. At Phase 3e,
-// no V2 rate-feed event exists. The projection uses a PLACEHOLDER for cross-
-// currency conversion:
-//   - If the notional currency IS the functional currency (ZAR): no conversion needed.
-//   - If the notional currency is NOT the functional currency: the position is
-//     recorded in its own currency WITHOUT ZAR conversion, and marked as a gap.
-//     The parity gate documents this as an advisory gap.
+// to functional-currency (ZAR) minor units requires a spot rate. The rate source
+// is the SAME one the sibling V2 daily-P&L projection (daily-pnl-v2.ts) already
+// consumes: `MarketDataStore` production `fx-quote` ticks, resolved via the shared
+// `lookupQuoteWithInverse(store, spotObservableId(ccy, functionalCurrency), …)`
+// primitive (Principle 2 — single rate-lookup derivation site; Charter cmd 4 —
+// source, don't duplicate). The S1 (#1387) backfill seeds those production ticks
+// for every open FIL FX pair.
+//   - If the notional currency IS the functional currency: no conversion needed.
+//   - If the notional currency is NOT the functional currency and a production
+//     tick is present: convert to functional-currency minor units via the spot mid.
+//   - If NO production tick is present for the pair: FAIL-CLOSED (Charter cmd 2) —
+//     the position is recorded in base-currency minor units only, `rateAvailable`
+//     is false, the open-position charge stays `null`, and `coverageStatus` stays
+//     "partial". The rate is NEVER fabricated and the charge is NEVER zero-filled.
 //
 // ## Comparison with V1
 //
@@ -48,11 +55,14 @@
 // Citations: Reg 28(5); BCBS D352 §718(xiii); P1-EVENTS-AS-TRUTH; D-FIL-ATTRIBUTION-A1-BUILD.
 // Author: Atlas (Substrate Architect, engineering).
 
+import { spotObservableId } from "../../v2-core/fil-models/fx-valuation/methodology";
+import { requireReporting } from "../../v2-core/fil-models/fx-valuation/reporting-currency-resolver";
 import { mulD, roundDecimal, toDecimal, toMinorUnits } from "../core/decimal-engine";
 import { amountToMinorUnits } from "../core/decimal-money";
 import type { Currency } from "../core/types";
 import type { EventStore } from "../event-store/store";
 import { anchorFunctionalCurrency } from "../identity/functional-currency";
+import { type MarketDataStore, lookupQuoteWithInverse } from "../market-data/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "./filter";
 
 // ---------------------------------------------------------------------------
@@ -79,7 +89,14 @@ export interface BA320FxPositionV2 {
   readonly netPositionFunctionalMinor: number | null;
   /** Number of open FIL instances contributing to this position. */
   readonly openInstanceCount: number;
-  /** Whether ZAR conversion was available (false = GAP-3E-005). */
+  /**
+   * Whether a functional-currency spot rate was available from the rate source
+   * for this position (false = fail-closed, no production tick — GAP-3E-005).
+   * `hasRateConversion` is retained as the historical alias; both carry the
+   * same value.
+   */
+  readonly rateAvailable: boolean;
+  /** @deprecated Alias of {@link rateAvailable}. */
   readonly hasRateConversion: boolean;
 }
 
@@ -137,11 +154,24 @@ export interface ComputeBA320V2Args {
    */
   readonly functionalCurrency?: string;
   /**
-   * Optional ZAR rate map for non-functional-currency positions.
-   * Key: ISO-4217 currency code (e.g. "USD"); value: units of functional
-   * currency per 1 unit of base currency in MAJOR units (e.g. 18.5 for
-   * 1 USD = 18.5 ZAR). When absent for a currency, position is returned
-   * without ZAR conversion (GAP-3E-005).
+   * Market-data store holding production `fx-quote` ticks — the SAME rate source
+   * the sibling V2 daily-P&L projection consumes (WS-V2-AUTHORITATIVE S8). When
+   * provided, the functional-currency rate for each non-functional currency is
+   * resolved from it via `lookupQuoteWithInverse(store, spotObservableId(ccy,
+   * functionalCurrency), { provenance: "production" })`. A currency with no usable
+   * production tick is FAIL-CLOSED (no fabricated rate; charge stays null).
+   *
+   * `zarRates` (below) takes precedence when both are supplied — it lets the
+   * parity gate feed BOTH the V1 and V2 paths from one identical rate snapshot so
+   * the comparison is apples-to-apples.
+   */
+  readonly marketDataStore?: MarketDataStore;
+  /**
+   * Optional explicit rate map for non-functional-currency positions. Key:
+   * ISO-4217 currency code (e.g. "USD"); value: units of functional currency per
+   * 1 unit of base currency in MAJOR units (e.g. 18.5 for 1 USD = 18.5 ZAR). When
+   * provided it OVERRIDES the `marketDataStore` lookup for that currency; when a
+   * currency is absent from BOTH, the position is FAIL-CLOSED (GAP-3E-005).
    */
   readonly zarRates?: Readonly<Record<string, number>>;
 }
@@ -169,7 +199,13 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
   // entity tree (fail-closed if unassigned) — NOT a literal "ZAR" default
   // (Engineering Charter cmd 4 — source, don't hardcode; cmd 2 — fail-closed).
   // An explicit override is still honoured. WS-MULTI-BASE-CURRENCY.
-  const functionalCurrency = args.functionalCurrency ?? anchorFunctionalCurrency();
+  // Fail-closed assertion (Charter cmd 2): the functional currency must resolve to
+  // a non-empty ISO-4217 code — never a silent literal. requireReporting throws
+  // rather than fall back to "ZAR" (WS-MULTI-BASE-CURRENCY; #1382).
+  const functionalCurrency = requireReporting(
+    args.functionalCurrency ?? anchorFunctionalCurrency(),
+    `ba320-fx-v2 (entity=${entity})`,
+  );
   const provenanceFilter = defaultProvenanceFilter();
   const gaps: string[] = [];
 
@@ -314,6 +350,24 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
 
   const allCurrencies = new Set([...longsByCurrency.keys(), ...shortsByCounterCurrency.keys()]);
 
+  // Rate resolver — explicit zarRates override wins; otherwise resolve the
+  // functional-currency spot mid from the MarketDataStore production fx-quote
+  // ticks via the SAME shared primitive daily-pnl-v2 uses (Principle 2 — single
+  // rate-lookup site; Charter cmd 4 — source, don't duplicate). Returns the
+  // major-units rate (functional units per 1 base unit) or `null` when no usable
+  // production tick exists (fail-closed; never fabricated).
+  const resolveRate = (baseCurrency: string): number | null => {
+    const explicit = args.zarRates?.[baseCurrency];
+    if (explicit !== undefined && explicit > 0) return explicit;
+    if (!args.marketDataStore) return null;
+    const observableId = spotObservableId(baseCurrency, functionalCurrency);
+    const quote = lookupQuoteWithInverse(args.marketDataStore, observableId, {
+      provenance: "production",
+    });
+    if (quote !== null && quote.rate > 0) return quote.rate;
+    return null;
+  };
+
   const positions: BA320FxPositionV2[] = [];
   let missingRateCount = 0;
 
@@ -322,32 +376,33 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
     const shortMinor = shortsByCounterCurrency.get(baseCurrency) ?? 0;
     const netPositionBaseCurrencyMinor = longMinor - shortMinor;
 
-    // Attempt ZAR conversion.
+    // Attempt functional-currency conversion.
     let netPositionFunctionalMinor: number | null = null;
-    let hasRateConversion = false;
+    let rateAvailable = false;
 
     if (baseCurrency === functionalCurrency) {
-      // Already in functional currency (e.g. ZAR/ZAR — excluded above, but guard).
+      // Already in functional currency (excluded above, but guard).
       netPositionFunctionalMinor = netPositionBaseCurrencyMinor;
-      hasRateConversion = true;
-    } else if (args.zarRates && baseCurrency in args.zarRates) {
-      // Caller supplied a rate (major units per 1 base unit → apply to minor units).
-      const zarRate = args.zarRates[baseCurrency];
-      if (zarRate !== undefined && zarRate > 0) {
+      rateAvailable = true;
+    } else {
+      const rate = resolveRate(baseCurrency);
+      if (rate !== null) {
         // The net position is in base-currency minor units. Convert:
-        //   netZarMinor = netBaseMinor × zarRate
-        // (zarRate is already expressed as: 1 base = zarRate functional, in major units;
+        //   netFunctionalMinor = netBaseMinor × rate
+        // The rate is expressed as: 1 base = rate functional, in MAJOR units;
         // since both sides are in minor units with the same integer denominator,
-        // the ratio is the same as in major units.)
-        // Use the decimal engine (D-DECIMAL-NATIVE-MONEY-ARITHMETIC).
+        // the ratio is the same as in major units (this mirrors V1
+        // fxPositionCalculator's `netBaseMinor × zarRate`). Use the decimal engine
+        // (D-DECIMAL-NATIVE-MONEY-ARITHMETIC).
         const netD = toDecimal(String(netPositionBaseCurrencyMinor));
-        const rateD = toDecimal(String(zarRate));
+        const rateD = toDecimal(String(rate));
         const convertedD = roundDecimal(mulD(netD, rateD), 0, "HALF_UP");
         netPositionFunctionalMinor = Number(toMinorUnits(convertedD, 0));
-        hasRateConversion = true;
+        rateAvailable = true;
+      } else {
+        // Fail-closed: no rate → no conversion, no fabricated figure.
+        missingRateCount += 1;
       }
-    } else {
-      missingRateCount += 1;
     }
 
     positions.push({
@@ -355,7 +410,8 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
       netPositionBaseCurrencyMinor,
       netPositionFunctionalMinor,
       openInstanceCount: instanceCountByBaseCurrency.get(baseCurrency) ?? 0,
-      hasRateConversion,
+      rateAvailable,
+      hasRateConversion: rateAvailable,
     });
   }
 
@@ -382,8 +438,15 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
     }
     totalLongZarMinor = sumLong;
     totalShortZarMinor = sumShort;
-    // 8% charge per Reg 28(5) / BCBS §718(xiii).
-    openPositionChargeMinor = Math.round(0.08 * Math.max(sumLong, sumShort));
+    // 8% charge per Reg 28(5) / BCBS §718(xiii) — decimal-engine arithmetic
+    // (D-DECIMAL-NATIVE-MONEY-ARITHMETIC; no float on a money figure).
+    const greaterMinor = Math.max(sumLong, sumShort);
+    const chargeD = roundDecimal(
+      mulD(toDecimal(String(greaterMinor)), toDecimal("0.08")),
+      0,
+      "HALF_UP",
+    );
+    openPositionChargeMinor = Number(toMinorUnits(chargeD, 0));
   }
 
   // -------------------------------------------------------------------------
@@ -392,7 +455,7 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
 
   if (missingRateCount > 0) {
     gaps.push(
-      `GAP-3E-005: ${missingRateCount} currency pair(s) lack ZAR conversion rates. The Reg 28(5) open-position charge cannot be computed without ZAR rates. At Phase 3e, no V2 rate-feed event type exists. Pass \`zarRates\` to computeBA320V2() to enable the charge computation. Resolution: V2 rate-feed event workstream (separate from D-V1-REMOVAL-PHASE-3E). Authority: D-V1-REMOVAL-PHASE-3E.`,
+      `GAP-3E-005: ${missingRateCount} currency pair(s) have NO usable production fx-quote tick in the MarketDataStore rate source, so the Reg 28(5) open-position charge stays \`null\` for the affected currencies (FAIL-CLOSED — no fabricated rate). The rate source is the same one daily-pnl-v2 consumes; ensure the S1 (#1387) fx-quote backfill covers these pairs (instrument = spotObservableId(ccy, functionalCurrency), dataType "fx-quote", provenance "production"). Authority: D-V1-REMOVAL-PHASE-3E; WS-V2-AUTHORITATIVE S8.`,
     );
   }
 
