@@ -159,9 +159,61 @@ export function makeIntraGroupArrangementSigned(args: {
   });
 }
 
+// ---------------------------------------------------------------------------
+// EntityFunctionalCurrencyAssigned
+//
+// Event-sources the FUNCTIONAL currency (IAS-21) of a legal entity / branch
+// (Principle 1, Principle 5; WS-MULTI-BASE-CURRENCY, D-MULTI-BASE-CURRENCY-
+// FOUNDATION). The functional currency is the currency the entity keeps its own
+// books in; "foreign vs. domestic" is a view-time comparison against THIS value,
+// never an instrument property. A re-assignment (rare, IAS-21 §35 — change in
+// functional currency) emits a new event carrying the prior value, so the axis
+// is versioned and replay-safe rather than a silent seed edit.
+// ---------------------------------------------------------------------------
+
+export const entityFunctionalCurrencyAssignedPayloadSchema = z.object({
+  /** Canonical legal-entity identifier (e.g. `urn:legal-entity:hoz:hoz-bank:v1`). */
+  entityId: z.string().min(1),
+  /** The assigned functional currency, ISO-4217 alpha-3. */
+  functionalCurrency: z.string().length(3),
+  /**
+   * The prior functional currency, or `null` for the FIRST assignment. Required
+   * (explicit `null`, never `undefined`) so the change axis is unambiguous.
+   */
+  priorFunctionalCurrency: z.string().length(3).nullable(),
+  /** Date the functional-currency assignment takes effect. */
+  effectiveDate: z.string().min(1),
+  /** Human-readable rationale (IAS-21 basis: primary economic environment). */
+  rationale: z.string().min(1),
+});
+
+export type EntityFunctionalCurrencyAssignedPayload = z.infer<
+  typeof entityFunctionalCurrencyAssignedPayloadSchema
+>;
+
+export function makeEntityFunctionalCurrencyAssigned(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: EntityFunctionalCurrencyAssignedPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "EntityFunctionalCurrencyAssigned",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: entityFunctionalCurrencyAssignedPayloadSchema.parse(args.payload),
+  });
+}
+
 export const LEGAL_ENTITY_TYPED_EVENT_TYPES = [
   "LegalEntityRegistered",
   "LegalEntityChanged",
   "IntraGroupArrangementSigned",
+  "EntityFunctionalCurrencyAssigned",
 ] as const;
 export type LegalEntityEventType = (typeof LEGAL_ENTITY_TYPED_EVENT_TYPES)[number];

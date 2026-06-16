@@ -48,6 +48,7 @@ import {
   documentRegisteredPayloadSchema,
   feedbackPayloadSchema,
   intraGroupArrangementSignedPayloadSchema,
+  entityFunctionalCurrencyAssignedPayloadSchema,
   legalEntityChangedPayloadSchema,
   legalEntityRegisteredPayloadSchema,
   productApprovedPayloadSchema,
@@ -600,6 +601,30 @@ export const LEGAL_ENTITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     source:
       "Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md §2 (intra-group arrangement stubs); Regulations/_legal-entity-tree.md §2",
     v2Status: "v1-only",
+  },
+  // EntityFunctionalCurrencyAssigned — event-sources the IAS-21 functional
+  // currency per entity/branch (WS-MULTI-BASE-CURRENCY). Foreign-vs-domestic is
+  // a view-time comparison against this value; the FX valuation path resolves
+  // `reporting` from it instead of the removed ZAR hardcode (Principle 5).
+  // Authority: D-MULTI-BASE-CURRENCY-FOUNDATION (CEO-approved 2026-06-16).
+  {
+    type: "EntityFunctionalCurrencyAssigned",
+    class: "governance",
+    payloadSchema: entityFunctionalCurrencyAssignedPayloadSchema,
+    issuer: "Atlas",
+    subscribers: ["Imani", "Owen", "Bea", "Camille", "Helena", "dashboard", "Vera"],
+    // Latest assignment per entity wins (IAS-21 §35 functional-currency change is
+    // prospective; the latest event is the current functional currency).
+    replay: "latest-wins-per-key",
+    citationsHint: [
+      "D-MULTI-BASE-CURRENCY-FOUNDATION",
+      "IAS-21",
+      "D-LEGAL-ENTITY-TREE-V0",
+    ],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "prototype/platform/event-store/event-types/legal-entity.ts; prototype/v2-core/fil-models/fx-valuation/MC-multi-base-currency-design-note.md; Regulations/_legal-entity-tree.md",
+    v2Status: "v2-native",
   },
 ];
 
