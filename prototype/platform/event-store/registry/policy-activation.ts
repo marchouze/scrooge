@@ -1,5 +1,14 @@
 // platform/event-store/registry/policy-activation.ts
 //
+// WAVE 2 BATCH-2 FLIP (2026-06-16): every type in this registry flipped
+// v1-only -> v2-replaced. Money-free governance-attestation / KYC / lifecycle
+// reference data, tee-mirrored verbatim into the v2 control-plane store;
+// recon:governance-attestation-v2-parity proves the V1-store <-> v2-store
+// event-list register byte-clean (ENFORCING; 571 events at the flip). Basis:
+// ordinary dual-write + parity. Authority: D-BANK-WIDE-V2-MIGRATION;
+// D-V1-REMOVAL-FLIP-BASIS-RBC (CEO-approved 2026-06-16). Flip by Atlas (Core
+// banking platform architect, engineering).
+//
 // Policy-version-in-force event-type registry rows.
 //
 // Covers:
@@ -59,6 +68,6 @@ export const POLICY_ACTIVATION_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
       "P1-EVENTS-AS-TRUTH",
     ],
     source: "platform/event-store/event-types/policy-activation.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];

@@ -1,5 +1,14 @@
 // platform/event-store/registry/governance-seat-runs.ts
 //
+// WAVE 2 BATCH-2 FLIP (2026-06-16): every type in this registry flipped
+// v1-only -> v2-replaced. Money-free governance-attestation / KYC / lifecycle
+// reference data, tee-mirrored verbatim into the v2 control-plane store;
+// recon:governance-attestation-v2-parity proves the V1-store <-> v2-store
+// event-list register byte-clean (ENFORCING; 571 events at the flip). Basis:
+// ordinary dual-write + parity. Authority: D-BANK-WIDE-V2-MIGRATION;
+// D-V1-REMOVAL-FLIP-BASIS-RBC (CEO-approved 2026-06-16). Flip by Atlas (Core
+// banking platform architect, engineering).
+//
 // Event-type registry rows for governance-seat periodic run events.
 //
 // Covers all five event types from event-types/governance-seat-runs.ts:
@@ -44,7 +53,7 @@ export const GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "scripts/governance/cco-periodic-run.ts (CCO quarterly run); future CISO and CAE analogues",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // RMCP quarterly attestation filed by the CCO under FIC Act §42.
@@ -63,7 +72,7 @@ export const GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     ],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "scripts/governance/cco-periodic-run.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // STR / CTR queue review emitted by the CCO (or MLRO delegate).
@@ -85,7 +94,7 @@ export const GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     ],
     retention: RETENTION_FIC_5Y,
     source: "scripts/governance/cco-periodic-run.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // AML/CFT risk assessment cycle close. 7-year retention per governance
@@ -104,7 +113,7 @@ export const GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     ],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "scripts/governance/cco-periodic-run.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // EDD queue sign-off by CCO. FIC Act 5-year minimum; mandatory for
@@ -123,6 +132,6 @@ export const GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     ],
     retention: RETENTION_FIC_5Y,
     source: "scripts/governance/cco-periodic-run.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];

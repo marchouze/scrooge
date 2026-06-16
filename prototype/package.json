@@ -244,6 +244,7 @@
     "recon:v2-posture-register-integrity": "bun run platform/recon/v2-posture-register-integrity.ts",
     "recon:posture-v2-parity": "bun run platform/recon/posture-v2-parity.ts",
     "recon:reference-data-v2-parity": "bun run platform/recon/reference-data-v2-parity.ts",
+    "recon:governance-attestation-v2-parity": "bun run platform/recon/governance-attestation-v2-parity.ts",
     "recon:v2-store-tee-coverage": "bun run platform/recon/v2-store-tee-coverage.ts",
     "recon:v2-eval-harness-integrity": "bun run platform/recon/v2-eval-harness-integrity.ts",
     "recon:v2-applicability-assessment-integrity": "bun run platform/recon/v2-applicability-assessment-integrity.ts",

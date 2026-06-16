@@ -1,5 +1,14 @@
 // platform/event-store/registry/ciso-governance.ts
 //
+// WAVE 2 BATCH-2 FLIP (2026-06-16): every type in this registry flipped
+// v1-only -> v2-replaced. Money-free governance-attestation / KYC / lifecycle
+// reference data, tee-mirrored verbatim into the v2 control-plane store;
+// recon:governance-attestation-v2-parity proves the V1-store <-> v2-store
+// event-list register byte-clean (ENFORCING; 571 events at the flip). Basis:
+// ordinary dual-write + parity. Authority: D-BANK-WIDE-V2-MIGRATION;
+// D-V1-REMOVAL-FLIP-BASIS-RBC (CEO-approved 2026-06-16). Flip by Atlas (Core
+// banking platform architect, engineering).
+//
 // Event-type registry rows for CISO (Chief Information Security Officer)
 // quarterly governance events.
 //
@@ -50,7 +59,7 @@ export const CISO_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
       "Banks Act 94/1990 §73",
     ],
     source: "scripts/governance/ciso-periodic-run.ts (CISO quarterly run)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // SbomReviewCompleted — Software Bill of Materials quarterly review.
@@ -70,7 +79,7 @@ export const CISO_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     retention: RETENTION_GOVERNANCE_7Y,
     citationsHint: ["PA-FSCA-JS2-2024-§4.3", "POPIA-s19-22", "Banks Act 94/1990 §73"],
     source: "scripts/governance/ciso-periodic-run.ts (CISO quarterly run)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // ThreatModelGateCompleted — quarterly threat-model gate.
@@ -95,7 +104,7 @@ export const CISO_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
       "Principle-4-security-designed-in",
     ],
     source: "scripts/governance/ciso-periodic-run.ts (CISO quarterly run)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // KeyCeremonyAttested — HSM / key-ceremony attestation.
@@ -119,6 +128,6 @@ export const CISO_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
       "Banks Act 94/1990 §73",
     ],
     source: "scripts/governance/ciso-periodic-run.ts (CISO quarterly run)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];

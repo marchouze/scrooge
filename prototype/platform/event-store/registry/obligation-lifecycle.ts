@@ -1,5 +1,14 @@
 // platform/event-store/registry/obligation-lifecycle.ts
 //
+// WAVE 2 BATCH-2 FLIP (2026-06-16): every type in this registry flipped
+// v1-only -> v2-replaced. Money-free governance-attestation / KYC / lifecycle
+// reference data, tee-mirrored verbatim into the v2 control-plane store;
+// recon:governance-attestation-v2-parity proves the V1-store <-> v2-store
+// event-list register byte-clean (ENFORCING; 571 events at the flip). Basis:
+// ordinary dual-write + parity. Authority: D-BANK-WIDE-V2-MIGRATION;
+// D-V1-REMOVAL-FLIP-BASIS-RBC (CEO-approved 2026-06-16). Flip by Atlas (Core
+// banking platform architect, engineering).
+//
 // Registry rows for the bank-obligation lifecycle event family (Plane B,
 // D-REGULATORY-ARCHITECTURE-TWO-PLANE):
 //   - ObligationAdopted — the bank decides to be bound by an obligation.
@@ -37,7 +46,7 @@ export const OBLIGATION_LIFECYCLE_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     payloadSchema: obligationAdoptedPayloadSchema,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/obligation-lifecycle.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ObligationLifecycleTransitioned",
@@ -49,7 +58,7 @@ export const OBLIGATION_LIFECYCLE_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     payloadSchema: obligationLifecycleTransitionedPayloadSchema,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/obligation-lifecycle.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ProvisionScopeAdopted",
@@ -61,6 +70,6 @@ export const OBLIGATION_LIFECYCLE_EVENT_TYPES_REGISTRY: readonly EventTypeMetada
     payloadSchema: provisionScopeAdoptedPayloadSchema,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/obligation-lifecycle.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];

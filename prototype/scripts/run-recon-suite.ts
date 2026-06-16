@@ -386,6 +386,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // market-data, obligation-review, obligation-equivalence; 19 types) V1-store
     // ↔ v2-control-plane-store event-list parity. ENFORCING (byte-clean flip).
     "recon:reference-data-v2-parity",
+    // Wave 2 BATCH-2 — seven money-free governance-attestation + KYC + lifecycle
+    // domains (kyc, cae-governance, ciso-governance, governance-seat-runs,
+    // obligation-lifecycle, policy-activation, decision-distillation; 36 types)
+    // V1-store ↔ v2-control-plane-store event-list parity. ENFORCING (byte-clean).
+    "recon:governance-attestation-v2-parity",
     "recon:period-close-cursor-integrity",
     "recon:ba310-submission-completeness",
     "recon:ba-returns-vs-gl-balances",
