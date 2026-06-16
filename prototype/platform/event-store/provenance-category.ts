@@ -214,6 +214,18 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   InstrumentDimensionAssigned: "governance",
   SliceDefined: "governance",
   OrgHierarchyEdgeAssigned: "governance",
+  // Phase 3d — V2 credit-limit approval-registry event types
+  // (D-V1-REMOVAL-PHASE-3D, CEO-approved 2026-06-15). These are credit
+  // committee governance decisions (approval / load / withdrawal of a
+  // counterparty's credit limit). Mapped to "counterparty" so they
+  // follow the same default policy as V1 counterparty events: simulated
+  // in build phase (no live credit approvals until licence-day), production
+  // under the live bank-mode policy. Third site of the three-site F-032
+  // registration rule (event-types + registry + provenance-category).
+  // Authority: D-V1-REMOVAL-PHASE-3D; Principle 1.
+  CreditLimitApprovedV2: "counterparty",
+  CreditLimitLoadedV2: "counterparty",
+  CreditLimitWithdrawnV2: "counterparty",
   // Counterparty / party register.
   PartyRegistered: "counterparty",
   PartyClassified: "counterparty",

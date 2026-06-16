@@ -268,6 +268,12 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // populated sides is warn-severity until A4 approved.
     // Authority: D-V1-REMOVAL-PHASE2-GAP-A2 (CEO-approved 2026-06-16).
     "recon:daily-pnl-v2-parity",
+    // D-V1-REMOVAL-PHASE-3D — V2 credit-limit approval-registry parity gate (advisory).
+    // Compares V1 approval registry (CreditLimitApproved/Loaded/Withdrawn) with V2
+    // registry (CreditLimitApprovedV2/LoadedV2/WithdrawnV2). Advisory until dual-run
+    // emitters are wired at every V1 call site. V1-only counterparties produce
+    // expected warn violations; V2-only counterparties (if any) or mismatches fail.
+    "recon:credit-limit-v2-parity",
   ],
   domain: [
     "recon:prose-duplication",

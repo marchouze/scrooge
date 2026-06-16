@@ -37,12 +37,15 @@ import {
   creditLimitAnnualReviewCompletedPayloadSchema,
   creditLimitApplicationSubmittedPayloadSchema,
   creditLimitApprovedPayloadSchema,
+  creditLimitApprovedV2PayloadSchema,
   creditLimitBreachDisposedPayloadSchema,
   creditLimitBreachedPayloadSchema,
   creditLimitExtensionRequestedPayloadSchema,
   creditLimitLoadedPayloadSchema,
+  creditLimitLoadedV2PayloadSchema,
   creditLimitProposedPayloadSchema,
   creditLimitWithdrawnPayloadSchema,
+  creditLimitWithdrawnV2PayloadSchema,
   isdaCsaAssessmentCompletedPayloadSchema,
   subInvestmentGradeCounterpartyApprovedPayloadSchema,
 } from "../event-types/credit-limit";
@@ -259,5 +262,62 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     source: "platform/event-store/event-types/credit-limit.ts",
     citationsHint: ["POLICY:credit-risk-policy-v1-S7", "PROC-RISK-CO-01"],
     v2Status: "v1-only",
+  },
+  // -------------------------------------------------------------------------
+  // V2 APPROVAL-REGISTRY TYPES — Phase 3d (D-V1-REMOVAL-PHASE-3D)
+  //
+  // Three V2 parallel variants of the approval-registry slice.
+  // - MoneyWire amounts (decimal-native, major units).
+  // - tenantId: TenantId stamp at emit time.
+  // - schemaVersion: 2.
+  //
+  // F-032 pattern: registered at all 3 sites:
+  //   1. event-types: platform/event-store/event-types/credit-limit.ts
+  //   2. registry: here (platform/event-store/registry/credit-limit.ts)
+  //   3. provenance: platform/event-store/provenance-category.ts
+  //
+  // Authority: D-V1-REMOVAL-PHASE-3D (CEO-approved 2026-06-15).
+  // -------------------------------------------------------------------------
+  {
+    type: "CreditLimitApprovedV2",
+    class: "audit",
+    issuer: "Helena",
+    subscribers: ["Helena", "Rohan", "Saskia", "Mira", "Atlas"],
+    replay: "pair-coupled",
+    retention: RETENTION_BANKING_5Y,
+    payloadSchema: creditLimitApprovedV2PayloadSchema,
+    source: "platform/event-store/event-types/credit-limit.ts",
+    citationsHint: [
+      "BANKS-ACT-94-1990-S73",
+      "RRB-REG-23",
+      "POLICY:credit-risk-policy-v1",
+      "PROC-RISK-CO-01",
+      "D-V1-REMOVAL-PHASE-3D",
+    ],
+    v2Status: "v2-parallel",
+  },
+  {
+    type: "CreditLimitLoadedV2",
+    class: "audit",
+    issuer: "Atlas",
+    subscribers: ["Helena", "Rohan", "Saskia", "Atlas"],
+    replay: "append-only-audit",
+    retention: RETENTION_BANKING_5Y,
+    payloadSchema: creditLimitLoadedV2PayloadSchema,
+    source: "platform/event-store/event-types/credit-limit.ts",
+    citationsHint: ["POLICY:credit-risk-policy-v1", "PROC-RISK-CO-01", "D-V1-REMOVAL-PHASE-3D"],
+    v2Status: "v2-parallel",
+  },
+  {
+    type: "CreditLimitWithdrawnV2",
+    class: "audit",
+    issuer: "Helena",
+    subscribers: ["Helena", "Rohan", "Saskia", "Mira", "Atlas"],
+    replay: "append-only-audit",
+    retention: RETENTION_BANKING_5Y,
+    payloadSchema: creditLimitWithdrawnV2PayloadSchema,
+    source: "platform/event-store/event-types/credit-limit.ts",
+    citationsHint: ["POLICY:credit-risk-policy-v1-S7", "PROC-RISK-CO-01", "D-V1-REMOVAL-PHASE-3D"],
+    v2Status: "v2-parallel",
   },
 ];
