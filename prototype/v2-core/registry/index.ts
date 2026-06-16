@@ -63,6 +63,7 @@ import {
   v2ProductRegisteredSchema,
   v2RiskAppetiteSetSchema,
 } from "../banking/events";
+import { BUCKET_A_A2_SPECS } from "../bucket-a-a2";
 import { contextPackBuiltPayloadSchema } from "../context-pack/events";
 import {
   functionalSeatRegisteredPayloadSchema,
@@ -322,6 +323,38 @@ function mfb3(
     migrationStatus: "v2-parallel",
     tee: {},
     source: MONEY_FREE_BATCH_3_SOURCE,
+  };
+}
+
+const BUCKET_A_A2_SOURCE =
+  "brief:atlas:bucket-a-a2-emittable-numeric-money-types:2026-06-16 — " +
+  "v2-parallel money-BEARING migration of nine emittable numeric-money non-financial types " +
+  "(store-tee + MoneyWire codec; decoded-decimal parity via recon:bucket-a-a2-v2-parity)";
+
+/**
+ * A Wave-2 Bucket-A batch-A2 migration row: ALWAYS tee-enabled with a
+ * money-BEARING codec (unlike `refData` / `govAtt` / `mfb3`, which are verbatim
+ * money-free). The generic store-tee mirrors every V1 append, lifting the
+ * legacy numeric money field(s) to decimal-native `MoneyWire` via the row's
+ * `tee.codec`. `recon:bucket-a-a2-v2-parity` proves the v2 store payload equals
+ * `codec(v1 payload)` on the decoded decimal value. Onboarding a batch-A2 type
+ * is one `BUCKET_A_A2_SPECS` entry — a registry edit, never a callsite edit.
+ */
+function bucketAA2(
+  type: string,
+  cls: V2EventTypeMetadata["class"],
+  schema: z.ZodTypeAny,
+  codec: V2TeeCodec,
+): V2EventTypeMetadata {
+  return {
+    type,
+    class: cls,
+    payloadSchema: asPayloadSchema(schema),
+    schemaVersion: 1,
+    retention: V2_RETENTION_RUNTIME_1Y,
+    migrationStatus: "v2-parallel",
+    tee: { codec },
+    source: BUCKET_A_A2_SOURCE,
   };
 }
 
@@ -614,6 +647,42 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
   // 27. regulatory-reporting (MONEY-FREE rows only; RwaComputed deferred)
   mfb3("TradeReportSubmitted", "governance", tradeReportSubmittedPayloadSchema),
   mfb3("SarbSubmissionAttempted", "governance", sarbSubmissionAttemptedPayloadSchema),
+
+  // ---------------------------------------------------------------------------
+  // WAVE 2 BUCKET-A BATCH-A2 — nine EMITTABLE numeric-money, non-financial types
+  // (TEE-ENABLED with a money-BEARING codec).
+  //
+  // These nine carry money as a PLAIN numeric field (not `*Minor`), so they are
+  // NOT blocked by recon:no-residual-minor-encoding and stay emittable on main.
+  // They dual-write via the generic store-tee: each V1 append is mirrored into
+  // the v2 control-plane store with the money field LIFTED to decimal-native
+  // MoneyWire by the per-type codec (v2-core/bucket-a-a2/events.ts). V1 stays
+  // numeric/authoritative; the v2 mirror holds the canonical decimal.
+  //
+  // CURRENCY SOURCE (Charter cmd 4 — source, don't hardcode; Principle 5): each
+  // codec resolves currency from the V1 payload — `currency` field where present
+  // (FeeDisclosureEvent, Correspondent…, Nostro…, STRCandidate, RelatedParty…,
+  // InterEntity…), or the schema-declared denomination where the field name /
+  // schema doc denominates it (ClimateScenarioRun `*ZAR`, CounterpartyExposure…
+  // "ZAR minor units", PAIARequest statutory ZAR PAIA fee). NOT a `?? "ZAR"`
+  // fallback. Full per-type rationale: v2-core/bucket-a-a2/events.ts.
+  //
+  // The parity gate `recon:bucket-a-a2-v2-parity` is the DECODED-DECIMAL evidence
+  // (v2 payload == codec(v1 payload)); PASS-on-empty in the build phase (all nine
+  // are data-empty today — Charter cmd 5: surfaced, not hidden), load-bearing the
+  // moment any event lands.
+  //
+  // EXCLUDED from this batch (Charter cmd 5 — noted, not silently skipped):
+  //   - CalculationPerformed (model-risk): polymorphic numeric `value` + string
+  //     `unit` (money AND non-money under one field); 2193 live events; a separate
+  //     decimal-correctness track.
+  //   - OperationalLossEvent + V2RiskAppetiteSet: un-emittable `*Minor` types →
+  //     batch A3 (retired-by-construction).
+  //
+  // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC;
+  //   D-V2-CORE-MONEY-DECIMAL-NATIVE.
+  // ---------------------------------------------------------------------------
+  ...BUCKET_A_A2_SPECS.map((s) => bucketAA2(s.type, s.cls, s.schema, s.codec)),
 ];
 
 // ---------------------------------------------------------------------------

@@ -411,6 +411,15 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // v2-eval/context-pack/cross-tenant-csi/applicability; 39 types) V1-store ↔
     // v2-control-plane-store event-list parity. ENFORCING (byte-clean).
     "recon:money-free-batch-3-v2-parity",
+    // Wave 2 BUCKET-A BATCH-A2 — nine EMITTABLE numeric-money, non-financial
+    // types (ClimateScenarioRun, FeeDisclosureEvent, Correspondent…Sent,
+    // NostroStatementReceived, CounterpartyExposureCalculated, STRCandidate,
+    // RelatedPartyTransactionProposed, InterEntityTransactionProposed,
+    // PAIARequest) V1-store ↔ v2-control-plane-store DECODED-DECIMAL parity
+    // (v2 payload == codec(v1 payload); MoneyWire lift). ENFORCING; PASS-on-empty
+    // in the build phase (all nine data-empty), codec correctness proven by unit
+    // test. Authority: D-V2-CORE-MONEY-DECIMAL-NATIVE.
+    "recon:bucket-a-a2-v2-parity",
     "recon:period-close-cursor-integrity",
     "recon:ba310-submission-completeness",
     "recon:ba-returns-vs-gl-balances",

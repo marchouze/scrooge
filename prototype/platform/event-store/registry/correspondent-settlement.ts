@@ -46,7 +46,11 @@ export const CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     payloadSchema: correspondentSettlementInstructionSentPayloadSchema,
     source: "platform/event-store/event-types/correspondent-settlement.ts",
     citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
-    v2Status: "v1-only",
+    // Bucket-A batch-A2 flip: dual-writes to the v2 control-plane store via the
+    // generic store-tee + MoneyWire codec (instructedAmount minor→decimal,
+    // currency sourced from payload). recon:bucket-a-a2-v2-parity is the decoded-
+    // decimal evidence. Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+    v2Status: "v2-replaced",
   },
   // -------------------------------------------------------------------------
   // CorrespondentSettlementStatusReceived
@@ -86,6 +90,10 @@ export const CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     payloadSchema: nostroStatementReceivedPayloadSchema,
     source: "platform/event-store/event-types/correspondent-settlement.ts",
     citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
-    v2Status: "v1-only",
+    // Bucket-A batch-A2 flip: dual-writes to the v2 control-plane store via the
+    // generic store-tee + MoneyWire codec (closingBalance minor→decimal, may be
+    // negative; currency sourced from payload). recon:bucket-a-a2-v2-parity is the
+    // decoded-decimal evidence. Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+    v2Status: "v2-replaced",
   },
 ];
