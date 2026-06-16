@@ -274,6 +274,18 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // emitters are wired at every V1 call site. V1-only counterparties produce
     // expected warn violations; V2-only counterparties (if any) or mismatches fail.
     "recon:credit-limit-v2-parity",
+    // D-V1-REMOVAL-PHASE-3E — BA-700 capital adequacy V2 parity gate (advisory).
+    // Compares V1 BA-700 (SubLedgerPostingEmitted + CapitalContributionRecorded +
+    // CcrEadComputed V1) vs V2 BA-700 (GlPostingEmitted capital accounts +
+    // CcrEadComputed v2-parallel). Advisory: V2 capital numerator is zero at Phase 3e
+    // (no capital GL posting rules emit GlPostingEmitted yet — GAP-3E-001).
+    "recon:ba700-v2-parity",
+    // D-V1-REMOVAL-PHASE-3E — BA-320 FX market risk V2 parity gate (advisory).
+    // Compares V1 BA-320 FX (FxTradeExecuted + TradeMatured → fxPositionCalculator)
+    // vs V2 BA-320 FX (FilInstrumentCreated + FilInstrumentTerminated → FIL lifecycle).
+    // Advisory: rate conversion (GAP-3E-005) unavailable at Phase 3e; no-data expected
+    // on clean CI store. Open-position charge comparison deferred to rate-feed workstream.
+    "recon:ba320-fx-v2-parity",
   ],
   domain: [
     "recon:prose-duplication",
