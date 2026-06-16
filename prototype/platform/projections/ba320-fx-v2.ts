@@ -57,7 +57,7 @@
 
 import { spotObservableId } from "../../v2-core/fil-models/fx-valuation/methodology";
 import { requireReporting } from "../../v2-core/fil-models/fx-valuation/reporting-currency-resolver";
-import { mulD, roundDecimal, toDecimal, toMinorUnits } from "../core/decimal-engine";
+import { divD, mulD, roundDecimal, toDecimal, toMinorUnits } from "../core/decimal-engine";
 import { amountToMinorUnits } from "../core/decimal-money";
 import type { Currency } from "../core/types";
 import type { EventStore } from "../event-store/store";
@@ -299,56 +299,89 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
   }
 
   // -------------------------------------------------------------------------
-  // Step 3: Compute net open position per base currency.
+  // Step 3: Compute net open position per FOREIGN (base) currency.
   //
-  // Net position = Σ(longs) - Σ(shorts), in base-currency minor units.
-  // The functional currency (ZAR) is excluded from the BA-320 FX charge per
-  // Reg 28(5) — positions in ZAR vs ZAR are already denominated.
+  // DATA SHAPE (verified against the FIL economic-terms kernel + the S1 #1387
+  // backfill, both fixture and real-book paths): a FIL FX instance carries its
+  // notional in the REPORTING / functional currency (e.g. ZAR) — `notional.currency
+  // === functionalCurrency` — with the FOREIGN leg identified by `hedgingSetTag`
+  // (e.g. "USD/ZAR" → base USD). So the position's foreign currency is the BASE
+  // of the hedging-set tag, NOT `economicTerms.currency` (which is the reporting
+  // leg). The notional being functional-denominated means the functional-currency
+  // net open position is NATIVE — no rate is needed to compute the Reg 28(5)
+  // charge. The rate source (Step 4) converts the native functional figure DOWN to
+  // the foreign-leg amount for the `netPositionBaseCurrencyMinor` display field and
+  // for apples-to-apples comparison against V1 (which derives the functional figure
+  // UP from a true foreign-base notional × rate). WS-V2-AUTHORITATIVE S8.
+  //
+  // Net position = Σ(longs) − Σ(shorts), in functional-currency minor units.
   // -------------------------------------------------------------------------
 
-  const longsByCurrency = new Map<string, number>();
-  const shortsByCounterCurrency = new Map<string, number>();
+  const longFunctionalByCurrency = new Map<string, number>();
+  const shortFunctionalByCurrency = new Map<string, number>();
+  const longForeignByCurrency = new Map<string, number>();
+  const shortForeignByCurrency = new Map<string, number>();
   const instanceCountByBaseCurrency = new Map<string, number>();
 
   for (const [, terms] of openInstances.entries()) {
-    const { currency, direction, notionalMajor } = terms;
+    const { currency, direction, notionalMajor, hedgingSetTag } = terms;
 
-    // Exclude functional-currency (ZAR vs ZAR) — no FX position.
-    if (currency === functionalCurrency) continue;
+    // Foreign (base) currency = the BASE leg of the hedging-set tag when present,
+    // else fall back to economicTerms.currency (legacy/non-tagged shape).
+    const tagBase = hedgingSetTag ? (hedgingSetTag.split("/")[0] ?? "").trim() : "";
+    const baseCurrency = tagBase !== "" ? tagBase : currency;
 
-    // Convert notional to minor units using the standard amountToMinorUnits path.
-    // FIL Money { currency, amount: string (major units) } is compatible with
-    // platform/core/decimal-money.ts amountToMinorUnits input shape.
+    // The notional currency must be the functional currency for the native-functional
+    // interpretation to hold. If it is NOT, fall back to the legacy base-denominated
+    // interpretation (notional already in the foreign currency) — handled by keying
+    // off `currency` and leaving the rate conversion to Step 4.
+    const notionalIsFunctional = currency === functionalCurrency;
+
+    // A position whose foreign leg IS the functional currency carries no FX risk.
+    if (baseCurrency === functionalCurrency) continue;
+
+    // Notional → functional minor (native) when notionalIsFunctional; otherwise
+    // it is the foreign-leg amount and Step 4 converts it up via the rate.
     let notionalMinor: number;
     try {
       notionalMinor = Number(
         amountToMinorUnits({ currency: currency as Currency, amount: notionalMajor }),
       );
     } catch {
-      // Fail-closed: if conversion throws (unrecognized currency scale),
-      // surface the error as a gap and skip.
+      // Fail-closed: unrecognised currency scale — surface and skip.
       gaps.push(
-        `GAP-3E-005b: Failed to convert notional to minor units for currency ${currency}. Check ISO-4217 currency scale registration. Instrument excluded from BA-320 V2 position.`,
+        `GAP-3E-005b: Failed to convert notional to minor units for currency ${currency} (instance base ${baseCurrency}). Check ISO-4217 currency scale registration. Instrument excluded from BA-320 V2 position.`,
       );
       continue;
     }
 
-    if (direction === "long") {
-      longsByCurrency.set(currency, (longsByCurrency.get(currency) ?? 0) + notionalMinor);
+    // Track separately whether the notional is functional-native or foreign-leg,
+    // so Step 4 knows whether to convert. We tag the map key with a discriminator
+    // by storing functional-native amounts and foreign-leg amounts in distinct maps.
+    if (notionalIsFunctional) {
+      const map = direction === "long" ? longFunctionalByCurrency : shortFunctionalByCurrency;
+      map.set(baseCurrency, (map.get(baseCurrency) ?? 0) + notionalMinor);
     } else {
-      shortsByCounterCurrency.set(
-        currency,
-        (shortsByCounterCurrency.get(currency) ?? 0) + notionalMinor,
-      );
+      // Legacy foreign-leg shape: record under foreign maps; Step 4 converts up.
+      const map = direction === "long" ? longForeignByCurrency : shortForeignByCurrency;
+      map.set(baseCurrency, (map.get(baseCurrency) ?? 0) + notionalMinor);
     }
-    instanceCountByBaseCurrency.set(currency, (instanceCountByBaseCurrency.get(currency) ?? 0) + 1);
+    instanceCountByBaseCurrency.set(
+      baseCurrency,
+      (instanceCountByBaseCurrency.get(baseCurrency) ?? 0) + 1,
+    );
   }
 
   // -------------------------------------------------------------------------
   // Step 4: Build BA320FxPositionV2 rows with optional ZAR conversion.
   // -------------------------------------------------------------------------
 
-  const allCurrencies = new Set([...longsByCurrency.keys(), ...shortsByCounterCurrency.keys()]);
+  const allCurrencies = new Set([
+    ...longFunctionalByCurrency.keys(),
+    ...shortFunctionalByCurrency.keys(),
+    ...longForeignByCurrency.keys(),
+    ...shortForeignByCurrency.keys(),
+  ]);
 
   // Rate resolver — explicit zarRates override wins; otherwise resolve the
   // functional-currency spot mid from the MarketDataStore production fx-quote
@@ -368,39 +401,57 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
     return null;
   };
 
+  const convertMinor = (minor: number, rate: number, op: "mul" | "div"): number => {
+    const minorD = toDecimal(String(minor));
+    const rateD = toDecimal(String(rate));
+    const resultD = op === "mul" ? mulD(minorD, rateD) : divD(minorD, rateD);
+    return Number(toMinorUnits(roundDecimal(resultD, 0, "HALF_UP"), 0));
+  };
+
   const positions: BA320FxPositionV2[] = [];
   let missingRateCount = 0;
 
   for (const baseCurrency of [...allCurrencies].sort()) {
-    const longMinor = longsByCurrency.get(baseCurrency) ?? 0;
-    const shortMinor = shortsByCounterCurrency.get(baseCurrency) ?? 0;
-    const netPositionBaseCurrencyMinor = longMinor - shortMinor;
+    const netFunctionalNative =
+      (longFunctionalByCurrency.get(baseCurrency) ?? 0) -
+      (shortFunctionalByCurrency.get(baseCurrency) ?? 0);
+    const netForeignNative =
+      (longForeignByCurrency.get(baseCurrency) ?? 0) -
+      (shortForeignByCurrency.get(baseCurrency) ?? 0);
+    const hasFunctionalNative =
+      longFunctionalByCurrency.has(baseCurrency) || shortFunctionalByCurrency.has(baseCurrency);
+    const hasForeignNative =
+      longForeignByCurrency.has(baseCurrency) || shortForeignByCurrency.has(baseCurrency);
 
-    // Attempt functional-currency conversion.
+    const rate = resolveRate(baseCurrency);
+
     let netPositionFunctionalMinor: number | null = null;
+    let netPositionBaseCurrencyMinor = 0;
     let rateAvailable = false;
 
-    if (baseCurrency === functionalCurrency) {
-      // Already in functional currency (excluded above, but guard).
-      netPositionFunctionalMinor = netPositionBaseCurrencyMinor;
-      rateAvailable = true;
-    } else {
-      const rate = resolveRate(baseCurrency);
+    if (hasFunctionalNative) {
+      // Notional is functional-denominated (the canonical FIL FX shape): the
+      // functional net position is NATIVE — no rate needed for the charge. The
+      // rate (when present) converts DOWN to the foreign-leg display amount.
+      netPositionFunctionalMinor = netFunctionalNative;
       if (rate !== null) {
-        // The net position is in base-currency minor units. Convert:
-        //   netFunctionalMinor = netBaseMinor × rate
-        // The rate is expressed as: 1 base = rate functional, in MAJOR units;
-        // since both sides are in minor units with the same integer denominator,
-        // the ratio is the same as in major units (this mirrors V1
-        // fxPositionCalculator's `netBaseMinor × zarRate`). Use the decimal engine
-        // (D-DECIMAL-NATIVE-MONEY-ARITHMETIC).
-        const netD = toDecimal(String(netPositionBaseCurrencyMinor));
-        const rateD = toDecimal(String(rate));
-        const convertedD = roundDecimal(mulD(netD, rateD), 0, "HALF_UP");
-        netPositionFunctionalMinor = Number(toMinorUnits(convertedD, 0));
+        netPositionBaseCurrencyMinor = convertMinor(netFunctionalNative, rate, "div");
         rateAvailable = true;
       } else {
-        // Fail-closed: no rate → no conversion, no fabricated figure.
+        // Foreign-leg display amount unavailable (no rate). The CHARGE still
+        // computes from the native functional figure (fail-closed only affects
+        // the display leg, not the regulatory charge).
+        netPositionBaseCurrencyMinor = 0;
+      }
+    } else if (hasForeignNative) {
+      // Legacy foreign-leg shape: notional in the foreign currency. The functional
+      // figure (needed for the charge) requires the rate — FAIL-CLOSED when absent.
+      netPositionBaseCurrencyMinor = netForeignNative;
+      if (rate !== null) {
+        // 1 base = rate functional; minor↔minor ratio == major↔major ratio.
+        netPositionFunctionalMinor = convertMinor(netForeignNative, rate, "mul");
+        rateAvailable = true;
+      } else {
         missingRateCount += 1;
       }
     }
@@ -419,9 +470,13 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
   // Step 5: Compute the FX open-position capital charge where possible.
   //
   // Reg 28(5) / BCBS D352 §718(xiii):
-  //   charge = 8% × max(Σ|netLong in ZAR|, Σ|netShort in ZAR|)
+  //   charge = 8% × max(Σ|netLong functional|, Σ|netShort functional|)
   //
-  // Can only compute if ALL currency pairs have ZAR conversion.
+  // Computable when every position carries a functional-currency figure
+  // (missingRateCount === 0). Functional-native positions (the canonical FIL FX
+  // shape) always carry one; a legacy foreign-leg position without a rate is the
+  // only thing that makes the charge null (fail-closed). All figures are in
+  // functional-currency (e.g. ZAR) minor units.
   // -------------------------------------------------------------------------
 
   let openPositionChargeMinor: number | null = null;
