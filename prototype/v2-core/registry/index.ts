@@ -85,6 +85,16 @@ import {
 } from "../decision-impact/events";
 import { evalRunCompletedPayloadSchema, examSetRegisteredPayloadSchema } from "../eval/events";
 import {
+  instrumentDimensionAssignedPayloadSchema,
+  orgHierarchyEdgeAssignedPayloadSchema,
+  sliceDefinedPayloadSchema,
+} from "../fil-attribution/events";
+import {
+  filInstrumentAmendedPayloadSchema,
+  filInstrumentCreatedPayloadSchema,
+  filInstrumentTerminatedPayloadSchema,
+} from "../fil-instances/events";
+import {
   amlRiskAssessmentCompletedPayloadSchema,
   auditIssueTrackerReviewedPayloadSchema,
   auditPlanUpdatedPayloadSchema,
@@ -119,19 +129,9 @@ import {
   qaipAttestationFiledPayloadSchema,
   sbomReviewCompletedPayloadSchema,
   suspiciousActivityQueueReviewedPayloadSchema,
-  threatModelGateCompletedPayloadSchema,
   thirdLineOpinionFiledPayloadSchema,
+  threatModelGateCompletedPayloadSchema,
 } from "../governance-attestation/events";
-import {
-  instrumentDimensionAssignedPayloadSchema,
-  orgHierarchyEdgeAssignedPayloadSchema,
-  sliceDefinedPayloadSchema,
-} from "../fil-attribution/events";
-import {
-  filInstrumentAmendedPayloadSchema,
-  filInstrumentCreatedPayloadSchema,
-  filInstrumentTerminatedPayloadSchema,
-} from "../fil-instances/events";
 import {
   postureActivatedPayloadSchema,
   postureDeactivatedPayloadSchema,
