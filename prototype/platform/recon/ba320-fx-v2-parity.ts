@@ -31,6 +31,7 @@
 import { fxPositionCalculator } from "../accounting/fx-calculators";
 import { eventStore } from "../composition";
 import { EVENT_TYPE_REGISTRY } from "../event-store/registry/index";
+import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import { computeBA320V2 } from "../projections/ba320-fx-v2";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
@@ -45,7 +46,9 @@ const PIPELINE = "ba320-fx-v2-parity";
 // ---------------------------------------------------------------------------
 
 const ANCHOR_ENTITY = "LE-ZA-HOZ-BANK";
-const FUNCTIONAL_CURRENCY = "ZAR";
+// Anchor functional currency, resolved from the legal-entity tree (fail-closed)
+// — NOT a literal "ZAR" (Engineering Charter cmd 4 — source, don't hardcode).
+const FUNCTIONAL_CURRENCY = anchorFunctionalCurrency();
 const AS_OF = "2099-12-31";
 
 // ---------------------------------------------------------------------------

@@ -52,6 +52,7 @@ import { mulD, roundDecimal, toDecimal, toMinorUnits } from "../core/decimal-eng
 import { amountToMinorUnits } from "../core/decimal-money";
 import type { Currency } from "../core/types";
 import type { EventStore } from "../event-store/store";
+import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "./filter";
 
 // ---------------------------------------------------------------------------
@@ -129,7 +130,11 @@ export interface ComputeBA320V2Args {
   readonly asOf: string;
   /** Legal entity short-id. Defaults to "LE-ZA-HOZ-BANK". */
   readonly entity?: string;
-  /** ISO 4217 functional currency. Defaults to "ZAR". */
+  /**
+   * ISO 4217 functional currency. When omitted, resolves from the anchor bank's
+   * functional currency in the legal-entity tree (fail-closed) — not a literal
+   * default. WS-MULTI-BASE-CURRENCY.
+   */
   readonly functionalCurrency?: string;
   /**
    * Optional ZAR rate map for non-functional-currency positions.
@@ -160,7 +165,11 @@ export interface ComputeBA320V2Args {
  */
 export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
   const entity = args.entity ?? "LE-ZA-HOZ-BANK";
-  const functionalCurrency = args.functionalCurrency ?? "ZAR";
+  // Functional currency resolves from the anchor bank's entry in the legal-
+  // entity tree (fail-closed if unassigned) — NOT a literal "ZAR" default
+  // (Engineering Charter cmd 4 — source, don't hardcode; cmd 2 — fail-closed).
+  // An explicit override is still honoured. WS-MULTI-BASE-CURRENCY.
+  const functionalCurrency = args.functionalCurrency ?? anchorFunctionalCurrency();
   const provenanceFilter = defaultProvenanceFilter();
   const gaps: string[] = [];
 

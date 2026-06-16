@@ -42,6 +42,7 @@ import { legAmountMoney } from "../core/money-codec";
 import { minorFromMoneyWire } from "../core/money-codec";
 import { normalizeCcrEadPayload } from "../event-store/event-types/counterparty-credit-risk";
 import type { EventStore } from "../event-store/store";
+import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import type { BA700Return } from "../returns/ba700/generator";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "./filter";
 
@@ -113,7 +114,11 @@ export interface ComputeBA700V2Args {
   readonly asOf: string;
   /** Legal entity short-id. Defaults to "LE-ZA-HOZ-BANK". */
   readonly entity?: string;
-  /** ISO 4217 functional currency. Defaults to "ZAR". */
+  /**
+   * ISO 4217 functional currency. When omitted, resolves from the anchor bank's
+   * functional currency in the legal-entity tree (fail-closed) — not a literal
+   * default. WS-MULTI-BASE-CURRENCY.
+   */
   readonly functionalCurrency?: string;
 }
 
@@ -139,7 +144,11 @@ export interface ComputeBA700V2Args {
  */
 export function computeBA700V2(args: ComputeBA700V2Args): BA700ReturnV2 {
   const entity = args.entity ?? "LE-ZA-HOZ-BANK";
-  const functionalCurrency = args.functionalCurrency ?? "ZAR";
+  // Functional currency resolves from the anchor bank's entry in the legal-
+  // entity tree (fail-closed if unassigned) — NOT a literal "ZAR" default
+  // (Engineering Charter cmd 4 — source, don't hardcode; cmd 2 — fail-closed).
+  // An explicit override is still honoured. WS-MULTI-BASE-CURRENCY.
+  const functionalCurrency = args.functionalCurrency ?? anchorFunctionalCurrency();
   const provenanceFilter = defaultProvenanceFilter();
   const gaps: string[] = [];
 

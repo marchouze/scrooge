@@ -33,6 +33,7 @@
 import { coaToCapitalClassifications } from "../accounting/coa-registry";
 import { eventStore } from "../composition";
 import { EVENT_TYPE_REGISTRY } from "../event-store/registry/index";
+import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import { computeBA700V2 } from "../projections/ba700-v2";
 import { generateBA700Return } from "../returns/ba700/generator";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
@@ -45,7 +46,9 @@ const PIPELINE = "ba700-v2-parity";
 // ---------------------------------------------------------------------------
 
 const ANCHOR_ENTITY = "LE-ZA-HOZ-BANK";
-const FUNCTIONAL_CURRENCY = "ZAR";
+// Anchor functional currency, resolved from the legal-entity tree (fail-closed)
+// — NOT a literal "ZAR" (Engineering Charter cmd 4 — source, don't hardcode).
+const FUNCTIONAL_CURRENCY = anchorFunctionalCurrency();
 const AS_OF = "2099-12-31"; // broad window capturing all build-phase events
 const PERIOD_ID = "period:hoz-bank:build-phase";
 const PERIOD_START = "2026-01-01";
