@@ -143,7 +143,7 @@ export function run(): ReconResult {
   if (v1Count > 0) {
     violations.push({
       subject: `operational-loss-v2-parity:construction-broken:${V1_TYPE}`,
-      message: `"${V1_TYPE}" is flipped v2-replaced RETIRED-BY-CONSTRUCTION, but ${v1Count} such event(s) exist in the store. The construction basis requires the V1 type to be un-emittable (its schema carries required numeric grossLossMinor / recoveryMinor fields, blocked by recon:no-residual-minor-encoding). A present event means either the ratchet was bypassed or these are historical replay-only events that should be mirrored to OperationalLossEventV2 (scripts/backfill-operational-loss-v2.ts) — investigate. Authority: D-V1-REMOVAL-FLIP-BASIS-RBC; recon:no-residual-minor-encoding.`,
+      message: `"${V1_TYPE}" is flipped v2-replaced RETIRED-BY-CONSTRUCTION, but ${v1Count} such event(s) exist in the store. The construction basis requires the V1 type to be un-emittable (its schema carries required numeric grossLossMinor and recoveryMinor fields, blocked by recon:no-residual-minor-encoding). A present event means either the ratchet was bypassed or these are historical replay-only events that should be mirrored to OperationalLossEventV2 (scripts/backfill-operational-loss-v2.ts) — investigate. Authority: D-V1-REMOVAL-FLIP-BASIS-RBC; recon:no-residual-minor-encoding.`,
       severity: "fail",
     });
   }

@@ -171,7 +171,7 @@ export function makeOperationalLossEvent(args: {
 // `OperationalLossEventV2` is the decimal-native successor to
 // `OperationalLossEvent` (Bucket A batch A3, the final batch — closes the
 // money-bearing-non-financial bucket). The two integer `*Minor` money fields
-// (grossLossMinor / recoveryMinor) are lifted to MoneyWire fields
+// (grossLossMinor and recoveryMinor) are lifted to MoneyWire fields
 // (`{ __money, amount: "<MAJOR-unit decimal string>", currency }`) per
 // D-V2-CORE-MONEY-DECIMAL-NATIVE. The currency is taken from the existing
 // payload `currency` field (currency-agnostic — no `?? "ZAR"` fallback;
@@ -200,7 +200,7 @@ export function makeOperationalLossEvent(args: {
 // ---------------------------------------------------------------------------
 
 import type { Money } from "../../core/decimal-money";
-import { type MoneyWire, moneyWireSchema } from "../../core/money-codec";
+import { moneyWireSchema } from "../../core/money-codec";
 import { decodeMoney, encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
 
 /** @deprecated DECIMAL-MIGRATION: superseded by OperationalLossEventPayloadV2. */
