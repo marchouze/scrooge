@@ -42,6 +42,7 @@ Decisions made by a rule engine against primary events: `SubLedgerPostingEmitted
 1. **Single purpose.** Each derived event type serves exactly one downstream domain. It is not a general-purpose data bus.
 2. **Re-derivable.** Replaying the same primary events through the same rule version must reproduce identical derived events. If it cannot, the derived event is storing state, not recording a decision.
 3. **Non-authoritative for other domains.** A derived event that is authoritative for domain A carries no authority for domain B. Domain B folds its own projection from the relevant primary events.
+4. **Irreducible — the decisive test.** A derived event type is legitimate *only* if it carries at least one field that is **not** recoverable by replaying the primary events through the versioned rule in force at the event's effective date. Re-derivability (criterion 2) and irreducibility are complementary: a derived event must be *reproducible* from its inputs, yet must add *something* not already in those inputs — a judgment, an external input adopted as a fact, or a timing/recognition decision. If `derived = f(primaryEvents, classification, rule@version)` with no residual, it carries no information and is a **projection**, not an event; storing it as authoritative is caching a projection into the log, which the rules above forbid. Authority: `D-DERIVED-EVENT-IRREDUCIBILITY-TEST` (CEO-approved 2026-06-16).
 
 ### Projections
 Pure folds over the event log. Never stored as authoritative state. Each projection declares its source event type(s) explicitly.
@@ -71,3 +72,42 @@ Routing a non-accounting projection through `SubLedgerPostingEmitted` or the tri
 The general ledger (trial balance derived from `SubLedgerPostingEmitted`) is the accounting view of the bank. It is one of many projections, not the universal intermediary. Systems that in traditional banking read balances from a GL table must instead fold their own projection from the appropriate source events.
 
 `SubLedgerPostingEmitted` → `computeTrialBalance` → IFRS statements / BA-300. That chain stops there. Every other domain has its own projection root in the primary event log.
+
+---
+
+## Postings are a projection, not an event
+
+Applying the irreducibility test (Derived events, criterion 4) to accounting yields a sharp
+result: **the double-entry posting itself is a projection, not an event.** A posting is
+
+```
+posting = f(primary economic event, classification decision, posting rule @ version)
+```
+
+— every input already lives in the log or in versioned reference data, so the posting carries
+no residual information. Materialising it as an authoritative event (the historical
+`SubLedgerPostingEmitted` shape) is caching a fold into the log; it is the weakest member of the
+derived-event family and fails criterion 4. The smell is visible in the substrate: correction
+posting-types accreted to neutralise frozen wrong postings (a projection self-heals on
+recompute), and parity recon gates exist only to police two copies of one computation.
+
+The genuine accounting **events** are the ones that carry irreducible content:
+
+- **Recognition decisions** — `IfrsClassificationApplied`, official-mark adoptions
+  (`OfficialMarkAdopted`), ECL / IFRS-9 staging, hedge designations — judgment not recoverable
+  from the trades.
+- **`ManualJournalEntry`** — a *primary* authored fact (irreducible `journalId` / `description`
+  / `postedBy` intent); no upstream event determines it, so its legs *are* the original fact.
+- **The period-close freeze** — `AccountingPeriodClosed` / `TrialBalanceSnapshotted` — the one
+  legitimate point at which the fold output is materialised, because *deciding to close* is
+  itself a point-in-time recognition act (the `OfficialMarkAdopted` pattern: store the
+  adoption, not every tick).
+
+The postings / sub-ledger / trial balance / IFRS statements / BA returns are then a pure
+projection of (primary facts × classification decisions × versioned posting rules), with the
+close-time snapshot providing as-filed immutability.
+
+The accounting + BA-returns substrate currently still roots on stored `SubLedgerPostingEmitted`;
+the migration to the projection model is **deferred and tracked** under
+`D-ACCT-POSTING-PROJECTION-MIGRATION` (a sequenced slice plan is required before any build).
+Authority: `D-DERIVED-EVENT-IRREDUCIBILITY-TEST` (CEO-approved 2026-06-16).
