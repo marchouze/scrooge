@@ -21,7 +21,12 @@ import { moneyWireFromMinor } from "../platform/core/money-codec";
 import { nowUtc } from "../platform/core/types";
 import { makeManualJournalEntry } from "../platform/event-store/event-types/accounting";
 import type { EventStore } from "../platform/event-store/store";
-import { computeTrialBalanceV2 } from "../platform/projections/gl-projection-v2";
+import {
+  type GlLedgerEntryV2,
+  computeGlAccountsV2,
+  computeGlEntriesV2,
+  computeTrialBalanceV2,
+} from "../platform/projections/gl-projection-v2";
 import {
   V2_ANCHOR_ENTITY,
   V2_PERIOD_END,
@@ -52,6 +57,27 @@ function handleGlEntries(searchParams: URLSearchParams, eventStore: EventStore):
     Math.min(500, Number.parseInt(searchParams.get("limit") ?? "50", 10) || 50),
   );
   const offset = Math.max(0, Number.parseInt(searchParams.get("offset") ?? "0", 10) || 0);
+
+  // WS-V2-AUTHORITATIVE S5 (D-BANK-WIDE-V2-MIGRATION): when useV2Store is ON,
+  // read individually-addressable ledger entries from the V2 projection
+  // (GlPostingEmitted → computeGlEntriesV2) for the anchor entity over the
+  // shared build-phase window. The V2 entry shape matches the V1 GlLedgerEntry
+  // shape the /gl view consumes. When the flag is OFF (default), V1 (buildGlView)
+  // stays authoritative — fully reversible.
+  if (isFlagEnabled("useV2Store")) {
+    let v2Entries: GlLedgerEntryV2[] = computeGlEntriesV2({
+      eventStore,
+      entity: V2_ANCHOR_ENTITY,
+      periodStart: V2_PERIOD_START,
+      periodEnd: V2_PERIOD_END,
+    });
+    if (accountFilter) v2Entries = v2Entries.filter((e) => e.accountId === accountFilter);
+    if (from) v2Entries = v2Entries.filter((e) => e.postedAt >= from);
+    if (to) v2Entries = v2Entries.filter((e) => e.postedAt <= to);
+    const v2Total = v2Entries.length;
+    const v2Page = v2Entries.slice(offset, offset + limit);
+    return jsonResponse({ entries: v2Page, total: v2Total, asOf });
+  }
 
   const events = [...eventStore.replay({})];
   const view = buildGlView(events, asOf, reportingCurrency);
@@ -108,6 +134,22 @@ function handleGlTrialBalance(searchParams: URLSearchParams, eventStore: EventSt
 
 function handleGlAccounts(searchParams: URLSearchParams, eventStore: EventStore): Response {
   const asOf = searchParams.get("asOf") ?? nowUtc();
+
+  // WS-V2-AUTHORITATIVE S5 (D-BANK-WIDE-V2-MIGRATION): when useV2Store is ON,
+  // read the account-master from the V2 projection (GlPostingEmitted →
+  // computeGlAccountsV2) for the anchor entity over the shared build-phase
+  // window. The V2 account-master carries the same { accountId, name, category,
+  // balances } shape the V1 accounts view surfaces. Flag OFF (default) → V1.
+  if (isFlagEnabled("useV2Store")) {
+    const v2Accounts = computeGlAccountsV2({
+      eventStore,
+      entity: V2_ANCHOR_ENTITY,
+      periodStart: V2_PERIOD_START,
+      periodEnd: V2_PERIOD_END,
+    });
+    return jsonResponse({ accounts: v2Accounts, asOf });
+  }
+
   const events = [...eventStore.replay({})];
   const view = buildGlView(events, asOf);
 

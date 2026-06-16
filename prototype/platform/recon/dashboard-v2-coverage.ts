@@ -62,18 +62,25 @@ const ROUTES: readonly RouteEntry[] = [
   {
     route: "GET /api/gl/entries",
     handlerFile: "dashboard/gl-view.ts",
-    v2Wired: false,
-    wiredMarker: "",
-    reason:
-      "No V2 ledger-entry projection exists — the V2 GL fold (computeTrialBalanceV2) emits balance rows, not individually-addressable ledger entries.",
+    v2Wired: true,
+    // WS-V2-AUTHORITATIVE S5: computeGlEntriesV2 folds GlPostingEmitted into the
+    // individually-addressable GlLedgerEntry shape the /gl entries view consumes,
+    // selected at the route boundary under useV2Store. Authority:
+    // D-BANK-WIDE-V2-MIGRATION + D-V2-AUTHORITATIVE-FLIP-PREREQS.
+    wiredMarker: "computeGlEntriesV2(",
+    reason: "",
   },
   {
     route: "GET /api/gl/accounts",
     handlerFile: "dashboard/gl-view.ts",
-    v2Wired: false,
-    wiredMarker: "",
-    reason:
-      "V2 fold carries (accountCode, currency) balances but not the account-name/category metadata the V1 accounts view surfaces; needs a V2 account-master projection.",
+    v2Wired: true,
+    // WS-V2-AUTHORITATIVE S5: computeGlAccountsV2 folds GlPostingEmitted into the
+    // account-master ({ accountId, name, category, balances }) shape the V1
+    // accounts view surfaces, with COA metadata from the same
+    // chart-of-accounts.json. Selected under useV2Store. Authority:
+    // D-BANK-WIDE-V2-MIGRATION + D-V2-AUTHORITATIVE-FLIP-PREREQS.
+    wiredMarker: "computeGlAccountsV2(",
+    reason: "",
   },
   {
     route: "GET /api/risk/market-risk-measure",
