@@ -289,6 +289,10 @@ export * from "./obligation-equivalence";
 //   IFRS 9 §3.1.1, §4.1.1, §5.4.1, §5.7.1; Banks Act Reg 26/27.
 // Author: Ravi (Treasury/ALM Engineer, engineering).
 export * from "./repo-mmd-ibl";
+// V2-parallel money-market lifecycle events (D-V1-REMOVAL-PHASE-3B).
+// DepositTakenV2 / FundingLineDrawnV2 / RepoTradeOpenedV2 / InterbankLoanPlacedV2
+// … — MoneyWire decimal-native, tenantId, schemaVersion 2. Author: Atlas.
+export * from "./repo-mmd-ibl-v2";
 // D-TRUSTED-FIGURES-PROGRAM-V1 — calculation-history provenance.
 // CalculationPerformed: which model/version/owner/inputs derived a figure,
 //   with an explicit ok|degraded|failed status (never a silent 0).
@@ -494,6 +498,7 @@ import { REGULATORY_TYPED_EVENT_TYPES } from "./regulatory";
 import { REGULATORY_PA_TYPED_EVENT_TYPES } from "./regulatory-pa";
 import { REGULATORY_REPORTING_TYPED_EVENT_TYPES } from "./regulatory-reporting";
 import { REPO_MMD_IBL_TYPED_EVENT_TYPES } from "./repo-mmd-ibl";
+import { REPO_MMD_IBL_V2_TYPED_EVENT_TYPES } from "./repo-mmd-ibl-v2";
 import { RISK_TYPED_EVENT_TYPES } from "./risk";
 import { RISK_TREASURY_EXTENDED_TYPED_EVENT_TYPES } from "./risk-treasury-extended";
 import { RMS_TYPED_EVENT_TYPES } from "./rms";
@@ -660,6 +665,10 @@ export const TYPED_EVENT_TYPES = [
   // loan lifecycles. Authority: WS1-PR1a brief; D-MARKETS-SCHEMA-FOUNDATION;
   // IFRS 9 §3.1.1, §4.1.1, §5.4.1, §5.7.1; Banks Act Reg 26/27.
   ...REPO_MMD_IBL_TYPED_EVENT_TYPES,
+  // D-V1-REMOVAL-PHASE-3B — V2-parallel money-market lifecycle events.
+  // 14 events (Repo / MMD / Funding Line / IBL), MoneyWire decimal-native +
+  // tenantId + schemaVersion 2. Author: Atlas (Core banking platform architect).
+  ...REPO_MMD_IBL_V2_TYPED_EVENT_TYPES,
   // WS-ODP-ISDA-ANNEXURES — ISDA Master Agreement Schedule + CSA election events.
   // IsdaScheduleElected, IsdaCsaElected, IsdaCsaSuperseded.
   // Authority: ORG-ODP-COND-005; urn:regulation:odp:cs-2-2018 §§ 3, 7, 14;

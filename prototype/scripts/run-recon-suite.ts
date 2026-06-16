@@ -245,6 +245,12 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // all 42 posting rules. V1-only accounts produce expected warn violations;
     // V2-only accounts (if any) or amount mismatches on common accounts fail.
     "recon:gl-v2-parity",
+    // D-V1-REMOVAL-PHASE-3B — V2 money-market LCR-denominator parity gate (advisory).
+    // Compares the BA-300 LCR net-cash-outflow denominator from the V1 ALM snapshot
+    // against the same denominator folded from the V2-parallel money-market
+    // lifecycle events. Advisory (ok: true with warn) until the V2 path is
+    // authoritative. Authority: D-V1-REMOVAL-PHASE-3B.
+    "recon:ba300-v2-parity",
   ],
   domain: [
     "recon:prose-duplication",
