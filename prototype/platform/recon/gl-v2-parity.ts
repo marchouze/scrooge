@@ -38,11 +38,7 @@ import { computeTrialBalanceUncached } from "../accounting/period-close";
 import { eventStore } from "../composition";
 import { EVENT_TYPE_REGISTRY } from "../event-store/registry/index";
 import { computeTrialBalanceV2Uncached } from "../projections/gl-projection-v2";
-import {
-  V2_ANCHOR_ENTITY,
-  V2_PERIOD_END,
-  V2_PERIOD_START,
-} from "../projections/v2-read-window";
+import { V2_ANCHOR_ENTITY, V2_PERIOD_END, V2_PERIOD_START } from "../projections/v2-read-window";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 import { runParityCheck } from "./v1-v2-parity-harness";
 

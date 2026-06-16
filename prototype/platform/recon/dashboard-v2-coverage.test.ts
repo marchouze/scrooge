@@ -41,9 +41,7 @@ describe("recon:dashboard-v2-coverage", () => {
     // If the V2 read call were removed from gl-view.ts, the gate would surface a
     // fail-severity wired-marker-missing violation. Asserting its absence here
     // confirms the marker check is live, not a no-op.
-    const markerMissing = r.violations.filter((v) =>
-      v.subject.startsWith("wired-marker-missing:"),
-    );
+    const markerMissing = r.violations.filter((v) => v.subject.startsWith("wired-marker-missing:"));
     expect(markerMissing.length).toBe(0);
   });
 });

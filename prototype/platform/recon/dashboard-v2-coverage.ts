@@ -162,10 +162,7 @@ export function run(): ReconResult {
   // genuine drift (missing handler, or a wired marker that disappeared) fails.
   result.ok = !hardFail;
   result.violations = violations;
-  result.asOf =
-    `dashboard-v2-coverage [ADVISORY — Phase 4]: ${wiredCount}/${total} read routes wired to V2 under useV2Store. ` +
-    `${total - wiredCount} route(s) V1-only (each with a recorded reason — see warn violations and dashboard-v2-coverage.notes.md). ` +
-    "Becomes enforcing once all routes are wired. Authority: D-V1-REMOVAL-PHASE-4.";
+  result.asOf = `dashboard-v2-coverage [ADVISORY — Phase 4]: ${wiredCount}/${total} read routes wired to V2 under useV2Store. ${total - wiredCount} route(s) V1-only (each with a recorded reason — see warn violations and dashboard-v2-coverage.notes.md). Becomes enforcing once all routes are wired. Authority: D-V1-REMOVAL-PHASE-4.`;
 
   return result;
 }

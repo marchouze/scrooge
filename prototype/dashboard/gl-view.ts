@@ -18,15 +18,15 @@ import type { GlLedgerEntry } from "../platform/accounting/gl-projection";
 import { clock } from "../platform/composition";
 import { isFlagEnabled } from "../platform/config/loader";
 import { moneyWireFromMinor } from "../platform/core/money-codec";
+import { nowUtc } from "../platform/core/types";
+import { makeManualJournalEntry } from "../platform/event-store/event-types/accounting";
+import type { EventStore } from "../platform/event-store/store";
 import { computeTrialBalanceV2 } from "../platform/projections/gl-projection-v2";
 import {
   V2_ANCHOR_ENTITY,
   V2_PERIOD_END,
   V2_PERIOD_START,
 } from "../platform/projections/v2-read-window";
-import { nowUtc } from "../platform/core/types";
-import { makeManualJournalEntry } from "../platform/event-store/event-types/accounting";
-import type { EventStore } from "../platform/event-store/store";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
 import type { AgentRunContext } from "../runtime/types";
 

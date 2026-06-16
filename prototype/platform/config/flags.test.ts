@@ -29,14 +29,17 @@ describe("useV2Store feature flag", () => {
     savedEnv.BANK_CONFIG_FILE = process.env.BANK_CONFIG_FILE;
     savedEnv.BANK_USE_V2_STORE = process.env.BANK_USE_V2_STORE;
     process.env.BANK_CONFIG_FILE = configPath;
-    process.env.BANK_USE_V2_STORE = undefined;
+    // biome-ignore lint/performance/noDelete: env-var must be fully unset (= undefined leaves the string "undefined")
     delete process.env.BANK_USE_V2_STORE;
   });
 
   afterEach(() => {
     for (const [k, v] of Object.entries(savedEnv)) {
-      if (v === undefined) delete process.env[k];
-      else process.env[k] = v;
+      if (v === undefined) {
+        delete process.env[k];
+      } else {
+        process.env[k] = v;
+      }
     }
     rmSync(dir, { recursive: true, force: true });
   });
@@ -48,11 +51,7 @@ describe("useV2Store feature flag", () => {
   });
 
   it("reads the file value when present", async () => {
-    writeFileSync(
-      configPath,
-      JSON.stringify({ version: 1, flags: { useV2Store: true } }),
-      "utf-8",
-    );
+    writeFileSync(configPath, JSON.stringify({ version: 1, flags: { useV2Store: true } }), "utf-8");
     const { isFlagEnabled } = await freshLoader();
     expect(isFlagEnabled("useV2Store")).toBe(true);
   });
@@ -66,11 +65,7 @@ describe("useV2Store feature flag", () => {
   });
 
   it("env override can force the flag OFF even if the file says ON", async () => {
-    writeFileSync(
-      configPath,
-      JSON.stringify({ version: 1, flags: { useV2Store: true } }),
-      "utf-8",
-    );
+    writeFileSync(configPath, JSON.stringify({ version: 1, flags: { useV2Store: true } }), "utf-8");
     process.env.BANK_USE_V2_STORE = "0";
     const { isFlagEnabled } = await freshLoader();
     expect(isFlagEnabled("useV2Store")).toBe(false);
