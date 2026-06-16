@@ -2,6 +2,14 @@
 //
 // Obligation-review event-type registry rows.
 //
+// WAVE 2 BATCH-1 FLIP (2026-06-16): all four types flipped v1-only →
+// v2-replaced. Money-free reference data, tee-mirrored verbatim into the v2
+// control-plane store; recon:reference-data-v2-parity proves the V1-store ↔
+// v2-store event-list register byte-clean (ENFORCING). Basis: ordinary
+// dual-write + parity. Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-
+// BASIS-RBC (CEO-approved 2026-06-16). Flip by Atlas (Core banking platform
+// architect, engineering).
+//
 // Covers:
 //   - ObligationReviewMatched — Mira's LLM-extraction asserts a match with
 //     an existing obligation-register row.
@@ -69,7 +77,7 @@ export const OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
     payloadSchema: obligationReviewMatchedPayloadSchema,
     citationsHint: SHARED_CITATIONS,
     source: "platform/event-store/event-types/obligation-review.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ObligationReviewConflict",
@@ -81,7 +89,7 @@ export const OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
     payloadSchema: obligationReviewConflictPayloadSchema,
     citationsHint: SHARED_CITATIONS,
     source: "platform/event-store/event-types/obligation-review.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ObligationCandidateProposed",
@@ -93,7 +101,7 @@ export const OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
     payloadSchema: obligationCandidateProposedPayloadSchema,
     citationsHint: SHARED_CITATIONS,
     source: "platform/event-store/event-types/obligation-review.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ObligationReviewCompleted",
@@ -111,6 +119,6 @@ export const OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[
     payloadSchema: obligationReviewCompletedPayloadSchema,
     citationsHint: SHARED_CITATIONS,
     source: "platform/event-store/event-types/obligation-review.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];

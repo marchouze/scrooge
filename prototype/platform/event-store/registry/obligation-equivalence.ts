@@ -2,6 +2,14 @@
 //
 // Obligation-equivalence event-type registry rows.
 //
+// WAVE 2 BATCH-1 FLIP (2026-06-16): ObligationEquivalenceClassified flipped
+// v1-only → v2-replaced. Money-free reference data, tee-mirrored verbatim into
+// the v2 control-plane store; recon:reference-data-v2-parity proves the V1-store
+// ↔ v2-store event-list register byte-clean (ENFORCING; 21 events at the flip).
+// Basis: ordinary dual-write + parity. Authority: D-BANK-WIDE-V2-MIGRATION;
+// D-V1-REMOVAL-FLIP-BASIS-RBC (CEO-approved 2026-06-16). Flip by Atlas (Core
+// banking platform architect, engineering).
+//
 // Covers:
 //   - ObligationEquivalenceClassified — a verdict on an SA↔BCBS obligation
 //     pair (equivalent / sa-stricter-gold-plates / materially-divergent),
@@ -56,6 +64,6 @@ export const OBLIGATION_EQUIVALENCE_EVENT_TYPES_REGISTRY: readonly EventTypeMeta
     payloadSchema: obligationEquivalenceClassifiedPayloadSchema,
     citationsHint: SHARED_CITATIONS,
     source: "platform/event-store/event-types/obligation-equivalence.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];

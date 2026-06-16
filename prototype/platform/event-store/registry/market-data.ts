@@ -63,7 +63,10 @@ export const MARKET_DATA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: marketDataStaleAlertPayloadSchema,
     source: "platform/event-store/event-types/market-data.ts; Policies/valuation-policy-v1.md §5",
     citationsHint: ["BCBS-239-2013", "D-MARKETS-SCHEMA-FOUNDATION"],
-    v2Status: "v1-only",
+    // WAVE 2 BATCH-1 FLIP (2026-06-16): v1-only → v2-replaced. Money-free
+    // reference data, tee-mirrored verbatim; recon:reference-data-v2-parity
+    // byte-clean. D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+    v2Status: "v2-replaced",
   },
   {
     type: "ModelValidationApproved",
@@ -90,7 +93,7 @@ export const MARKET_DATA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: zaroniaRatePublishedPayloadSchema,
     source: "platform/event-store/event-types/market-data.ts",
     citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ZaroniaTermRatePublished",
@@ -102,7 +105,7 @@ export const MARKET_DATA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: zaroniaTermRatePublishedPayloadSchema,
     source: "platform/event-store/event-types/market-data.ts",
     citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "JibarFixingPublished",
@@ -114,7 +117,7 @@ export const MARKET_DATA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: jibarFixingPublishedPayloadSchema,
     source: "platform/event-store/event-types/market-data.ts",
     citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "OisCurvePublished",
@@ -126,7 +129,7 @@ export const MARKET_DATA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: oisCurvePublishedPayloadSchema,
     source: "platform/event-store/event-types/market-data.ts",
     citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "SagbYieldsPublished",
@@ -138,6 +141,6 @@ export const MARKET_DATA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: sagbYieldsPublishedPayloadSchema,
     source: "platform/event-store/event-types/market-data.ts",
     citationsHint: ["D-TREASURER-WAVE2-SUBSTRATE"],
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];
