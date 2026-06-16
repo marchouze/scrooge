@@ -59,8 +59,10 @@ for (const e of eventStore.replay({ type: "MarketRiskVarComputed" })) {
     es?: { present?: boolean; value?: { amount?: string; currency?: string } };
     riskFactorCount?: number;
   };
-  const fmt = (f?: { present?: boolean; value?: { amount?: string; currency?: string } }): string =>
-    f?.present && f.value ? `${f.value.currency} ${f.value.amount}` : "absent";
+  const fmt = (f?: {
+    present?: boolean;
+    value?: { amount?: string; currency?: string };
+  }): string => (f?.present && f.value ? `${f.value.currency} ${f.value.amount}` : "absent");
   produced = {
     measureId: p.measureId ?? "(unknown)",
     var: fmt(p.var),
