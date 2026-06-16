@@ -30,6 +30,17 @@
 // `process.env.BANK_EVENT_DB` themselves at runtime (after this preload)
 // or pass it to spawned subprocesses, so they are unaffected.
 //
+// 2026-06-16: redirect EXTENDED to the v2 control-plane store
+// (`BANK_V2_CONTROL_PLANE_DB`). The generic V1→v2 store-tee (Wave 2 infra,
+// D-BANK-WIDE-V2-MIGRATION) wires a mirror into the composition seam: a
+// composition append of a TEE-ENABLED type (e.g. PostureRegistered) now also
+// writes into the v2 control-plane store. Without this redirect a test that
+// appends a tee-enabled event via the composition `eventStore` would mirror it
+// into the SHARED `.local/v2-control-plane.db`, polluting the store that
+// `recon:posture-v2-parity` reads (the 46→47 extra-mirror divergence). Pointing
+// BOTH stores at the same fresh tmpdir keeps the tee's mirror isolated exactly
+// like the V1 write. Authority: D-BANK-WIDE-V2-MIGRATION.
+//
 // Author: Atlas (Core banking platform architect)
 
 import { mkdtempSync } from "node:fs";
@@ -39,4 +50,5 @@ import { join } from "node:path";
 if (process.env.BANK_TEST_USE_AMBIENT_DB !== "1") {
   const tmpDir = mkdtempSync(join(tmpdir(), "bank-test-eventdb-"));
   process.env.BANK_EVENT_DB = join(tmpDir, "event.db");
+  process.env.BANK_V2_CONTROL_PLANE_DB = join(tmpDir, "v2-control-plane.db");
 }
