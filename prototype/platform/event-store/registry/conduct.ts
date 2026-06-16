@@ -244,7 +244,12 @@ export const CONDUCT_EVENT_TYPES: readonly EventTypeMetadata[] = [
       "D-FX-SALES-TRADING-FRONTEND",
       "PROC-PAY-RBH-01",
     ],
-    v2Status: "v1-only",
+    // Bucket-A batch-A2 flip: dual-writes to the v2 control-plane store via the
+    // generic store-tee + MoneyWire codec (notional + nullable feeAmount lifted to
+    // decimal-native MoneyWire, currency sourced from payload). recon:bucket-a-a2-
+    // v2-parity is the decoded-decimal evidence. Authority: D-BANK-WIDE-V2-MIGRATION;
+    // D-V1-REMOVAL-FLIP-BASIS-RBC.
+    v2Status: "v2-replaced",
   },
   // ---------------------------------------------------------------------------
   // BestExecutionPolicySchedule — CCO-published best-execution tolerance

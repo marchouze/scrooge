@@ -1425,7 +1425,10 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/zara.ts",
-    v2Status: "v1-only",
+    // Bucket-A batch-A2 flip: store-tee + MoneyWire codec (amount → decimal,
+    // currency from payload). recon:bucket-a-a2-v2-parity (decoded-decimal).
+    // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a sanctions screening run produces a hit.
@@ -1604,7 +1607,10 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/owen.ts",
-    v2Status: "v1-only",
+    // Bucket-A batch-A2 flip: store-tee + MoneyWire codec (optional fee → decimal;
+    // statutory ZAR PAIA fee regime). recon:bucket-a-a2-v2-parity (decoded-decimal).
+    // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+    v2Status: "v2-replaced",
   },
   {
     // Snapshot of POPIA controls state (data mapping, consent register,
@@ -1660,7 +1666,10 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/owen.ts",
-    v2Status: "v1-only",
+    // Bucket-A batch-A2 flip: store-tee + MoneyWire codec (amount → decimal,
+    // currency from payload). recon:bucket-a-a2-v2-parity (decoded-decimal).
+    // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a protected disclosure / whistleblowing incident is raised.
@@ -1823,7 +1832,10 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/yael.ts",
-    v2Status: "v1-only",
+    // Bucket-A batch-A2 flip: store-tee + MoneyWire codec (amount → decimal,
+    // currency from payload). recon:bucket-a-a2-v2-parity (decoded-decimal).
+    // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+    v2Status: "v2-replaced",
   },
 ];
 

@@ -48,6 +48,10 @@ export const COUNTERPARTY_EXPOSURE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: counterpartyExposureCalculatedPayloadSchema,
     source: "platform/event-store/event-types/counterparty-exposure.ts",
-    v2Status: "v1-only",
+    // Bucket-A batch-A2 flip: dual-writes to the v2 control-plane store via the
+    // generic store-tee + MoneyWire codec (4 ZAR-minor exposure fields lifted to
+    // decimal-native MoneyWire). recon:bucket-a-a2-v2-parity is the decoded-
+    // decimal evidence. Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+    v2Status: "v2-replaced",
   },
 ];

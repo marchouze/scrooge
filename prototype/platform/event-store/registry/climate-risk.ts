@@ -45,7 +45,11 @@ export const CLIMATE_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: climateScenarioRunPayloadSchema,
     citationsHint: ["D-RAS-CLIMATE-SCENARIO-FRAMEWORK", "PA-GN1-2024", "PROC-RISK-CR-01"],
     source: "platform/event-store/event-types/climate-risk.ts",
-    v2Status: "v1-only",
+    // Bucket-A batch-A2 flip: dual-writes to the v2 control-plane store via the
+    // generic store-tee + MoneyWire codec (3 *ZAR money fields lifted to decimal-
+    // native MoneyWire). recon:bucket-a-a2-v2-parity is the decoded-decimal
+    // evidence. Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+    v2Status: "v2-replaced",
   },
   {
     type: "ClimateExposureRevalued",
