@@ -18,10 +18,12 @@
 //
 // STATUS
 // ------
-// ADVISORY at landing (warn-severity only; ok:true). Flips ENFORCING in the SAME
-// PR once parity is byte-clean (the flip cites the byte-clean parity as the
-// evidence for moving the V1 posture types to v2-replaced — ordinary dual-write
-// flip basis, NOT retired-by-construction; D-V1-REMOVAL-FLIP-BASIS-RBC).
+// ENFORCING (Wave 2 pilot flip, 2026-06-16). Parity was byte-clean at the flip
+// (46 register events, V1 == v2), so the four V1 posture types are flipped to
+// v2-replaced and this gate is enforcing: a byte-diff (severity fail) blocks CI.
+// Flip basis: ordinary dual-write + parity, NOT retired-by-construction — V1
+// remains emittable and this gate is the standing evidence (D-V1-REMOVAL-FLIP-
+// BASIS-RBC). A harness/fold error is also fail-severity.
 //
 // COMPARISON SHAPE
 // ----------------
@@ -51,7 +53,11 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import type { CpEvent } from "../../v2-core/control-plane/store";
-import { type Posture, type PostureRegister, foldPostureRegister } from "../../v2-core/posture/projection";
+import {
+  type Posture,
+  type PostureRegister,
+  foldPostureRegister,
+} from "../../v2-core/posture/projection";
 import { eventStore } from "../composition";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 import { runParityCheck } from "./v1-v2-parity-harness";
@@ -199,10 +205,13 @@ export function run(overridePath?: string): ReconResult {
       readV1: () => v1Snap,
       readV2: () => v2Snap,
     });
+    // ENFORCING (Wave 2 pilot flip, 2026-06-16): a byte-diff between the V1-store
+    // register and the v2-control-plane-store register is a hard fail. The
+    // harness already returns severity "fail"; we forward it verbatim. This gate
+    // is the standing evidence that the v2-replaced posture types remain in
+    // dual-write parity — a regression that breaks the mirror fails CI.
     for (const v of parity) {
-      // ADVISORY at landing: surface the divergence as warn. The flip to
-      // ENFORCING (severity fail) happens in the same PR once byte-clean.
-      violations.push({ ...v, severity: "warn" });
+      violations.push(v);
     }
   } catch (err) {
     violations.push({
@@ -213,14 +222,14 @@ export function run(overridePath?: string): ReconResult {
   }
 
   result.violations = violations;
-  // ADVISORY gate: ok = true unless a fail-severity (harness/fold) violation.
+  // ENFORCING gate: ok = false on any fail-severity (byte-diff / harness / fold).
   result.ok = violations.every((v) => v.severity !== "fail");
 
   const failCount = violations.filter((v) => v.severity === "fail").length;
   const warnCount = violations.filter((v) => v.severity === "warn").length;
   const byteClean = warnCount === 0 && failCount === 0;
   result.asOf =
-    `posture-v2-parity [ADVISORY]: V1 register events=${v1Count}, v2 register events=${v2Count}; ` +
+    `posture-v2-parity [ENFORCING]: V1 register events=${v1Count}, v2 register events=${v2Count}; ` +
     `${byteClean ? "BYTE-CLEAN (V1 == v2)" : `DIVERGENT (${warnCount} warn, ${failCount} fail)`}. ` +
     `Harness self-test: ${vacuous.length === 0 ? "OK" : "FAILED"}.`;
   return result;
