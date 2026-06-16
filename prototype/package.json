@@ -28,6 +28,7 @@
     "recon:credit-limit-v2-parity": "bun run platform/recon/credit-limit-v2-parity.ts",
     "recon:ba700-v2-parity": "bun run platform/recon/ba700-v2-parity.ts",
     "recon:ba320-fx-v2-parity": "bun run platform/recon/ba320-fx-v2-parity.ts",
+    "recon:alm-snapshot-v2-parity": "bun run platform/recon/alm-snapshot-v2-parity.ts",
     "recon:dashboard-v2-coverage": "bun run platform/recon/dashboard-v2-coverage.ts",
     "file:atlas-ceo-escalation-push-channel-spec": "bun run scripts/file-atlas-ceo-escalation-push-channel-spec.ts",
     "file:atlas-dashboard-consolidation-proposal": "bun run scripts/file-atlas-dashboard-consolidation-proposal.ts",

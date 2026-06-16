@@ -113,10 +113,16 @@ const ROUTES: readonly RouteEntry[] = [
   {
     route: "ALM positions / LCR / NSFR (treasury tiles, getALMPositionSnapshot)",
     handlerFile: "dashboard/server.ts",
-    v2Wired: false,
-    wiredMarker: "",
-    reason:
-      "Phase 3b (#1383) added V2 money-market lifecycle events and the recon:ba300-v2-parity gate folds them into LCR numerator/denominator, but no V2 projection produces the getALMPositionSnapshot shape (HQLA/funding/ASF/RSF position arrays) the treasury route consumes. Needs a snapshot-shaped V2 ALM projection before a route-boundary dual-read is possible.",
+    v2Wired: true,
+    // WS-V2-AUTHORITATIVE S6: getALMPositionSnapshotV2 folds the V2-parallel
+    // money-market lifecycle events (DepositTakenV2 / FundingLineDrawnV2 /
+    // InterbankLoanPlacedV2 / RepoTradeOpenedV2) into the IDENTICAL
+    // ALMPositionSnapshot shape (HQLA / funding / ASF / RSF arrays) the treasury
+    // LCR / NSFR tiles read, selected at the route boundary under useV2Store
+    // (selectALMPositionSnapshot). Currency-agnostic (no hardcoded ZAR).
+    // Authority: D-BANK-WIDE-V2-MIGRATION + D-V1-REMOVAL-PHASE-3B.
+    wiredMarker: "getALMPositionSnapshotV2(",
+    reason: "",
   },
   {
     route: "regulatory returns BA-700 / BA-320",
