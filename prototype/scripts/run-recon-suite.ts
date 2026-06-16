@@ -286,6 +286,13 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // Advisory: rate conversion (GAP-3E-005) unavailable at Phase 3e; no-data expected
     // on clean CI store. Open-position charge comparison deferred to rate-feed workstream.
     "recon:ba320-fx-v2-parity",
+    // D-V1-REMOVAL-PHASE-4 — dashboard read-route → V2 coverage gate (advisory).
+    // Enumerates dashboard read routes with a V1↔V2 projection pairing and counts
+    // how many have a V2 read path wired under the useV2Store flag vs total. Each
+    // V1-only route carries an explicit reason (warn) — no silent gaps. Genuine
+    // drift (missing handler / disappeared V2 marker) fails. Becomes enforcing
+    // once all routes are wired. Authority: D-V1-REMOVAL-PHASE-4.
+    "recon:dashboard-v2-coverage",
   ],
   domain: [
     "recon:prose-duplication",

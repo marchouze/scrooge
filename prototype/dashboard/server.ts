@@ -71,7 +71,7 @@ import { computeRepricingGap } from "../platform/alm/repricing-gap";
 import { getCollateralInventory } from "../platform/collateral/inventory";
 import { eventStore, logger } from "../platform/composition";
 import { FINANCIAL_CONSTANTS } from "../platform/config/financial-constants";
-import { updateConfigFile } from "../platform/config/loader";
+import { isFlagEnabled, updateConfigFile } from "../platform/config/loader";
 import type {
   BankConfigDisplay,
   BankConfigPaths,
@@ -138,6 +138,7 @@ import {
   computeDailyPnL,
   runDailyPnLReport,
 } from "../platform/product-control/daily-pnl";
+import { computeDailyPnLV2 } from "../platform/product-control/daily-pnl-v2";
 import { computeDeskCashPositions } from "../platform/product-control/desk-cash-positions";
 import { buildPnLDataFailuresView } from "../platform/product-control/pnl-data-failures-view";
 import {
@@ -151,6 +152,7 @@ import {
   computeCapitalMetrics,
 } from "../platform/projections/capital-metrics";
 import {
+  type MarketRiskMeasureView,
   buildLimitUtilisationDeps,
   getCorrespondentRouting,
   getLimitUtilisations,
@@ -468,6 +470,50 @@ function buildFtpSummary(): import("./types").FtpDashboardSummary | null {
 
 function buildCapitalPositions(): CapitalMetrics | null {
   return computeCapitalMetrics(eventStore, nowUtc());
+}
+
+// V1-removal Phase 4 (D-V1-REMOVAL-PHASE-4): presentation-boundary promotion of
+// the V2 market-risk figure into the primary VaR/SVaR/ES fields. The projection
+// (getMarketRiskMeasure) already folds the V2 MarketRiskVarComputed event and
+// exposes it as `v2Measure`; this helper re-points the headline figures at it
+// when useV2Store is ON, re-deriving utilisation + RAG against the SAME appetite
+// the V1 path uses (no new appetite, no projection mutation). When the V2 measure
+// is absent the view is returned unchanged (no silent zero — the V1 lineage and
+// absent-reason are preserved). RAG bands mirror the projection (amber 0.8, red
+// 1.0 of the VaR appetite — D-B3-6).
+const MARKET_RISK_AMBER_THRESHOLD = 0.8;
+const MARKET_RISK_RED_THRESHOLD = 1.0;
+
+function promoteMarketRiskV2(view: MarketRiskMeasureView): MarketRiskMeasureView {
+  const v2 = view.v2Measure;
+  // No V2 event folded yet → leave the V1 view (with its lineage) untouched.
+  // Promoting an absent V2 figure would be a silent zero (Charter cmd 5).
+  if (!v2 || v2.varZar === null) return view;
+
+  const appetite = view.varAppetiteZar;
+  const utilisationPct = appetite !== null && appetite > 0 ? v2.varZar / appetite : null;
+
+  let ragStatus: MarketRiskMeasureView["ragStatus"] = null;
+  if (utilisationPct !== null) {
+    ragStatus =
+      utilisationPct >= MARKET_RISK_RED_THRESHOLD
+        ? "red"
+        : utilisationPct >= MARKET_RISK_AMBER_THRESHOLD
+          ? "amber"
+          : "green";
+  }
+
+  return {
+    ...view,
+    status: "computed",
+    asOf: v2.asOf,
+    varZar: v2.varZar,
+    svarZar: v2.svarZar,
+    esZar: v2.esZar,
+    utilisationPct: utilisationPct === null ? null : Math.min(utilisationPct, 9.99),
+    ragStatus,
+    lineage: `V2 read (useV2Store ON): MarketRiskVarComputed asOf ${v2.asOf}, tenant ${v2.tenantId}. ${view.lineage}`,
+  };
 }
 
 function buildLiquidityMetrics(): {
@@ -4177,9 +4223,22 @@ const server = Bun.serve({
       // latest MarketRiskMeasureComputed event → VaR / SVaR / ES vs Helena's
       // MR-1-FX VaR appetite. The risk-calibrated rung of the appetite stack;
       // surfaced on the CRO risk page alongside the RAS clusters.
-      return jsonResponse(
-        getMarketRiskMeasure([...eventStore.replay({ type: "MarketRiskMeasureComputed" })]),
-      );
+      //
+      // V1-removal Phase 4 (D-V1-REMOVAL-PHASE-4): the projection already folds
+      // the V2 `MarketRiskVarComputed` event in parallel and exposes it as
+      // `v2Measure`. When useV2Store is ON we promote that V2 figure into the
+      // primary VaR/SVaR/ES fields (re-deriving utilisation + RAG against the
+      // same appetite) at the route boundary — projection untouched. When OFF
+      // (default), the V1 figure stays authoritative — fully reversible.
+      const measureEvents = [
+        ...eventStore.replay({ type: "MarketRiskMeasureComputed" }),
+        ...eventStore.replay({ type: "MarketRiskVarComputed" }),
+      ];
+      const measureView = getMarketRiskMeasure(measureEvents);
+      if (isFlagEnabled("useV2Store")) {
+        return jsonResponse(promoteMarketRiskV2(measureView));
+      }
+      return jsonResponse(measureView);
     }
     if (url.pathname === "/api/markets/fx/products/attestation" && req.method === "GET") {
       // FX desk Slice 7 — NPA attestation badge source. Replays the event
@@ -4251,12 +4310,21 @@ const server = Bun.serve({
         latestReport = e.payload; // keep last (replay is oldest-first)
       }
       // Compute fresh trade-level detail and report on demand.
+      //
+      // V1-removal Phase 4 (D-V1-REMOVAL-PHASE-4): when useV2Store is ON, compute
+      // the fresh report from the V2 engine (FilInstrumentCreated/Terminated FX
+      // instruments → MarketDataSlice valuation). computeDailyPnLV2 returns the
+      // IDENTICAL DailyPnLResult shape as the V1 engine (drop-in parallel), so the
+      // downstream classification + response shape are unchanged. When OFF
+      // (default), V1 (computeDailyPnL) stays authoritative — fully reversible.
       const {
         payload: freshPayload,
         trades,
         marksUnavailableCount,
         totalUnrealised,
-      } = computeDailyPnL(eventStore, reportDate);
+      } = isFlagEnabled("useV2Store")
+        ? computeDailyPnLV2(eventStore, marketDataStore, reportDate, nowUtc)
+        : computeDailyPnL(eventStore, reportDate);
       // Classify each unmarkable live position: a pair with a production tick
       // is merely awaiting revaluation (not a feed gap); only a pair with no
       // production tick at all genuinely needs an MTM feed. Lets the banner

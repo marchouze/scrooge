@@ -38,21 +38,22 @@ import { computeTrialBalanceUncached } from "../accounting/period-close";
 import { eventStore } from "../composition";
 import { EVENT_TYPE_REGISTRY } from "../event-store/registry/index";
 import { computeTrialBalanceV2Uncached } from "../projections/gl-projection-v2";
+import { V2_ANCHOR_ENTITY, V2_PERIOD_END, V2_PERIOD_START } from "../projections/v2-read-window";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 import { runParityCheck } from "./v1-v2-parity-harness";
 
 const PIPELINE = "gl-v2-parity";
 
 // ---------------------------------------------------------------------------
-// Period window. Use a broad window that captures the entire build phase.
-// These are ISO date strings matching `YYYY-MM-DD` format (periodStart ≤ as_of ≤ periodEnd).
+// Period window + anchor entity. Sourced from the shared v2-read-window module
+// so the dashboard's V2 read path (gl-view, useV2Store) and this parity gate
+// read exactly the same (entity, window) — no drift between what is surfaced
+// and what is proven. These are ISO date strings (periodStart ≤ as_of ≤ periodEnd).
 // ---------------------------------------------------------------------------
 
-const PERIOD_START = "2026-01-01";
-const PERIOD_END = "2099-12-31";
-
-// The anchor entity for Phase 3A (legal entity that the V2 FIL instances belong to).
-const ANCHOR_ENTITY = "LE-ZA-HOZ-BANK";
+const PERIOD_START = V2_PERIOD_START;
+const PERIOD_END = V2_PERIOD_END;
+const ANCHOR_ENTITY = V2_ANCHOR_ENTITY;
 
 // ---------------------------------------------------------------------------
 // Gate implementation
