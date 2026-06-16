@@ -35,6 +35,7 @@ import { eventStore } from "../composition";
 import { EVENT_TYPE_REGISTRY } from "../event-store/registry/index";
 import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import { computeBA700V2 } from "../projections/ba700-v2";
+import { eventInOperatingBook } from "../projections/filter";
 import { generateBA700Return } from "../returns/ba700/generator";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 import { runParityCheck } from "./v1-v2-parity-harness";
@@ -200,21 +201,58 @@ export function run(): ReconResult {
     severity: "warn",
   });
 
-  // (6) When BOTH sides have data (non-zero capital on V2), compare coverable cells.
-  if (v2Tier1 > 0 || v2Tier2 > 0) {
-    result.asserted += 1;
-    // Capital comparison — can only compare if V2 has capital.
+  // (6) S7 — V1↔V2 CAPITAL NUMERATOR parity over the recorded
+  // CapitalContributionRecorded population.
+  //
+  // S7 (D-BANK-WIDE-V2-MIGRATION) built the V2 capital GL posting engine
+  // (gl-posting-engine-v2-capital.ts, PR-CAP-001-V2): it consumes
+  // CapitalContributionRecorded and emits GlPostingEmitted to the capital
+  // accounts, so the V2 fold (ba700-v2.ts) can produce a non-zero numerator.
+  // The dual-run backfill (scripts/backfill-capital-gl-v2-dual-run.ts, in
+  // ci:migrate) mirrors every production contribution into V2 GlPostingEmitted.
+  //
+  // PASS-on-empty / WARN-on-gap / FAIL-on-throw (Charter cmd 3, advisory):
+  //   - PASS-empty: zero operating-book CapitalContributionRecorded events. This
+  //     is the correct build-phase state — the bank holds no real capital
+  //     pre-licence ("No R300m sits anywhere", CLAUDE.md operating model). Both
+  //     numerators are legitimately zero; the comparison is vacuously equal.
+  //   - WARN-gap: a non-empty population but V1≠V2 (e.g. backfill not yet run, or
+  //     a sign / account divergence). Advisory until the capital-type flip slice.
+  //   - FAIL-throw: a projection crash (handled by the try/catch above).
+  result.asserted += 1;
+  let capitalPopulation = 0;
+  for (const ev of eventStore.replay({ type: "CapitalContributionRecorded", asOf: AS_OF })) {
+    if (!eventInOperatingBook(ev)) continue;
+    capitalPopulation += 1;
+  }
+
+  if (capitalPopulation === 0) {
+    // PASS-empty — documented advisory, not a breach.
+    violations.push({
+      subject: "ba700-v2-parity:capital-numerator:pass-empty",
+      message: `ADVISORY (S7): zero operating-book CapitalContributionRecorded events in the store — the V1 and V2 capital numerators are both legitimately zero (build-phase: the bank holds no real capital pre-licence). The V2 capital GL engine (PR-CAP-001-V2) + dual-run backfill are wired and will populate the V2 numerator automatically when a production contribution lands. V1 tier1=${v1Tier1} tier2=${v1Tier2}, V2 tier1=${v2Tier1} tier2=${v2Tier2}. Authority: D-BANK-WIDE-V2-MIGRATION.`,
+      severity: "warn",
+    });
+  } else {
+    // Non-empty population — compare the capital numerator byte-for-byte.
     if (v1Tier1 !== v2Tier1) {
       violations.push({
         subject: "ba700-v2-parity:mismatch:tier1Capital",
-        message: `V1↔V2 tier1Capital mismatch: V1=${v1Tier1}, V2=${v2Tier1}. Inspect GlPostingEmitted capital-account fold vs V1 SubLedgerPostingEmitted fold. Verify identical capital-account IDs and sign conventions. Authority: D-V1-REMOVAL-PHASE-3E.`,
+        message: `V1↔V2 tier1Capital mismatch over ${capitalPopulation} CapitalContributionRecorded event(s): V1=${v1Tier1}, V2=${v2Tier1}. Inspect the V2 GlPostingEmitted capital fold (gl-posting-engine-v2-capital.ts / backfill-capital-gl-v2-dual-run.ts) vs the V1 CapitalContributionRecorded fold. Verify identical capital-account IDs and the credit sign convention, and that the dual-run backfill ran in ci:migrate. Authority: D-BANK-WIDE-V2-MIGRATION.`,
         severity: "warn",
       });
     }
     if (v1Tier2 !== v2Tier2) {
       violations.push({
         subject: "ba700-v2-parity:mismatch:tier2Capital",
-        message: `V1↔V2 tier2Capital mismatch: V1=${v1Tier2}, V2=${v2Tier2}. Inspect GlPostingEmitted T2-account fold vs V1 fold. Authority: D-V1-REMOVAL-PHASE-3E.`,
+        message: `V1↔V2 tier2Capital mismatch over ${capitalPopulation} CapitalContributionRecorded event(s): V1=${v1Tier2}, V2=${v2Tier2}. Inspect the V2 T2-account fold vs the V1 fold. Authority: D-BANK-WIDE-V2-MIGRATION.`,
+        severity: "warn",
+      });
+    }
+    if (v1Tier1 === v2Tier1 && v1Tier2 === v2Tier2) {
+      violations.push({
+        subject: "ba700-v2-parity:capital-numerator:byte-clean",
+        message: `S7 capital numerator parity BYTE-CLEAN over ${capitalPopulation} CapitalContributionRecorded event(s): V1 tier1=${v1Tier1} tier2=${v1Tier2} == V2 tier1=${v2Tier1} tier2=${v2Tier2}. Authority: D-BANK-WIDE-V2-MIGRATION.`,
         severity: "warn",
       });
     }
@@ -228,7 +266,8 @@ export function run(): ReconResult {
   const failCount = violations.filter((v) => v.severity === "fail").length;
   const warnCount = violations.filter((v) => v.severity === "warn").length;
   const summary =
-    `ba700-v2-parity [ADVISORY — Phase 3e]: ${failCount} fail violations, ${warnCount} warn violations. ` +
+    `ba700-v2-parity [ADVISORY — Phase 3e / S7]: ${failCount} fail violations, ${warnCount} warn violations. ` +
+    `CapitalContributionRecorded population (operating-book): ${capitalPopulation}. ` +
     `V1: tier1=${v1Tier1} tier2=${v1Tier2} rwa=${v1Rwa}. ` +
     `V2: tier1=${v2Tier1} tier2=${v2Tier2} creditRwa=${v2CreditRwa} (coverage: ${v2CoverageStatus}). ` +
     `GlPostingEmitted registry: ${glEntry?.v2Status ?? "MISSING"}. ` +
