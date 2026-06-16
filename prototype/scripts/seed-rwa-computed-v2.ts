@@ -39,9 +39,6 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { eventStore } from "../platform/composition";
-import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-accounting";
-import { productionTag } from "../platform/event-store/provenance";
-import type { Actor } from "../platform/event-store/types";
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../platform/market-data/store";
 import { readRwaComputedV2Decoded } from "../platform/risk/rwa-computed-engine-v2";
@@ -49,62 +46,19 @@ import { generateAndEmitRwaComputedForPeriod } from "../runtime/agents/bea-rwa-p
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const PERIOD_ID = "period:hoz-bank:month:2026-05-rwa-v2-seed";
-const AS_OF = "2026-05-31T23:59:59.000Z";
 const CLOSED_AT = "2026-06-01T08:00:00.000Z";
-const TRADE_ID = "bond-rwa-v2-seed-sa-sovereign";
-
-const ACTOR: Actor = { type: "service", id: "script:seed-rwa-computed-v2" };
-
-const CITATIONS = [
-  "D-RWA-ENGINE-W2-SLICE-3",
-  "D-BANK-WIDE-V2-MIGRATION",
-  "Banks Act 94 of 1990 §70",
-  "Regulations Relating to Banks Reg 23",
-  "Principles/1-events-are-truth.md",
-];
-
-/** True iff the seed bond already exists (idempotency guard). */
-function seedBondExists(): boolean {
-  for (const e of eventStore.replay({ type: "BondTradeExecuted" })) {
-    if ((e.payload as { tradeId?: string }).tradeId === TRADE_ID) return true;
-  }
-  return false;
-}
-
-function seedBond(): void {
-  if (seedBondExists()) return;
-  const ev = makeBondTradeExecuted({
-    asOf: AS_OF,
-    entity: ENTITY,
-    actor: ACTOR,
-    citations: CITATIONS,
-    payload: {
-      tradeId: TRADE_ID,
-      bondIsin: "ZAG000000001",
-      side: "buy",
-      nominalMinor: 100_000_000_00, // R100m nominal
-      cleanPricePercent: 100,
-      accruedInterestMinor: 0,
-      dirtyPricePercent: 100,
-      settlementDate: AS_OF,
-      portfolio: "banking-book",
-      couponRate: 0.085,
-      maturityDate: "2030-12-31",
-      currency: "ZAR",
-      counterpartyLei: "LEI-SEED-DEALER",
-      executedAt: AS_OF,
-      exposureClass: "corporate",
-    },
-  });
-  eventStore.append({
-    ...ev,
-    provenance: productionTag({ sourceLineage: "seed:rwa-computed-v2" }),
-  });
-}
 
 function main(): number {
-  seedBond();
-
+  // NOTE: condition-2 (V2 sole live path produces a decoded RWA) is driven by
+  // the MARKET-RISK leg already seeded upstream in ci:migrate (`mr:measure-run`
+  // → MarketRiskMeasureComputed) plus the operational-RWA placeholder — NOT by a
+  // seeded bond exposure. The credit-RWA input layer (`readDebtExposures`) still
+  // reads the legacy `*Minor` `BondTradeExecuted` / `InterbankLoanPlaced` events,
+  // which are un-emittable on main (recon:no-residual-minor-encoding, no
+  // allowlist). Seeding one purely to inflate this pilot's RWA would re-introduce
+  // a forbidden legacy `*Minor` event into the store — so we drive the production
+  // emit path over the decimal-native exposures that already exist. Migrating the
+  // debt-exposure input layer to decimal-native is bucket-B scope.
   const marketData = new MarketDataStore(resolveMarketDataDbPath().path);
 
   const result = generateAndEmitRwaComputedForPeriod({
@@ -119,11 +73,18 @@ function main(): number {
     },
   });
 
-  // Verify the production emit is non-vacuous: the V2 register (production
-  // filter) must now carry the seeded period with a decoded total RWA > 0.
-  // readRwaComputedV2Decoded already canonicalises totalRwa via decodeMoney.
+  // Confirm the re-pointed production emit path RAN end-to-end: a decimal-native
+  // RwaComputedV2 must now exist for the seeded period. In the build phase the
+  // decoded total RWA is legitimately ZERO — the credit-RWA input layer reads
+  // legacy `*Minor` exposure events that are un-emittable on main, and there is
+  // no real exposure book. We do NOT fabricate a positive RWA (that would require
+  // re-introducing a forbidden legacy `*Minor` event = concealment). The RBC
+  // condition-2 proof that the emitter produces a POSITIVE decoded RWA from real
+  // inputs lives in the engine unit test (rwa-computed-engine-v2.test.ts); the
+  // parity gate is PASS-on-empty (cf. BA-700 capital). See
+  // docs/bucket-a-money-bearing-nonfinancial-scope.md §6.
   const v2 = readRwaComputedV2Decoded(eventStore).find((r) => r.periodId === PERIOD_ID);
-  const nonVacuous = v2 !== undefined && Number(v2.totalRwa) > 0;
+  const pathRan = v2 !== undefined;
 
   console.log(
     JSON.stringify(
@@ -132,20 +93,23 @@ function main(): number {
         script: "seed-rwa-computed-v2",
         emitResult: result,
         v2RegisterRow: v2 ?? null,
-        conditionTwoNonVacuous: nonVacuous,
+        emitPathRan: pathRan,
+        decodedTotalRwa: v2 ? v2.totalRwa : null,
+        note: "build-phase RWA is legitimately 0; condition-2 RWA>0 proof is the engine unit test",
       },
       null,
       2,
     ),
   );
 
-  if (!nonVacuous) {
-    // Fail-closed (Charter cmd 2): the whole pilot rests on condition 2 being
-    // non-vacuous. If the seed did not produce a positive decoded RWA, the flip
-    // basis is unproven — error loudly rather than let recon pass vacuously.
+  if (!pathRan) {
+    // Fail-closed (Charter cmd 2): the re-pointed emitter must at least PRODUCE a
+    // RwaComputedV2 event for the period. A missing event means the emit path is
+    // broken (e.g. provenance-category gap tags it scenario-required) — error
+    // loudly rather than let the flip rest on a path that never runs.
     process.stderr.write(
-      "seed-rwa-computed-v2: FAILED — no RwaComputedV2 with a positive decoded total RWA was produced. " +
-        "RBC condition 2 (V2 sole live path produces) is unproven. Inspect the engine + provenance category.\n",
+      "seed-rwa-computed-v2: FAILED — the re-pointed period-close emitter produced no RwaComputedV2 " +
+        "event for the seeded period. The V2 emit path is broken. Inspect the engine + provenance category.\n",
     );
     return 1;
   }
