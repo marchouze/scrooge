@@ -1,8 +1,17 @@
 // platform/recon/credit-limit-v2-parity.ts
 //
-// recon:credit-limit-v2-parity — ADVISORY parity gate for Phase 3d.
+// recon:credit-limit-v2-parity — ENFORCING parity gate (WS-V2-AUTHORITATIVE S2).
 //
-// STATUS: PHASE 3D — ADVISORY (ok: true even with warn-severity violations).
+// STATUS: ENFORCING — hardened from advisory (Phase 3d) to enforcing under
+// WS-V2-AUTHORITATIVE S2 (D-V1-REMOVAL-FLIP-BASIS-RBC, CEO-approved 2026-06-16).
+// The V1 credit-limit approval types (CreditLimitApproved / CreditLimitLoaded /
+// CreditLimitWithdrawn) are flipped to v2Status "v2-replaced" on ORDINARY
+// BYTE-PARITY: the S4 (#1386) dual-run emitter proves V1↔V2 approval registries
+// are byte-identical (V1-only=0, V2-only=0, zero field mismatches). Any future
+// V1↔V2 divergence (mismatch, or a V2-only entry exceeding V1 scope) is now a
+// fail-severity violation that blocks CI. A V1-only entry remains a warn (the
+// dual-run emitter may legitimately lag a brand-new V1 approval by one tick).
+// Charter cmd 3 — ratchets harden only; this gate now blocks regressions.
 //
 // Compares the V1 credit-limit approval registry (folded from V1 event types
 // CreditLimitApproved / CreditLimitLoaded / CreditLimitWithdrawn) against the
@@ -113,6 +122,31 @@ export function run(): ReconResult {
     }
   }
 
+  // (2b) FLIP-RECORDED CHECK (ENFORCING) — the three V1 approval types must be
+  //      tagged "v2-replaced" (WS-V2-AUTHORITATIVE S2). Reverting a recorded flip
+  //      without a CEO Decision is a regression. Authority: D-V1-REMOVAL-FLIP-BASIS-RBC.
+  for (const typeName of [
+    "CreditLimitApproved",
+    "CreditLimitLoaded",
+    "CreditLimitWithdrawn",
+  ] as const) {
+    const entry = EVENT_TYPE_REGISTRY.find((e) => e.type === typeName);
+    result.asserted += 1;
+    if (!entry) {
+      violations.push({
+        subject: `credit-limit-v2-parity:registry-missing:${typeName}`,
+        message: `"${typeName}" is not in the registry. Expected v2Status "v2-replaced" (flipped on byte-parity, WS-V2-AUTHORITATIVE S2). Authority: D-V1-REMOVAL-FLIP-BASIS-RBC.`,
+        severity: "fail",
+      });
+    } else if (entry.v2Status !== "v2-replaced") {
+      violations.push({
+        subject: `credit-limit-v2-parity:flip-reverted:${typeName}`,
+        message: `"${typeName}" is tagged "${entry.v2Status}" but it was flipped to "v2-replaced" under WS-V2-AUTHORITATIVE S2 (ordinary byte-parity; S4 dual-run). Reverting a recorded flip requires a CEO Decision. Authority: D-V1-REMOVAL-FLIP-BASIS-RBC; D-V1-REMOVAL-PHASE-3D.`,
+        severity: "fail",
+      });
+    }
+  }
+
   // (3) V1 vs V2 approval-registry comparison.
   //
   // Both folds use Uncached paths to avoid snapshot cross-contamination.
@@ -191,20 +225,21 @@ export function run(): ReconResult {
   // (4) Advisory gap documentation — surface the Phase 3d structural gap.
   result.asserted += 1;
   violations.push({
-    subject: "credit-limit-v2-parity:gap:phase-3d-coverage",
-    message: `ADVISORY GAP (Phase 3d): V2 approval-registry covers the dual-run slice only (CreditLimitApprovedV2 / CreditLimitLoadedV2 / CreditLimitWithdrawnV2). V1 entries: ${v1Count}. V2 entries: ${v2Count}. Common (both): ${commonCount}. V1-only (expected warns): ${v1OnlyCount}. V2-only (fail if any): ${v2OnlyCount}. TO CLOSE: wire dual-run emitters at every V1 approval call site, then promote this gate to enforcing via a CEO Decision. Authority: D-V1-REMOVAL-PHASE-3D.`,
-    severity: "warn",
+    subject: "credit-limit-v2-parity:coverage-status",
+    message: `COVERAGE STATUS (ENFORCING — S2): V1↔V2 approval registries byte-compared. V1 entries: ${v1Count}. V2 entries: ${v2Count}. Common (both, byte-equal): ${commonCount}. V1-only (dual-run lag warn): ${v1OnlyCount}. V2-only (fail if any): ${v2OnlyCount}. The V1 types are flipped v2-replaced; V2 (decimal-native MoneyWire + tenantId) is authoritative. Authority: D-V1-REMOVAL-FLIP-BASIS-RBC; D-V1-REMOVAL-PHASE-3D.`,
+    severity: v1OnlyCount > 0 ? "warn" : "info",
   });
 
-  // ADVISORY gate: ok = true even when there are warn violations.
-  // Only fail-severity violations set ok = false.
+  // ENFORCING gate: ok = false on any fail-severity violation (flip-revert,
+  // V2-only scope breach, field mismatch, fold error). Warn-severity (V1-only
+  // dual-run lag, the coverage status line) does not block.
   result.violations = violations;
   result.ok = violations.every((v) => v.severity !== "fail");
 
   const failCount = violations.filter((v) => v.severity === "fail").length;
   const warnCount = violations.filter((v) => v.severity === "warn").length;
   const harnessStatus = vacuousViolations.length === 0 ? "OK" : "FAILED";
-  const summary = `credit-limit-v2-parity [ADVISORY — Phase 3d]: ${failCount} fail, ${warnCount} warn. V1 entries: ${v1Count}, V2 entries: ${v2Count}. Common: ${commonCount}, V1-only (expected warns): ${v1OnlyCount}, V2-only (fail if any): ${v2OnlyCount}. Harness: ${harnessStatus}.`;
+  const summary = `credit-limit-v2-parity [ENFORCING — S2]: ${failCount} fail, ${warnCount} warn. V1 types flipped v2-replaced (byte-parity). V1 entries: ${v1Count}, V2 entries: ${v2Count}. Common: ${commonCount}, V1-only (warn lag): ${v1OnlyCount}, V2-only (fail if any): ${v2OnlyCount}. Harness: ${harnessStatus}.`;
 
   result.asOf = summary;
   return result;
@@ -215,7 +250,7 @@ if (import.meta.main) {
   for (const v of r.violations) {
     process.stderr.write(`[${v.severity}] ${v.subject}: ${v.message}\n`);
   }
-  const label = r.ok ? "OK (advisory — warn violations expected at Phase 3d)" : "FAIL";
+  const label = r.ok ? "OK (enforcing — byte-parity holds, flips recorded)" : "FAIL";
   process.stdout.write(`\nrecon:${PIPELINE} ${label}\n${r.asOf}\n`);
   console.log(
     JSON.stringify({

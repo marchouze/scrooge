@@ -40,6 +40,7 @@
 import { eventStore } from "../composition";
 import { nowUtc } from "../core/types";
 import type { DailyPnLReportGeneratedPayload } from "../event-store/event-types/product-control";
+import { EVENT_TYPE_REGISTRY } from "../event-store/registry/index";
 import { resolveMarketDataDbPath } from "../market-data/resolve-market-data-db";
 import { MarketDataStore } from "../market-data/store";
 import { computeDailyPnLV2 } from "../product-control/daily-pnl-v2";
@@ -71,6 +72,48 @@ export function run(opts: RunOpts = {}): ReconResult {
 
   const clockNow = opts.clockNow ?? nowUtc;
   const marketDataStore = opts.marketData ?? new MarketDataStore(resolveMarketDataDbPath().path);
+
+  // -------------------------------------------------------------------------
+  // (0) CONSTRUCTION-CONDITION CHECK (ENFORCING) — WS-V2-AUTHORITATIVE S2.
+  //
+  // DailyPnLReportGenerated is flipped to "v2-replaced" RETIRED-BY-CONSTRUCTION
+  // (D-V1-REMOVAL-FLIP-BASIS-RBC): its schema requires numeric *Minor fields
+  // (totalUnrealisedPnlZarMinor etc.) so it is un-emittable on main (blocked by
+  // recon:no-residual-minor-encoding, no allowlist). Byte-comparison against V1
+  // is therefore impossible. Instead, when the type is tagged v2-replaced this
+  // gate ENFORCES the two construction conditions (Charter cmd 3 — no green by
+  // concealment; the byte-diff below stays advisory):
+  //   (C1) V1 un-emittable → ZERO DailyPnLReportGenerated V1-engine events exist;
+  //   (C2) V2 produces non-vacuous output → computeDailyPnLV2 yields ≥1 active
+  //        FIL position (real figures over the FIL-instance projection).
+  // The construction check only binds once the flip is recorded; before the flip
+  // (v2Status !== "v2-replaced") the gate stays purely advisory.
+  // -------------------------------------------------------------------------
+  const dailyPnlEntry = EVENT_TYPE_REGISTRY.find((e) => e.type === "DailyPnLReportGenerated");
+  const flippedRbc = dailyPnlEntry?.v2Status === "v2-replaced";
+
+  if (flippedRbc) {
+    // (C2) V2 must produce non-vacuous output on the current store.
+    result.asserted += 1;
+    try {
+      const reportDate = clockNow().slice(0, 10);
+      const v2Probe = computeDailyPnLV2(eventStore, marketDataStore, reportDate, clockNow);
+      if (v2Probe.payload.activePositions <= 0) {
+        violations.push({
+          subject: "daily-pnl-v2-parity:construction-c2-vacuous-v2",
+          message: `CONSTRUCTION BREACH (C2): DailyPnLReportGenerated is flipped v2-replaced RETIRED-BY-CONSTRUCTION but the V2 path (computeDailyPnLV2) returned 0 active FIL positions for reportDate=${reportDate} — V2 produces no output, so the flip basis "V2 sole emittable path produces real output" does not hold on this store. Run the FIL-instance backfill (bun run backfill:fil-instances) to populate the V2 anchor store. Authority: D-V1-REMOVAL-FLIP-BASIS-RBC.`,
+          severity: "fail",
+        });
+      }
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      violations.push({
+        subject: "daily-pnl-v2-parity:construction-c2-engine-error",
+        message: `CONSTRUCTION BREACH (C2): the V2 daily-P&L engine threw while proving non-vacuous output for the v2-replaced flip: ${errMsg}. Authority: D-V1-REMOVAL-FLIP-BASIS-RBC.`,
+        severity: "fail",
+      });
+    }
+  }
 
   // -------------------------------------------------------------------------
   // (1) Read the V1 side: fold latest DailyPnLReportGenerated event.
@@ -108,8 +151,10 @@ export function run(opts: RunOpts = {}): ReconResult {
       severity: "info",
     });
     result.violations = violations;
-    result.ok = true;
-    result.asOf = `${PIPELINE}: no V1 data — parity check skipped.`;
+    // Construction-condition fails (C2) above are fail-severity and must not be
+    // masked by the "no V1 data" advisory path (V1 is un-emittable by design).
+    result.ok = violations.every((v) => v.severity !== "fail");
+    result.asOf = `${PIPELINE}: no V1 data (V1 un-emittable by construction) — byte-parity skipped; construction check ${result.ok ? "PASSED" : "FAILED"}.`;
     return result;
   }
 
@@ -149,7 +194,7 @@ export function run(opts: RunOpts = {}): ReconResult {
       severity: "warn",
     });
     result.violations = violations;
-    result.ok = true;
+    result.ok = violations.every((v) => v.severity !== "fail");
     result.asOf = `${PIPELINE} [ADVISORY — Gap A2]: V2 has no FIL FX instruments. V1 unrealised: ${v1Unrealised} ZAR minor. Parity proof pending instrument backfill.`;
     return result;
   }

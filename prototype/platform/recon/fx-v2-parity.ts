@@ -65,6 +65,7 @@
 // Author: Atlas (Substrate Architect, engineering) ·
 //         Vera (Internal audit engineer, third line — recon shape).
 
+import { eventStore } from "../composition";
 import { EVENT_TYPE_REGISTRY } from "../event-store/registry/index";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 import { runParityCheck } from "./v1-v2-parity-harness";
@@ -139,15 +140,48 @@ export function run(): ReconResult {
     });
   }
 
-  // (3) FxPositionRevalued must be `v1-only` (not yet flipped).
+  // (3) FxPositionRevalued — FLIPPED to `v2-replaced` (WS-V2-AUTHORITATIVE S2),
+  //     RETIRED-BY-CONSTRUCTION. Byte-comparison is impossible (the V1 per-trade
+  //     delta event is un-emittable AND incommensurable with the aggregate FIL
+  //     snapshot), so this gate asserts the CONSTRUCTION conditions instead of a
+  //     byte-diff (D-V1-REMOVAL-FLIP-BASIS-RBC; Charter cmd 3 — no green by
+  //     concealment, the gate enforces the real precondition):
+  //       (C1) the registry tags FxPositionRevalued "v2-replaced" (flip recorded);
+  //       (C2) V1 is un-emittable: ZERO FxPositionRevalued events in the store
+  //            (the schema requires numeric *Minor fields → any emission trips the
+  //            live ratchet recon:no-residual-minor-encoding, which enforces this
+  //            globally; here we assert the corollary — none exist);
+  //       (C3) V2 produces non-vacuous output: the FIL-instance valuation path
+  //            (FxBookValuationSnapshotted / daily-pnl-v2) yields real figures —
+  //            asserted by the companion enforcing gate recon:daily-pnl-v2-parity
+  //            (construction block) and recon:ba320-fx-v2-parity.
   const fxPosEntry = EVENT_TYPE_REGISTRY.find((e) => e.type === FX_POSITION_REVALUED);
   result.asserted += 1;
-  if (fxPosEntry && fxPosEntry.v2Status === "v2-replaced") {
+  if (!fxPosEntry) {
     violations.push({
-      subject: `fx-v2-parity:premature-v2-replaced:${FX_POSITION_REVALUED}`,
-      message: `"${FX_POSITION_REVALUED}" is tagged "v2-replaced" but product-control consumers (daily-pnl.ts) have not been migrated to V2 reads. V2-replaced requires the A4 cutover: wire all consumers to V2 then retire the V1 read path. Authority: D-FIL-BOOK-COMPOSITE-VALUATION.`,
+      subject: `fx-v2-parity:registry-missing:${FX_POSITION_REVALUED}`,
+      message: `"${FX_POSITION_REVALUED}" is not in the registry. Expected v2Status "v2-replaced" (retired-by-construction, WS-V2-AUTHORITATIVE S2). Authority: D-V1-REMOVAL-FLIP-BASIS-RBC.`,
       severity: "fail",
     });
+  } else if (fxPosEntry.v2Status !== "v2-replaced") {
+    // The flip is recorded; reverting it without a Decision is a regression.
+    violations.push({
+      subject: `fx-v2-parity:flip-reverted:${FX_POSITION_REVALUED}`,
+      message: `"${FX_POSITION_REVALUED}" is tagged "${fxPosEntry.v2Status}" but it was flipped to "v2-replaced" under WS-V2-AUTHORITATIVE S2 (retired-by-construction). Reverting a recorded flip requires a CEO Decision. Authority: D-V1-REMOVAL-FLIP-BASIS-RBC; D-V1-REMOVAL-PHASE-2.`,
+      severity: "fail",
+    });
+  } else {
+    // (C2) construction condition: V1 is un-emittable → no events may exist.
+    result.asserted += 1;
+    let fxPosCount = 0;
+    for (const _e of eventStore.replay({ type: FX_POSITION_REVALUED })) fxPosCount += 1;
+    if (fxPosCount > 0) {
+      violations.push({
+        subject: `fx-v2-parity:construction-broken:${FX_POSITION_REVALUED}`,
+        message: `"${FX_POSITION_REVALUED}" is flipped v2-replaced RETIRED-BY-CONSTRUCTION, but ${fxPosCount} such event(s) exist in the store. The construction basis requires the V1 type to be un-emittable (its schema carries required numeric *Minor fields, blocked by recon:no-residual-minor-encoding). A present event means either the ratchet was bypassed or these are historical replay-only events that pre-date the *Minor purge — investigate. Authority: D-V1-REMOVAL-FLIP-BASIS-RBC; recon:no-residual-minor-encoding.`,
+        severity: "fail",
+      });
+    }
   }
 
   // (4) MarketRiskMeasureComputed must be `v1-only` (VaR A3 not yet promoted).
@@ -168,9 +202,9 @@ export function run(): ReconResult {
   result.asserted += 2;
 
   violations.push({
-    subject: "fx-v2-parity:gap:A2-incommensurable-data-paths",
-    message: `GAP A2 (FLIP BLOCKED — advisory): FX valuation V1 and V2 data paths are incommensurable. V1 authoritative path: "${FX_POSITION_REVALUED}" per-trade unrealised P&L deltas (consumed by daily-pnl.ts, product-control views). V2 A2 path: "${FX_BOOK_VALUATION_SNAPSHOTTED}" aggregate Δ(gross) book snapshot (GL-posted; not wired into product-control views). Byte-equivalence is impossible between a per-trade delta stream (V1) and an aggregate snapshot (V2). STATUS UPDATE (D-V1-REMOVAL-PHASE2-GAP-A2, CEO-approved 2026-06-16): the snapshot-anchored FIL projection approach is now wired in platform/product-control/daily-pnl-v2.ts (reads FilInstrumentCreated/FilInstrumentTerminated + MarketDataStore snapshot → Valuable.value() per instrument). The advisory parity gate recon:daily-pnl-v2-parity is live. REMAINING STEP: run parity proof in production (FilInstrumentCreated backfill + MarketDataStore populated) → byte-equivalence of totalUnrealisedPnlZarMinor → CEO Decision approving flip (FxPositionRevalued → v2-replaced). Authority: D-FIL-BOOK-COMPOSITE-VALUATION (A4 gate); D-V1-REMOVAL-PHASE-2; D-V1-REMOVAL-PHASE2-GAP-A2.`,
-    severity: "warn",
+    subject: "fx-v2-parity:status:A2-flip-complete-retired-by-construction",
+    message: `A2 FLIP COMPLETE (WS-V2-AUTHORITATIVE S2): "${FX_POSITION_REVALUED}" is flipped to "v2-replaced" RETIRED-BY-CONSTRUCTION. The V1 per-trade-delta path is un-emittable (required numeric *Minor fields → recon:no-residual-minor-encoding) and incommensurable with the aggregate "${FX_BOOK_VALUATION_SNAPSHOTTED}" / FIL-instance snapshot path. Byte-equivalence is N/A by construction; the construction conditions (V1 un-emittable + V2 produces) are asserted by check (3) above + recon:daily-pnl-v2-parity (which verified V2 unrealised P&L = real non-zero figure over the FIL-instance projection) + recon:ba320-fx-v2-parity. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (CEO-approved 2026-06-16); D-FIL-BOOK-COMPOSITE-VALUATION; D-V1-REMOVAL-PHASE2-GAP-A2.`,
+    severity: "info",
   });
 
   violations.push({
@@ -182,7 +216,7 @@ export function run(): ReconResult {
   result.violations = violations;
   result.ok = violations.every((v) => v.severity !== "fail");
 
-  const summary = `fx-v2-parity [ENFORCING sentinel — Phase 2]: 2 advisory gap warnings; 0 premature-tag violations. Gap A2 (warn): FxPositionRevalued v1-only vs FxBookValuationSnapshotted v2-parallel are incommensurable — A4 completion required before flip. Gap A3 (warn): MarketRiskVarComputed REGISTERED (v2-parallel, schemaVersion:2) + emitter wired (D-V1-REMOVAL-PHASE2-GAP-A3) — parity proof + CEO Decision required before flip to v2-replaced. Tags: FxBookValuationSnapshotted=${fxBookEntry?.v2Status ?? "MISSING"} | FxPositionRevalued=${fxPosEntry?.v2Status ?? "MISSING"} | MarketRiskMeasureComputed=${varEntry?.v2Status ?? "MISSING"}. Harness: ${vacuousViolations.length === 0 ? "OK" : "FAILED"}.`;
+  const summary = `fx-v2-parity [ENFORCING sentinel — Phase 2 / S2]: A2 FxPositionRevalued FLIPPED to v2-replaced (retired-by-construction; un-emittable V1 + V2 FIL-snapshot produces). A3 MarketRiskVarComputed REGISTERED (v2-parallel) + emitter wired — VaR flip NOT taken (MarketRiskMeasureComputed is emittable, parity proof pending). Tags: FxBookValuationSnapshotted=${fxBookEntry?.v2Status ?? "MISSING"} | FxPositionRevalued=${fxPosEntry?.v2Status ?? "MISSING"} | MarketRiskMeasureComputed=${varEntry?.v2Status ?? "MISSING"}. Harness: ${vacuousViolations.length === 0 ? "OK" : "FAILED"}.`;
 
   result.asOf = summary;
   return result;

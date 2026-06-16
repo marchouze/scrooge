@@ -57,7 +57,24 @@ export const PRODUCT_CONTROL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] 
     payloadSchema: dailyPnLReportGeneratedPayloadSchema,
     citationsHint: ["D-FX-SALES-TRADING-FRONTEND", "IFRS-9-§5.7.1", "D-MARKETS-SCHEMA-FOUNDATION"],
     source: "platform/event-store/event-types/product-control.ts",
-    v2Status: "v1-only",
+    // FLIP (WS-V2-AUTHORITATIVE S2) — v1-only → v2-replaced, RETIRED-BY-CONSTRUCTION.
+    // Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (CEO-approved 2026-06-16). All four
+    // conditions hold and are recorded:
+    //   (1) V1 UN-EMITTABLE: dailyPnLReportGeneratedPayloadSchema requires the
+    //       numeric `*Minor` fields totalUnrealisedPnlZarMinor / totalRealisedPnlZarMinor
+    //       / totalPnlZarMinor (z.number().int()). Any emission of this type trips
+    //       recon:no-residual-minor-encoding (no allowlist) → un-emittable on main.
+    //   (2) V2 SOLE EMITTABLE PATH PRODUCES: platform/product-control/daily-pnl-v2.ts
+    //       (computeDailyPnLV2) reads the FIL-instance projection + MarketDataStore
+    //       snapshot → MoneyWire figures. Verified non-vacuous on the ci:migrate
+    //       seeded store: totalUnrealisedPnlZarMinor = 789_500_000 (ZAR 7,895,000)
+    //       across 3 active FIL positions (D-V1-REMOVAL-PHASE2-GAP-A2 wiring; S1 #1387).
+    //   (3) V2 HAS OWN TESTS: daily-pnl-v2 unit tests + recon:daily-pnl-v2-parity.
+    //   (4) HISTORICAL V1 REPLAY-READABLE: the schema + decoder remain registered;
+    //       historical V1 events (if any pre-date the *Minor purge) replay unchanged.
+    // Byte-parity is genuinely N/A by construction (V1 cannot be emitted to compare);
+    // the construction conditions are asserted by recon:daily-pnl-v2-parity (Charter cmd 3+5).
+    v2Status: "v2-replaced",
   },
   {
     type: "PnLAttributionGenerated",
