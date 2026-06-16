@@ -20,6 +20,7 @@ import { makeMarketRiskMeasureComputed } from "../platform/event-store/event-typ
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../platform/market-data/store";
 import { computeMarketRisk } from "../platform/market-risk/var-engine";
+import { emitMarketRiskVarV2 } from "../platform/market-risk/var-engine-v2";
 import { marketVarAppetiteCeilingZar } from "../platform/risk/ras-appetite-register";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
@@ -67,6 +68,12 @@ const event = makeMarketRiskMeasureComputed({
 
 eventStore.append(event);
 
+// Dual-emit the V2 MarketRiskVarComputed event (WS-V2-AUTHORITATIVE S2 /
+// Phase 2 Gap A3). Fail-closed: appends nothing when the book is flat or
+// history is insufficient. Reporting currency sourced from the anchor's
+// functional currency inside the emitter. Authority: D-V1-REMOVAL-PHASE2-GAP-A3.
+const v2Emitted = emitMarketRiskVarV2(eventStore, marketDataStore, VAR_APPETITE_ZAR, () => asOf);
+
 console.log(
   JSON.stringify(
     {
@@ -75,6 +82,7 @@ console.log(
       status: report.status,
       eventId: event.event_id,
       var: report.var.present ? report.var.value : `absent: ${report.var.reason}`,
+      v2Emitted,
     },
     null,
     2,

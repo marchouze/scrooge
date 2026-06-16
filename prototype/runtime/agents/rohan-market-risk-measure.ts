@@ -44,6 +44,7 @@ import type { EventStore } from "../../platform/event-store/store";
 import { resolveMarketDataDbPath } from "../../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../../platform/market-data/store";
 import { computeMarketRisk } from "../../platform/market-risk/var-engine";
+import { emitMarketRiskVarV2 } from "../../platform/market-risk/var-engine-v2";
 import { marketVarAppetiteCeilingZar } from "../../platform/risk/ras-appetite-register";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC } from "./_shared";
@@ -89,6 +90,13 @@ export interface MeasureRunResult {
   readonly status: string;
   readonly varSummary: string;
   readonly riskFactorCount: number;
+  /**
+   * True when a V2 `MarketRiskVarComputed` event was dual-emitted alongside the
+   * V1 `MarketRiskMeasureComputed`. The V2 emit is fail-closed (it appends
+   * nothing when the book is flat or history is insufficient), so this can be
+   * `false` even when the V1 event was emitted with absent figures.
+   */
+  readonly v2Emitted: boolean;
 }
 
 /**
@@ -119,6 +127,7 @@ export function computeAndEmitMarketRiskMeasure(args: {
       status: "skipped-idempotent",
       varSummary: "already emitted",
       riskFactorCount: 0,
+      v2Emitted: false,
     };
   }
 
@@ -144,6 +153,17 @@ export function computeAndEmitMarketRiskMeasure(args: {
     }),
   );
 
+  // Dual-emit the V2 MarketRiskVarComputed event (Phase 2 Gap A3 →
+  // WS-V2-AUTHORITATIVE S2). emitMarketRiskVarV2 reuses the SAME NOP fold and
+  // ported kernel as the V1 engine, so the two events carry parity figures
+  // (recon:var-v2-parity asserts ≤1 ZAR-cent agreement). It is FAIL-CLOSED:
+  // emits nothing when the book is flat or history is insufficient — so the V2
+  // event exists only when there is a computed figure to compare. The reporting
+  // currency is sourced from the anchor's functional currency inside the emitter
+  // (never hardcoded; Engineering Charter cmd 4). Idempotent per tenant+day.
+  // Authority: D-V1-REMOVAL-PHASE2-GAP-A3; D-V1-REMOVAL-FLIP-BASIS-RBC.
+  const v2Emitted = emitMarketRiskVarV2(store, marketData, VAR_APPETITE_ZAR, () => asOf);
+
   const varSummary = report.var.present
     ? `ZAR ${report.var.value.toFixed(2)}`
     : `absent (${report.var.reason})`;
@@ -154,6 +174,7 @@ export function computeAndEmitMarketRiskMeasure(args: {
     status: report.status,
     varSummary,
     riskFactorCount: report.exposures.length,
+    v2Emitted,
   };
 }
 
@@ -209,13 +230,18 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   marketDataStore.close();
 
   logger.info(
-    { measureId: result.measureId, status: result.status, var: result.varSummary },
-    "rohan:market-risk-measure — MarketRiskMeasureComputed emitted",
+    {
+      measureId: result.measureId,
+      status: result.status,
+      var: result.varSummary,
+      v2Emitted: result.v2Emitted,
+    },
+    "rohan:market-risk-measure — MarketRiskMeasureComputed (V1) + MarketRiskVarComputed (V2) emitted",
   );
 
   return {
-    eventsEmitted: result.emitted ? 1 : 0,
-    summary: `MR measure ${dateStr}: status=${result.status} · VaR ${result.varSummary} · ${result.riskFactorCount} risk-factor(s) · appetite ZAR ${VAR_APPETITE_ZAR}`,
+    eventsEmitted: (result.emitted ? 1 : 0) + (result.v2Emitted ? 1 : 0),
+    summary: `MR measure ${dateStr}: status=${result.status} · VaR ${result.varSummary} · ${result.riskFactorCount} risk-factor(s) · appetite ZAR ${VAR_APPETITE_ZAR} · V2 dual-emit=${result.v2Emitted ? "yes" : "no (fail-closed)"}`,
     ok: true,
   };
 };
