@@ -82,6 +82,26 @@ export const cmpD = (a: DecimalValue, b: DecimalValue): -1 | 0 | 1 => a.cmp(b) a
 export const eqD = (a: DecimalValue, b: DecimalValue): boolean => a.eq(b);
 
 /**
+ * Exponentiation `base ** exponent`, supporting a NON-INTEGER exponent (the
+ * discount-factor case `(1 + y) ** t` where `t` is a fractional number of years).
+ * Bounded to the configured 60-significant-digit context, then trimmed to 28
+ * significant digits to match `divD` so a discount factor is deterministic and
+ * stable across replays. `decimal.js` `.pow` is the exact-decimal power; this is
+ * the SOLE site exposing it (the no-float gate forbids `Math.pow`/`**` on money).
+ * The explicit currency-scale rounding is still applied by the caller via
+ * `roundDecimal` at the money boundary. The non-finite guard fails closed.
+ */
+export function powD(base: DecimalValue, exponent: DecimalValue): DecimalValue {
+  const r = base.pow(exponent);
+  if (!r.isFinite()) {
+    throw new RangeError(
+      `v2 decimal: non-finite power result (base=${base.toFixed()}, exponent=${exponent.toFixed()})`,
+    );
+  }
+  return r.toSignificantDigits(28);
+}
+
+/**
  * Division WITHOUT rounding to a currency scale — a full-precision quotient
  * bounded by a fixed working precision (28 significant digits) so a
  * non-terminating quotient (e.g. premium ÷ days) is deterministic and stable
