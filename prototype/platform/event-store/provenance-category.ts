@@ -92,6 +92,20 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   BondPositionRevaluedV2: "trading",
   BondMaturedV2: "trading",
   BondSoldV2: "trading",
+  // RWA-computed Pillar-1 capital-adequacy basis records. These are the
+  // regulatory capital denominator of record (BA 700) under D-RWA-ENGINE-W2-
+  // SLICE-3 — a governance/regulatory commitment, NOT operational simulated
+  // data: they must survive a config-only / production-filter fold so the
+  // BA 700 generator + recon:rwa-computed-v2-parity read them. Categorising
+  // RwaComputedV2 here BEFORE seeding is the F-032 site-3 requirement — without
+  // it the seed would be tagged `simulated` and dropped by the production
+  // filter (the S3 posture defect). RwaComputed (V1) is co-categorised so the
+  // V1 decode/replay path resolves identically (it is un-emittable going
+  // forward; 0 live events, so the explicit row reclassifies nothing).
+  // Authority: D-RWA-ENGINE-W2-SLICE-3; D-BANK-WIDE-V2-MIGRATION;
+  //   D-V1-REMOVAL-FLIP-BASIS-RBC.
+  RwaComputed: "governance",
+  RwaComputedV2: "governance",
   // Governance — decisions, briefs, records, audit, agent governance.
   Decision: "governance",
   // WS-V2-BBAAS W1 — distillation classification of an existing Decision
