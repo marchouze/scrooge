@@ -10,7 +10,7 @@
 //   5. const marketDataAsOf = clockNow() — freeze the snapshot timestamp (once per run).
 //   6. Build ONE MarketDataSlice: for each pair call MarketDataStore.getLatest(pair).
 //      Missing pairs get null (mark unavailable — no-silent-zero).
-//   7. For each open FIL instrument, call fcyCashValuable(pos).value(slice) → Money (ZAR major).
+//   7. For each open FIL instrument, call fcyCashValuable(pos).value(slice) → Money (reporting-ccy major).
 //      Missing pair → markStatus: "unavailable" (never fold as 0).
 //   8. Aggregate by currency / counterparty / book (same shape as V1 daily-pnl.ts).
 //   9. Set marketDataAsOf on the returned payload.
@@ -37,6 +37,7 @@ import type { MarketDataSlice } from "../../v2-core/fil-facets/facets";
 import {
   fcyCashFromSettledReceivable,
   fcyCashValuable,
+  spotObservableId,
 } from "../../v2-core/fil-models/fx-valuation";
 import { toDecimal } from "../core/decimal-engine";
 import { newEventId, nowUtc } from "../core/types";
@@ -48,6 +49,7 @@ import type {
   PnLByCurrency,
 } from "../event-store/event-types/product-control";
 import type { EventStore } from "../event-store/store";
+import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import type { MarketDataStore } from "../market-data/store";
 import { lookupQuoteWithInverse } from "../market-data/store";
 import { majorStringToMinorBigint } from "../risk/sa-ccr/v2-money-bridge";
@@ -117,8 +119,9 @@ function buildMarketDataSlice(
       provenance: "production",
     });
     if (quote !== null && quote.rate > 0) {
-      // Key the observable by the pair in the canonical direction (C/ZAR).
-      // The FIL fcyCashValuable reads `${currency}/ZAR` from the slice.
+      // Key the observable by the pair in the canonical direction
+      // (currency/reporting). The FIL fcyCashValuable reads
+      // `spotObservableId(currency, reporting)` from the slice.
       // lookupQuoteWithInverse already handles direction inversion — the
       // returned rate is ALWAYS in the requested pair direction.
       observables[pair] = quote.rate;
@@ -168,6 +171,12 @@ export function computeDailyPnLV2(
   reportDate: string,
   clockNow: () => string,
 ): DailyPnLResult {
+  // Reporting currency = the ANCHOR bank's functional currency, resolved from
+  // the legal-entity tree (Engineering Charter cmd 4 — source, don't hardcode;
+  // cmd 2 — fail-closed). NEVER a literal "ZAR": re-pointing the anchor's
+  // functional currency is a seed change, not a code change. WS-MULTI-BASE-CURRENCY.
+  const reporting = anchorFunctionalCurrency();
+
   // -------------------------------------------------------------------------
   // 1. Replay FilInstrumentCreated (assetClass === "fx") → candidate instruments
   // -------------------------------------------------------------------------
@@ -204,10 +213,13 @@ export function computeDailyPnLV2(
       const nettingSetId = economicTerms.nettingSetId as string | undefined;
       if (!nettingSetId) continue;
 
-      // Derive pair: prefer hedgingSetTag (e.g. "EUR/ZAR"); fallback to
-      // currency/ZAR (the anchor book is ZAR-reporting).
+      // Derive pair: prefer hedgingSetTag (e.g. "EUR/ZAR"); fallback to the
+      // currency against the resolved reporting currency (the anchor book's
+      // functional currency) — NOT a hardcoded "/ZAR". The slice observable is
+      // keyed by `spotObservableId(currency, reporting)` so this fallback must
+      // match it exactly (Charter cmd 4). WS-MULTI-BASE-CURRENCY.
       const hedgingSetTag = economicTerms.hedgingSetTag as string | undefined;
-      const pair = hedgingSetTag ?? `${currency}/ZAR`;
+      const pair = hedgingSetTag ?? spotObservableId(currency, reporting);
 
       instrumentsById.set(instance, {
         instanceUrn: instance,
@@ -294,17 +306,19 @@ export function computeDailyPnLV2(
     } else {
       // Call Valuable.value(slice) via fcyCashValuable (the canonical V2 FX
       // valuation path; same lifecycle-free arithmetic as the FX Valuable).
-      // The FCY-cash Valuable accepts the signedNotional + currency and looks
-      // up observables[`${currency}/ZAR`] from the slice.
+      // The FCY-cash Valuable accepts the signedNotional + currency + reporting
+      // and looks up observables[`spotObservableId(currency, reporting)`] from
+      // the slice.
       try {
         const position = fcyCashFromSettledReceivable({
           currency: inst.currency,
           signedNotional: inst.signedNotional,
+          reporting,
         });
         const valuable = fcyCashValuable(position);
         const revalRecord = valuable.value(slice, marketDataAsOf as Instant);
-        // revalRecord.value is Money { currency: "ZAR", amount: string (major) }
-        // Convert to ZAR minor integer for V1-compatible aggregation
+        // revalRecord.value is Money { currency: reporting, amount: string (major) }
+        // Convert to reporting-currency minor integer for V1-compatible aggregation
         const minorBigint = majorStringToMinorBigint(revalRecord.value.amount);
         unrealisedZarMinor = Number(minorBigint);
       } catch {
@@ -327,8 +341,10 @@ export function computeDailyPnLV2(
     // we only prove the MTM (unrealised) component equivalence at Gap A2).
     const unrealisedForReporting = markStatus === "live" ? unrealisedZarMinor : 0;
 
-    // Aggregate by currency
-    if (inst.currency !== "ZAR") {
+    // Aggregate by currency. Skip the reporting (functional) currency itself —
+    // domestic cash carries no FX P&L. Compared against the resolved reporting
+    // currency, NOT a literal "ZAR" (Charter cmd 4). WS-MULTI-BASE-CURRENCY.
+    if (inst.currency !== reporting) {
       const cr = byCurrencyMap.get(inst.currency) ?? { trades: 0, unrealised: 0, realised: 0 };
       cr.trades++;
       if (markStatus === "live") cr.unrealised += unrealisedForReporting;
