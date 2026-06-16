@@ -261,6 +261,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // tagged) and asserts the computeGlEntriesV2 / computeGlAccountsV2 folds. Not a
   // production access path. T-01 carve-out.
   "platform/projections/gl-projection-v2-entries-accounts.test.ts",
+  // WS-V2-AUTHORITATIVE S6 — dashboard-shaped V2 ALM-position-snapshot projection
+  // unit test. Same build-phase fixture pattern as the V2 GL tests above: raw
+  // EventStore(":memory:") seeds V1 / V2 money-market lifecycle events and asserts
+  // the getALMPositionSnapshotV2 fold has shape-parity with the V1 snapshot. Not a
+  // production access path. T-01 carve-out.
+  "platform/projections/alm-positions-v2.test.ts",
   // M3 Slice 4 — BA 100 period-close return scenario test. Co-located in the
   // returns/ba700/ package per the per-module test convention. Raw
   // EventStore(":memory:") is a build-phase fixture, not a production access

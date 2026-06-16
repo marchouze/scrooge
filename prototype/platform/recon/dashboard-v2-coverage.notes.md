@@ -23,17 +23,17 @@ It becomes enforcing once every route here is wired.
 | 4 | `GET /api/gl/entries` | `buildGlView().ledgerEntries` | `computeGlEntriesV2` (gl-projection-v2.ts, WS-V2-AUTHORITATIVE S5) — individually-addressable `GlLedgerEntry`-shaped entries | **YES** | — |
 | 5 | `GET /api/gl/accounts` | `buildGlView().accountBalances` | `computeGlAccountsV2` (gl-projection-v2.ts, WS-V2-AUTHORITATIVE S5) — account-master `{ accountId, name, category, balances }` with COA metadata | **YES** | — |
 | 6 | capital metrics (`computeCapitalMetrics`, home/treasury tiles) | `capital-metrics.ts` | `computeBA700V2` (ba700-v2.ts, #1378) exists but is structurally no-data at Phase 3e | NO | The V2 BA-700 projection exists, but at Phase 3e its capital numerator is structurally no-data (no capital-GL posting rules emit `GlPostingEmitted` yet — GAP-3E-001) and its `BA700ReturnV2` shape differs from the `CapitalMetrics` tile shape. Promoting it would replace real V1 capital figures with zero — a regression, not an equivalent dual-read. Stays V1-only until capital-GL posting rules + a `CapitalMetrics`-shaped V2 adapter land. |
-| 7 | ALM positions / LCR / NSFR (`getALMPositionSnapshot`, treasury tiles) | `alm-positions.ts` | Phase 3b money-market FIL fold lands the V2 events; `recon:ba300-v2-parity` folds them into LCR numerator/denominator, but no `getALMPositionSnapshot`-shaped V2 projection exists | NO | Phase 3b (#1383) added the V2 money-market lifecycle path, but not a V2 projection producing the HQLA/funding/ASF/RSF position-array shape the treasury route consumes. A route-boundary dual-read needs a snapshot-shaped V2 ALM projection first. |
+| 7 | ALM positions / LCR / NSFR (`getALMPositionSnapshot`, treasury tiles) | `alm-positions.ts` | `getALMPositionSnapshotV2` (alm-positions-v2.ts, WS-V2-AUTHORITATIVE S6) — folds the V2-parallel money-market lifecycle events into the IDENTICAL `ALMPositionSnapshot` shape; backed by `recon:alm-snapshot-v2-parity` | **YES** | — |
 | 8 | regulatory returns BA-700 / BA-320 | (V1 BA-return generators) | `computeBA700V2` + `computeBA320V2` (ba700-v2.ts / ba320-fx-v2.ts, #1378) exist and back the V2 parity gates | NO | The V2 projections exist and back `recon:ba700-v2-parity` / `recon:ba320-fx-v2-parity`, but no dashboard HTTP route surfaces a BA-700/BA-320 return today (the returns come from the BA-return generators, not a `/api` route). There is no route boundary to dual-read; this entry tracks projection availability so the gap stays explicit. BA-700 capital is additionally structurally no-data at Phase 3e (GAP-3E-001). |
 
 ## Summary
 
-- Wired under `useV2Store`: **5** routes (GL trial-balance, GL entries, GL
-  accounts, market-risk measure, daily P&L).
+- Wired under `useV2Store`: **6** routes (GL trial-balance, GL entries, GL
+  accounts, market-risk measure, daily P&L, ALM / LCR / NSFR snapshot).
 - Total inventoried read routes with a V1↔V2 pairing: **8**.
-- Coverage this slice: **5 / 8**.
+- Coverage this slice: **6 / 8**.
 
-The five wired routes are the ones with genuinely drop-in, shape-compatible V2
+The six wired routes are the ones with genuinely drop-in, shape-compatible V2
 read paths:
 
 - `computeTrialBalanceV2` — shape-identical to V1, asserted by `recon:gl-v2-parity`.
@@ -48,15 +48,19 @@ read paths:
   the same appetite (no projection mutation; no silent zero when V2 is absent).
 - `computeDailyPnLV2` — returns the identical `DailyPnLResult` shape as V1 (FIL FX
   instrument valuation), selected at the route boundary under the flag.
+- `getALMPositionSnapshotV2` (WS-V2-AUTHORITATIVE S6) — folds the V2-parallel
+  money-market lifecycle events into the IDENTICAL `ALMPositionSnapshot` shape
+  (HQLA / funding / ASF / RSF arrays) the treasury LCR / NSFR tiles read,
+  selected at the route boundary under the flag via `selectALMPositionSnapshot`.
+  Currency-agnostic (reporting currency sourced from the entity tree, no
+  hardcoded ZAR). Backed by `recon:alm-snapshot-v2-parity` (snapshot-shape
+  compare, where `recon:ba300-v2-parity` compares only the LCR ratio denominator).
 
-The remaining three routes are honest gaps:
+The remaining two routes are honest gaps:
 
 - **#6 (capital metrics):** the V2 BA-700 projection exists but is structurally
   no-data at Phase 3e (no capital-GL posting rules) and shape-incompatible with
   the capital tile.
-- **#7 (ALM/LCR/NSFR):** no snapshot-shaped V2 ALM projection — the V2
-  money-market events are folded into LCR ratios for parity, not into the
-  snapshot the route consumes.
 - **#8 (BA-700/BA-320 returns):** the V2 projections exist but no dashboard route
   surfaces these returns, so there is no boundary to dual-read.
 

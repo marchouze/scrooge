@@ -12,37 +12,37 @@
     },
     {
       "file": "dashboard/server.ts",
-      "line": 389,
+      "line": 393,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 579,
+      "line": 600,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 580,
+      "line": 601,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 670,
+      "line": 691,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 690,
+      "line": 711,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 713,
+      "line": 734,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 714,
+      "line": 735,
       "pattern": "money-multiply/divide"
     },
     {
@@ -353,6 +353,11 @@
     {
       "file": "platform/payments/swift-mt/types.ts",
       "line": 123,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/projections/alm-positions-v2.ts",
+      "line": 294,
       "pattern": "money-multiply/divide"
     },
     {

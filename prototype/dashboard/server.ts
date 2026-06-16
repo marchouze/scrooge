@@ -146,7 +146,11 @@ import {
   eventInOperatingBook,
   eventMatchesProvenanceFilter,
 } from "../platform/projections";
-import { getALMPositionSnapshot } from "../platform/projections/alm-positions";
+import {
+  type ALMPositionSnapshot,
+  getALMPositionSnapshot,
+} from "../platform/projections/alm-positions";
+import { getALMPositionSnapshotV2 } from "../platform/projections/alm-positions-v2";
 import {
   type CapitalMetrics,
   computeCapitalMetrics,
@@ -516,6 +520,23 @@ function promoteMarketRiskV2(view: MarketRiskMeasureView): MarketRiskMeasureView
   };
 }
 
+// WS-V2-AUTHORITATIVE S6 (D-BANK-WIDE-V2-MIGRATION + D-V1-REMOVAL-PHASE-3B):
+// dual-read the ALM / LCR / NSFR snapshot. When useV2Store is ON, the snapshot
+// is folded from the V2-parallel money-market lifecycle events
+// (getALMPositionSnapshotV2 — DepositTakenV2 / FundingLineDrawnV2 /
+// InterbankLoanPlacedV2 / RepoTradeOpenedV2) into the IDENTICAL
+// ALMPositionSnapshot shape, currency-agnostic (no hardcoded ZAR). When OFF
+// (default), V1 (getALMPositionSnapshot) stays authoritative — fully reversible.
+function selectALMPositionSnapshot(
+  asOf: string,
+  horizonDays: number,
+  entity: string,
+): ALMPositionSnapshot {
+  return isFlagEnabled("useV2Store")
+    ? getALMPositionSnapshotV2(eventStore, asOf, horizonDays, entity)
+    : getALMPositionSnapshot(eventStore, asOf, horizonDays, entity);
+}
+
 function buildLiquidityMetrics(): {
   lcr: number | null;
   nsfr: number | null;
@@ -525,7 +546,7 @@ function buildLiquidityMetrics(): {
   // Per-entity LCR: scope to the bank-licence entity, matching the BA 110
   // generator's LE-ZA-HOZ-BANK-only scope (Reg 26 is bank-licence-bound).
   // Authority: WS-LCR-ENGINE-RECONCILIATION; D-LCR-TILE-PROVENANCE.
-  const snap = getALMPositionSnapshot(eventStore, nowUtc(), 30, "LE-ZA-HOZ-BANK");
+  const snap = selectALMPositionSnapshot(nowUtc(), 30, "LE-ZA-HOZ-BANK");
   const lcr = computeLCR(
     snap.hqlaPositions as import("../platform/liquidity/lcr").HQLAPosition[],
     snap.fundingPositions as import("../platform/liquidity/lcr").FundingPosition[],
@@ -551,7 +572,7 @@ function buildTreasuryMetrics() {
   // ALM + liquidity — per-entity, scoped to the bank-licence entity to match
   // the BA 110 generator (Reg 26 / 26A are bank-licence-bound).
   // Authority: WS-LCR-ENGINE-RECONCILIATION; D-LCR-TILE-PROVENANCE.
-  const almSnapshot = getALMPositionSnapshot(eventStore, asOf, 30, "LE-ZA-HOZ-BANK");
+  const almSnapshot = selectALMPositionSnapshot(asOf, 30, "LE-ZA-HOZ-BANK");
   const lcr = computeLCR(
     almSnapshot.hqlaPositions as import("../platform/liquidity/lcr").HQLAPosition[],
     almSnapshot.fundingPositions as import("../platform/liquidity/lcr").FundingPosition[],

@@ -301,6 +301,15 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // Advisory: rate conversion (GAP-3E-005) unavailable at Phase 3e; no-data expected
     // on clean CI store. Open-position charge comparison deferred to rate-feed workstream.
     "recon:ba320-fx-v2-parity",
+    // WS-V2-AUTHORITATIVE S6 — ALM-snapshot-SHAPE V2 parity gate (advisory).
+    // Structural-compares V1 getALMPositionSnapshot vs V2 getALMPositionSnapshotV2
+    // (HQLA / funding / ASF / RSF arrays) for the anchor bank entity — the
+    // snapshot shape the dashboard ALM / LCR / NSFR route reads, where
+    // recon:ba300-v2-parity compares only the LCR ratio denominator. Advisory:
+    // the V2 money-market shadow has no events in build phase, so a V2-vacuous /
+    // V1-populated divergence is an expected warn. A compute throw fails.
+    // Authority: D-BANK-WIDE-V2-MIGRATION + D-V1-REMOVAL-PHASE-3B.
+    "recon:alm-snapshot-v2-parity",
     // D-V1-REMOVAL-PHASE-4 — dashboard read-route → V2 coverage gate (advisory).
     // Enumerates dashboard read routes with a V1↔V2 projection pairing and counts
     // how many have a V2 read path wired under the useV2Store flag vs total. Each

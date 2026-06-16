@@ -17,15 +17,16 @@ describe("recon:dashboard-v2-coverage", () => {
     expect(r.pipeline).toBe("dashboard-v2-coverage");
   });
 
-  it("reports the wired routes (GL trial-balance + entries + accounts, market-risk, daily P&L) and no hard failures", () => {
+  it("reports the wired routes (GL trial-balance + entries + accounts, market-risk, daily P&L, ALM/LCR/NSFR) and no hard failures", () => {
     const r = run();
     // No fail-severity violations on the real tree (only warn for V1-only routes).
     expect(r.violations.some((v) => v.severity === "fail")).toBe(false);
-    // The summary records the wired/total split. WS-V2-AUTHORITATIVE S5 wires the
-    // GL entries + accounts routes, taking the wired count to five of eight
-    // (GL trial-balance + GL entries + GL accounts + market-risk + daily P&L).
+    // The summary records the wired/total split. WS-V2-AUTHORITATIVE S6 wires the
+    // ALM / LCR / NSFR snapshot route, taking the wired count to six of eight
+    // (GL trial-balance + GL entries + GL accounts + market-risk + daily P&L +
+    // ALM/LCR/NSFR snapshot).
     expect(r.asOf).toContain("/8 read routes wired to V2");
-    expect(r.asOf).toMatch(/5\/8 read routes wired/);
+    expect(r.asOf).toMatch(/6\/8 read routes wired/);
   });
 
   it("emits an explicit reason (warn) for every V1-only route — no silent gaps", () => {
