@@ -66,6 +66,24 @@ export const DEFAULT_CATEGORY_POLICY: CategoryProvenanceMap = {
 // ---------------------------------------------------------------------------
 
 const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
+  // D-V1-REMOVAL-PHASE-3B — V2-parallel money-market lifecycle events. Trading/
+  // treasury instrument lifecycle, same category as their V1 counterparts. The
+  // PREFIX map would already resolve these to "trading"; the explicit rows make
+  // the categorisation unambiguous + self-documenting (F-032 site 3).
+  RepoTradeOpenedV2: "trading",
+  RepoTradeTerminatedV2: "trading",
+  RepoTradeTerminatedEarlyV2: "trading",
+  DepositTakenV2: "trading",
+  DepositInterestAccruedV2: "trading",
+  DepositMaturedV2: "trading",
+  DepositWithdrawnEarlyV2: "trading",
+  DepositRolledOverV2: "trading",
+  FundingLineDrawnV2: "trading",
+  FundingLineRepaidV2: "trading",
+  InterbankLoanPlacedV2: "trading",
+  InterbankLoanInterestAccruedV2: "trading",
+  InterbankLoanMaturedV2: "trading",
+  InterbankLoanRecalledEarlyV2: "trading",
   // Governance — decisions, briefs, records, audit, agent governance.
   Decision: "governance",
   // WS-V2-BBAAS W1 — distillation classification of an existing Decision

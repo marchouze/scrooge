@@ -201,6 +201,8 @@ export { FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY } from "./financial-instrumen
 // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION; IFRS 9; IAS 39 §27;
 //   Banks Act 94/1990 Reg 26/27; BA 110; BA 120; BCBS d365.
 export { REPO_MMD_IBL_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl";
+// D-V1-REMOVAL-PHASE-3B — V2-parallel money-market lifecycle events (Atlas).
+export { REPO_MMD_IBL_V2_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl-v2";
 // D-IFRS9-STAGING-V1 — IFRS 9 impairment stage classification events.
 // Authority: D-IFRS9-STAGING-V1 (CEO-approved 2026-05-28);
 //   IFRS 9 §5.5; Regulations Relating to Banks Reg 23.
@@ -355,6 +357,7 @@ import { REGULATORY_EVENT_TYPES } from "./regulatory";
 import { REGULATORY_PA_EVENT_TYPES_REGISTRY } from "./regulatory-pa";
 import { REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory-reporting";
 import { REPO_MMD_IBL_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl";
+import { REPO_MMD_IBL_V2_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl-v2";
 import {
   AGENT_DECISION_REQUEST_EVENT_TYPES,
   AGENT_OPS_EVENT_TYPES,
@@ -550,6 +553,10 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION (CEO-approved);
   //   IFRS 9; IAS 39 §27; Banks Act 94/1990 Reg 26/27; BA 110; BA 120; BCBS d365.
   ...REPO_MMD_IBL_EVENT_TYPES_REGISTRY,
+  // D-V1-REMOVAL-PHASE-3B — 14 V2-parallel money-market lifecycle event types
+  // (Repo / MMD / Funding Line / IBL). MoneyWire decimal-native + tenantId +
+  // schemaVersion 2. Author: Atlas (Core banking platform architect).
+  ...REPO_MMD_IBL_V2_EVENT_TYPES_REGISTRY,
   // D-IFRS9-STAGING-V1 — IFRS 9 impairment stage classification events.
   // Placed last so typed schema rows override any placeholder rows.
   // Authority: D-IFRS9-STAGING-V1 (CEO-approved 2026-05-28);
