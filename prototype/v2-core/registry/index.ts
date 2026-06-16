@@ -102,9 +102,9 @@ import {
 } from "../posture/events";
 import {
   type V2EventTypeMetadata,
-  V2_RETENTION_RUNTIME_1Y,
   type V2TeeCodec,
   type V2TeeDeclaration,
+  V2_RETENTION_RUNTIME_1Y,
   VERBATIM_CODEC,
 } from "./types";
 

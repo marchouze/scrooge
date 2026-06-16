@@ -210,12 +210,7 @@ export function teeEventStore(store: EventStore, opts: TeeOptions = {}): EventSt
             alertId: `alert:integrity:v2-store-tee-mirror-failed-${v1.type.toLowerCase()}`,
             alertClass: "integrity",
             severity: "high",
-            details:
-              `v2 store-tee FAILED to mirror a "${v1.type}" event (V1 event_id ${v1.event_id}) ` +
-              `into the v2 control-plane store at ${cpPath}: ${message}. The V1 write is ` +
-              `committed and authoritative; the v2 store is now DIVERGENT for this type. ` +
-              `recon:v2-store-tee-coverage will report the count gap. Investigate the v2 ` +
-              `store availability and re-run bun run backfill:v2-store-tee to re-sync.`,
+            details: `v2 store-tee FAILED to mirror a "${v1.type}" event (V1 event_id ${v1.event_id}) into the v2 control-plane store at ${cpPath}: ${message}. The V1 write is committed and authoritative; the v2 store is now DIVERGENT for this type. recon:v2-store-tee-coverage will report the count gap. Investigate the v2 store availability and re-run bun run backfill:v2-store-tee to re-sync.`,
           },
         }),
       );

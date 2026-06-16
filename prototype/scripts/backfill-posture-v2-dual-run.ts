@@ -75,14 +75,8 @@
 //   Principles/1-events-are-truth.md; Principles/2-single-graph-discipline.md.
 // Author: Atlas (Core banking platform architect, engineering).
 
-import { eventStore } from "../platform/composition";
-import type { Event } from "../platform/event-store/types";
-import {
-  type CpEvent,
-  defaultControlPlanePath,
-  openControlPlaneStore,
-} from "../v2-core/control-plane/store";
-import { ANCHOR_TENANT_ID } from "../v2-core/control-plane/tenant";
+import { TENANT_TAG_PREFIX, V1_SOURCE_TAG_PREFIX } from "../platform/event-store/v2-store-tee";
+import { backfillV2StoreTee } from "./backfill-v2-store-tee";
 
 // ---------------------------------------------------------------------------
 // The four posture event types this pilot mirrors. These are the migration
@@ -98,125 +92,28 @@ const POSTURE_EVENT_TYPES = [
   "PostureRevised",
 ] as const;
 
-type PostureEventType = (typeof POSTURE_EVENT_TYPES)[number];
-
 // ---------------------------------------------------------------------------
-// Mirror one V1 posture event into the v2 control-plane store.
+// Delegation to the generic store-tee backfill (Wave-2 infra).
 //
-// The CpEvent reuses the V1 event's identity verbatim:
-//   - `event_id`  — the V1 event id (idempotency key; INSERT OR IGNORE dedupes).
-//   - `type`      — the same posture type name (registered in the v2 registry,
-//                   so `validateV2Payload` parses the payload fail-closed).
-//   - `as_of`     — the V1 as_of (so the v2 fold orders identically).
-//   - `entity`    — the V1 entity (the anchor bank LE).
-//   - `actor`     — the V1 actor (same {type,id} shape on both stores).
-//   - `citations` — the V1 citations verbatim.
-//   - `payload`   — the V1 payload verbatim (money-free; no codec needed).
-//
-// V2-envelope fields stamped on the mirror:
-//   - `schemaVersion` — 1 (V2_ENVELOPE_SCHEMA_VERSION_DEFAULT; posture is shape v1).
-//   - `provenance`    — carried from the V1 source row (multi-axis tag) plus a
-//                       `bank:v1-source:<id>` tag recording the lineage. When the
-//                       V1 row has no provenance (legacy pre-soft-tag rows), we
-//                       stamp a minimal lineage-only tag rather than failing —
-//                       the parity comparison folds the posture REGISTER (payload-
-//                       derived), not the provenance, so a missing source tag does
-//                       not perturb parity; it only weakens lineage, surfaced as a
-//                       warn by the standing provenance-coverage gates.
-//   - `tenantId`      — encoded on the v2 store via the anchor tenant on the
-//                       envelope; the control-plane store is the anchor's store.
-//
-// `tenantId` is not a column on the (W0) control-plane `events` table — it is the
-// V2Envelope axis. The control-plane store IS the anchor tenant's store, so the
-// anchor tenantId is implicit; we record it on the provenance tag set for an
-// explicit audit trail and forward-compatibility with the S3 routing gate.
+// This script is now a THIN WRAPPER around `backfillV2StoreTee` scoped to the
+// four posture types. The bespoke per-event mirror (`toCpEvent`) and the
+// idempotency pre-scan have moved into the shared mechanism
+// (`platform/event-store/v2-store-tee.ts` `toMirroredCpEvent` +
+// `scripts/backfill-v2-store-tee.ts`), so there is ONE mirror shape across the
+// composition-seam tee, the generic backfill, and this posture entry-point. The
+// posture types are tee-enabled in the v2 registry; passing them as `onlyTypes`
+// here keeps the historical `bun run backfill:posture-v2-dual-run` invocation
+// (still in the ci:migrate chain) working while it mirrors exactly the posture
+// set. `recon:posture-v2-parity` stays the byte-clean evidence.
 // ---------------------------------------------------------------------------
-
-const V1_SOURCE_TAG_PREFIX = "bank:v1-source:";
-const TENANT_TAG_PREFIX = "bank:tenant:";
-
-function toCpEvent(v1: Event): CpEvent {
-  const sourceTag = `${V1_SOURCE_TAG_PREFIX}${v1.event_id}`;
-  const tenantTag = `${TENANT_TAG_PREFIX}${ANCHOR_TENANT_ID}`;
-  const baseProv = v1.provenance;
-  const provenance: Record<string, unknown> = baseProv
-    ? { ...baseProv, tags: [...(baseProv.tags ?? []), sourceTag, tenantTag] }
-    : {
-        // Minimal lineage-only provenance for legacy un-tagged V1 rows. The W0
-        // store accepts an optional provenance; we never fabricate a kind we
-        // cannot defend, so this is a thin tag carrying only the lineage links.
-        kind: "simulated",
-        sourceLineage: "backfill:posture-v2-dual-run",
-        scenario: "wave-2-posture-pilot-mirror",
-        tags: [sourceTag, tenantTag],
-      };
-
-  return {
-    event_id: v1.event_id,
-    type: v1.type,
-    as_of: v1.as_of,
-    entity: v1.entity,
-    actor: { type: v1.actor.type, id: v1.actor.id },
-    citations: [...v1.citations],
-    payload: v1.payload,
-    schemaVersion: 1,
-    provenance,
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Idempotency pre-scan: collect event_ids already present in the v2 store.
-// ---------------------------------------------------------------------------
-
-function alreadyMirroredIds(store: ReturnType<typeof openControlPlaneStore>): Set<string> {
-  const ids = new Set<string>();
-  for (const type of POSTURE_EVENT_TYPES) {
-    for (const e of store.replay({ type })) {
-      ids.add(e.event_id);
-    }
-  }
-  return ids;
-}
-
-// ---------------------------------------------------------------------------
-// Main.
-// ---------------------------------------------------------------------------
-
-interface MirrorEntry {
-  readonly type: PostureEventType;
-  readonly eventId: string;
-  readonly status: "mirrored" | "skipped-already-mirrored";
-}
 
 export function backfillPostureV2(dbPath?: string): {
   readonly mirrored: number;
   readonly skipped: number;
-  readonly entries: MirrorEntry[];
+  readonly entries: readonly { type: string; eventId: string; status: string }[];
 } {
-  const store = openControlPlaneStore(dbPath ?? defaultControlPlanePath());
-  const entries: MirrorEntry[] = [];
-  try {
-    const mirrored = alreadyMirroredIds(store);
-
-    // Replay V1 posture events in sequence order (per type), mirror each.
-    for (const type of POSTURE_EVENT_TYPES) {
-      for (const v1 of eventStore.replay({ type })) {
-        if (mirrored.has(v1.event_id)) {
-          entries.push({ type, eventId: v1.event_id, status: "skipped-already-mirrored" });
-          continue;
-        }
-        store.append(toCpEvent(v1));
-        mirrored.add(v1.event_id);
-        entries.push({ type, eventId: v1.event_id, status: "mirrored" });
-      }
-    }
-  } finally {
-    store.close();
-  }
-
-  const mirroredCount = entries.filter((e) => e.status === "mirrored").length;
-  const skippedCount = entries.filter((e) => e.status === "skipped-already-mirrored").length;
-  return { mirrored: mirroredCount, skipped: skippedCount, entries };
+  const result = backfillV2StoreTee(dbPath, [...POSTURE_EVENT_TYPES]);
+  return { mirrored: result.mirrored, skipped: result.skipped, entries: result.entries };
 }
 
 function main(): void {
@@ -226,6 +123,7 @@ function main(): void {
       {
         ok: true,
         script: "backfill-posture-v2-dual-run",
+        delegatesTo: "backfill-v2-store-tee",
         mirrored: result.mirrored,
         skipped: result.skipped,
         total: result.entries.length,
