@@ -53,7 +53,7 @@ import { resolveMarketDataDbPath } from "../../platform/market-data/resolve-mark
 import { MarketDataStore } from "../../platform/market-data/store";
 import { deriveZarRatesFromMarketData } from "../../platform/market-risk/var-engine";
 import { ba310PeriodCloseSubscriber } from "../../platform/returns/ba320/period-close-subscriber";
-import { emitRwaComputed, rwaComputedExists } from "../../platform/risk/rwa-computed-engine";
+import { emitRwaComputedV2, rwaComputedV2Exists } from "../../platform/risk/rwa-computed-engine-v2";
 import { RWA_BANK_ENTITIES } from "../../platform/risk/rwa-engine";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
@@ -110,8 +110,10 @@ export function generateAndEmitRwaComputedForPeriod(args: {
     return { emitted: false, periodId, status: "skipped-non-bank-entity" };
   }
 
-  // Idempotency: one RwaComputed per period.
-  if (rwaComputedExists(store, entity, periodId)) {
+  // Idempotency: one RwaComputedV2 per period. (V2 is the sole live path —
+  // Bucket A PILOT, D-V1-REMOVAL-FLIP-BASIS-RBC. The V1 RwaComputed type is
+  // retired-by-construction: un-emittable on main, retained for replay/decode.)
+  if (rwaComputedV2Exists(store, entity, periodId)) {
     return { emitted: false, periodId, status: "skipped-idempotent" };
   }
 
@@ -138,7 +140,7 @@ export function generateAndEmitRwaComputedForPeriod(args: {
     };
   }
 
-  const { emitted, eventId, result } = emitRwaComputed(store, {
+  const { emitted, eventId, result } = emitRwaComputedV2(store, {
     entityId: entity,
     asOf: closedPayload.closedAt,
     periodId,

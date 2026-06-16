@@ -500,6 +500,7 @@ import { PRODUCT_CONTROL_EVENT_TYPES } from "./product-control";
 import { REGULATORY_TYPED_EVENT_TYPES } from "./regulatory";
 import { REGULATORY_PA_TYPED_EVENT_TYPES } from "./regulatory-pa";
 import { REGULATORY_REPORTING_TYPED_EVENT_TYPES } from "./regulatory-reporting";
+import { REGULATORY_REPORTING_V2_TYPED_EVENT_TYPES } from "./regulatory-reporting-v2";
 import { REPO_MMD_IBL_TYPED_EVENT_TYPES } from "./repo-mmd-ibl";
 import { REPO_MMD_IBL_V2_TYPED_EVENT_TYPES } from "./repo-mmd-ibl-v2";
 import { RISK_TYPED_EVENT_TYPES } from "./risk";
@@ -549,6 +550,9 @@ export const TYPED_EVENT_TYPES = [
   ...SEMANTIC_LAYER_TYPED_EVENT_TYPES,
   ...PARTY_EVENT_TYPES,
   ...REGULATORY_REPORTING_TYPED_EVENT_TYPES,
+  // Bucket A PILOT — RwaComputedV2 (decimal-native MoneyWire successor to
+  // RwaComputed). Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+  ...REGULATORY_REPORTING_V2_TYPED_EVENT_TYPES,
   // F-032 extended typed event types — replacing PT placeholder rows
   ...AGENT_SUBSTRATE_EXTENDED_TYPED_EVENT_TYPES,
   ...GOVERNANCE_EXTENDED_TYPED_EVENT_TYPES,
