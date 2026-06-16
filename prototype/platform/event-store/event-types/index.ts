@@ -153,6 +153,8 @@ export * from "./markets-trading-extended";
 //   BondMatured, BondSold.
 // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
 export * from "./bond-accounting";
+// D-V1-REMOVAL-PHASE-3C — V2-parallel JSE bond lifecycle accounting events.
+export * from "./bond-accounting-v2";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE equity lifecycle accounting events.
 // EquityTradeExecuted, EquityPositionRevalued,
 //   EquityDividendAccrued, EquitySold.
@@ -447,6 +449,7 @@ import { SEMANTIC_LAYER_TYPED_EVENT_TYPES } from "./analytics";
 import { AUDIT_TYPED_EVENT_TYPES } from "./audit";
 import { BALANCE_SHEET_TYPED_EVENT_TYPES } from "./balance-sheet";
 import { BOND_ACCOUNTING_EVENT_TYPES } from "./bond-accounting";
+import { BOND_ACCOUNTING_V2_TYPED_EVENT_TYPES } from "./bond-accounting-v2";
 import { CFP_TRIGGER_TYPED_EVENT_TYPES } from "./cfp-triggers";
 import { CLIMATE_RISK_TYPED_EVENT_TYPES } from "./climate-risk";
 import { CLOSE_MANAGEMENT_TYPED_EVENT_TYPES } from "./close-management";
@@ -576,6 +579,8 @@ export const TYPED_EVENT_TYPES = [
   // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE bond lifecycle accounting event types.
   // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
   ...BOND_ACCOUNTING_EVENT_TYPES,
+  // D-V1-REMOVAL-PHASE-3C — V2-parallel JSE bond lifecycle events.
+  ...BOND_ACCOUNTING_V2_TYPED_EVENT_TYPES,
   // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE equity lifecycle accounting event types.
   // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
   ...EQUITY_ACCOUNTING_EVENT_TYPES,

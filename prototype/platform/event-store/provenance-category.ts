@@ -84,6 +84,14 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   InterbankLoanInterestAccruedV2: "trading",
   InterbankLoanMaturedV2: "trading",
   InterbankLoanRecalledEarlyV2: "trading",
+  // D-V1-REMOVAL-PHASE-3C — V2-parallel JSE bond lifecycle events (FVTPL).
+  // Trading/treasury instrument lifecycle, same category as their V1
+  // counterparts. Explicit rows make the categorisation unambiguous (F-032 site 3).
+  BondTradeExecutedV2: "trading",
+  BondInterestAccruedV2: "trading",
+  BondPositionRevaluedV2: "trading",
+  BondMaturedV2: "trading",
+  BondSoldV2: "trading",
   // Governance — decisions, briefs, records, audit, agent governance.
   Decision: "governance",
   // WS-V2-BBAAS W1 — distillation classification of an existing Decision

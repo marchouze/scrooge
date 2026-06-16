@@ -28,11 +28,17 @@
 //
 // ## Scope
 //
-// Production valuation-path source only:
-//   - `v2-core/fil-models/fx/**`         (spot/forward/swap/ndf + shared/perf)
-//   - `v2-core/fil-models/fx-valuation/**`
-// Excludes `*.test.ts` / `*.spec.ts` (the SA-anchor unit tests legitimately pin
-// the anchor's functional currency ZAR as fixture data) and this gate itself.
+// Production valuation-path source only — ALL FIL-model directories:
+//   - `v2-core/fil-models/**`   (fx spot/forward/swap/ndf, fx-valuation, the
+//                                Phase 3b `ir/money-market/**` amortised-cost
+//                                models, the Phase 3c `ir/bond/**` FVTPL bond,
+//                                and every future FIL model)
+// Widened from the original fx-only roots (`fx`, `fx-valuation`) so the gate
+// mechanically covers EVERY FIL model — the bond and money-market models, and
+// anything added later — without re-touching this gate (D-V1-REMOVAL-PHASE-3C,
+// closing the 3b substrate gap). Excludes `*.test.ts` / `*.spec.ts` (the SA-anchor
+// unit tests legitimately pin the anchor's functional currency ZAR as fixture
+// data) and this gate itself.
 //
 // Harden-only: the valuation-path debt was REMOVED in the same PR, so the
 // expected violation count is ZERO. There is no allowlist — any literal reporting
@@ -61,8 +67,11 @@ function findRepoRoot(start: string): string {
 const REPO_ROOT = findRepoRoot(import.meta.dir);
 const PROTOTYPE_DIR = resolve(REPO_ROOT, "prototype");
 
-// The valuation-path roots scanned (relative to prototype/).
-const SCAN_ROOTS: readonly string[] = ["v2-core/fil-models/fx", "v2-core/fil-models/fx-valuation"];
+// The valuation-path roots scanned (relative to prototype/). WIDENED to ALL
+// FIL-model directories (D-V1-REMOVAL-PHASE-3C) so every FIL model — fx,
+// fx-valuation, ir/money-market, ir/bond, and any future model — is mechanically
+// covered by the no-hardcoded-reporting-currency gate.
+const SCAN_ROOTS: readonly string[] = ["v2-core/fil-models"];
 
 // Files excluded from the scan (relative to prototype/).
 const EXCLUDED_FILES: ReadonlySet<string> = new Set([

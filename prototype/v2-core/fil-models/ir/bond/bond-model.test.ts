@@ -187,7 +187,7 @@ describe("bond RiskMeasurable facet", () => {
     expect(rm.riskFactors().map((f) => f.factorId)).toContain("ir:curve");
     const sel = rm.positionContribution("irrbb-engine" as EngineId);
     expect(sel.engine).toBe("irrbb-engine" as EngineId);
-    expect(sel.lifecycleEvents).toContain("BondTradeExecutedV2");
+    expect(sel.lifecycleEvents.map((e) => String(e))).toContain("BondTradeExecutedV2");
   });
 });
 

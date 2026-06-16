@@ -88,6 +88,7 @@ export { REGULATORY_PA_EVENT_TYPES_REGISTRY } from "./regulatory-pa";
 export { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE bond lifecycle accounting events.
 export { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
+export { BOND_ACCOUNTING_V2_EVENT_TYPES_REGISTRY } from "./bond-accounting-v2";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE equity lifecycle accounting events.
 export { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — OTC IRD swap lifecycle accounting events.
@@ -285,6 +286,7 @@ export { V2_EVAL_EVENT_TYPES_REGISTRY } from "./v2-eval";
 import { ALCO_EVENT_TYPES_REGISTRY } from "./alco";
 import { APPLICABILITY_ASSESSMENT_EVENT_TYPES_REGISTRY } from "./applicability-assessment";
 import { BALANCE_SHEET_EVENT_TYPES_REGISTRY } from "./balance-sheet";
+import { BOND_ACCOUNTING_V2_EVENT_TYPES_REGISTRY } from "./bond-accounting-v2";
 import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 import { CAE_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./cae-governance";
 import { CFP_TRIGGER_EVENT_TYPES_REGISTRY } from "./cfp-triggers";
@@ -430,6 +432,8 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE bond lifecycle accounting events.
   // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
   ...BOND_ACCOUNTING_EVENT_TYPES_REGISTRY,
+  // D-V1-REMOVAL-PHASE-3C — V2-parallel JSE bond lifecycle events.
+  ...BOND_ACCOUNTING_V2_EVENT_TYPES_REGISTRY,
   // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE equity lifecycle accounting events.
   // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
   ...EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY,

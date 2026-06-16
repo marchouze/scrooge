@@ -251,6 +251,12 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // lifecycle events. Advisory (ok: true with warn) until the V2 path is
     // authoritative. Authority: D-V1-REMOVAL-PHASE-3B.
     "recon:ba300-v2-parity",
+    // D-V1-REMOVAL-PHASE-3C — V2 bond GL parity gate (advisory). Compares the
+    // bond GL trial-balance entries from the V1 bond lifecycle events against the
+    // same entries folded from the V2-parallel bond lifecycle events, per bond
+    // account. Advisory (ok: true with warn) until the V2 bond path is
+    // authoritative. Authority: D-V1-REMOVAL-PHASE-3C.
+    "recon:bond-gl-v2-parity",
   ],
   domain: [
     "recon:prose-duplication",
