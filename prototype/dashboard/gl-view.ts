@@ -16,7 +16,14 @@ import { availableCurrencies, buildRateMap } from "../platform/accounting/fx-rat
 import { buildGlView } from "../platform/accounting/gl-projection";
 import type { GlLedgerEntry } from "../platform/accounting/gl-projection";
 import { clock } from "../platform/composition";
+import { isFlagEnabled } from "../platform/config/loader";
 import { moneyWireFromMinor } from "../platform/core/money-codec";
+import { computeTrialBalanceV2 } from "../platform/projections/gl-projection-v2";
+import {
+  V2_ANCHOR_ENTITY,
+  V2_PERIOD_END,
+  V2_PERIOD_START,
+} from "../platform/projections/v2-read-window";
 import { nowUtc } from "../platform/core/types";
 import { makeManualJournalEntry } from "../platform/event-store/event-types/accounting";
 import type { EventStore } from "../platform/event-store/store";
@@ -74,6 +81,22 @@ function handleGlEntries(searchParams: URLSearchParams, eventStore: EventStore):
 function handleGlTrialBalance(searchParams: URLSearchParams, eventStore: EventStore): Response {
   const asOf = searchParams.get("asOf") ?? nowUtc();
   const reportingCurrency = searchParams.get("reportingCurrency") ?? undefined;
+
+  // V1-removal Phase 4 (D-V1-REMOVAL-PHASE-4): when useV2Store is ON, read the
+  // trial balance from the V2 projection (GlPostingEmitted → computeTrialBalanceV2)
+  // for the anchor entity over the shared build-phase window. The V2 fold returns
+  // the same TrialBalance shape as V1, so presentation is unchanged. When the flag
+  // is OFF (default), V1 (buildGlView) stays authoritative — fully reversible.
+  if (isFlagEnabled("useV2Store")) {
+    const v2TrialBalance = computeTrialBalanceV2({
+      eventStore,
+      entity: V2_ANCHOR_ENTITY,
+      periodStart: V2_PERIOD_START,
+      periodEnd: V2_PERIOD_END,
+    });
+    return jsonResponse(v2TrialBalance);
+  }
+
   const events = [...eventStore.replay({})];
   const view = buildGlView(events, asOf, reportingCurrency);
   return jsonResponse(view.trialBalance);

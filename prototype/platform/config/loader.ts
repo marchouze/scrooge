@@ -25,10 +25,12 @@ import { dirname, resolve } from "node:path";
 import type {
   BankConfigDisplay,
   BankConfigFile,
+  BankConfigFlags,
   BankConfigPaths,
   BankConfigServer,
   ResolvedConfig,
 } from "./schema";
+import { FLAG_DEFAULTS } from "./schema";
 
 // ── Config file path ────────────────────────────────────────────────────────
 
@@ -58,6 +60,7 @@ function buildDefaults(): BankConfigFile {
       refreshMs: 30000,
     },
     display: buildDisplayDefaults(),
+    flags: { ...FLAG_DEFAULTS },
   };
 }
 
@@ -128,10 +131,34 @@ function resolveVal<T>(fileVal: T | undefined, defaultVal: T): { value: T; sourc
   return { value: defaultVal, source: "default" };
 }
 
+/**
+ * Boolean flag resolution: env var → file → default. The env value is parsed
+ * truthy/falsey explicitly (only "1"/"true"/"yes"/"on" → true, anything else
+ * that is set → false) so an env override can also force a flag OFF.
+ */
+function resolveBool(
+  envVal: string | undefined,
+  fileVal: boolean | undefined,
+  defaultVal: boolean,
+): { value: boolean; source: Source } {
+  const env = envVal?.trim().toLowerCase();
+  if (env !== undefined && env !== "") {
+    const truthy = env === "1" || env === "true" || env === "yes" || env === "on";
+    return { value: truthy, source: "env" };
+  }
+  if (fileVal !== undefined) return { value: fileVal, source: "file" };
+  return { value: defaultVal, source: "default" };
+}
+
 // ── In-process cache ────────────────────────────────────────────────────────
 
-let _cache: (BankConfigPaths & { server: BankConfigServer; display: BankConfigDisplay }) | null =
-  null;
+let _cache:
+  | (BankConfigPaths & {
+      server: BankConfigServer;
+      display: BankConfigDisplay;
+      flags: BankConfigFlags;
+    })
+  | null = null;
 
 function buildResolved(): ResolvedConfig {
   const configFilePath = getConfigFilePath();
@@ -151,9 +178,11 @@ function buildResolved(): ResolvedConfig {
   const fp = fileConfig?.paths;
   const fs = fileConfig?.server;
   const fd = fileConfig?.display;
+  const ff = fileConfig?.flags;
   const dp = defaults.paths;
   const ds = defaults.server;
   const dd = defaults.display;
+  const df = defaults.flags ?? FLAG_DEFAULTS;
 
   return {
     version: 1,
@@ -185,6 +214,9 @@ function buildResolved(): ResolvedConfig {
       currencyPosition: resolveVal(fd?.currencyPosition, dd.currencyPosition),
       locale: resolveVal(fd?.locale, dd.locale),
     },
+    flags: {
+      useV2Store: resolveBool(process.env.BANK_USE_V2_STORE, ff?.useV2Store, df.useV2Store),
+    },
     configFilePath,
     configFileExists,
   };
@@ -201,6 +233,7 @@ function buildResolved(): ResolvedConfig {
 export function getBankConfig(): BankConfigPaths & {
   server: BankConfigServer;
   display: BankConfigDisplay;
+  flags: BankConfigFlags;
 } {
   if (_cache) return _cache;
   const resolved = buildResolved();
@@ -223,8 +256,20 @@ export function getBankConfig(): BankConfigPaths & {
       currencyPosition: resolved.display.currencyPosition.value,
       locale: resolved.display.locale.value,
     },
+    flags: {
+      useV2Store: resolved.flags.useV2Store.value,
+    },
   };
   return _cache;
+}
+
+/**
+ * Convenience accessor for a single feature flag. Reads the resolved config
+ * (cached) so callers don't repeat the lookup. Use this at route boundaries to
+ * branch V1/V2 read paths.
+ */
+export function isFlagEnabled(flag: keyof BankConfigFlags): boolean {
+  return getBankConfig().flags[flag];
 }
 
 /**
@@ -244,6 +289,7 @@ export function updateConfigFile(
     paths: Partial<BankConfigPaths>;
     server: Partial<BankConfigServer>;
     display: Partial<BankConfigDisplay>;
+    flags: Partial<BankConfigFlags>;
   }>,
 ): void {
   const configFilePath = getConfigFilePath();
@@ -266,6 +312,11 @@ export function updateConfigFile(
       ...defaults.display,
       ...(existing?.display ?? {}),
       ...(patch.display ?? {}),
+    },
+    flags: {
+      ...(defaults.flags ?? FLAG_DEFAULTS),
+      ...(existing?.flags ?? {}),
+      ...(patch.flags ?? {}),
     },
   };
 

@@ -47,11 +47,35 @@ export type CurrencyPosition = "prefix" | "suffix";
 export const NEGATIVE_STYLES: readonly NegativeStyle[] = ["minus", "parens", "minus-red"];
 export const CURRENCY_POSITIONS: readonly CurrencyPosition[] = ["prefix", "suffix"];
 
+/**
+ * Platform feature flags. Boolean toggles that gate not-yet-default behaviour.
+ *
+ * Resolution per flag: env var override → config file value → built-in default.
+ * Flags default OFF (false) so the established/authoritative path stays in
+ * force unless a flag is explicitly turned on.
+ *
+ * Authority: D-V1-REMOVAL-PHASE-4 (CEO-approved 2026-06-16).
+ */
+export interface BankConfigFlags {
+  /**
+   * Route the dashboard read path through V2 projections where a V2 path is
+   * wired. OFF (default) → V1 projections remain authoritative — the V1-removal
+   * cutover sequence keeps V1 as source of truth until every V2 path is proven.
+   * Env: BANK_USE_V2_STORE ("1" / "true" → on).
+   */
+  useV2Store: boolean;
+}
+
+export const FLAG_DEFAULTS: BankConfigFlags = {
+  useV2Store: false,
+};
+
 export interface BankConfigFile {
   version: 1;
   paths: BankConfigPaths;
   server: BankConfigServer;
   display: BankConfigDisplay;
+  flags?: BankConfigFlags;
 }
 
 /** Resolved config with source annotation per key */
@@ -69,6 +93,9 @@ export interface ResolvedConfig {
       value: BankConfigDisplay[K];
       source: "env" | "file" | "default";
     };
+  };
+  flags: {
+    [K in keyof BankConfigFlags]: { value: boolean; source: "env" | "file" | "default" };
   };
   configFilePath: string;
   configFileExists: boolean;
