@@ -276,6 +276,10 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:ras-b6-cyber-severity-coverage",
     "recon:ras-register-parity",
     "recon:var-nop-exposure-parity",
+    // D-V1-REMOVAL-PHASE2-GAP-A3 — V2 VaR parity gate (advisory).
+    // Compares V1 MarketRiskMeasureComputed figures vs V2 MarketRiskVarComputed
+    // figures within 1 ZAR minor-unit tolerance. Advisory until CEO-approved flip.
+    "recon:var-v2-parity",
     "recon:fx-gateway-threshold-enforcement",
     "recon:permission-gate-default",
     "recon:permission-policy-coverage",
