@@ -371,6 +371,9 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:fil-conformance",
     // WS-V2-BBAAS S7-FIL — SA-CCR FIL-Model ↔ v1 engine byte-equivalence gate.
     "recon:v2-saccr-parity",
+    // Wave 2 PILOT — posture domain V1-store ↔ v2-control-plane-store register
+    // byte-equivalence. ENFORCING once byte-clean (the pilot flip evidence).
+    "recon:posture-v2-parity",
     "recon:period-close-cursor-integrity",
     "recon:ba310-submission-completeness",
     "recon:ba-returns-vs-gl-balances",
