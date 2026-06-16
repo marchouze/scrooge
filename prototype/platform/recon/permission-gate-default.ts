@@ -245,6 +245,11 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // per the per-module test convention. Raw EventStore(":memory:") in tests is
   // a build-phase fixture, not a production access path. T-01 carve-out.
   "platform/accounting/period-close-handler.test.ts",
+  // D-V1-REMOVAL-PHASE-3B — V2 money-market GL posting engine unit tests.
+  // Co-located per the per-module test convention. Raw EventStore(":memory:")
+  // is a build-phase fixture (seeds V2 lifecycle events, runs the engine,
+  // asserts balanced double-entry), not a production access path. T-01 carve-out.
+  "platform/accounting/gl-posting-engine-v2-mm.test.ts",
   // M3 Slice 4 — BA 100 period-close return scenario test. Co-located in the
   // returns/ba700/ package per the per-module test convention. Raw
   // EventStore(":memory:") is a build-phase fixture, not a production access

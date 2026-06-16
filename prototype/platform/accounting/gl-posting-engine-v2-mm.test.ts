@@ -11,6 +11,7 @@ import { describe, expect, test } from "bun:test";
 import { tenantIdSchema } from "../../v2-core/control-plane/tenant";
 import { money } from "../core/decimal-money";
 import { encodeMoney } from "../core/money-codec";
+import type { Currency } from "../core/types";
 import type { GlPostingEmittedPayload } from "../event-store/event-types/fx-accounting";
 import {
   makeDepositTakenV2,
@@ -28,7 +29,7 @@ const TENANT = tenantIdSchema.parse("tenant:za-bank");
 const CITES = ["D-V1-REMOVAL-PHASE-3B"];
 
 function moneyWire(amount: string, currency: string) {
-  return encodeMoney(money(amount, currency as "ZAR"));
+  return encodeMoney(money(amount, currency as Currency));
 }
 
 /** Collect emitted GlPostingEmitted legs from the store. */

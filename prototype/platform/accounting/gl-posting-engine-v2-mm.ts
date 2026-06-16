@@ -28,12 +28,14 @@
 //   PR-IBL-003-V2    InterbankLoanMaturedV2 / RecalledEarlyV2 → derecognition
 //
 // DOUBLE-ENTRY: every handler returns BALANCED legs (Σdebit == Σcredit in the
-// instrument currency). Derecognition events that do not carry the original
-// principal (DepositWithdrawnEarlyV2, RepoTradeTerminatedEarlyV2,
-// InterbankLoanRecalledEarlyV2) post the amount they DO carry and rely on a
-// later phase / the originating event for full close — mirroring the FX V2
-// engine's advisory-close pattern. This is observable (the parity gate surfaces
-// any residual), never a silent zero.
+// instrument currency). Derecognition events that DO carry an amount post it
+// (DepositWithdrawnEarlyV2 posts its breakage penalty). The reason-only /
+// id-only early-close events (RepoTradeTerminatedEarlyV2,
+// InterbankLoanRecalledEarlyV2) carry neither amount NOR currency, so they emit
+// NO posting — fabricating a zero leg would force a hardcoded currency
+// (forbidden by WS-MULTI-BASE-CURRENCY). Their full derecognition is posted from
+// the originating trade's currency at a later phase; the parity gate surfaces the
+// open residual (observable, never a silent omission).
 //
 // Authority: D-V1-REMOVAL-PHASE-3B (CEO-approved 2026-06-16);
 //            D-ENGINEERING-INTEGRITY-CHARTER;
@@ -41,6 +43,7 @@
 //            brief:atlas:v1-removal-phase-3b-alm-liquidity-on-v2-money-ma:2026-06-16.
 // Author: Atlas (Core banking platform architect, engineering).
 
+import type { TenantId } from "../../v2-core/control-plane/tenant";
 import type { MoneyWire } from "../core/money-codec";
 import { newEventId } from "../core/types";
 import {
@@ -119,7 +122,7 @@ interface LegArgs {
   readonly accountCode: string;
   readonly amount: MoneyWire;
   readonly postingDate: string;
-  readonly tenantId: string;
+  readonly tenantId: TenantId;
   readonly sourceEventId: string;
   readonly iasRule: string;
   readonly postingRuleId: string;
@@ -156,7 +159,7 @@ function balancedPair(args: {
   readonly creditAccount: string;
   readonly amount: MoneyWire;
   readonly postingDate: string;
-  readonly tenantId: string;
+  readonly tenantId: TenantId;
   readonly sourceEventId: string;
   readonly iasRule: string;
   readonly postingRuleId: string;
@@ -218,6 +221,7 @@ function postDepositAccrual(
   p: DepositInterestAccruedV2Payload,
   actor: Actor,
   entity: string,
+  asOf: string,
 ): Event[] {
   return balancedPair({
     debitAccount: ACC.depositInterestExpense,
@@ -282,6 +286,7 @@ function postDepositWithdrawnEarly(
   p: DepositWithdrawnEarlyV2Payload,
   actor: Actor,
   entity: string,
+  asOf: string,
 ): Event[] {
   return balancedPair({
     debitAccount: ACC.cash,
@@ -400,38 +405,22 @@ function postRepoTerminated(
 }
 
 // PR-REPO-003-V2 — RepoTradeTerminatedEarlyV2 → early-unwind terminal.
-// The early-termination event carries only the reason (the unwind cash is the
-// originating start-leg amount, closed at a later phase). PR-REPO-004-V2 is
-// reserved for repo-interest accrual once a V2 accrual event lands; both keep
-// their rule keys registered for parity completeness. The early-unwind here
-// posts a zero-amount memo to mark the close — observable via the parity gate,
-// never a silent omission (mirrors the FX V2 advisory-close pattern).
+// The early-termination event is REASON-ONLY: it carries neither an amount nor
+// a currency (the unwind cash is the originating RepoTradeOpenedV2 start-leg
+// amount). Fabricating a zero-amount memo would require inventing a currency —
+// a hardcoded-currency smell forbidden by WS-MULTI-BASE-CURRENCY. Instead we
+// emit NO posting here and post the derecognition from the originating trade's
+// currency at a later phase. This is OBSERVABLE, not silent: the parity gate
+// reconciles the open RepoTradeOpenedV2 against its terminal and surfaces the
+// residual. PR-REPO-004-V2 is reserved for repo-interest accrual once a V2
+// accrual event lands; its rule key stays registered for parity completeness.
 function postRepoTerminatedEarly(
-  p: RepoTradeTerminatedEarlyV2Payload,
-  actor: Actor,
-  entity: string,
+  _p: RepoTradeTerminatedEarlyV2Payload,
+  _actor: Actor,
+  _entity: string,
+  _asOf: string,
 ): Event[] {
-  // Zero-amount memo in the suspense currency-neutral form is not possible
-  // (MoneyWire needs a currency); the early-unwind reason carries no amount, so
-  // we mark the close on the repo-liability account with a zero amount in the
-  // booking currency recorded on the originating trade. Since the early-unwind
-  // event does not carry the currency, we surface the close as a single
-  // self-balancing zero pair on the repo-liability account (Dr == Cr == 0),
-  // which the parity gate reconciles against the originating RepoTradeOpenedV2.
-  const zero: MoneyWire = { __money: "v1", currency: "ZAR", amount: "0" };
-  return balancedPair({
-    debitAccount: ACC.repoLiability,
-    creditAccount: ACC.repoLiability,
-    amount: zero,
-    postingDate: isoDate(asOf),
-    tenantId: p.tenantId,
-    sourceEventId: p.tradeId,
-    iasRule: "IFRS 9 §3.2.3 — derecognition on early termination (close memo; reason-only event)",
-    postingRuleId: "PR-REPO-003-V2",
-    description: `Repo early-unwind close memo — ${p.reason} (V2 advisory)`,
-    actor,
-    entity,
-  });
+  return [];
 }
 
 // ---------------------------------------------------------------------------
@@ -467,6 +456,7 @@ function postIblAccrual(
   p: InterbankLoanInterestAccruedV2Payload,
   actor: Actor,
   entity: string,
+  asOf: string,
 ): Event[] {
   return balancedPair({
     debitAccount: ACC.iblAccruedInterestReceivable,
@@ -521,28 +511,19 @@ function postIblMatured(
 }
 
 // PR-IBL-003-V2 (recall variant) — InterbankLoanRecalledEarlyV2 → early-recall
-// terminal. The recall event carries only the placement id (the recalled
-// principal is the originating placement amount, closed at a later phase). Zero-
-// amount close memo on the IBL asset account; observable via the parity gate.
+// terminal. The recall event is ID-ONLY: no amount, no currency (the recalled
+// principal is the originating InterbankLoanPlacedV2 amount). As with the repo
+// early-unwind, fabricating a zero-amount memo would force a hardcoded currency
+// (forbidden by WS-MULTI-BASE-CURRENCY), so we emit NO posting here; the
+// derecognition is posted from the originating placement's currency at a later
+// phase. Observable via the parity gate, never a silent omission.
 function postIblRecalledEarly(
-  p: InterbankLoanRecalledEarlyV2Payload,
-  actor: Actor,
-  entity: string,
+  _p: InterbankLoanRecalledEarlyV2Payload,
+  _actor: Actor,
+  _entity: string,
+  _asOf: string,
 ): Event[] {
-  const zero: MoneyWire = { __money: "v1", currency: "ZAR", amount: "0" };
-  return balancedPair({
-    debitAccount: ACC.iblAssetByType["fixed-term"],
-    creditAccount: ACC.iblAssetByType["fixed-term"],
-    amount: zero,
-    postingDate: isoDate(asOf),
-    tenantId: p.tenantId,
-    sourceEventId: p.placementId,
-    iasRule: "IFRS 9 §3.2.3 — derecognition on lender recall (close memo; id-only event)",
-    postingRuleId: "PR-IBL-003-V2",
-    description: "Interbank early-recall close memo (V2 advisory)",
-    actor,
-    entity,
-  });
+  return [];
 }
 
 // ---------------------------------------------------------------------------

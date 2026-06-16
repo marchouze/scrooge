@@ -522,32 +522,32 @@
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1242,
+      "line": 1312,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1760,
+      "line": 1830,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1762,
+      "line": 1832,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1374,
+      "line": 1444,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1589,
+      "line": 1659,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1756,
+      "line": 1826,
       "pattern": "money-multiply/divide"
     },
     {
