@@ -409,9 +409,7 @@ export const MONEY_FREE_BATCH_3_REDECLARED_SCHEMAS = {
 export type MoneyFreeBatch3RedeclaredType = keyof typeof MONEY_FREE_BATCH_3_REDECLARED_SCHEMAS;
 
 export const MONEY_FREE_BATCH_3_REDECLARED_TYPES: readonly MoneyFreeBatch3RedeclaredType[] =
-  Object.keys(
-    MONEY_FREE_BATCH_3_REDECLARED_SCHEMAS,
-  ).sort() as MoneyFreeBatch3RedeclaredType[];
+  Object.keys(MONEY_FREE_BATCH_3_REDECLARED_SCHEMAS).sort() as MoneyFreeBatch3RedeclaredType[];
 
 /**
  * The FOOTHOLD type names swept by batch-3 — their schemas already live in

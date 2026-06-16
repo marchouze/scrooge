@@ -41,7 +41,7 @@ export const REGULATORY_REPORTING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "platform/markets/regulatory/finsurv-stub.ts (build-phase); live FinSurv API (post-licence)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 5 — local SARB portal simulator.
@@ -69,7 +69,7 @@ export const REGULATORY_REPORTING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_JSE_TRADE_7Y,
     source:
       "simulators/sarb-prudential.ts (build-phase simulator); SARB BankServ portal (post-licence)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // D-RWA-ENGINE-W2-SLICE-3 — Pillar-1 RWA decomposition emitted at period
@@ -97,6 +97,9 @@ export const REGULATORY_REPORTING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_ACCOUNTING_7Y,
     source:
       "platform/risk/rwa-computed-engine.ts (emitRwaComputed); runtime/agents/bea-rwa-period-close.ts (period-close emitter)",
+    // DEFERRED (Charter cmd 5 — money-bearing): RwaComputed carries `*RwaMinor`
+    // fields; it cannot be verbatim-mirrored as money-free. Stays v1-only pending
+    // the money-bearing migration track. Authority: D-V1-REMOVAL-FLIP-BASIS-RBC.
     v2Status: "v1-only",
   },
 ];

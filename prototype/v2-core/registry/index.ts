@@ -133,6 +133,32 @@ import {
   threatModelGateCompletedPayloadSchema,
 } from "../governance-attestation/events";
 import {
+  backtestBreachDisposedPayloadSchema,
+  backtestRequestedPayloadSchema,
+  backtestRunPayloadSchema,
+  designReviewCompletePayloadSchema,
+  intranetFeatureShippedPayloadSchema,
+  methodologyChangeRequestedPayloadSchema,
+  modelDriftDetectedPayloadSchema,
+  modelSubmittedPayloadSchema,
+  modelTierClassifiedPayloadSchema,
+  modelValidationApprovedPayloadSchema,
+  modelValidationWithheldPayloadSchema,
+  paNotificationSubmittedPayloadSchema,
+  productionUseRequestedPayloadSchema,
+  sarbSubmissionAttemptedPayloadSchema,
+  seedDescopedPayloadSchema,
+  seedPromotedToSimulatedPayloadSchema,
+  slaRuleApprovedPayloadSchema,
+  slaRulePublishedPayloadSchema,
+  slaRuleWithheldPayloadSchema,
+  tradeReportSubmittedPayloadSchema,
+  uxFindingRaisedPayloadSchema,
+  validationFindingClosedPayloadSchema,
+  validationFindingRaisedPayloadSchema,
+  validationMethodologyPublishedPayloadSchema,
+} from "../money-free-batch-3/events";
+import {
   postureActivatedPayloadSchema,
   postureDeactivatedPayloadSchema,
   postureRegisteredPayloadSchema,
@@ -268,6 +294,37 @@ function govAtt(
   };
 }
 
+const MONEY_FREE_BATCH_3_SOURCE =
+  "brief:atlas:wave-2-batch-3-remaining-money-free-domains:2026-06-16 — " +
+  "v2-parallel money-free migration of the remaining self-contained domains (tee-enabled, verbatim)";
+
+/**
+ * A Wave-2 batch-3 money-free migration row: identical to `refData` / `govAtt`
+ * (ALWAYS tee-enabled, verbatim — money-free) but carrying the batch-3 source
+ * string. The generic store-tee mirrors every V1 append of the type; the
+ * `recon:money-free-batch-3-v2-parity` gate proves byte-clean equivalence.
+ * Onboarding a batch-3 type is one `mfb3(...)` line — a registry edit, never a
+ * callsite edit. Used for the SIX RE-DECLARED domains; the FOOTHOLD domains
+ * (v2-banking, decision-impact, v2-eval, context-pack, cross-tenant-csi,
+ * applicability) are instead tee-enabled in place on their existing foothold rows.
+ */
+function mfb3(
+  type: string,
+  cls: V2EventTypeMetadata["class"],
+  schema: z.ZodTypeAny,
+): V2EventTypeMetadata {
+  return {
+    type,
+    class: cls,
+    payloadSchema: asPayloadSchema(schema),
+    schemaVersion: 1,
+    retention: V2_RETENTION_RUNTIME_1Y,
+    migrationStatus: "v2-parallel",
+    tee: {},
+    source: MONEY_FREE_BATCH_3_SOURCE,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // The registry — every foothold event type with its Zod schema.
 // ---------------------------------------------------------------------------
@@ -280,10 +337,14 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
   foothold("TenantMeterEvent", "runtime", tenantMeterEventPayloadSchema),
   foothold("FunctionalSeatRegistered", "governance", functionalSeatRegisteredPayloadSchema),
 
-  // 2. banking (slice's own schemas — payload carries a `kind` discriminator)
-  foothold("V2ProductRegistered", "governance", v2ProductRegisteredSchema),
-  foothold("V2ProductDeprecated", "governance", v2ProductDeprecatedSchema),
-  foothold("V2AccountTypeRegistered", "governance", v2AccountTypeRegisteredSchema),
+  // 2. banking (slice's own schemas — payload carries a `kind` discriminator).
+  // BATCH-3 TEE: the three money-free banking types are mirrored verbatim (V1 and
+  // v2 share the SAME schema object — these are true footholds, so no anti-drift
+  // re-declaration is needed). V2RiskAppetiteSet carries `floorZarMinor`
+  // (money-bearing) → NOT tee-enabled; deferred to the money-bearing track.
+  foothold("V2ProductRegistered", "governance", v2ProductRegisteredSchema, {}),
+  foothold("V2ProductDeprecated", "governance", v2ProductDeprecatedSchema, {}),
+  foothold("V2AccountTypeRegistered", "governance", v2AccountTypeRegisteredSchema, {}),
   foothold("V2RiskAppetiteSet", "governance", v2RiskAppetiteSetSchema),
 
   // 3. fil-instances
@@ -306,39 +367,53 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
   foothold("PostureDeactivated", "governance", postureDeactivatedPayloadSchema, {}),
   foothold("PostureRevised", "governance", postureRevisedPayloadSchema, {}),
 
-  // 6. applicability
+  // 6. applicability — BATCH-3 TEE-ENABLED (foothold schemas; v1 has its own
+  // re-declaration guarded by the batch-3 anti-drift schema-parity test).
   foothold(
     "ApplicabilityAssessmentRequested",
     "governance",
     applicabilityAssessmentRequestedPayloadSchema,
+    {},
   ),
   foothold(
     "ApplicabilityAssessmentPerformed",
     "governance",
     applicabilityAssessmentPerformedPayloadSchema,
+    {},
   ),
   foothold(
     "ApplicabilityAssessmentConcluded",
     "governance",
     applicabilityAssessmentConcludedPayloadSchema,
+    {},
   ),
 
-  // 7. decision-impact
-  foothold("DecisionImpactSweepRequested", "governance", decisionImpactSweepRequestedPayloadSchema),
-  foothold("DecisionImpactAssessed", "governance", decisionImpactAssessedPayloadSchema),
+  // 7. decision-impact — BATCH-3 TEE-ENABLED.
+  foothold(
+    "DecisionImpactSweepRequested",
+    "governance",
+    decisionImpactSweepRequestedPayloadSchema,
+    {},
+  ),
+  foothold("DecisionImpactAssessed", "governance", decisionImpactAssessedPayloadSchema, {}),
 
-  // 8. eval
-  foothold("ExamSetRegistered", "audit", examSetRegisteredPayloadSchema),
-  foothold("EvalRunCompleted", "audit", evalRunCompletedPayloadSchema),
+  // 8. eval — BATCH-3 TEE-ENABLED.
+  foothold("ExamSetRegistered", "audit", examSetRegisteredPayloadSchema, {}),
+  foothold("EvalRunCompleted", "audit", evalRunCompletedPayloadSchema, {}),
 
-  // 9. context-pack
-  foothold("ContextPackBuilt", "runtime", contextPackBuiltPayloadSchema),
+  // 9. context-pack — BATCH-3 TEE-ENABLED.
+  foothold("ContextPackBuilt", "runtime", contextPackBuiltPayloadSchema, {}),
 
-  // 10. cross-tenant
-  foothold("CsiCategoryRegistered", "governance", csiCategoryRegisteredPayloadSchema),
-  foothold("CsiCategoryRetired", "governance", csiCategoryRetiredPayloadSchema),
-  foothold("CrossTenantLearningScreened", "governance", crossTenantLearningScreenedPayloadSchema),
-  foothold("CrossTenantLearningBlocked", "governance", crossTenantLearningBlockedPayloadSchema),
+  // 10. cross-tenant — BATCH-3 TEE-ENABLED.
+  foothold("CsiCategoryRegistered", "governance", csiCategoryRegisteredPayloadSchema, {}),
+  foothold("CsiCategoryRetired", "governance", csiCategoryRetiredPayloadSchema, {}),
+  foothold(
+    "CrossTenantLearningScreened",
+    "governance",
+    crossTenantLearningScreenedPayloadSchema,
+    {},
+  ),
+  foothold("CrossTenantLearningBlocked", "governance", crossTenantLearningBlockedPayloadSchema, {}),
 
   // ---------------------------------------------------------------------------
   // WAVE 2 BATCH-1 — money-free reference-data domains (TEE-ENABLED, verbatim).
@@ -476,6 +551,69 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
 
   // 21. decision-distillation (BBaaS shared-core seam classification)
   govAtt("DecisionDistilled", "governance", decisionDistilledPayloadSchema),
+
+  // ---------------------------------------------------------------------------
+  // WAVE 2 BATCH-3 — remaining money-free, non-substrate domains (TEE-ENABLED,
+  // verbatim).
+  //
+  // SIX RE-DECLARED domains (24 types). Schemas are the faithful v2 re-
+  // declarations in `money-free-batch-3/events.ts` (no-v1-import boundary); the
+  // anti-drift `money-free-batch-3-v2-schema-parity.test.ts` is the backstop.
+  // The FOOTHOLD domains swept by this batch (v2-banking money-free x3,
+  // decision-impact x2, v2-eval x2, context-pack x1, cross-tenant-csi x4,
+  // applicability x3 = 15) are tee-enabled on their foothold rows above, NOT
+  // re-declared here. Total batch-3 = 39 logical types.
+  //
+  // All money-free (verified field-by-field: no `*Minor` / MoneyWire / notional /
+  // par-face / ZAR-amount fields — numeric values are integer counts, ratios,
+  // metric values/thresholds, durations, and 1/2/3 tier literals). The parity
+  // gate `recon:money-free-batch-3-v2-parity` is the byte-clean evidence.
+  //
+  // EXCLUDED (Charter cmd 5 — noted, not silently skipped):
+  //   - runtime/RMS dispatch substrate (Wave-3, leave v1-only).
+  //   - money-bearing: model-risk CalculationPerformed (polymorphic value, unit
+  //     may be ZAR-minor), regulatory-reporting RwaComputed (*RwaMinor),
+  //     v2-banking V2RiskAppetiteSet (floorZarMinor), financial-instrument
+  //     (notional / par-face value).
+  //
+  // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+  // ---------------------------------------------------------------------------
+
+  // 22. intranet
+  mfb3("IntranetFeatureShipped", "runtime", intranetFeatureShippedPayloadSchema),
+  mfb3("DesignReviewComplete", "runtime", designReviewCompletePayloadSchema),
+  mfb3("UXFindingRaised", "runtime", uxFindingRaisedPayloadSchema),
+
+  // 23. sla-approval (four-eyes SLA rule approval workflow)
+  mfb3("SlaRulePublished", "governance", slaRulePublishedPayloadSchema),
+  mfb3("SlaRuleApproved", "governance", slaRuleApprovedPayloadSchema),
+  mfb3("SlaRuleWithheld", "governance", slaRuleWithheldPayloadSchema),
+
+  // 24. regulatory-pa (regulator-notification record)
+  mfb3("PaNotificationSubmitted", "governance", paNotificationSubmittedPayloadSchema),
+
+  // 25. seed-management (seed lifecycle)
+  mfb3("SeedDescoped", "governance", seedDescopedPayloadSchema),
+  mfb3("SeedPromotedToSimulated", "governance", seedPromotedToSimulatedPayloadSchema),
+
+  // 26. model-risk (model lifecycle / validation / backtest — money-free)
+  mfb3("ModelSubmitted", "governance", modelSubmittedPayloadSchema),
+  mfb3("ModelTierClassified", "governance", modelTierClassifiedPayloadSchema),
+  mfb3("ModelValidationApproved", "governance", modelValidationApprovedPayloadSchema),
+  mfb3("ModelValidationWithheld", "governance", modelValidationWithheldPayloadSchema),
+  mfb3("ValidationFindingRaised", "governance", validationFindingRaisedPayloadSchema),
+  mfb3("ValidationFindingClosed", "governance", validationFindingClosedPayloadSchema),
+  mfb3("BacktestRequested", "governance", backtestRequestedPayloadSchema),
+  mfb3("BacktestRun", "governance", backtestRunPayloadSchema),
+  mfb3("ValidationMethodologyPublished", "governance", validationMethodologyPublishedPayloadSchema),
+  mfb3("BacktestBreachDisposed", "governance", backtestBreachDisposedPayloadSchema),
+  mfb3("ModelDriftDetected", "governance", modelDriftDetectedPayloadSchema),
+  mfb3("ProductionUseRequested", "governance", productionUseRequestedPayloadSchema),
+  mfb3("MethodologyChangeRequested", "governance", methodologyChangeRequestedPayloadSchema),
+
+  // 27. regulatory-reporting (MONEY-FREE rows only; RwaComputed deferred)
+  mfb3("TradeReportSubmitted", "governance", tradeReportSubmittedPayloadSchema),
+  mfb3("SarbSubmissionAttempted", "governance", sarbSubmissionAttemptedPayloadSchema),
 ];
 
 // ---------------------------------------------------------------------------

@@ -391,6 +391,12 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // obligation-lifecycle, policy-activation, decision-distillation; 36 types)
     // V1-store ↔ v2-control-plane-store event-list parity. ENFORCING (byte-clean).
     "recon:governance-attestation-v2-parity",
+    // Wave 2 BATCH-3 — remaining money-free, non-substrate domains (intranet,
+    // sla-approval, regulatory-pa, seed-management, model-risk, regulatory-
+    // reporting money-free rows + foothold domains v2-banking/decision-impact/
+    // v2-eval/context-pack/cross-tenant-csi/applicability; 39 types) V1-store ↔
+    // v2-control-plane-store event-list parity. ENFORCING (byte-clean).
+    "recon:money-free-batch-3-v2-parity",
     "recon:period-close-cursor-integrity",
     "recon:ba310-submission-completeness",
     "recon:ba-returns-vs-gl-balances",

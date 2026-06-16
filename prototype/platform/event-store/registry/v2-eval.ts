@@ -42,7 +42,7 @@ export const V2_EVAL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: examSetRegisteredPayloadSchema as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/v2-eval.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "EvalRunCompleted",
@@ -54,6 +54,6 @@ export const V2_EVAL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: evalRunCompletedPayloadSchema as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/v2-eval.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];

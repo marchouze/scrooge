@@ -78,7 +78,11 @@ export const MARKET_DATA_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: modelValidationApprovedPayloadSchema,
     source: "platform/event-store/event-types/model-risk.ts; Policies/valuation-policy-v1.md §5",
     citationsHint: ["BCBS-239-2013", "D-MARKETS-SCHEMA-FOUNDATION"],
-    v2Status: "v1-only",
+    // BATCH-3 FLIP: ModelValidationApproved is double-registered (model-risk.ts +
+    // here). Both rows flip together so the single event-type name is consistently
+    // v2-replaced; the tee/parity treat the type once (by name). Authority:
+    // D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+    v2Status: "v2-replaced",
   },
   // -------------------------------------------------------------------------
   // FTP / ALM market-data feed events (W2.3, D-TREASURER-WAVE2-SUBSTRATE)
