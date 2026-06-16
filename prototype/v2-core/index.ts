@@ -81,6 +81,15 @@ export * from "./fil-models/fx-valuation";
  * Authority: D-FIL-ATTRIBUTION-A1-BUILD (A3); D-VAR-EXPOSURE-INCLUDES-STANDING-NOP. */
 export * from "./fil-models/market-risk-var";
 
+// --- V2 type registry (Wave 0) ---------------------------------------------
+
+/** @tier K — v2-native event-type registry + payload validation (the general-host
+ * foundation): V2EventTypeMetadata, V2_EVENT_TYPE_REGISTRY (the 10 v2-parallel
+ * footholds), lookupV2EventType, validateV2Payload (fail-closed on a registered
+ * type), registeredV2EventTypes, retention/archival-tier constants. The control-
+ * plane store's append() consults this. Authority: D-BANK-WIDE-V2-MIGRATION. */
+export * from "./registry";
+
 // --- Control-plane (Wave 1) ------------------------------------------------
 
 /** @tier R — tenant axis: ANCHOR_TENANT_ID, TenantId, tenantIdSchema, isAnchorTenantEvent (dark, not yet enforced) */

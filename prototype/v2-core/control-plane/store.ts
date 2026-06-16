@@ -28,6 +28,8 @@ import { dirname, resolve } from "node:path";
 
 import { Database } from "bun:sqlite";
 
+import { lookupV2EventType, validateV2Payload } from "../registry";
+
 // ---------------------------------------------------------------------------
 // Schema DDL — structurally identical to the v1 EventStore DDL.
 // Keeping parity means the same `PartitionedEventStore`, archive tooling,
@@ -45,8 +47,10 @@ CREATE TABLE IF NOT EXISTS events (
   actor_id    TEXT    NOT NULL,
   citations   TEXT    NOT NULL,   -- JSON array
   payload     TEXT    NOT NULL,   -- JSON object
+  schema_version INTEGER NOT NULL DEFAULT 1, -- W0: V2Envelope.schemaVersion
   recorded_at TEXT    NOT NULL DEFAULT (datetime('now')),
-  provenance      TEXT,
+  provenance      TEXT,           -- W0: JSON ProvenanceTag (kind / sourceLineage / …)
+  retention_class TEXT,           -- W0: archival-tier policy from the v2 registry row
   aggregate_id    TEXT,
   aggregate_label TEXT
 );
@@ -54,6 +58,8 @@ CREATE INDEX IF NOT EXISTS idx_cp_events_type    ON events(type);
 CREATE INDEX IF NOT EXISTS idx_cp_events_entity  ON events(entity);
 CREATE INDEX IF NOT EXISTS idx_cp_events_as_of   ON events(as_of);
 CREATE INDEX IF NOT EXISTS idx_cp_events_type_seq ON events(type, sequence);
+-- W0: archive / cold-partition tooling targets the v2 store by retention_class.
+CREATE INDEX IF NOT EXISTS idx_cp_events_retention ON events(retention_class);
 
 -- Incremental recon cursors (mirrors v1 EventStore schema).
 CREATE TABLE IF NOT EXISTS recon_cursors (
@@ -62,6 +68,16 @@ CREATE TABLE IF NOT EXISTS recon_cursors (
   updated_at    TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 `;
+
+// W0: additive column migrations for stores created before Wave 0. SQLite
+// `ALTER TABLE ... ADD COLUMN` is a no-op-equivalent on a fresh store (the
+// CREATE above already has the columns) and a backwards-compatible upgrade on
+// an existing store. Mirrors the v1 EventStore's in-place column migration.
+const CP_COLUMN_MIGRATIONS: ReadonlyArray<{ readonly column: string; readonly ddl: string }> = [
+  { column: "schema_version", ddl: "ALTER TABLE events ADD COLUMN schema_version INTEGER NOT NULL DEFAULT 1" },
+  { column: "provenance", ddl: "ALTER TABLE events ADD COLUMN provenance TEXT" },
+  { column: "retention_class", ddl: "ALTER TABLE events ADD COLUMN retention_class TEXT" },
+];
 
 // ---------------------------------------------------------------------------
 // Raw row shape as returned by bun:sqlite
@@ -77,8 +93,10 @@ interface CpEventRow {
   actor_id: string;
   citations: string;
   payload: string;
+  schema_version: number;
   recorded_at: string;
   provenance: string | null;
+  retention_class: string | null;
   aggregate_id: string | null;
   aggregate_label: string | null;
 }
@@ -106,6 +124,26 @@ export interface CpEvent {
   readonly actor: CpActor;
   readonly citations: readonly string[];
   readonly payload: Record<string, unknown>;
+  /**
+   * W0: the V2Envelope schema version for this event. Optional on the input
+   * type — `append()` defaults an omitted value to 1 (the foothold default).
+   * Always present on replayed events. Aligns with `V2Envelope.schemaVersion`.
+   */
+  readonly schemaVersion?: number;
+  /**
+   * W0: typed multi-axis provenance tag (kind / sourceLineage / …),
+   * JSON-serialised onto the `provenance` column so the same archive / recon
+   * tooling that targets the v1 store can target the v2 store. Optional —
+   * NULL on the row when omitted (build-phase; the soft-tagger backfills).
+   */
+  readonly provenance?: Record<string, unknown>;
+  /**
+   * W0: archival-tier policy for cold storage, persisted to the
+   * `retention_class` column. When omitted, `append()` derives it from the
+   * v2 registry row's retention (`retention.archivalTier`) for a REGISTERED
+   * type, leaving it NULL for an unregistered type.
+   */
+  readonly retentionClass?: string;
 }
 
 export interface CpReplayOpts {
@@ -116,10 +154,15 @@ export interface CpReplayOpts {
 
 /**
  * The typed control-plane store. Structurally compatible with the v1
- * `EventStore` surface: `append` + `replay`. The subset is intentional —
- * control-plane events are simpler than the full event store (no provenance
- * substrate, no snapshot substrate, no archive partitioning in S1). Those
- * extensions land when the control-plane store is ready for the M8 cloud lift.
+ * `EventStore` surface: `append` + `replay`.
+ *
+ * W0 (D-BANK-WIDE-V2-MIGRATION) turned this into the general-purpose v2 event
+ * host: `append()` now (a) validates the payload against the v2 type registry
+ * (fail-closed on a registered type, accept-on-unregistered), and (b) stamps
+ * `schema_version`, `provenance`, and `retention_class` so the same archive /
+ * cold-partition + recon tooling can target the v2 store (Wave 5 deletion,
+ * Phase-5 retire-to-cold). The snapshot substrate is still the v1 store's;
+ * it lands here when the v2 host needs snapshot-from-replay.
  */
 export interface ControlPlaneStore {
   /** Append a single control-plane event. Idempotent on `event_id`. */
@@ -151,14 +194,48 @@ class ControlPlaneStoreImpl implements ControlPlaneStore {
       `);
     }
     this.db.exec(CP_DDL);
+    this.runColumnMigrations();
+  }
+
+  /**
+   * W0: additive in-place column migrations for stores created before Wave 0.
+   * Each ALTER is wrapped in a guard that inspects `PRAGMA table_info` so a
+   * fresh store (where CP_DDL already declared the columns) skips them.
+   * Failure to add a column is fatal (fail-closed) — a half-migrated store
+   * would silently drop schema_version / provenance / retention on append.
+   */
+  private runColumnMigrations(): void {
+    const cols = new Set(
+      (this.db.prepare("PRAGMA table_info(events)").all() as Array<{ name: string }>).map(
+        (r) => r.name,
+      ),
+    );
+    for (const m of CP_COLUMN_MIGRATIONS) {
+      if (!cols.has(m.column)) {
+        this.db.exec(m.ddl);
+      }
+    }
   }
 
   append(event: CpEvent): void {
+    // W0: fail-closed payload validation against the v2 type registry. A
+    // REGISTERED type with a bad payload throws (propagated as an append
+    // failure); an UNREGISTERED type is accepted (build-phase forward compat —
+    // footholds and pre-registration Wave-2 types keep appending).
+    validateV2Payload(event.type, event.payload);
+
+    const schemaVersion = event.schemaVersion ?? 1;
+    const provenanceJson = event.provenance ? JSON.stringify(event.provenance) : null;
+    // Derive retention_class from the registry row when the caller omits it.
+    const retentionClass =
+      event.retentionClass ?? lookupV2EventType(event.type)?.retention.archivalTier ?? null;
+
     this.db
       .prepare(
         `INSERT OR IGNORE INTO events
-           (event_id, type, as_of, entity, actor_type, actor_id, citations, payload)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+           (event_id, type, as_of, entity, actor_type, actor_id, citations, payload,
+            schema_version, provenance, retention_class)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         event.event_id,
@@ -169,6 +246,9 @@ class ControlPlaneStoreImpl implements ControlPlaneStore {
         event.actor.id,
         JSON.stringify(event.citations),
         JSON.stringify(event.payload),
+        schemaVersion,
+        provenanceJson,
+        retentionClass,
       );
   }
 
@@ -203,6 +283,11 @@ class ControlPlaneStoreImpl implements ControlPlaneStore {
         actor: { type: row.actor_type as CpActor["type"], id: row.actor_id },
         citations: JSON.parse(row.citations) as string[],
         payload: JSON.parse(row.payload) as Record<string, unknown>,
+        schemaVersion: row.schema_version,
+        ...(row.provenance
+          ? { provenance: JSON.parse(row.provenance) as Record<string, unknown> }
+          : {}),
+        ...(row.retention_class ? { retentionClass: row.retention_class } : {}),
       };
     }
   }
