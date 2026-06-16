@@ -382,6 +382,10 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // Wave 2 PILOT — posture domain V1-store ↔ v2-control-plane-store register
     // byte-equivalence. ENFORCING once byte-clean (the pilot flip evidence).
     "recon:posture-v2-parity",
+    // Wave 2 BATCH-1 — four money-free reference-data domains (regulatory,
+    // market-data, obligation-review, obligation-equivalence; 19 types) V1-store
+    // ↔ v2-control-plane-store event-list parity. ENFORCING (byte-clean flip).
+    "recon:reference-data-v2-parity",
     "recon:period-close-cursor-integrity",
     "recon:ba310-submission-completeness",
     "recon:ba-returns-vs-gl-balances",

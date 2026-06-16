@@ -101,6 +101,27 @@ import {
   postureRevisedPayloadSchema,
 } from "../posture/events";
 import {
+  graphEdgeAssertedPayloadSchema,
+  graphNodeAssertedPayloadSchema,
+  jibarFixingPublishedPayloadSchema,
+  marketDataStaleAlertPayloadSchema,
+  obligationCandidateProposedPayloadSchema,
+  obligationConceptLinkedPayloadSchema,
+  obligationEquivalenceClassifiedPayloadSchema,
+  obligationReviewCompletedPayloadSchema,
+  obligationReviewConflictPayloadSchema,
+  obligationReviewMatchedPayloadSchema,
+  oisCurvePublishedPayloadSchema,
+  regulatoryConceptExtractedPayloadSchema,
+  regulatoryInstrumentAmendedPayloadSchema,
+  regulatoryInstrumentContextualisedPayloadSchema,
+  regulatoryInstrumentRegisteredPayloadSchema,
+  regulatorySourceReviewedPayloadSchema,
+  sagbYieldsPublishedPayloadSchema,
+  zaroniaRatePublishedPayloadSchema,
+  zaroniaTermRatePublishedPayloadSchema,
+} from "../reference-data/events";
+import {
   type V2EventTypeMetadata,
   type V2TeeCodec,
   type V2TeeDeclaration,
@@ -149,6 +170,34 @@ function foothold(
     migrationStatus: "v2-parallel",
     ...(tee !== undefined ? { tee } : {}),
     source: FOOTHOLD_SOURCE,
+  };
+}
+
+const REFERENCE_DATA_BATCH_1_SOURCE =
+  "brief:atlas:wave-2-batch-1-money-free-reference-data-domains:2026-06-16 — " +
+  "v2-parallel reference-data migration (tee-enabled, verbatim)";
+
+/**
+ * A Wave-2 reference-data migration row: identical to `foothold` but ALWAYS
+ * tee-enabled (verbatim — money-free) and carrying the batch source string. The
+ * generic store-tee mirrors every V1 append of the type; `recon:reference-data-
+ * v2-parity` proves byte-clean equivalence. Onboarding a reference-data type to
+ * the rollout is one `refData(...)` line — a registry edit, never a callsite edit.
+ */
+function refData(
+  type: string,
+  cls: V2EventTypeMetadata["class"],
+  schema: z.ZodTypeAny,
+): V2EventTypeMetadata {
+  return {
+    type,
+    class: cls,
+    payloadSchema: asPayloadSchema(schema),
+    schemaVersion: 1,
+    retention: V2_RETENTION_RUNTIME_1Y,
+    migrationStatus: "v2-parallel",
+    tee: {},
+    source: REFERENCE_DATA_BATCH_1_SOURCE,
   };
 }
 
@@ -223,6 +272,63 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
   foothold("CsiCategoryRetired", "governance", csiCategoryRetiredPayloadSchema),
   foothold("CrossTenantLearningScreened", "governance", crossTenantLearningScreenedPayloadSchema),
   foothold("CrossTenantLearningBlocked", "governance", crossTenantLearningBlockedPayloadSchema),
+
+  // ---------------------------------------------------------------------------
+  // WAVE 2 BATCH-1 — money-free reference-data domains (TEE-ENABLED, verbatim).
+  //
+  // Four V1 reference-data domains migrated to v2-core via the generic store-tee
+  // (every row carries `tee: {}` → the tee mirrors each V1 append verbatim, the
+  // generic backfill replays history). All money-free (verified: no `*Minor` /
+  // MoneyWire / notional-position fields; rate/score values are plain decimals).
+  // The schemas are the faithful v2 re-declarations in `reference-data/events.ts`
+  // (the v2 package cannot import the V1 schemas — no-v1-import boundary). The
+  // batch parity gate `recon:reference-data-v2-parity` is the byte-clean evidence.
+  //
+  // DEFERRED (no silent skip — Charter cmd 5): isda-odp legal-terms (money-bearing
+  // CSA/cross-default thresholds → need a codec), financial-instrument (nested
+  // ACTUS union → own PR), market-data ModelValidationApproved (model-risk family).
+  //
+  // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+  // ---------------------------------------------------------------------------
+
+  // 11. regulatory (reference data)
+  refData(
+    "RegulatoryInstrumentRegistered",
+    "governance",
+    regulatoryInstrumentRegisteredPayloadSchema,
+  ),
+  refData("RegulatoryInstrumentAmended", "governance", regulatoryInstrumentAmendedPayloadSchema),
+  refData(
+    "RegulatoryInstrumentContextualised",
+    "governance",
+    regulatoryInstrumentContextualisedPayloadSchema,
+  ),
+  refData("RegulatoryConceptExtracted", "governance", regulatoryConceptExtractedPayloadSchema),
+  refData("ObligationConceptLinked", "governance", obligationConceptLinkedPayloadSchema),
+  refData("RegulatorySourceReviewed", "governance", regulatorySourceReviewedPayloadSchema),
+  refData("GraphNodeAsserted", "governance", graphNodeAssertedPayloadSchema),
+  refData("GraphEdgeAsserted", "governance", graphEdgeAssertedPayloadSchema),
+
+  // 12. market-data (reference data — rate/curve publications + stale alerts)
+  refData("MarketDataStaleAlert", "markets", marketDataStaleAlertPayloadSchema),
+  refData("ZaroniaRatePublished", "markets", zaroniaRatePublishedPayloadSchema),
+  refData("ZaroniaTermRatePublished", "markets", zaroniaTermRatePublishedPayloadSchema),
+  refData("JibarFixingPublished", "markets", jibarFixingPublishedPayloadSchema),
+  refData("OisCurvePublished", "markets", oisCurvePublishedPayloadSchema),
+  refData("SagbYieldsPublished", "markets", sagbYieldsPublishedPayloadSchema),
+
+  // 13. obligation-review (reference data)
+  refData("ObligationReviewMatched", "governance", obligationReviewMatchedPayloadSchema),
+  refData("ObligationReviewConflict", "governance", obligationReviewConflictPayloadSchema),
+  refData("ObligationCandidateProposed", "governance", obligationCandidateProposedPayloadSchema),
+  refData("ObligationReviewCompleted", "governance", obligationReviewCompletedPayloadSchema),
+
+  // 14. obligation-equivalence (reference data)
+  refData(
+    "ObligationEquivalenceClassified",
+    "governance",
+    obligationEquivalenceClassifiedPayloadSchema,
+  ),
 ];
 
 // ---------------------------------------------------------------------------
