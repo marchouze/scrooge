@@ -89,6 +89,7 @@ describe("Nadia challenger — parallel run vs model", () => {
         currency: s.ccy,
         signedNotional: s.notional,
         isForward: s.fwd !== undefined,
+        reporting: "ZAR",
       }).value(marks(obs), ASOF).value;
       const challenger = challengerValue({
         currency: s.ccy,
@@ -110,10 +111,12 @@ describe("Nadia challenger — sensitivity", () => {
   test("value is linear in rate (doubling the rate doubles the value)", () => {
     const v = (rate: number) =>
       Number(
-        fxValuable({ currency: "USD", signedNotional: "10000.00", isForward: false }).value(
-          marks({ "USD/ZAR": rate }),
-          ASOF,
-        ).value.amount,
+        fxValuable({
+          currency: "USD",
+          signedNotional: "10000.00",
+          isForward: false,
+          reporting: "ZAR",
+        }).value(marks({ "USD/ZAR": rate }), ASOF).value.amount,
       );
     // Pick rates with exact 2dp products to avoid rounding noise in the ratio.
     expect(v(20) * 2).toBe(v(40));
@@ -123,10 +126,12 @@ describe("Nadia challenger — sensitivity", () => {
   test("value is linear in notional (3× notional ⇒ 3× value)", () => {
     const v = (n: string) =>
       Number(
-        fxValuable({ currency: "USD", signedNotional: n, isForward: false }).value(
-          marks({ "USD/ZAR": 18 }),
-          ASOF,
-        ).value.amount,
+        fxValuable({
+          currency: "USD",
+          signedNotional: n,
+          isForward: false,
+          reporting: "ZAR",
+        }).value(marks({ "USD/ZAR": 18 }), ASOF).value.amount,
       );
     expect(v("1000.00") * 3).toBe(v("3000.00"));
   });
@@ -138,10 +143,12 @@ describe("Nadia challenger — sensitivity", () => {
 
 describe("Nadia challenger — boundary / edge", () => {
   test("zero notional ⇒ zero value", () => {
-    const rec = fxValuable({ currency: "USD", signedNotional: "0.00", isForward: false }).value(
-      marks({ "USD/ZAR": 18.5 }),
-      ASOF,
-    );
+    const rec = fxValuable({
+      currency: "USD",
+      signedNotional: "0.00",
+      isForward: false,
+      reporting: "ZAR",
+    }).value(marks({ "USD/ZAR": 18.5 }), ASOF);
     expect(Number(rec.value.amount)).toBe(0);
   });
 
@@ -151,6 +158,7 @@ describe("Nadia challenger — boundary / edge", () => {
         currency: "USD",
         signedNotional: "3333.33",
         isForward: false,
+        reporting: "ZAR",
       }).value(marks({ "USD/ZAR": 17.77 }), ASOF).value.amount,
     );
     const neg = Number(
@@ -158,6 +166,7 @@ describe("Nadia challenger — boundary / edge", () => {
         currency: "USD",
         signedNotional: "-3333.33",
         isForward: false,
+        reporting: "ZAR",
       }).value(marks({ "USD/ZAR": 17.77 }), ASOF).value.amount,
     );
     expect(neg).toBe(-pos);
@@ -166,14 +175,18 @@ describe("Nadia challenger — boundary / edge", () => {
   test("rounding is half-away-from-zero at the .5 boundary, symmetric in sign", () => {
     // Construct a product whose fractional part is exactly .5 at the 2dp level:
     // 0.01 major unit × 2.5 = 0.025 → 0.03 (away from zero); −0.01 × 2.5 = −0.025 → −0.03.
-    const up = fxValuable({ currency: "USD", signedNotional: "0.01", isForward: false }).value(
-      marks({ "USD/ZAR": 2.5 }),
-      ASOF,
-    ).value.amount;
-    const down = fxValuable({ currency: "USD", signedNotional: "-0.01", isForward: false }).value(
-      marks({ "USD/ZAR": 2.5 }),
-      ASOF,
-    ).value.amount;
+    const up = fxValuable({
+      currency: "USD",
+      signedNotional: "0.01",
+      isForward: false,
+      reporting: "ZAR",
+    }).value(marks({ "USD/ZAR": 2.5 }), ASOF).value.amount;
+    const down = fxValuable({
+      currency: "USD",
+      signedNotional: "-0.01",
+      isForward: false,
+      reporting: "ZAR",
+    }).value(marks({ "USD/ZAR": 2.5 }), ASOF).value.amount;
     expect(Number(up)).toBe(0.03);
     expect(Number(down)).toBe(-0.03);
   });
@@ -183,6 +196,7 @@ describe("Nadia challenger — boundary / edge", () => {
       currency: "ZAR",
       signedNotional: "12345.67",
       isForward: false,
+      reporting: "ZAR",
     }).value(marks({}), ASOF); // no observable needed for the home leg
     expect(rec.value.currency).toBe("ZAR");
     expect(rec.value.amount).toBe("12345.67");
@@ -190,10 +204,12 @@ describe("Nadia challenger — boundary / edge", () => {
 
   test("missing spot observable is a hard error (no silent zero)", () => {
     expect(() =>
-      fxValuable({ currency: "USD", signedNotional: "1000.00", isForward: false }).value(
-        marks({}),
-        ASOF,
-      ),
+      fxValuable({
+        currency: "USD",
+        signedNotional: "1000.00",
+        isForward: false,
+        reporting: "ZAR",
+      }).value(marks({}), ASOF),
     ).toThrow(/missing required spot observable/);
   });
 
@@ -202,11 +218,13 @@ describe("Nadia challenger — boundary / edge", () => {
       currency: "USD",
       signedNotional: "1000.00",
       isForward: true,
+      reporting: "ZAR",
     }).value(marks({ "USD/ZAR": 18.5 }), ASOF).value.amount;
     const spotOnly = fxValuable({
       currency: "USD",
       signedNotional: "1000.00",
       isForward: false,
+      reporting: "ZAR",
     }).value(marks({ "USD/ZAR": 18.5 }), ASOF).value.amount;
     expect(withFwdFlagNoPoints).toBe(spotOnly);
   });
@@ -231,6 +249,7 @@ describe("Nadia challenger — JPY non-2dp deferred-gap probe", () => {
       currency: "JPY",
       signedNotional: jpyNotional,
       isForward: false,
+      reporting: "ZAR",
     }).value(marks({ "JPY/ZAR": 0.124 }), ASOF);
     expect(rec.value.currency).toBe("ZAR");
     expect(rec.value.amount).toBe(
@@ -250,9 +269,14 @@ describe("Nadia challenger — JPY non-2dp deferred-gap probe", () => {
         currency: "JPY",
         signedNotional: notional,
         isForward: false,
+        reporting: "ZAR",
       }).value(marks({ "JPY/ZAR": rate }), ASOF).value.amount;
       const post = fcyCashValuable(
-        fcyCashFromSettledReceivable({ currency: "JPY", signedNotional: notional }),
+        fcyCashFromSettledReceivable({
+          currency: "JPY",
+          signedNotional: notional,
+          reporting: "ZAR",
+        }),
       ).value(marks({ "JPY/ZAR": rate }), ASOF).value.amount;
       expect(post).toBe(pre);
     }
@@ -270,6 +294,7 @@ describe("Nadia challenger — JPY non-2dp deferred-gap probe", () => {
         currency: "JPY",
         signedNotional: wholeYenStr,
         isForward: false,
+        reporting: "ZAR",
       }).value(marks({ "JPY/ZAR": 0.124 }), ASOF).value.amount,
     );
     const v2dp = Number(
@@ -277,6 +302,7 @@ describe("Nadia challenger — JPY non-2dp deferred-gap probe", () => {
         currency: "JPY",
         signedNotional: as2dpStr,
         isForward: false,
+        reporting: "ZAR",
       }).value(marks({ "JPY/ZAR": 0.124 }), ASOF).value.amount,
     );
     expect(v2dp).toBe(vWhole * 100);

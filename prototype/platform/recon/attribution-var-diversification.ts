@@ -75,12 +75,18 @@ import { eventStore } from "../composition";
 import type { Event } from "../event-store/types";
 import { resolveMarketDataDbPath } from "../market-data/resolve-market-data-db";
 import { MarketDataStore } from "../market-data/store";
+import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import { computeMarketRisk, deriveRiskFactorExposures } from "../market-risk/var-engine";
 import { majorStringToMinorBigint, minorBigintToMajorString } from "../risk/sa-ccr/v2-money-bridge";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "attribution-var-diversification";
 const ANCHOR_TENANT = ANCHOR_TENANT_ID as TenantId;
+
+// Anchor book reporting currency = anchor entity's functional currency, sourced
+// from the legal-entity tree (WS-MULTI-BASE-CURRENCY). Exposures are carried in
+// this currency; the home-currency FCY notional values at rate 1.
+const REPORTING = anchorFunctionalCurrency();
 
 /** Relative tolerance for the v1↔v2 VaR parity (rounding across two derivations). */
 const REL_TOLERANCE = 1e-6;
@@ -127,8 +133,9 @@ function buildVarMembers(
     // rate 1 to keep the member's Valuable in ZAR).
     const exposureMinor = BigInt(Math.round(e.exposureZar * 100));
     const position = fcyCashFromSettledReceivable({
-      currency: "ZAR",
+      currency: REPORTING,
       signedNotional: minorBigintToMajorString(exposureMinor),
+      reporting: REPORTING,
     });
     // Partition currencies across two desks BY EXPOSURE SIGN — a "long desk"
     // (net-long currencies) and a "short desk" (net-short currencies). This is a
@@ -151,6 +158,7 @@ function buildVarMembers(
           fcyCashFromSettledReceivable({
             currency: ccy,
             signedNotional: minorBigintToMajorString(exposureMinor),
+            reporting: REPORTING,
           }),
         ),
       },

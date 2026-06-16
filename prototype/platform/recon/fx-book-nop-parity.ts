@@ -54,6 +54,7 @@ import {
 } from "../../v2-core";
 import { eventStore } from "../composition";
 import type { Event } from "../event-store/types";
+import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import { deriveNetFxPositionByCurrency } from "../projections/markets/limit-utilisation";
 import { majorStringToMinorBigint, minorBigintToMajorString } from "../risk/sa-ccr/v2-money-bridge";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
@@ -62,6 +63,12 @@ const PIPELINE = "fx-book-nop-parity";
 
 /** Anchor tenant the fx-trading book belongs to (the seed tenant, branded). */
 const ANCHOR_TENANT = "tenant:za-bank" as TenantId;
+
+// The anchor book's reporting currency = the anchor entity's FUNCTIONAL currency,
+// resolved from the legal-entity tree (WS-MULTI-BASE-CURRENCY; sourced, not
+// hardcoded). The home-currency leg (currency === reporting) is excluded from the
+// NOP (it bears no FX translation risk).
+const REPORTING = anchorFunctionalCurrency();
 
 /** Tolerance: the two derivations should agree to the cent (1 minor unit). */
 const TOLERANCE_MINOR = 1n;
@@ -85,7 +92,7 @@ function buildFxTradingBookMembers(net: Map<string, number>): {
   const perCurrencyNetMinor = new Map<string, bigint>();
   let i = 0;
   for (const [ccy, positionMajor] of net) {
-    if (ccy === "ZAR") continue; // home residual — excluded from NOP
+    if (ccy === REPORTING) continue; // home/functional residual — excluded from NOP
     // positionMajor is in FCY MAJOR units (signed); convert to minor (2dp).
     const signedMinor = BigInt(Math.round(positionMajor * 100));
     if (signedMinor === 0n) continue;
@@ -94,6 +101,7 @@ function buildFxTradingBookMembers(net: Map<string, number>): {
       fcyCashFromSettledReceivable({
         currency: ccy,
         signedNotional: minorBigintToMajorString(signedMinor),
+        reporting: REPORTING,
       }),
     );
     const member: ResolvedMember = {

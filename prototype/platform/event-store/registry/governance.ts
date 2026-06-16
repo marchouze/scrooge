@@ -616,15 +616,11 @@ export const LEGAL_ENTITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Latest assignment per entity wins (IAS-21 §35 functional-currency change is
     // prospective; the latest event is the current functional currency).
     replay: "latest-wins-per-key",
-    citationsHint: [
-      "D-MULTI-BASE-CURRENCY-FOUNDATION",
-      "IAS-21",
-      "D-LEGAL-ENTITY-TREE-V0",
-    ],
+    citationsHint: ["D-MULTI-BASE-CURRENCY-FOUNDATION", "IAS-21", "D-LEGAL-ENTITY-TREE-V0"],
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "prototype/platform/event-store/event-types/legal-entity.ts; prototype/v2-core/fil-models/fx-valuation/MC-multi-base-currency-design-note.md; Regulations/_legal-entity-tree.md",
-    v2Status: "v2-native",
+    v2Status: "v2-parallel",
   },
 ];
 

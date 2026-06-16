@@ -48,24 +48,36 @@ function displayDp(_currency: string): number {
 // e.g. ZAR per 1 unit of CCY).
 // ---------------------------------------------------------------------------
 
-/** The reporting currency the FX book values into (the bank's home currency). */
-export const FX_REPORTING_CURRENCY: string = "ZAR";
+// ---------------------------------------------------------------------------
+// HISTORICAL methodology-hash token — NOT a runtime default.
+//
+// `V1_PINNED_REPORTING_CURRENCY` exists for ONE purpose: it is the immutable
+// description of the reporting currency that the v1 (pinned-ZAR) methodology
+// used, embedded inside the v1 methodology-hash pin string so historical events
+// replay byte-for-byte and existing FX/SA-CCR parity gates stay green
+// (WS-MULTI-BASE-CURRENCY MC-3; Engineering Charter cmd 3 — no green by
+// concealment, so the v1 hash is preserved, not loosened). It is DELIBERATELY
+// NOT a `?? "ZAR"` fallback in any valuation path — the runtime reporting
+// currency is resolved from the holding entity's functional currency and is
+// fail-closed (Charter cmd 2 + cmd 4). Do NOT reference this constant from the
+// valuation kernel; it belongs to the v1 hash construction alone.
+const V1_PINNED_REPORTING_CURRENCY = "ZAR" as const;
 
 /** Spot observable id for a currency against the reporting currency. */
-export function spotObservableId(currency: string, reporting?: string): string {
-  return `${currency}/${reporting ?? FX_REPORTING_CURRENCY}`;
+export function spotObservableId(currency: string, reporting: string): string {
+  return `${currency}/${reporting}`;
 }
 
 /** Forward-points observable id for a currency/tenor against the reporting ccy. */
-export function forwardPointsObservableId(currency: string, reporting?: string): string {
-  return `${currency}/${reporting ?? FX_REPORTING_CURRENCY}:fwd-points`;
+export function forwardPointsObservableId(currency: string, reporting: string): string {
+  return `${currency}/${reporting}:fwd-points`;
 }
 
-export function spotObservableRef(currency: string, reporting?: string): ObservableRef {
+export function spotObservableRef(currency: string, reporting: string): ObservableRef {
   return { observableId: spotObservableId(currency, reporting), kind: "fixing" };
 }
 
-export function forwardPointsObservableRef(currency: string, reporting?: string): ObservableRef {
+export function forwardPointsObservableRef(currency: string, reporting: string): ObservableRef {
   return { observableId: forwardPointsObservableId(currency, reporting), kind: "curve" };
 }
 
@@ -92,8 +104,12 @@ export interface FxValuationInput {
   readonly signedNotional: string;
   /** All-in rate: reporting-currency MAJOR units per 1 MAJOR unit of `currency`. */
   readonly allInRate: number;
-  /** Reporting currency (default ZAR). */
-  readonly reporting?: string;
+  /**
+   * Reporting currency — the holding entity's FUNCTIONAL currency (IAS-21),
+   * resolved via `resolveReportingCurrency` (WS-MULTI-BASE-CURRENCY). REQUIRED +
+   * fail-closed: there is NO `?? "ZAR"` default in the valuation kernel.
+   */
+  readonly reporting: string;
 }
 
 export interface FxValuation {
@@ -109,7 +125,7 @@ export interface FxValuation {
  * the settlement-continuity invariant.
  */
 export function valueFxPosition(input: FxValuationInput): FxValuation {
-  const reporting = input.reporting ?? FX_REPORTING_CURRENCY;
+  const reporting = input.reporting;
   if (input.currency === reporting) {
     // A reporting-currency leg is its own value at rate 1 (no translation).
     return {
@@ -149,9 +165,9 @@ export function resolveAllInRate(args: {
   currency: string;
   isForward: boolean;
   marks: MarketDataSlice;
-  reporting?: string;
+  reporting: string;
 }): FxRateResolution {
-  const reporting = args.reporting ?? FX_REPORTING_CURRENCY;
+  const reporting = args.reporting;
   if (args.currency === reporting) {
     return { allInRate: 1, observablesUsed: [] };
   }
@@ -190,6 +206,16 @@ export function fnv1a(input: string): string {
   return (h >>> 0).toString(16).padStart(8, "0");
 }
 
+/**
+ * V1 methodology hash — FROZEN (WS-MULTI-BASE-CURRENCY MC-3). The pin string
+ * still embeds `reporting=ZAR` because that is the HISTORICAL TRUTH: v1 events
+ * were computed under a pinned-ZAR methodology. Keeping the v1 pin byte-identical
+ * means historical events validate against this exact hash and every existing FX/
+ * SA-CCR parity gate stays green WITHOUT being loosened (Engineering Charter cmd
+ * 3). The runtime ZAR literal was removed from the valuation path; this constant
+ * survives only inside the hash as an immutable description of how v1 numbers
+ * were produced.
+ */
 export function computeFxMethodologyHash(
   modelId: string,
   version: { major: number; minor: number },
@@ -197,7 +223,7 @@ export function computeFxMethodologyHash(
   const pin = [
     `model=${modelId}`,
     `version=${version.major}.${version.minor}`,
-    `reporting=${FX_REPORTING_CURRENCY}`,
+    `reporting=${V1_PINNED_REPORTING_CURRENCY}`,
     "value=signedNotional*allInRate",
     "allIn=spot(+fwdPoints)",
     "round=half-away-from-zero",
@@ -205,6 +231,33 @@ export function computeFxMethodologyHash(
     "lifecycle-free=true",
   ].join("|");
   return `fxval:v${version.major}.${version.minor}:${fnv1a(pin)}`;
+}
+
+/**
+ * V2 methodology hash — the RESOLVED-currency methodology (WS-MULTI-BASE-CURRENCY
+ * MC-3). The pin records that the reporting currency is resolved from the holding
+ * entity's functional currency (a constant string TOKEN describing the
+ * methodology, NOT a per-position value — the hash describes HOW we value, never
+ * a specific currency). Stamped `fxval:v2.<…>` so it never collides with the v1
+ * hash. A model adopts this when its declaration cuts over to resolver-sourced
+ * reporting; existing model versions keep `computeFxMethodologyHash` so the
+ * current parity gates are untouched. New model-version bumps use this.
+ */
+export function computeFxMethodologyHashV2(
+  modelId: string,
+  version: { major: number; minor: number },
+): string {
+  const pin = [
+    `model=${modelId}`,
+    `version=${version.major}.${version.minor}`,
+    "reporting=resolved-from-entity-functional-currency",
+    "value=signedNotional*allInRate",
+    "allIn=spot(+fwdPoints)",
+    "round=half-away-from-zero",
+    "dp=2",
+    "lifecycle-free=true",
+  ].join("|");
+  return `fxval:v2.${version.major}.${version.minor}:${fnv1a(pin)}`;
 }
 
 // Re-export the asOf type for downstream model files.

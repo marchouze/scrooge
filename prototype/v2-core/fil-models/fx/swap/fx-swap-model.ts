@@ -24,11 +24,12 @@ import type {
   Valuable,
 } from "../../../fil-facets/facets.ts";
 import type { FilModelImplementationDeclared } from "../../declaration.ts";
+import { requireReporting } from "../../fx-valuation/reporting-currency-resolver.ts";
 import { fxForwardLegPerformable, fxForwardLegValuable } from "../forward/fx-forward-model.ts";
 import type { FxSwapPosition } from "../shared/fx-positions.ts";
 
 export function fxSwapValuable(pos: FxSwapPosition): Valuable {
-  const reporting = pos.reporting ?? "ZAR";
+  const reporting = requireReporting(pos.reporting, "fxSwapValuable");
   const nearValuable = fxForwardLegValuable({ ...pos.nearLeg, reporting });
   const farValuable = fxForwardLegValuable({ ...pos.farLeg, reporting });
   return {
@@ -55,7 +56,7 @@ export function fxSwapValuable(pos: FxSwapPosition): Valuable {
 }
 
 export function fxSwapPerformable(pos: FxSwapPosition): Performable {
-  const reporting = pos.reporting ?? "ZAR";
+  const reporting = requireReporting(pos.reporting, "fxSwapPerformable");
   const nearPerformable = fxForwardLegPerformable({ ...pos.nearLeg, reporting });
   const farPerformable = fxForwardLegPerformable({ ...pos.farLeg, reporting });
   return {

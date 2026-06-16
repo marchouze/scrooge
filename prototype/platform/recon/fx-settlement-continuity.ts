@@ -52,9 +52,17 @@ import {
   fxValuable,
 } from "../../v2-core";
 import type { FilInstanceLifecycleEvent } from "../../v2-core";
+import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "fx-settlement-continuity";
+
+// The SA anchor book values into the anchor entity's FUNCTIONAL currency,
+// resolved from the legal-entity tree (WS-MULTI-BASE-CURRENCY; sourced, not
+// hardcoded). The settlement-continuity invariant is rate- and currency-
+// independent (both sides apply the same reporting currency), so the gate uses
+// the anchor's functional currency for both pre and post legs.
+const REPORTING = anchorFunctionalCurrency();
 
 // ---------------------------------------------------------------------------
 // v2 anchor store resolution (mirrors fil-instance-positions.ts).
@@ -156,11 +164,16 @@ export function run(opts: RunOpts = {}): ReconResult {
       currency: s.ccy,
       signedNotional: s.notional,
       isForward: false,
+      reporting: REPORTING,
     };
     const marks = singleRate(s.ccy, s.rate, asOf);
     const valuePre = fxValuable(pos).value(marks, asOf as Instant).value;
     const valuePost = fcyCashValuable(
-      fcyCashFromSettledReceivable({ currency: s.ccy, signedNotional: s.notional }),
+      fcyCashFromSettledReceivable({
+        currency: s.ccy,
+        signedNotional: s.notional,
+        reporting: REPORTING,
+      }),
     ).value(marks, asOf as Instant).value;
     if (!sameMoney(valuePre, valuePost)) {
       violations.push({
@@ -205,10 +218,15 @@ export function run(opts: RunOpts = {}): ReconResult {
       currency: terms.currency,
       signedNotional,
       isForward: false,
+      reporting: REPORTING,
     }).value(marks, row.lastAsOf as Instant).value;
 
     const valuePost = fcyCashValuable(
-      fcyCashFromSettledReceivable({ currency: terms.currency, signedNotional }),
+      fcyCashFromSettledReceivable({
+        currency: terms.currency,
+        signedNotional,
+        reporting: REPORTING,
+      }),
     ).value(marks, row.lastAsOf as Instant).value;
 
     if (!sameMoney(valuePre, valuePost)) {

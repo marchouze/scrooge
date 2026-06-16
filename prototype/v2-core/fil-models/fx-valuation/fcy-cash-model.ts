@@ -54,6 +54,7 @@ import {
   spotObservableRef,
   valueFxPosition,
 } from "./methodology";
+import { requireReporting } from "./reporting-currency-resolver";
 
 // ---------------------------------------------------------------------------
 // Model identity + version + scope.
@@ -106,17 +107,33 @@ export const FCY_CASH_MODEL_DECLARATION: FilModelImplementationDeclared = {
 // ---------------------------------------------------------------------------
 
 export interface FcyCashPosition {
-  /** FCY balance currency, ISO-4217 alpha-3. */
+  /**
+   * Cash balance currency, ISO-4217 alpha-3. This is a CURRENCY-AGNOSTIC cash
+   * FIL `{ currency, balance }` (MC-4, WS-MULTI-BASE-CURRENCY): there is no
+   * intrinsic "foreign" property — whether this balance is foreign or domestic
+   * is a VIEW-TIME comparison between `currency` and the holding entity's
+   * functional currency (`reporting`), computed when the value is read (IAS-21),
+   * NOT baked into the instrument. A GBP balance is domestic to a functional-GBP
+   * branch (currency === reporting → rate 1, no retranslation) and foreign to a
+   * functional-ZAR branch (currency !== reporting → monetary-item retranslation).
+   */
   readonly currency: string;
   /**
-   * Balance in the FCY's MAJOR units, SIGNED decimal string. This is the notional
-   * carried from the derecognised receivable — NOT a contracted/trade-date cost.
-   * The reporting-currency carrying amount is `balance × settlement-date rate` at
-   * recognition; subsequent reporting dates retranslate at the then-current rate.
+   * Balance in the cash currency's MAJOR units, SIGNED decimal string. This is
+   * the notional carried from the derecognised receivable — NOT a contracted/
+   * trade-date cost. The reporting-currency carrying amount is
+   * `balance × settlement-date rate` at recognition; subsequent reporting dates
+   * retranslate at the then-current rate.
    */
   readonly balance: string;
-  /** Reporting currency (default ZAR). */
-  readonly reporting?: string;
+  /**
+   * Reporting currency — the holding entity's FUNCTIONAL currency (IAS-21),
+   * populated by `resolveReportingCurrency` (WS-MULTI-BASE-CURRENCY). REQUIRED +
+   * fail-closed: no `?? "ZAR"` default. When `currency === reporting` the cash is
+   * domestic (rate 1, no retranslation); otherwise it is a foreign monetary item
+   * retranslated at the closing rate.
+   */
+  readonly reporting: string;
 }
 
 /**
@@ -134,12 +151,13 @@ export interface FcyCashPosition {
 export function fcyCashFromSettledReceivable(args: {
   currency: string;
   signedNotional: string;
-  reporting?: string;
+  /** Holding entity's functional currency (required; resolved via the resolver). */
+  reporting: string;
 }): FcyCashPosition {
   return {
     currency: args.currency,
     balance: args.signedNotional,
-    ...(args.reporting !== undefined ? { reporting: args.reporting } : {}),
+    reporting: requireReporting(args.reporting, "fcyCashFromSettledReceivable"),
   };
 }
 
@@ -148,25 +166,26 @@ export function fcyCashFromSettledReceivable(args: {
 // ---------------------------------------------------------------------------
 
 export function fcyCashValuable(position: FcyCashPosition): Valuable {
+  const reporting = requireReporting(position.reporting, "fcyCashValuable");
   return {
     valuationMethod(): "mark-to-market" {
       return "mark-to-market";
     },
     requiredObservables(): readonly ObservableRef[] {
-      return [spotObservableRef(position.currency, position.reporting)];
+      return [spotObservableRef(position.currency, reporting)];
     },
     value(marks, asOf: Instant): RevaluationRecord {
       const { allInRate, observablesUsed } = resolveAllInRate({
         currency: position.currency,
         isForward: false,
         marks,
-        ...(position.reporting !== undefined ? { reporting: position.reporting } : {}),
+        reporting,
       });
       const { value } = valueFxPosition({
         currency: position.currency,
         signedNotional: position.balance,
         allInRate,
-        ...(position.reporting !== undefined ? { reporting: position.reporting } : {}),
+        reporting,
       });
       return { value, asOf, observablesUsed };
     },
@@ -228,7 +247,7 @@ export function fcyCashAccountable(): Accountable {
 // ---------------------------------------------------------------------------
 
 export function fcyCashRiskMeasurable(position: FcyCashPosition): RiskMeasurable {
-  const reporting = position.reporting ?? "ZAR";
+  const reporting = requireReporting(position.reporting, "fcyCashRiskMeasurable");
   return {
     riskFactors(): readonly RiskFactorRef[] {
       if (position.currency === reporting) return [];

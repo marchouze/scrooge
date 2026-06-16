@@ -63,10 +63,15 @@ function varMember(args: {
 }): ResolvedMember {
   const signedNotional = (Math.round(args.exposureZar * 100) / 100).toFixed(2);
   // Value the member in ZAR at a unit rate (exposure already in ZAR).
-  const zarPos = fcyCashFromSettledReceivable({ currency: "ZAR", signedNotional });
+  const zarPos = fcyCashFromSettledReceivable({
+    currency: "ZAR",
+    signedNotional,
+    reporting: "ZAR",
+  });
   const ccyPos = fcyCashFromSettledReceivable({
     currency: args.currency,
     signedNotional,
+    reporting: "ZAR",
   });
   return {
     instanceUrn: inst(args.id),

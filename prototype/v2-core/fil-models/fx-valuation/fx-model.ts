@@ -61,6 +61,7 @@ import {
   spotObservableRef,
   valueFxPosition,
 } from "./methodology";
+import { requireReporting } from "./reporting-currency-resolver";
 
 // ---------------------------------------------------------------------------
 // Model identity + version + scope.
@@ -150,8 +151,12 @@ export interface FxValuablePosition {
   readonly signedNotional: string;
   /** Spot vs forward — a forward additionally consumes the forward-points mark. */
   readonly isForward: boolean;
-  /** Reporting currency the value is expressed in (default ZAR). */
-  readonly reporting?: string;
+  /**
+   * Reporting currency the value is expressed in — the holding entity's
+   * FUNCTIONAL currency (IAS-21), populated by `resolveReportingCurrency`
+   * (WS-MULTI-BASE-CURRENCY). REQUIRED + fail-closed: no `?? "ZAR"` default.
+   */
+  readonly reporting: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -164,12 +169,12 @@ export interface FxValuablePosition {
 // ---------------------------------------------------------------------------
 
 export function fxValuable(position: FxValuablePosition): Valuable {
+  const reporting = requireReporting(position.reporting, "fxValuable");
   return {
     valuationMethod(): "mark-to-market" {
       return "mark-to-market";
     },
     requiredObservables(): readonly ObservableRef[] {
-      const reporting = position.reporting;
       const obs: ObservableRef[] = [spotObservableRef(position.currency, reporting)];
       if (position.isForward) obs.push(forwardPointsObservableRef(position.currency, reporting));
       return obs;
@@ -179,13 +184,13 @@ export function fxValuable(position: FxValuablePosition): Valuable {
         currency: position.currency,
         isForward: position.isForward,
         marks,
-        ...(position.reporting !== undefined ? { reporting: position.reporting } : {}),
+        reporting,
       });
       const { value } = valueFxPosition({
         currency: position.currency,
         signedNotional: position.signedNotional,
         allInRate,
-        ...(position.reporting !== undefined ? { reporting: position.reporting } : {}),
+        reporting,
       });
       return { value, asOf, observablesUsed };
     },
@@ -261,13 +266,13 @@ export function fxAccountable(): Accountable {
 // of my events does the VaR / SA-CCR engine consume?" (W9 §3.4).
 // ---------------------------------------------------------------------------
 
-/** The FX spot risk-factor pair for a position currency (`<CCY>/ZAR`). */
-export function fxRiskFactorId(currency: string, reporting = "ZAR"): string {
+/** The FX spot risk-factor pair for a position currency (`<CCY>/<reporting>`). */
+export function fxRiskFactorId(currency: string, reporting: string): string {
   return `${currency}/${reporting}`;
 }
 
 export function fxRiskMeasurable(position: FxValuablePosition): RiskMeasurable {
-  const reporting = position.reporting ?? "ZAR";
+  const reporting = requireReporting(position.reporting, "fxRiskMeasurable");
   return {
     riskFactors(): readonly RiskFactorRef[] {
       // A reporting-currency leg carries no FX risk factor (rate is 1, no

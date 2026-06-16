@@ -23,12 +23,13 @@ import type {
 } from "../../../fil-facets/facets.ts";
 import type { FilModelImplementationDeclared } from "../../declaration.ts";
 import { valueFxPosition } from "../../fx-valuation/methodology.ts";
+import { requireReporting } from "../../fx-valuation/reporting-currency-resolver.ts";
 import { bookCost, computeUnrealisedPnl } from "../performance/fx-performance-methodology.ts";
 import { fxSpotObsRef as spotObservableRef } from "../shared/fx-observables.ts";
 import type { FxSpotPosition } from "../shared/fx-positions.ts";
 
 export function fxSpotValuable(pos: FxSpotPosition): Valuable {
-  const reporting = pos.reporting ?? "ZAR";
+  const reporting = requireReporting(pos.reporting, "fxSpotValuable");
   return {
     valuationMethod: () => "mark-to-market",
     requiredObservables(): readonly ObservableRef[] {
@@ -58,7 +59,7 @@ export function fxSpotValuable(pos: FxSpotPosition): Valuable {
 }
 
 export function fxSpotPerformable(pos: FxSpotPosition): Performable {
-  const reporting = pos.reporting ?? "ZAR";
+  const reporting = requireReporting(pos.reporting, "fxSpotPerformable");
   return {
     unrealisedPnl(marks: MarketDataSlice, asOf: Instant, bookedCost: Money): PerformanceRecord {
       const spotId = `${pos.currency}/${reporting}`;
@@ -87,10 +88,10 @@ export function fxSpotPerformable(pos: FxSpotPosition): Performable {
       };
     },
     carry(_marks: MarketDataSlice, _asOf: Instant): Money {
-      return zeroMoney(pos.reporting ?? "ZAR");
+      return zeroMoney(reporting);
     },
     theta(_marks: MarketDataSlice, _asOf: Instant, _remainingDays: number): Money {
-      return zeroMoney(pos.reporting ?? "ZAR");
+      return zeroMoney(reporting);
     },
   };
 }
