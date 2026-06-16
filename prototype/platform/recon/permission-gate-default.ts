@@ -261,6 +261,11 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // asserts balanced double-entry to the capital accounts. Not a production
   // access path. T-01 carve-out.
   "platform/accounting/gl-posting-engine-v2-capital.test.ts",
+  // Bucket A pilot — RwaComputedV2 decimal-native engine test. Same build-phase
+  // fixture pattern as the V2 GL engine tests above: raw EventStore(":memory:")
+  // seeds inputs, runs emitRwaComputedV2, asserts the decoded decimal RWA. Not a
+  // production access path. T-01 carve-out. Citation: D-V1-REMOVAL-FLIP-BASIS-RBC.
+  "platform/risk/rwa-computed-engine-v2.test.ts",
   // WS-V2-AUTHORITATIVE S5 — entry-level + account-master V2 GL projection unit
   // tests. Same build-phase fixture pattern as the bond/money-market V2 GL tests
   // above: raw EventStore(":memory:") seeds GlPostingEmitted legs (production-
