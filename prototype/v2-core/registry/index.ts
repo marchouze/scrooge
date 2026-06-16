@@ -50,7 +50,7 @@
 // Brief: brief:atlas:wave-0-v2-general-host-foundation-schemaversion-:2026-06-16
 // Author: Atlas (Core banking platform architect, engineering).
 
-import { z } from "zod";
+import type { z } from "zod";
 
 import {
   applicabilityAssessmentConcludedPayloadSchema,
@@ -72,21 +72,18 @@ import {
   tenantUpgradeLedgerEntryPayloadSchema,
 } from "../control-plane/events";
 import {
-  crossTenantLearningBlockedPayloadSchema,
-  crossTenantLearningScreenedPayloadSchema,
-} from "../cross-tenant/gate";
-import {
   csiCategoryRegisteredPayloadSchema,
   csiCategoryRetiredPayloadSchema,
 } from "../cross-tenant/csi-blocklist";
 import {
+  crossTenantLearningBlockedPayloadSchema,
+  crossTenantLearningScreenedPayloadSchema,
+} from "../cross-tenant/gate";
+import {
   decisionImpactAssessedPayloadSchema,
   decisionImpactSweepRequestedPayloadSchema,
 } from "../decision-impact/events";
-import {
-  evalRunCompletedPayloadSchema,
-  examSetRegisteredPayloadSchema,
-} from "../eval/events";
+import { evalRunCompletedPayloadSchema, examSetRegisteredPayloadSchema } from "../eval/events";
 import {
   instrumentDimensionAssignedPayloadSchema,
   orgHierarchyEdgeAssignedPayloadSchema,
@@ -103,10 +100,7 @@ import {
   postureRegisteredPayloadSchema,
   postureRevisedPayloadSchema,
 } from "../posture/events";
-import {
-  V2_RETENTION_RUNTIME_1Y,
-  type V2EventTypeMetadata,
-} from "./types";
+import { type V2EventTypeMetadata, V2_RETENTION_RUNTIME_1Y } from "./types";
 
 export * from "./types";
 

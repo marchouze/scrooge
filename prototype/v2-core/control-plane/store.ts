@@ -74,7 +74,10 @@ CREATE TABLE IF NOT EXISTS recon_cursors (
 // CREATE above already has the columns) and a backwards-compatible upgrade on
 // an existing store. Mirrors the v1 EventStore's in-place column migration.
 const CP_COLUMN_MIGRATIONS: ReadonlyArray<{ readonly column: string; readonly ddl: string }> = [
-  { column: "schema_version", ddl: "ALTER TABLE events ADD COLUMN schema_version INTEGER NOT NULL DEFAULT 1" },
+  {
+    column: "schema_version",
+    ddl: "ALTER TABLE events ADD COLUMN schema_version INTEGER NOT NULL DEFAULT 1",
+  },
   { column: "provenance", ddl: "ALTER TABLE events ADD COLUMN provenance TEXT" },
   { column: "retention_class", ddl: "ALTER TABLE events ADD COLUMN retention_class TEXT" },
 ];
