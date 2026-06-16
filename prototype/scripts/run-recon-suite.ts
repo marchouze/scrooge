@@ -128,6 +128,13 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:context-pack-freshness",
     // WS-V2-BBAAS S1 — control-plane tenant registry (advisory in S1).
     "recon:v2-control-plane-tenant-registry",
+    // Wave 0 (D-BANK-WIDE-V2-MIGRATION) — v2 type-registry coverage (advisory).
+    // Every event type appended to the v2 control-plane store must have a
+    // V2_EVENT_TYPE_REGISTRY row (with a Zod payloadSchema) so its payload is
+    // validated fail-closed. Vacuous on a clean CI store; load-bearing on a
+    // populated store. Flips enforcing once every v2-hosted type is guaranteed
+    // a registry row at emit time. Authority: D-BANK-WIDE-V2-MIGRATION.
+    "recon:v2-type-registry-coverage",
     // WS-V2-BBAAS S14 — operational fleet integrity (advisory→enforcing): every
     // tenant has tier + surface grant; metering windows well-formed; upgrade
     // ledger consistent (no version regressions, connected chain).
