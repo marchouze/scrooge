@@ -151,6 +151,7 @@ import {
   getALMPositionSnapshot,
 } from "../platform/projections/alm-positions";
 import { getALMPositionSnapshotV2 } from "../platform/projections/alm-positions-v2";
+import { selectRegulatoryReturn } from "./regulatory-returns-view";
 import {
   type CapitalMetrics,
   computeCapitalMetrics,
@@ -4260,6 +4261,28 @@ const server = Bun.serve({
         return jsonResponse(promoteMarketRiskV2(measureView));
       }
       return jsonResponse(measureView);
+    }
+    if (url.pathname.startsWith("/api/regulatory-returns/") && req.method === "GET") {
+      // WS-V2-AUTHORITATIVE S9 — read-only regulatory-returns route boundary for
+      // the BA-700 (capital adequacy) and BA-320 (FX market-risk) returns, with a
+      // V1↔V2 dual-read selected under the useV2Store flag (default OFF). This is
+      // the route boundary that closes recon:dashboard-v2-coverage route #8: until
+      // S9 there was no dashboard HTTP route surfacing these returns, so there was
+      // nothing to dual-read. V1 = the existing BA-return generators; V2 =
+      // ba700-v2 / ba320-fx-v2 projections (selected ONLY when useV2Store is ON).
+      // Flipping useV2Store ON by default is the SEPARATE authoritative cutover —
+      // NOT done here. Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-PHASE-4.
+      const which = url.pathname.slice("/api/regulatory-returns/".length);
+      if (which !== "ba700" && which !== "ba320") {
+        return jsonResponse(
+          {
+            error: "unknown-return",
+            message: `Unknown regulatory return "${which}". Supported: ba700, ba320.`,
+          },
+          404,
+        );
+      }
+      return jsonResponse(selectRegulatoryReturn(which, eventStore, marketDataStore));
     }
     if (url.pathname === "/api/markets/fx/products/attestation" && req.method === "GET") {
       // FX desk Slice 7 — NPA attestation badge source. Replays the event
