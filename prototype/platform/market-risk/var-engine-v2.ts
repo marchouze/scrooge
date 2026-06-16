@@ -46,6 +46,7 @@ import {
   makeMarketRiskVarComputed,
 } from "../event-store/event-types/market-risk-measure";
 import type { EventStore } from "../event-store/store";
+import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import type { MarketDataStore } from "../market-data/store";
 import { MIN_RETURN_OBSERVATIONS, deriveRiskFactorExposures } from "./var-engine";
 
@@ -54,13 +55,26 @@ import { MIN_RETURN_OBSERVATIONS, deriveRiskFactorExposures } from "./var-engine
 // ---------------------------------------------------------------------------
 
 const BANK_ENTITY = "LE-ZA-HOZ-BANK";
-const REPORTING_CURRENCY = "ZAR";
 
 /**
- * ZAR minor-unit scale (100 minor units = 1 major unit = ZAR 1.00).
- * Used to convert the V1 engine's major-unit float figures to MoneyWire.
+ * The reporting currency the V2 VaR figures are denominated in — the ANCHOR
+ * bank's functional currency, SOURCED from the legal-entity tree via
+ * `anchorFunctionalCurrency()` (Engineering Charter cmd 4 — source, don't
+ * hardcode; WS-MULTI-BASE-CURRENCY / D-MULTI-BASE-CURRENCY-FOUNDATION). The
+ * underlying NOP fold (`deriveRiskFactorExposures`) and the ported kernel value
+ * the SA anchor book into this currency; re-pointing the anchor's functional
+ * currency is a seed change, not a code change. Fail-closed if unresolved.
  */
-const ZAR_SCALE = 100;
+function reportingCurrency(): string {
+  return anchorFunctionalCurrency();
+}
+
+/**
+ * Anchor minor-unit scale (100 minor units = 1 major unit). The SA anchor's
+ * functional currency (ZAR) is a 2-d.p. currency; used to convert the V1
+ * engine's major-unit float figures to MoneyWire.
+ */
+const ANCHOR_MINOR_SCALE = 100;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -77,7 +91,7 @@ const ZAR_SCALE = 100;
  */
 function zarMajorToMoneyWire(majorFloat: number): ReturnType<typeof moneyWireFromMinor> {
   // Round to nearest cent (minor unit), convert to MoneyWire via the codec.
-  return moneyWireFromMinor(Math.round(majorFloat * ZAR_SCALE), REPORTING_CURRENCY);
+  return moneyWireFromMinor(Math.round(majorFloat * ANCHOR_MINOR_SCALE), reportingCurrency());
 }
 
 // ---------------------------------------------------------------------------
