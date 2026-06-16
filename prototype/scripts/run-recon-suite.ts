@@ -257,6 +257,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // account. Advisory (ok: true with warn) until the V2 bond path is
     // authoritative. Authority: D-V1-REMOVAL-PHASE-3C.
     "recon:bond-gl-v2-parity",
+<<<<<<< HEAD
     // D-V1-REMOVAL-PHASE2-GAP-A2 — daily P&L V2 parity gate (advisory).
     // Compares V1 DailyPnLReportGenerated (FxPositionRevalued-based, v1-only)
     // against V2 computeDailyPnLV2 (snapshot-anchored FIL projection + MarketDataSlice
@@ -286,6 +287,13 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // Advisory: rate conversion (GAP-3E-005) unavailable at Phase 3e; no-data expected
     // on clean CI store. Open-position charge comparison deferred to rate-feed workstream.
     "recon:ba320-fx-v2-parity",
+    // D-V1-REMOVAL-PHASE-4 — dashboard read-route → V2 coverage gate (advisory).
+    // Enumerates dashboard read routes with a V1↔V2 projection pairing and counts
+    // how many have a V2 read path wired under the useV2Store flag vs total. Each
+    // V1-only route carries an explicit reason (warn) — no silent gaps. Genuine
+    // drift (missing handler / disappeared V2 marker) fails. Becomes enforcing
+    // once all routes are wired. Authority: D-V1-REMOVAL-PHASE-4.
+    "recon:dashboard-v2-coverage",
   ],
   domain: [
     "recon:prose-duplication",
