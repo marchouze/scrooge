@@ -255,6 +255,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // seeds the V2 bond lifecycle events, runs the engine, asserts balanced
   // double-entry. Not a production access path. T-01 carve-out.
   "platform/accounting/gl-posting-engine-v2-bond.test.ts",
+  // WS-V2-AUTHORITATIVE S5 — entry-level + account-master V2 GL projection unit
+  // tests. Same build-phase fixture pattern as the bond/money-market V2 GL tests
+  // above: raw EventStore(":memory:") seeds GlPostingEmitted legs (production-
+  // tagged) and asserts the computeGlEntriesV2 / computeGlAccountsV2 folds. Not a
+  // production access path. T-01 carve-out.
+  "platform/projections/gl-projection-v2-entries-accounts.test.ts",
   // M3 Slice 4 — BA 100 period-close return scenario test. Co-located in the
   // returns/ba700/ package per the per-module test convention. Raw
   // EventStore(":memory:") is a build-phase fixture, not a production access
