@@ -166,44 +166,191 @@ export function makeOperationalLossEvent(args: {
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-// DECIMAL-MIGRATION: V2 MoneyWire payload types (slice 2)
+// DECIMAL-MIGRATION → BUCKET A: OperationalLossEventV2 (decimal-native MoneyWire)
 //
-// Authority: D-MONEY-DECIMAL-BUILD-PROCEED, D-MONEY-DECIMAL-REDENOMINATION.
+// `OperationalLossEventV2` is the decimal-native successor to
+// `OperationalLossEvent` (Bucket A batch A3, the final batch — closes the
+// money-bearing-non-financial bucket). The two integer `*Minor` money fields
+// (grossLossMinor / recoveryMinor) are lifted to MoneyWire fields
+// (`{ __money, amount: "<MAJOR-unit decimal string>", currency }`) per
+// D-V2-CORE-MONEY-DECIMAL-NATIVE. The currency is taken from the existing
+// payload `currency` field (currency-agnostic — no `?? "ZAR"` fallback;
+// op-losses can crystallise in any settlement currency). Every other field
+// copies the V1 payload verbatim, so the V2 type is a pure money-encoding lift
+// — the capture semantics (the internal-loss data set every bank collects,
+// Basel II Annex 9 / BCBS D196 §644, Reg 33) are unchanged.
+//
+// V1 is RETIRED-BY-CONSTRUCTION (D-V1-REMOVAL-FLIP-BASIS-RBC): the V1 schema
+// carries required numeric `*Minor` fields, so any V1 emission trips
+// recon:no-residual-minor-encoding (no allowlist) → un-emittable on main. The
+// live capture/probe path (oprisk-attestation-gates.ts) is re-pointed to
+// OperationalLossEventV2. makeOperationalLossEvent + the decode helper are
+// retained for historical decode/replay only.
+//
+// Like RwaComputedV2, OperationalLossEventV2 is emitted into the SAME
+// authoritative V1 event store (NOT mirrored into the v2 control-plane store —
+// money-bearing types stay decimal-native in the authoritative store; the
+// control-plane mirror is the money-free reference-data pattern).
+//
+// Authority: D-BANK-WIDE-V2-MIGRATION (CEO-approved 2026-06-16);
+//   D-V1-REMOVAL-FLIP-BASIS-RBC (CEO-approved 2026-06-16);
+//   D-V2-CORE-MONEY-DECIMAL-NATIVE; D-FX-HELD-DIMS-SEAT-SWEEP (op-loss capture).
+// Engineering Charter: D-ENGINEERING-INTEGRITY-CHARTER.
+// Author: Atlas (Core banking platform architect, engineering).
 // ---------------------------------------------------------------------------
 
 import type { Money } from "../../core/decimal-money";
-import type { MoneyWire } from "../../core/money-codec";
-import { encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
-
-// ── OperationalLossEvent V2 ──────────────────────────────────────────────────
+import { type MoneyWire, moneyWireSchema } from "../../core/money-codec";
+import { decodeMoney, encodeMoney, moneyWireFromMinor } from "../../core/money-codec";
 
 /** @deprecated DECIMAL-MIGRATION: superseded by OperationalLossEventPayloadV2. */
 export type OperationalLossEventPayloadLegacy = OperationalLossEventPayload;
 
-export interface OperationalLossEventPayloadV2
-  extends Omit<OperationalLossEventPayload, "grossLossMinor" | "recoveryMinor"> {
-  readonly grossLoss: MoneyWire;
-  readonly recovery: MoneyWire;
+// ── OperationalLossEventV2 — decimal-native capture ──────────────────────────
+
+/**
+ * Decimal-native operational-loss capture payload. `grossLossMinor` /
+ * `recoveryMinor` are lifted to MoneyWire (MAJOR-unit decimal string); the
+ * standalone `currency` field is removed because the currency now lives inside
+ * each MoneyWire (`grossLoss.currency` === `recovery.currency`). All other
+ * fields are verbatim from the V1 capture schema.
+ */
+export const operationalLossEventV2PayloadSchema = z
+  .object({
+    /** Stable identifier — idempotency + supersession anchor. */
+    lossEventId: z.string().min(1),
+    /** ISO 8601 — when the loss crystallised (the accounting/event date). */
+    eventDate: z.string().min(1),
+    /** ISO 8601 — when the loss was discovered (>= eventDate in practice). */
+    discoveryDate: z.string().min(1),
+    /** Gross loss — MoneyWire (MAJOR-unit decimal). Currency carried inline. */
+    grossLoss: moneyWireSchema,
+    /** Basel business line — aligned to the BA 400 β-line taxonomy. */
+    businessLine: baselBusinessLineSchema,
+    /** BCBS Level-1 loss-event-type category. */
+    eventTypeCategory: operationalLossEventTypeCategorySchema,
+    /** Recovery to date — MoneyWire (MAJOR-unit; <= grossLoss in practice). */
+    recovery: moneyWireSchema,
+    /** Lifecycle status. */
+    status: operationalLossStatusSchema,
+    /** One-line human description of the loss event. */
+    description: z.string().min(1),
+    /** Optional product / desk the loss is attributable to. */
+    productId: z.string().min(1).optional(),
+    /** Optional related event ids (the order/trade/incident that caused the loss). */
+    relatedEventIds: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+export type OperationalLossEventPayloadV2 = z.infer<typeof operationalLossEventV2PayloadSchema>;
+
+export function makeOperationalLossEventV2(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: OperationalLossEventPayloadV2;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "OperationalLossEventV2",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: operationalLossEventV2PayloadSchema.parse(args.payload),
+  });
 }
 
+/**
+ * Build a V2 payload from a base (non-money) capture plus decimal-native Money
+ * amounts. Currency is carried inside each MoneyWire — no standalone field.
+ */
 export function encodeOperationalLossEvent(
-  base: Omit<OperationalLossEventPayload, "grossLossMinor" | "recoveryMinor">,
+  base: Omit<OperationalLossEventPayload, "grossLossMinor" | "recoveryMinor" | "currency">,
   grossLoss: Money,
   recovery: Money,
 ): OperationalLossEventPayloadV2 {
   return { ...base, grossLoss: encodeMoney(grossLoss), recovery: encodeMoney(recovery) };
 }
 
+/**
+ * Decode a legacy V1 capture payload to the V2 (MoneyWire) shape — the lossless
+ * exact-integer → decimal-string lift (currency from the payload `currency`
+ * field; no `?? "ZAR"`). Used by the backfill + the decoded-decimal parity gate.
+ */
 export function decodeOperationalLossEvent(
   raw: OperationalLossEventPayload,
 ): OperationalLossEventPayloadV2 {
-  const { grossLossMinor, recoveryMinor, ...rest } = raw;
+  const { grossLossMinor, recoveryMinor, currency, ...rest } = raw;
   return {
     ...rest,
-    grossLoss: moneyWireFromMinor(grossLossMinor, raw.currency),
-    recovery: moneyWireFromMinor(recoveryMinor ?? 0, raw.currency),
+    grossLoss: moneyWireFromMinor(grossLossMinor, currency),
+    recovery: moneyWireFromMinor(recoveryMinor ?? 0, currency),
   };
 }
 
-export const OPERATIONAL_RISK_TYPED_EVENT_TYPES = ["OperationalLossEvent"] as const;
+// ---------------------------------------------------------------------------
+// Decoded-decimal projection shape — the parity comparison shape (V1 + V2 both
+// project onto this so recon:operational-loss-v2-parity compares on DECODED
+// DECIMAL VALUE, not bytes — byte-compare across the minor-int → decimal-string
+// unit change is meaningless; precedent recon:rwa-computed-v2-parity).
+// ---------------------------------------------------------------------------
+
+export interface OperationalLossDecodedDecimal {
+  readonly lossEventId: string;
+  readonly grossLoss: string;
+  readonly grossLossCurrency: string;
+  readonly recovery: string;
+  readonly recoveryCurrency: string;
+  readonly businessLine: string;
+  readonly eventTypeCategory: string;
+  readonly status: string;
+  /** The event_id of the underlying V1/V2 event. */
+  readonly eventId: string;
+}
+
+/** Project a V1 `OperationalLossEvent` payload onto the decoded-decimal shape. */
+export function decodeOperationalLossV1Decimal(
+  raw: OperationalLossEventPayload,
+  eventId: string,
+): OperationalLossDecodedDecimal {
+  const gross = moneyWireFromMinor(raw.grossLossMinor, raw.currency);
+  const rec = moneyWireFromMinor(raw.recoveryMinor ?? 0, raw.currency);
+  return {
+    lossEventId: raw.lossEventId,
+    grossLoss: decodeMoney(gross).amount,
+    grossLossCurrency: gross.currency,
+    recovery: decodeMoney(rec).amount,
+    recoveryCurrency: rec.currency,
+    businessLine: raw.businessLine,
+    eventTypeCategory: raw.eventTypeCategory,
+    status: raw.status,
+    eventId,
+  };
+}
+
+/** Project a V2 `OperationalLossEventV2` payload onto the decoded-decimal shape. */
+export function decodeOperationalLossV2Decimal(
+  raw: OperationalLossEventPayloadV2,
+  eventId: string,
+): OperationalLossDecodedDecimal {
+  return {
+    lossEventId: raw.lossEventId,
+    grossLoss: decodeMoney(raw.grossLoss).amount,
+    grossLossCurrency: raw.grossLoss.currency,
+    recovery: decodeMoney(raw.recovery).amount,
+    recoveryCurrency: raw.recovery.currency,
+    businessLine: raw.businessLine,
+    eventTypeCategory: raw.eventTypeCategory,
+    status: raw.status,
+    eventId,
+  };
+}
+
+export const OPERATIONAL_RISK_TYPED_EVENT_TYPES = [
+  "OperationalLossEvent",
+  "OperationalLossEventV2",
+] as const;
 export type OperationalRiskEventType = (typeof OPERATIONAL_RISK_TYPED_EVENT_TYPES)[number];
