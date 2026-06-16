@@ -43,34 +43,54 @@ Before-baseline (clean CI store):
 - The pre-existing `seed:v2-fil-instances-ir-fx` wrote ONLY to `v2-anchor.db` —
   so even when run it never populated the store the Phase-2/3 gates read.
 
-## What S1 builds
+## What S1 builds (as delivered)
 
 A single idempotent, replay-safe `scripts/backfill-fil-instances.ts`, wired into
 `ci:migrate`, run against `BANK_EVENT_DB` via `composition.eventStore`:
 
-1. **Source resolution (fail-open to bootstrap).** Read `FxTradeExecuted` from the
-   main store. If trades exist → derive FIL instances from them (a true backfill).
-   If ZERO (the current CI reality) → seed a small **deterministic anchor FX book**
-   (`build-phase-fixture` provenance, correctly labelled — no concealment) first,
-   then derive. Both paths are idempotent.
+1. **Source resolution.** Read `FxTradeExecuted` from the main store. If trades
+   exist → derive FIL instances from them (true backfill). If ZERO (the current
+   CI reality) → derive from a small **deterministic anchor FX book descriptor
+   set** (constants, re-run identical) WITHOUT persisting any legacy trade events.
 2. **FIL materialisation into the main store.** Emit `FilInstrumentCreated` (and
-   `FilInstrumentTerminated` for settled/matured) via `makeFilInstrumentCreated`,
-   economic terms decimal-native (`{currency, amount}` MAJOR-unit string), tenant
-   from anchor, reporting currency via `anchorFunctionalCurrency()` (never
-   hardcoded). Idempotency key = instance URN derived from source trade id.
-3. **Market-data seed (gap-only).** Production `fx-quote` ticks (with `mid`) for
-   every referenced pair + an FX return history long enough for the VaR engines
-   (`MIN_RETURN_OBSERVATIONS`). Never overwrite an existing tick.
-4. **Run the engines** so the parity gates have both sides: V1 daily-P&L reval +
-   report, V1 VaR (`MarketRiskMeasureComputed`), V2 VaR (`MarketRiskVarComputed`).
-5. **Wire into `ci:migrate`** so the gates are non-vacuous in CI too.
+   `FilInstrumentTerminated` for settled instruments) via the registered `make*`
+   builders, economic terms decimal-native (`{currency, amount}` MAJOR-unit
+   string — no `*Minor`), tenant from anchor, reporting currency via
+   `anchorFunctionalCurrency()` (never hardcoded). Idempotency = instance URN.
+3. **Market-data seed (gap-only).** Production `fx-quote` ticks (`mid`) for every
+   referenced pair + an FX return history (≥ `MIN_RETURN_OBSERVATIONS`+1 levels).
+   Deterministic id + INSERT OR IGNORE → never overwrites.
+4. **Wire into `ci:migrate`** so the V2 FIL data is present in CI too.
 
-S1 performs **NO flips** — no `v2Status` promotion. Byte-clean OR genuine
-divergence are both valid S1 outcomes; the job is non-vacuity.
+S1 performs **NO flips** — no `v2Status` promotion.
+
+### Result (clean CI store, after backfill)
+
+- 4 `FilInstrumentCreated` + 1 `FilInstrumentTerminated` (3 open + 1 settled),
+  78 production fx-quote ticks across 3 pairs (USD/ZAR, EUR/ZAR, GBP/ZAR).
+- `computeDailyPnLV2` over the FIL projection now returns **real** numbers:
+  3 active positions, totalUnrealised = 789 500 000 ZAR minor, 0 marks
+  unavailable — the V2 valuation path is exercised end-to-end (was vacuous).
+- `ba320-fx-v2-parity` V2 side: **3 open FIL instances** (was 0).
+- `recon:no-residual-minor-encoding`: **0 violations** (FIL emission is clean).
+
+### The legacy-encoding finding (S1→S2/S3 hand-off, not a silent gap)
+
+The V1 FX trade/settlement/reval/daily-P&L event family is still LEGACY
+minor-encoded (`*Minor` fields). `recon:no-residual-minor-encoding` forbids any
+`*Minor` numeric field in any payload (no allowlist), so those V1 types are
+**un-emittable on current main**. The V1 COMPARISON BASELINES of all three gates
+(`var-v2-parity`, `ba320-fx-v2-parity`, `daily-pnl-v2-parity`) are therefore
+frozen; FULL byte-comparison needs the V1 FX trade CDM
+(`markets/cdm/primitives.ts moneySchema` + the NOP fold + the V1 emitters)
+redenominated to decimal MoneyWire. That CDM-redenomination is the binding
+prerequisite for S2 (VaR flip) / S3 (daily-P&L flip) — beyond S1's data-population
+scope, logged here as the explicit hand-off.
 
 ## Charter Definition of Done
 
 - Idempotent + replay-safe (re-run = 0 new events).
 - `bun run ci` green on a clean store; no `any`/`!`/`@ts-ignore`; no green by concealment.
-- citation-gate 0; v1-removal-ratchet holds; no-hardcoded-reporting-currency green.
-- New source-trade fixtures labelled `build-phase-fixture` provenance (truthful).
+- citation-gate 0; v1-removal-ratchet holds; no-hardcoded-reporting-currency green;
+  no-residual-minor-encoding green (FIL emission is decimal-native).
+- Fixture descriptors are constants; no legacy `*Minor` events persisted.
