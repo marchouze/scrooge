@@ -17,16 +17,18 @@ describe("recon:dashboard-v2-coverage", () => {
     expect(r.pipeline).toBe("dashboard-v2-coverage");
   });
 
-  it("reports the wired routes (GL trial-balance + entries + accounts, market-risk, daily P&L, ALM/LCR/NSFR) and no hard failures", () => {
+  it("reports the wired routes (GL trial-balance + entries + accounts, market-risk, daily P&L, ALM/LCR/NSFR, BA-700/BA-320 returns) and no hard failures", () => {
     const r = run();
     // No fail-severity violations on the real tree (only warn for V1-only routes).
     expect(r.violations.some((v) => v.severity === "fail")).toBe(false);
-    // The summary records the wired/total split. WS-V2-AUTHORITATIVE S6 wires the
-    // ALM / LCR / NSFR snapshot route, taking the wired count to six of eight
-    // (GL trial-balance + GL entries + GL accounts + market-risk + daily P&L +
-    // ALM/LCR/NSFR snapshot).
+    // The summary records the wired/total split. WS-V2-AUTHORITATIVE S9 wires the
+    // BA-700 / BA-320 regulatory-returns route (the new GET
+    // /api/regulatory-returns/:return boundary → selectRegulatoryReturn dual-read),
+    // taking the wired count to seven of eight (GL trial-balance + GL entries +
+    // GL accounts + market-risk + daily P&L + ALM/LCR/NSFR snapshot + BA-700/BA-320
+    // returns). Only #6 (capital metrics) stays V1-only with its honest reason.
     expect(r.asOf).toContain("/8 read routes wired to V2");
-    expect(r.asOf).toMatch(/6\/8 read routes wired/);
+    expect(r.asOf).toMatch(/7\/8 read routes wired/);
   });
 
   it("emits an explicit reason (warn) for every V1-only route — no silent gaps", () => {
@@ -46,5 +48,22 @@ describe("recon:dashboard-v2-coverage", () => {
     // confirms the marker check is live, not a no-op.
     const markerMissing = r.violations.filter((v) => v.subject.startsWith("wired-marker-missing:"));
     expect(markerMissing.length).toBe(0);
+  });
+
+  it("the BA-700/BA-320 regulatory-returns route (#8) is wired with a present marker (WS-V2-AUTHORITATIVE S9)", () => {
+    const r = run();
+    // The route #8 wired entry must NOT surface a missing-marker fail — confirms
+    // selectRegulatoryReturn is genuinely present in the handler file and the
+    // dual-read boundary is live, not an inventory claim the code lacks.
+    const ba700Missing = r.violations.filter(
+      (v) =>
+        v.subject.startsWith("wired-marker-missing:") && v.subject.includes("regulatory-returns"),
+    );
+    expect(ba700Missing.length).toBe(0);
+    // And the route is no longer surfaced as a V1-only warn.
+    const ba700V1Only = r.violations.filter(
+      (v) => v.subject.startsWith("v1-only:") && v.subject.includes("regulatory-returns"),
+    );
+    expect(ba700V1Only.length).toBe(0);
   });
 });

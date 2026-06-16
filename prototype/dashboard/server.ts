@@ -151,7 +151,6 @@ import {
   getALMPositionSnapshot,
 } from "../platform/projections/alm-positions";
 import { getALMPositionSnapshotV2 } from "../platform/projections/alm-positions-v2";
-import { selectRegulatoryReturn } from "./regulatory-returns-view";
 import {
   type CapitalMetrics,
   computeCapitalMetrics,
@@ -286,6 +285,7 @@ import { listPolicies, listProcedures } from "./products-policy-chain";
 import { buildProductListView } from "./products-view";
 import { saveState } from "./registry";
 import { buildInstrumentDetailView, buildInstrumentsListView } from "./regulation-reader-view";
+import { selectRegulatoryReturn } from "./regulatory-returns-view";
 import { buildRegConceptsView, buildRegInstrumentsView } from "./regulatory-view";
 import { buildRiskRegisterView } from "./risk-register";
 import {

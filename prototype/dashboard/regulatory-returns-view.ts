@@ -49,6 +49,8 @@
 import { coaToCapitalClassifications } from "../platform/accounting/coa-registry";
 import { fxPositionCalculator } from "../platform/accounting/fx-calculators";
 import { isFlagEnabled } from "../platform/config/loader";
+import { mulD, roundDecimal, toDecimal, toMinorUnits } from "../platform/core/decimal-engine";
+import type { EventStore } from "../platform/event-store/store";
 import { anchorFunctionalCurrency } from "../platform/identity/functional-currency";
 import { type MarketDataStore, lookupQuoteWithInverse } from "../platform/market-data/store";
 import type { FxTradeExecutedPayload } from "../platform/markets/cdm/fx";
@@ -60,7 +62,6 @@ import {
 } from "../platform/projections/filter";
 import { fxPositionsToBa310Input } from "../platform/reporting/ba-320-fx-adapter";
 import { generateBA700Return } from "../platform/returns/ba700/generator";
-import type { EventStore } from "../platform/event-store/store";
 import { spotObservableId } from "../v2-core/fil-models/fx-valuation/methodology";
 
 // ---------------------------------------------------------------------------
@@ -217,10 +218,7 @@ function buildBA700V2(eventStore: EventStore, functionalCurrency: string): Regul
     functionalCurrency,
     entity: ANCHOR_ENTITY,
     asOf: AS_OF,
-    lineage:
-      `V2 read (useV2Store ON): computeBA700V2 — GlPostingEmitted (capital accounts) + ` +
-      `CcrEadComputed (credit RWA). coverageStatus=${v2.meta.coverageStatus}. ` +
-      "Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-PHASE-4.",
+    lineage: `V2 read (useV2Store ON): computeBA700V2 — GlPostingEmitted (capital accounts) + CcrEadComputed (credit RWA). coverageStatus=${v2.meta.coverageStatus}. Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-PHASE-4.`,
     figures: {
       tier1Capital: ca.tier1Capital,
       tier2Capital: ca.tier2Capital,
@@ -284,7 +282,10 @@ function buildBA320V1(
   });
   const rows = fxPositionsToBa310Input(positions, functionalCurrency);
 
-  // Reg 28(5) / BCBS §718(xiii): 8% × max(Σ|long|, Σ|short|).
+  // Reg 28(5) / BCBS §718(xiii): 8% × max(Σ|long|, Σ|short|). Computed with the
+  // decimal engine (D-DECIMAL-NATIVE-MONEY-ARITHMETIC — no float on a money
+  // figure), mirroring the V2 computeBA320V2 charge derivation exactly so the
+  // dual-read paths are byte-for-byte comparable.
   let sumLong = 0;
   let sumShort = 0;
   for (const row of rows) {
@@ -292,7 +293,18 @@ function buildBA320V1(
     else sumShort += Math.abs(row.netPositionFunctionalMinor);
   }
   const openPositionChargeMinor =
-    rows.length > 0 ? Math.round(0.08 * Math.max(sumLong, sumShort)) : null;
+    rows.length > 0
+      ? Number(
+          toMinorUnits(
+            roundDecimal(
+              mulD(toDecimal(String(Math.max(sumLong, sumShort))), toDecimal("0.08")),
+              0,
+              "HALF_UP",
+            ),
+            0,
+          ),
+        )
+      : null;
 
   return {
     return: "BA 320",
@@ -339,10 +351,7 @@ function buildBA320V2(
     functionalCurrency,
     entity: ANCHOR_ENTITY,
     asOf: AS_OF,
-    lineage:
-      `V2 read (useV2Store ON): computeBA320V2 — FilInstrumentCreated/Terminated FIL FX ` +
-      `instances; production fx-quote rate source. coverageStatus=${v2.meta.coverageStatus}. ` +
-      "Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-PHASE-4.",
+    lineage: `V2 read (useV2Store ON): computeBA320V2 — FilInstrumentCreated/Terminated FIL FX instances; production fx-quote rate source. coverageStatus=${v2.meta.coverageStatus}. Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-PHASE-4.`,
     figures: {
       positions: v2.fx.positions.map((p) => ({
         baseCurrency: p.baseCurrency,

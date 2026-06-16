@@ -24,16 +24,17 @@ It becomes enforcing once every route here is wired.
 | 5 | `GET /api/gl/accounts` | `buildGlView().accountBalances` | `computeGlAccountsV2` (gl-projection-v2.ts, WS-V2-AUTHORITATIVE S5) — account-master `{ accountId, name, category, balances }` with COA metadata | **YES** | — |
 | 6 | capital metrics (`computeCapitalMetrics`, home/treasury tiles) | `capital-metrics.ts` | `computeBA700V2` (ba700-v2.ts, #1378) exists but is structurally no-data at Phase 3e | NO | The V2 BA-700 projection exists, but at Phase 3e its capital numerator is structurally no-data (no capital-GL posting rules emit `GlPostingEmitted` yet — GAP-3E-001) and its `BA700ReturnV2` shape differs from the `CapitalMetrics` tile shape. Promoting it would replace real V1 capital figures with zero — a regression, not an equivalent dual-read. Stays V1-only until capital-GL posting rules + a `CapitalMetrics`-shaped V2 adapter land. |
 | 7 | ALM positions / LCR / NSFR (`getALMPositionSnapshot`, treasury tiles) | `alm-positions.ts` | `getALMPositionSnapshotV2` (alm-positions-v2.ts, WS-V2-AUTHORITATIVE S6) — folds the V2-parallel money-market lifecycle events into the IDENTICAL `ALMPositionSnapshot` shape; backed by `recon:alm-snapshot-v2-parity` | **YES** | — |
-| 8 | regulatory returns BA-700 / BA-320 | (V1 BA-return generators) | `computeBA700V2` + `computeBA320V2` (ba700-v2.ts / ba320-fx-v2.ts, #1378) exist and back the V2 parity gates | NO | The V2 projections exist and back `recon:ba700-v2-parity` / `recon:ba320-fx-v2-parity`, but no dashboard HTTP route surfaces a BA-700/BA-320 return today (the returns come from the BA-return generators, not a `/api` route). There is no route boundary to dual-read; this entry tracks projection availability so the gap stays explicit. BA-700 capital is additionally structurally no-data at Phase 3e (GAP-3E-001). |
+| 8 | `GET /api/regulatory-returns/:return` (BA-700 / BA-320) | V1 BA-return generators (`generateBA700Return`; `fxPositionCalculator` + `fxPositionsToBa310Input`) | `computeBA700V2` + `computeBA320V2` (ba700-v2.ts / ba320-fx-v2.ts, #1378) — WS-V2-AUTHORITATIVE S9 `selectRegulatoryReturn` dual-read | **YES** | — |
 
 ## Summary
 
-- Wired under `useV2Store`: **6** routes (GL trial-balance, GL entries, GL
-  accounts, market-risk measure, daily P&L, ALM / LCR / NSFR snapshot).
+- Wired under `useV2Store`: **7** routes (GL trial-balance, GL entries, GL
+  accounts, market-risk measure, daily P&L, ALM / LCR / NSFR snapshot, BA-700 /
+  BA-320 regulatory returns).
 - Total inventoried read routes with a V1↔V2 pairing: **8**.
-- Coverage this slice: **6 / 8**.
+- Coverage this slice: **7 / 8** (WS-V2-AUTHORITATIVE S9 closed route #8).
 
-The six wired routes are the ones with genuinely drop-in, shape-compatible V2
+The seven wired routes are the ones with genuinely drop-in, shape-compatible V2
 read paths:
 
 - `computeTrialBalanceV2` — shape-identical to V1, asserted by `recon:gl-v2-parity`.
@@ -55,17 +56,28 @@ read paths:
   Currency-agnostic (reporting currency sourced from the entity tree, no
   hardcoded ZAR). Backed by `recon:alm-snapshot-v2-parity` (snapshot-shape
   compare, where `recon:ba300-v2-parity` compares only the LCR ratio denominator).
+- `selectRegulatoryReturn` (WS-V2-AUTHORITATIVE S9) — the route-boundary dual-read
+  behind the new `GET /api/regulatory-returns/:return` route. Under `useV2Store`
+  it folds the V2 projections (`computeBA700V2` for BA-700 capital adequacy;
+  `computeBA320V2` for BA-320 FX market risk) into a faithful presentation view;
+  when OFF (default) the V1 BA-return generators stay authoritative. Functional
+  currency is sourced from the entity tree (no hardcoded ZAR) and passed
+  explicitly into every generator; the BA-320 FX rate resolves from the same
+  `MarketDataStore` production fx-quote source the V2 projection and parity gate
+  read, fail-closed (charge stays `null`, never fabricated) on a missing rate.
+  Backed by `recon:ba700-v2-parity` / `recon:ba320-fx-v2-parity`. This is the
+  route boundary only — `useV2Store` stays OFF by default; flipping it ON is the
+  SEPARATE authoritative cutover.
 
-The remaining two routes are honest gaps:
+The remaining one route is an honest gap:
 
 - **#6 (capital metrics):** the V2 BA-700 projection exists but is structurally
   no-data at Phase 3e (no capital-GL posting rules) and shape-incompatible with
   the capital tile.
-- **#8 (BA-700/BA-320 returns):** the V2 projections exist but no dashboard route
-  surfaces these returns, so there is no boundary to dual-read.
 
-These are tracked here and in the advisory recon as honest gaps, to be wired in
-subsequent slices as the missing V2 projections / route boundaries land.
+This is tracked here and in the advisory recon as an honest gap, to be wired in a
+subsequent slice as the missing capital-GL posting rules / `CapitalMetrics`-shaped
+V2 adapter land.
 The gate stays **advisory** until all eight routes are wired, keeping the cutover
 reversible: V1 stays authoritative and the flag is OFF by default.
 
