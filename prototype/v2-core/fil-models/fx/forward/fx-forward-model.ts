@@ -26,6 +26,7 @@ import type {
 } from "../../../fil-facets/facets.ts";
 import type { FilModelImplementationDeclared } from "../../declaration.ts";
 import { valueFxPosition } from "../../fx-valuation/methodology.ts";
+import { requireReporting } from "../../fx-valuation/reporting-currency-resolver.ts";
 import {
   bookCost,
   computeDailyCarry,
@@ -69,7 +70,7 @@ function resolveFwdRate(
 }
 
 export function fxForwardLegValuable(pos: FxForwardLegPosition): Valuable {
-  const reporting = pos.reporting ?? "ZAR";
+  const reporting = requireReporting(pos.reporting, "fxForwardLegValuable");
   return {
     valuationMethod: () => "mark-to-market",
     requiredObservables(): readonly ObservableRef[] {
@@ -97,7 +98,7 @@ export function fxForwardLegValuable(pos: FxForwardLegPosition): Valuable {
 }
 
 export function fxForwardLegPerformable(pos: FxForwardLegPosition): Performable {
-  const reporting = pos.reporting ?? "ZAR";
+  const reporting = requireReporting(pos.reporting, "fxForwardLegPerformable");
   return {
     unrealisedPnl(marks: MarketDataSlice, asOf: Instant, bookedCost: Money): PerformanceRecord {
       const { forwardRate, observablesUsed } = resolveFwdRate(

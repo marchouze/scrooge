@@ -16,14 +16,13 @@ import type {
 } from "../../../fil-attribution/metric.ts";
 import { addD, isZeroD, toDecimal } from "../../../fil-core/decimal.ts";
 import type { FilLifecycleStage } from "../../../fil-core/lifecycle.ts";
-import { type Instant, moneyFromDecimal, zeroMoney } from "../../../fil-core/primitives.ts";
+import { type Instant, moneyFromDecimal } from "../../../fil-core/primitives.ts";
 import type {
   MarketDataSlice,
   Performable,
   RevaluationRecord,
   Valuable,
 } from "../../../fil-facets/facets.ts";
-import { FX_REPORTING_CURRENCY } from "../../fx-valuation/methodology.ts";
 
 // ---------------------------------------------------------------------------
 // Result type — shared by all three metrics. DECIMAL-NATIVE
@@ -35,14 +34,27 @@ export interface FxPerformanceResult {
   readonly amount: string;
 }
 
+// CURRENCY-NEUTRAL zero (empty currency sentinel) — carries NO hardcoded
+// reporting currency (WS-MULTI-BASE-CURRENCY). The fold's first real member
+// supplies the currency; the book result is whatever the (resolved) reporting
+// currency of its members is, never a baked-in ZAR.
 const ZERO_RESULT: FxPerformanceResult = {
-  currency: FX_REPORTING_CURRENCY,
+  currency: "",
   amount: "0",
 };
 
+/** Neutral baseline booked-cost for the unrealised-P&L call — the models derive
+ * the real book cost from their own booked rate when this is zero, so the
+ * currency here is never consumed (no hardcoded reporting ccy needed). */
+const NEUTRAL_ZERO_COST = { currency: "", amount: "0" } as const;
+
+function isNeutralZero(r: FxPerformanceResult): boolean {
+  return r.currency === "" && isZeroD(toDecimal(r.amount));
+}
+
 function addResults(a: FxPerformanceResult, b: FxPerformanceResult): FxPerformanceResult {
-  if (isZeroD(toDecimal(a.amount)) && a.currency === FX_REPORTING_CURRENCY) return b;
-  if (isZeroD(toDecimal(b.amount)) && b.currency === FX_REPORTING_CURRENCY) return a;
+  if (isNeutralZero(a)) return b;
+  if (isNeutralZero(b)) return a;
   if (a.currency !== b.currency) {
     throw new Error(
       `fx-performance: cannot add across currencies (${a.currency} + ${b.currency}) — single-currency book required`,
@@ -107,7 +119,7 @@ export const fxUnrealisedPnlMetric: AttributionMetric<FxPerformanceResult> & {
           `${FX_UNREALISED_PNL_METRIC_ID}: member "${m.instanceUrn}" exposes no Performable facet`,
         );
       }
-      const rec = perf.unrealisedPnl(marks, asOf, zeroMoney(FX_REPORTING_CURRENCY));
+      const rec = perf.unrealisedPnl(marks, asOf, NEUTRAL_ZERO_COST);
       acc = addResults(acc, {
         currency: rec.unrealisedPnl.currency,
         amount: rec.unrealisedPnl.amount,

@@ -46,7 +46,12 @@ import {
   registerFxPnlMetric,
   sumChildren,
 } from "../../v2-core";
+import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
+
+// Anchor book reporting currency = anchor entity's functional currency, sourced
+// from the legal-entity tree (WS-MULTI-BASE-CURRENCY).
+const REPORTING = anchorFunctionalCurrency();
 
 // ---------------------------------------------------------------------------
 // Fixture: a trivially-additive scalar metric used to assert the gate is
@@ -137,15 +142,31 @@ export function run(): ReconResult {
     });
     const a = mkMember(
       "a",
-      fxValuable({ currency: "USD", signedNotional: "100000", isForward: false }),
+      fxValuable({
+        currency: "USD",
+        signedNotional: "100000",
+        isForward: false,
+        reporting: REPORTING,
+      }),
     );
     const b = mkMember(
       "b",
-      fcyCashValuable(fcyCashFromSettledReceivable({ currency: "EUR", signedNotional: "50000" })),
+      fcyCashValuable(
+        fcyCashFromSettledReceivable({
+          currency: "EUR",
+          signedNotional: "50000",
+          reporting: REPORTING,
+        }),
+      ),
     );
     const c = mkMember(
       "c",
-      fxValuable({ currency: "GBP", signedNotional: "-30000", isForward: false }),
+      fxValuable({
+        currency: "GBP",
+        signedNotional: "-30000",
+        isForward: false,
+        reporting: REPORTING,
+      }),
     );
 
     const joint = fxPnlMetric.evaluate([a, b, c], marks, marks.asOf);

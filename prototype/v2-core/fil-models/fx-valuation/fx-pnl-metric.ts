@@ -43,7 +43,6 @@ import { addD, isZeroD, toDecimal } from "../../fil-core/decimal";
 import type { FilLifecycleStage } from "../../fil-core/lifecycle";
 import { type CitationRef, moneyFromDecimal } from "../../fil-core/primitives";
 import type { MarketDataSlice, RevaluationRecord, Valuable } from "../../fil-facets/facets";
-import { FX_REPORTING_CURRENCY } from "./methodology";
 
 // ---------------------------------------------------------------------------
 // The metric result — reporting-currency P&L as a DECIMAL-NATIVE amount (canonical
@@ -60,19 +59,32 @@ export interface FxPnlResult {
 
 export const FX_PNL_METRIC_ID = "fx-pnl" as const;
 
-/** The reporting-currency zero for the additive fold. */
-export const FX_PNL_ZERO: FxPnlResult = { currency: FX_REPORTING_CURRENCY, amount: "0" };
+/**
+ * The CURRENCY-NEUTRAL zero for the additive fold. The empty currency string is
+ * a sentinel meaning "no reporting currency established yet" — the fold's first
+ * real member supplies the currency. This deliberately carries NO hardcoded
+ * reporting currency (WS-MULTI-BASE-CURRENCY): the book P&L currency is whatever
+ * the (resolved) reporting currency of its members is, never a baked-in ZAR.
+ */
+export const FX_PNL_ZERO: FxPnlResult = { currency: "", amount: "0" };
+
+/** `true` iff this result is the neutral zero (empty currency + zero amount). */
+function isNeutralZero(r: FxPnlResult): boolean {
+  return r.currency === "" && isZeroD(toDecimal(r.amount));
+}
 
 /**
  * Additive combination of two reporting-currency P&L results. A cross-currency
  * mix is a hard error — book P&L is single-currency (the reporting currency);
  * a member valued in a different reporting currency is a projection defect.
+ * The neutral zero (empty currency) is the fold identity: `zero + x == x` for
+ * any reporting currency x, with NO hardcoded default.
  * Decimal-exact (D-V2-CORE-MONEY-DECIMAL-NATIVE).
  */
 function addFxPnl(a: FxPnlResult, b: FxPnlResult): FxPnlResult {
-  // Treat the zero element's currency as neutral so `zero + x == x`.
-  if (isZeroD(toDecimal(a.amount)) && a.currency === FX_REPORTING_CURRENCY) return b;
-  if (isZeroD(toDecimal(b.amount)) && b.currency === FX_REPORTING_CURRENCY) return a;
+  // The neutral zero is identity for any currency (no hardcoded reporting ccy).
+  if (isNeutralZero(a)) return b;
+  if (isNeutralZero(b)) return a;
   if (a.currency !== b.currency) {
     throw new Error(
       `fx-pnl: cannot add P&L across reporting currencies (${a.currency} + ${b.currency}) — book P&L is single-currency`,

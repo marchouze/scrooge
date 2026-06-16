@@ -192,6 +192,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // parallel to v1. Authority: D-FIL-ATTRIBUTION-A1-BUILD (A2).
     "recon:fx-settlement-continuity",
     "recon:fx-book-nop-parity",
+    // WS-MULTI-BASE-CURRENCY (D-MULTI-BASE-CURRENCY-FOUNDATION) — ENFORCING,
+    // harden-only. Asserts no literal reporting/base currency in the V2 FX
+    // valuation path; the reporting currency must resolve from the holding
+    // entity's functional currency. Expected 0 violations (debt removed in PR).
+    "recon:no-hardcoded-reporting-currency",
     "recon:dashboard",
     "recon:wall-clock-callsite-coverage",
     "recon:decisions-events-only",

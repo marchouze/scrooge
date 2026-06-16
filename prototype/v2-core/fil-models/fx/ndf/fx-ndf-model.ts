@@ -27,6 +27,7 @@ import type {
   Valuable,
 } from "../../../fil-facets/facets.ts";
 import type { FilModelImplementationDeclared } from "../../declaration.ts";
+import { requireReporting } from "../../fx-valuation/reporting-currency-resolver.ts";
 import {
   bookCost,
   computeDailyCarry,
@@ -48,7 +49,7 @@ function resolveNdfRate(
   pos: FxNdfPosition,
   marks: MarketDataSlice,
 ): { ndfRate: number; observablesUsed: readonly ObservableRef[] } {
-  const reporting = pos.reporting ?? "ZAR";
+  const reporting = requireReporting(pos.reporting, "resolveNdfRate");
   if (pos.fixingRate !== undefined) {
     // Post-fixing: crystallised rate, no observables needed
     return { ndfRate: pos.fixingRate, observablesUsed: [] };
@@ -60,7 +61,7 @@ function resolveNdfRate(
 }
 
 export function fxNdfValuable(pos: FxNdfPosition): Valuable {
-  const reporting = pos.reporting ?? "ZAR";
+  const reporting = requireReporting(pos.reporting, "fxNdfValuable");
   const settlementCurrency = pos.settlementCurrency;
   return {
     valuationMethod: () => "mark-to-model",
@@ -83,7 +84,7 @@ export function fxNdfValuable(pos: FxNdfPosition): Valuable {
 }
 
 export function fxNdfPerformable(pos: FxNdfPosition): Performable {
-  const reporting = pos.reporting ?? "ZAR";
+  const reporting = requireReporting(pos.reporting, "fxNdfPerformable");
   const settlementCurrency = pos.settlementCurrency;
   return {
     unrealisedPnl(marks: MarketDataSlice, asOf: Instant, _bookedCost: Money): PerformanceRecord {

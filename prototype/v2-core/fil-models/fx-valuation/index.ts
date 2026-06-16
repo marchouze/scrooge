@@ -11,6 +11,7 @@
 //         Bea (Accounting & financial reporting engineer, engineering).
 
 export * from "./methodology";
+export * from "./reporting-currency-resolver";
 export * from "./fx-model";
 export * from "./fcy-cash-model";
 export * from "./fx-pnl-metric";

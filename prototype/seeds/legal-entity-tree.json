@@ -14,6 +14,7 @@
         "country": "ZA"
       },
       "parentEntityId": null,
+      "functionalCurrency": "ZAR",
       "regulatoryRegime": {
         "primaryRegulator": "none-companies-act-only",
         "regimeAnchor": [
@@ -40,6 +41,7 @@
         "country": "ZA"
       },
       "parentEntityId": "urn:legal-entity:hoz:hoz-group:v1",
+      "functionalCurrency": "ZAR",
       "regulatoryRegime": {
         "primaryRegulator": "PA",
         "regimeAnchor": [
@@ -69,6 +71,7 @@
         "country": "ZA"
       },
       "parentEntityId": "urn:legal-entity:hoz:hoz-group:v1",
+      "functionalCurrency": "ZAR",
       "regulatoryRegime": {
         "primaryRegulator": "JSE",
         "regimeAnchor": [

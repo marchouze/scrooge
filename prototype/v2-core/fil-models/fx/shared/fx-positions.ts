@@ -20,7 +20,13 @@ export interface FxSpotPosition {
   readonly signedNotional: string; // MAJOR units, SIGNED canonical decimal string (long +, short −)
   readonly bookedSpotRate: number;
   readonly settlementDate: string;
-  readonly reporting?: string;
+  /**
+   * Reporting currency the position is valued into — the holding entity's
+   * FUNCTIONAL currency (IAS-21), populated by `resolveReportingCurrency` at
+   * construction (WS-MULTI-BASE-CURRENCY). REQUIRED + fail-closed: there is NO
+   * `?? "ZAR"` default anywhere in the valuation path. ISO-4217 alpha-3.
+   */
+  readonly reporting: string;
 }
 
 export interface FxForwardLegPosition {
@@ -29,7 +35,13 @@ export interface FxForwardLegPosition {
   readonly bookedForwardRate: number;
   readonly maturityDate: string;
   readonly remainingDays: number;
-  readonly reporting?: string;
+  /**
+   * Reporting currency the position is valued into — the holding entity's
+   * FUNCTIONAL currency (IAS-21), populated by `resolveReportingCurrency` at
+   * construction (WS-MULTI-BASE-CURRENCY). REQUIRED + fail-closed: there is NO
+   * `?? "ZAR"` default anywhere in the valuation path. ISO-4217 alpha-3.
+   */
+  readonly reporting: string;
 }
 
 export interface FxForwardPosition extends FxForwardLegPosition {
@@ -40,7 +52,13 @@ export interface FxSwapPosition {
   readonly kind: "swap";
   readonly nearLeg: FxForwardLegPosition;
   readonly farLeg: FxForwardLegPosition;
-  readonly reporting?: string;
+  /**
+   * Reporting currency the position is valued into — the holding entity's
+   * FUNCTIONAL currency (IAS-21), populated by `resolveReportingCurrency` at
+   * construction (WS-MULTI-BASE-CURRENCY). REQUIRED + fail-closed: there is NO
+   * `?? "ZAR"` default anywhere in the valuation path. ISO-4217 alpha-3.
+   */
+  readonly reporting: string;
 }
 
 export interface FxNdfPosition {
@@ -53,7 +71,13 @@ export interface FxNdfPosition {
   readonly settlementCurrency: string;
   readonly fixingRate?: number; // undefined = pre-fixing; present = post-fixing (crystallised)
   readonly remainingDays: number;
-  readonly reporting?: string;
+  /**
+   * Reporting currency the position is valued into — the holding entity's
+   * FUNCTIONAL currency (IAS-21), populated by `resolveReportingCurrency` at
+   * construction (WS-MULTI-BASE-CURRENCY). REQUIRED + fail-closed: there is NO
+   * `?? "ZAR"` default anywhere in the valuation path. ISO-4217 alpha-3.
+   */
+  readonly reporting: string;
 }
 
 export type FxPosition = FxSpotPosition | FxForwardPosition | FxSwapPosition | FxNdfPosition;

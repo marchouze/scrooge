@@ -194,6 +194,11 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   PartyAttributeChanged: "counterparty",
   PartyRelationshipAsserted: "counterparty",
   LegalEntityRegistered: "counterparty",
+  // Functional-currency assignment per entity/branch (IAS-21; WS-MULTI-BASE-
+  // CURRENCY). A governance record — the source of truth for the FX valuation
+  // path's `reporting` resolution, which replaced the removed ZAR hardcode.
+  // Authority: D-MULTI-BASE-CURRENCY-FOUNDATION (CEO-approved 2026-06-16).
+  EntityFunctionalCurrencyAssigned: "governance",
   // Settlement.
   SettlementInstructionIssued: "settlement",
   SettlementConfirmed: "settlement",
