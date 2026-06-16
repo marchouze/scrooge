@@ -391,6 +391,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // Wave 2 PILOT — posture domain V1-store ↔ v2-control-plane-store register
     // byte-equivalence. ENFORCING once byte-clean (the pilot flip evidence).
     "recon:posture-v2-parity",
+    // Bucket A PILOT — RwaComputed → RwaComputedV2 retired-by-construction.
+    // ENFORCING: asserts the four D-V1-REMOVAL-FLIP-BASIS-RBC conditions
+    // (registry tags; V1 un-emittable; V2 sole live path produces non-vacuous;
+    // decoded-decimal parity). Decoded-value compare (not byte) — unit change.
+    "recon:rwa-computed-v2-parity",
     // Wave 2 BATCH-1 — four money-free reference-data domains (regulatory,
     // market-data, obligation-review, obligation-equivalence; 19 types) V1-store
     // ↔ v2-control-plane-store event-list parity. ENFORCING (byte-clean flip).

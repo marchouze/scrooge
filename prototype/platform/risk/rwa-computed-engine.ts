@@ -55,7 +55,9 @@
 //   + Camille (Chief Financial Officer, governance — RWA-engine accountable).
 
 import { type DebtExposure, type ExposureClass, readDebtExposures } from "../accounting/ecl-engine";
+import { minorFromMoneyWire } from "../core/money-codec";
 import { makeRwaComputed } from "../event-store/event-types/regulatory-reporting";
+import type { RwaComputedV2Payload } from "../event-store/event-types/regulatory-reporting-v2";
 import type { EventStore } from "../event-store/store";
 import type { Actor, Event } from "../event-store/types";
 import {
@@ -355,13 +357,37 @@ export function readRwaDecompositionOfRecord(
   },
 ): RwaDecomposition | null {
   const provenanceFilter = opts?.provenanceFilter ?? defaultProvenanceFilter();
-  let latest: { eventId: string; payload: Record<string, unknown> } | undefined;
-  for (const ev of store.replay({
+  const window = {
     entity,
-    type: "RwaComputed",
     ...(opts?.asOf !== undefined ? { asOf: opts.asOf } : {}),
     ...(opts?.untilSequence !== undefined ? { untilSequence: opts.untilSequence } : {}),
-  })) {
+  } as const;
+
+  // V2-FIRST (Bucket A pilot, D-V1-REMOVAL-FLIP-BASIS-RBC): the live emit path
+  // is RwaComputedV2 (decimal-native MoneyWire). Decode the four MoneyWire
+  // figures back to minor units for the minor-based RwaDecomposition shape that
+  // BA 700 consumes. Fall back to the historical V1 RwaComputed type so legacy /
+  // backfilled events (which carry *RwaMinor) still replay (RBC condition 4).
+  let latestV2: { eventId: string; payload: RwaComputedV2Payload } | undefined;
+  for (const ev of store.replay({ type: "RwaComputedV2", ...window })) {
+    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+    const p = ev.payload as RwaComputedV2Payload;
+    if (p.periodId !== periodId) continue;
+    latestV2 = { eventId: ev.event_id, payload: p };
+  }
+  if (latestV2 !== undefined) {
+    const p = latestV2.payload;
+    return {
+      creditRwaMinor: minorFromMoneyWire(p.creditRwa),
+      marketRwaMinor: minorFromMoneyWire(p.marketRwa),
+      operationalRwaMinor: minorFromMoneyWire(p.operationalRwa),
+      rwaComputationEventId: latestV2.eventId,
+      source: typeof p.source === "string" ? p.source : RWA_COMPUTED_BUILD_PHASE_SOURCE,
+    };
+  }
+
+  let latest: { eventId: string; payload: Record<string, unknown> } | undefined;
+  for (const ev of store.replay({ type: "RwaComputed", ...window })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const p = ev.payload as Record<string, unknown>;
     if (p.periodId !== periodId) continue;
