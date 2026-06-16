@@ -60,7 +60,12 @@ import type {
   TenantId,
 } from "../event-store/event-types/credit-limit";
 import type { EventStore } from "../event-store/store";
-import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "./filter";
+import type { Event } from "../event-store/types";
+import {
+  type ProvenanceFilter,
+  defaultProvenanceFilter,
+  eventMatchesProvenanceFilter,
+} from "./filter";
 import { readWithOutputSnapshot } from "./output-snapshot-cache";
 
 // ---------------------------------------------------------------------------
@@ -68,6 +73,41 @@ import { readWithOutputSnapshot } from "./output-snapshot-cache";
 // ---------------------------------------------------------------------------
 
 export type CreditLimitRegistry = Map<string, CreditLimitV2RegistryEntry>;
+
+// ---------------------------------------------------------------------------
+// sortedByAsOf — gather provenance-filtered, as_of-bounded credit-limit
+// lifecycle events and return them in as_of order (stable on sequence).
+//
+// Both the V1 and V2 folds use this so a `CreditLimitLoaded`/`Withdrawn`
+// folds after its `CreditLimitApproved` regardless of physical append order
+// — the events-truth invariant is that `as_of` is the logical clock, not the
+// store sequence. A stable sort preserves replay (sequence) order for equal
+// as_of values, keeping the fold deterministic and replay-safe.
+// ---------------------------------------------------------------------------
+
+const CREDIT_LIMIT_LIFECYCLE_TYPES = new Set<string>([
+  "CreditLimitApproved",
+  "CreditLimitLoaded",
+  "CreditLimitWithdrawn",
+  "CreditLimitApprovedV2",
+  "CreditLimitLoadedV2",
+  "CreditLimitWithdrawnV2",
+]);
+
+function sortedByAsOf(store: EventStore, filter: ProvenanceFilter, asOf: string): Event[] {
+  const events: Event[] = [];
+  for (const e of store.replay({})) {
+    if (!CREDIT_LIMIT_LIFECYCLE_TYPES.has(e.type)) continue;
+    if (!eventMatchesProvenanceFilter(e, filter)) continue;
+    if (e.as_of > asOf) continue;
+    events.push(e);
+  }
+  // Stable sort by as_of; replay already yields sequence order for ties.
+  return events
+    .map((e, i) => ({ e, i }))
+    .sort((a, b) => (a.e.as_of < b.e.as_of ? -1 : a.e.as_of > b.e.as_of ? 1 : a.i - b.i))
+    .map(({ e }) => e);
+}
 
 // ---------------------------------------------------------------------------
 // computeCreditLimitRegistryV2Uncached — pure fold (no snapshot cache).
@@ -83,14 +123,18 @@ export function computeCreditLimitRegistryV2Uncached(
   const registry = new Map<string, CreditLimitV2RegistryEntry>();
   const provenanceFilter = defaultProvenanceFilter();
 
-  // Single pass over the store: fold Approved → Loaded → Withdrawn in
-  // chronological order (the store returns events in append order, which
-  // equals as_of order for normal operation).
-  for (const e of store.replay({})) {
-    if (!eventMatchesProvenanceFilter(e, provenanceFilter)) continue;
-    // Apply as-of gate (fold only events up to `asOf`).
-    if (e.as_of > asOf) continue;
+  // Fold Approved → Loaded → Withdrawn in chronological (as_of) order.
+  //
+  // We gather the relevant events first and sort by `as_of` (stable — the
+  // store replays in sequence order, so a stable sort yields as_of-primary,
+  // sequence-secondary). This makes the fold independent of physical append
+  // order: a `CreditLimitLoaded`/`Withdrawn` whose source approval was
+  // appended LATER (e.g. a dual-run / Step-5 backfill) still folds after its
+  // approval, as the events-truth logical order (as_of) dictates. Relying on
+  // append order alone silently dropped out-of-order loads.
+  const events = sortedByAsOf(store, provenanceFilter, asOf);
 
+  for (const e of events) {
     if (e.type === "CreditLimitApprovedV2") {
       const p = e.payload as unknown as CreditLimitApprovedV2Payload;
       registry.set(p.counterpartyId, {
@@ -228,10 +272,9 @@ export function computeCreditLimitRegistryV1(
     readonly withdrawnBy: string;
   }
 
-  for (const e of store.replay({})) {
-    if (!eventMatchesProvenanceFilter(e, provenanceFilter)) continue;
-    if (e.as_of > asOf) continue;
-
+  // Fold in as_of order (see computeCreditLimitRegistryV2Uncached for the
+  // rationale — append order is not a safe proxy after dual-run backfills).
+  for (const e of sortedByAsOf(store, provenanceFilter, asOf)) {
     if (e.type === "CreditLimitApproved") {
       const p = e.payload as unknown as V1ApprovedPayload;
       const limit: MoneyWire = minorIntToMoneyWire(p.limit, p.currency);
