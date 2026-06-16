@@ -257,7 +257,6 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // account. Advisory (ok: true with warn) until the V2 bond path is
     // authoritative. Authority: D-V1-REMOVAL-PHASE-3C.
     "recon:bond-gl-v2-parity",
-<<<<<<< HEAD
     // D-V1-REMOVAL-PHASE2-GAP-A2 — daily P&L V2 parity gate (advisory).
     // Compares V1 DailyPnLReportGenerated (FxPositionRevalued-based, v1-only)
     // against V2 computeDailyPnLV2 (snapshot-anchored FIL projection + MarketDataSlice
