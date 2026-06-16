@@ -9,6 +9,17 @@
 //   - RegulatoryConceptExtracted
 //   - ObligationConceptLinked
 //
+// WAVE 2 BATCH-1 FLIP (2026-06-16): all eight types flipped v1-only →
+// v2-replaced. Basis: ORDINARY dual-write + byte-clean parity (NOT
+// retired-by-construction). The generic store-tee mirrors every V1 append into
+// the v2 control-plane store (rows in v2-core/registry/index.ts carry tee:{};
+// schemas re-declared in v2-core/reference-data/events.ts) and
+// recon:reference-data-v2-parity proves the V1-store ↔ v2-store event-list
+// register byte-clean (ENFORCING). V1 remains emittable; the parity gate is the
+// standing evidence. Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-
+// BASIS-RBC (CEO-approved 2026-06-16). Flip by Atlas (Core banking platform
+// architect, engineering).
+//
 // Authority: Mira mandate (Compliance / RegTech engineer, engineering).
 // Pilot: FAIS Act 37/2002 horizon scan.
 // Author: Mira (Compliance / RegTech engineer, engineering)
@@ -38,7 +49,7 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // consistent with FSCA inspection / Banks Act s.91 audit requirements.
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/regulatory/concept-extractor.ts; Mira horizon-scan pilot",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "RegulatoryInstrumentAmended",
@@ -50,7 +61,7 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["FAIS-ACT-37-2002", "ORG-CD-01"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/regulatory/concept-extractor.ts; Mira horizon-scan pilot",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "RegulatoryInstrumentContextualised",
@@ -62,7 +73,7 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["FAIS-ACT-37-2002", "ORG-CD-01"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/regulatory/concept-extractor.ts; Mira horizon-scan pilot",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "RegulatoryConceptExtracted",
@@ -75,7 +86,7 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["FAIS-ACT-37-2002", "ORG-CD-01"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/regulatory/concept-extractor.ts; Mira horizon-scan pilot",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ObligationConceptLinked",
@@ -87,7 +98,7 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["FAIS-ACT-37-2002", "ORG-CD-01"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/regulatory/obligation-linker.ts; Mira horizon-scan pilot",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "RegulatorySourceReviewed",
@@ -101,7 +112,7 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-REGULATORY-LIBRARY-V1", "ORG-CD-01"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "scripts/backfill-regulatory-reviews.ts; platform/regulatory review-marker (Phase 1)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "GraphNodeAsserted",
@@ -113,7 +124,7 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["ORG-CD-01"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/regulatory/graph/seed-projection.ts; Mira regulatory knowledge graph",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "GraphEdgeAsserted",
@@ -125,6 +136,6 @@ export const REGULATORY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["ORG-CD-01"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/regulatory/graph/seed-projection.ts; Mira regulatory knowledge graph",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];
