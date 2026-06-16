@@ -8,14 +8,14 @@
 // Proves byte-equivalence of the seven MONEY-FREE governance-attestation +
 // money-free-risk domains migrated in Wave 2 batch-2 (kyc, cae-governance,
 // ciso-governance, governance-seat-runs, obligation-lifecycle, policy-activation,
-// decision-distillation — 35 event types) between:
+// decision-distillation — 36 event types) between:
 //   - the authoritative V1 event store, and
 //   - the v2 control-plane store (the W0 general event host),
 // populated by the generic store-tee + generic backfill.
 //
 // The comparable shape is the event-list register
 // (`foldGovernanceAttestationRegister`): the sorted-by-event_id set of
-// {event_id, type, payload} tuples scoped to the batch's 35 types. Because the
+// {event_id, type, payload} tuples scoped to the batch's 36 types. Because the
 // tee mirrors verbatim and reuses the V1 event_id, a byte-clean result is the
 // expected steady state — any drop (gap), spurious mirror (excess), or payload
 // byte-divergence surfaces as a parity fail. Same harness (`runParityCheck`) and
@@ -23,7 +23,7 @@
 //
 // STATUS
 // ------
-// ENFORCING (Wave 2 batch-2 flip, 2026-06-16). All 35 types flipped
+// ENFORCING (Wave 2 batch-2 flip, 2026-06-16). All 36 types flipped
 // v1-only → v2-replaced on ORDINARY dual-write + byte-clean parity basis
 // (D-V1-REMOVAL-FLIP-BASIS-RBC): V1 remains emittable and this gate is the
 // standing evidence. A byte-diff, a harness self-test failure, or a fold error

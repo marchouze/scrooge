@@ -1,5 +1,14 @@
 // platform/event-store/registry/cae-governance.ts
 //
+// WAVE 2 BATCH-2 FLIP (2026-06-16): every type in this registry flipped
+// v1-only -> v2-replaced. Money-free governance-attestation / KYC / lifecycle
+// reference data, tee-mirrored verbatim into the v2 control-plane store;
+// recon:governance-attestation-v2-parity proves the V1-store <-> v2-store
+// event-list register byte-clean (ENFORCING; 571 events at the flip). Basis:
+// ordinary dual-write + parity. Authority: D-BANK-WIDE-V2-MIGRATION;
+// D-V1-REMOVAL-FLIP-BASIS-RBC (CEO-approved 2026-06-16). Flip by Atlas (Core
+// banking platform architect, engineering).
+//
 // Event-type registry rows for CAE quarterly governance run events.
 //
 // Covers:
@@ -44,7 +53,7 @@ export const CAE_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] =
     citationsHint: ["D-CAE-QUARTERLY-RUN-G5", "IIA-STANDARDS-2010", "Banks Act 94/1990 §73"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "scripts/governance/cae-periodic-run.ts (quarterly batch runner)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // AuditIssueTrackerReviewed — open findings review.
@@ -63,7 +72,7 @@ export const CAE_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] =
     citationsHint: ["D-CAE-QUARTERLY-RUN-G5", "IIA-STANDARDS-2010", "Banks Act 94/1990 §73"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "scripts/governance/cae-periodic-run.ts (quarterly batch runner)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // QaipAttestationFiled — QAIP conformance attestation (IIA §1300).
@@ -86,7 +95,7 @@ export const CAE_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] =
     ],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "scripts/governance/cae-periodic-run.ts (quarterly batch runner)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // ThirdLineOpinionFiled — CAE independent assurance opinion (IIA §2600).
@@ -109,6 +118,6 @@ export const CAE_GOVERNANCE_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] =
     ],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "scripts/governance/cae-periodic-run.ts (quarterly batch runner)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];
