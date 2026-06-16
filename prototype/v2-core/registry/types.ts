@@ -113,6 +113,48 @@ export type V2EventClass = "runtime" | "markets" | "governance" | "audit";
 export type V2MigrationStatus = "v2-parallel" | "v2-canonical" | "v1-only";
 
 /**
+ * A payload codec applied by the generic V1→v2 store-tee when mirroring a V1
+ * event into the v2 control-plane store. The tee passes the V1 event's payload
+ * through this function and stores the result on the v2 row.
+ *
+ *   - Money-FREE types declare no codec → the tee mirrors the payload VERBATIM
+ *     (`VERBATIM_CODEC`, the default).
+ *   - Money-BEARING types declare a codec that upcasts `*Minor` integer fields
+ *     into decimal-native `{currency, amount}` MoneyWire shapes (the same
+ *     transform the V2 decimal-native cutover applies), so the v2 store holds
+ *     the canonical decimal shape while the V1 source row stays minor-encoded.
+ *
+ * The codec is a PURE function of the V1 payload. It must be deterministic and
+ * idempotent-compatible (the tee reuses the V1 event_id as the v2 idempotency
+ * key, so re-mirroring re-applies the codec to the same input → same output).
+ *
+ * Authority: D-BANK-WIDE-V2-MIGRATION; D-V2-CORE-MONEY-DECIMAL-NATIVE.
+ */
+export type V2TeeCodec = (v1Payload: Record<string, unknown>) => Record<string, unknown>;
+
+/**
+ * Verbatim codec — the default for money-free types. The tee mirrors the V1
+ * payload unchanged. Returns the SAME reference (the tee JSON-serialises it
+ * downstream; no defensive copy is needed for a read-only pass-through).
+ */
+export const VERBATIM_CODEC: V2TeeCodec = (p) => p;
+
+/**
+ * Opt-in tee declaration on a v2 registry row. A type is mirrored by the
+ * generic store-tee ONLY when its registry row carries a `tee` block — adding a
+ * type to the rollout is a REGISTRY EDIT, never a callsite edit. Unregistered
+ * types and registered-but-tee-less types are untouched by the tee.
+ *
+ *   - `codec` — payload transform applied on mirror (defaults to
+ *     `VERBATIM_CODEC` when omitted, i.e. `tee: {}` mirrors verbatim).
+ *
+ * Authority: D-BANK-WIDE-V2-MIGRATION (Wave 2 generic store-tee).
+ */
+export interface V2TeeDeclaration {
+  readonly codec?: V2TeeCodec;
+}
+
+/**
  * The per-event-type record the v2 host consults. The required `payloadSchema`
  * is the load-bearing field — `validateV2Payload` parses against it, so the
  * control-plane store fails closed on an invalid payload for a REGISTERED type
@@ -143,6 +185,15 @@ export interface V2EventTypeMetadata {
   readonly retention: V2RetentionMetadata;
   /** Migration status relative to v1 authority. */
   readonly migrationStatus: V2MigrationStatus;
+  /**
+   * Opt-in store-tee declaration. When PRESENT, the generic V1→v2 store-tee
+   * (wired at the composition seam) mirrors every V1 append of this type into
+   * the v2 control-plane store, applying `tee.codec` (verbatim by default). When
+   * ABSENT, the type is NOT mirrored — onboarding a type to the rollout is
+   * adding this field, not editing any callsite. Authority:
+   * D-BANK-WIDE-V2-MIGRATION (Wave 2 generic store-tee).
+   */
+  readonly tee?: V2TeeDeclaration;
   /** Source-spec reference (decision id, brief id, or slice note). */
   readonly source: string;
 }
