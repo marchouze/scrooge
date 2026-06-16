@@ -17,6 +17,7 @@ import { LocalPermissionPolicyPublisher } from "./agent-identity/permission-poli
 import { gateEventStore, isGateEnabled } from "./event-store/permission-gate";
 import { resolveEventDbPath } from "./event-store/resolve-event-db";
 import { EventStore } from "./event-store/store";
+import { teeEventStore } from "./event-store/v2-store-tee";
 import { LocalAuthenticator } from "./identity";
 import { logger } from "./observability/logger";
 import { LocalProjector } from "./projections";
@@ -77,7 +78,7 @@ const permissionPolicy = new LocalPermissionPolicyPublisher({ eventStore: rawEve
 // in `permission-gate.ts` softens the flip for actors whose policy is
 // not yet published — each bypass emits a low-severity `SubstrateAlert`
 // (alertClass: integrity) that Vera's recon drives to zero.
-export const eventStore = gateEventStore({
+const gatedEventStore = gateEventStore({
   store: rawEventStore,
   config: {
     policy: permissionPolicy,
@@ -96,6 +97,17 @@ export const eventStore = gateEventStore({
     // be prose-without-event drift.
   },
 });
+
+// Generic V1→v2 store-tee (Wave 2 infra, D-BANK-WIDE-V2-MIGRATION). Wraps the
+// gated store so every successful V1 append of a TEE-ENABLED type (a type whose
+// v2 registry row carries a `tee` declaration) is also mirrored into the v2
+// control-plane store under a V2Envelope. Non-tee-enabled types pass through
+// untouched. A mirror failure is surfaced (typed SubstrateAlert + the standing
+// recon:v2-store-tee-coverage gate) but never wedges the authoritative V1 write
+// path — see `event-store/v2-store-tee.ts` for the failure-handling rationale.
+// Set BANK_V2_STORE_TEE_DISABLED=true to disable locally. Onboarding a new
+// domain is a registry edit (add `tee: {}`), not a callsite change.
+export const eventStore = teeEventStore(gatedEventStore);
 
 export const projector = new LocalProjector(eventStore);
 export const authenticator = new LocalAuthenticator({ keyPath: idpKeyPath });

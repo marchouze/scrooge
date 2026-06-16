@@ -100,7 +100,13 @@ import {
   postureRegisteredPayloadSchema,
   postureRevisedPayloadSchema,
 } from "../posture/events";
-import { type V2EventTypeMetadata, V2_RETENTION_RUNTIME_1Y } from "./types";
+import {
+  type V2EventTypeMetadata,
+  type V2TeeCodec,
+  type V2TeeDeclaration,
+  V2_RETENTION_RUNTIME_1Y,
+  VERBATIM_CODEC,
+} from "./types";
 
 export * from "./types";
 
@@ -122,11 +128,17 @@ function asPayloadSchema(schema: z.ZodTypeAny): z.ZodType<Record<string, unknown
 const FOOTHOLD_SOURCE =
   "brief:atlas:wave-0-v2-general-host-foundation-schemaversion-:2026-06-16 — v2-parallel foothold";
 
-/** Shared field set for every foothold row (all v2-parallel, schemaVersion 1). */
+/**
+ * Shared field set for every foothold row (all v2-parallel, schemaVersion 1).
+ * `tee` is optional: pass a declaration (`{}` for verbatim, or `{ codec }` for a
+ * money-bearing transform) to opt the type into the generic store-tee. Omit it
+ * to leave the type un-mirrored.
+ */
 function foothold(
   type: string,
   cls: V2EventTypeMetadata["class"],
   schema: z.ZodTypeAny,
+  tee?: V2TeeDeclaration,
 ): V2EventTypeMetadata {
   return {
     type,
@@ -135,6 +147,7 @@ function foothold(
     schemaVersion: 1,
     retention: V2_RETENTION_RUNTIME_1Y,
     migrationStatus: "v2-parallel",
+    ...(tee !== undefined ? { tee } : {}),
     source: FOOTHOLD_SOURCE,
   };
 }
@@ -167,11 +180,15 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
   foothold("SliceDefined", "markets", sliceDefinedPayloadSchema),
   foothold("OrgHierarchyEdgeAssigned", "markets", orgHierarchyEdgeAssignedPayloadSchema),
 
-  // 5. posture
-  foothold("PostureRegistered", "governance", postureRegisteredPayloadSchema),
-  foothold("PostureActivated", "governance", postureActivatedPayloadSchema),
-  foothold("PostureDeactivated", "governance", postureDeactivatedPayloadSchema),
-  foothold("PostureRevised", "governance", postureRevisedPayloadSchema),
+  // 5. posture — TEE-ENABLED (verbatim; money-free). The generic store-tee
+  // mirrors these into the v2 control-plane store on every V1 append; the
+  // generic backfill replays history. This is the same set the Wave-2 pilot
+  // mirrored via the bespoke posture backfill (now delegating to the generic
+  // mechanism), and `recon:posture-v2-parity` remains the byte-clean evidence.
+  foothold("PostureRegistered", "governance", postureRegisteredPayloadSchema, {}),
+  foothold("PostureActivated", "governance", postureActivatedPayloadSchema, {}),
+  foothold("PostureDeactivated", "governance", postureDeactivatedPayloadSchema, {}),
+  foothold("PostureRevised", "governance", postureRevisedPayloadSchema, {}),
 
   // 6. applicability
   foothold(
@@ -236,6 +253,35 @@ export function isV2EventTypeRegistered(type: string): boolean {
 /** Every registered v2 event-type name (sorted). */
 export function registeredV2EventTypes(): readonly string[] {
   return [...V2_REGISTRY_BY_TYPE.keys()].sort();
+}
+
+/**
+ * True iff `type` is registered AND carries a `tee` declaration — i.e. the
+ * generic store-tee mirrors its V1 appends into the v2 control-plane store. This
+ * is the single source of truth for "is this type mirrored"; the composition
+ * tee, the generic backfill, and the coverage recon all read it.
+ */
+export function isV2TeeEnabled(type: string): boolean {
+  return V2_REGISTRY_BY_TYPE.get(type)?.tee !== undefined;
+}
+
+/** Every tee-enabled (mirrored) v2 event-type name (sorted). */
+export function teeEnabledV2EventTypes(): readonly string[] {
+  return V2_EVENT_TYPE_REGISTRY.filter((m) => m.tee !== undefined)
+    .map((m) => m.type)
+    .sort();
+}
+
+/**
+ * Resolve the codec the tee applies when mirroring `type`. Returns the row's
+ * declared `tee.codec`, falling back to `VERBATIM_CODEC` when the row is
+ * tee-enabled with no explicit codec, and `undefined` when the type is not
+ * tee-enabled (caller must not mirror it).
+ */
+export function v2TeeCodecFor(type: string): V2TeeCodec | undefined {
+  const meta = V2_REGISTRY_BY_TYPE.get(type);
+  if (!meta?.tee) return undefined;
+  return meta.tee.codec ?? VERBATIM_CODEC;
 }
 
 /**

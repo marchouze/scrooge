@@ -135,6 +135,14 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // populated store. Flips enforcing once every v2-hosted type is guaranteed
     // a registry row at emit time. Authority: D-BANK-WIDE-V2-MIGRATION.
     "recon:v2-type-registry-coverage",
+    // Wave 2 infra (D-BANK-WIDE-V2-MIGRATION) — generic store-tee coverage
+    // (advisory). Every tee-enabled type (v2 registry row with a `tee` block) is
+    // actually mirrored into the v2 control-plane store with a count matching its
+    // V1 source (no gap = the loud-divergence backstop for a mirror failure; no
+    // excess = no orphaned mirror). Vacuous on a clean store; load-bearing after
+    // the ci:migrate chain seeds + backfills. Flips enforcing once every tee type
+    // carries its own parity gate. Authority: D-BANK-WIDE-V2-MIGRATION.
+    "recon:v2-store-tee-coverage",
     // WS-V2-BBAAS S14 — operational fleet integrity (advisory→enforcing): every
     // tenant has tier + surface grant; metering windows well-formed; upgrade
     // ledger consistent (no version regressions, connected chain).
