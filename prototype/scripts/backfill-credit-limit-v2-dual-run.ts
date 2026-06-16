@@ -230,11 +230,14 @@ function backfillMissingApprovals(): ApprovalBackfillEntry[] {
     }
     const p = load.payload as V1Loaded;
     const eventId = newEventId();
-    // The approval precedes the load; stamp it one second earlier so the fold
-    // order (Approved → Loaded) is unambiguous regardless of append order.
-    const approvedAt = p.effectiveFrom;
+    // The approval precedes the load (PROC-RISK-CO-01 Step 5 → Step 6). Stamp
+    // its `as_of` strictly one second before the load so the as_of-ordered
+    // registry fold applies Approved → Loaded regardless of physical append
+    // order (the approval is appended LATER than the pre-existing load).
+    const approvalAsOf = new Date(new Date(load.as_of).getTime() - 1000).toISOString();
+    const approvedAt = approvalAsOf;
     const event = makeCreditLimitApproved({
-      asOf: load.as_of,
+      asOf: approvalAsOf,
       entity: load.entity,
       actor: ACTOR,
       citations: APPROVAL_BACKFILL_CITATIONS,
