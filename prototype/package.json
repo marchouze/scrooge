@@ -23,6 +23,7 @@
     "recon:fx-v2-parity": "bun run platform/recon/fx-v2-parity.ts",
     "recon:gl-v2-parity": "bun run platform/recon/gl-v2-parity.ts",
     "recon:ba300-v2-parity": "bun run platform/recon/ba300-v2-parity.ts",
+    "recon:bond-gl-v2-parity": "bun run platform/recon/bond-gl-v2-parity.ts",
     "file:atlas-ceo-escalation-push-channel-spec": "bun run scripts/file-atlas-ceo-escalation-push-channel-spec.ts",
     "file:atlas-dashboard-consolidation-proposal": "bun run scripts/file-atlas-dashboard-consolidation-proposal.ts",
     "file:scrooge-lra-66-1995-hr-source-map": "bun run scripts/file-scrooge-lra-66-1995-hr-source-map.ts",
