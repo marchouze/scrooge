@@ -16,12 +16,12 @@
 import { describe, expect, it } from "bun:test";
 
 import { decodeMoney } from "../core/money-codec";
+import { newEventId } from "../core/types";
 import { makeBondTradeExecuted } from "../event-store/event-types/bond-accounting";
 import { makeRwaComputed } from "../event-store/event-types/regulatory-reporting";
 import { productionTag } from "../event-store/provenance";
 import { EventStore } from "../event-store/store";
 import type { Actor } from "../event-store/types";
-import { newEventId } from "../core/types";
 import type { Ba310Output } from "../reporting/ba-320-market-risk";
 import { computeRwaComputed } from "./rwa-computed-engine";
 import {

@@ -96,7 +96,10 @@ function seedBond(): void {
       exposureClass: "corporate",
     },
   });
-  eventStore.append({ ...ev, provenance: productionTag({ sourceLineage: "seed:rwa-computed-v2" }) });
+  eventStore.append({
+    ...ev,
+    provenance: productionTag({ sourceLineage: "seed:rwa-computed-v2" }),
+  });
 }
 
 function main(): number {

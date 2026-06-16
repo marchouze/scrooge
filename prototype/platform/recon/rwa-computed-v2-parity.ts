@@ -150,7 +150,7 @@ export function run(): ReconResult {
     });
     result.violations = violations;
     result.ok = false;
-    result.asOf = `rwa-computed-v2-parity [ENFORCING]: fold error.`;
+    result.asOf = "rwa-computed-v2-parity [ENFORCING]: fold error.";
     return result;
   }
 
