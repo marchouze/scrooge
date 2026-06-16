@@ -106,6 +106,18 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   //   D-V1-REMOVAL-FLIP-BASIS-RBC.
   RwaComputed: "governance",
   RwaComputedV2: "governance",
+  // Operational-loss CAPTURE records — the internal-loss data set every bank
+  // must collect (Basel II Annex 9 / BCBS D196 §644; Reg 33). A risk-governance
+  // record (registry class "governance"), NOT operational simulated trading
+  // data: it must survive the production-filter fold so the op-loss register +
+  // recon:operational-loss-v2-parity read it. Categorising OperationalLossEventV2
+  // here is the F-032 site-3 requirement (WS-V2-MIGRATION-BUCKET-A batch A3).
+  // OperationalLossEvent (V1) is co-categorised so its decode/replay path
+  // resolves identically (un-emittable going forward; 0 live events).
+  // Authority: D-FX-HELD-DIMS-SEAT-SWEEP; D-BANK-WIDE-V2-MIGRATION;
+  //   D-V1-REMOVAL-FLIP-BASIS-RBC.
+  OperationalLossEvent: "governance",
+  OperationalLossEventV2: "governance",
   // Governance — decisions, briefs, records, audit, agent governance.
   Decision: "governance",
   // WS-V2-BBAAS W1 — distillation classification of an existing Decision

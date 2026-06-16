@@ -266,6 +266,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // seeds inputs, runs emitRwaComputedV2, asserts the decoded decimal RWA. Not a
   // production access path. T-01 carve-out. Citation: D-V1-REMOVAL-FLIP-BASIS-RBC.
   "platform/risk/rwa-computed-engine-v2.test.ts",
+  // Bucket A batch A3 — OperationalLossEventV2 round-trip + positive-figure emit
+  // proof. Builds an mkdtempSync-isolated tmp EventStore, captures one
+  // OperationalLossEventV2, asserts the projection reads the decoded figure +
+  // V1/V2 decoded-decimal parity. Not a production access path; T-01 carve-out.
+  // Citation: D-V1-REMOVAL-FLIP-BASIS-RBC, F-031.
+  "platform/event-store/event-types/operational-risk-v2.test.ts",
   // WS-V2-AUTHORITATIVE S5 — entry-level + account-master V2 GL projection unit
   // tests. Same build-phase fixture pattern as the bond/money-market V2 GL tests
   // above: raw EventStore(":memory:") seeds GlPostingEmitted legs (production-

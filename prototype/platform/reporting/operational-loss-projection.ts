@@ -21,8 +21,10 @@
 // Author: Tomas (Operations & payments engineer, engineering) — governance
 //   owner Devon (Chief Operating Officer, governance; op-risk seat).
 
+import { minorFromMoneyWire } from "../core/money-codec";
 import type {
   OperationalLossEventPayload,
+  OperationalLossEventPayloadV2,
   OperationalLossEventTypeCategory,
   OperationalLossStatus,
 } from "../event-store/event-types/operational-risk";
@@ -104,8 +106,35 @@ interface MutableRecord {
 }
 
 /**
- * Fold every OperationalLossEvent into the read-model. Single pass; latest-wins
- * per lossEventId on as_of (ties broken by stream order — later replay wins).
+ * Normalise a V2 (MoneyWire) capture payload to the V1 minor-unit record shape
+ * the projection aggregates on. The MoneyWire → minor lift is lossless
+ * (minorFromMoneyWire), so the register figures are unchanged across the
+ * encoding flip. Currency is read back out of the MoneyWire (V2 has no
+ * standalone `currency` field).
+ */
+function v2ToV1Record(p: OperationalLossEventPayloadV2): OperationalLossEventPayload {
+  return {
+    lossEventId: p.lossEventId,
+    eventDate: p.eventDate,
+    discoveryDate: p.discoveryDate,
+    grossLossMinor: minorFromMoneyWire(p.grossLoss),
+    currency: p.grossLoss.currency,
+    businessLine: p.businessLine,
+    eventTypeCategory: p.eventTypeCategory,
+    recoveryMinor: minorFromMoneyWire(p.recovery),
+    status: p.status,
+    description: p.description,
+    ...(p.productId !== undefined ? { productId: p.productId } : {}),
+    ...(p.relatedEventIds !== undefined ? { relatedEventIds: p.relatedEventIds } : {}),
+  };
+}
+
+/**
+ * Fold every OperationalLossEvent + OperationalLossEventV2 into the read-model.
+ * Single pass per type; latest-wins per lossEventId on as_of (ties broken by
+ * stream order — later replay wins). The V2 decimal-native capture is read
+ * alongside V1 so the register does not go blind after the Bucket A flip
+ * (D-V1-REMOVAL-FLIP-BASIS-RBC: V1 is un-emittable, V2 is the sole live path).
  */
 export function buildOperationalLossProjection(
   store: Pick<EventStore, "replay">,
@@ -113,15 +142,21 @@ export function buildOperationalLossProjection(
 ): OperationalLossProjection {
   const latest = new Map<string, MutableRecord>();
 
-  for (const e of store.replay({ type: "OperationalLossEvent" })) {
-    const p = e.payload as OperationalLossEventPayload;
-    if (typeof p.lossEventId !== "string") continue;
-    const prior = latest.get(p.lossEventId);
+  const consider = (payload: OperationalLossEventPayload, eventAsOf: string): void => {
+    if (typeof payload.lossEventId !== "string") return;
+    const prior = latest.get(payload.lossEventId);
     // latest-wins: replace when this event is at or after the prior as_of
     // (stream order resolves ties so the later-replayed event wins).
-    if (prior === undefined || e.as_of >= prior.asOf) {
-      latest.set(p.lossEventId, { payload: p, asOf: e.as_of });
+    if (prior === undefined || eventAsOf >= prior.asOf) {
+      latest.set(payload.lossEventId, { payload, asOf: eventAsOf });
     }
+  };
+
+  for (const e of store.replay({ type: "OperationalLossEvent" })) {
+    consider(e.payload as OperationalLossEventPayload, e.as_of);
+  }
+  for (const e of store.replay({ type: "OperationalLossEventV2" })) {
+    consider(v2ToV1Record(e.payload as OperationalLossEventPayloadV2), e.as_of);
   }
 
   const records: OperationalLossRecord[] = [];

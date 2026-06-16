@@ -14,6 +14,7 @@ import { join } from "node:path";
 
 import { routeOrderToGateway } from "../../../dashboard/markets-fx-gateway";
 import { quoteRfq } from "../../../dashboard/markets-fx-trade";
+import { moneyWireFromMinor } from "../../core/money-codec";
 import {
   makeCounterpartyEligibilityScreened,
   makeCounterpartyFaisClassified,
@@ -24,7 +25,7 @@ import {
   makeCreditLimitLoaded,
 } from "../../event-store/event-types/credit-limit";
 import { makeLegalDocumentationSigned } from "../../event-store/event-types/legal-documentation";
-import { makeOperationalLossEvent } from "../../event-store/event-types/operational-risk";
+import { makeOperationalLossEventV2 } from "../../event-store/event-types/operational-risk";
 import { EventStore } from "../../event-store/store";
 import { buildOperationalLossProjection } from "../../reporting/operational-loss-projection";
 
@@ -33,16 +34,25 @@ const T_SEED = "2026-06-12T00:00:00.000Z";
 const T_NOW = "2026-06-12T07:00:00.000Z";
 
 /**
- * GATE 1 — the OperationalLossEvent type is registered and a captured loss
+ * GATE 1 — the OperationalLossEventV2 type is registered and a captured loss
  * round-trips through the registered schema into the projection. Runs against
  * an isolated tmp store.
+ *
+ * Re-pointed to OperationalLossEventV2 under WS-V2-MIGRATION-BUCKET-A batch A3:
+ * V1 OperationalLossEvent is un-emittable RETIRED-BY-CONSTRUCTION (its `*Minor`
+ * fields trip recon:no-residual-minor-encoding), so the decimal-native V2 type
+ * is the sole live capture path (D-V1-REMOVAL-FLIP-BASIS-RBC). The captured loss
+ * carries decimal-native MoneyWire money (R100.00 gross via moneyWireFromMinor —
+ * the lossless integer→decimal lift, no float). This is the engine-level
+ * positive-figure proof referenced by recon:operational-loss-v2-parity (which is
+ * PASS-on-empty on the production store).
  */
 export function isOperationalLossEventRegistered(): boolean {
   const dir = mkdtempSync(join(tmpdir(), "fx-oprisk-loss-probe-"));
   try {
     const store = new EventStore(join(dir, "loss.db"));
     store.append(
-      makeOperationalLossEvent({
+      makeOperationalLossEventV2({
         asOf: T_SEED,
         entity: ENTITY,
         actor: { type: "service", id: "agent:tomas:oprisk-probe" },
@@ -51,8 +61,8 @@ export function isOperationalLossEventRegistered(): boolean {
           lossEventId: "loss:probe:001",
           eventDate: "2026-06-10",
           discoveryDate: "2026-06-11",
-          grossLossMinor: 100_00,
-          currency: "ZAR",
+          grossLoss: moneyWireFromMinor(100_00, "ZAR"),
+          recovery: moneyWireFromMinor(0, "ZAR"),
           businessLine: "trading-and-sales",
           eventTypeCategory: "execution-delivery-and-process-management",
           status: "open",
@@ -64,6 +74,7 @@ export function isOperationalLossEventRegistered(): boolean {
     store.close();
     return (
       proj.totals.count === 1 &&
+      proj.totals.grossLossMinor === 100_00 &&
       proj.openRecords.length === 1 &&
       proj.byBusinessLine.some((l) => l.businessLine === "trading-and-sales")
     );

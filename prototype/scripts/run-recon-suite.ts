@@ -396,6 +396,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // (registry tags; V1 un-emittable; V2 sole live path produces non-vacuous;
     // decoded-decimal parity). Decoded-value compare (not byte) — unit change.
     "recon:rwa-computed-v2-parity",
+    // Bucket A batch A3 (FINAL) — OperationalLossEvent → OperationalLossEventV2
+    // retired-by-construction. ENFORCING: asserts the D-V1-REMOVAL-FLIP-BASIS-RBC
+    // conditions (registry tags; V1 un-emittable; V2 sole live path PASS-on-empty;
+    // decoded-decimal parity). Decoded-value compare (not byte) — unit change.
+    "recon:operational-loss-v2-parity",
     // Wave 2 BATCH-1 — four money-free reference-data domains (regulatory,
     // market-data, obligation-review, obligation-equivalence; 19 types) V1-store
     // ↔ v2-control-plane-store event-list parity. ENFORCING (byte-clean flip).
