@@ -85,6 +85,44 @@ import {
 } from "../decision-impact/events";
 import { evalRunCompletedPayloadSchema, examSetRegisteredPayloadSchema } from "../eval/events";
 import {
+  amlRiskAssessmentCompletedPayloadSchema,
+  auditIssueTrackerReviewedPayloadSchema,
+  auditPlanUpdatedPayloadSchema,
+  cisoJs2AttestationFiledPayloadSchema,
+  clientAcceptedPayloadSchema,
+  clientRejectedPayloadSchema,
+  counterpartyCategorisedPayloadSchema,
+  counterpartyDeclinedPayloadSchema,
+  decisionDistilledPayloadSchema,
+  eddQueueReviewedPayloadSchema,
+  governanceAttestationFiledPayloadSchema,
+  governanceSeatRunCompletedPayloadSchema,
+  keyCeremonyAttestedPayloadSchema,
+  kycDecisionMadePayloadSchema,
+  kycEDDCompletedPayloadSchema,
+  kycEDDInitiatedPayloadSchema,
+  kycIdentityCollectedPayloadSchema,
+  kycIdentityVerificationFailedPayloadSchema,
+  kycIdentityVerifiedPayloadSchema,
+  kycRatingRevisedPayloadSchema,
+  kycRefreshCompletedPayloadSchema,
+  kycRefreshScheduledPayloadSchema,
+  kycRiskRatedPayloadSchema,
+  kycSanctionsPEPScreenedPayloadSchema,
+  kycUBOResolvedPayloadSchema,
+  lawfulProcessingRegisteredPayloadSchema,
+  obligationAdoptedPayloadSchema,
+  obligationLifecycleTransitionedPayloadSchema,
+  odpCounterpartyCategorisedPayloadSchema,
+  policyVersionActivatedPayloadSchema,
+  provisionScopeAdoptedPayloadSchema,
+  qaipAttestationFiledPayloadSchema,
+  sbomReviewCompletedPayloadSchema,
+  suspiciousActivityQueueReviewedPayloadSchema,
+  threatModelGateCompletedPayloadSchema,
+  thirdLineOpinionFiledPayloadSchema,
+} from "../governance-attestation/events";
+import {
   instrumentDimensionAssignedPayloadSchema,
   orgHierarchyEdgeAssignedPayloadSchema,
   sliceDefinedPayloadSchema,
@@ -198,6 +236,35 @@ function refData(
     migrationStatus: "v2-parallel",
     tee: {},
     source: REFERENCE_DATA_BATCH_1_SOURCE,
+  };
+}
+
+const GOVERNANCE_ATTESTATION_BATCH_2_SOURCE =
+  "brief:atlas:wave-2-4-batch-2-money-free-risk-governance-atte:2026-06-16 — " +
+  "v2-parallel governance-attestation + money-free-risk migration (tee-enabled, verbatim)";
+
+/**
+ * A Wave-2 batch-2 governance-attestation migration row: identical to `refData`
+ * (ALWAYS tee-enabled, verbatim — money-free) but carrying the batch-2 source
+ * string. The generic store-tee mirrors every V1 append of the type; the
+ * `recon:governance-attestation-v2-parity` gate proves byte-clean equivalence.
+ * Onboarding a governance-attestation type is one `govAtt(...)` line — a registry
+ * edit, never a callsite edit.
+ */
+function govAtt(
+  type: string,
+  cls: V2EventTypeMetadata["class"],
+  schema: z.ZodTypeAny,
+): V2EventTypeMetadata {
+  return {
+    type,
+    class: cls,
+    payloadSchema: asPayloadSchema(schema),
+    schemaVersion: 1,
+    retention: V2_RETENTION_RUNTIME_1Y,
+    migrationStatus: "v2-parallel",
+    tee: {},
+    source: GOVERNANCE_ATTESTATION_BATCH_2_SOURCE,
   };
 }
 
@@ -329,6 +396,86 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
     "governance",
     obligationEquivalenceClassifiedPayloadSchema,
   ),
+
+  // ---------------------------------------------------------------------------
+  // WAVE 2 BATCH-2 — money-free governance-attestation + KYC + lifecycle domains
+  // (TEE-ENABLED, verbatim).
+  //
+  // Seven V1 domains migrated to v2-core via the generic store-tee (every row
+  // carries `tee: {}` → the tee mirrors each V1 append verbatim; the generic
+  // backfill replays history). All money-free (verified: no `*Minor` / MoneyWire /
+  // notional / ZAR-amount fields — numeric values are integer counts, percentages,
+  // weights [0..1], and risk scores). Schemas are the faithful v2 re-declarations
+  // in `governance-attestation/events.ts` (no-v1-import boundary). The batch parity
+  // gate `recon:governance-attestation-v2-parity` is the byte-clean evidence.
+  //
+  // EXCLUDED (Charter cmd 5): the dispatch/RMS substrate (runtime AgentRun*,
+  // dispatch, escalation; Decision/RecordFiled/AgentBriefIssued/correspondence/
+  // feedback/brief) — emitted LIVE by orchestration, needs a Wave-3 substrate plan.
+  // DEFERRED (money-bearing → money-codec batch): conduct, alco, climate-risk.
+  // DEFERRED (cross-registry split): model-risk (ModelValidationApproved is
+  // double-registered) → own PR.
+  //
+  // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+  // ---------------------------------------------------------------------------
+
+  // 15. kyc (onboarding lifecycle — money-free; scores/percentages only)
+  govAtt("KYCIdentityCollected", "audit", kycIdentityCollectedPayloadSchema),
+  govAtt("KYCIdentityVerified", "audit", kycIdentityVerifiedPayloadSchema),
+  govAtt("KYCIdentityVerificationFailed", "audit", kycIdentityVerificationFailedPayloadSchema),
+  govAtt("KYCSanctionsPEPScreened", "audit", kycSanctionsPEPScreenedPayloadSchema),
+  govAtt("KYCUBOResolved", "audit", kycUBOResolvedPayloadSchema),
+  govAtt("KYCRiskRated", "audit", kycRiskRatedPayloadSchema),
+  govAtt("KYCEDDInitiated", "audit", kycEDDInitiatedPayloadSchema),
+  govAtt("KYCEDDCompleted", "audit", kycEDDCompletedPayloadSchema),
+  govAtt("KYCDecisionMade", "audit", kycDecisionMadePayloadSchema),
+  govAtt("ClientAccepted", "audit", clientAcceptedPayloadSchema),
+  govAtt("ClientRejected", "audit", clientRejectedPayloadSchema),
+  govAtt("LawfulProcessingRegistered", "audit", lawfulProcessingRegisteredPayloadSchema),
+  govAtt("KYCRefreshScheduled", "audit", kycRefreshScheduledPayloadSchema),
+  govAtt("KYCRefreshCompleted", "audit", kycRefreshCompletedPayloadSchema),
+  govAtt("KYCRatingRevised", "audit", kycRatingRevisedPayloadSchema),
+  govAtt("CounterpartyCategorised", "audit", counterpartyCategorisedPayloadSchema),
+  govAtt("CounterpartyDeclined", "audit", counterpartyDeclinedPayloadSchema),
+  govAtt("OdpCounterpartyCategorised", "audit", odpCounterpartyCategorisedPayloadSchema),
+
+  // 16. cae-governance (third-line audit attestations)
+  govAtt("AuditPlanUpdated", "governance", auditPlanUpdatedPayloadSchema),
+  govAtt("AuditIssueTrackerReviewed", "governance", auditIssueTrackerReviewedPayloadSchema),
+  govAtt("QaipAttestationFiled", "governance", qaipAttestationFiledPayloadSchema),
+  govAtt("ThirdLineOpinionFiled", "governance", thirdLineOpinionFiledPayloadSchema),
+
+  // 17. ciso-governance (security governance attestations)
+  govAtt("CisoJs2AttestationFiled", "governance", cisoJs2AttestationFiledPayloadSchema),
+  govAtt("SbomReviewCompleted", "governance", sbomReviewCompletedPayloadSchema),
+  govAtt("ThreatModelGateCompleted", "governance", threatModelGateCompletedPayloadSchema),
+  govAtt("KeyCeremonyAttested", "governance", keyCeremonyAttestedPayloadSchema),
+
+  // 18. governance-seat-runs (CCO/CISO/CAE periodic-run + AML/CFT attestations)
+  govAtt("GovernanceSeatRunCompleted", "governance", governanceSeatRunCompletedPayloadSchema),
+  govAtt("GovernanceAttestationFiled", "governance", governanceAttestationFiledPayloadSchema),
+  govAtt(
+    "SuspiciousActivityQueueReviewed",
+    "governance",
+    suspiciousActivityQueueReviewedPayloadSchema,
+  ),
+  govAtt("AmlRiskAssessmentCompleted", "governance", amlRiskAssessmentCompletedPayloadSchema),
+  govAtt("EddQueueReviewed", "governance", eddQueueReviewedPayloadSchema),
+
+  // 19. obligation-lifecycle (bank-obligation adoption + lifecycle)
+  govAtt("ObligationAdopted", "governance", obligationAdoptedPayloadSchema),
+  govAtt(
+    "ObligationLifecycleTransitioned",
+    "governance",
+    obligationLifecycleTransitionedPayloadSchema,
+  ),
+  govAtt("ProvisionScopeAdopted", "governance", provisionScopeAdoptedPayloadSchema),
+
+  // 20. policy-activation (policy-version-in-force chain)
+  govAtt("PolicyVersionActivated", "governance", policyVersionActivatedPayloadSchema),
+
+  // 21. decision-distillation (BBaaS shared-core seam classification)
+  govAtt("DecisionDistilled", "governance", decisionDistilledPayloadSchema),
 ];
 
 // ---------------------------------------------------------------------------
