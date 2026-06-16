@@ -50,7 +50,7 @@ export const SLA_APPROVAL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     citationsHint: CITATIONS_HINT,
     source: "platform/event-store/event-types/sla-approval.ts",
     status: "active",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "SlaRuleApproved",
@@ -63,7 +63,7 @@ export const SLA_APPROVAL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     citationsHint: CITATIONS_HINT,
     source: "platform/event-store/event-types/sla-approval.ts",
     status: "active",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "SlaRuleWithheld",
@@ -76,6 +76,6 @@ export const SLA_APPROVAL_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     citationsHint: CITATIONS_HINT,
     source: "platform/event-store/event-types/sla-approval.ts",
     status: "active",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];

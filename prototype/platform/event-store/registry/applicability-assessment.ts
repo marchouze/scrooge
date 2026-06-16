@@ -49,7 +49,7 @@ export const APPLICABILITY_ASSESSMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     >,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/applicability-assessment.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ApplicabilityAssessmentPerformed",
@@ -63,7 +63,7 @@ export const APPLICABILITY_ASSESSMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     >,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/applicability-assessment.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ApplicabilityAssessmentConcluded",
@@ -77,6 +77,6 @@ export const APPLICABILITY_ASSESSMENT_EVENT_TYPES_REGISTRY: readonly EventTypeMe
     >,
     citationsHint: CITATIONS,
     source: "platform/event-store/event-types/applicability-assessment.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];

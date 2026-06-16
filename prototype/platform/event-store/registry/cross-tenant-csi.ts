@@ -52,7 +52,7 @@ export const CROSS_TENANT_CSI_EVENT_TYPES: readonly EventTypeMetadata[] = [
     >,
     citationsHint: CITATIONS,
     source: SOURCE,
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "CsiCategoryRetired",
@@ -64,7 +64,7 @@ export const CROSS_TENANT_CSI_EVENT_TYPES: readonly EventTypeMetadata[] = [
     payloadSchema: csiCategoryRetiredPayloadSchema as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: SOURCE,
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "CrossTenantLearningScreened",
@@ -78,7 +78,7 @@ export const CROSS_TENANT_CSI_EVENT_TYPES: readonly EventTypeMetadata[] = [
     >,
     citationsHint: CITATIONS,
     source: SOURCE,
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "CrossTenantLearningBlocked",
@@ -92,6 +92,6 @@ export const CROSS_TENANT_CSI_EVENT_TYPES: readonly EventTypeMetadata[] = [
     >,
     citationsHint: CITATIONS,
     source: SOURCE,
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];

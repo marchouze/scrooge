@@ -34,9 +34,7 @@ const BLAKE3 = `blake3:${"a".repeat(64)}`;
  */
 interface Case {
   readonly name: string;
-  // biome-ignore lint/suspicious/noExplicitAny: heterogeneous Zod schemas across 19 types; parse() is the only call.
   readonly v1: { parse: (p: unknown) => unknown; safeParse: (p: unknown) => { success: boolean } };
-  // biome-ignore lint/suspicious/noExplicitAny: see above.
   readonly v2: { parse: (p: unknown) => unknown; safeParse: (p: unknown) => { success: boolean } };
   readonly valid: Record<string, unknown>;
   readonly invalid: Record<string, unknown>;
