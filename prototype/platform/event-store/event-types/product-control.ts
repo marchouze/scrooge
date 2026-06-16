@@ -161,6 +161,19 @@ export const dailyPnLReportGeneratedPayloadSchema = z.object({
   generatedAt: z.string().min(1),
   /** Agent/service that generated this report. */
   generatedBy: z.string().min(1),
+  /**
+   * ISO 8601 instant at which the `MarketDataStore` was snapshotted for this
+   * report. Together with the FIL instance log, this is sufficient to fully
+   * reproduce any per-instrument mark without storing per-instrument mark
+   * events (CEO design principle, 2026-06-16).
+   *
+   * Present on V2-path reports (daily-pnl-v2.ts); absent on V1-path reports
+   * (daily-pnl.ts, which reads FxPositionRevalued instead). Backwards-compatible:
+   * existing V1 events without this field parse as undefined.
+   *
+   * Authority: D-V1-REMOVAL-PHASE2-GAP-A2 (CEO-approved 2026-06-16).
+   */
+  marketDataAsOf: z.string().optional(),
 });
 
 export type DailyPnLReportGeneratedPayload = z.infer<typeof dailyPnLReportGeneratedPayloadSchema>;

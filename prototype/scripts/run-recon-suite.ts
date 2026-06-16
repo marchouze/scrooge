@@ -257,6 +257,17 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // account. Advisory (ok: true with warn) until the V2 bond path is
     // authoritative. Authority: D-V1-REMOVAL-PHASE-3C.
     "recon:bond-gl-v2-parity",
+    // D-V1-REMOVAL-PHASE2-GAP-A2 — daily P&L V2 parity gate (advisory).
+    // Compares V1 DailyPnLReportGenerated (FxPositionRevalued-based, v1-only)
+    // against V2 computeDailyPnLV2 (snapshot-anchored FIL projection + MarketDataSlice
+    // per Valuable.value()). Advisory (ok: true even with warn violations) until:
+    //   (1) FilInstrumentCreated backfill populates the V2 anchor store,
+    //   (2) parity proof passes in production,
+    //   (3) CEO Decision (A4) approves the flip (FxPositionRevalued → v2-replaced).
+    // Gap warn on vacuous V2 side (no FIL FX instruments yet); divergence on
+    // populated sides is warn-severity until A4 approved.
+    // Authority: D-V1-REMOVAL-PHASE2-GAP-A2 (CEO-approved 2026-06-16).
+    "recon:daily-pnl-v2-parity",
   ],
   domain: [
     "recon:prose-duplication",
