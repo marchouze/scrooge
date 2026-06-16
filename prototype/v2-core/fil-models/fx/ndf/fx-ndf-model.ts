@@ -27,13 +27,13 @@ import type {
   Valuable,
 } from "../../../fil-facets/facets.ts";
 import type { FilModelImplementationDeclared } from "../../declaration.ts";
+import { requireReporting } from "../../fx-valuation/reporting-currency-resolver.ts";
 import {
   bookCost,
   computeDailyCarry,
   computeTheta,
   computeUnrealisedPnl,
 } from "../performance/fx-performance-methodology.ts";
-import { requireReporting } from "../../fx-valuation/reporting-currency-resolver.ts";
 import { interpolateCurve } from "../shared/fx-interpolation.ts";
 import { ndfCurvePrefix } from "../shared/fx-observables.ts";
 import type { FxNdfPosition } from "../shared/fx-positions.ts";

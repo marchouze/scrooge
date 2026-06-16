@@ -60,9 +60,7 @@ export function resolveReportingCurrency(
   const functional = lookup(holdingEntityRef);
   if (functional === undefined || functional.trim() === "") {
     throw new Error(
-      `reporting-currency resolution: holding entity "${holdingEntityRef}" has no assigned functional ` +
-        "currency (fail-closed; no silent ZAR default). Emit EntityFunctionalCurrencyAssigned for this " +
-        "entity, or correct the holding-entity reference. WS-MULTI-BASE-CURRENCY.",
+      `reporting-currency resolution: holding entity "${holdingEntityRef}" has no assigned functional currency (fail-closed; no silent ZAR default). Emit EntityFunctionalCurrencyAssigned for this entity, or correct the holding-entity reference. WS-MULTI-BASE-CURRENCY.`,
     );
   }
   return functional;
@@ -79,9 +77,7 @@ export function resolveReportingCurrency(
 export function requireReporting(reporting: string, context: string): string {
   if (reporting === undefined || reporting.trim() === "") {
     throw new Error(
-      `${context}: reporting currency is unresolved (empty) — a position must carry its holding entity's ` +
-        "functional currency, resolved via resolveReportingCurrency (fail-closed; no silent ZAR default). " +
-        "WS-MULTI-BASE-CURRENCY.",
+      `${context}: reporting currency is unresolved (empty) — a position must carry its holding entity's functional currency, resolved via resolveReportingCurrency (fail-closed; no silent ZAR default). WS-MULTI-BASE-CURRENCY.`,
     );
   }
   return reporting;

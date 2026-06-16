@@ -41,9 +41,7 @@ const FUNCTIONAL_BY_TREE_URN: ReadonlyMap<string, string> = new Map(
   TREE.entities.map((e): [string, string] => {
     if (e.functionalCurrency === undefined || e.functionalCurrency.trim() === "") {
       throw new Error(
-        `functional-currency: legal-entity-tree entity "${e.entityId}" has no functionalCurrency ` +
-          "(source defect; every entity/branch must carry its IAS-21 functional currency). " +
-          "WS-MULTI-BASE-CURRENCY.",
+        `functional-currency: legal-entity-tree entity "${e.entityId}" has no functionalCurrency (source defect; every entity/branch must carry its IAS-21 functional currency). WS-MULTI-BASE-CURRENCY.`,
       );
     }
     return [e.entityId, e.functionalCurrency];

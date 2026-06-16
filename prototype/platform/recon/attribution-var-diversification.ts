@@ -73,9 +73,9 @@ import {
 } from "../../v2-core/fil-models/market-risk-var";
 import { eventStore } from "../composition";
 import type { Event } from "../event-store/types";
+import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import { resolveMarketDataDbPath } from "../market-data/resolve-market-data-db";
 import { MarketDataStore } from "../market-data/store";
-import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import { computeMarketRisk, deriveRiskFactorExposures } from "../market-risk/var-engine";
 import { majorStringToMinorBigint, minorBigintToMajorString } from "../risk/sa-ccr/v2-money-bridge";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
