@@ -13,7 +13,12 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import type { FilEventRef } from "../../../../fil-core/lifecycle.ts";
-import type { CitationRef, Instant, Money, MethodologyHash } from "../../../../fil-core/primitives.ts";
+import type {
+  CitationRef,
+  Instant,
+  MethodologyHash,
+  Money,
+} from "../../../../fil-core/primitives.ts";
 import type { FilScopePattern } from "../../../../fil-core/urn.ts";
 import type {
   MarketDataSlice,

@@ -140,13 +140,83 @@ import {
 } from "../event-store/event-types/risk-treasury-extended";
 import type { TradeMaturedFxSpotPayload } from "../event-store/event-types/trade-matured";
 import type { EventStore } from "../event-store/store";
+import { computeLCR } from "../liquidity/lcr";
 import type { EquitySettlementInstructedPayload } from "../markets/cdm/equity";
 import type { FxSettlementInstructedPayload } from "../markets/cdm/fx";
 import type { Identifier } from "../markets/cdm/primitives";
+import { getALMPositionSnapshot } from "../projections/alm-positions";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 import type { HqlaLevelOverride } from "./hqla-overrides";
 import { computeHqlaStockFromPositions } from "./hqla-stock";
 import type { HqlaStockInput, HqlaStockLine } from "./hqla-stock";
+
+// ---------------------------------------------------------------------------
+// D-V1-REMOVAL-PHASE-3B — LCR denominator from the canonical ALM projection.
+//
+// `getALMPositionSnapshot()` (platform/projections/alm-positions.ts, 1,072
+// lines) already folds the deposit / funding-line / repo / IBL lifecycle events
+// into the typed `fundingPositions` the LCR run-off table consumes. Phase 3b
+// wires the BA-300 LCR DENOMINATOR to that single projection rather than letting
+// each consumer re-fold the events: `computeLcrDenominatorFromAlmSnapshot`
+// returns the net-cash-outflow denominator computed from the ALM snapshot via
+// the canonical `computeLCR`. This is the read-side single-source the brief
+// asks for — the projection is NOT duplicated here; this is a thin adapter over
+// it, and the V1↔V2 parity gate (recon:ba300-v2-parity) asserts the V2 path
+// produces the same denominator.
+//
+// The LCR denominator is a money figure in the snapshot's functional currency.
+// It is returned as a major-unit decimal-native amount via the ALM snapshot's
+// own currency-carrying positions — currency-agnostic by construction (no
+// hardcoded ZAR; WS-MULTI-BASE-CURRENCY).
+// ---------------------------------------------------------------------------
+
+/**
+ * The LCR net-cash-outflow denominator (the BA-300 §"net cash outflows" cell)
+ * derived from the canonical ALM position snapshot. Single source: the
+ * `getALMPositionSnapshot()` projection. Returns the denominator plus the
+ * snapshot's own gap inventory so callers (and the parity gate) can see whether
+ * the figure is fully event-sourced.
+ */
+export interface AlmLcrDenominator {
+  /** Net cash outflows over the 30-day stress horizon (functional currency). */
+  readonly netCashOutflowsZar: number;
+  /** Post-haircut HQLA stock (the numerator) — returned for completeness. */
+  readonly hqlaZar: number;
+  /** The ALM snapshot's substrate-gap inventory (empty ⇒ fully event-sourced). */
+  readonly gaps: readonly string[];
+  /** True when the snapshot is the build-phase fallback (no live positions). */
+  readonly buildPhase: boolean;
+}
+
+/**
+ * Compute the LCR denominator from the canonical ALM projection.
+ *
+ * @param eventStore the event store the ALM projection reads.
+ * @param asOf ISO-8601 as-of date.
+ * @param entity bank legal-entity short-id (defaults to the BA-300 bank entity).
+ * @param horizonDays LCR stress horizon (default 30).
+ */
+export function computeLcrDenominatorFromAlmSnapshot(args: {
+  readonly eventStore: EventStore;
+  readonly asOf: string;
+  readonly entity?: string;
+  readonly horizonDays?: number;
+}): AlmLcrDenominator {
+  const horizonDays = args.horizonDays ?? 30;
+  const snapshot = getALMPositionSnapshot(
+    args.eventStore,
+    args.asOf,
+    horizonDays,
+    args.entity ?? BA_300_LCR_BANK_ENTITIES[0],
+  );
+  const lcr = computeLCR([...snapshot.hqlaPositions], [...snapshot.fundingPositions]);
+  return {
+    netCashOutflowsZar: lcr.netCashOutflowsZar,
+    hqlaZar: lcr.hqlaZar,
+    gaps: snapshot.gaps,
+    buildPhase: snapshot.buildPhase,
+  };
+}
 
 /** Normalise a tradeId that may be either a plain string or a CDM Identifier object. */
 function normaliseTradeId(tradeId: string | Identifier): string {

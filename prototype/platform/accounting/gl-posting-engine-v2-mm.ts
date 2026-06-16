@@ -191,7 +191,12 @@ function isoDate(asOf: string): string {
 
 // PR-MMD-001-V2 — DepositTakenV2 → recognise deposit liability at par.
 // Dr Cash / Cr Deposit Liability (by LCR category).
-function postDepositTaken(p: DepositTakenV2Payload, actor: Actor, entity: string, asOf: string): Event[] {
+function postDepositTaken(
+  p: DepositTakenV2Payload,
+  actor: Actor,
+  entity: string,
+  asOf: string,
+): Event[] {
   return balancedPair({
     debitAccount: ACC.cash,
     creditAccount: ACC.depositLiabilityByCategory[p.depositCategory],
@@ -218,7 +223,7 @@ function postDepositAccrual(
     debitAccount: ACC.depositInterestExpense,
     creditAccount: ACC.depositAccruedInterestPayable,
     amount: p.accruedInterest,
-    postingDate: isoDate(p.accrualDate),
+    postingDate: isoDate(asOf),
     tenantId: p.tenantId,
     sourceEventId: p.depositId,
     iasRule: "IFRS 9 B5.4.1 — EIR interest expense accrual",
@@ -232,7 +237,12 @@ function postDepositAccrual(
 // PR-MMD-MAT-V2 — DepositMaturedV2 → derecognition at maturity.
 // Dr Deposit Liability + Dr Accrued Interest Payable / Cr Cash. The principal
 // and the interest are distinct legs so each side balances to the cash outflow.
-function postDepositMatured(p: DepositMaturedV2Payload, actor: Actor, entity: string, asOf: string): Event[] {
+function postDepositMatured(
+  p: DepositMaturedV2Payload,
+  actor: Actor,
+  entity: string,
+  asOf: string,
+): Event[] {
   const ccy = p.principal.currency;
   const principalPair = balancedPair({
     debitAccount: ACC.depositLiabilityByCategory["wholesale-non-operational"],
@@ -294,7 +304,12 @@ function postDepositWithdrawnEarly(
 
 // PR-FUNDING-001-V2 — FundingLineDrawnV2 → recognise funding liability.
 // Dr Cash / Cr Funding Liability.
-function postFundingDrawn(p: FundingLineDrawnV2Payload, actor: Actor, entity: string, asOf: string): Event[] {
+function postFundingDrawn(
+  p: FundingLineDrawnV2Payload,
+  actor: Actor,
+  entity: string,
+  asOf: string,
+): Event[] {
   return balancedPair({
     debitAccount: ACC.cash,
     creditAccount: ACC.fundingLiability,
@@ -312,7 +327,12 @@ function postFundingDrawn(p: FundingLineDrawnV2Payload, actor: Actor, entity: st
 
 // PR-FUNDING-002-V2 — FundingLineRepaidV2 → derecognition on repayment.
 // Dr Funding Liability / Cr Cash.
-function postFundingRepaid(p: FundingLineRepaidV2Payload, actor: Actor, entity: string, asOf: string): Event[] {
+function postFundingRepaid(
+  p: FundingLineRepaidV2Payload,
+  actor: Actor,
+  entity: string,
+  asOf: string,
+): Event[] {
   return balancedPair({
     debitAccount: ACC.fundingLiability,
     creditAccount: ACC.cash,
@@ -335,7 +355,12 @@ function postFundingRepaid(p: FundingLineRepaidV2Payload, actor: Actor, entity: 
 // PR-REPO-001-V2 — RepoTradeOpenedV2 → secured-borrowing recognition.
 // Collateral is NOT derecognised (stays on the bank's books); the start-leg
 // cash receipt is a secured borrowing. Dr Cash / Cr Repo Liability.
-function postRepoOpened(p: RepoTradeOpenedV2Payload, actor: Actor, entity: string, asOf: string): Event[] {
+function postRepoOpened(
+  p: RepoTradeOpenedV2Payload,
+  actor: Actor,
+  entity: string,
+  asOf: string,
+): Event[] {
   return balancedPair({
     debitAccount: ACC.cash,
     creditAccount: ACC.repoLiability,
@@ -353,7 +378,12 @@ function postRepoOpened(p: RepoTradeOpenedV2Payload, actor: Actor, entity: strin
 
 // PR-REPO-002-V2 — RepoTradeTerminatedV2 → derecognition at repurchase.
 // Dr Repo Liability / Cr Cash (repurchase price paid).
-function postRepoTerminated(p: RepoTradeTerminatedV2Payload, actor: Actor, entity: string, asOf: string): Event[] {
+function postRepoTerminated(
+  p: RepoTradeTerminatedV2Payload,
+  actor: Actor,
+  entity: string,
+  asOf: string,
+): Event[] {
   return balancedPair({
     debitAccount: ACC.repoLiability,
     creditAccount: ACC.cash,
@@ -410,12 +440,17 @@ function postRepoTerminatedEarly(
 
 // PR-IBL-001-V2 — InterbankLoanPlacedV2 → recognise loan asset.
 // Dr Due-from-Banks (by placement type) / Cr Cash.
-function postIblPlaced(p: InterbankLoanPlacedV2Payload, actor: Actor, entity: string, asOf: string): Event[] {
+function postIblPlaced(
+  p: InterbankLoanPlacedV2Payload,
+  actor: Actor,
+  entity: string,
+  asOf: string,
+): Event[] {
   return balancedPair({
     debitAccount: ACC.iblAssetByType[p.placementType],
     creditAccount: ACC.cash,
     amount: p.principal,
-    postingDate: isoDate(p.startDate),
+    postingDate: isoDate(asOf),
     tenantId: p.tenantId,
     sourceEventId: p.placementId,
     iasRule: "IFRS 9 §4.1.2 — asset at amortised cost; trade-date recognition",
@@ -437,7 +472,7 @@ function postIblAccrual(
     debitAccount: ACC.iblAccruedInterestReceivable,
     creditAccount: ACC.iblInterestIncome,
     amount: p.accruedInterest,
-    postingDate: isoDate(p.accrualDate),
+    postingDate: isoDate(asOf),
     tenantId: p.tenantId,
     sourceEventId: p.placementId,
     iasRule: "IFRS 9 B5.4.1 — EIR interest income accrual",
@@ -450,7 +485,12 @@ function postIblAccrual(
 
 // PR-IBL-003-V2 — InterbankLoanMaturedV2 → derecognition at maturity.
 // Dr Cash / Cr Due-from-Banks (principal) + Dr Cash / Cr Accrued Interest Recv.
-function postIblMatured(p: InterbankLoanMaturedV2Payload, actor: Actor, entity: string, asOf: string): Event[] {
+function postIblMatured(
+  p: InterbankLoanMaturedV2Payload,
+  actor: Actor,
+  entity: string,
+  asOf: string,
+): Event[] {
   const principalPair = balancedPair({
     debitAccount: ACC.cash,
     creditAccount: ACC.iblAssetByType["fixed-term"],
@@ -553,18 +593,30 @@ export function runGlV2MoneyMarketEngine(
         processed.deposit++;
         break;
       case "DepositInterestAccruedV2":
-        legs = postDepositAccrual(event.payload as DepositInterestAccruedV2Payload, actor, entity, event.as_of);
+        legs = postDepositAccrual(
+          event.payload as DepositInterestAccruedV2Payload,
+          actor,
+          entity,
+          event.as_of,
+        );
         processed.deposit++;
         break;
       case "DepositMaturedV2":
-        legs = postDepositMatured(event.payload as DepositMaturedV2Payload, actor, entity, event.as_of);
+        legs = postDepositMatured(
+          event.payload as DepositMaturedV2Payload,
+          actor,
+          entity,
+          event.as_of,
+        );
         processed.deposit++;
         break;
       case "DepositWithdrawnEarlyV2":
         legs = postDepositWithdrawnEarly(
           event.payload as DepositWithdrawnEarlyV2Payload,
           actor,
-          entity, event.as_of);
+          entity,
+          event.as_of,
+        );
         processed.deposit++;
         break;
       // DepositRolledOverV2 — no GL impact (term amendment, no cash movement);
@@ -573,50 +625,86 @@ export function runGlV2MoneyMarketEngine(
         break;
       // Funding line.
       case "FundingLineDrawnV2":
-        legs = postFundingDrawn(event.payload as FundingLineDrawnV2Payload, actor, entity, event.as_of);
+        legs = postFundingDrawn(
+          event.payload as FundingLineDrawnV2Payload,
+          actor,
+          entity,
+          event.as_of,
+        );
         processed.funding++;
         break;
       case "FundingLineRepaidV2":
-        legs = postFundingRepaid(event.payload as FundingLineRepaidV2Payload, actor, entity, event.as_of);
+        legs = postFundingRepaid(
+          event.payload as FundingLineRepaidV2Payload,
+          actor,
+          entity,
+          event.as_of,
+        );
         processed.funding++;
         break;
       // Repo.
       case "RepoTradeOpenedV2":
-        legs = postRepoOpened(event.payload as RepoTradeOpenedV2Payload, actor, entity, event.as_of);
+        legs = postRepoOpened(
+          event.payload as RepoTradeOpenedV2Payload,
+          actor,
+          entity,
+          event.as_of,
+        );
         processed.repo++;
         break;
       case "RepoTradeTerminatedV2":
-        legs = postRepoTerminated(event.payload as RepoTradeTerminatedV2Payload, actor, entity, event.as_of);
+        legs = postRepoTerminated(
+          event.payload as RepoTradeTerminatedV2Payload,
+          actor,
+          entity,
+          event.as_of,
+        );
         processed.repo++;
         break;
       case "RepoTradeTerminatedEarlyV2":
         legs = postRepoTerminatedEarly(
           event.payload as RepoTradeTerminatedEarlyV2Payload,
           actor,
-          entity, event.as_of);
+          entity,
+          event.as_of,
+        );
         processed.repo++;
         break;
       // Interbank loan.
       case "InterbankLoanPlacedV2":
-        legs = postIblPlaced(event.payload as InterbankLoanPlacedV2Payload, actor, entity, event.as_of);
+        legs = postIblPlaced(
+          event.payload as InterbankLoanPlacedV2Payload,
+          actor,
+          entity,
+          event.as_of,
+        );
         processed.ibl++;
         break;
       case "InterbankLoanInterestAccruedV2":
         legs = postIblAccrual(
           event.payload as InterbankLoanInterestAccruedV2Payload,
           actor,
-          entity, event.as_of);
+          entity,
+          event.as_of,
+        );
         processed.ibl++;
         break;
       case "InterbankLoanMaturedV2":
-        legs = postIblMatured(event.payload as InterbankLoanMaturedV2Payload, actor, entity, event.as_of);
+        legs = postIblMatured(
+          event.payload as InterbankLoanMaturedV2Payload,
+          actor,
+          entity,
+          event.as_of,
+        );
         processed.ibl++;
         break;
       case "InterbankLoanRecalledEarlyV2":
         legs = postIblRecalledEarly(
           event.payload as InterbankLoanRecalledEarlyV2Payload,
           actor,
-          entity, event.as_of);
+          entity,
+          event.as_of,
+        );
         processed.ibl++;
         break;
       default:

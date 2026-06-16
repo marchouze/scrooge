@@ -49,8 +49,7 @@ export const MM_UNSECURED_TYPE: FilTypeDefinition = {
 // Fixed-term deposit (bank as taker) — liability. Distinct type because the
 // NSFR/LCR ASF treatment differs from interbank.
 // ---------------------------------------------------------------------------
-export const MM_DEPOSIT_TYPE_URN =
-  "fil:type:ir:money-market.deposit:fixed-term@1.0" as FilTypeUrn;
+export const MM_DEPOSIT_TYPE_URN = "fil:type:ir:money-market.deposit:fixed-term@1.0" as FilTypeUrn;
 
 export const MM_DEPOSIT_TYPE: FilTypeDefinition = {
   urn: MM_DEPOSIT_TYPE_URN,

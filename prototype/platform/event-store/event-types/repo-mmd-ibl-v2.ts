@@ -199,9 +199,7 @@ export const depositInterestAccruedV2PayloadSchema = z.object({
   schemaVersion: SCHEMA_VERSION_2,
 });
 
-export type DepositInterestAccruedV2Payload = z.infer<
-  typeof depositInterestAccruedV2PayloadSchema
->;
+export type DepositInterestAccruedV2Payload = z.infer<typeof depositInterestAccruedV2PayloadSchema>;
 
 export function makeDepositInterestAccruedV2(args: {
   asOf: string;
@@ -261,9 +259,7 @@ export const depositWithdrawnEarlyV2PayloadSchema = z.object({
   schemaVersion: SCHEMA_VERSION_2,
 });
 
-export type DepositWithdrawnEarlyV2Payload = z.infer<
-  typeof depositWithdrawnEarlyV2PayloadSchema
->;
+export type DepositWithdrawnEarlyV2Payload = z.infer<typeof depositWithdrawnEarlyV2PayloadSchema>;
 
 export function makeDepositWithdrawnEarlyV2(args: {
   asOf: string;
@@ -460,9 +456,7 @@ export const interbankLoanMaturedV2PayloadSchema = z.object({
   schemaVersion: SCHEMA_VERSION_2,
 });
 
-export type InterbankLoanMaturedV2Payload = z.infer<
-  typeof interbankLoanMaturedV2PayloadSchema
->;
+export type InterbankLoanMaturedV2Payload = z.infer<typeof interbankLoanMaturedV2PayloadSchema>;
 
 export function makeInterbankLoanMaturedV2(args: {
   asOf: string;
