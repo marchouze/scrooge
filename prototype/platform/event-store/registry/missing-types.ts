@@ -241,7 +241,28 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "runtime/agents/metadata/bea.ts; Team/Kai.md; platform/event-store/event-types/fx-accounting.ts",
-    v2Status: "v1-only",
+    // FLIP (WS-V2-AUTHORITATIVE S2) — v1-only → v2-replaced, RETIRED-BY-CONSTRUCTION.
+    // Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (CEO-approved 2026-06-16). All four
+    // conditions hold and are recorded:
+    //   (1) V1 UN-EMITTABLE: fxPositionRevaluedPayloadSchema requires the numeric
+    //       `*Minor` fields notionalBaseMinor / unrealisedPnlZarMinor (z.number().int()).
+    //       Any emission trips recon:no-residual-minor-encoding (no allowlist) →
+    //       un-emittable on main. The V1 product-control read path (daily-pnl.ts)
+    //       that consumed FxPositionRevalued is superseded by the FIL-instance
+    //       valuation path (daily-pnl-v2.ts).
+    //   (2) V2 SOLE EMITTABLE PATH PRODUCES: FX valuation is now sourced from the
+    //       FIL-instance projection + MarketDataStore snapshot (Valuable.value()
+    //       per instrument; D-FIL-BOOK-COMPOSITE-VALUATION). Verified non-vacuous:
+    //       computeDailyPnLV2 returns ZAR 7,895,000 unrealised over 3 FIL positions
+    //       on the ci:migrate seeded store (S1 #1387).
+    //   (3) V2 HAS OWN TESTS: FIL valuation tests + recon:fx-v2-parity (structural)
+    //       + recon:daily-pnl-v2-parity.
+    //   (4) HISTORICAL V1 REPLAY-READABLE: schema + decoder remain registered;
+    //       historical FxPositionRevalued events replay unchanged.
+    // Byte-parity genuinely N/A by construction (per-trade V1 delta vs aggregate
+    // FIL snapshot are incommensurable AND V1 is un-emittable); the construction
+    // conditions are asserted by recon:fx-v2-parity (Charter cmd 3+5).
+    v2Status: "v2-replaced",
   },
   {
     // Realised P&L crystallised on close-out of a desk FX cash instrument

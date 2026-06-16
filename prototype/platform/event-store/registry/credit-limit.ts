@@ -165,7 +165,17 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
       "POLICY:credit-risk-policy-v1",
       "PROC-RISK-CO-01",
     ],
-    v2Status: "v1-only",
+    // FLIP (WS-V2-AUTHORITATIVE S2) — v1-only → v2-replaced, ORDINARY BYTE-PARITY.
+    // Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (CEO-approved 2026-06-16); S4 (#1386).
+    // Unlike the FX/risk family, CreditLimitApproved is byte-clean-comparable:
+    // the S4 dual-run emitter (credit-limit-engine-v2.ts) emits CreditLimitApprovedV2
+    // alongside V1, and recon:credit-limit-v2-parity proves the V1↔V2 approval
+    // registries are byte-identical (folded approvedLimit / loadedLimit /
+    // breachStatus / effectiveFrom / expiryDate agree exactly; V1-only=0, V2-only=0).
+    // V2 (CreditLimitApprovedV2, MoneyWire/decimal-native + tenantId) is now the
+    // authoritative read path; historical V1 events remain replay-readable.
+    // The gate is hardened advisory→enforcing in the same PR (Charter cmd 3+5).
+    v2Status: "v2-replaced",
   },
   // -------------------------------------------------------------------------
   // Load + annual review
@@ -180,7 +190,12 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: creditLimitLoadedPayloadSchema,
     source: "platform/event-store/event-types/credit-limit.ts",
     citationsHint: ["POLICY:credit-risk-policy-v1", "PROC-RISK-CO-01"],
-    v2Status: "v1-only",
+    // FLIP (WS-V2-AUTHORITATIVE S2) — v1-only → v2-replaced, ORDINARY BYTE-PARITY.
+    // Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (CEO-approved 2026-06-16); S4 (#1386).
+    // CreditLimitLoadedV2 dual-emitted (S4); recon:credit-limit-v2-parity proves
+    // byte-equivalence of the folded loaded registry. V2 is authoritative; V1
+    // historical events replay-readable. Gate hardened to enforcing this PR.
+    v2Status: "v2-replaced",
   },
   {
     type: "CreditLimitAnnualReviewCompleted",
@@ -261,7 +276,12 @@ export const CREDIT_LIMIT_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: creditLimitWithdrawnPayloadSchema,
     source: "platform/event-store/event-types/credit-limit.ts",
     citationsHint: ["POLICY:credit-risk-policy-v1-S7", "PROC-RISK-CO-01"],
-    v2Status: "v1-only",
+    // FLIP (WS-V2-AUTHORITATIVE S2) — v1-only → v2-replaced, ORDINARY BYTE-PARITY.
+    // Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (CEO-approved 2026-06-16); S4 (#1386).
+    // CreditLimitWithdrawnV2 dual-emitted (S4); recon:credit-limit-v2-parity proves
+    // byte-equivalence of the folded withdrawn registry. V2 is authoritative; V1
+    // historical events replay-readable. Gate hardened to enforcing this PR.
+    v2Status: "v2-replaced",
   },
   // -------------------------------------------------------------------------
   // V2 APPROVAL-REGISTRY TYPES — Phase 3d (D-V1-REMOVAL-PHASE-3D)

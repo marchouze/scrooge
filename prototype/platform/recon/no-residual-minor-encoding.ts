@@ -40,7 +40,7 @@ const PIPELINE = "no-residual-minor-encoding";
  * Recursively walk an arbitrary payload object and return the dotted paths
  * of any key that ends in "Minor" whose value is a JSON number (not a string).
  */
-function findMinorEncodingViolations(obj: unknown, path = ""): string[] {
+export function findMinorEncodingViolations(obj: unknown, path = ""): string[] {
   if (obj === null || typeof obj !== "object") return [];
   if (Array.isArray(obj)) {
     const out: string[] = [];

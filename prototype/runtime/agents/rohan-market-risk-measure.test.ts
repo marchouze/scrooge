@@ -78,6 +78,27 @@ describe("rohan:market-risk-measure — daily VaR / MR-1-FX core", () => {
     expect(r.varSummary).toContain("absent");
   });
 
+  // -------------------------------------------------------------------------
+  // V2 dual-emit (WS-V2-AUTHORITATIVE S2) — MarketRiskVarComputed alongside V1.
+  // -------------------------------------------------------------------------
+  it("dual-emit is FAIL-CLOSED on a flat book — no V2 MarketRiskVarComputed event", () => {
+    const { store, md } = stores();
+    const r = computeAndEmitMarketRiskMeasure({ store, marketData: md, asOf: AS_OF });
+    // Flat book ⇒ V1 emits with absent figures, V2 emits NOTHING (fail-closed).
+    expect(r.emitted).toBe(true);
+    expect(r.v2Emitted).toBe(false);
+    expect([...store.replay({ type: "MarketRiskVarComputed" })].length).toBe(0);
+  });
+
+  it("result always carries the v2Emitted flag (idempotent skip included)", () => {
+    const { store, md } = stores();
+    const first = computeAndEmitMarketRiskMeasure({ store, marketData: md, asOf: AS_OF });
+    expect(typeof first.v2Emitted).toBe("boolean");
+    const second = computeAndEmitMarketRiskMeasure({ store, marketData: md, asOf: AS_OF });
+    expect(second.emitted).toBe(false);
+    expect(second.v2Emitted).toBe(false);
+  });
+
   it("measureId is one-per-entity-per-UTC-day", () => {
     expect(marketRiskMeasureId(ENTITY, "2026-06-08T18:30:00.000Z")).toBe(
       "MR-MEASURE-LE-ZA-HOZ-BANK-2026-06-08",
