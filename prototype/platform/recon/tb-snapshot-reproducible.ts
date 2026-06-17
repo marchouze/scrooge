@@ -27,11 +27,11 @@
 //   (replay-safe & append-only; whole-tree integrity).
 // Author: Atlas (Substrate Architect, engineering).
 
+import { eventStore } from "../composition";
 import type {
   AccountingPeriodOpenedPayload,
   TrialBalanceSnapshottedPayload,
 } from "../event-store/event-types";
-import { eventStore } from "../composition";
 import { computeTrialBalanceV2 } from "../projections/gl-projection-v2";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
@@ -118,7 +118,9 @@ export function run(): ReconResult {
     }
 
     result.asOf = `${PIPELINE}: ${snapshotsChecked} close snapshot(s) with FX rows checked. ${
-      violations.some((v) => v.severity === "fail") ? "DRIFT" : "snapshot reproduces fold byte-for-byte"
+      violations.some((v) => v.severity === "fail")
+        ? "DRIFT"
+        : "snapshot reproduces fold byte-for-byte"
     }.`;
   } catch (err) {
     violations.push({

@@ -23,6 +23,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { v2ProductRegisteredSchema } from "../../../v2-core/banking/events";
 import type { FilInstanceLifecycleEvent } from "../../../v2-core/fil-instances/events";
 import {
+  filInstrumentAmendedPayloadSchema,
   filInstrumentCreatedPayloadSchema,
   filInstrumentTerminatedPayloadSchema,
 } from "../../../v2-core/fil-instances/events";
@@ -30,13 +31,16 @@ import {
   FX_TREATMENT_MODULES,
   FX_TREATMENT_MODULE_IDS,
 } from "../../../v2-core/reporting-treatments/fx-modules";
+import { filInstanceTreatmentElectedSchema } from "../../../v2-core/reporting-treatments/instance-election";
 import { amountToMinorUnits } from "../../core/decimal-money";
 import { legAmountMoney } from "../../core/money-codec";
 import {
+  makeFilInstrumentAmended,
   makeFilInstrumentCreated,
   makeFilInstrumentTerminated,
 } from "../../event-store/event-types/fil-instances";
 import type { GlPostingEmittedPayload } from "../../event-store/event-types/fx-accounting";
+import { makeFilInstanceTreatmentElected } from "../../event-store/event-types/instance-election";
 import { makeReportingTreatmentDeclared } from "../../event-store/event-types/reporting-treatments";
 import { makeV2ProductRegistered } from "../../event-store/event-types/v2-banking";
 import { EventStore } from "../../event-store/store";
@@ -51,6 +55,8 @@ import {
   computeTrialBalanceV2Uncached,
 } from "../../projections/gl-projection-v2";
 import { runGlV2Engine } from "../gl-posting-engine-v2";
+import { FX_FVOCI_OCI_RESERVE_ACCOUNT } from "./fx";
+import { foldFxContributionLegs } from "./fx-fold";
 
 const ACTOR: Actor = { type: "system", id: "atlas:fx-fold-test" };
 const ENTITY = "LE-ZA-HOZ-BANK";
@@ -111,6 +117,61 @@ function fxCreated(
         settlementDate: asOf.slice(0, 10),
         hedgingSetTag: "USD/ZAR",
       },
+    }),
+  });
+  return { ...base, provenance };
+}
+
+/** A production FX FIL amended (revaluation) event for `id`, `notional` ZAR. */
+function fxAmended(
+  id: string,
+  notional: string,
+  asOf: string,
+  provenance: ProvenanceTag,
+  originating: { eventType: string; eventId: string },
+): Event {
+  const base = makeFilInstrumentAmended({
+    asOf,
+    entity: ENTITY,
+    actor: ACTOR,
+    citations: CITES,
+    payload: filInstrumentAmendedPayloadSchema.parse({
+      kind: "FilInstrumentAmended",
+      instance: instanceUrn(id),
+      type: FX_TYPE_URN,
+      tenant: TENANT,
+      asOf,
+      originatingEvent: originating,
+      amendmentVia: "FxPositionRevalued",
+      economicTerms: {
+        assetClass: "fx",
+        notional: { currency: "ZAR", amount: notional },
+        direction: "long",
+        counterpartyId: "urn:party:legal-entity:standard-bank-za",
+        nettingSetId: "NS-test-ZAR",
+        currency: "ZAR",
+        settlementDate: asOf.slice(0, 10),
+        hedgingSetTag: "USD/ZAR",
+      },
+    }),
+  });
+  return { ...base, provenance };
+}
+
+/** An FVOCI per-instrument election (IFRS 9 §5.7.5) for `id`. */
+function fvociElection(id: string, asOf: string, provenance: ProvenanceTag): Event {
+  const base = makeFilInstanceTreatmentElected({
+    asOf,
+    entity: ENTITY,
+    actor: ACTOR,
+    citations: CITES,
+    payload: filInstanceTreatmentElectedSchema.parse({
+      kind: "FilInstanceTreatmentElected",
+      instance: instanceUrn(id),
+      facet: "ifrs-classification",
+      electedAt: asOf,
+      ifrsCategory: "fvoci",
+      cites: ["IFRS-9-§5.7.5"],
     }),
   });
   return { ...base, provenance };
@@ -382,5 +443,107 @@ describe("FX fold — in-test provenance cohort + reversibility", () => {
     const afterReclassify = computeTrialBalanceV2Uncached(args(store));
     setDefaultProvenanceModeOverride("production-only");
     expect(afterReclassify.rows).toEqual(productionTb.rows);
+  });
+});
+
+// ===========================================================================
+// FX3 — per-instance accounting elections (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD).
+//
+// The product treatment is the DEFAULT. A genuine per-instance election the law
+// leaves open (FVOCI election IFRS 9 §5.7.5) OVERRIDES it for the elected facet:
+//   - FVOCI-elected instance → revaluation fair-value leg routes to OCI (a
+//     deviation, RECORDED with its citation);
+//   - no-election instance → product default (revaluation → FVTPL P&L);
+//   - an election missing its citation → REJECTED (fail-closed) at parse.
+// ===========================================================================
+
+describe("FX3 — per-instance elections override the product-default treatment", () => {
+  test("FVOCI-elected instance folds the revaluation leg to OCI (deviation recorded)", () => {
+    const store = new EventStore(":memory:");
+    seedTreatmentModules(store);
+    // Created + amended (revaluation) for an FVOCI-elected instance.
+    store.append(
+      fxCreated("FX-OCI", "long", "5000000", "2026-06-01T10:00:00.000Z", PROD_TAG, {
+        eventType: "Ws-v2-s1-fixture-book",
+        eventId: "s1:FX-OCI",
+      }),
+    );
+    store.append(
+      fxAmended("FX-OCI", "5200000", "2026-06-02T10:00:00.000Z", PROD_TAG, {
+        eventType: "Ws-v2-s1-fixture-book",
+        eventId: "s1:FX-OCI",
+      }),
+    );
+    store.append(fvociElection("FX-OCI", "2026-06-02T09:00:00.000Z", PROD_TAG));
+
+    const fold = foldFxContributionLegs(args(store));
+
+    // The revaluation credit leg routes to the OCI reserve, NOT the FVTPL P&L
+    // account (ACC-2100-005). Proves the election re-routed the leg.
+    const revalLegs = fold.legs.filter((l) => l.postingRuleId === "PR-FX-REVAL-V2");
+    expect(revalLegs.length).toBe(2); // Dr receivable + Cr OCI
+    const creditLeg = revalLegs.find((l) => l.creditDebit === "credit");
+    expect(creditLeg?.accountCode).toBe(FX_FVOCI_OCI_RESERVE_ACCOUNT);
+    expect(revalLegs.some((l) => l.accountCode === "ACC-2100-005")).toBe(false);
+
+    // The deviation is recorded with its backing citation (not silent).
+    expect(fold.deviations.length).toBe(1);
+    expect(fold.deviations[0]?.instance).toBe(instanceUrn("FX-OCI"));
+    expect(fold.deviations[0]?.facet).toBe("ifrs-classification");
+    expect(fold.deviations[0]?.cites).toContain("IFRS-9-§5.7.5");
+  });
+
+  test("no-election instance folds the revaluation leg to the product default (FVTPL P&L)", () => {
+    const store = new EventStore(":memory:");
+    seedTreatmentModules(store);
+    store.append(
+      fxCreated("FX-DEF", "long", "5000000", "2026-06-01T10:00:00.000Z", PROD_TAG, {
+        eventType: "Ws-v2-s1-fixture-book",
+        eventId: "s1:FX-DEF",
+      }),
+    );
+    store.append(
+      fxAmended("FX-DEF", "5200000", "2026-06-02T10:00:00.000Z", PROD_TAG, {
+        eventType: "Ws-v2-s1-fixture-book",
+        eventId: "s1:FX-DEF",
+      }),
+    );
+    // NO election appended.
+
+    const fold = foldFxContributionLegs(args(store));
+    const revalLegs = fold.legs.filter((l) => l.postingRuleId === "PR-FX-REVAL-V2");
+    const creditLeg = revalLegs.find((l) => l.creditDebit === "credit");
+    // Product default: revaluation credit → FVTPL unrealised P&L (ACC-2100-005).
+    expect(creditLeg?.accountCode).toBe("ACC-2100-005");
+    expect(revalLegs.some((l) => l.accountCode === FX_FVOCI_OCI_RESERVE_ACCOUNT)).toBe(false);
+    // No deviation recorded — the product default bound.
+    expect(fold.deviations.length).toBe(0);
+  });
+
+  test("an election missing its required citation is REJECTED (fail-closed) at parse", () => {
+    expect(() =>
+      filInstanceTreatmentElectedSchema.parse({
+        kind: "FilInstanceTreatmentElected",
+        instance: instanceUrn("FX-NOCITE"),
+        facet: "ifrs-classification",
+        electedAt: "2026-06-02T09:00:00.000Z",
+        ifrsCategory: "fvoci",
+        cites: [], // ← missing required citation
+      }),
+    ).toThrow();
+  });
+
+  test("an election whose value does not match its facet is REJECTED (fail-closed)", () => {
+    expect(() =>
+      filInstanceTreatmentElectedSchema.parse({
+        kind: "FilInstanceTreatmentElected",
+        instance: instanceUrn("FX-MISMATCH"),
+        facet: "ifrs-classification",
+        electedAt: "2026-06-02T09:00:00.000Z",
+        // No ifrsCategory present for the ifrs-classification facet.
+        hedgeDesignation: "cash-flow-hedge",
+        cites: ["IFRS-9-§6.5.2"],
+      }),
+    ).toThrow();
   });
 });

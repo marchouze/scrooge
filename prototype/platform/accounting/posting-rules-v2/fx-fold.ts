@@ -316,6 +316,8 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
   const legs: FxFoldLeg[] = [];
   const skipped: FxFoldSkip[] = [];
   const deviations: FxFoldDeviation[] = [];
+  // De-dup deviation records per (instance, facet) — one election, one deviation.
+  const recordedDeviations = new Set<string>();
 
   // Read the FIL FX lifecycle events from the store in sequence order (stable,
   // matching the engine's iteration). Iterate each registered type stream and
@@ -376,12 +378,19 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
     let electionOverride: FxElectionOverride | undefined;
     if (ifrsElection?.ifrsCategory !== undefined) {
       electionOverride = { ifrsCategory: ifrsElection.ifrsCategory };
-      deviations.push({
-        instance,
-        facet: "ifrs-classification",
-        detail: `IFRS classification elected to ${ifrsElection.ifrsCategory} (overrides product default)`,
-        cites: ifrsElection.cites,
-      });
+      // Record the deviation ONCE per (instance, facet) — an election applies to
+      // the whole instance, not per lifecycle event (multiple lifecycle events
+      // for one instance must not double-count the deviation).
+      const devKey = `${instance}::ifrs-classification`;
+      if (!recordedDeviations.has(devKey)) {
+        recordedDeviations.add(devKey);
+        deviations.push({
+          instance,
+          facet: "ifrs-classification",
+          detail: `IFRS classification elected to ${ifrsElection.ifrsCategory} (overrides product default)`,
+          cites: ifrsElection.cites,
+        });
+      }
     }
 
     // Apply the lifted FX rule for this trigger kind.
