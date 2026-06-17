@@ -451,6 +451,19 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // types are the 14 load-bearing dispatch/run-lifecycle/RMS types (CEO
     // checkpoint). Authority: D-BANK-WIDE-V2-MIGRATION.
     "recon:bucket-c-batch4-v2-parity",
+    // Bucket C FINAL load-bearing batch (CLOSES bucket C) — the 14 load-bearing
+    // dispatch / run-lifecycle / RMS types (AgentBriefIssued, RecordFiled,
+    // DecisionRequested, Feedback, BriefSuperseded, Decision, DocumentRegistered,
+    // AgentRunStarted, AgentRunCompleted, AgentRunFailed, WorkstreamRegistered,
+    // WorkstreamStarted, WorkstreamCompleted, ReconResult) V1-store ↔ v2-control-
+    // plane-store VERBATIM {event_id, type, payload} tuple-fold parity. ENFORCING
+    // (byte-clean; NON-VACUOUS on the home store — high-population dispatch/decision/
+    // run history; PASS-on-empty on the CI store). The dispatch CLIs stay
+    // V1-authoritative (this flip is v2Status+ratchet only); the RMS/dispatch gates
+    // (rms-briefs-parity, rms-documents-parity, dispatch-sync-integrity) read V1
+    // unchanged. ReconResult self-reference analysed, not a hazard (14/14 flipped).
+    // CLOSES bucket C. Authority: D-V1-REMOVAL-BUCKET-C-LOAD-BEARING-FLIP.
+    "recon:bucket-c-loadbearing-v2-parity",
     // Wave 2 BUCKET-A BATCH-A2 — nine EMITTABLE numeric-money, non-financial
     // types (ClimateScenarioRun, FeeDisclosureEvent, Correspondent…Sent,
     // NostroStatementReceived, CounterpartyExposureCalculated, STRCandidate,

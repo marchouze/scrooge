@@ -258,6 +258,7 @@
     "recon:bucket-c-batch2-v2-parity": "bun run platform/recon/bucket-c-batch2-v2-parity.ts",
     "recon:bucket-c-batch3-v2-parity": "bun run platform/recon/bucket-c-batch3-v2-parity.ts",
     "recon:bucket-c-batch4-v2-parity": "bun run platform/recon/bucket-c-batch4-v2-parity.ts",
+    "recon:bucket-c-loadbearing-v2-parity": "bun run platform/recon/bucket-c-loadbearing-v2-parity.ts",
     "recon:bucket-a-a2-v2-parity": "bun run platform/recon/bucket-a-a2-v2-parity.ts",
     "recon:v2-store-tee-coverage": "bun run platform/recon/v2-store-tee-coverage.ts",
     "recon:v2-eval-harness-integrity": "bun run platform/recon/v2-eval-harness-integrity.ts",

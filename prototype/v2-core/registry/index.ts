@@ -72,6 +72,7 @@ import { bucketCVerbatimSchema } from "../bucket-c-batch1";
 import { BUCKET_C_BATCH2_TYPES } from "../bucket-c-batch2";
 import { BUCKET_C_BATCH3_TYPES } from "../bucket-c-batch3";
 import { BUCKET_C_BATCH4_TYPES } from "../bucket-c-batch4";
+import { BUCKET_C_LOADBEARING_TYPES } from "../bucket-c-loadbearing";
 import { contextPackBuiltPayloadSchema } from "../context-pack/events";
 import {
   functionalSeatRegisteredPayloadSchema,
@@ -630,6 +631,67 @@ function bucketC4(type: string): V2EventTypeMetadata {
   };
 }
 
+const BUCKET_C_LOADBEARING_SOURCE =
+  "brief:atlas:bucket-c-loadbearing-final:2026-06-17 — " +
+  "Bucket C FINAL load-bearing batch (CLOSES bucket C): 14 money-free, " +
+  "LOAD-BEARING dispatch / run-lifecycle / RMS control-plane substrate types " +
+  "(AgentBriefIssued, RecordFiled, DecisionRequested, Feedback, BriefSuperseded, " +
+  "Decision, DocumentRegistered, AgentRunStarted, AgentRunCompleted, " +
+  "AgentRunFailed, WorkstreamRegistered, WorkstreamStarted, WorkstreamCompleted, " +
+  "ReconResult) migrated via the store-tee verbatim path (tee-enabled, " +
+  "money-free, no codec). The dispatch CLIs stay V1-authoritative; the tee " +
+  "mirrors V1->v2 read-side. ReconResult self-reference analysed, not a hazard " +
+  "(emitted only by vera-overnight-recon, never by a parity gate)";
+
+/**
+ * The per-type `class` for each load-bearing type, sourced verbatim from the V1
+ * `EVENT_TYPE_REGISTRY` rows so the v2 row carries the same class as V1 (a
+ * verbatim mirror must not re-class). Confirmed against the registry on
+ * 2026-06-17 (`governance.ts` / `runtime.ts`).
+ */
+const BUCKET_C_LOADBEARING_CLASS: Record<string, V2EventTypeMetadata["class"]> = {
+  AgentBriefIssued: "runtime",
+  RecordFiled: "governance",
+  DecisionRequested: "runtime",
+  Feedback: "runtime",
+  BriefSuperseded: "runtime",
+  Decision: "governance",
+  DocumentRegistered: "governance",
+  AgentRunStarted: "runtime",
+  AgentRunCompleted: "runtime",
+  AgentRunFailed: "runtime",
+  WorkstreamRegistered: "runtime",
+  WorkstreamStarted: "governance",
+  WorkstreamCompleted: "governance",
+  ReconResult: "audit",
+};
+
+/**
+ * A Bucket-C FINAL load-bearing migration row: identical mechanics to
+ * `bucketC1` / `bucketC2` / `bucketC3` / `bucketC4` (ALWAYS tee-enabled,
+ * verbatim — money-free, shared `bucketCVerbatimSchema`). The class is sourced
+ * from `BUCKET_C_LOADBEARING_CLASS` (= the V1 row's class) so the mirror never
+ * re-classes. Onboarding is one `BUCKET_C_LOADBEARING_TYPES` entry.
+ */
+function bucketCLoadBearing(type: string): V2EventTypeMetadata {
+  const cls = BUCKET_C_LOADBEARING_CLASS[type];
+  if (cls === undefined) {
+    throw new Error(
+      `bucketCLoadBearing: no class mapping for "${type}". Every BUCKET_C_LOADBEARING_TYPES entry must have a BUCKET_C_LOADBEARING_CLASS mapping matching its V1 registry class.`,
+    );
+  }
+  return {
+    type,
+    class: cls,
+    payloadSchema: bucketCVerbatimSchema,
+    schemaVersion: 1,
+    retention: V2_RETENTION_RUNTIME_1Y,
+    migrationStatus: "v2-parallel",
+    tee: {},
+    source: BUCKET_C_LOADBEARING_SOURCE,
+  };
+}
+
 const BUCKET_A_A2_SOURCE =
   "brief:atlas:bucket-a-a2-emittable-numeric-money-types:2026-06-16 — " +
   "v2-parallel money-BEARING migration of nine emittable numeric-money non-financial types " +
@@ -1121,6 +1183,37 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
   // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
   // ---------------------------------------------------------------------------
   ...BUCKET_C_BATCH4_TYPES.map((t) => bucketC4(t)),
+
+  // ---------------------------------------------------------------------------
+  // BUCKET C FINAL load-bearing batch (CLOSES bucket C) — the 14 load-bearing
+  // dispatch / run-lifecycle / RMS types (AgentBriefIssued, RecordFiled,
+  // DecisionRequested, Feedback, BriefSuperseded, Decision, DocumentRegistered,
+  // AgentRunStarted, AgentRunCompleted, AgentRunFailed, WorkstreamRegistered,
+  // WorkstreamStarted, WorkstreamCompleted, ReconResult). ALWAYS tee-enabled,
+  // VERBATIM (money-free, shared `bucketCVerbatimSchema`). The store-tee mirrors
+  // every V1 append verbatim; `recon:bucket-c-loadbearing-v2-parity` is the
+  // byte-clean {event_id, type, payload} tuple fold (expected NON-VACUOUS on the
+  // home store — these are high-population dispatch/decision/run history). Type
+  // list is sourced from BUCKET_C_LOADBEARING_TYPES; class from
+  // BUCKET_C_LOADBEARING_CLASS.
+  //
+  // ★CRITICAL INVARIANT — the dispatch CLIs (open-brief / start-run / close-run)
+  // stay V1-AUTHORITATIVE. This flip changes ONLY v2Status + the ratchet; it does
+  // NOT change where the CLIs write or read. The CLIs keep emitting V1; the tee
+  // mirrors V1->v2 read-side; open-brief keeps replaying V1 AgentBriefIssued for
+  // dedup. The CLI-read cutover is a SEPARATE, deferred workstream. The RMS /
+  // dispatch parity gates (recon:rms-briefs-parity, recon:rms-documents-parity,
+  // recon:dispatch-sync-integrity) read the V1 shape unchanged.
+  //
+  // ★ReconResult self-reference: analysed, NOT a hazard (emitted only by
+  // vera-overnight-recon to the V1 store; never by a parity gate). INCLUDED.
+  //
+  // AFTER THIS BATCH bucket C is FULLY CLOSED — no bucket-C type remains v1-only.
+  //
+  // Authority: D-V1-REMOVAL-BUCKET-C-LOAD-BEARING-FLIP; D-BANK-WIDE-V2-MIGRATION;
+  // D-V1-REMOVAL-FLIP-BASIS-RBC.
+  // ---------------------------------------------------------------------------
+  ...BUCKET_C_LOADBEARING_TYPES.map((t) => bucketCLoadBearing(t)),
 
   // ---------------------------------------------------------------------------
   // WAVE 2 BUCKET-A BATCH-A2 — nine EMITTABLE numeric-money, non-financial types
