@@ -1318,7 +1318,9 @@ const ACCOUNTING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/bea.ts",
-    v2Status: "v1-only",
+    // Bucket C batch 4 (D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror
+    // to the v2 control-plane store; recon:bucket-c-batch4-v2-parity enforcing.
+    v2Status: "v2-replaced",
   },
 ];
 
@@ -1337,7 +1339,9 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/mira.ts",
-    v2Status: "v1-only",
+    // Bucket C batch 4 (D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror
+    // to the v2 control-plane store; recon:bucket-c-batch4-v2-parity enforcing.
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a PEP list update is published.
@@ -1349,7 +1353,9 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/mira.ts",
-    v2Status: "v1-only",
+    // Bucket C batch 4 (D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror
+    // to the v2 control-plane store; recon:bucket-c-batch4-v2-parity enforcing.
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when adverse media is published about a client / counterparty.
@@ -1361,7 +1367,9 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/mira.ts",
-    v2Status: "v1-only",
+    // Bucket C batch 4 (D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror
+    // to the v2 control-plane store; recon:bucket-c-batch4-v2-parity enforcing.
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when an AML / compliance alert is opened for investigation.

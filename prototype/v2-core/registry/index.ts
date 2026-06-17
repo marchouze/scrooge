@@ -71,6 +71,7 @@ import { BUCKET_A_A2_SPECS } from "../bucket-a-a2";
 import { bucketCVerbatimSchema } from "../bucket-c-batch1";
 import { BUCKET_C_BATCH2_TYPES } from "../bucket-c-batch2";
 import { BUCKET_C_BATCH3_TYPES } from "../bucket-c-batch3";
+import { BUCKET_C_BATCH4_TYPES } from "../bucket-c-batch4";
 import { contextPackBuiltPayloadSchema } from "../context-pack/events";
 import {
   functionalSeatRegisteredPayloadSchema,
@@ -582,6 +583,53 @@ function bucketC3(type: string): V2EventTypeMetadata {
   };
 }
 
+const BUCKET_C_BATCH4_SOURCE =
+  "brief:atlas:bucket-c-batch4-final-non-load-bearing:2026-06-17 — " +
+  "Bucket C bulk batch 4 (FINAL non-load-bearing, COMPLETES the wave): 4 money-free, " +
+  "non-load-bearing reference-data-process control-plane substrate types " +
+  "(SanctionsListPublished, PepListPublished, AdverseMediaPublished, " +
+  "TaxClassificationPublished) migrated via the store-tee verbatim path " +
+  "(tee-enabled, money-free, no codec). ReconciliationBreak EXCLUDED (money-bearing, C/B boundary)";
+
+/**
+ * The per-type `class` for each batch-4 type, sourced verbatim from the V1
+ * `EVENT_TYPE_REGISTRY` rows so the v2 row carries the same class as V1 (a
+ * verbatim mirror must not re-class). Confirmed against the registry on
+ * 2026-06-17 (`missing-types.ts`: all four are class "governance").
+ */
+const BUCKET_C_BATCH4_CLASS: Record<string, V2EventTypeMetadata["class"]> = {
+  SanctionsListPublished: "governance",
+  PepListPublished: "governance",
+  AdverseMediaPublished: "governance",
+  TaxClassificationPublished: "governance",
+};
+
+/**
+ * A Bucket-C bulk batch-4 migration row: identical mechanics to `bucketC1` /
+ * `bucketC2` / `bucketC3` (ALWAYS tee-enabled, verbatim — money-free, shared
+ * `bucketCVerbatimSchema`). The class is sourced from `BUCKET_C_BATCH4_CLASS`
+ * (= the V1 row's class) so the mirror never re-classes. Onboarding is one
+ * `BUCKET_C_BATCH4_TYPES` entry.
+ */
+function bucketC4(type: string): V2EventTypeMetadata {
+  const cls = BUCKET_C_BATCH4_CLASS[type];
+  if (cls === undefined) {
+    throw new Error(
+      `bucketC4: no class mapping for "${type}". Every BUCKET_C_BATCH4_TYPES entry must have a BUCKET_C_BATCH4_CLASS mapping matching its V1 registry class.`,
+    );
+  }
+  return {
+    type,
+    class: cls,
+    payloadSchema: bucketCVerbatimSchema,
+    schemaVersion: 1,
+    retention: V2_RETENTION_RUNTIME_1Y,
+    migrationStatus: "v2-parallel",
+    tee: {},
+    source: BUCKET_C_BATCH4_SOURCE,
+  };
+}
+
 const BUCKET_A_A2_SOURCE =
   "brief:atlas:bucket-a-a2-emittable-numeric-money-types:2026-06-16 — " +
   "v2-parallel money-BEARING migration of nine emittable numeric-money non-financial types " +
@@ -1051,6 +1099,28 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
   // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
   // ---------------------------------------------------------------------------
   ...BUCKET_C_BATCH3_TYPES.map((t) => bucketC3(t)),
+
+  // ---------------------------------------------------------------------------
+  // BUCKET C bulk BATCH 4 (FINAL non-load-bearing — COMPLETES the wave) — the
+  // four money-free reference-data-process boundary types
+  // (SanctionsListPublished, PepListPublished, AdverseMediaPublished,
+  // TaxClassificationPublished). ALWAYS tee-enabled, VERBATIM (money-free,
+  // shared `bucketCVerbatimSchema`). The store-tee mirrors every V1 append
+  // verbatim by the store-tee; `recon:bucket-c-batch4-v2-parity` is the
+  // byte-clean {event_id, type, payload} tuple fold. Type list is sourced from
+  // BUCKET_C_BATCH4_TYPES; class from BUCKET_C_BATCH4_CLASS.
+  //
+  // `ReconciliationBreak` is EXCLUDED — it is money-BEARING (tradeAmount/
+  // paymentAmount minor units) and sits on the substrate/financial (C/B)
+  // boundary; held for a dedicated money-bearing / bucket-B slice.
+  //
+  // AFTER THIS BATCH the ONLY bucket-C types left v1-only are the 14
+  // load-bearing dispatch / run-lifecycle / RMS types (held for the separate
+  // CEO checkpoint; the dispatch CLIs stay V1-authoritative).
+  //
+  // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+  // ---------------------------------------------------------------------------
+  ...BUCKET_C_BATCH4_TYPES.map((t) => bucketC4(t)),
 
   // ---------------------------------------------------------------------------
   // WAVE 2 BUCKET-A BATCH-A2 — nine EMITTABLE numeric-money, non-financial types
