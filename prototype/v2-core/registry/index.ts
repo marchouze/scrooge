@@ -69,6 +69,7 @@ import {
 } from "../banking/events";
 import { BUCKET_A_A2_SPECS } from "../bucket-a-a2";
 import { bucketCVerbatimSchema } from "../bucket-c-batch1";
+import { BUCKET_C_BATCH2_TYPES } from "../bucket-c-batch2";
 import { contextPackBuiltPayloadSchema } from "../context-pack/events";
 import {
   functionalSeatRegisteredPayloadSchema,
@@ -391,6 +392,117 @@ function bucketC1(type: string, cls: V2EventTypeMetadata["class"]): V2EventTypeM
     migrationStatus: "v2-parallel",
     tee: {},
     source: BUCKET_C_BATCH1_SOURCE,
+  };
+}
+
+const BUCKET_C_BATCH2_SOURCE =
+  "brief:atlas:bucket-c-batch2-ciso-party-legal-substrate-types:2026-06-17 — " +
+  "Bucket C bulk batch 2: 68 money-free, non-load-bearing control-plane substrate " +
+  "types (CISO/security-process + party/product-lifecycle + legal/privacy-process) " +
+  "migrated via the store-tee verbatim path (tee-enabled, money-free, no codec)";
+
+/**
+ * The per-type `class` for each batch-2 type, sourced verbatim from the V1
+ * `EVENT_TYPE_REGISTRY` rows so the v2 row carries the same class as V1 (a
+ * verbatim mirror must not re-class). Confirmed against the registry on
+ * 2026-06-17.
+ */
+const BUCKET_C_BATCH2_CLASS: Record<string, V2EventTypeMetadata["class"]> = {
+  // C-7 CISO / security-process
+  SecurityIncidentRaised: "audit",
+  KeyRotationDue: "runtime",
+  DependencyVulnDetected: "runtime",
+  SuspiciousAuthEvent: "audit",
+  SBOMRequired: "runtime",
+  SBOMAcceptanceRequired: "governance",
+  MergeRequested: "runtime",
+  KeyCeremonyScheduled: "governance",
+  VendorSecurityReview: "governance",
+  RegulatorCyberInquiry: "governance",
+  ThreatModelGateDecision: "governance",
+  ThreatModelExceptionRequested: "governance",
+  CyberResilienceSnapshot: "audit",
+  OperationalResilienceSnapshot: "audit",
+  EventSchemaProposal: "runtime",
+  EventSchemaPublished: "runtime",
+  IdentityPermissionChangeProposal: "runtime",
+  ChangeApprovalRequested: "governance",
+  SLOBudgetBurn: "runtime",
+  CapacityBreach: "runtime",
+  // C-5 party / product-lifecycle
+  LegalEntityRegistered: "governance",
+  LegalEntityChanged: "governance",
+  IntraGroupArrangementSigned: "governance",
+  PartyRegistered: "governance",
+  PartyAttributeChanged: "governance",
+  PartyClassified: "governance",
+  PartyDeclassified: "governance",
+  PartyScreeningCompleted: "governance",
+  PartyRelationshipAsserted: "governance",
+  PartyRelationshipChanged: "governance",
+  PartyRelationshipRevoked: "governance",
+  BeneficialOwnerChainAsserted: "governance",
+  PartyDeactivated: "governance",
+  ProductProposalRegistered: "governance",
+  ProductConceptualised: "governance",
+  ProductDueDiligenceCompleted: "governance",
+  ProductDueDiligenceWithheld: "governance",
+  ProductDimensionAttested: "governance",
+  ProductApproved: "governance",
+  ProductWithheld: "governance",
+  ProductLaunched: "governance",
+  ProductPostImplementationReviewCompleted: "governance",
+  ProductReviewCompleted: "governance",
+  ProductRetired: "governance",
+  ProductVersionPublished: "governance",
+  ProductPostApprovalFinding: "governance",
+  ProductDimensionRetrospectiveReview: "governance",
+  ProductDimensionNarrativeRequested: "runtime",
+  ProductDimensionNarrativeRecorded: "governance",
+  // C-8 legal / privacy-process
+  LegalDocumentationSigned: "governance",
+  JurisdictionalOpinionRefreshed: "governance",
+  LegalEntityChange: "governance",
+  ContractDraftRequested: "governance",
+  ClauseChangeProposed: "governance",
+  SignatureRequested: "governance",
+  ECTAExceptionFlagged: "governance",
+  MOIChangeProposed: "governance",
+  ConflictDeclared: "governance",
+  ResolutionRequired: "governance",
+  DSARReceived: "governance",
+  DSARClosed: "governance",
+  DSARExtended: "governance",
+  NewProcessingPurposeProposed: "governance",
+  ConsentWithdrawn: "governance",
+  CrossBorderTransferRequested: "governance",
+  InformationRegulatorInquiry: "governance",
+  POPIAControlsSnapshot: "audit",
+  PersonalInformationCompromiseSuspected: "audit",
+};
+
+/**
+ * A Bucket-C bulk batch-2 migration row: identical mechanics to `bucketC1`
+ * (ALWAYS tee-enabled, verbatim — money-free, shared `bucketCVerbatimSchema`).
+ * The class is sourced from `BUCKET_C_BATCH2_CLASS` (= the V1 row's class) so
+ * the mirror never re-classes. Onboarding is one `BUCKET_C_BATCH2_TYPES` entry.
+ */
+function bucketC2(type: string): V2EventTypeMetadata {
+  const cls = BUCKET_C_BATCH2_CLASS[type];
+  if (cls === undefined) {
+    throw new Error(
+      `bucketC2: no class mapping for "${type}". Every BUCKET_C_BATCH2_TYPES entry must have a BUCKET_C_BATCH2_CLASS mapping matching its V1 registry class.`,
+    );
+  }
+  return {
+    type,
+    class: cls,
+    payloadSchema: bucketCVerbatimSchema,
+    schemaVersion: 1,
+    retention: V2_RETENTION_RUNTIME_1Y,
+    migrationStatus: "v2-parallel",
+    tee: {},
+    source: BUCKET_C_BATCH2_SOURCE,
   };
 }
 
@@ -815,6 +927,26 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
   bucketC1("MandateGapDetected", "runtime"),
   bucketC1("RoleResearchRequested", "governance"),
   bucketC1("RoleResearchQueueSnapshot", "runtime"),
+
+  // ---------------------------------------------------------------------------
+  // BUCKET C — BULK BATCH 2 (68 types; TEE-ENABLED, verbatim; money-free).
+  //
+  // Non-load-bearing control-plane substrate: CISO/security-process (C-7),
+  // party/product-lifecycle (C-5), legal/privacy-process (C-8). Zero dispatch
+  // coupling — none is emitted/replayed by the dispatch CLIs, none is behind an
+  // RMS-parity gate, none is in the run lifecycle. All mirrored verbatim by the
+  // store-tee; `recon:bucket-c-batch2-v2-parity` is the byte-clean (PASS-on-empty
+  // in build phase) evidence over the {event_id, type, payload} tuple fold. Type
+  // list is sourced from BUCKET_C_BATCH2_TYPES; class from BUCKET_C_BATCH2_CLASS.
+  //
+  // EXCLUDED (later batches / CEO checkpoint): the 14 load-bearing dispatch
+  // types, SubstrateAlert (tee self-reference), ScheduledTrigger /
+  // SubstrateAgentRun* (runtime-emitted), the batch-1 set, and the C-3/C-4/C-6/
+  // C-9 remainder (batch 3).
+  //
+  // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+  // ---------------------------------------------------------------------------
+  ...BUCKET_C_BATCH2_TYPES.map((t) => bucketC2(t)),
 
   // ---------------------------------------------------------------------------
   // WAVE 2 BUCKET-A BATCH-A2 — nine EMITTABLE numeric-money, non-financial types
