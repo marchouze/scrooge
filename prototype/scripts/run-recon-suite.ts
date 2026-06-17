@@ -260,6 +260,12 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // all 42 posting rules. V1-only accounts produce expected warn violations;
     // V2-only accounts (if any) or amount mismatches on common accounts fail.
     "recon:gl-v2-parity",
+    // D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD — FX trial-balance fold byte-equivalence
+    // gate (ENFORCING). Proves the FX contribution computed as a pure fold over the
+    // primary FIL FX events (reading NO GlPostingEmitted) reproduces the FX posting
+    // rules byte-for-byte (the legs the dual-run engine emits). Vacuous-pass on a
+    // clean store (no FIL FX events). Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD.
+    "recon:gl-v2-fold-equivalence-fx",
     // D-V1-REMOVAL-PHASE-3B — V2 money-market LCR-denominator parity gate (advisory).
     // Compares the BA-300 LCR net-cash-outflow denominator from the V1 ALM snapshot
     // against the same denominator folded from the V2-parallel money-market

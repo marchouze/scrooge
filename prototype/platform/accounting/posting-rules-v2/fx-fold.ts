@@ -42,6 +42,7 @@
 //   citing D-DERIVED-EVENT-IRREDUCIBILITY-TEST. Principle 1; Principle 2.
 // Author: Atlas (Substrate Architect, engineering).
 
+import { matchesFilScope } from "../../../v2-core/fil-core/urn";
 import type {
   FilInstrumentAmendedPayload,
   FilInstrumentCreatedPayload,
@@ -51,7 +52,6 @@ import {
   type ReportingTreatmentRegister,
   foldReportingTreatmentRegister,
 } from "../../../v2-core/reporting-treatments/registry";
-import { matchesFilScope } from "../../../v2-core/fil-core/urn";
 import type { EventStore } from "../../event-store/store";
 import type { Event } from "../../event-store/types";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../../projections/filter";
@@ -177,10 +177,13 @@ function decideFxTreatment(
         };
   }
 
-  // Only "no-product-binding" enters the build-phase fallback. A missing
-  // originating event or an unregistered bound product is a genuine fail-closed
-  // condition that must NOT be papered over by the type-scope fallback.
-  if (resolved.reason !== "no-product-binding") {
+  // The build-phase reality (pre-S0d): FIL fixtures carry an originating REF to a
+  // descriptor (`Ws-v2-s1-fixture-book`) that is not itself a stored event, and
+  // real trades carry no `productId` yet. BOTH manifest as "no product binding
+  // available" → the fallback. Only `product-not-registered` is a genuine
+  // fail-closed error (a productId WAS present but names no registered product),
+  // which must NOT be papered over by the type-scope fallback.
+  if (resolved.reason === "product-not-registered") {
     return {
       applyFxPostingRules: false,
       reason: "treatment-unresolved",
@@ -202,8 +205,7 @@ function decideFxTreatment(
   const distinctModules = new Set(matches.map((r) => r.treatmentId));
   if (distinctModules.size === 1) {
     const only = matches[0];
-    const appliesFx =
-      only !== undefined && only.applicablePostingRuleIds.some((id) => id.startsWith("PR-FX-"));
+    const appliesFx = only?.applicablePostingRuleIds.some((id) => id.startsWith("PR-FX-"));
     return appliesFx
       ? {
           applyFxPostingRules: true,

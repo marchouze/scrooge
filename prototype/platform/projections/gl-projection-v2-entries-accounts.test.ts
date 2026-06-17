@@ -10,6 +10,12 @@
 //     balance direction;
 //   - both projections sort deterministically (replay-stable).
 //
+// NOTE (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD, 2026-06-17): the FX contribution
+// to the V2 GL is now a pure fold over FIL events, so these tests exercise the
+// GlPostingEmitted read path via a NON-FX (capital) rule id — an FX rule id would
+// be excluded from the GlPostingEmitted path. FX entry/account folding is proven
+// in platform/accounting/posting-rules-v2/fx-fold.test.ts.
+//
 // Authority: D-BANK-WIDE-V2-MIGRATION + D-V2-AUTHORITATIVE-FLIP-PREREQS
 //            (CEO-approved 2026-06-16).
 // Author: Atlas (Core banking platform architect, engineering).
@@ -63,7 +69,12 @@ function appendLeg(
     tenantId: TENANT,
     sourceEventId: leg.sourceEventId ?? "src:test",
     iasRule: "IFRS 9 §3.1.1",
-    postingRuleId: leg.postingRuleId ?? "PR-FX-001-V2",
+    // Non-FX rule id: the entry/account projections read GlPostingEmitted for
+    // NON-FX accounts only — FX is now a pure fold over FIL events
+    // (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD), so an FX rule id would be excluded
+    // from the GlPostingEmitted read path. These tests exercise the generic
+    // GlPostingEmitted projection mechanics via a non-FX (capital) rule id.
+    postingRuleId: leg.postingRuleId ?? "PR-CAP-001-V2",
     description: leg.description ?? "test posting",
   };
   const ev = makeGlPostingEmitted({
@@ -85,8 +96,8 @@ describe("computeGlEntriesV2 — entry-level projection", () => {
       creditDebit: "debit",
       amount: wire("1000.00", "USD"),
       postingDate: "2026-06-10",
-      description: "FX Initial Recognition USD long (V2)",
-      postingRuleId: "PR-FX-001-V2",
+      description: "Capital recognition USD (V2)",
+      postingRuleId: "PR-CAP-001-V2",
     });
     appendLeg(store, {
       accountCode: "ACC-2100-003",
@@ -112,8 +123,8 @@ describe("computeGlEntriesV2 — entry-level projection", () => {
     // amountMinor is the load-bearing integer invariant.
     expect(debit?.amount.amount).toBe("1000");
     expect(debit?.amountMinor).toBe(100000);
-    expect(debit?.postingRuleId).toBe("PR-FX-001-V2");
-    expect(debit?.description).toBe("FX Initial Recognition USD long (V2)");
+    expect(debit?.postingRuleId).toBe("PR-CAP-001-V2");
+    expect(debit?.description).toBe("Capital recognition USD (V2)");
   });
 
   test("posting-date window excludes out-of-window legs", () => {
