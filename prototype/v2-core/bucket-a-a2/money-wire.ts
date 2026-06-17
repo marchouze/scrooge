@@ -37,6 +37,8 @@
 // Principle 1 (events are truth); Principle 5 (multi-currency at the type level).
 // Author: Atlas (Core banking platform architect, engineering).
 
+import { z } from "zod";
+
 import { decimalToString, divD, toDecimal } from "../fil-core/decimal";
 
 /**
@@ -53,6 +55,34 @@ export interface MoneyWire {
 }
 
 const MONEY_DISCRIMINANT = "v1" as const;
+
+/**
+ * Shared v2-core Zod schema for a `MoneyWire` money field. Byte-identical to the
+ * platform `MoneyWire`. This is the REUSABLE control-plane money primitive: any
+ * v2-native control-plane event that carries a decimal-native money field uses
+ * this schema (e.g. `V2RiskAppetiteSet.floor`, the batch-A2 mirror payloads).
+ * `amount` is a MAJOR-unit decimal string; `currency` is carried explicitly
+ * (Principle 5 — multi-currency at the type level; no untyped currency default).
+ */
+export const moneyWireSchema: z.ZodType<MoneyWire> = z.object({
+  __money: z.literal(MONEY_DISCRIMINANT),
+  amount: z.string().min(1),
+  currency: z.string().min(1),
+});
+
+/**
+ * Build a `MoneyWire` from a MAJOR-unit decimal STRING (e.g. a register value
+ * that is already a major-unit figure). The string is canonicalised through the
+ * decimal engine — no IEEE-754 arithmetic. The caller resolves `currency`
+ * explicitly from the value's declared denomination (no `?? "ZAR"` default).
+ */
+export function moneyWireFromMajorString(majorAmount: string, currency: string): MoneyWire {
+  return {
+    __money: MONEY_DISCRIMINANT,
+    amount: decimalToString(toDecimal(majorAmount)),
+    currency,
+  };
+}
 
 /**
  * ISO 4217 minor-unit exponent table for the currencies that appear on the
