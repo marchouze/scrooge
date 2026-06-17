@@ -16,7 +16,6 @@ const NAV = [
   {
     label: "Finance",
     icon: "₣",
-    seat: "CFO · Camille",
     href: "/v2/finance/index.html",
     items: [
       { label: "Overview", href: "/v2/finance/index.html" },
@@ -29,7 +28,6 @@ const NAV = [
   {
     label: "Treasury",
     icon: "⊕",
-    seat: "Treasurer · Eitan",
     href: "/v2/treasury/index.html",
     items: [
       { label: "Overview", href: "/v2/treasury/index.html" },
@@ -41,7 +39,6 @@ const NAV = [
   {
     label: "Markets",
     icon: "⟳",
-    seat: "Head of Global Markets · Saskia",
     href: "/v2/markets/index.html",
     items: [
       { label: "Overview", href: "/v2/markets/index.html" },
@@ -52,7 +49,6 @@ const NAV = [
   {
     label: "Risk",
     icon: "⚡",
-    seat: "CRO · Helena",
     href: "/v2/risk/index.html",
     items: [
       { label: "Overview", href: "/v2/risk/index.html" },
@@ -66,7 +62,6 @@ const NAV = [
   {
     label: "Compliance",
     icon: "✓",
-    seat: "CCO · Zara",
     href: "/v2/compliance/index.html",
     items: [
       { label: "Overview", href: "/v2/compliance/index.html" },
@@ -78,7 +73,6 @@ const NAV = [
   {
     label: "Audit",
     icon: "◎",
-    seat: "CAE · Thandiwe",
     href: "/v2/audit/index.html",
     items: [
       { label: "Overview", href: "/v2/audit/index.html" },
@@ -89,7 +83,6 @@ const NAV = [
   {
     label: "Security",
     icon: "⊗",
-    seat: "CISO · Rashida",
     href: "/v2/security/index.html",
     items: [
       { label: "Overview", href: "/v2/security/index.html" },
@@ -100,7 +93,6 @@ const NAV = [
   {
     label: "Operations",
     icon: "⚙",
-    seat: "COO · Devon",
     href: "/v2/operations/index.html",
     items: [
       { label: "Overview", href: "/v2/operations/index.html" },
@@ -112,7 +104,6 @@ const NAV = [
   {
     label: "Governance",
     icon: "⊞",
-    seat: "CoSec · Owen",
     href: "/v2/governance/index.html",
     items: [
       { label: "Overview", href: "/v2/governance/index.html" },
@@ -125,7 +116,6 @@ const NAV = [
   {
     label: "Data & Privacy",
     icon: "⊡",
-    seat: "Info Officer · Iris",
     href: "/v2/data/index.html",
     items: [
       { label: "Overview", href: "/v2/data/index.html" },
@@ -164,14 +154,11 @@ function renderSidebar() {
       })
       .join("");
 
-    const seat = section.seat ? `<span class="v2-nav-section-seat">${section.seat}</span>` : "";
-
     return `
       <div class="v2-nav-section${isOpen ? " open" : ""}" data-section="${i}">
         <button class="v2-nav-section-toggle${isActive ? " active" : ""}" aria-expanded="${isOpen}">
           <span class="v2-nav-section-icon">${section.icon}</span>
           <span class="v2-nav-section-label">${section.label}</span>
-          ${seat}
           <span class="v2-nav-chevron">›</span>
         </button>
         <div class="v2-nav-items">${items}</div>

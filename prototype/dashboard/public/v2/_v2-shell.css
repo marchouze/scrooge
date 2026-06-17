@@ -215,13 +215,6 @@ body {
   flex: 1;
 }
 
-.v2-nav-section-seat {
-  font: var(--text-caption);
-  color: var(--color-text-disabled);
-  white-space: nowrap;
-  margin-right: var(--space-2);
-}
-
 .v2-nav-chevron {
   font-size: 10px;
   transition: transform 200ms;
