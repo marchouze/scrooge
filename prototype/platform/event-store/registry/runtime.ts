@@ -89,7 +89,11 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "A0 freeze (markets-side coordinator); Atlas runtime spec §11",
-    v2Status: "v1-only",
+    // Bucket C FINAL load-bearing (D-V1-REMOVAL-BUCKET-C-LOAD-BEARING-FLIP;
+    // D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror to the v2 control-plane
+    // store; recon:bucket-c-loadbearing-v2-parity enforcing. The dispatch CLIs stay
+    // V1-authoritative (flip is v2Status+ratchet only).
+    v2Status: "v2-replaced",
   },
   {
     type: "RiskRaised",
@@ -234,7 +238,11 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_RUNTIME_1Y,
     source:
       "A0 freeze §4 #6; D-RMS-PHASE-1 Slice 2 typed payload — Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.2",
-    v2Status: "v1-only",
+    // Bucket C FINAL load-bearing (D-V1-REMOVAL-BUCKET-C-LOAD-BEARING-FLIP;
+    // D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror to the v2 control-plane
+    // store; recon:bucket-c-loadbearing-v2-parity enforcing. The dispatch CLIs stay
+    // V1-authoritative (flip is v2Status+ratchet only).
+    v2Status: "v2-replaced",
   },
   {
     // Typed under D-RMS-PHASE-1 Slice 2 (CEO standing authority 2026-05-09).
@@ -251,7 +259,11 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_RUNTIME_1Y,
     source:
       "A0 freeze §4 #7; D-RMS-PHASE-1 Slice 2 typed payload — Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.3",
-    v2Status: "v1-only",
+    // Bucket C FINAL load-bearing (D-V1-REMOVAL-BUCKET-C-LOAD-BEARING-FLIP;
+    // D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror to the v2 control-plane
+    // store; recon:bucket-c-loadbearing-v2-parity enforcing. The dispatch CLIs stay
+    // V1-authoritative (flip is v2Status+ratchet only).
+    v2Status: "v2-replaced",
   },
   {
     type: "AgentRunFailed",
@@ -264,7 +276,11 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Failures retained longer for incident analysis — promote to 7y.
     retention: RETENTION_GOVERNANCE_7Y,
     source: "A0 freeze §4 #8",
-    v2Status: "v1-only",
+    // Bucket C FINAL load-bearing (D-V1-REMOVAL-BUCKET-C-LOAD-BEARING-FLIP;
+    // D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror to the v2 control-plane
+    // store; recon:bucket-c-loadbearing-v2-parity enforcing. The dispatch CLIs stay
+    // V1-authoritative (flip is v2Status+ratchet only).
+    v2Status: "v2-replaced",
   },
   {
     type: "AgentEscalationAcknowledged",

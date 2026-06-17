@@ -166,7 +166,11 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Workstream lifecycle (pre-A0)",
-    v2Status: "v1-only",
+    // Bucket C FINAL load-bearing (D-V1-REMOVAL-BUCKET-C-LOAD-BEARING-FLIP;
+    // D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror to the v2 control-plane
+    // store; recon:bucket-c-loadbearing-v2-parity enforcing. The dispatch CLIs stay
+    // V1-authoritative (flip is v2Status+ratchet only).
+    v2Status: "v2-replaced",
   },
   {
     type: "WorkstreamCompleted",
@@ -178,7 +182,11 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Workstream lifecycle (pre-A0)",
-    v2Status: "v1-only",
+    // Bucket C FINAL load-bearing (D-V1-REMOVAL-BUCKET-C-LOAD-BEARING-FLIP;
+    // D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror to the v2 control-plane
+    // store; recon:bucket-c-loadbearing-v2-parity enforcing. The dispatch CLIs stay
+    // V1-authoritative (flip is v2Status+ratchet only).
+    v2Status: "v2-replaced",
   },
   // D-POLICY-DOCUMENT-HOME Option C (CEO-approved 2026-05-12).
   // Emitted once per versioned policy/charter/procedure/report registered in
@@ -195,7 +203,11 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // matches the Companies Act / BCBS-239 governance record floor.
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/recon/document-registration.ts",
-    v2Status: "v1-only",
+    // Bucket C FINAL load-bearing (D-V1-REMOVAL-BUCKET-C-LOAD-BEARING-FLIP;
+    // D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror to the v2 control-plane
+    // store; recon:bucket-c-loadbearing-v2-parity enforcing. The dispatch CLIs stay
+    // V1-authoritative (flip is v2Status+ratchet only).
+    v2Status: "v2-replaced",
   },
   // D-DECISIONS-FRAMEWORK-REDESIGN (CEO-approved 2026-05-16). Unified
   // Decision event family. Slice A adds the type alongside CeoDecision;
@@ -210,7 +222,11 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-DECISIONS-FRAMEWORK-REDESIGN", "GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/decision.ts",
-    v2Status: "v1-only",
+    // Bucket C FINAL load-bearing (D-V1-REMOVAL-BUCKET-C-LOAD-BEARING-FLIP;
+    // D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror to the v2 control-plane
+    // store; recon:bucket-c-loadbearing-v2-parity enforcing. The dispatch CLIs stay
+    // V1-authoritative (flip is v2Status+ratchet only).
+    v2Status: "v2-replaced",
   },
 ];
 
@@ -273,7 +289,11 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
-    v2Status: "v1-only",
+    // Bucket C FINAL load-bearing (D-V1-REMOVAL-BUCKET-C-LOAD-BEARING-FLIP;
+    // D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror to the v2 control-plane
+    // store; recon:bucket-c-loadbearing-v2-parity enforcing. The dispatch CLIs stay
+    // V1-authoritative (flip is v2Status+ratchet only).
+    v2Status: "v2-replaced",
   },
   // D-PROVENANCE-BUILD-PHASE-CLASS Slice 2 — audit event for envelope-axis
   // provenance re-tagging. Emitted by the build-phase-fixture backfill
@@ -1100,7 +1120,11 @@ export const RMS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_RUNTIME_1Y,
     source:
       "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.1; D-RMS-PHASE-1 Slice 2",
-    v2Status: "v1-only",
+    // Bucket C FINAL load-bearing (D-V1-REMOVAL-BUCKET-C-LOAD-BEARING-FLIP;
+    // D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror to the v2 control-plane
+    // store; recon:bucket-c-loadbearing-v2-parity enforcing. The dispatch CLIs stay
+    // V1-authoritative (flip is v2Status+ratchet only).
+    v2Status: "v2-replaced",
   },
   {
     type: "DecisionRequested",
@@ -1116,7 +1140,11 @@ export const RMS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.4; D-RMS-PHASE-1 Slice 2",
-    v2Status: "v1-only",
+    // Bucket C FINAL load-bearing (D-V1-REMOVAL-BUCKET-C-LOAD-BEARING-FLIP;
+    // D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror to the v2 control-plane
+    // store; recon:bucket-c-loadbearing-v2-parity enforcing. The dispatch CLIs stay
+    // V1-authoritative (flip is v2Status+ratchet only).
+    v2Status: "v2-replaced",
   },
   {
     type: "Feedback",
@@ -1132,7 +1160,11 @@ export const RMS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.6; D-RMS-PHASE-1 Slice 2",
-    v2Status: "v1-only",
+    // Bucket C FINAL load-bearing (D-V1-REMOVAL-BUCKET-C-LOAD-BEARING-FLIP;
+    // D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror to the v2 control-plane
+    // store; recon:bucket-c-loadbearing-v2-parity enforcing. The dispatch CLIs stay
+    // V1-authoritative (flip is v2Status+ratchet only).
+    v2Status: "v2-replaced",
   },
   {
     type: "BriefSuperseded",
@@ -1145,7 +1177,11 @@ export const RMS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_RUNTIME_1Y,
     source:
       "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.7; D-RMS-PHASE-1 Slice 2",
-    v2Status: "v1-only",
+    // Bucket C FINAL load-bearing (D-V1-REMOVAL-BUCKET-C-LOAD-BEARING-FLIP;
+    // D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror to the v2 control-plane
+    // store; recon:bucket-c-loadbearing-v2-parity enforcing. The dispatch CLIs stay
+    // V1-authoritative (flip is v2Status+ratchet only).
+    v2Status: "v2-replaced",
   },
   {
     type: "RecordFiled",
@@ -1164,7 +1200,11 @@ export const RMS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md §3.8; D-RMS-PHASE-1 Slice 2",
-    v2Status: "v1-only",
+    // Bucket C FINAL load-bearing (D-V1-REMOVAL-BUCKET-C-LOAD-BEARING-FLIP;
+    // D-BANK-WIDE-V2-MIGRATION): store-tee verbatim mirror to the v2 control-plane
+    // store; recon:bucket-c-loadbearing-v2-parity enforcing. The dispatch CLIs stay
+    // V1-authoritative (flip is v2Status+ratchet only).
+    v2Status: "v2-replaced",
   },
 ];
 
