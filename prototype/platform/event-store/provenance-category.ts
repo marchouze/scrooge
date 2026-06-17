@@ -226,6 +226,15 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   // three-site-registration gotcha) so the type does not resolve to "simulated".
   // Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD; D-DERIVED-EVENT-IRREDUCIBILITY-TEST; Principle 1.
   ReportingTreatmentDeclared: "governance",
+  // WS-ACCT-MODULAR-FOLD FX3 — per-instance accounting election (FVOCI election
+  // IFRS 9 §5.7.5, hedge designation, business-model override). A recorded
+  // governance decision carrying its statutory citation, minted through the
+  // governed booking process — never simulated market activity. Registered
+  // v1-side as class "governance"; this mapping keeps the provenance category in
+  // lock-step (the third site of the three-site-registration gotcha) so the type
+  // does not resolve to "simulated".
+  // Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD; D-DERIVED-EVENT-IRREDUCIBILITY-TEST; Principle 1.
+  FilInstanceTreatmentElected: "governance",
   // WS-V2-BBAAS — FIL instance lifecycle family. A materialised FIL instance is
   // a real anchor-book record (the native fil:inst feed for the bank's IR + FX
   // book), minted through the governed materialisation process and emitted into

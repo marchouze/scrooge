@@ -160,6 +160,12 @@ export { FIL_MODELS_EVENT_TYPES_REGISTRY } from "./fil-models";
 // picking treatment modules from this registry; mirrors the FIL-Models pattern.
 // Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD; D-DERIVED-EVENT-IRREDUCIBILITY-TEST.
 export { REPORTING_TREATMENT_EVENT_TYPES_REGISTRY } from "./reporting-treatments";
+// WS-ACCT-MODULAR-FOLD FX3 — FilInstanceTreatmentElected (per-instance accounting
+// election: FVOCI election IFRS 9 §5.7.5, hedge designation, business-model
+// override). Overrides the instance's product-default treatment for the elected
+// facet; recorded with a statutory citation (fail-closed without one).
+// Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD; D-DERIVED-EVENT-IRREDUCIBILITY-TEST.
+export { INSTANCE_ELECTION_EVENT_TYPES_REGISTRY } from "./instance-election";
 // WS-V2-BBAAS — FilInstrumentCreated/Amended/Terminated (FIL instance family).
 // Native fil:inst lifecycle records for the materialised anchor IR + FX book;
 // emitted ONLY into BANK_V2_ANCHOR_DB; never touch the v1 canonical store.
@@ -329,6 +335,7 @@ import { GOVERNANCE_SEAT_RUNS_EVENT_TYPES_REGISTRY } from "./governance-seat-run
 import { IFRS_POLICY_THRESHOLDS_EVENT_TYPES_REGISTRY } from "./ifrs-policy-thresholds";
 import { IFRS9_STAGING_EVENT_TYPES_REGISTRY } from "./ifrs9-staging";
 import { ILAAP_EVENT_TYPES_REGISTRY } from "./ilaap";
+import { INSTANCE_ELECTION_EVENT_TYPES_REGISTRY } from "./instance-election";
 import { INTRADAY_LIQUIDITY_EVENT_TYPES_REGISTRY } from "./intraday-liquidity";
 import { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 import { IRD_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./ird-swaps";
@@ -531,6 +538,12 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // menu registry; a Product composes its treatment by picking modules).
   // Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD; D-DERIVED-EVENT-IRREDUCIBILITY-TEST.
   ...REPORTING_TREATMENT_EVENT_TYPES_REGISTRY,
+  // WS-ACCT-MODULAR-FOLD FX3 — FilInstanceTreatmentElected (per-instance
+  // accounting election: FVOCI election IFRS 9 §5.7.5, hedge designation,
+  // business-model override). Overrides the instance product-default treatment
+  // for the elected facet; recorded with a statutory citation (fail-closed).
+  // Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD; D-DERIVED-EVENT-IRREDUCIBILITY-TEST.
+  ...INSTANCE_ELECTION_EVENT_TYPES_REGISTRY,
   // WS-V2-BBAAS — FilInstrumentCreated/Amended/Terminated (FIL instance family).
   // Native fil:inst lifecycle records for the materialised anchor IR + FX book.
   // Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1.
