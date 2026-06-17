@@ -115,8 +115,10 @@ describe("money-tail codecs — MINOR-unit lift; currency sourced from payload",
       citations: ["PROC-PAY-RBH-01"],
     });
     const breaks = out.breaks as Array<Record<string, unknown>>;
-    expect(breaks[0].tradeAmount).toEqual({ __money: "v1", amount: "2500", currency: "ZAR" });
-    expect(breaks[0].paymentAmount).toEqual({ __money: "v1", amount: "2499", currency: "ZAR" });
+    const firstBreak = breaks[0];
+    expect(firstBreak).toBeDefined();
+    expect(firstBreak?.tradeAmount).toEqual({ __money: "v1", amount: "2500", currency: "ZAR" });
+    expect(firstBreak?.paymentAmount).toEqual({ __money: "v1", amount: "2499", currency: "ZAR" });
     expect(out.matchedCount).toBe(2);
     expect(() => dailyReconciliationReportV2PayloadSchema.parse(out)).not.toThrow();
   });
