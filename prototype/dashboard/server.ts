@@ -310,6 +310,12 @@ import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
 import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
 import type { DashboardState } from "./types";
+import {
+  buildSchemaDetailView,
+  buildSchemasView,
+  buildSubstrateView,
+  provenanceFilterFromMode,
+} from "./v2-views";
 
 const PORT = Number(process.env.BANK_DASHBOARD_PORT ?? 3010);
 const REFRESH_MS = Number(process.env.BANK_DASHBOARD_REFRESH_MS ?? 30_000);
@@ -5428,6 +5434,34 @@ const server = Bun.serve({
     }
     if (req.method === "GET" && (url.pathname === "/v2" || url.pathname === "/v2/")) {
       return Response.redirect(new URL("/v2/index.html", req.url), 302);
+    }
+    // ── V2 oversight data layer (clean /api/v2/* surface) ──────────────────
+    // Standing UI guidance: every V2 surface gives a human direct visibility
+    // into what the autonomous AI is doing. Slice 1 = Schemas & substrate.
+    // Authority: D-V2-UI-OVERSIGHT-STANDARD. Spec: docs/v2-ui-oversight-standard.md.
+    // Provenance toggle (?provenance=prod|prod+sim) maps to the filter applied
+    // to every count; pageProvenance is the same filter so the badge matches.
+    if (req.method === "GET" && url.pathname === "/api/v2/schemas") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildSchemasView(eventStore, filter, nowUtc()),
+        pageProvenance: filter,
+      });
+    }
+    if (req.method === "GET" && url.pathname.startsWith("/api/v2/schemas/")) {
+      const type = decodeURIComponent(url.pathname.slice("/api/v2/schemas/".length));
+      if (!type) return jsonResponse({ error: "missing event type" }, 400);
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const detail = buildSchemaDetailView(eventStore, type, filter, nowUtc());
+      if (!detail) return jsonResponse({ error: `unknown event type: ${type}` }, 404);
+      return jsonResponse({ ...detail, pageProvenance: filter });
+    }
+    if (req.method === "GET" && url.pathname === "/api/v2/substrate") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildSubstrateView(eventStore, filter, nowUtc()),
+        pageProvenance: filter,
+      });
     }
     if (req.method === "GET") {
       return serveStatic(url.pathname, req);

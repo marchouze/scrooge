@@ -98,6 +98,7 @@ const NAV = [
       { label: "Overview", href: "/v2/operations/index.html" },
       { label: "Agent Fleet", href: "/v2/operations/agents.html" },
       { label: "Evaluations", href: "/v2/operations/evals.html" },
+      { label: "Event Schemas", href: "/v2/operations/schemas.html" },
       { label: "Substrate", href: "/v2/operations/substrate.html" },
     ],
   },

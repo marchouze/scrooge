@@ -13,9 +13,11 @@ function renderTile(container, opts) {
   const variantClass = variant ? ` v2-tile--${variant}` : "";
   const valueClass = value === "—" ? " pending" : "";
 
-  const el = document.createElement("a");
-  el.className = `v2-tile${variantClass}`;
-  el.href = href;
+  // Clickable tiles are <a>; non-navigating metric tiles render as a <div>
+  // (a bare <a href="undefined"> is a dead link).
+  const el = document.createElement(href ? "a" : "div");
+  el.className = `v2-tile${href ? "" : " v2-tile--static"}${variantClass}`;
+  if (href) el.href = href;
   el.innerHTML = `
     <div class="v2-tile__label">${label}</div>
     <div class="v2-tile__value${valueClass}">${value}</div>
@@ -54,7 +56,7 @@ function renderTileGroup(parent, opts) {
  */
 // biome-ignore lint/correctness/noUnusedVariables: global API called by inline page scripts
 function renderTable(parent, opts) {
-  const { columns, emptyMsg = "No data yet — wired in a future build." } = opts;
+  const { columns, rows, emptyMsg = "No data yet — wired in a future build." } = opts;
 
   const wrapper = document.createElement("div");
   wrapper.className = "v2-table-wrapper";
@@ -67,7 +69,30 @@ function renderTable(parent, opts) {
   table.appendChild(thead);
 
   const tbody = document.createElement("tbody");
-  tbody.innerHTML = `<tr><td colspan="${columns.length}" class="v2-table-empty">${emptyMsg}</td></tr>`;
+  if (!Array.isArray(rows)) {
+    // No data supplied — placeholder skeleton row.
+    tbody.innerHTML = `<tr><td colspan="${columns.length}" class="v2-table-empty">${emptyMsg}</td></tr>`;
+  } else if (rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="${columns.length}" class="v2-table-empty">${emptyMsg}</td></tr>`;
+  } else {
+    // Each row: { cells: string[], href?: string }. A row with href is
+    // clickable (drill-through to the item's detail page — never a modal).
+    for (const row of rows) {
+      const tr = document.createElement("tr");
+      if (row.href) {
+        tr.className = "v2-table-row-link";
+        tr.tabIndex = 0;
+        tr.addEventListener("click", () => {
+          window.location.href = row.href;
+        });
+        tr.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") window.location.href = row.href;
+        });
+      }
+      tr.innerHTML = row.cells.map((c) => `<td>${c}</td>`).join("");
+      tbody.appendChild(tr);
+    }
+  }
   table.appendChild(tbody);
 
   wrapper.appendChild(table);

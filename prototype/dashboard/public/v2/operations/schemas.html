@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Event Schemas — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-source="/api/v2/schemas">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Operations", href: "/v2/operations/index.html" },
+        { label: "Event Schemas" },
+      ],
+      title: "Event Schema Browser",
+      seat: "EVENT_TYPE_REGISTRY — every event kind the bank records",
+    });
+
+    // Mount points (built once; re-filled by the loader on each fetch).
+    const tilesHost = document.createElement("div"); main.appendChild(tilesHost);
+    const controls = document.createElement("div"); controls.className = "v2-filter-bar"; main.appendChild(controls);
+    const tableHost = document.createElement("div"); main.appendChild(tableHost);
+
+    controls.innerHTML = `
+      <input id="f-text" class="v2-filter-input" type="search" placeholder="Filter by type / issuer / source…" />
+      <select id="f-class" class="v2-filter-select"><option value="">All classes</option><option>runtime</option><option>markets</option><option>governance</option><option>audit</option></select>
+      <select id="f-v2" class="v2-filter-select"><option value="">All V1→V2</option><option value="v1-only">v1-only</option><option value="v2-parallel">v2-parallel</option><option value="v2-replaced">v2-replaced</option></select>
+      <select id="f-status" class="v2-filter-select"><option value="">All statuses</option><option>active</option><option>deprecated</option></select>
+      <span id="f-count" class="v2-filter-count"></span>
+    `;
+
+    let rows = [];
+
+    function applyFilters() {
+      const q = document.getElementById("f-text").value.trim().toLowerCase();
+      const cls = document.getElementById("f-class").value;
+      const v2 = document.getElementById("f-v2").value;
+      const status = document.getElementById("f-status").value;
+      const filtered = rows.filter((r) =>
+        (!cls || r.class === cls) &&
+        (!v2 || r.v2Status === v2) &&
+        (!status || r.status === status) &&
+        (!q || r.type.toLowerCase().includes(q) || String(r.issuer).toLowerCase().includes(q) || String(r.source).toLowerCase().includes(q))
+      );
+      document.getElementById("f-count").textContent = `${filtered.length} of ${rows.length} event kinds`;
+      tableHost.replaceChildren();
+      renderTable(tableHost, {
+        columns: ["Event type", "Class", "Issuer", "Subs", "Replay", "Retention", "V1→V2", "Schema", "Recent"],
+        emptyMsg: "No event kinds match the filters.",
+        rows: filtered.map((r) => ({
+          href: `/v2/operations/schema.html?type=${encodeURIComponent(r.type)}`,
+          cells: [
+            `<strong>${v2Esc(r.type)}</strong>${r.status === "deprecated" ? ' <span class="v2-badge v2-badge-warning">deprecated</span>' : ""}`,
+            v2Esc(r.class),
+            v2Esc(r.issuer),
+            String(r.subscriberCount),
+            v2Esc(r.replay),
+            `${r.retentionYears}y · ${v2Esc(r.retentionTier)}`,
+            `<span class="v2-badge v2-badge-${r.v2Status === "v2-replaced" ? "success" : r.v2Status === "v2-parallel" ? "warning" : "neutral"}">${v2Esc(r.v2Status)}</span>`,
+            r.hasSchema ? `${r.fieldCount} fields` : "—",
+            String(r.recentCount),
+          ],
+        })),
+      });
+    }
+
+    for (const id of ["f-text", "f-class", "f-v2", "f-status"]) {
+      document.getElementById(id).addEventListener("input", applyFilters);
+    }
+
+    v2WireLoader(async () => {
+      let data;
+      try {
+        data = await v2Fetch("/api/v2/schemas");
+      } catch (err) {
+        tilesHost.replaceChildren(); tableHost.replaceChildren();
+        v2RenderError(tableHost, v2Esc(err.message));
+        return;
+      }
+      document.getElementById("as-of").textContent = `as of ${new Date(data.asOf).toLocaleString()}`;
+      const s = data.summary;
+      tilesHost.replaceChildren();
+      renderTileGroup(tilesHost, {
+        tiles: [
+          { label: "Event kinds", value: String(s.totalKinds), unit: `${s.active} active · ${s.deprecated} deprecated` },
+          { label: "With typed schema", value: String(s.withSchema), unit: `${s.withoutSchema} envelope-only` },
+          { label: "V1→V2 migration", value: `${s.v2.v2Replaced + s.v2.v2Parallel}/${s.totalKinds}`, unit: `${s.v2.v1Only} v1-only · ${s.v2.v2Parallel} parallel · ${s.v2.v2Replaced} replaced` },
+          { label: "Events observed", value: s.totalEventsObserved.toLocaleString(), unit: "in current provenance view" },
+        ],
+      });
+      rows = data.eventKinds;
+      applyFilters();
+    });
+  </script>
+</body>
+</html>
