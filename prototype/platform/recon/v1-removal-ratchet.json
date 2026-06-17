@@ -1,5 +1,5 @@
 {
-  "v1OnlyCount": 403,
+  "v1OnlyCount": 335,
   "asOf": "2026-06-17",
-  "authority": "D-BANK-WIDE-V2-MIGRATION (Bucket C bulk batch 1 — flip 57 money-free non-load-bearing control-plane substrate types (agent-lifecycle + governance-process + HR) v1-only->v2-replaced, -57 rows; was 460 under Bucket C pilot)"
+  "authority": "D-BANK-WIDE-V2-MIGRATION (Bucket C bulk batch 2 — flip 68 money-free non-load-bearing control-plane substrate types (CISO/security-process + party/product-lifecycle + legal/privacy-process) v1-only->v2-replaced, -68 rows; was 403 under Bucket C bulk batch 1)"
 }

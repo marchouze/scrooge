@@ -567,7 +567,7 @@ export const LEGAL_ENTITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md §6; Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-legal-entity-tree-v0.md (PR #82); Owner Inbox/2026-05-09_scrooge_ceo-decision-record_d-regulatory-perimeter.md (PR #85); Regulations/_legal-entity-tree.md",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "LegalEntityChanged",
@@ -580,7 +580,7 @@ export const LEGAL_ENTITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md §6.2; Regulations/_legal-entity-tree.md",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "IntraGroupArrangementSigned",
@@ -600,7 +600,7 @@ export const LEGAL_ENTITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_ACCOUNTING_7Y,
     source:
       "Owner Inbox/2026-05-09_imani-owen_legal-entity-tree-v0.md §2 (intra-group arrangement stubs); Regulations/_legal-entity-tree.md §2",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   // EntityFunctionalCurrencyAssigned — event-sources the IAS-21 functional
   // currency per entity/branch (WS-MULTI-BASE-CURRENCY). Foreign-vs-domestic is
@@ -651,7 +651,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/types.ts; domains/party/schemas.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "PartyAttributeChanged",
@@ -669,7 +669,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "PartyClassified",
@@ -687,7 +687,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "PartyDeclassified",
@@ -705,7 +705,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "PartyScreeningCompleted",
@@ -725,7 +725,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_FIC_5Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "PartyRelationshipAsserted",
@@ -747,7 +747,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-relationship-kinds-v0.md; domains/party/schemas.ts (RELATIONSHIP_KIND_CONSTRAINTS)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "PartyRelationshipChanged",
@@ -765,7 +765,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-relationship-kinds-v0.md; domains/party/schemas.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "PartyRelationshipRevoked",
@@ -783,7 +783,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-relationship-kinds-v0.md; domains/party/schemas.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "BeneficialOwnerChainAsserted",
@@ -802,7 +802,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_FIC_5Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts (chain-shape enforcement)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "PartyDeactivated",
@@ -820,7 +820,7 @@ export const PARTY_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-11_scrooge_ceo-decision-record_d-party-register.md; domains/party/schemas.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];
 
@@ -839,7 +839,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #1; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ProductConceptualised",
@@ -852,7 +852,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #2; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ProductDueDiligenceCompleted",
@@ -865,7 +865,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #3; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ProductDueDiligenceWithheld",
@@ -878,7 +878,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #4; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Per Q2 resolution: per-dimension agent emits its own attestation —
@@ -894,7 +894,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #5 + §5; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2 (Q2 + Q3 resolutions)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ProductApproved",
@@ -921,7 +921,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #6; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ProductWithheld",
@@ -934,7 +934,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #7; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2 (Q4 explicit-decision resolution)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ProductLaunched",
@@ -947,7 +947,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #8; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ProductPostImplementationReviewCompleted",
@@ -960,7 +960,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #9; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ProductReviewCompleted",
@@ -973,7 +973,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #10 (annual cadence); D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ProductRetired",
@@ -986,7 +986,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #11 (binds Imani migration-clause); D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Per Q5 resolution: material change increments version on the same
@@ -1001,7 +1001,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_atlas-kai-saskia_product-construction-substrate.md §4 #12; D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 2 (Q5 same-productId resolution)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Post-approval finding (D-NPA-POST-APPROVAL-FINDING-REVIEW, CEO-approved
@@ -1022,7 +1022,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "PROC-NPA-GATE-01 Step 14; D-NPA-POST-APPROVAL-FINDING-REVIEW (CEO-approved 2026-06-15)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Retrospective review by the dimension's responsible agent
@@ -1043,7 +1043,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "PROC-NPA-GATE-01 Step 14; D-NPA-POST-APPROVAL-FINDING-REVIEW (CEO-approved 2026-06-15)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Narrative-request marker. Raised when the Products page (or any
@@ -1061,7 +1061,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "NPA Policy v1.0 §5 (dimension owners); Products page narrative slot per the per-dimension agent-authored position requirement.",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Narrative-recorded canonical artefact (Principle 1: narrative-as-event).
@@ -1076,7 +1076,7 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "NPA Policy v1.0 §5 (dimension owners); Products page narrative slot per the per-dimension agent-authored position requirement.",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];
 
