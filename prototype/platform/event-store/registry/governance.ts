@@ -138,7 +138,7 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE (CEO-approved 2026-06-03)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "CeoDecision",
@@ -154,7 +154,7 @@ export const GOVERNANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "WorkstreamStarted",
@@ -225,7 +225,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/audit.ts",
     payloadSchema: auditFindingPayloadSchema,
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "AuditFindingClosed",
@@ -237,7 +237,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/audit.ts",
     payloadSchema: auditFindingClosedPayloadSchema,
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "AuditIssueOpened",
@@ -289,7 +289,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-PROVENANCE-BUILD-PHASE-CLASS", "D-DATA-PROVENANCE-SUBSTRATE"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/provenance-reclassified.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   // D-G2-ENTITY-ID-BACKFILL — audit event for envelope-axis entity re-tagging.
   // Emitted by the entity-id-g2 backfill migrating BANK-ZA-001 → LE-ZA-HOZ-BANK.
@@ -305,7 +305,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["D-G2-ENTITY-ID-BACKFILL"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/entity-reclassified.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "CitationGatePassed",
@@ -317,7 +317,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["P2-CITATION-DISCIPLINE", "FIC-ACT-38-2001"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "runtime/agents/mira-citation-gate.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "CitationGateFailed",
@@ -329,7 +329,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["P2-CITATION-DISCIPLINE", "FIC-ACT-38-2001"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "runtime/agents/mira-citation-gate.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "SubstrateStateSnapshot",
@@ -342,7 +342,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Substrate-state is operational telemetry — runtime tier.
     retention: RETENTION_RUNTIME_1Y,
     source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "DashboardProjectionRefreshed",
@@ -354,7 +354,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_RUNTIME_1Y,
     source: "runtime/agents/anya-projection-refresh.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "DataProjectionSnapshot",
@@ -366,7 +366,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_RUNTIME_1Y,
     source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "DecisionComment",
@@ -390,7 +390,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["COMPANIES-ACT-71-2008", "GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ObligationsRegisterSnapshot",
@@ -404,7 +404,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // governance retention 7y for audit-trail integrity.
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   // M1 obligations-register family — emitted by Mira's
   // m1-regulator-citation-urns handler under D-MARKETS-SCHEMA-FOUNDATION
@@ -429,7 +429,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // 5-year record-keeping on CDD/EDD/transactions/STRs).
     source:
       "runtime/agents/mira-m1-regulator-citation-urns.ts; Team Inbox/2026-05-07_brief_mira_m1-regulator-citation-urns.md; D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md §5 (retention floor: ORG-CS3-009 + ORG-FC-05, ≥5y)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "M1CitationTrancheRegistered",
@@ -451,7 +451,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // for the per-run registration cohort).
     source:
       "runtime/agents/mira-m1-regulator-citation-urns.ts; Team Inbox/2026-05-07_brief_mira_m1-regulator-citation-urns.md; D-MARKETS-SCHEMA-FOUNDATION (CEO approved 2026-05-07); Owner Inbox/2026-05-10_atlas_event-store-scaling-design.md §5 (retention floor: ORG-CS3-009 + ORG-FC-05, ≥5y)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "SecuritySubstrateSnapshot",
@@ -463,7 +463,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["JOINT-STANDARD-2-2024", "POPIA-S19-22"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "InboxHygieneSweep",
@@ -476,7 +476,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Inbox-hygiene sweeps are operational housekeeping — runtime tier.
     retention: RETENTION_RUNTIME_1Y,
     source: "prototype/platform/event-store/event-types/governance-snapshots.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   // M1 markets-projection family — emitted by Anya's
   // m1-projection-runtime-mapping handler. Envelope-only at v0;
@@ -493,7 +493,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "runtime/agents/anya-m1-projection-runtime-mapping.ts; Team Inbox/2026-05-07_brief_anya_m1-projection-runtime-mapping.md",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "MarketsProjectionRefreshed",
@@ -506,7 +506,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // High-cadence refresh — runtime tier.
     retention: RETENTION_RUNTIME_1Y,
     source: "runtime/agents/anya-m1-projection-runtime-mapping.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   // M1 security family — emitted by Senna's m1-trading-stack-threat-model handler.
   {
@@ -519,7 +519,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["ORG-CY-01", "ORG-CY-03", "ORG-CY-05", "ORG-PR(IV)-06"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "runtime/agents/senna-m1-trading-stack-threat-model.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "SecurityGateRegistered",
@@ -531,7 +531,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["ORG-CY-01", "ORG-CY-03", "GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "runtime/agents/senna-m1-trading-stack-threat-model.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];
 
@@ -1193,7 +1193,7 @@ export const RAS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Owner Inbox/2026-05-10_zara-helena_regulatory-readiness-gate-plan.md §3 W2 Slice 2; D-REGULATORY-READINESS-W2-SLICE-2",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];
 
@@ -1215,7 +1215,7 @@ export const READINESS_SNAPSHOT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_FIC_5Y,
     source:
       "runtime/agents/zara-mlro-supervision.ts; D-REGULATORY-READINESS-GATE-PLAN; Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-032)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "AccountingReadinessSnapshot",
@@ -1228,7 +1228,7 @@ export const READINESS_SNAPSHOT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_ACCOUNTING_7Y,
     source:
       "runtime/agents/bea-accounting-readiness.ts; D-REGULATORY-READINESS-GATE-PLAN; Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-032)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "AgentOpsReadinessSnapshot",
@@ -1241,7 +1241,7 @@ export const READINESS_SNAPSHOT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "runtime/agents/sade-agentops-readiness.ts; D-REGULATORY-READINESS-GATE-PLAN; Owner Inbox/2026-05-10_vera_codebase-quality-review.md (F-032)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];
 
@@ -1305,6 +1305,6 @@ export const ANALYTICS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     source:
       "platform/event-store/event-types/analytics.ts (factory); platform/semantic-layer/seed.ts (boot-time emission)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];

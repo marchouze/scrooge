@@ -68,6 +68,7 @@ import {
   v2RiskAppetiteSetSchema,
 } from "../banking/events";
 import { BUCKET_A_A2_SPECS } from "../bucket-a-a2";
+import { bucketCVerbatimSchema } from "../bucket-c-batch1";
 import { contextPackBuiltPayloadSchema } from "../context-pack/events";
 import {
   functionalSeatRegisteredPayloadSchema,
@@ -358,6 +359,38 @@ function bucketCPilot(
     migrationStatus: "v2-parallel",
     tee: {},
     source: BUCKET_C_PILOT_SOURCE,
+  };
+}
+
+const BUCKET_C_BATCH1_SOURCE =
+  "brief:atlas:bucket-c-batch1-non-load-bearing-substrate-types:2026-06-17 — " +
+  "Bucket C bulk batch 1: 57 money-free, non-load-bearing control-plane substrate " +
+  "types (agent-lifecycle + governance-process + HR) migrated via the store-tee " +
+  "verbatim path (tee-enabled, money-free, no codec)";
+
+/**
+ * A Bucket-C bulk batch-1 migration row: identical to `refData` / `govAtt` /
+ * `mfb3` / `bucketCPilot` (ALWAYS tee-enabled, verbatim — money-free) but
+ * carrying the batch-1 source string and the SHARED opaque verbatim payload
+ * schema (`bucketCVerbatimSchema`). The store-tee mirrors every V1 append
+ * verbatim; `recon:bucket-c-batch1-v2-parity` proves byte-clean equivalence of
+ * the {event_id, type, payload} tuple fold (PASS-on-empty in the build phase).
+ * The opaque schema is the FAITHFUL contract for a verbatim mirror (payload
+ * validated upstream by the authoritative V1 store) — see
+ * `v2-core/bucket-c-batch1/index.ts` for the Charter cmd-3/cmd-6 rationale.
+ * Onboarding a batch-1 type is one `bucketC1(...)` line — a registry edit,
+ * never a callsite edit.
+ */
+function bucketC1(type: string, cls: V2EventTypeMetadata["class"]): V2EventTypeMetadata {
+  return {
+    type,
+    class: cls,
+    payloadSchema: bucketCVerbatimSchema,
+    schemaVersion: 1,
+    retention: V2_RETENTION_RUNTIME_1Y,
+    migrationStatus: "v2-parallel",
+    tee: {},
+    source: BUCKET_C_BATCH1_SOURCE,
   };
 }
 
@@ -707,6 +740,81 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
   // ---------------------------------------------------------------------------
   bucketCPilot("AgentPerformanceEvaluated", "audit", agentPerformanceEvaluatedPayloadSchema),
   bucketCPilot("AgentFeedbackIssued", "audit", agentFeedbackIssuedPayloadSchema),
+
+  // ---------------------------------------------------------------------------
+  // BUCKET C — BULK BATCH 1 (57 types; TEE-ENABLED, verbatim; money-free).
+  //
+  // Non-load-bearing control-plane substrate: agent-lifecycle / escalation /
+  // goal-loop (C-3, non-run-lifecycle), governance-process (C-4), HR (C-6).
+  // Zero dispatch coupling — none is emitted/replayed by the dispatch CLIs, none
+  // is behind an RMS-parity gate, none is in the run lifecycle. All mirrored
+  // verbatim by the store-tee; `recon:bucket-c-batch1-v2-parity` is the
+  // byte-clean (PASS-on-empty in build phase) evidence over the {event_id, type,
+  // payload} tuple fold. Type list is sourced from BUCKET_C_BATCH1_TYPES.
+  //
+  // EXCLUDED (later batches / CEO checkpoint): the 14 load-bearing dispatch
+  // types, the pilot pair, SubstrateAlert (tee self-reference), ScheduledTrigger
+  // / SubstrateAgentRun* (runtime-emitted), CISO/security C-7 (batch 2).
+  //
+  // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+  // ---------------------------------------------------------------------------
+  bucketC1("AgentRegistered", "runtime"),
+  bucketC1("AgentRetired", "runtime"),
+  bucketC1("IdentityKeyRotated", "runtime"),
+  bucketC1("PermissionPolicyPublished", "runtime"),
+  bucketC1("AgentEscalation", "runtime"),
+  bucketC1("AgentEscalationAcknowledged", "runtime"),
+  bucketC1("AgentEscalationDecided", "runtime"),
+  bucketC1("AgentEscalationDelegated", "runtime"),
+  bucketC1("AgentEscalationOverdue", "runtime"),
+  bucketC1("AgentDecision", "runtime"),
+  bucketC1("AgentDecisionRequired", "runtime"),
+  bucketC1("AgentGoalEvaluated", "runtime"),
+  bucketC1("AgentGoalSelected", "runtime"),
+  bucketC1("AgentGoalDeferred", "runtime"),
+  bucketC1("BusDispatched", "runtime"),
+  bucketC1("LegacyFanoutShadowed", "runtime"),
+  bucketC1("RiskRaised", "runtime"),
+  bucketC1("RiskResolved", "runtime"),
+  bucketC1("RiskAccepted", "runtime"),
+  bucketC1("RiskMitigated", "runtime"),
+  bucketC1("BankModePolicySet", "governance"),
+  bucketC1("CeoDecision", "governance"),
+  bucketC1("AuditFinding", "audit"),
+  bucketC1("AuditFindingClosed", "audit"),
+  bucketC1("ProvenanceReclassified", "audit"),
+  bucketC1("EntityReclassified", "audit"),
+  bucketC1("CitationGatePassed", "audit"),
+  bucketC1("CitationGateFailed", "audit"),
+  bucketC1("RasLineCalibrated", "governance"),
+  bucketC1("MLROAttestation", "governance"),
+  bucketC1("ObligationRegistered", "governance"),
+  bucketC1("ObligationsRegisterSnapshot", "governance"),
+  bucketC1("M1CitationTrancheRegistered", "governance"),
+  bucketC1("GovernanceCyclePrep", "governance"),
+  bucketC1("InboxHygieneSweep", "audit"),
+  bucketC1("MarketsProjectionRegistered", "audit"),
+  bucketC1("MarketsProjectionRefreshed", "audit"),
+  bucketC1("DashboardProjectionRefreshed", "audit"),
+  bucketC1("DataProjectionSnapshot", "audit"),
+  bucketC1("SubstrateStateSnapshot", "runtime"),
+  bucketC1("SecuritySubstrateSnapshot", "audit"),
+  bucketC1("ThreatModelDimensionRegistered", "audit"),
+  bucketC1("SecurityGateRegistered", "audit"),
+  bucketC1("SemanticLayerQuantityRegistered", "audit"),
+  bucketC1("AccountingReadinessSnapshot", "governance"),
+  bucketC1("AgentOpsReadinessSnapshot", "governance"),
+  bucketC1("HireConfirmed", "governance"),
+  bucketC1("Termination", "governance"),
+  bucketC1("LeaveGranted", "governance"),
+  bucketC1("DisciplinaryActionRequested", "governance"),
+  bucketC1("RoleBriefDelivered", "governance"),
+  bucketC1("AgentCapabilityChanged", "runtime"),
+  bucketC1("PersonaSpecChanged", "runtime"),
+  bucketC1("TokenUsageRecorded", "runtime"),
+  bucketC1("MandateGapDetected", "runtime"),
+  bucketC1("RoleResearchRequested", "governance"),
+  bucketC1("RoleResearchQueueSnapshot", "runtime"),
 
   // ---------------------------------------------------------------------------
   // WAVE 2 BUCKET-A BATCH-A2 — nine EMITTABLE numeric-money, non-financial types

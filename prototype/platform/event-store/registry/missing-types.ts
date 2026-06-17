@@ -2143,7 +2143,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/sade.ts; platform/event-store/event-types/agent-ops.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when an agent's capability set changes (new handler added /
@@ -2156,7 +2156,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/sade.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when an agent's persona spec is changed (mandate, trigger,
@@ -2169,7 +2169,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/sade.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when Nolan / Scrooge confirms a hire (new agent registered).
@@ -2181,7 +2181,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/sade.ts; runtime/agents/metadata/scrooge.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when an agent or human employee is terminated.
@@ -2193,7 +2193,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/sade.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when leave is granted to an employee / agent.
@@ -2205,7 +2205,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/sade.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a disciplinary action is requested for an agent / employee.
@@ -2217,7 +2217,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/sade.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when Nolan delivers a role brief (persona spec) for a new hire.
@@ -2229,7 +2229,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/nolan.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a mandate gap is detected (agent lacks a required capability).
@@ -2241,7 +2241,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/nolan.ts; runtime/agents/metadata/pax.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted by PAX when a role research task is requested.
@@ -2253,7 +2253,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/pax.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Snapshot of PAX's role research queue state.
@@ -2265,7 +2265,7 @@ const AGENTOPS_HR_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/pax.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   // NOTE: AgentOpsReadinessSnapshot is already registered in governance.ts
   // with a payloadSchema (F-032 closed type). Omitting here to avoid
