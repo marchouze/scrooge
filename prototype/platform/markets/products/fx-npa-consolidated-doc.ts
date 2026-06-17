@@ -7,15 +7,16 @@
 // the caller passes the already-folded register row + gate result.
 //
 // Content:
-//   - lifecycle state (withheld, pending re-gate),
+//   - lifecycle state (derived from npaStatus — internal-test approved /
+//     withheld / pending),
 //   - one short paragraph per NPA dimension (current result + tracked gaps),
 //   - the accounting/prudential/tax → treatment-module map (id@version),
 //   - the consolidated deferred-gap register (owner + target trigger + citations).
 //
-// Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD (CEO-approved 2026-06-17);
-//            D-NPA-GATE-POLICY-REDESIGN; D-FX-OTC-NPA-SCOPE-EXPANSION;
-//            D-NEW-PRODUCT-APPROVAL-POLICY §5.
-// Author: Bea (Financial Accountant, finance).
+// Authority: D-FX-NPA-RESTART (CEO-approved 2026-06-17); D-NEW-PRODUCT-APPROVAL-
+//            POLICY-V2; D-NPA-GATE-POLICY-REDESIGN; D-FX-OTC-NPA-SCOPE-EXPANSION;
+//            D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD; D-NEW-PRODUCT-APPROVAL-POLICY §5.
+// Author: Saskia (Head of Global Markets, governance), NPA cycle owner.
 
 import { formatVersion } from "../../../v2-core/fil-core/urn";
 import { FX_TREATMENT_MODULES } from "../../../v2-core/reporting-treatments/fx-modules";
@@ -91,19 +92,32 @@ export function renderFxNpaConsolidatedDoc(input: RenderFxNpaConsolidatedDocInpu
   const { row, gate, npaStatus, asOf } = input;
   const lines: string[] = [];
 
-  lines.push("# FX OTC Vanilla — Consolidated NPA (treatment-module enrichment)");
+  const scopeNote =
+    npaStatus === "approved"
+      ? "INTERNAL-TEST scope (pre-licence rehearsal) — NOT a production approval"
+      : npaStatus === "withheld"
+        ? "withheld"
+        : "pending";
+
+  lines.push("# FX OTC Vanilla — Consolidated NPA (clean cycle)");
   lines.push("");
   lines.push(`- **Product:** \`${row.productId}\` (${row.family}), version ${row.version}`);
-  lines.push(`- **Lifecycle state:** **${npaStatus}** (register stage: ${row.lifecycleStage})`);
+  lines.push(`- **Lifecycle state:** **${scopeNote}** (register stage: ${row.lifecycleStage})`);
   lines.push(`- **As of:** ${asOf}`);
   lines.push(
-    "- **Authority:** D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD (CEO-approved 2026-06-17); " +
+    "- **Authority:** D-FX-NPA-RESTART (CEO-approved 2026-06-17); D-NEW-PRODUCT-APPROVAL-POLICY-V2; " +
       "D-NPA-GATE-POLICY-REDESIGN; D-FX-OTC-NPA-SCOPE-EXPANSION; D-NEW-PRODUCT-APPROVAL-POLICY §5.",
   );
-  lines.push("- **Author:** Bea (Financial Accountant, finance).");
+  lines.push("- **Author:** Saskia (Head of Global Markets, governance), NPA cycle owner.");
   lines.push("");
   lines.push(
-    `> This document records the enrichment of the accounting, capital/prudential and tax dimension attestations so each cites its versioned reporting-treatment module as the canonical source. It is a render of the event log (Principle 1); the \`RecordFiled\` event is the canonical artefact. **It does NOT re-approve the product — the umbrella remains **${npaStatus}** pending a separate re-gate; no \`ProductApproved\` is emitted.**`,
+    `> This document is the render of ONE clean, coherent FX OTC vanilla NPA cycle authored from scratch under D-FX-NPA-RESTART (Principle 1: append-only, latest-wins; the prior accreted attestations are superseded, not deleted). The accounting, capital/prudential and tax dimensions cite their versioned reporting-treatment module as the canonical source. It is a render of the event log; the \`RecordFiled\` event is the canonical artefact. ${
+      npaStatus === "approved"
+        ? "**The gate rule was RUN over the honest attestations and yielded an INTERNAL-TEST-scope `ProductApproved` (13 implementation-attested + 2 design-attested-with-tracked-gap dimensions); no PRODUCTION `ProductApproved` is emitted — production is gated on closing every tracked gap and on the real-counterparty / external-counsel triggers.**"
+        : "**The gate rule was RUN over the honest attestations and did NOT yield an internal-test approval; the product is `" +
+          npaStatus +
+          "`.**"
+    }`,
   );
   lines.push("");
 
@@ -113,9 +127,13 @@ export function renderFxNpaConsolidatedDoc(input: RenderFxNpaConsolidatedDocInpu
   lines.push("## 1. Lifecycle & gate");
   lines.push("");
   lines.push(
-    `The umbrella FX product is **${npaStatus}** (withheld 2026-06-15 per the standing CEO decision D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL; register stage ${row.lifecycleStage}; pending re-gate). The NPA gate (D-NPA-GATE-POLICY-REDESIGN) over the current attestations reports \`ready=${gate.ready}\`${gate.missing.length > 0 ? `, blocking dimensions: ${gate.missing.join(", ")}` : ""}${
-      gate.openConditions.length > 0 ? `, open conditions: ${gate.openConditions.join("; ")}` : ""
-    }. This enrichment changes neither the gate result nor the approval state.`,
+    `The umbrella FX product is **${scopeNote}** (register stage ${row.lifecycleStage}). The NPA gate (D-NPA-GATE-POLICY-REDESIGN) over the clean cycle's attestations reports \`ready=${gate.ready}\`${gate.missing.length > 0 ? `, blocking dimensions: ${gate.missing.join(", ")}` : ""}${
+      gate.openConditions.length > 0 ? `, open conditions (design-attested-with-tracked-gap): ${gate.openConditions.join("; ")}` : ""
+    }.${
+      npaStatus === "approved"
+        ? " The gate result is taken honestly: implementation-attested dimensions pass unconditionally and design-attested-with-tracked-gap dimensions pass with a recorded open condition — yielding an INTERNAL-TEST `ProductApproved`. No PRODUCTION approval is emitted."
+        : ""
+    }`,
   );
   lines.push("");
 
