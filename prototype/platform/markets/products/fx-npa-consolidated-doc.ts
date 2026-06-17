@@ -93,6 +93,16 @@ export function renderFxNpaConsolidatedDoc(input: RenderFxNpaConsolidatedDocInpu
   const { row, gate, npaStatus, asOf } = input;
   const lines: string[] = [];
 
+  // Derive the attestation-mix counts from the register row (never hardcode):
+  // honest authoring may shift the implementation- vs design-attested split as
+  // dimensions are re-checked against Amendment A liveness evidence.
+  let implAttestedCount = 0;
+  let designAttestedCount = 0;
+  for (const [, record] of row.attestedDimensions) {
+    if (record.result === "implementation-attested") implAttestedCount += 1;
+    else if (record.result === "design-attested") designAttestedCount += 1;
+  }
+
   const scopeNote =
     npaStatus === "approved"
       ? "INTERNAL-TEST scope (pre-licence rehearsal) — NOT a production approval"
@@ -114,7 +124,7 @@ export function renderFxNpaConsolidatedDoc(input: RenderFxNpaConsolidatedDocInpu
   lines.push(
     `> This document is the render of ONE clean, coherent FX OTC vanilla NPA cycle authored from scratch under D-FX-NPA-RESTART (Principle 1: append-only, latest-wins; the prior accreted attestations are superseded, not deleted). The accounting, capital/prudential and tax dimensions cite their versioned reporting-treatment module as the canonical source. It is a render of the event log; the \`RecordFiled\` event is the canonical artefact. ${
       npaStatus === "approved"
-        ? "**The gate rule was RUN over the honest attestations and yielded an INTERNAL-TEST-scope `ProductApproved` (13 implementation-attested + 2 design-attested-with-tracked-gap dimensions); no PRODUCTION `ProductApproved` is emitted — production is gated on closing every tracked gap and on the real-counterparty / external-counsel triggers.**"
+        ? `**The gate rule was RUN over the honest attestations and yielded an INTERNAL-TEST-scope \`ProductApproved\` (${implAttestedCount} implementation-attested + ${designAttestedCount} design-attested-with-tracked-gap dimensions); no PRODUCTION \`ProductApproved\` is emitted — production is gated on closing every tracked gap and on the real-counterparty / external-counsel triggers.**`
         : `**The gate rule was RUN over the honest attestations and did NOT yield an internal-test approval; the product is \`${npaStatus}\`.**`
     }`,
   );

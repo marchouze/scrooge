@@ -6,9 +6,10 @@
 //     attestations, due-diligence-completed, terminal gate event);
 //   - every attestation payload parses the write-time ProductDimensionAttested
 //     schema (deferred-gap well-formedness gate);
-//   - the gate RULE is RUN, not pre-decided: with 13 implementation-attested +
-//     2 design-attested-with-tracked-gap dimensions it yields an INTERNAL-TEST
-//     ProductApproved (NOT a production approval);
+//   - the gate RULE is RUN, not pre-decided: with the honest Amendment-A split
+//     (4 implementation-attested — each citing a green, non-vacuous completeness
+//     recon — + 11 design-attested-with-tracked-gap dimensions) it yields an
+//     INTERNAL-TEST ProductApproved (NOT a production approval);
 //   - every design-attested dimension carries ≥1 well-formed deferred gap;
 //   - accounting/capital/tax cite a resolving treatment-module@version head;
 //   - idempotent (a second run emits nothing).
@@ -90,8 +91,14 @@ describe("clean FX OTC vanilla NPA cycle", () => {
     expect(result.outcome).toBe("approved-internal-test");
     expect(result.gateReady).toBe(true);
     expect(result.blockingDimensions.length).toBe(0);
-    // legal + data-quality are the two design-attested-with-gap open conditions.
-    expect(result.openConditions.length).toBe(2);
+    // Each design-attested-with-gap dimension is one open condition. The honest
+    // count is derived from the dimension set (Amendment-A re-check may shift the
+    // implementation- vs design-attested split), not hardcoded.
+    const designAttestedCount = FX_NPA_DIMENSIONS.filter(
+      (d) => d.result === "design-attested",
+    ).length;
+    expect(designAttestedCount).toBe(11);
+    expect(result.openConditions.length).toBe(designAttestedCount);
 
     // Exactly one ProductApproved, and it is INTERNAL-TEST scope (not production).
     const approvals = Array.from(store.replay({ type: "ProductApproved" }));

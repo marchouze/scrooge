@@ -6,13 +6,20 @@
 // run-fx-legal-conditions-post-withdrawal.ts, withdraw-fx-otc-npa-approval.ts).
 //
 // It:
-//   1. Records the CEO restart decision D-FX-NPA-RESTART (session-delegation),
-//      idempotently.
-//   2. Runs the clean cycle (runFxOtcVanillaNpaCycle) — fresh proposal →
-//      conceptualised → 15 honest attestations → due-diligence-completed →
+//   1. Runs the clean cycle (runFxOtcVanillaNpaCycle) — fresh proposal →
+//      conceptualised → honest attestations → due-diligence-completed →
 //      gate-determined ProductApproved (INTERNAL-TEST) or ProductWithheld.
-//   3. Renders + files the consolidated FX NPA document events-first
+//   2. Renders + files the consolidated FX NPA document events-first
 //      (RecordFiled, RMS-7).
+//
+// It does NOT record the CEO restart decision D-FX-NPA-RESTART. That decision is
+// recorded canonically by Scrooge (the recording instrument) in the shared home
+// store via session-delegation. Re-emitting it here / on the ci:migrate clean
+// store would create an `approved` decision with no prior `requested` phase
+// (tripping recon:decision-symmetry) and a decision with no impact-sweep
+// coverage (tripping recon:v2-decision-impact-sweep-coverage). The cycle events
+// may still CITE D-FX-NPA-RESTART as authority; a citation string does not
+// require the decision to live in the clean store.
 //
 // Wired into `ci:migrate` so the cycle reproduces on CI's clean store; also run
 // against the shared canonical home store for the canonical record:
@@ -35,47 +42,9 @@ import { validateNpaGate } from "../platform/markets/products/npa-gate";
 import { logger } from "../platform/observability/logger";
 import { buildProductRegisterView } from "../platform/projections/products/product-register";
 import { recordFiled } from "../platform/records/helpers";
-import { recordDecision } from "../runtime/decisions/record";
-
-const RESTART_DECISION = "D-FX-NPA-RESTART";
 
 // ---------------------------------------------------------------------------
-// 1. Record the CEO restart decision (session-delegation), idempotently.
-// ---------------------------------------------------------------------------
-
-recordDecision(
-  {
-    decisionId: RESTART_DECISION,
-    phase: "approved",
-    authority: "CEO",
-    authorityRef: "marc@tgv.co.za",
-    title: "Restart the FX OTC vanilla NPA cycle from scratch (clean, fully policy-compliant)",
-    category: "product",
-    recommendation:
-      "Replace the structurally-unsound FX OTC NPA authoring (contradictory legal attestations, " +
-      "verification-pass-2 accretion, design-attested-no-gaps, tangled approve→withhold lifecycle) " +
-      "with ONE clean, coherent, fully policy-compliant NPA cycle for prd:bank:fx:otc-vanilla. " +
-      "Author fresh events (append-only, latest-wins): proposal → conceptualised → 15 honest " +
-      "dimension attestations → due-diligence-completed → gate-determined ProductApproved " +
-      "(INTERNAL-TEST scope) or ProductWithheld. Flag every build-phase shortfall as a tracked " +
-      "ProductDeferredGap.",
-    rationale:
-      "The data in the FX NPA was rubbish; restarting from scratch under Principle 1 (append-only, " +
-      "latest-wins) gives one internally-consistent cycle that complies with NPA Policy v2 §3a " +
-      "(liveness-backed attestation + forward-tracked deferrals) and PROC-NPA-GATE-01. No production " +
-      "approval is forced; the honest gate result is taken.",
-    citations: [
-      "D-NEW-PRODUCT-APPROVAL-POLICY-V2",
-      "D-NPA-GATE-POLICY-REDESIGN",
-      "D-FX-OTC-NPA-SCOPE-EXPANSION",
-    ],
-    recordedVia: "scrooge:session-delegation",
-  },
-  FX_NPA_CYCLE_AS_OF,
-);
-
-// ---------------------------------------------------------------------------
-// 2. Run the clean cycle (idempotent, append-only, gate-determined).
+// 1. Run the clean cycle (idempotent, append-only, gate-determined).
 // ---------------------------------------------------------------------------
 
 const result = runFxOtcVanillaNpaCycle(eventStore);
@@ -92,7 +61,7 @@ logger.info(
 );
 
 // ---------------------------------------------------------------------------
-// 3. Render + file the consolidated NPA document events-first (RecordFiled).
+// 2. Render + file the consolidated NPA document events-first (RecordFiled).
 // ---------------------------------------------------------------------------
 
 const events = Array.from(eventStore.replay());

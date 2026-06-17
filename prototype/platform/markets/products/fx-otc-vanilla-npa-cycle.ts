@@ -15,16 +15,22 @@
 // later as_of) that wins latest-wins per (productId, dimension). Re-runs are
 // idempotent on `ProductApproved` already present for the product.
 //
-// HONEST ATTESTATION (the "flag gaps for build" rule, NPA Policy v2 §3a):
-//   - A dimension is `implementation-attested` only where it is backed by built,
-//     exercised substrate; each carries its real Principle-2 citationChain and,
+// HONEST ATTESTATION (the "flag gaps for build" rule, NPA Policy v2 §3a;
+// Amendment A §3a.1 — liveness EVIDENCE, not assertion):
+//   - A dimension is `implementation-attested` ONLY where its citationChain cites
+//     a GREEN completeness recon proving the capability is wired, exercised, and
+//     complete across the declared (internal-test) scope — NOT a bare narrative
+//     or code-file citation. Each also carries its Principle-2 citationChain and,
 //     where a sub-item is genuinely deferred, a well-formed `ProductDeferredGap`
 //     (gapId + title + owner[name+position] + targetTrigger + citations — all
 //     mandatory, enforced by the Zod schema and inventoried by
 //     `recon:npa-deferred-gap-tracking`).
-//   - A dimension is `design-attested` (with a well-formed gap) where the build
+//   - A dimension is `design-attested` (with a well-formed gap) where the
+//     capability is narrative/structural-only in the build phase: either no green
+//     completeness recon exists, the only available recon is VACUOUS on the clean
+//     store (engine not run / flat book / no instances), or the capability
 //     genuinely depends on real counterparties / external counsel that cannot
-//     exist in the build phase — `legal` is the honest example.
+//     exist in the build phase (`legal`).
 //   - The accounting / capital(prudential) / tax dimensions SOURCE from the
 //     versioned reporting-treatment modules (`v2-core/reporting-treatments/
 //     fx-modules.ts`) — the `treatment-module:<id>@<version>` head is resolved
@@ -36,8 +42,11 @@
 // D-NPA-GATE-POLICY-REDESIGN, implementation-attested passes unconditionally and
 // design-attested-WITH-a-tracked-gap passes with a recorded open condition; a
 // design-attested-NO-gap or a `failed` dimension blocks. With the honest set
-// here (13 implementation-attested + 2 design-attested-with-gaps: legal,
-// data-quality), the gate is `ready` with open conditions → an
+// here under the Amendment A re-check — 4 implementation-attested (market-risk,
+// liquidity-risk, operational-readiness, accounting — each citing a green,
+// non-vacuous completeness recon) + 11 design-attested-with-gaps (credit-risk,
+// operational-risk, capital, conduct, aml, model-risk, legal, infosec, privacy,
+// tax, data-quality) — the gate is `ready` with open conditions → an
 // **INTERNAL-TEST-scope** `ProductApproved` is the honest result. We do NOT emit
 // a production-scope approval: production is gated on closing every tracked gap
 // and on the real-counterparty / external-counsel triggers. The `approvedBy`
@@ -172,6 +181,9 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       "D-B3-5",
       "ORG-PR-19",
       "Policies/market-risk-policy-v1.md",
+      // Amendment A (§3a.1): GREEN completeness recon — VaR-freshness manifest
+      // parity (the Amendment A Item-8 valuation-cadence evidence).
+      "recon:expected-event-watchdog",
       "platform/market-risk/var-engine.ts",
       "platform/markets/eod/fx-forward-revaluation.ts",
       "runtime/agents/rohan-market-risk-measure.ts",
@@ -198,12 +210,19 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       },
     ],
   },
-  // -- Dimension 2: credit-risk (Helena / Rohan) — implementation-attested. ---
+  // -- Dimension 2: credit-risk (Helena / Rohan) — DESIGN-ATTESTED (honest). ---
+  // Amendment A (§3a.1) re-check: the SA-CCR completeness recon
+  // (recon:v2-saccr-parity) is VACUOUS on the clean store ("0 recorded SA-CCR
+  // netting sets — engine has not run"); it does not prove the EAD/RWA capability
+  // is exercised and complete across the FX book. With no green completeness
+  // recon evidencing liveness, the honest result is design-attested + tracked
+  // gaps (the authoritative Basel-class run + the daily SA-CCR cadence both
+  // pending). The interim conservative 100% RWA stands.
   {
     dimension: "credit-risk",
     owner:
       "Helena (Chief Risk Officer, governance) / Rohan (Market risk quantitative engineer, engineering)",
-    result: "implementation-attested",
+    result: "design-attested",
     citationChain: [
       ...BASE_CHAIN,
       "D-FX-GATEWAY-CREDIT-LIMIT-FAIL-CLOSED",
@@ -247,6 +266,9 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       "D-BA300-LCR-FX-ENRICHMENT",
       "ORG-PR-01",
       "Policies/liquidity-risk-policy-v1.md",
+      // Amendment A (§3a.1): GREEN completeness recon — both gateway paths enforce
+      // the CRO-ratified capital-impact + funding thresholds (15 assertions).
+      "recon:fx-gateway-threshold-enforcement",
       "platform/risk/fx-gateway-thresholds.ts",
       "runtime/agents/bea-ba300-lcr-period-close.ts",
     ],
@@ -262,12 +284,19 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       },
     ],
   },
-  // -- Dimension 4: operational-risk (Tomas / Devon) — implementation-attested.
+  // -- Dimension 4: operational-risk (Tomas / Devon) — DESIGN-ATTESTED (honest).
+  // Amendment A (§3a.1) re-check: there is NO green completeness recon proving the
+  // op-risk capital capability is wired+exercised+complete. op-RWA is gross-income-
+  // blocked (no audited history exists in the build phase), no LDA/SMA model
+  // exists (OperationalLossEvent is capture-only), and the identity-gate's
+  // counterparty CDD records are SIMULATED fixtures. The capture substrate is
+  // genuinely built, but the dimension as a whole is design-attested honestly,
+  // with each shortfall a tracked forward gap.
   {
     dimension: "operational-risk",
     owner:
       "Tomas (Operations & payments engineer, engineering) / Devon (Chief Operating Officer, governance)",
-    result: "implementation-attested",
+    result: "design-attested",
     citationChain: [
       ...BASE_CHAIN,
       "BCBS-D196-§644",
@@ -322,6 +351,9 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       "ISDA-2002-§2(c)",
       "BCBS-D226-§4",
       "Banks-Act-94-Reg-39",
+      // Amendment A (§3a.1): GREEN completeness recon — settlement value() is
+      // lifecycle-free (structural invariant proven across 5 structural cases).
+      "recon:fx-settlement-continuity",
       "platform/markets/fx/nostro-routing-registry.ts",
       "platform/markets/fx/otc-failure-handlers.ts",
     ],
@@ -350,15 +382,28 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       "Policies/accounting-policy-v1.md",
       "IAS-21",
       "IFRS-9",
+      // Amendment A (§3a.1): GREEN completeness recon — GL Chart-of-Accounts
+      // full-scope, no suspense (28 resolutions, 0 suspense balances). This is
+      // the Amendment A Item-3 evidence; the capability is genuinely exercised
+      // and complete across the supported-currency scope.
+      "recon:fx-supported-currency-no-suspense",
     ],
     deferredGaps: [],
   },
-  // -- Dimension 7: capital / prudential (Camille / Helena) — impl, treatment-module.
+  // -- Dimension 7: capital / prudential (Camille / Helena) — DESIGN-ATTESTED (honest).
+  // Amendment A (§3a.1) re-check: the BA 320 capital-charge completeness recon
+  // (recon:ba320-fx-v2-parity) is ADVISORY with warn violations and a null V1
+  // charge (no live charge recorded); it does not green-evidence a wired+
+  // exercised+complete capital stack across the product scope. The market-risk
+  // FX-NOP charge leg computes, but op-RWA remains the bank-wide gross-income-
+  // blocked placeholder, so the capital stack is not complete. Honest result:
+  // design-attested + tracked gap. The treatment module is still the canonical
+  // policy source (cited below).
   {
     dimension: "capital",
     owner:
       "Camille (Chief Financial Officer, governance) / Helena (Chief Risk Officer, governance)",
-    result: "implementation-attested",
+    result: "design-attested",
     citationChain: [
       moduleCitation("prudential-treatment:fx-trading-book"),
       ...BASE_CHAIN,
@@ -383,11 +428,17 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       },
     ],
   },
-  // -- Dimension 8: conduct (Zara) — implementation-attested. ------------------
+  // -- Dimension 8: conduct (Zara) — DESIGN-ATTESTED (honest). -----------------
+  // Amendment A (§3a.1) re-check: no green completeness recon evidences the
+  // conduct capability end-to-end. Best-execution is measured against an FTP
+  // proxy (directional, not a live FX mid-rate), and the EDD/STR/CTR/TPR
+  // reporting substrate is design-only pending licence-day FIC registration.
+  // The surveillance sweep is wired, but the dimension as a whole is honestly
+  // design-attested with tracked gaps.
   {
     dimension: "conduct",
     owner: "Zara (Chief Compliance Officer, governance)",
-    result: "implementation-attested",
+    result: "design-attested",
     citationChain: [
       ...BASE_CHAIN,
       "D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH",
@@ -419,12 +470,17 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       },
     ],
   },
-  // -- Dimension 9: aml / sanctions (Zara / Mira) — implementation-attested. ---
+  // -- Dimension 9: aml / sanctions (Zara / Mira) — DESIGN-ATTESTED (honest). --
+  // Amendment A (§3a.1) re-check: no green completeness recon evidences the AML/
+  // sanctions capability across scope. The sanctions screen matches a LOCAL STUB
+  // blocked list (exact-match on synthetic IDs); the live UN/OFAC/EU/HMT/POCDATARA
+  // feeds and the EDD/STR/CTR/TPR filing substrate are not built. The screen is
+  // wired, but the dimension is honestly design-attested with tracked gaps.
   {
     dimension: "aml",
     owner:
       "Zara (Chief Compliance Officer, governance) / Mira (Compliance / RegTech engineer, engineering)",
-    result: "implementation-attested",
+    result: "design-attested",
     citationChain: [
       ...BASE_CHAIN,
       "ORG-FC-13",
@@ -452,11 +508,20 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       },
     ],
   },
-  // -- Dimension 10: model-risk (Nadia) — implementation-attested. -------------
+  // -- Dimension 10: model-risk (Nadia) — DESIGN-ATTESTED (honest). ------------
+  // Amendment A (§3a.1) re-check: the citationChain points at two
+  // ModelValidationApproved events of record (fx-forward-irp-v1, market-risk-
+  // var-hs-v1), but those validation events are NOT present in the gated /
+  // ci:migrate clean store — they live only in the shared home store from prior
+  // model-validation runs, and no seeder for them is wired into ci:migrate.
+  // There is therefore no green completeness recon and no validation-of-record
+  // in the gated store evidencing the FX models are independently validated for
+  // this product. Honest result: design-attested with a tracked gap to land the
+  // validation-of-record into the canonical (CI-reproducible) store.
   {
     dimension: "model-risk",
     owner: "Nadia (Independent-validation engineer, second line)",
-    result: "implementation-attested",
+    result: "design-attested",
     citationChain: [
       ...BASE_CHAIN,
       "ModelValidationApproved:model:fx-forward-irp-v1",
@@ -466,6 +531,15 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       "platform/market-risk/var-engine.ts",
     ],
     deferredGaps: [
+      {
+        gapId: "fx-model-validation-of-record-not-in-gated-store",
+        title:
+          "The ModelValidationApproved events for model:fx-forward-irp-v1 and model:market-risk-var-hs-v1 exist only in the shared home store; no seeder lands them in the ci:migrate clean store, so the gated store carries no validation-of-record for the FX models. Land the validation-of-record into the canonical CI-reproducible store before model-risk may be implementation-attested.",
+        owner: "Nadia (Independent-validation engineer, second line)",
+        targetTrigger:
+          "FX model-validation seeder wired into ci:migrate (ModelValidationApproved reproducible on the clean store)",
+        citations: ["D-TRUSTED-FIGURES-PROGRAM-V1", "Policies/model-risk-policy-v1.md"],
+      },
       {
         gapId: "fx-forward-model-revalidation-live-curve",
         title:
@@ -541,11 +615,17 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       },
     ],
   },
-  // -- Dimension 12: infosec (Rashida) — implementation-attested. --------------
+  // -- Dimension 12: infosec (Rashida) — DESIGN-ATTESTED (honest). -------------
+  // Amendment A (§3a.1) re-check: no green completeness recon evidences the
+  // infosec capability across scope. The registered threat model is STALE versus
+  // the as-built synchronous gateway, the HSM key-custody substrate is not
+  // provisioned (placeholder keys), and runtime detection (SIEM/EDR/SOAR) is
+  // registered posture only — not live. The permission/identity gates are wired,
+  // but the dimension is honestly design-attested with tracked gaps.
   {
     dimension: "infosec",
     owner: "Rashida (Chief Information Security Officer, governance)",
-    result: "implementation-attested",
+    result: "design-attested",
     citationChain: [
       ...BASE_CHAIN,
       "D-FX-HELD-DIMS-SEAT-SWEEP",
@@ -585,11 +665,17 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       },
     ],
   },
-  // -- Dimension 13: privacy (Iris) — implementation-attested. -----------------
+  // -- Dimension 13: privacy (Iris) — DESIGN-ATTESTED (honest). ----------------
+  // Amendment A (§3a.1) re-check: no green completeness recon evidences the
+  // privacy capability across scope. POPIA s.72 cross-border assessment is not
+  // yet run per counterparty, the DSAR intake channel + PAIA s.51 manual are not
+  // published, and the consent phase-gate has emitted ZERO events. The DSAR
+  // register/watchdog substrate is wired, but the dimension is honestly
+  // design-attested with tracked gaps.
   {
     dimension: "privacy",
     owner: "Iris (Information Officer, governance)",
-    result: "implementation-attested",
+    result: "design-attested",
     citationChain: [
       ...BASE_CHAIN,
       "D-FX-HELD-DIMS-SEAT-SWEEP",
@@ -632,11 +718,18 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       },
     ],
   },
-  // -- Dimension 14: tax (Yael / Camille) — impl-attested, treatment-module. ---
+  // -- Dimension 14: tax (Yael / Camille) — DESIGN-ATTESTED (honest), treatment-module.
+  // Amendment A (§3a.1) re-check: no green completeness recon evidences the tax
+  // capability across scope. The VAT exemption rests on administrative guidance
+  // (no binding SARS private ruling), the s24J accrual engine + IT14 integration
+  // build from the first taxable year (none in the build phase), and FATCA/CRS
+  // self-certification collection joins the licence-day onboarding workflow. The
+  // treatment module is the canonical policy source (cited below), but the
+  // operative tax capability is honestly design-attested with tracked gaps.
   {
     dimension: "tax",
     owner: "Yael (Tax engineer, engineering) / Camille (Chief Financial Officer, governance)",
-    result: "implementation-attested",
+    result: "design-attested",
     citationChain: [
       moduleCitation("tax-treatment:fx"),
       ...BASE_CHAIN,
