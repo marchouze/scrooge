@@ -35,6 +35,17 @@ it, through four content types — each with a fixed treatment:
 
 ## Cross-cutting rules (every page)
 
+- **No agent personal names — Title only.** V2 UI surfaces NEVER render agent
+  personal names (Helena, Camille, Bea, …). The bank is autonomous; persona
+  names are implementation detail, not something the human overseer reads.
+  Refer to seats by their function / role **Title** ("Chief Risk Officer",
+  "Risk", "Accounting & financial reporting engineer"). Names are stripped at
+  the `/api/v2` boundary via `seatTitle()` / `seatTitles()`
+  (`dashboard/agent-title.ts`), so the client never receives a name to render.
+  This applies to every name-bearing field — issuers, subscribers, owners,
+  attesters, approvers. (Standing instruction from Marc; supersedes the
+  internal Identity-discipline convention, which governs briefs/memories, not
+  user-facing UI.)
 - **Provenance is explicit.** A data page declares
   `data-provenance-source="/api/v2/<endpoint>"` and carries a
   `[data-provenance-badge]` marker; the badge resolves prod vs. simulated from the

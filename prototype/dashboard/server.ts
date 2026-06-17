@@ -316,6 +316,7 @@ import {
   buildSchemasView,
   buildSubstrateView,
   provenanceFilterFromMode,
+  redactNpaDetailNames,
 } from "./v2-views";
 
 const PORT = Number(process.env.BANK_DASHBOARD_PORT ?? 3010);
@@ -5480,7 +5481,7 @@ const server = Bun.serve({
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       const detail = buildProductDetailView(productId, eventStore, nowUtc());
       if (!detail) return jsonResponse({ error: `unknown product: ${productId}` }, 404);
-      return jsonResponse({ ...detail, pageProvenance: filter });
+      return jsonResponse({ ...redactNpaDetailNames(detail), pageProvenance: filter });
     }
     if (req.method === "GET") {
       return serveStatic(url.pathname, req);

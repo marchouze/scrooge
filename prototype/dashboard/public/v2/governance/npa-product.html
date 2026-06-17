@@ -87,14 +87,14 @@
         const dsec = document.createElement("div"); dsec.className = "v2-section"; bodyHost.appendChild(dsec);
         const dh = document.createElement("h2"); dh.className = "v2-section-title"; dh.textContent = `Attestation matrix (${dims.length} dimensions)`; dsec.appendChild(dh);
         renderTable(dsec, {
-          columns: ["Dimension", "Status", "Attested by", "Owner"],
+          columns: ["Dimension", "Status", "Attested", "Accountable seat"],
           emptyMsg: "No dimension cards.",
           rows: dims.map((x) => ({
             cells: [
               `<strong>${v2Esc(x.label || x.dimension)}</strong>`,
               dimBadge(x.attestation ? x.attestation.status : "pending"),
-              v2Esc(x.attestation && x.attestation.attestedBy ? x.attestation.attestedBy : "—"),
-              v2Esc(x.owner ? `${x.owner.name} · ${x.owner.position}` : "—"),
+              v2Esc(x.attestation && x.attestation.attestedAt ? x.attestation.attestedAt : "—"),
+              v2Esc(x.owner ? x.owner.position : "—"),
             ],
           })),
         });

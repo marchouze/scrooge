@@ -30,6 +30,8 @@ import type { EventTypeMetadata } from "../platform/event-store/registry/index";
 import type { EventStore } from "../platform/event-store/store";
 import { eventMatchesProvenanceFilter } from "../platform/projections/filter";
 import type { ProvenanceFilter } from "../platform/projections/filter";
+import { seatTitle, seatTitles } from "./agent-title";
+import type { ProductDetailView } from "./products-detail";
 import { NPA_DIMENSIONS, buildProductListView } from "./products-view";
 
 // ---------------------------------------------------------------------------
@@ -218,7 +220,7 @@ export function buildSchemasView(
       class: m.class,
       status,
       ...(m.supersededBy ? { supersededBy: m.supersededBy } : {}),
-      issuer: m.issuer,
+      issuer: seatTitle(m.issuer),
       subscriberCount: m.subscribers.length,
       replay: m.replay,
       retentionTier: m.retention.archivalTier,
@@ -315,8 +317,8 @@ export function buildSchemaDetailView(
     class: meta.class,
     status: meta.status,
     ...(meta.supersededBy ? { supersededBy: meta.supersededBy } : {}),
-    issuer: meta.issuer,
-    subscribers: [...meta.subscribers].sort(),
+    issuer: seatTitle(meta.issuer),
+    subscribers: seatTitles(meta.subscribers),
     replay: meta.replay,
     retention: {
       minimumYears: meta.retention.minimumYears,
@@ -535,6 +537,30 @@ export function buildNpaRegisterView(store: EventStore, asOf: string): NpaView {
       totalDimensions: NPA_DIMENSIONS.length,
     },
     products,
+  };
+}
+
+/**
+ * Redact agent personal names from an NPA product-detail view before it crosses
+ * the /api/v2 boundary (no-agent-names rule). Keeps role/seat Titles
+ * (owner.position, narrative author position) and timestamps; blanks the
+ * name-bearing fields (owner.name, attestedBy, narrative author name,
+ * finding discoveredBy / reviewedBy) so no client can render a name.
+ */
+export function redactNpaDetailNames(detail: ProductDetailView): ProductDetailView {
+  return {
+    ...detail,
+    dimensions: detail.dimensions.map((card) => ({
+      ...card,
+      owner: { ...card.owner, name: "" },
+      attestation: { ...card.attestation, attestedBy: undefined },
+      narrative: card.narrative ? { ...card.narrative, authorAgentName: "" } : null,
+    })),
+    postApprovalFindings: detail.postApprovalFindings.map((f) => ({
+      ...f,
+      discoveredBy: "",
+      review: f.review ? { ...f.review, reviewedBy: "" } : undefined,
+    })),
   };
 }
 
