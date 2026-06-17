@@ -217,7 +217,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // Scheduler-tick stream — operational. 1y floor; high cardinality.
     retention: RETENTION_RUNTIME_1Y,
     source: "A0 freeze §4 #5; A2.1 scheduler — platform/scheduler/scheduler.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Typed under D-RMS-PHASE-1 Slice 2 (CEO standing authority 2026-05-09).
@@ -326,7 +326,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // 7y to match incident-record retention norms.
     retention: RETENTION_GOVERNANCE_7Y,
     source: "A0 freeze §4 #15; A2.1 scheduler — platform/scheduler/scheduler.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "BusDispatched",
@@ -358,7 +358,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_RUNTIME_1Y,
     source:
       "Atlas runtime spec §3.4; S8 substrate-runner lifecycle — runtime/run.ts (Owner Inbox/2026-05-10_atlas_s8-substrate-state-and-next-slice.md)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "SubstrateAgentRunCompleted",
@@ -371,7 +371,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_RUNTIME_1Y,
     source:
       "Atlas runtime spec §3.4; S8 substrate-runner lifecycle — runtime/run.ts (Owner Inbox/2026-05-10_atlas_s8-substrate-state-and-next-slice.md)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Failures retained for 7y for incident analysis (matches the existing
@@ -386,7 +386,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "Atlas runtime spec §3.4; S8 substrate-runner lifecycle — runtime/run.ts (Owner Inbox/2026-05-10_atlas_s8-substrate-state-and-next-slice.md)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Short-lived event introduced for D-A22-RETIRE-LEGACY Phase 1
@@ -488,7 +488,7 @@ export const AGENT_OPS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_RUNTIME_1Y,
     source: "platform/event-store/event-types/agent-ops.ts (factory)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "AgentPromptOptimizationApplied",
@@ -500,7 +500,7 @@ export const AGENT_OPS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_RUNTIME_1Y,
     source: "platform/event-store/event-types/agent-ops.ts (factory)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];
 

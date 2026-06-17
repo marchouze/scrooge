@@ -378,7 +378,7 @@ export const AUDIT_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "dashboard decision-comments thread (Phase 1 slice 2)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "GovernanceCyclePrep",

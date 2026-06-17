@@ -70,6 +70,7 @@ import {
 import { BUCKET_A_A2_SPECS } from "../bucket-a-a2";
 import { bucketCVerbatimSchema } from "../bucket-c-batch1";
 import { BUCKET_C_BATCH2_TYPES } from "../bucket-c-batch2";
+import { BUCKET_C_BATCH3_TYPES } from "../bucket-c-batch3";
 import { contextPackBuiltPayloadSchema } from "../context-pack/events";
 import {
   functionalSeatRegisteredPayloadSchema,
@@ -503,6 +504,81 @@ function bucketC2(type: string): V2EventTypeMetadata {
     migrationStatus: "v2-parallel",
     tee: {},
     source: BUCKET_C_BATCH2_SOURCE,
+  };
+}
+
+const BUCKET_C_BATCH3_SOURCE =
+  "brief:atlas:bucket-c-batch3-remainder-and-runtime-substrate-types:2026-06-17 — " +
+  "Bucket C bulk batch 3 (FINAL non-load-bearing): 29 money-free, non-load-bearing " +
+  "control-plane substrate types (C-3 agent-lifecycle/runtime remainder incl " +
+  "SubstrateAlert + SubstrateAgentRun* + ScheduledTrigger, C-9 audit/readiness/" +
+  "regulator-process, C-10 agent-performance remainder) migrated via the store-tee " +
+  "verbatim path (tee-enabled, money-free, no codec)";
+
+/**
+ * The per-type `class` for each batch-3 type, sourced verbatim from the V1
+ * `EVENT_TYPE_REGISTRY` rows so the v2 row carries the same class as V1 (a
+ * verbatim mirror must not re-class). Confirmed against the registry on
+ * 2026-06-17.
+ */
+const BUCKET_C_BATCH3_CLASS: Record<string, V2EventTypeMetadata["class"]> = {
+  // C-3 agent-lifecycle / runtime remainder
+  DecisionComment: "governance",
+  SubstrateAgentRunStarted: "runtime",
+  SubstrateAgentRunCompleted: "runtime",
+  SubstrateAgentRunFailed: "runtime",
+  ScheduledTrigger: "runtime",
+  SubstrateAlert: "runtime",
+  // C-9 audit-process / readiness / regulator-process
+  IncidentRaised: "audit",
+  ResilienceTestResult: "audit",
+  WhistleblowingDisclosure: "audit",
+  ExternalAuditorInquiry: "governance",
+  AuditCommitteePackPrepped: "governance",
+  PolicyChange: "governance",
+  RiskPolicyChange: "governance",
+  RiskPolicyChangeProposal: "governance",
+  RegulatorRequest: "governance",
+  RegulatorInquiry: "governance",
+  SupervisoryLetterReceived: "governance",
+  RegulatoryInstrumentUpdate: "governance",
+  SARSGuidanceUpdate: "governance",
+  SchemeRuleChange: "governance",
+  CSPAttestationDue: "governance",
+  ALMReadinessSnapshot: "audit",
+  MarketsReadinessSnapshot: "audit",
+  PaymentsReadinessSnapshot: "audit",
+  LegalReadinessSnapshot: "audit",
+  TaxReadinessSnapshot: "audit",
+  CutOffBreach: "markets",
+  // C-10 agent-performance remainder
+  AgentEfficiencyAdvisoryIssued: "runtime",
+  AgentPromptOptimizationApplied: "runtime",
+};
+
+/**
+ * A Bucket-C bulk batch-3 migration row: identical mechanics to `bucketC1` /
+ * `bucketC2` (ALWAYS tee-enabled, verbatim — money-free, shared
+ * `bucketCVerbatimSchema`). The class is sourced from `BUCKET_C_BATCH3_CLASS`
+ * (= the V1 row's class) so the mirror never re-classes. Onboarding is one
+ * `BUCKET_C_BATCH3_TYPES` entry.
+ */
+function bucketC3(type: string): V2EventTypeMetadata {
+  const cls = BUCKET_C_BATCH3_CLASS[type];
+  if (cls === undefined) {
+    throw new Error(
+      `bucketC3: no class mapping for "${type}". Every BUCKET_C_BATCH3_TYPES entry must have a BUCKET_C_BATCH3_CLASS mapping matching its V1 registry class.`,
+    );
+  }
+  return {
+    type,
+    class: cls,
+    payloadSchema: bucketCVerbatimSchema,
+    schemaVersion: 1,
+    retention: V2_RETENTION_RUNTIME_1Y,
+    migrationStatus: "v2-parallel",
+    tee: {},
+    source: BUCKET_C_BATCH3_SOURCE,
   };
 }
 
@@ -947,6 +1023,34 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
   // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
   // ---------------------------------------------------------------------------
   ...BUCKET_C_BATCH2_TYPES.map((t) => bucketC2(t)),
+
+  // ---------------------------------------------------------------------------
+  // BUCKET C — BULK BATCH 3 (29 types; TEE-ENABLED, verbatim; money-free).
+  // FINAL non-load-bearing batch.
+  //
+  // The remaining non-load-bearing control-plane substrate: C-3 agent-lifecycle
+  // / runtime remainder (DecisionComment, the runtime-emitted SubstrateAgentRun*
+  // lifecycle trio, ScheduledTrigger, and SubstrateAlert), C-9 audit-process /
+  // readiness / regulator-process (22), and the C-10 agent-performance remainder
+  // (AgentEfficiencyAdvisoryIssued, AgentPromptOptimizationApplied). All mirrored
+  // verbatim by the store-tee; `recon:bucket-c-batch3-v2-parity` is the byte-clean
+  // (PASS-on-empty in build phase) evidence over the {event_id, type, payload}
+  // tuple fold. Type list is sourced from BUCKET_C_BATCH3_TYPES; class from
+  // BUCKET_C_BATCH3_CLASS.
+  //
+  // ★ SubstrateAlert is INCLUDED: the store-tee's divergence alert is emitted via
+  // the RAW underlying store (not the teed wrapper) and a successful mirror writes
+  // only to the v2 store, so the alert's own mirror can never trigger a new
+  // SubstrateAlert (no feedback loop). See v2-store-tee.ts and the batch-3 index
+  // header for the full recursion-safety argument.
+  //
+  // AFTER THIS BATCH the ONLY bucket-C types left v1-only are the 14 load-bearing
+  // dispatch / run-lifecycle / RMS types (held for the separate CEO checkpoint;
+  // the dispatch CLIs stay V1-authoritative).
+  //
+  // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+  // ---------------------------------------------------------------------------
+  ...BUCKET_C_BATCH3_TYPES.map((t) => bucketC3(t)),
 
   // ---------------------------------------------------------------------------
   // WAVE 2 BUCKET-A BATCH-A2 — nine EMITTABLE numeric-money, non-financial types
