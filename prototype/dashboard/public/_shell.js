@@ -60,13 +60,17 @@
       owner: "CCO",
       pages: [
         { label: "Compliance", href: "/compliance.html" },
-        { label: "Obligations", href: "/obligations.html" },
+        // Unified Regulations module — regulations, the bank obligations they
+        // generate, and the bidirectional source trace, in one surface. The
+        // specialist pages below remain reachable during the transition.
+        { label: "Regulations", href: "/regulations.html" },
+        { label: "Policies", href: "/policies.html" },
+        { label: "Obligations (legacy)", href: "/obligations.html" },
         { label: "Bank Obligations (events)", href: "/bank-obligations.html" },
         { label: "Unadopted Obligations", href: "/unadopted-obligations.html" },
         { label: "Obligation Readers", href: "/obligation-readers.html" },
         { label: "Forward Obligations", href: "/forward-obligations.html" },
-        { label: "Policies", href: "/policies.html" },
-        { label: "Regulatory", href: "/regulatory.html" },
+        { label: "Regulatory (concepts)", href: "/regulatory.html" },
         { label: "Regulation Reader", href: "/regulation-reader.html" },
       ],
     },
@@ -137,6 +141,7 @@
     "/risk-register.html": { domains: ["A"], owner: "CRO" },
     "/models.html": { domains: ["A"], owner: "CRO" },
     "/compliance.html": { domains: ["B", "C"], owner: "CCO" },
+    "/regulations.html": { domains: ["B", "C", "FX"], owner: "CCO" },
     "/obligations.html": { domains: ["B", "C", "FX"], owner: "CCO" },
     "/bank-obligations.html": { domains: ["B", "C", "FX"], owner: "CCO" },
     "/regulatory.html": { domains: ["M"], owner: "CCO" },

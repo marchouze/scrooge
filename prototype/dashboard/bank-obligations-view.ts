@@ -27,11 +27,16 @@ import {
   resolveDomain,
 } from "../platform/obligations/presentation";
 import { type BankObligation, loadBankObligations } from "../platform/obligations/projection";
+import { seatForObligation } from "../platform/regulatory/domain-ownership-map";
 import { getDb } from "../platform/regulatory/graph/db";
 import { buildProvisionTree } from "../platform/regulatory/graph/provision-tree";
 import { extractSectionIdsFromCitation } from "../platform/regulatory/obligation-linker";
 import { loadStructuredDocBySlug } from "../platform/regulatory/structured-doc-loader";
-import { foldAssessmentRegister } from "../v2-core/applicability";
+import {
+  foldLatestApplicabilityBySubject,
+  latestApplicabilityForSubject,
+} from "./obligation-applicability";
+import { seatTitle } from "./regulation-obligation-index";
 
 /** A reference row from the committed obligations seed (the authored origin). */
 export interface ObligationSeedRow {
@@ -80,6 +85,14 @@ export interface BankObligationRow extends BankObligation {
   hasVerbatim: boolean;
   /** Linked POL-* policy node ids (IMPLEMENTED_BY edges), if any. */
   policies: string[];
+  /**
+   * Accountable seat TITLE from the domain-ownership map (masked — never the
+   * agent personal name; the V2 UI surfaces seats by title only). Null when the
+   * obligation is unclassifiable.
+   */
+  ownerSeatTitle: string | null;
+  /** Latest W8 applicability verdict, or null when none concluded. */
+  applicabilityVerdict: "applies" | "partially-applies" | "does-not-apply" | null;
 }
 
 export interface BankObligationsView {
@@ -89,6 +102,7 @@ export interface BankObligationsView {
     byStatus: Record<string, number>;
     byDomain: Record<string, number>;
     byRegulator: Record<string, number>;
+    byApplicability: Record<string, number>;
     withDerivesFrom: number;
   };
 }
@@ -157,6 +171,7 @@ export function getBankObligationsView(
   const base = loadBankObligations(store).filter((o) => o.adopted);
   const verbatimPresent = resolveVerbatimPresence(base, db);
   const policiesByObligation = resolvePoliciesByObligation(db);
+  const applicabilityBySubject = foldLatestApplicabilityBySubject(store);
   // The authored register `section` is the truthful domain (the event-folded
   // `domain` code has drifted for many rows) — key it by obligation id.
   const sectionById = new Map(
@@ -167,6 +182,7 @@ export function getBankObligationsView(
 
   const obligations: BankObligationRow[] = base.map((o) => {
     const domain = resolveDomain({ section: sectionById.get(o.id), domainCode: o.domain });
+    const seat = seatForObligation({ id: o.id, citation: o.citation, requirement: o.requirement });
     return {
       ...o,
       title: obligationTitle(o),
@@ -175,22 +191,34 @@ export function getBankObligationsView(
       domainDescription: domain.description,
       hasVerbatim: verbatimPresent.has(o.id),
       policies: policiesByObligation.get(o.id) ?? [],
+      ownerSeatTitle: seatTitle(seat),
+      applicabilityVerdict: applicabilityBySubject.get(o.id)?.verdict ?? null,
     };
   });
 
   const byStatus: Record<string, number> = {};
   const byDomain: Record<string, number> = {};
   const byRegulator: Record<string, number> = {};
+  const byApplicability: Record<string, number> = {};
   let withDerivesFrom = 0;
   for (const o of obligations) {
     byStatus[o.status || "(unset)"] = (byStatus[o.status || "(unset)"] ?? 0) + 1;
     byDomain[o.domainCode || "(unset)"] = (byDomain[o.domainCode || "(unset)"] ?? 0) + 1;
     byRegulator[o.regulator] = (byRegulator[o.regulator] ?? 0) + 1;
+    const av = o.applicabilityVerdict ?? "(unassessed)";
+    byApplicability[av] = (byApplicability[av] ?? 0) + 1;
     if (o.derivesFrom.length > 0) withDerivesFrom++;
   }
   return {
     obligations,
-    summary: { total: obligations.length, byStatus, byDomain, byRegulator, withDerivesFrom },
+    summary: {
+      total: obligations.length,
+      byStatus,
+      byDomain,
+      byRegulator,
+      byApplicability,
+      withDerivesFrom,
+    },
   };
 }
 
@@ -786,47 +814,11 @@ export function getObligationDetail(
   const citation = projection?.citation ?? seed?.citation ?? "";
   const domain = resolveDomain({ section: seed?.section, domainCode: projection?.domain });
 
-  // W8 Slice C — the obligation's applicability verdict. The S8 lifecycle
-  // carries `subjectRef` ONLY on the Requested event; the Concluded payload does
-  // not. So we fold the full register (Requested+Performed+Concluded) and use
-  // `assessmentsForSubject(id)` (which propagates subjectRef from Requested onto
-  // each folded assessment), keeping only concluded assessments. We pick the
-  // LATEST by the Concluded event's as_of (a re-adoption on a later day
-  // re-assesses against a fresh posture snapshot). Principle 1: a query over
-  // events. (D-W8-POSTURE-REGISTER-SLICE-1.)
-  let applicability: ObligationDetail["applicability"] | undefined;
-  {
-    // Map assessmentId → latest Concluded as_of (for the latest-wins tiebreak).
-    const concludedAt = new Map<string, string>();
-    const payloads: unknown[] = [];
-    for (const ev of store.replay({ type: "ApplicabilityAssessmentRequested" })) {
-      payloads.push({ kind: "ApplicabilityAssessmentRequested", ...(ev.payload as object) });
-    }
-    for (const ev of store.replay({ type: "ApplicabilityAssessmentPerformed" })) {
-      payloads.push({ kind: "ApplicabilityAssessmentPerformed", ...(ev.payload as object) });
-    }
-    for (const ev of store.replay({ type: "ApplicabilityAssessmentConcluded" })) {
-      payloads.push({ kind: "ApplicabilityAssessmentConcluded", ...(ev.payload as object) });
-      const aid = (ev.payload as { assessmentId?: string }).assessmentId;
-      const at = ev.as_of ?? "";
-      if (aid && (!concludedAt.has(aid) || at > (concludedAt.get(aid) ?? ""))) {
-        concludedAt.set(aid, at);
-      }
-    }
-    const register = foldAssessmentRegister(payloads);
-    let latestAt = "";
-    for (const a of register.assessmentsForSubject(id)) {
-      if (a.stage !== "concluded" || a.verdict === undefined) continue;
-      const at = concludedAt.get(a.assessmentId) ?? "";
-      if (applicability && at <= latestAt) continue;
-      applicability = {
-        verdict: a.verdict,
-        matchedContexts: [...(a.appliesToContexts ?? [])],
-        rationale: a.rationale ?? "",
-      };
-      latestAt = at;
-    }
-  }
+  // W8 Slice C — the obligation's latest applicability verdict, folded from the
+  // S8 lifecycle (D-W8-POSTURE-REGISTER-SLICE-1). Shared with the reverse index
+  // so the reader and the obligation drill-down agree. Principle 1: a query over
+  // events, never stored state.
+  const applicability: ObligationDetail["applicability"] = latestApplicabilityForSubject(store, id);
 
   return {
     id,

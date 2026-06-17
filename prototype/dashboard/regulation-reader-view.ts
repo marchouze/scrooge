@@ -18,9 +18,15 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, resolve } from "node:path";
 
+import type { EventStore } from "../platform/event-store/store";
 import { getDb } from "../platform/regulatory/graph/db";
 import { getObligationCountForDocument } from "../platform/regulatory/graph/query";
 import { ensureProvisionIds } from "../platform/regulatory/structured-doc-loader";
+import {
+  type EnrichedObligationRef,
+  type RegulationObligationIndex,
+  buildRegulationObligationIndex,
+} from "./regulation-obligation-index";
 
 /** Normalise a section reference: lowercase + dots stripped. */
 const normSectionRef = (raw: string) => raw.toLowerCase().replace(/\./g, "");
@@ -133,6 +139,12 @@ export interface InstrumentSummary {
   reviewStatus: "reviewed" | "stale" | "unreviewed";
   /** ISO timestamp of the latest review, or null when never reviewed. */
   reviewedAt: string | null;
+  /**
+   * Adopted bank obligations (Plane B) traced back to this instrument via the
+   * reverse index — the "back-population" count. 0 when no event store was
+   * supplied (the view degrades to reference-only data).
+   */
+  derivedObligationCount: number;
 }
 
 export interface InstrumentsListView {
@@ -148,6 +160,14 @@ export interface ObligationOnSection {
 
 export interface SectionDetail extends RegSection {
   obligations: ObligationOnSection[];
+  /**
+   * Adopted bank obligations (Plane B, event-sourced) traced back to this
+   * section via the reverse index — enriched with lifecycle status,
+   * applicability verdict, and owner seat TITLE. The "back-population" of the
+   * regulation viewer; deduped by obligation id. Empty when no event store was
+   * supplied or nothing traces here.
+   */
+  derivedObligations: EnrichedObligationRef[];
 }
 
 export interface ChapterDetail extends Omit<RegChapter, "sections"> {
@@ -170,6 +190,10 @@ export interface InstrumentDetailView {
    */
   instrumentWideObligations: ObligationOnSection[];
   chapters: ChapterDetail[];
+  /** Distinct adopted bank obligations traced back to this instrument. */
+  derivedObligationCount: number;
+  /** Status histogram across the derived obligations (status → count). */
+  derivedStatusRollup: Record<string, number>;
 }
 
 // ---------------------------------------------------------------------------
@@ -517,6 +541,47 @@ function getObligationsForSection(
   return result;
 }
 
+/**
+ * Candidate provision ids for a section, spanning BOTH id spaces so the reverse
+ * index resolves regardless of which space the obligation linked through:
+ *   - graph `EXPRESSES` form: `PROV-<SLUG>-s<n>` (section-anchored adoptions)
+ *   - structured-doc form:    `section.id` + each subsection id (tick-flow
+ *     adoptions carry these directly in `derivesFrom`)
+ */
+function candidateProvisionIds(slug: string, section: RegSection): string[] {
+  const ids = new Set<string>();
+  const raw = numberFromSection(section);
+  if (raw) ids.add(`PROV-${slug.toUpperCase()}-s${normSectionRef(raw)}`);
+  if (section.id) ids.add(section.id);
+  for (const sub of section.subsections ?? []) {
+    if (sub.id) ids.add(sub.id);
+  }
+  return [...ids];
+}
+
+/**
+ * Adopted bank obligations traced back to this section via the reverse index,
+ * deduped by obligation id (a section spanning several provision ids must not
+ * list the same obligation twice).
+ */
+function derivedObligationsForSection(
+  slug: string,
+  section: RegSection,
+  index: RegulationObligationIndex | null,
+): EnrichedObligationRef[] {
+  if (!index) return [];
+  const seen = new Set<string>();
+  const refs: EnrichedObligationRef[] = [];
+  for (const provId of candidateProvisionIds(slug, section)) {
+    for (const ref of index.byProvision.get(provId) ?? []) {
+      if (seen.has(ref.id)) continue;
+      seen.add(ref.id);
+      refs.push(ref);
+    }
+  }
+  return refs;
+}
+
 function getInstrumentWideObligations(
   _slug: string,
   _obligationsMap: Record<string, ObligationRow>,
@@ -581,17 +646,30 @@ function loadCoverageMarkers(repoRoot: string): Map<string, CoverageMarker> {
   return bySlug;
 }
 
-export function buildInstrumentsListView(repoRoot: string): InstrumentsListView {
+export function buildInstrumentsListView(
+  repoRoot: string,
+  store?: EventStore,
+): InstrumentsListView {
   const instruments: InstrumentSummary[] = [];
   const coverage = loadCoverageMarkers(repoRoot);
+
+  // One reverse index for the whole list (Plane B → Plane A). Absent store →
+  // derivedObligationCount degrades to 0 (reference-only list view).
+  const index = store ? buildRegulationObligationIndex(store) : null;
 
   for (const slug of discoverSlugPaths(repoRoot).keys()) {
     const doc = loadStructuredDoc(repoRoot, slug);
     if (!doc) continue;
 
     let sectionCount = 0;
+    const derivedIds = new Set<string>();
     for (const chapter of doc.chapters) {
       sectionCount += chapter.sections.length;
+      for (const section of chapter.sections) {
+        for (const ref of derivedObligationsForSection(doc.slug, section, index)) {
+          derivedIds.add(ref.id);
+        }
+      }
     }
 
     const obligationCount = getObligationCountForDocument(`DOC-${slug.toUpperCase()}`);
@@ -612,6 +690,7 @@ export function buildInstrumentsListView(repoRoot: string): InstrumentsListView 
         : obligationCount,
       reviewStatus: marker?.reviewStatus ?? "unreviewed",
       reviewedAt: marker?.reviewedAt ?? null,
+      derivedObligationCount: derivedIds.size,
     });
   }
 
@@ -619,9 +698,73 @@ export function buildInstrumentsListView(repoRoot: string): InstrumentsListView 
   return { instruments };
 }
 
+// ---------------------------------------------------------------------------
+// Backward navigation: obligation → its source provision(s) in the reader
+// ---------------------------------------------------------------------------
+
+let _provisionSlugCache: Map<string, string> | null = null;
+
+/**
+ * Map every candidate provision id (both id spaces) back to the instrument slug
+ * that owns it, scanning all structured docs once. Powers the obligation
+ * drill-down's "View in source regulation" jump (the reverse direction). Cached
+ * for the process; the structured docs are committed reference data.
+ */
+function buildProvisionSlugMap(repoRoot: string): Map<string, string> {
+  if (_provisionSlugCache) return _provisionSlugCache;
+  const map = new Map<string, string>();
+  for (const slug of discoverSlugPaths(repoRoot).keys()) {
+    const doc = loadStructuredDoc(repoRoot, slug);
+    if (!doc) continue;
+    for (const chapter of doc.chapters) {
+      for (const section of chapter.sections) {
+        for (const pid of candidateProvisionIds(doc.slug, section)) {
+          if (!map.has(pid)) map.set(pid, doc.slug);
+        }
+      }
+    }
+  }
+  _provisionSlugCache = map;
+  return map;
+}
+
+/** One instrument the obligation traces into, with the matched provision ids. */
+export interface ObligationSourceLink {
+  slug: string;
+  provisionIds: string[];
+}
+
+/**
+ * Resolve the source instrument(s) and provision id(s) an obligation derives
+ * from — the deep-link target for the backward jump. Pure read-side join of the
+ * reverse index (Plane B) against the provision→slug map (Plane A).
+ */
+export function sourceLinksForObligation(
+  repoRoot: string,
+  store: EventStore,
+  id: string,
+): ObligationSourceLink[] {
+  const index = buildRegulationObligationIndex(store);
+  const provIds = index.provisionsForObligation.get(id) ?? [];
+  const slugMap = buildProvisionSlugMap(repoRoot);
+  const bySlug = new Map<string, string[]>();
+  for (const pid of provIds) {
+    const slug = slugMap.get(pid);
+    if (!slug) continue;
+    const list = bySlug.get(slug) ?? [];
+    list.push(pid);
+    bySlug.set(slug, list);
+  }
+  return [...bySlug.entries()].map(([slug, provisionIds]) => ({
+    slug,
+    provisionIds: provisionIds.sort(),
+  }));
+}
+
 export function buildInstrumentDetailView(
   repoRoot: string,
   slug: string,
+  store?: EventStore,
 ): InstrumentDetailView | null {
   const doc = loadStructuredDoc(repoRoot, slug);
   if (!doc) return null;
@@ -631,6 +774,9 @@ export function buildInstrumentDetailView(
   // Reset policy cache per call (so tests can override repoRoot)
   _policyCache = null;
 
+  // Reverse index (Plane B → Plane A). Absent store → reference-only view.
+  const index = store ? buildRegulationObligationIndex(store) : null;
+
   const chapters: ChapterDetail[] = doc.chapters.map((chapter) => ({
     id: chapter.id,
     number: chapter.number ?? "",
@@ -638,6 +784,7 @@ export function buildInstrumentDetailView(
     sections: chapter.sections.map((section) => ({
       ...section,
       obligations: getObligationsForSection(slug, section, obligationsMap, repoRoot),
+      derivedObligations: derivedObligationsForSection(slug, section, index),
     })),
   }));
 
@@ -656,6 +803,21 @@ export function buildInstrumentDetailView(
     allOblIds.add(obl.id);
   }
 
+  // Back-population rollup: distinct adopted obligations + status histogram
+  // across the reverse index for this instrument's sections.
+  const derivedIds = new Set<string>();
+  const derivedStatusRollup: Record<string, number> = {};
+  for (const ch of chapters) {
+    for (const sec of ch.sections) {
+      for (const ref of sec.derivedObligations) {
+        if (derivedIds.has(ref.id)) continue;
+        derivedIds.add(ref.id);
+        const key = ref.status || "(unset)";
+        derivedStatusRollup[key] = (derivedStatusRollup[key] ?? 0) + 1;
+      }
+    }
+  }
+
   return {
     slug: doc.slug,
     title: doc.title,
@@ -667,5 +829,7 @@ export function buildInstrumentDetailView(
     totalObligations: allOblIds.size,
     instrumentWideObligations,
     chapters,
+    derivedObligationCount: derivedIds.size,
+    derivedStatusRollup,
   };
 }

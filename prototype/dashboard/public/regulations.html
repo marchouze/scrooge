@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Regulations — Scrooge Bank</title>
+  <link rel="stylesheet" href="/_brand.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <link rel="stylesheet" href="/_shell.css">
+  <style>
+    /* ── Tabs ─────────────────────────────────────────────────────── */
+    .rg-tabs { display: flex; gap: 2px; background: var(--color-surface-hover);
+      padding: 3px; border-radius: var(--radius-md); width: fit-content; }
+    .rg-tab { padding: 6px 18px; border: none; border-radius: calc(var(--radius-md) - 1px);
+      font: var(--text-small); font-weight: 600; background: transparent;
+      color: var(--color-text-muted); cursor: pointer; transition: all 0.1s; white-space: nowrap; }
+    .rg-tab.active { background: var(--color-bg); color: var(--color-text); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+    .rg-tab-count { display: inline-block; margin-left: 6px; padding: 0 6px;
+      background: color-mix(in srgb, var(--color-text-muted) 15%, transparent);
+      border-radius: 8px; font-size: 0.75em; }
+    .rg-tab.active .rg-tab-count { background: color-mix(in srgb, var(--color-accent) 15%, transparent); color: var(--color-accent); }
+
+    .rg-panel { display: none; }
+    .rg-panel.active { display: block; }
+
+    /* ── Shared controls ──────────────────────────────────────────── */
+    .rg-toolbar { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; margin: var(--space-4) 0 var(--space-3); }
+    .rg-input, .rg-select { padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border);
+      border-radius: var(--radius-md); font: var(--text-small); background: var(--color-bg); color: var(--color-text); outline: none; }
+    .rg-input { flex: 1; min-width: 160px; max-width: 320px; }
+    .rg-input:focus, .rg-select:focus { border-color: var(--color-accent); }
+    .rg-count { font: var(--text-small); color: var(--color-text-muted); white-space: nowrap; }
+
+    /* ── Tables ───────────────────────────────────────────────────── */
+    .rg-table { width: 100%; border-collapse: collapse; font: var(--text-small); }
+    .rg-table th { background: var(--color-surface-hover); border-bottom: 2px solid var(--color-border);
+      padding: var(--space-2) var(--space-3); text-align: left; font-size: 0.7rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); white-space: nowrap; }
+    .rg-table td { border-bottom: 1px solid var(--color-border); padding: var(--space-2) var(--space-3); vertical-align: middle; color: var(--color-text); }
+    .rg-table tbody tr { cursor: pointer; transition: background 0.1s; }
+    .rg-table tbody tr:hover { background: var(--color-surface-hover); }
+    .rg-num { text-align: right; font-variant-numeric: tabular-nums; }
+    .rg-name { font-weight: 600; }
+    .rg-sub { font-size: 0.82em; color: var(--color-text-muted); margin-top: 1px; }
+
+    /* ── Badges / chips ───────────────────────────────────────────── */
+    .rg-badge { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 10px; font: var(--text-small); font-weight: 500; white-space: nowrap; }
+    .rg-b-muted { background: color-mix(in srgb, var(--color-text-muted) 14%, transparent); color: var(--color-text-muted); }
+    .rg-b-accent { background: color-mix(in srgb, var(--color-accent) 14%, transparent); color: var(--color-accent); }
+    .rg-b-green { background: color-mix(in srgb, #22c55e 16%, transparent); color: color-mix(in srgb, #22c55e 80%, black); }
+    .rg-b-amber { background: color-mix(in srgb, #f59e0b 18%, transparent); color: #92400e; }
+    .rg-b-grey  { background: color-mix(in srgb, var(--color-text-muted) 10%, transparent); color: var(--color-text-muted); }
+    .rg-b-indigo { background: color-mix(in srgb, #6366f1 15%, transparent); color: #3730a3; }
+
+    /* ── Reader ───────────────────────────────────────────────────── */
+    .rg-reader-head { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; margin-bottom: var(--space-3); }
+    .rg-reader-title { font: var(--text-heading); margin: 0; }
+    .rg-chapter { margin-bottom: var(--space-5); }
+    .rg-chapter-h { font: var(--text-label); text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--color-text-muted); padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-3); }
+    .rg-section { margin-bottom: var(--space-4); padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+    .rg-section.rg-flash { border-color: var(--color-accent); background: color-mix(in srgb, var(--color-accent) 6%, transparent); }
+    .rg-section-hd { display: flex; gap: var(--space-2); align-items: baseline; margin-bottom: var(--space-2); }
+    .rg-section-num { font-weight: 700; color: var(--color-accent); flex-shrink: 0; }
+    .rg-section-heading { font-weight: 600; }
+    .rg-section-text { color: var(--color-text); line-height: 1.6; white-space: pre-wrap; font-size: 0.92em; }
+    .rg-derived { margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px dashed var(--color-border); }
+    .rg-derived-lbl { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-accent); margin-bottom: var(--space-2); }
+    .rg-obl-card { display: flex; flex-direction: column; gap: 4px; padding: var(--space-2) var(--space-3);
+      background: var(--color-surface-hover); border: 1px solid var(--color-border); border-radius: var(--radius-sm); margin-bottom: var(--space-2); }
+    .rg-obl-row1 { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
+    .rg-obl-id { font-weight: 700; font-family: var(--font-mono, monospace); color: var(--color-accent); cursor: pointer; }
+    .rg-obl-id:hover { text-decoration: underline; }
+    .rg-obl-title { color: var(--color-text); }
+    .rg-obl-meta { font-size: 0.82em; color: var(--color-text-muted); }
+    .rg-jump { color: var(--color-accent); text-decoration: none; font-weight: 600; cursor: pointer; }
+    .rg-jump:hover { text-decoration: underline; }
+
+    /* ── Obligation drill-down panel ──────────────────────────────── */
+    .rg-obl-body { display: flex; gap: var(--space-4); align-items: flex-start; }
+    .rg-obl-table-wrap { flex: 1; min-width: 0; overflow-x: auto; }
+    .rg-drill { width: 380px; flex-shrink: 0; border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      background: var(--color-bg); position: sticky; top: var(--space-3); max-height: calc(100vh - var(--topbar-height) - 150px); overflow-y: auto; }
+    .rg-drill-hd { display: flex; align-items: flex-start; gap: var(--space-2); padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-border); background: var(--color-surface-hover); }
+    .rg-drill-title { flex: 1; font-weight: 700; line-height: 1.4; }
+    .rg-drill-x { border: none; background: none; color: var(--color-text-muted); cursor: pointer; font-size: 1.1em; }
+    .rg-drill-c { padding: var(--space-3) var(--space-4); }
+    .rg-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2) var(--space-4); margin-bottom: var(--space-3); }
+    .rg-meta-l { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); }
+    .rg-meta-v { font: var(--text-small); color: var(--color-text); font-weight: 500; }
+    .rg-source-btn { display: flex; align-items: center; justify-content: space-between; width: 100%;
+      padding: var(--space-2) var(--space-3); margin: var(--space-2) 0 var(--space-3);
+      border: 1px solid var(--color-accent); border-radius: var(--radius-md);
+      background: color-mix(in srgb, var(--color-accent) 8%, transparent); color: var(--color-accent);
+      font: var(--text-small); font-weight: 600; cursor: pointer; }
+    .rg-source-btn:hover { background: color-mix(in srgb, var(--color-accent) 16%, transparent); }
+    .rg-prose { font: var(--text-small); color: var(--color-text); line-height: 1.55; white-space: pre-wrap; }
+    .rg-hist-item { font: var(--text-small); padding: 3px 0; border-bottom: 1px solid var(--color-border); color: var(--color-text-muted); }
+    .rg-skeleton { padding: var(--space-4); color: var(--color-text-muted); }
+    @media (max-width: 900px) { .rg-obl-body { flex-direction: column; } .rg-drill { width: 100%; position: static; } }
+  </style>
+</head>
+<body>
+  <div id="shell"></div>
+  <main id="content" class="main-content">
+    <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
+    <div class="page-header">
+      <h1 class="page-title">Regulations</h1>
+      <p class="page-subtitle" style="color:var(--color-text-muted);font:var(--text-small);margin-top:4px">
+        Regulations, the bank obligations they generate, and the source they trace back to — one bidirectional view.
+      </p>
+    </div>
+    <div class="page-body">
+      <div id="rg-tabs" class="rg-tabs">
+        <button type="button" class="rg-tab active" data-tab="regulations">Regulations</button>
+        <button type="button" class="rg-tab" data-tab="reader">Reader</button>
+        <button type="button" class="rg-tab" data-tab="obligations">Obligations</button>
+      </div>
+
+      <!-- ── Regulations panel ─────────────────────────────────────── -->
+      <section id="panel-regulations" class="rg-panel active">
+        <div class="rg-toolbar">
+          <input type="search" id="rg-inst-search" class="rg-input" placeholder="Search regulations…" aria-label="Search regulations">
+          <select id="rg-inst-regulator" class="rg-select" aria-label="Filter by regulator"><option value="">All regulators</option></select>
+          <select id="rg-inst-review" class="rg-select" aria-label="Filter by review status">
+            <option value="">All review states</option>
+            <option value="reviewed">Reviewed</option>
+            <option value="stale">Stale</option>
+            <option value="unreviewed">Unreviewed</option>
+          </select>
+          <span id="rg-inst-count" class="rg-count"></span>
+        </div>
+        <table class="rg-table">
+          <thead><tr>
+            <th>Instrument</th><th>Year</th><th>Regulator</th>
+            <th class="rg-num">Sections</th><th class="rg-num">Source obls</th>
+            <th class="rg-num">Bank obls</th><th>Review</th>
+          </tr></thead>
+          <tbody id="rg-inst-body"><tr><td colspan="7" class="rg-skeleton">Loading…</td></tr></tbody>
+        </table>
+      </section>
+
+      <!-- ── Reader panel ──────────────────────────────────────────── -->
+      <section id="panel-reader" class="rg-panel">
+        <div class="rg-reader-head">
+          <select id="rg-reader-select" class="rg-select" aria-label="Choose instrument"><option value="">Choose a regulation…</option></select>
+          <input type="search" id="rg-reader-search" class="rg-input" placeholder="Search sections…" aria-label="Search sections">
+          <span id="rg-reader-meta" class="rg-count"></span>
+        </div>
+        <div id="rg-reader-body"><div class="rg-skeleton">Select a regulation to read.</div></div>
+      </section>
+
+      <!-- ── Obligations panel ─────────────────────────────────────── -->
+      <section id="panel-obligations" class="rg-panel">
+        <div class="rg-toolbar">
+          <input type="search" id="rg-obl-search" class="rg-input" placeholder="Search obligations…" aria-label="Search obligations">
+          <select id="rg-obl-status" class="rg-select" aria-label="Filter by status"><option value="">All statuses</option></select>
+          <select id="rg-obl-applic" class="rg-select" aria-label="Filter by applicability">
+            <option value="">All applicability</option>
+            <option value="applies">Applies</option>
+            <option value="partially-applies">Partially applies</option>
+            <option value="does-not-apply">Does not apply</option>
+            <option value="(unassessed)">Unassessed</option>
+          </select>
+          <select id="rg-obl-owner" class="rg-select" aria-label="Filter by owner seat"><option value="">All owner seats</option></select>
+          <select id="rg-obl-regulator" class="rg-select" aria-label="Filter by regulator"><option value="">All regulators</option></select>
+          <span id="rg-obl-count" class="rg-count"></span>
+        </div>
+        <div class="rg-obl-body">
+          <div class="rg-obl-table-wrap">
+            <table class="rg-table">
+              <thead><tr>
+                <th>Obligation</th><th>Status</th><th>Applicability</th><th>Owner seat</th><th>Regulator</th>
+              </tr></thead>
+              <tbody id="rg-obl-tbody"><tr><td colspan="5" class="rg-skeleton">Loading…</td></tr></tbody>
+            </table>
+          </div>
+          <aside id="rg-obl-drill" class="rg-drill" style="display:none" aria-label="Obligation detail">
+            <div class="rg-drill-hd">
+              <div class="rg-drill-title" id="rg-drill-title">—</div>
+              <button type="button" class="rg-drill-x" id="rg-drill-x" aria-label="Close">×</button>
+            </div>
+            <div class="rg-drill-c" id="rg-drill-c"></div>
+          </aside>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/_shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/_components.js"></script>
+  <script src="/regulations.js"></script>
+</body>
+</html>

@@ -368,6 +368,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // guard, not a production access path. T-01 carve-out.
   // Citation: D-W8-POSTURE-REGISTER-SLICE-1, P4-SECURITY-DESIGNED-IN.
   "platform/obligations/applicability.test.ts",
+  // Regulation↔obligation reverse-index unit test (unified Regulations module)
+  // — co-located per-module test convention. Raw EventStore(":memory:") is a
+  // build-phase fixture for the Plane-B→Plane-A join, not a production access
+  // path. T-01 carve-out.
+  // Citation: D-REGULATORY-ARCHITECTURE-TWO-PLANE, P4-SECURITY-DESIGNED-IN.
+  "dashboard/regulation-obligation-index.test.ts",
   // Obligation-review-status authored-summary coverage unit test — co-located
   // per-module test convention. Raw EventStore is a build-phase test fixture
   // for the per-domain coverage fold, not a production access path. T-01

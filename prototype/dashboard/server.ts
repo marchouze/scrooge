@@ -284,7 +284,11 @@ import { buildProductDetailView } from "./products-detail";
 import { listPolicies, listProcedures } from "./products-policy-chain";
 import { buildProductListView } from "./products-view";
 import { saveState } from "./registry";
-import { buildInstrumentDetailView, buildInstrumentsListView } from "./regulation-reader-view";
+import {
+  buildInstrumentDetailView,
+  buildInstrumentsListView,
+  sourceLinksForObligation,
+} from "./regulation-reader-view";
 import { selectRegulatoryReturn } from "./regulatory-returns-view";
 import { buildRegConceptsView, buildRegInstrumentsView } from "./regulatory-view";
 import { buildRiskRegisterView } from "./risk-register";
@@ -3962,17 +3966,37 @@ const server = Bun.serve({
     // ── Regulation Reader endpoints ────────────────────────────────────────
     // GET /api/regulation-reader/instruments — list of all structured regulation instruments
     if (url.pathname === "/api/regulation-reader/instruments" && req.method === "GET") {
+      // `eventStore` supplies the reverse index (Plane B → Plane A) so each
+      // instrument carries its derived-obligation count (the back-population).
       return jsonResponse({
-        ...buildInstrumentsListView(REPO_ROOT),
+        ...buildInstrumentsListView(REPO_ROOT, eventStore),
         pageProvenance: proseAuthoredPageProvenance(),
       });
+    }
+    // GET /api/regulations/obligation-source/:id — the source instrument(s) +
+    // provision id(s) an obligation derives from (the backward "View in source
+    // regulation" jump target). Read-side join of the reverse index against the
+    // provision→slug map; no events emitted.
+    {
+      const srcMatch = url.pathname.match(
+        /^\/api\/regulations\/obligation-source\/([A-Za-z0-9()\-_.]+)$/,
+      );
+      if (srcMatch?.[1] && req.method === "GET") {
+        return jsonResponse({
+          obligationId: srcMatch[1],
+          links: sourceLinksForObligation(REPO_ROOT, eventStore, srcMatch[1]),
+          pageProvenance: eventDerivedPageProvenance(),
+        });
+      }
     }
     // GET /api/regulation-reader/:slug — full structured detail for one instrument
     {
       const readerMatch = url.pathname.match(/^\/api\/regulation-reader\/([a-z0-9-]+)$/);
       if (readerMatch?.[1] && req.method === "GET") {
         const slug = readerMatch[1];
-        const detail = buildInstrumentDetailView(REPO_ROOT, slug);
+        // Pass the store so each section is back-populated with the adopted
+        // bank obligations (status + applicability + owner seat) tracing to it.
+        const detail = buildInstrumentDetailView(REPO_ROOT, slug, eventStore);
         if (!detail) {
           return jsonResponse({ error: `Instrument not found: ${slug}` }, 404);
         }
