@@ -99,7 +99,9 @@ const events = Array.from(eventStore.replay());
 const register = buildProductRegisterView(events);
 const row = register.get(FX_NPA_PRODUCT_ID);
 if (!row) {
-  throw new Error(`No register row for ${FX_NPA_PRODUCT_ID} — cannot file the consolidated NPA doc.`);
+  throw new Error(
+    `No register row for ${FX_NPA_PRODUCT_ID} — cannot file the consolidated NPA doc.`,
+  );
 }
 const gate = validateNpaGate(row);
 

@@ -36,9 +36,10 @@ const DIMENSION_TREATMENT_MODULE: Readonly<Record<string, string>> = {
 
 /** Governance-owner attribution per dimension (identity discipline). */
 const DIMENSION_OWNER: Readonly<Record<string, string>> = {
-  "market-risk": "Rohan (Risk engineer, engineering) / Helena (Chief Risk Officer, governance)",
+  "market-risk":
+    "Rohan (Market risk quantitative engineer, engineering) / Helena (Chief Risk Officer, governance)",
   "credit-risk": "Helena (Chief Risk Officer, governance)",
-  "liquidity-risk": "Eitan (Treasurer, finance)",
+  "liquidity-risk": "Eitan (Treasurer, governance)",
   "operational-risk":
     "Tomas (Operations & payments engineer, engineering) / Devon (Chief Operating Officer, governance)",
   "operational-readiness":
@@ -114,9 +115,7 @@ export function renderFxNpaConsolidatedDoc(input: RenderFxNpaConsolidatedDocInpu
     `> This document is the render of ONE clean, coherent FX OTC vanilla NPA cycle authored from scratch under D-FX-NPA-RESTART (Principle 1: append-only, latest-wins; the prior accreted attestations are superseded, not deleted). The accounting, capital/prudential and tax dimensions cite their versioned reporting-treatment module as the canonical source. It is a render of the event log; the \`RecordFiled\` event is the canonical artefact. ${
       npaStatus === "approved"
         ? "**The gate rule was RUN over the honest attestations and yielded an INTERNAL-TEST-scope `ProductApproved` (13 implementation-attested + 2 design-attested-with-tracked-gap dimensions); no PRODUCTION `ProductApproved` is emitted — production is gated on closing every tracked gap and on the real-counterparty / external-counsel triggers.**"
-        : "**The gate rule was RUN over the honest attestations and did NOT yield an internal-test approval; the product is `" +
-          npaStatus +
-          "`.**"
+        : `**The gate rule was RUN over the honest attestations and did NOT yield an internal-test approval; the product is \`${npaStatus}\`.**`
     }`,
   );
   lines.push("");
@@ -128,7 +127,9 @@ export function renderFxNpaConsolidatedDoc(input: RenderFxNpaConsolidatedDocInpu
   lines.push("");
   lines.push(
     `The umbrella FX product is **${scopeNote}** (register stage ${row.lifecycleStage}). The NPA gate (D-NPA-GATE-POLICY-REDESIGN) over the clean cycle's attestations reports \`ready=${gate.ready}\`${gate.missing.length > 0 ? `, blocking dimensions: ${gate.missing.join(", ")}` : ""}${
-      gate.openConditions.length > 0 ? `, open conditions (design-attested-with-tracked-gap): ${gate.openConditions.join("; ")}` : ""
+      gate.openConditions.length > 0
+        ? `, open conditions (design-attested-with-tracked-gap): ${gate.openConditions.join("; ")}`
+        : ""
     }.${
       npaStatus === "approved"
         ? " The gate result is taken honestly: implementation-attested dimensions pass unconditionally and design-attested-with-tracked-gap dimensions pass with a recorded open condition — yielding an INTERNAL-TEST `ProductApproved`. No PRODUCTION approval is emitted."

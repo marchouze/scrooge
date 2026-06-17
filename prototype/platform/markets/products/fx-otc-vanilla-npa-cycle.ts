@@ -72,9 +72,9 @@ import {
 } from "../../event-store/event-types/product";
 import { buildPhaseFixtureTag } from "../../event-store/provenance";
 import type { EventStore } from "../../event-store/store";
+import { buildProductRegisterView } from "../../projections/products/product-register";
 import type { DimensionKey } from "./npa-attestation-runner";
 import { validateNpaGate } from "./npa-gate";
-import { buildProductRegisterView } from "../../projections/products/product-register";
 
 // ---------------------------------------------------------------------------
 // Identity
@@ -132,8 +132,7 @@ function moduleCitation(treatmentId: string): string {
   const decl = FX_TREATMENT_MODULES.find((m) => m.treatmentId === treatmentId);
   if (!decl) {
     throw new Error(
-      `FX treatment module "${treatmentId}" not found in FX_TREATMENT_MODULES — ` +
-        "cannot author an NPA attestation citing a non-resolving treatment module.",
+      `FX treatment module "${treatmentId}" not found in FX_TREATMENT_MODULES — cannot author an NPA attestation citing a non-resolving treatment module.`,
     );
   }
   return `treatment-module:${decl.treatmentId}@${formatVersion(decl.version)}`;
@@ -164,7 +163,8 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
   // -- Dimension 1: market-risk (Rohan / Helena) — implementation-attested. ---
   {
     dimension: "market-risk",
-    owner: "Rohan (Market risk quantitative engineer, engineering) / Helena (Chief Risk Officer, governance)",
+    owner:
+      "Rohan (Market risk quantitative engineer, engineering) / Helena (Chief Risk Officer, governance)",
     result: "implementation-attested",
     citationChain: [
       ...BASE_CHAIN,
@@ -191,14 +191,18 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
           "Forward/swap MtM uses the flat-discount approximation; production valuation discounts with currency-specific OIS factors from the ALM substrate.",
         owner: "Ravi (Treasury / ALM engineer, engineering)",
         targetTrigger: "ALM substrate delivers currency-specific OIS discount factors",
-        citations: ["D-FX-FORWARDS-TRADING-FVTPL", "platform/markets/eod/fx-forward-revaluation.ts"],
+        citations: [
+          "D-FX-FORWARDS-TRADING-FVTPL",
+          "platform/markets/eod/fx-forward-revaluation.ts",
+        ],
       },
     ],
   },
   // -- Dimension 2: credit-risk (Helena / Rohan) — implementation-attested. ---
   {
     dimension: "credit-risk",
-    owner: "Helena (Chief Risk Officer, governance) / Rohan (Market risk quantitative engineer, engineering)",
+    owner:
+      "Helena (Chief Risk Officer, governance) / Rohan (Market risk quantitative engineer, engineering)",
     result: "implementation-attested",
     citationChain: [
       ...BASE_CHAIN,
@@ -261,7 +265,8 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
   // -- Dimension 4: operational-risk (Tomas / Devon) — implementation-attested.
   {
     dimension: "operational-risk",
-    owner: "Tomas (Operations & payments engineer, engineering) / Devon (Chief Operating Officer, governance)",
+    owner:
+      "Tomas (Operations & payments engineer, engineering) / Devon (Chief Operating Officer, governance)",
     result: "implementation-attested",
     citationChain: [
       ...BASE_CHAIN,
@@ -307,7 +312,8 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
   // -- Dimension 5: operational-readiness (Tomas / Devon) — impl-attested. -----
   {
     dimension: "operational-readiness",
-    owner: "Tomas (Operations & payments engineer, engineering) / Devon (Chief Operating Officer, governance)",
+    owner:
+      "Tomas (Operations & payments engineer, engineering) / Devon (Chief Operating Officer, governance)",
     result: "implementation-attested",
     citationChain: [
       ...BASE_CHAIN,
@@ -350,7 +356,8 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
   // -- Dimension 7: capital / prudential (Camille / Helena) — impl, treatment-module.
   {
     dimension: "capital",
-    owner: "Camille (Chief Financial Officer, governance) / Helena (Chief Risk Officer, governance)",
+    owner:
+      "Camille (Chief Financial Officer, governance) / Helena (Chief Risk Officer, governance)",
     result: "implementation-attested",
     citationChain: [
       moduleCitation("prudential-treatment:fx-trading-book"),
@@ -415,7 +422,8 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
   // -- Dimension 9: aml / sanctions (Zara / Mira) — implementation-attested. ---
   {
     dimension: "aml",
-    owner: "Zara (Chief Compliance Officer, governance) / Mira (Compliance / RegTech engineer, engineering)",
+    owner:
+      "Zara (Chief Compliance Officer, governance) / Mira (Compliance / RegTech engineer, engineering)",
     result: "implementation-attested",
     citationChain: [
       ...BASE_CHAIN,
@@ -477,7 +485,8 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
   // the honest design-attested state.)
   {
     dimension: "legal",
-    owner: "Imani (Legal-as-code engineer, engineering) / Devon (Chief Operating Officer, governance — interim, pending future GC)",
+    owner:
+      "Imani (Legal-as-code engineer, engineering) / Devon (Chief Operating Officer, governance — interim, pending future GC)",
     result: "design-attested",
     citationChain: [
       ...BASE_CHAIN,
@@ -516,7 +525,10 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
         owner: "Imani (Legal-as-code engineer, engineering)",
         targetTrigger:
           "licence-day ISDA opinion subscription — first JurisdictionalOpinionRefreshed filed with doc-store opinionDocumentHash",
-        citations: ["ISDA-2002-MASTER-AGREEMENT", "platform/markets/legal/opinion-refresh-watchdog.ts"],
+        citations: [
+          "ISDA-2002-MASTER-AGREEMENT",
+          "platform/markets/legal/opinion-refresh-watchdog.ts",
+        ],
       },
       {
         gapId: "fx-csa-margin-mechanics",
@@ -674,7 +686,11 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
         owner: "Yael (Tax engineer, engineering)",
         targetTrigger:
           "first real counterparty onboarding at licence-day (W-8BEN-E / W-8IMY collection in the legal-onboarding workflow)",
-        citations: ["FATCA-IRC-S1471-1474", "SA-US-FATCA-IGA-2014", "urn:reg:za:income-tax-act-58-1962:s70"],
+        citations: [
+          "FATCA-IRC-S1471-1474",
+          "SA-US-FATCA-IGA-2014",
+          "urn:reg:za:income-tax-act-58-1962:s70",
+        ],
       },
       {
         gapId: "fx-crs-counterparty-classification-and-reporting",
@@ -846,8 +862,12 @@ export function runFxOtcVanillaNpaCycle(store: EventStore): FxNpaCycleResult {
   }
 
   // 4. ProductDueDiligenceCompleted.
-  const gatesCleared = FX_NPA_DIMENSIONS.filter((d) => d.result !== "failed").map((d) => d.dimension);
-  const gatesFailed = FX_NPA_DIMENSIONS.filter((d) => d.result === "failed").map((d) => d.dimension);
+  const gatesCleared = FX_NPA_DIMENSIONS.filter((d) => d.result !== "failed").map(
+    (d) => d.dimension,
+  );
+  const gatesFailed = FX_NPA_DIMENSIONS.filter((d) => d.result === "failed").map(
+    (d) => d.dimension,
+  );
   store.append({
     ...makeProductDueDiligenceCompleted({
       asOf: FX_NPA_CYCLE_AS_OF,
