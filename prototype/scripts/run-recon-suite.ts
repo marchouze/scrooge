@@ -421,6 +421,12 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // parity. ENFORCING (byte-clean / PASS-on-empty). Validates the money-free
     // control-plane store-tee path for the ~195 remaining bucket-C types.
     "recon:agent-performance-v2-parity",
+    // Bucket C bulk BATCH 1 — 57 non-load-bearing control-plane substrate types
+    // (agent-lifecycle + governance-process + HR) V1-store ↔ v2-control-plane-
+    // store VERBATIM {event_id, type, payload} tuple-fold parity. ENFORCING
+    // (byte-clean / PASS-on-empty). Empty-population flips tracked as one
+    // batch-level gap (scope §5.1). Authority: D-BANK-WIDE-V2-MIGRATION.
+    "recon:bucket-c-batch1-v2-parity",
     // Wave 2 BUCKET-A BATCH-A2 — nine EMITTABLE numeric-money, non-financial
     // types (ClimateScenarioRun, FeeDisclosureEvent, Correspondent…Sent,
     // NostroStatementReceived, CounterpartyExposureCalculated, STRCandidate,
