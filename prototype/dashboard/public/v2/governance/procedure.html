@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Procedure — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-source="/api/v2/procedures">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    const file = new URLSearchParams(location.search).get("file");
+
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Governance", href: "/v2/governance/index.html" },
+        { label: "Procedures", href: "/v2/governance/procedures.html" },
+        { label: file || "Detail" },
+      ],
+      title: "Procedure",
+    });
+
+    const bodyHost = document.createElement("div"); main.appendChild(bodyHost);
+
+    if (!file) {
+      v2RenderError(bodyHost, `no procedure selected — choose from the <a href="/v2/governance/procedures.html">Procedure Register</a>.`);
+    } else {
+      v2WireLoader(async () => {
+        bodyHost.replaceChildren();
+        let d;
+        try {
+          d = await v2Fetch(`/api/v2/procedures/${encodeURIComponent(file)}`);
+        } catch (err) {
+          v2RenderError(bodyHost, v2Esc(err.message));
+          return;
+        }
+        const m = d.meta;
+        document.querySelector(".v2-page-title").textContent = m.title || file;
+
+        renderTileGroup(bodyHost, {
+          tiles: [
+            { label: "Domain", value: v2Esc(m.domain || "—"), unit: m.procedureId ? v2Esc(m.procedureId) : "procedure" },
+            { label: "Owner (seat)", value: v2Esc(m.owner || "—"), unit: "accountable seat" },
+            { label: "Status", value: v2Esc(m.status || "—"), unit: "authoring status" },
+            { label: "Last reviewed", value: v2Esc(m.lastReviewed || "—"), unit: m.reconciliationCadence ? `cadence: ${v2Esc(m.reconciliationCadence)}` : "review cadence" },
+          ],
+        });
+
+        // Upward chain (parent policy).
+        const cs = document.createElement("div"); cs.className = "v2-section"; bodyHost.appendChild(cs);
+        const cssh = document.createElement("h2"); cssh.className = "v2-section-title"; cssh.textContent = "Chain"; cs.appendChild(cssh);
+        renderTable(cs, {
+          columns: ["Relation", "Reference"],
+          rows: [
+            { cells: ["Parent policy", m.policyParent ? `<a href="/v2/governance/policies.html">${v2Esc(m.policyParent)}</a>` : "—"] },
+            { cells: ["Reconciliation cadence", v2Esc(m.reconciliationCadence || "—")] },
+          ],
+        });
+
+        // Document body.
+        const ds = document.createElement("div"); ds.className = "v2-section"; bodyHost.appendChild(ds);
+        const dh = document.createElement("h2"); dh.className = "v2-section-title"; dh.textContent = "Procedure document"; ds.appendChild(dh);
+        const doc = document.createElement("div"); doc.className = "v2-doc";
+        doc.innerHTML = d.markdown ? v2Markdown(d.markdown) : '<p class="v2-table-empty">Document body not found on disk.</p>';
+        ds.appendChild(doc);
+
+        document.getElementById("as-of").textContent = `as of ${new Date(d.asOf).toLocaleString()}`;
+      });
+    }
+  </script>
+</body>
+</html>

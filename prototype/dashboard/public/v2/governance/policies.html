@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Policies — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-source="/api/v2/policies">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Governance", href: "/v2/governance/index.html" },
+        { label: "Policies" },
+      ],
+      title: "Policy Register",
+      seat: "policy heads the executable chain (Principle 2) → procedure → capability",
+    });
+
+    const tilesHost = document.createElement("div"); main.appendChild(tilesHost);
+    const filterHost = document.createElement("div"); filterHost.className = "v2-filter-bar"; main.appendChild(filterHost);
+    const tableHost = document.createElement("div"); main.appendChild(tableHost);
+
+    filterHost.innerHTML = `<input id="f-text" class="v2-filter-input" type="search" placeholder="Filter by title / id / owner…" /><span id="f-count" class="v2-filter-count"></span>`;
+
+    let rows = [];
+    const statusBadge = (s) => `<span class="v2-badge v2-badge-${/active|approv|populated/i.test(s) ? "success" : /draft|planned|stub/i.test(s) ? "warning" : "neutral"}">${v2Esc(s || "—")}</span>`;
+
+    function applyFilter() {
+      const q = document.getElementById("f-text").value.trim().toLowerCase();
+      const filtered = rows.filter((r) => !q || r.title.toLowerCase().includes(q) || String(r.policyId).toLowerCase().includes(q) || String(r.owner).toLowerCase().includes(q));
+      document.getElementById("f-count").textContent = `${filtered.length} of ${rows.length} policies`;
+      tableHost.replaceChildren();
+      const s = document.createElement("div"); s.className = "v2-section"; tableHost.appendChild(s);
+      renderTable(s, {
+        columns: ["Policy ID", "Title", "Owner (seat)", "Status"],
+        emptyMsg: "No policies match.",
+        rows: filtered.map((r) => ({
+          href: `/v2/governance/policy.html?file=${encodeURIComponent(r.filename)}`,
+          cells: [`<code>${v2Esc(r.policyId || "—")}</code>`, `<strong>${v2Esc(r.title)}</strong>`, v2Esc(r.owner || "—"), statusBadge(r.status)],
+        })),
+      });
+    }
+    document.getElementById("f-text").addEventListener("input", applyFilter);
+
+    v2WireLoader(async () => {
+      let data;
+      try {
+        data = await v2Fetch("/api/v2/policies");
+      } catch (err) {
+        tilesHost.replaceChildren(); tableHost.replaceChildren();
+        v2RenderError(tableHost, v2Esc(err.message));
+        return;
+      }
+      document.getElementById("as-of").textContent = `as of ${new Date(data.asOf).toLocaleString()}`;
+      const bs = data.summary.byStatus || {};
+      const active = Object.entries(bs).filter(([k]) => /active|approv|populated/i.test(k)).reduce((a, [, n]) => a + n, 0);
+      tilesHost.replaceChildren();
+      renderTileGroup(tilesHost, {
+        tiles: [
+          { label: "Policies", value: String(data.summary.total), unit: "in the register" },
+          { label: "Active / approved", value: String(active), unit: "in force", variant: "success" },
+          { label: "Distinct statuses", value: String(Object.keys(bs).length), unit: "lifecycle states" },
+        ],
+      });
+      rows = data.rows;
+      applyFilter();
+    });
+  </script>
+</body>
+</html>

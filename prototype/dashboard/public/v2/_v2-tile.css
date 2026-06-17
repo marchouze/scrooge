@@ -216,3 +216,69 @@
   margin: 0 0 var(--space-3);
   color: var(--color-text-secondary);
 }
+
+/* ── Rendered markdown document (policy / procedure viewers) ─── */
+
+.v2-doc {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  max-width: 880px;
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+.v2-doc .v2-md-h1 {
+  font: var(--text-h1);
+  margin: 0 0 var(--space-4);
+}
+.v2-doc .v2-md-h2 {
+  font: var(--text-h2);
+  margin: var(--space-6) 0 var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+.v2-doc .v2-md-h3 {
+  font: var(--text-h3);
+  margin: var(--space-5) 0 var(--space-2);
+}
+.v2-doc .v2-md-h4,
+.v2-doc .v2-md-h5,
+.v2-doc .v2-md-h6 {
+  font-weight: 600;
+  margin: var(--space-4) 0 var(--space-2);
+}
+.v2-doc p {
+  margin: 0 0 var(--space-3);
+}
+.v2-doc ul,
+.v2-doc ol {
+  margin: 0 0 var(--space-3) var(--space-5);
+}
+.v2-doc li {
+  margin: 2px 0;
+}
+.v2-doc code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--color-surface-raised);
+  padding: 1px 4px;
+  border-radius: var(--radius-sm);
+}
+.v2-doc blockquote {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border-left: 3px solid var(--color-border-strong);
+  color: var(--color-text-secondary);
+}
+.v2-doc hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-5) 0;
+}
+.v2-doc a {
+  color: var(--color-accent);
+}
+.v2-doc .v2-table-wrapper {
+  margin: 0 0 var(--space-3);
+}

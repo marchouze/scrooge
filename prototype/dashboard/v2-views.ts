@@ -23,6 +23,9 @@
 //
 // Author: Atlas (Platform Engineering Lead).
 
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { z } from "zod";
 
 import { EVENT_TYPE_REGISTRY, lookupEventType } from "../platform/event-store/registry/index";
@@ -30,8 +33,10 @@ import type { EventTypeMetadata } from "../platform/event-store/registry/index";
 import type { EventStore } from "../platform/event-store/store";
 import { eventMatchesProvenanceFilter } from "../platform/projections/filter";
 import type { ProvenanceFilter } from "../platform/projections/filter";
-import { seatTitle, seatTitles } from "./agent-title";
+import { ownerSeatTitle, seatTitle, seatTitles } from "./agent-title";
+import { getProceduresIndex } from "./procedures-index";
 import type { ProductDetailView } from "./products-detail";
+import { listPolicies } from "./products-policy-chain";
 import { NPA_DIMENSIONS, buildProductListView } from "./products-view";
 import type { DashboardState, DecisionDrillDown } from "./types";
 
@@ -611,7 +616,7 @@ export function buildDecisionsView(state: DashboardState, asOf: string): Decisio
     category: d.category,
     ...(d.domainCategory ? { domainCategory: d.domainCategory } : {}),
     authority: d.authority ?? "—",
-    owner: seatTitle(d.owner),
+    owner: ownerSeatTitle(d.owner),
     decisionForCEO: d.decisionForCEO,
   }));
   const resolved: ResolvedDecisionRow[] = state.decisionsResolved
@@ -621,7 +626,7 @@ export function buildDecisionsView(state: DashboardState, asOf: string): Decisio
       actionedAt: d.actionedAt,
       outcome: d.outcome,
       ...(d.domainCategory ? { domainCategory: d.domainCategory } : {}),
-      ...(d.actionedBy ? { actionedBy: seatTitle(d.actionedBy) } : {}),
+      ...(d.actionedBy ? { actionedBy: ownerSeatTitle(d.actionedBy) } : {}),
     }))
     .sort((a, b) => (a.actionedAt < b.actionedAt ? 1 : -1));
 
@@ -657,13 +662,13 @@ export function buildDecisionsView(state: DashboardState, asOf: string): Decisio
 export function redactDecisionDetailNames(detail: DecisionDrillDown): DecisionDrillDown {
   return {
     ...detail,
-    ...(detail.open ? { open: { ...detail.open, owner: seatTitle(detail.open.owner) } } : {}),
+    ...(detail.open ? { open: { ...detail.open, owner: ownerSeatTitle(detail.open.owner) } } : {}),
     ...(detail.resolution
       ? {
           resolution: {
             ...detail.resolution,
             ...(detail.resolution.actionedBy
-              ? { actionedBy: seatTitle(detail.resolution.actionedBy) }
+              ? { actionedBy: ownerSeatTitle(detail.resolution.actionedBy) }
               : {}),
           },
         }
@@ -672,14 +677,208 @@ export function redactDecisionDetailNames(detail: DecisionDrillDown): DecisionDr
       ? {
           escalation: {
             ...detail.escalation,
-            raisedBy: seatTitle(detail.escalation.raisedBy),
-            routedTo: seatTitle(detail.escalation.routedTo),
-            currentResponsible: seatTitle(detail.escalation.currentResponsible),
+            raisedBy: ownerSeatTitle(detail.escalation.raisedBy),
+            routedTo: ownerSeatTitle(detail.escalation.routedTo),
+            currentResponsible: ownerSeatTitle(detail.escalation.currentResponsible),
           },
         }
       : {}),
-    comments: detail.comments.map((c) => ({ ...c, author: seatTitle(c.author), actorId: "" })),
+    comments: detail.comments.map((c) => ({ ...c, author: ownerSeatTitle(c.author), actorId: "" })),
   };
+}
+
+// ---------------------------------------------------------------------------
+// /api/v2/policies + /api/v2/procedures — governance document viewers.
+// ---------------------------------------------------------------------------
+//
+// Principle 2: policy heads the executable chain → procedure → capability.
+// Registers read the filesystem index (listPolicies / getProceduresIndex);
+// detail views add the rendered document body + the up/down chain links.
+// Owners are mapped to seat Titles (no-agent-names rule); the document body
+// itself is rendered verbatim (it is the authored source, not an attribution).
+
+const NO_DOTDOT = (f: string): boolean =>
+  !f.includes("/") && !f.includes("\\") && !f.includes("..") && f.toLowerCase().endsWith(".md");
+
+export interface PolicyRow {
+  readonly policyId: string;
+  readonly filename: string;
+  readonly title: string;
+  readonly owner: string;
+  readonly status: string;
+}
+
+export interface PoliciesView {
+  readonly asOf: string;
+  readonly summary: { readonly total: number; readonly byStatus: Record<string, number> };
+  readonly rows: readonly PolicyRow[];
+}
+
+export function buildPoliciesView(repoRoot: string, asOf: string): PoliciesView {
+  const byStatus: Record<string, number> = {};
+  const rows: PolicyRow[] = listPolicies(repoRoot).map((p) => {
+    byStatus[p.status] = (byStatus[p.status] ?? 0) + 1;
+    return {
+      policyId: p.policyId,
+      filename: p.filename,
+      title: p.title,
+      owner: ownerSeatTitle(p.owner),
+      status: p.status,
+    };
+  });
+  return { asOf, summary: { total: rows.length, byStatus }, rows };
+}
+
+export interface PolicyDetailView {
+  readonly asOf: string;
+  readonly meta: PolicyRow;
+  readonly markdown: string;
+  readonly procedures: ReadonlyArray<{
+    readonly file: string;
+    readonly title: string;
+    readonly owner: string;
+    readonly status: string;
+  }>;
+}
+
+export function buildPolicyDetailView(
+  repoRoot: string,
+  filename: string,
+  asOf: string,
+): PolicyDetailView | null {
+  if (!NO_DOTDOT(filename)) return null;
+  const p = listPolicies(repoRoot).find((x) => x.filename === filename);
+  if (!p) return null;
+  const path = join(repoRoot, "Policies", filename);
+  const markdown = existsSync(path) ? readFileSync(path, "utf8") : "";
+
+  // Child procedures — policyParent referencing this policy's id / title /
+  // basename. Loose match (the frontmatter cites whichever form the author used).
+  const keys = new Set(
+    [p.policyId, p.title, filename.replace(/\.md$/, "")]
+      .filter(Boolean)
+      .map((k) => k.trim().toLowerCase()),
+  );
+  const procedures = getProceduresIndex(repoRoot)
+    .groups.flatMap((g) => g.rows)
+    .filter(
+      (r) => r.procedureFile && r.policyParent && keys.has(r.policyParent.trim().toLowerCase()),
+    )
+    .map((r) => ({
+      file: r.procedureFile,
+      title: r.procedureTitle || r.procedureLabel || r.procedureFile,
+      owner: ownerSeatTitle(r.owner),
+      status: r.status,
+    }));
+
+  return {
+    asOf,
+    meta: {
+      policyId: p.policyId,
+      filename: p.filename,
+      title: p.title,
+      owner: ownerSeatTitle(p.owner),
+      status: p.status,
+    },
+    markdown,
+    procedures,
+  };
+}
+
+export interface ProcedureViewRow {
+  readonly procedureFile: string;
+  readonly procedureId: string;
+  readonly title: string;
+  readonly owner: string;
+  readonly status: string;
+  readonly policyParent: string;
+  readonly lastReviewed: string;
+  readonly reconciliationCadence: string;
+  readonly orphan: boolean;
+  readonly verifyHints: readonly string[];
+}
+
+export interface ProceduresView {
+  readonly asOf: string;
+  readonly summary: {
+    readonly count: number;
+    readonly authored: number;
+    readonly orphans: number;
+    readonly statusCounts: Record<string, number>;
+  };
+  readonly groups: ReadonlyArray<{
+    readonly domain: string;
+    readonly rows: readonly ProcedureViewRow[];
+  }>;
+}
+
+export function buildProceduresView(repoRoot: string, asOf: string): ProceduresView {
+  const idx = getProceduresIndex(repoRoot);
+  return {
+    asOf,
+    summary: {
+      count: idx.count,
+      authored: idx.authoredCount,
+      orphans: idx.orphanCount,
+      statusCounts: idx.statusCounts,
+    },
+    groups: idx.groups.map((g) => ({
+      domain: g.domain,
+      rows: g.rows.map((r) => ({
+        procedureFile: r.procedureFile,
+        procedureId: r.procedureId,
+        title: r.procedureTitle || r.procedureLabel || r.procedureFile,
+        owner: ownerSeatTitle(r.owner),
+        status: r.status,
+        policyParent: r.policyParent,
+        lastReviewed: r.lastReviewed,
+        reconciliationCadence: r.reconciliationCadence,
+        orphan: r.orphan,
+        verifyHints: r.verifyHints,
+      })),
+    })),
+  };
+}
+
+export interface ProcedureDetailView {
+  readonly asOf: string;
+  readonly meta: ProcedureViewRow & { readonly domain: string };
+  readonly markdown: string;
+}
+
+export function buildProcedureDetailView(
+  repoRoot: string,
+  filename: string,
+  asOf: string,
+): ProcedureDetailView | null {
+  if (!NO_DOTDOT(filename)) return null;
+  const idx = getProceduresIndex(repoRoot);
+  let found: { domain: string; row: ProcedureViewRow } | null = null;
+  for (const g of idx.groups) {
+    const r = g.rows.find((x) => x.procedureFile === filename && !x.orphan);
+    if (r) {
+      found = {
+        domain: g.domain,
+        row: {
+          procedureFile: r.procedureFile,
+          procedureId: r.procedureId,
+          title: r.procedureTitle || r.procedureLabel || r.procedureFile,
+          owner: ownerSeatTitle(r.owner),
+          status: r.status,
+          policyParent: r.policyParent,
+          lastReviewed: r.lastReviewed,
+          reconciliationCadence: r.reconciliationCadence,
+          orphan: r.orphan,
+          verifyHints: r.verifyHints,
+        },
+      };
+      break;
+    }
+  }
+  if (!found) return null;
+  const path = join(repoRoot, "Procedures", "by-policy", filename);
+  const markdown = existsSync(path) ? readFileSync(path, "utf8") : "";
+  return { asOf, meta: { ...found.row, domain: found.domain }, markdown };
 }
 
 // ---------------------------------------------------------------------------

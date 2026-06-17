@@ -63,6 +63,29 @@ export function seatTitle(identifier: string): string {
   return loadNameToTitle().get(identifier) ?? identifier;
 }
 
+/**
+ * Resolve an authored owner cell to a seat Title, stripping any personal name.
+ * Index/register owner cells are authored as "Name (Title)" (e.g.
+ * "Camille (CFO, governance)") — return the parenthetical Title only. A bare
+ * roster name maps via the roster; anything else passes through.
+ */
+export function ownerSeatTitle(raw: string): string {
+  const s = (raw ?? "").trim();
+  if (!s) return s;
+  // Shared-owner cells: "Owen + Devon" / "A / B" → map each, rejoin. (Do not
+  // split on comma — parenthetical Titles contain commas, e.g. "CFO, governance".)
+  const parts = s.split(/\s+\+\s+|\s+\/\s+/);
+  if (parts.length > 1) return parts.map((p) => ownerSeatTitleOne(p)).join(" + ");
+  return ownerSeatTitleOne(s);
+}
+
+function ownerSeatTitleOne(raw: string): string {
+  const s = raw.trim();
+  const m = s.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+  if (m?.[2]) return m[2].trim(); // drop the leading name, keep the Title
+  return seatTitle(s);
+}
+
 /** Map + de-duplicate + sort a list of agent references to Titles. */
 export function seatTitles(identifiers: readonly string[]): string[] {
   return [...new Set(identifiers.map(seatTitle))].sort((a, b) => a.localeCompare(b));

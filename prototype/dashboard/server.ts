@@ -313,6 +313,10 @@ import type { DashboardState } from "./types";
 import {
   buildDecisionsView,
   buildNpaRegisterView,
+  buildPoliciesView,
+  buildPolicyDetailView,
+  buildProcedureDetailView,
+  buildProceduresView,
   buildSchemaDetailView,
   buildSchemasView,
   buildSubstrateView,
@@ -5498,6 +5502,30 @@ const server = Bun.serve({
       const detail = buildDecisionDrillDown(eventStore, cachedState, decisionId);
       if (!detail) return jsonResponse({ error: `unknown decision: ${decisionId}` }, 404);
       return jsonResponse({ ...redactDecisionDetailNames(detail), pageProvenance: filter });
+    }
+    // Governance document viewers (Policies + Procedures). Authored governance
+    // source (production category); both toggle modes show them.
+    if (req.method === "GET" && url.pathname === "/api/v2/policies") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({ ...buildPoliciesView(REPO_ROOT, nowUtc()), pageProvenance: filter });
+    }
+    if (req.method === "GET" && url.pathname.startsWith("/api/v2/policies/")) {
+      const filename = decodeURIComponent(url.pathname.slice("/api/v2/policies/".length));
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const detail = buildPolicyDetailView(REPO_ROOT, filename, nowUtc());
+      if (!detail) return jsonResponse({ error: `unknown policy: ${filename}` }, 404);
+      return jsonResponse({ ...detail, pageProvenance: filter });
+    }
+    if (req.method === "GET" && url.pathname === "/api/v2/procedures") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({ ...buildProceduresView(REPO_ROOT, nowUtc()), pageProvenance: filter });
+    }
+    if (req.method === "GET" && url.pathname.startsWith("/api/v2/procedures/")) {
+      const filename = decodeURIComponent(url.pathname.slice("/api/v2/procedures/".length));
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const detail = buildProcedureDetailView(REPO_ROOT, filename, nowUtc());
+      if (!detail) return jsonResponse({ error: `unknown procedure: ${filename}` }, 404);
+      return jsonResponse({ ...detail, pageProvenance: filter });
     }
     if (req.method === "GET") {
       return serveStatic(url.pathname, req);

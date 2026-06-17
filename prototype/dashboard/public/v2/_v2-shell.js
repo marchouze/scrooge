@@ -110,9 +110,10 @@ const NAV = [
       { label: "Overview", href: "/v2/governance/index.html" },
       { label: "Decisions", href: "/v2/governance/decisions.html" },
       { label: "New Products (NPA)", href: "/v2/governance/npa.html" },
+      { label: "Policies", href: "/v2/governance/policies.html" },
+      { label: "Procedures", href: "/v2/governance/procedures.html" },
       { label: "Briefs", href: "/v2/governance/briefs.html" },
       { label: "Workstreams", href: "/v2/governance/workstreams.html" },
-      { label: "Procedures", href: "/v2/governance/procedures.html" },
     ],
   },
   {
