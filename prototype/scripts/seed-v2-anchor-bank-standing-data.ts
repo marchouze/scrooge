@@ -48,7 +48,7 @@ import type {
   V2ProductRegistered,
   V2RiskAppetiteSet,
 } from "../v2-core/banking/events";
-import { moneyWireFromMajorString } from "../v2-core/bucket-a-a2/money-wire";
+import { moneyWireFromMajorString } from "../v2-core/core/money-wire";
 
 // ---------------------------------------------------------------------------
 // Resolve the v2 anchor store path — NEVER the v1 store

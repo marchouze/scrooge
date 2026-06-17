@@ -29,7 +29,7 @@
 // Author: Bea (Financial Controller, accounting).
 
 import { z } from "zod";
-import { moneyWireSchema } from "../bucket-a-a2/money-wire";
+import { moneyWireSchema } from "../core/money-wire";
 import { filScopePatternSchema } from "../fil-core/urn";
 import { appliesToScopeSchema } from "../posture/applies-when";
 
@@ -223,7 +223,7 @@ export const v2RiskAppetiteSetSchema = z.object({
    * type level): ZAR is the only floor denomination today, but it is sourced
    * from the v1 RAS register's `floorZar` field (declared ZAR major units), not
    * an untyped `?? "ZAR"` default. Wire shape is the shared control-plane
-   * `MoneyWire` primitive (`v2-core/bucket-a-a2/money-wire.ts`) — the same
+   * `MoneyWire` primitive (`v2-core/core/money-wire.ts`) — the same
    * decimal-native encoding as the batch-A2 mirrors and the platform money codec
    * (D-V2-CORE-MONEY-DECIMAL-NATIVE). Replaces the legacy `floorZarMinor`
    * minor-int field, closing the last bucket-A migration residual.
