@@ -1,7 +1,7 @@
 ---
 agent: Ravi
 trigger: alm-readiness
-asOf: 2026-06-17T05:37:49.873Z
+asOf: 2026-06-17T06:23:54.546Z
 decision-required: false
 ---
 
@@ -78,7 +78,7 @@ Ravi's daily run pairs with Eitan's daily run: Eitan reports the ALCO-chair side
 
 ## Ravi's narrative
 
-_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011Cc8HuGumTXGTd25NRVSD5"})._
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011Cc8MSDJvsD3miqchTXrV1"})._
 
 ## Provenance
 
