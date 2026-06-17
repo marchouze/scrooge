@@ -386,6 +386,13 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:provision-tick-drift",
     "recon:decision-distillation-coverage",
     "recon:fil-conformance",
+    // WS-ACCT-MODULAR-FOLD S0a — reporting-treatment menu registry-conflict gate
+    // (no two treatment modules claim the same category+scope at the same
+    // version). ADVISORY, ENFORCING-READY — matches the fil-conformance precedent:
+    // the register starts empty so it passes trivially; only a malformed
+    // declaration (hard fold error) blocks CI. Authority:
+    // D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD; D-DERIVED-EVENT-IRREDUCIBILITY-TEST.
+    "recon:reporting-treatment-registry-conflict",
     // WS-V2-BBAAS S7-FIL — SA-CCR FIL-Model ↔ v1 engine byte-equivalence gate.
     "recon:v2-saccr-parity",
     // Wave 2 PILOT — posture domain V1-store ↔ v2-control-plane-store register
