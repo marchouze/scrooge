@@ -33,6 +33,7 @@ import type { ProvenanceFilter } from "../platform/projections/filter";
 import { seatTitle, seatTitles } from "./agent-title";
 import type { ProductDetailView } from "./products-detail";
 import { NPA_DIMENSIONS, buildProductListView } from "./products-view";
+import type { DashboardState, DecisionDrillDown } from "./types";
 
 // ---------------------------------------------------------------------------
 // Zod payload introspection (top-level field shape).
@@ -561,6 +562,123 @@ export function redactNpaDetailNames(detail: ProductDetailView): ProductDetailVi
       discoveredBy: "",
       review: f.review ? { ...f.review, reviewedBy: "" } : undefined,
     })),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// /api/v2/decisions — Decision register (Governance).
+// ---------------------------------------------------------------------------
+//
+// Reads the cached DashboardState decision projection (folds Decision +
+// legacy CeoDecision events + escalation-derived open items). Owner / actioned-
+// by are mapped to seat Titles (no-agent-names rule).
+
+export interface OpenDecisionRow {
+  readonly id: string;
+  readonly title: string;
+  readonly category: string;
+  readonly domainCategory?: string;
+  readonly authority: string;
+  readonly owner: string;
+  readonly decisionForCEO: string;
+}
+
+export interface ResolvedDecisionRow {
+  readonly id: string;
+  readonly title: string;
+  readonly actionedAt: string;
+  readonly outcome: string;
+  readonly domainCategory?: string;
+  readonly actionedBy?: string;
+}
+
+export interface DecisionsView {
+  readonly asOf: string;
+  readonly summary: {
+    readonly open: number;
+    readonly resolved: number;
+    readonly authorities: number;
+    readonly categories: number;
+  };
+  readonly open: readonly OpenDecisionRow[];
+  readonly resolved: readonly ResolvedDecisionRow[];
+}
+
+export function buildDecisionsView(state: DashboardState, asOf: string): DecisionsView {
+  const open: OpenDecisionRow[] = state.decisionsOpen.map((d) => ({
+    id: d.id,
+    title: d.title,
+    category: d.category,
+    ...(d.domainCategory ? { domainCategory: d.domainCategory } : {}),
+    authority: d.authority ?? "—",
+    owner: seatTitle(d.owner),
+    decisionForCEO: d.decisionForCEO,
+  }));
+  const resolved: ResolvedDecisionRow[] = state.decisionsResolved
+    .map((d) => ({
+      id: d.id,
+      title: d.title,
+      actionedAt: d.actionedAt,
+      outcome: d.outcome,
+      ...(d.domainCategory ? { domainCategory: d.domainCategory } : {}),
+      ...(d.actionedBy ? { actionedBy: seatTitle(d.actionedBy) } : {}),
+    }))
+    .sort((a, b) => (a.actionedAt < b.actionedAt ? 1 : -1));
+
+  const authorities = new Set(
+    state.decisionsOpen.map((d) => d.authority).filter((a): a is string => Boolean(a)),
+  );
+  const categories = new Set(
+    [
+      ...state.decisionsOpen.map((d) => d.domainCategory ?? d.category),
+      ...state.decisionsResolved.map((d) => d.domainCategory),
+    ].filter((c): c is string => Boolean(c)),
+  );
+
+  return {
+    asOf,
+    summary: {
+      open: open.length,
+      resolved: resolved.length,
+      authorities: authorities.size,
+      categories: categories.size,
+    },
+    open,
+    resolved,
+  };
+}
+
+/**
+ * Redact agent personal names from a decision drill-down before it crosses the
+ * /api/v2 boundary (no-agent-names rule). Maps owner / actioned-by / comment
+ * authors / escalation parties to seat Titles; keeps timestamps, citations,
+ * bodies, and outcomes.
+ */
+export function redactDecisionDetailNames(detail: DecisionDrillDown): DecisionDrillDown {
+  return {
+    ...detail,
+    ...(detail.open ? { open: { ...detail.open, owner: seatTitle(detail.open.owner) } } : {}),
+    ...(detail.resolution
+      ? {
+          resolution: {
+            ...detail.resolution,
+            ...(detail.resolution.actionedBy
+              ? { actionedBy: seatTitle(detail.resolution.actionedBy) }
+              : {}),
+          },
+        }
+      : {}),
+    ...(detail.escalation
+      ? {
+          escalation: {
+            ...detail.escalation,
+            raisedBy: seatTitle(detail.escalation.raisedBy),
+            routedTo: seatTitle(detail.escalation.routedTo),
+            currentResponsible: seatTitle(detail.escalation.currentResponsible),
+          },
+        }
+      : {}),
+    comments: detail.comments.map((c) => ({ ...c, author: seatTitle(c.author), actorId: "" })),
   };
 }
 

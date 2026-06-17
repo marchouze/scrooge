@@ -311,11 +311,13 @@ import { buildTaxonomiesView } from "./taxonomy-view";
 import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
 import type { DashboardState } from "./types";
 import {
+  buildDecisionsView,
   buildNpaRegisterView,
   buildSchemaDetailView,
   buildSchemasView,
   buildSubstrateView,
   provenanceFilterFromMode,
+  redactDecisionDetailNames,
   redactNpaDetailNames,
 } from "./v2-views";
 
@@ -5482,6 +5484,20 @@ const server = Bun.serve({
       const detail = buildProductDetailView(productId, eventStore, nowUtc());
       if (!detail) return jsonResponse({ error: `unknown product: ${productId}` }, 404);
       return jsonResponse({ ...redactNpaDetailNames(detail), pageProvenance: filter });
+    }
+    // Decision register (Governance). Decisions are governance/production
+    // records; both toggle modes show them, pageProvenance reflects the lens.
+    if (req.method === "GET" && url.pathname === "/api/v2/decisions") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({ ...buildDecisionsView(cachedState, nowUtc()), pageProvenance: filter });
+    }
+    if (req.method === "GET" && url.pathname.startsWith("/api/v2/decisions/")) {
+      const decisionId = decodeURIComponent(url.pathname.slice("/api/v2/decisions/".length));
+      if (!decisionId) return jsonResponse({ error: "missing decisionId" }, 400);
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const detail = buildDecisionDrillDown(eventStore, cachedState, decisionId);
+      if (!detail) return jsonResponse({ error: `unknown decision: ${decisionId}` }, 404);
+      return jsonResponse({ ...redactDecisionDetailNames(detail), pageProvenance: filter });
     }
     if (req.method === "GET") {
       return serveStatic(url.pathname, req);
