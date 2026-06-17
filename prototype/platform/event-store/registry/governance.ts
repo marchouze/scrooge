@@ -1256,7 +1256,12 @@ export const PERFORMANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-GV-21"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/agents/performance-evaluator.ts; platform/agents/performance-runner.ts",
-    v2Status: "v1-only",
+    // Bucket C PILOT flip (D-BANK-WIDE-V2-MIGRATION, 2026-06-17): mirrored verbatim
+    // into the v2 control-plane store by the generic store-tee; byte-clean /
+    // PASS-on-empty parity asserted by recon:agent-performance-v2-parity (ENFORCING).
+    // V1 stays emittable/authoritative; this re-tag + ratchet-lower changes no
+    // write/read path (D-V1-REMOVAL-FLIP-BASIS-RBC).
+    v2Status: "v2-replaced",
   },
   {
     type: "AgentFeedbackIssued",
@@ -1268,7 +1273,10 @@ export const PERFORMANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/agents/performance-feedback.ts; platform/agents/performance-runner.ts",
-    v2Status: "v1-only",
+    // Bucket C PILOT flip (D-BANK-WIDE-V2-MIGRATION, 2026-06-17): see
+    // AgentPerformanceEvaluated above. Mirrored verbatim by the store-tee;
+    // recon:agent-performance-v2-parity (ENFORCING) is the standing evidence.
+    v2Status: "v2-replaced",
   },
 ];
 
