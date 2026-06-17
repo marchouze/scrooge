@@ -91,7 +91,6 @@ import {
 import type { EventStore } from "../event-store/store";
 import type { Actor, Event, ProvenanceTag } from "../event-store/types";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
-import { computeTrialBalanceV2 } from "../projections/gl-projection-v2";
 import { readWithOutputSnapshot } from "../projections/output-snapshot-cache";
 
 // ---------------------------------------------------------------------------
@@ -578,11 +577,27 @@ export function closePeriod(args: ClosePeriodArgs): ClosePeriodResult {
 // ONLY difference is the trial-balance source: the FX-fold-over-FIL V2 path
 // instead of the V1 SubLedgerPostingEmitted fold.
 //
+// DEPENDENCY INVERSION: the V2 fold (`computeTrialBalanceV2`) is INJECTED via
+// `args.computeTrialBalanceV2` rather than imported here. `gl-projection-v2.ts`
+// already imports the `TrialBalance` TYPE from this module; importing its fold
+// VALUE back would form an import cycle (`recon:madge-circular-deps`). Injection
+// keeps `period-close.ts` free of any `gl-projection-v2` import — the caller (the
+// recon gate, the dashboard close path, tests) passes the fold function.
+//
 // Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD (CEO-approved 2026-06-17),
 //   citing D-DERIVED-EVENT-IRREDUCIBILITY-TEST. Principle 1.
 // ---------------------------------------------------------------------------
 
-export function closePeriodV2(args: ClosePeriodArgs): ClosePeriodResult {
+export interface ClosePeriodV2Args extends ClosePeriodArgs {
+  /**
+   * The V2 folded trial-balance computation — injected (dependency inversion) to
+   * avoid an import cycle with `gl-projection-v2.ts`. Callers pass
+   * `computeTrialBalanceV2` from `platform/projections/gl-projection-v2`.
+   */
+  readonly computeTrialBalanceV2: (a: ComputeTrialBalanceArgs) => TrialBalance;
+}
+
+export function closePeriodV2(args: ClosePeriodV2Args): ClosePeriodResult {
   // Find the most-recent (by sequence — replay is ordered) open event for the
   // period; same discovery as the V1 closePeriod.
   let mostRecentOpen: Event | undefined;
@@ -615,7 +630,7 @@ export function closePeriodV2(args: ClosePeriodArgs): ClosePeriodResult {
   const openedPayload = mostRecentOpen.payload as unknown as AccountingPeriodOpenedPayload;
 
   // (a) compute the trial balance via the FOLDED V2 path (FX from FIL events).
-  const trialBalance = computeTrialBalanceV2({
+  const trialBalance = args.computeTrialBalanceV2({
     eventStore: args.eventStore,
     entity: args.entity,
     periodStart: openedPayload.periodStart,

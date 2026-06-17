@@ -151,6 +151,7 @@ describe("FX4 — closePeriodV2 snapshot is a byte-faithful cache of the fold", 
       actor: ACTOR,
       citations: CITES,
       provenance: PROD_TAG,
+      computeTrialBalanceV2,
     });
 
     // The close produced a non-vacuous FX trial balance.
@@ -188,6 +189,7 @@ describe("FX4 — closePeriodV2 snapshot is a byte-faithful cache of the fold", 
       actor: ACTOR,
       citations: CITES,
       provenance: PROD_TAG,
+      computeTrialBalanceV2,
     };
     closePeriodV2(closeArgs);
     expect(() => closePeriodV2(closeArgs)).toThrow(/already closed/);
