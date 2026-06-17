@@ -168,6 +168,7 @@ import {
   validationFindingRaisedPayloadSchema,
   validationMethodologyPublishedPayloadSchema,
 } from "../money-free-batch-3/events";
+import { MONEY_TAIL_SPECS } from "../money-tail";
 import {
   postureActivatedPayloadSchema,
   postureDeactivatedPayloadSchema,
@@ -724,6 +725,40 @@ function bucketAA2(
   };
 }
 
+const MONEY_TAIL_SOURCE =
+  "brief:atlas:money-bearing-non-financial-tail:2026-06-17 — " +
+  "v2-parallel money-BEARING migration of two EMITTABLE numeric-money OPERATIONAL " +
+  "payments-reconciliation types (ReconciliationBreak, DailyReconciliationReport) " +
+  "(store-tee + MoneyWire codec; decoded-decimal parity via recon:money-tail-v2-parity)";
+
+/**
+ * A money-bearing non-financial TAIL migration row: tee-enabled with a
+ * money-BEARING codec (like `bucketAA2`). The generic store-tee mirrors every V1
+ * append, lifting the OPTIONAL minor-unit money field(s) to decimal-native
+ * `MoneyWire` via the row's `tee.codec` (sourcing currency from the payload's
+ * `currency`, never defaulting). `recon:money-tail-v2-parity` proves the v2 store
+ * payload equals `codec(v1 payload)` on the decoded decimal value. Onboarding a
+ * money-tail type is one `MONEY_TAIL_SPECS` entry — a registry edit, not a
+ * callsite edit.
+ */
+function moneyTail(
+  type: string,
+  cls: V2EventTypeMetadata["class"],
+  schema: z.ZodTypeAny,
+  codec: V2TeeCodec,
+): V2EventTypeMetadata {
+  return {
+    type,
+    class: cls,
+    payloadSchema: asPayloadSchema(schema),
+    schemaVersion: 1,
+    retention: V2_RETENTION_RUNTIME_1Y,
+    migrationStatus: "v2-parallel",
+    tee: { codec },
+    source: MONEY_TAIL_SOURCE,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // The registry — every foothold event type with its Zod schema.
 // ---------------------------------------------------------------------------
@@ -1250,6 +1285,24 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
   //   D-V2-CORE-MONEY-DECIMAL-NATIVE.
   // ---------------------------------------------------------------------------
   ...BUCKET_A_A2_SPECS.map((s) => bucketAA2(s.type, s.cls, s.schema, s.codec)),
+
+  // ---------------------------------------------------------------------------
+  // MONEY-BEARING NON-FINANCIAL TAIL — two EMITTABLE numeric-money OPERATIONAL
+  // payments-reconciliation types (ReconciliationBreak, DailyReconciliationReport)
+  // TEE-ENABLED with a per-type MoneyWire codec. The store-tee mirrors each V1
+  // append, lifting the OPTIONAL minor-unit money field(s) to decimal-native
+  // MoneyWire (currency SOURCED from the payload's `currency`, never defaulted).
+  // `recon:money-tail-v2-parity` is the DECODED-DECIMAL evidence (v2 == codec(V1)).
+  // Build-phase data-empty on the money fields (0 ReconciliationBreak; 7
+  // DailyReconciliationReport, all empty breaks) → PASS-on-empty; codec MINOR→MAJOR
+  // + currency-source correctness proven by `v2-core/money-tail/codec.test.ts`.
+  // The V1 emitter (platform/payments/reconciliation.ts) stays authoritative; the
+  // flip is v2Status + ratchet only.
+  //
+  // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC;
+  //   D-V2-CORE-MONEY-DECIMAL-NATIVE.
+  // ---------------------------------------------------------------------------
+  ...MONEY_TAIL_SPECS.map((s) => moneyTail(s.type, s.cls, s.schema, s.codec)),
 ];
 
 // ---------------------------------------------------------------------------

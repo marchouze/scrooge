@@ -90,7 +90,13 @@ export const PAYMENTS_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: reconciliationBreakPayloadSchema,
     source: "platform/event-store/event-types/payments.ts; PROC-PAY-RBH-01",
-    v2Status: "v1-only",
+    // Money-bearing non-financial TAIL — flipped on ORDINARY dual-write +
+    // decoded-decimal parity (D-V1-REMOVAL-FLIP-BASIS-RBC): the V1 emitter stays
+    // authoritative, the store-tee mirrors V1→v2 lifting the optional minor-unit
+    // tradeAmount/paymentAmount to MoneyWire, and recon:money-tail-v2-parity is the
+    // standing evidence. PASS-on-empty on the money fields in the build phase
+    // (codec correctness proven by v2-core/money-tail/codec.test.ts).
+    v2Status: "v2-replaced",
   },
   {
     type: "DailyReconciliationReport",
@@ -101,7 +107,10 @@ export const PAYMENTS_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: dailyReconciliationReportPayloadSchema,
     source: "platform/event-store/event-types/payments.ts; PROC-PAY-RBH-01",
-    v2Status: "v1-only",
+    // Money-bearing non-financial TAIL — flipped with ReconciliationBreak (above);
+    // store-tee mirrors V1→v2 lifting each breaks[].tradeAmount/paymentAmount to
+    // MoneyWire; recon:money-tail-v2-parity standing evidence. See note above.
+    v2Status: "v2-replaced",
   },
   // -------------------------------------------------------------------------
   // D-FX-MESSAGE-EVENTS (CEO-approved 2026-05-19)
