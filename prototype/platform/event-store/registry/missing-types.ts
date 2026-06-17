@@ -882,7 +882,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "platform/event-store/event-types/legal-documentation.ts; 2026-05-20_imani_g9-isda-vs-bilateral-fx-master-for-spot.md (PR #637)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when an annual jurisdictional netting opinion is refreshed
@@ -898,7 +898,7 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "platform/event-store/event-types/legal-documentation.ts; 2026-05-20_imani_g9-isda-vs-bilateral-fx-master-for-spot.md (PR #637) §5",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a trade is cancelled post-booking. Triggers PR-FX-CANCEL:
@@ -1474,7 +1474,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/iris.ts; runtime/agents/metadata/rashida.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Data Subject Access Request received by Iris (POPIA s.23).
@@ -1486,7 +1486,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/iris.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // DSAR disposition of record — closes the DSARReceived pair (POPIA ss.23–25;
@@ -1503,7 +1503,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "platform/event-store/event-types/aml-popia-extended.ts",
     citationsHint: ["urn:reg:za:popia:s23", "urn:reg:za:popia:s25", "ORG-PR(IV)-08"],
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // One-time DSAR response-window extension (POPIA s.25 → PAIA ss.25–26:
@@ -1520,7 +1520,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "platform/event-store/event-types/aml-popia-extended.ts",
     citationsHint: ["urn:reg:za:popia:s25", "ORG-PR(IV)-08"],
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a new processing purpose is proposed for personal information.
@@ -1532,7 +1532,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/iris.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a data subject withdraws consent.
@@ -1544,7 +1544,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/iris.ts; runtime/agents/metadata/niko.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a cross-border personal information transfer is requested.
@@ -1556,7 +1556,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/iris.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when the Information Regulator (POPIA) issues an inquiry.
@@ -1568,7 +1568,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/iris.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a PAIA (Promotion of Access to Information Act) request
@@ -1597,7 +1597,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/iris.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];
 
@@ -1616,7 +1616,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/owen.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a conflict of interest is declared by a director / officer.
@@ -1628,7 +1628,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/owen.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a related-party transaction is proposed (Companies Act s.75 / s.76).
@@ -1668,7 +1668,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/owen.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted by Imani when a contract draft is requested.
@@ -1680,7 +1680,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/imani.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a change to a contract clause is proposed.
@@ -1692,7 +1692,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/imani.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a document requires a digital signature under ECTA.
@@ -1704,7 +1704,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/imani.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when an ECTA (Electronic Communications and Transactions Act)
@@ -1717,7 +1717,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/imani.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a legal entity change is recorded (name, registration,
@@ -1730,7 +1730,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/imani.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   // NOTE (Bucket C prep, D-BANK-WIDE-V2-MIGRATION): the shadow rows for
   // AuditIssueOpened and AuditIssueClosed were removed here. They duplicated the
@@ -1862,7 +1862,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/atlas.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when Atlas proposes an identity / permission change for review.
@@ -1874,7 +1874,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/atlas.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when Atlas publishes a reviewed and approved event schema.
@@ -1886,7 +1886,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/anya.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when an operational incident is raised (SRE / security).
@@ -1910,7 +1910,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/devon.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when infrastructure capacity is projected to breach a threshold.
@@ -1922,7 +1922,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/devon.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a change is submitted for approval via the change-advisory
@@ -1935,7 +1935,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/devon.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a resilience test (BCP, DR, chaos engineering) result
@@ -1961,7 +1961,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/senna.ts; runtime/agents/metadata/rashida.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a cryptographic key rotation is due.
@@ -1973,7 +1973,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/senna.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a dependency vulnerability is detected via SCA scanning.
@@ -1985,7 +1985,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/senna.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a suspicious authentication event is detected (brute
@@ -1998,7 +1998,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/senna.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when an SBOM (Software Bill of Materials) is required for a
@@ -2011,7 +2011,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/senna.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a merge request is submitted for security review.
@@ -2023,7 +2023,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/senna.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when Rashida requires SBOM acceptance confirmation from a
@@ -2036,7 +2036,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/rashida.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a key ceremony is scheduled (HSM key generation / ceremony).
@@ -2048,7 +2048,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/rashida.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a vendor security review is triggered (third-party risk).
@@ -2060,7 +2060,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/rashida.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a regulator (SARB / FSCA / FIC) issues a cyber security
@@ -2073,7 +2073,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/rashida.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when Rashida requests a threat model gate decision from the
@@ -2086,7 +2086,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/rashida.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a threat model exception is requested (deviation from
@@ -2099,7 +2099,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/rashida.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Cyber resilience snapshot: point-in-time summary of the bank's cyber
@@ -2112,7 +2112,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/rashida.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Operational resilience snapshot (BCP / DR / SLO status).
@@ -2124,7 +2124,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/devon.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];
 
