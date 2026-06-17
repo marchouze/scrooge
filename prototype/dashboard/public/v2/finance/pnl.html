@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Daily P&amp;L — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-content="none">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html" title="Errors &amp; recon violations">
+        <span class="v2-errors-icon">⚠</span>
+        <span class="v2-errors-count" id="errors-count">…</span>
+      </a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Finance", href: "/v2/finance/index.html" }, { label: "Daily P&L" }],
+      title: "Daily P&L",
+      seat: "Product Control",
+    });
+
+    renderTileGroup(main, {
+      tiles: [
+        { label: "Total Daily P&L", unit: "Realised + Unrealised" },
+        { label: "Realised P&L", unit: "Settled trades" },
+        { label: "Unrealised P&L", unit: "Mark-to-market" },
+        { label: "FX P&L", unit: "FX book" },
+      ],
+    });
+
+    renderFormula(main, {
+      name: "Daily P&L",
+      numLabel: "Realised P&L",
+      denLabel: "+ Unrealised P&L (MtM)",
+      resultLabel: "Total Daily P&L",
+      reference: "IFRS 9 para 5.7; PR-CAP-001-V2",
+    });
+
+    const s = document.createElement("div"); s.className = "v2-section"; main.appendChild(s);
+    const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "P&L by Book"; s.appendChild(h);
+    renderTable(s, { columns: ["Book", "Instrument Type", "Realised (ZAR)", "Unrealised (ZAR)", "Total (ZAR)"] });
+
+    renderRefs(main, {
+      refs: [
+        { label: "IFRS 9 — Recognition and Measurement", href: "#" },
+        { label: "PR-CAP-001-V2 — Capital & P&L framework", href: "#" },
+        { label: "FX daily P&L computation (computeDailyPnLV2)", href: "#" },
+      ],
+    });
+  </script>
+</body>
+</html>

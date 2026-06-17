@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Schema Detail — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-source="/api/v2/schemas">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    const type = new URLSearchParams(location.search).get("type");
+
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Operations", href: "/v2/operations/index.html" },
+        { label: "Event Schemas", href: "/v2/operations/schemas.html" },
+        { label: type || "Detail" },
+      ],
+      title: type ? `Schema: ${type}` : "Schema Detail",
+    });
+
+    const bodyHost = document.createElement("div"); main.appendChild(bodyHost);
+
+    if (!type) {
+      v2RenderError(bodyHost, `no event type selected — choose from the <a href="/v2/operations/schemas.html">Event Schema Browser</a>.`);
+    } else {
+      v2WireLoader(async () => {
+        bodyHost.replaceChildren();
+        let d;
+        try {
+          d = await v2Fetch(`/api/v2/schemas/${encodeURIComponent(type)}`);
+        } catch (err) {
+          v2RenderError(bodyHost, v2Esc(err.message));
+          return;
+        }
+        document.getElementById("as-of").textContent = `as of ${new Date(d.asOf).toLocaleString()}`;
+
+        renderTileGroup(bodyHost, {
+          tiles: [
+            { label: "Class", value: v2Esc(d.class), unit: d.status === "deprecated" ? `deprecated → ${v2Esc(d.supersededBy || "?")}` : "active" },
+            { label: "V1→V2 status", value: v2Esc(d.v2Status), unit: "migration journey" },
+            { label: "Issuer", value: v2Esc(d.issuer), unit: `${d.subscribers.length} subscriber(s)` },
+            { label: "Recent events", value: d.recentCount.toLocaleString(), unit: "in current provenance view" },
+          ],
+        });
+
+        // Payload field shape.
+        const ph = document.createElement("div"); ph.className = "v2-section"; bodyHost.appendChild(ph);
+        const phh = document.createElement("h2"); phh.className = "v2-section-title"; phh.textContent = "Payload fields"; ph.appendChild(phh);
+        renderTable(ph, {
+          columns: ["Field", "Type", "Required"],
+          emptyMsg: "Envelope-only — no typed payload schema registered yet.",
+          rows: d.payloadFields ? d.payloadFields.map((f) => ({ cells: [`<strong>${v2Esc(f.name)}</strong>`, `<code>${v2Esc(f.type)}</code>`, f.optional ? "optional" : "required"] })) : null,
+        });
+
+        // Subscribers + retention metadata.
+        const meta = document.createElement("div"); meta.className = "v2-section"; bodyHost.appendChild(meta);
+        const mh = document.createElement("h2"); mh.className = "v2-section-title"; mh.textContent = "Consumers & governance"; meta.appendChild(mh);
+        renderTable(meta, {
+          columns: ["Property", "Value"],
+          rows: [
+            { cells: ["Replay rule", `<code>${v2Esc(d.replay)}</code>`] },
+            { cells: ["Subscribers", d.subscribers.length ? d.subscribers.map(v2Esc).join(", ") : "—"] },
+            { cells: ["Retention", `${d.retention.minimumYears}y · ${v2Esc(d.retention.archivalTier)}`] },
+            { cells: ["Retention citation", `<code>${v2Esc(d.retention.citationRef)}</code>`] },
+            { cells: ["Source", v2Esc(d.source)] },
+          ],
+        });
+
+        renderRefs(bodyHost, {
+          title: "Citation hints",
+          refs: (d.citationsHint.length ? d.citationsHint : ["(none recorded)"]).map((c) => ({ label: c, href: "#" })),
+        });
+
+        // Recent example envelopes.
+        const ex = document.createElement("div"); ex.className = "v2-section"; bodyHost.appendChild(ex);
+        const exh = document.createElement("h2"); exh.className = "v2-section-title"; exh.textContent = "Recent examples"; ex.appendChild(exh);
+        if (!d.recentExamples.length) {
+          renderTable(ex, { columns: ["Event ID", "As of", "Entity", "Kind"], rows: [], emptyMsg: "No events of this kind in the current provenance view." });
+        } else {
+          renderTable(ex, {
+            columns: ["Event ID", "As of", "Entity", "Kind"],
+            rows: d.recentExamples.map((e) => ({ cells: [`<code>${v2Esc(e.event_id)}</code>`, v2Esc(e.as_of), v2Esc(e.entity), v2Esc(e.provenanceKind)] })),
+          });
+          for (const e of d.recentExamples) {
+            const pre = document.createElement("pre"); pre.className = "v2-code-block";
+            pre.textContent = JSON.stringify(e.payload, null, 2);
+            ex.appendChild(pre);
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

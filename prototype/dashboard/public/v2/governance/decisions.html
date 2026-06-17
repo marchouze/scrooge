@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Decisions — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-source="/api/v2/decisions">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Governance", href: "/v2/governance/index.html" },
+        { label: "Decisions" },
+      ],
+      title: "Decision Register",
+      seat: "every decision the bank records, by authority seat · Decision event",
+    });
+
+    const tilesHost = document.createElement("div"); main.appendChild(tilesHost);
+    const filterHost = document.createElement("div"); filterHost.className = "v2-filter-bar"; main.appendChild(filterHost);
+    const openHost = document.createElement("div"); main.appendChild(openHost);
+    const resolvedHost = document.createElement("div"); main.appendChild(resolvedHost);
+    const refsHost = document.createElement("div"); main.appendChild(refsHost);
+
+    filterHost.innerHTML = `
+      <input id="f-text" class="v2-filter-input" type="search" placeholder="Filter by id / title / authority…" />
+      <span id="f-count" class="v2-filter-count"></span>
+    `;
+
+    let data = null;
+    const cat = (d) => v2Esc(d.domainCategory || d.category || "—");
+    const decHref = (id) => `/v2/governance/decision.html?id=${encodeURIComponent(id)}`;
+    const short = (t, n) => { const s = String(t || ""); return s.length > n ? `${s.slice(0, n - 1)}…` : s; };
+
+    function applyFilter() {
+      if (!data) return;
+      const q = document.getElementById("f-text").value.trim().toLowerCase();
+      const match = (d) => !q || d.id.toLowerCase().includes(q) || d.title.toLowerCase().includes(q) || String(d.authority || "").toLowerCase().includes(q);
+      const open = data.open.filter(match);
+      const resolved = data.resolved.filter(match);
+      document.getElementById("f-count").textContent = `${open.length} open · ${resolved.length} resolved`;
+
+      openHost.replaceChildren();
+      const os = document.createElement("div"); os.className = "v2-section"; openHost.appendChild(os);
+      const oh = document.createElement("h2"); oh.className = "v2-section-title"; oh.textContent = "Open — awaiting decision"; os.appendChild(oh);
+      renderTable(os, {
+        columns: ["Decision ID", "Title", "Category", "Authority", "For the CEO"],
+        emptyMsg: "No open decisions.",
+        rows: open.map((d) => ({
+          href: decHref(d.id),
+          cells: [`<code>${v2Esc(d.id)}</code>`, `<strong>${v2Esc(d.title)}</strong>`, cat(d), `<span class="v2-badge v2-badge-info">${v2Esc(d.authority)}</span>`, v2Esc(d.decisionForCEO || "—")],
+        })),
+      });
+
+      resolvedHost.replaceChildren();
+      const rs = document.createElement("div"); rs.className = "v2-section"; resolvedHost.appendChild(rs);
+      const rh = document.createElement("h2"); rh.className = "v2-section-title"; rh.textContent = "Resolved"; rs.appendChild(rh);
+      renderTable(rs, {
+        columns: ["Decision ID", "Title", "Category", "Outcome", "Actioned"],
+        emptyMsg: "No resolved decisions.",
+        rows: resolved.map((d) => ({
+          href: decHref(d.id),
+          cells: [
+            `<code>${v2Esc(d.id)}</code>`,
+            `<strong>${v2Esc(short(d.title, 70))}</strong>`,
+            cat(d),
+            v2Esc(short(d.outcome, 90)),
+            v2Esc(d.actionedAt ? d.actionedAt.slice(0, 10) : "—"),
+          ],
+        })),
+      });
+    }
+
+    document.getElementById("f-text").addEventListener("input", applyFilter);
+
+    v2WireLoader(async () => {
+      try {
+        data = await v2Fetch("/api/v2/decisions");
+      } catch (err) {
+        tilesHost.replaceChildren(); openHost.replaceChildren(); resolvedHost.replaceChildren();
+        v2RenderError(openHost, v2Esc(err.message));
+        return;
+      }
+      document.getElementById("as-of").textContent = `as of ${new Date(data.asOf).toLocaleString()}`;
+      const s = data.summary;
+      tilesHost.replaceChildren();
+      renderTileGroup(tilesHost, {
+        tiles: [
+          { label: "Open decisions", value: String(s.open), unit: "awaiting decision", variant: s.open > 0 ? "warning" : "success" },
+          { label: "Resolved", value: String(s.resolved), unit: "approved / rejected / deferred" },
+          { label: "Authority seats", value: String(s.authorities), unit: "distinct deciders (open)" },
+          { label: "Categories", value: String(s.categories), unit: "distinct decision categories" },
+        ],
+      });
+      applyFilter();
+      refsHost.replaceChildren();
+      renderRefs(refsHost, {
+        refs: [
+          { label: "Decision event schema (D-DECISIONS-FRAMEWORK-REDESIGN)", href: "/v2/operations/schemas.html?type=Decision" },
+          { label: "Decision authority routing table — CLAUDE.md", href: "#" },
+        ],
+      });
+    });
+  </script>
+</body>
+</html>

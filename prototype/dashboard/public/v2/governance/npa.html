@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>New Product Approval — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-source="/api/v2/npa">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Governance", href: "/v2/governance/index.html" },
+        { label: "New Product Approval" },
+      ],
+      title: "New Product Approval (NPA)",
+      seat: "CoSec · gate before any product launches · 15 attestation dimensions",
+    });
+
+    const tilesHost = document.createElement("div"); main.appendChild(tilesHost);
+    const tableHost = document.createElement("div"); main.appendChild(tableHost);
+    const refsHost = document.createElement("div"); main.appendChild(refsHost);
+
+    const lifecycleBadge = (s) =>
+      `<span class="v2-badge v2-badge-${s === "launched" ? "success" : s === "retired" ? "neutral" : "info"}">${v2Esc(s)}</span>`;
+    const approvalBadge = (s) =>
+      `<span class="v2-badge v2-badge-${s === "approved" ? "success" : s === "withheld" ? "danger" : "warning"}">${v2Esc(s)}</span>`;
+
+    v2WireLoader(async () => {
+      tilesHost.replaceChildren(); tableHost.replaceChildren(); refsHost.replaceChildren();
+      let d;
+      try {
+        d = await v2Fetch("/api/v2/npa");
+      } catch (err) {
+        v2RenderError(tableHost, v2Esc(err.message));
+        return;
+      }
+      document.getElementById("as-of").textContent = `as of ${new Date(d.asOf).toLocaleString()}`;
+      const s = d.summary;
+      renderTileGroup(tilesHost, {
+        tiles: [
+          { label: "Products in NPA", value: String(s.total), unit: `${s.launched} launched` },
+          { label: "Approved", value: String(s.approved), unit: `${s.pending} pending · ${s.withheld} withheld`, variant: s.withheld > 0 ? "warning" : "success" },
+          { label: "Awaiting attestation", value: String(s.awaitingAttestation), unit: `gate not yet ready (of ${s.totalDimensions} dims)`, variant: s.awaitingAttestation > 0 ? "warning" : "success" },
+          { label: "Open deferred gaps", value: String(s.openDeferredGaps), unit: "approved-with-tracked-gaps" },
+          { label: "Open critical findings", value: String(s.openCriticalFindings), unit: "post-approval", variant: s.openCriticalFindings > 0 ? "danger" : "success" },
+        ],
+      });
+
+      const sec = document.createElement("div"); sec.className = "v2-section"; tableHost.appendChild(sec);
+      const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "NPA pipeline register"; sec.appendChild(h);
+      renderTable(sec, {
+        columns: ["Product", "Family", "Lifecycle", "Approval", "Dimensions", "Deferred gaps", "Findings"],
+        emptyMsg: "No products in the NPA register.",
+        rows: d.products.map((p) => ({
+          href: `/v2/governance/npa-product.html?id=${encodeURIComponent(p.productId)}`,
+          cells: [
+            `<strong>${v2Esc(p.name)}</strong>`,
+            v2Esc(p.family),
+            lifecycleBadge(p.lifecycle),
+            approvalBadge(p.approvalStatus),
+            `<span class="v2-badge v2-badge-${p.gateReady ? "success" : "neutral"}">${p.attestedCount}/${p.totalDimensions}</span>`,
+            p.deferredGapCount > 0 ? String(p.deferredGapCount) : "—",
+            p.hasOpenCriticalFinding ? '<span class="v2-badge v2-badge-danger">critical</span>' : "—",
+          ],
+        })),
+      });
+
+      renderRefs(refsHost, {
+        refs: [
+          { label: "D-NEW-PRODUCT-APPROVAL-POLICY — 15 NPA dimensions", href: "#" },
+          { label: "D-PRODUCT-CONSTRUCTION-SUBSTRATE — product lifecycle", href: "#" },
+          { label: "ProductApproved / ProductWithheld / ProductDimensionAttested schemas", href: "/v2/operations/schemas.html?type=ProductApproved" },
+        ],
+      });
+    });
+  </script>
+</body>
+</html>

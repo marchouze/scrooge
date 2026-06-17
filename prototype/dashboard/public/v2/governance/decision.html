@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Decision Detail — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-source="/api/v2/decisions">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    const id = new URLSearchParams(location.search).get("id");
+
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Governance", href: "/v2/governance/index.html" },
+        { label: "Decisions", href: "/v2/governance/decisions.html" },
+        { label: id || "Detail" },
+      ],
+      title: id ? `Decision: ${id}` : "Decision Detail",
+    });
+
+    const bodyHost = document.createElement("div"); main.appendChild(bodyHost);
+
+    if (!id) {
+      v2RenderError(bodyHost, `no decision selected — choose from the <a href="/v2/governance/decisions.html">Decision Register</a>.`);
+    } else {
+      v2WireLoader(async () => {
+        bodyHost.replaceChildren();
+        let d;
+        try {
+          d = await v2Fetch(`/api/v2/decisions/${encodeURIComponent(id)}`);
+        } catch (err) {
+          v2RenderError(bodyHost, v2Esc(err.message));
+          return;
+        }
+        const open = d.open || null;
+        const res = d.resolution || null;
+        const rec = open && open.title ? open : res;
+        const status = res ? "resolved" : open ? "open" : d.escalation ? "escalation" : "—";
+        const category = (open && (open.domainCategory || open.category)) || (res && res.domainCategory) || "—";
+
+        renderTileGroup(bodyHost, {
+          tiles: [
+            { label: "Status", value: v2Esc(status), unit: res ? "actioned" : "awaiting decision", variant: res ? "success" : "warning" },
+            { label: "Authority", value: v2Esc((open && open.authority) || "—"), unit: "deciding seat" },
+            { label: "Category", value: v2Esc(category), unit: "decision category" },
+            { label: "Actioned", value: v2Esc(res && res.actionedAt ? res.actionedAt.slice(0, 10) : "—"), unit: res ? "resolved" : "open" },
+          ],
+        });
+
+        const recSec = document.createElement("div"); recSec.className = "v2-section"; bodyHost.appendChild(recSec);
+        const recH = document.createElement("h2"); recH.className = "v2-section-title"; recH.textContent = "Decision record"; recSec.appendChild(recH);
+        const recRows = [
+          ["Title", v2Esc(rec ? rec.title : "—")],
+          ["Authority", v2Esc((open && open.authority) || "—")],
+          ["Category", v2Esc(category)],
+        ];
+        if (open) {
+          recRows.push(["Owner (seat)", v2Esc(open.owner || "—")]);
+          if (open.decisionForCEO) recRows.push(["For the CEO", v2Esc(open.decisionForCEO)]);
+        }
+        if (res) {
+          recRows.push(["Outcome", v2Esc(res.outcome)]);
+          recRows.push(["Actioned at", v2Esc(res.actionedAt)]);
+          if (res.comment) recRows.push(["Note", v2Esc(res.comment)]);
+        }
+        renderTable(recSec, { columns: ["Field", "Value"], rows: recRows.map((cells) => ({ cells })) });
+
+        // Escalation origin (if any).
+        if (d.escalation) {
+          const e = d.escalation;
+          const esec = document.createElement("div"); esec.className = "v2-section"; bodyHost.appendChild(esec);
+          const eh = document.createElement("h2"); eh.className = "v2-section-title"; eh.textContent = "Escalation"; esec.appendChild(eh);
+          renderTable(esec, {
+            columns: ["Field", "Value"],
+            rows: [
+              ["Question", v2Esc(e.question)],
+              ["Severity", v2Esc(e.severity)],
+              ["Raised by (seat)", v2Esc(e.raisedBy)],
+              ["Routed to (seat)", v2Esc(e.routedTo)],
+              ["Status", v2Esc(e.status)],
+            ].map((cells) => ({ cells })),
+          });
+        }
+
+        // Lifecycle.
+        if (Array.isArray(d.lifecycle) && d.lifecycle.length) {
+          const lsec = document.createElement("div"); lsec.className = "v2-section"; bodyHost.appendChild(lsec);
+          const lh = document.createElement("h2"); lh.className = "v2-section-title"; lh.textContent = "Lifecycle"; lsec.appendChild(lh);
+          renderTable(lsec, {
+            columns: ["Event", "As of"],
+            rows: d.lifecycle.map((ev) => ({ cells: [`<a href="/v2/operations/schemas.html?type=${encodeURIComponent(ev.type)}">${v2Esc(ev.type)}</a>`, v2Esc(ev.asOf)] })),
+          });
+        }
+
+        // Comments.
+        const csec = document.createElement("div"); csec.className = "v2-section"; bodyHost.appendChild(csec);
+        const ch = document.createElement("h2"); ch.className = "v2-section-title"; ch.textContent = "Comments"; csec.appendChild(ch);
+        renderTable(csec, {
+          columns: ["Author (seat)", "As of", "Comment"],
+          emptyMsg: "No comments on this decision.",
+          rows: (d.comments || []).map((c) => ({ cells: [v2Esc(c.author), v2Esc(c.asOf), v2Esc(c.body)] })),
+        });
+
+        renderRefs(bodyHost, {
+          title: "Citations",
+          refs: (d.citations && d.citations.length ? d.citations : ["(none recorded)"]).map((c) => ({ label: c, href: "#" })),
+        });
+        document.getElementById("as-of").textContent = "";
+      });
+    }
+  </script>
+</body>
+</html>

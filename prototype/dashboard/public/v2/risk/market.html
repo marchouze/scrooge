@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Market Risk — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-content="none">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Risk", href: "/v2/risk/index.html" }, { label: "Market Risk" }],
+      title: "Market Risk",
+      seat: "MarketRiskVarComputed",
+    });
+    renderTileGroup(main, {
+      tiles: [
+        { label: "VaR (99%, 1-day)", unit: "ZAR" },
+        { label: "SVaR (99%, 1-day)", unit: "Stressed VaR (ZAR)" },
+        { label: "Expected Shortfall", unit: "97.5% ES (ZAR)" },
+        { label: "VaR Utilisation", unit: "VaR / Appetite" },
+      ],
+    });
+    renderFormula(main, {
+      name: "VaR (99%, 1-day)",
+      numLabel: "FX NOP (ZAR)",
+      denLabel: "× 1-day 99th pctile move",
+      resultLabel: "Value at Risk",
+      reference: "BCBS MAR30; BA-320 Standardised",
+    });
+    const s = document.createElement("div"); s.className = "v2-section"; main.appendChild(s);
+    const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "VaR by Risk Factor"; s.appendChild(h);
+    renderTable(s, { columns: ["Risk Factor", "NOP (ZAR)", "1-day Move %", "VaR (ZAR)", "% of Total"] });
+    const s2 = document.createElement("div"); s2.className = "v2-section"; main.appendChild(s2);
+    const h2 = document.createElement("h2"); h2.className = "v2-section-title"; h2.textContent = "Historical VaR Series"; s2.appendChild(h2);
+    renderTable(s2, { columns: ["Date", "VaR (ZAR)", "SVaR (ZAR)", "ES (ZAR)", "Appetite (ZAR)", "Utilisation %"] });
+    renderRefs(main, {
+      refs: [
+        { label: "BCBS MAR30 — Market Risk Standardised Approach", href: "#" },
+        { label: "BA-320 — FX Charge Calculation", href: "#" },
+        { label: "D-VAR-EXPOSURE-INCLUDES-STANDING-NOP", href: "#" },
+        { label: "MarketRiskVarComputed event schema", href: "#" },
+      ],
+    });
+  </script>
+</body>
+</html>

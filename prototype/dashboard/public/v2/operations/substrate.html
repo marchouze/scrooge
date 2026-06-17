@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Substrate — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-source="/api/v2/substrate">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Operations", href: "/v2/operations/index.html" }, { label: "Substrate" }],
+      title: "Substrate Health",
+      seat: "Event store · V1→V2 migration · recon-gate health",
+    });
+
+    const tilesHost = document.createElement("div"); main.appendChild(tilesHost);
+    const ratchetHost = document.createElement("div"); main.appendChild(ratchetHost);
+    const tablesHost = document.createElement("div"); main.appendChild(tablesHost);
+
+    v2WireLoader(async () => {
+      tilesHost.replaceChildren(); ratchetHost.replaceChildren(); tablesHost.replaceChildren();
+      let d;
+      try {
+        d = await v2Fetch("/api/v2/substrate");
+      } catch (err) {
+        v2RenderError(tablesHost, v2Esc(err.message));
+        return;
+      }
+      document.getElementById("as-of").textContent = `as of ${new Date(d.asOf).toLocaleString()}`;
+
+      renderTileGroup(tilesHost, {
+        tiles: [
+          { label: "Events observed", value: d.store.totalEvents.toLocaleString(), unit: "current provenance view" },
+          { label: "v1-only types", value: String(d.migration.v1Only), unit: "ratchet (target: 0)", variant: d.migration.v1Only > 0 ? "warning" : "success" },
+          { label: "V2 migrated", value: `${d.migration.v2Replaced + d.migration.v2Parallel}`, unit: `${d.migration.v2Replaced} replaced · ${d.migration.v2Parallel} parallel` },
+          { label: "Recon gates failing", value: String(d.recon.failing), unit: `${d.recon.passing} passing · ${d.recon.advisory} advisory`, variant: d.recon.failing > 0 ? "danger" : "success" },
+        ],
+      });
+
+      // V1→V2 ratchet as an explicit formula (numerator / denominator).
+      renderFormula(ratchetHost, {
+        name: "V1→V2 migration progress",
+        numLabel: "Types still v1-only",
+        denLabel: "Total registered event kinds",
+        reference: "D-BANK-WIDE-V2-MIGRATION · recon:v1-removal-ratchet",
+      });
+      // Fill the formula's placeholder values with live figures.
+      const fvals = ratchetHost.querySelectorAll(".v2-formula-value");
+      if (fvals[0]) fvals[0].textContent = String(d.migration.v1Only);
+      if (fvals[1]) fvals[1].textContent = String(d.migration.totalRegistered);
+      const fres = ratchetHost.querySelector(".v2-formula-result-value");
+      if (fres) fres.textContent = `${Math.round((1 - d.migration.v1Only / d.migration.totalRegistered) * 100)}% migrated`;
+
+      // Events by provenance kind + by class.
+      const s1 = document.createElement("div"); s1.className = "v2-section"; tablesHost.appendChild(s1);
+      const h1 = document.createElement("h2"); h1.className = "v2-section-title"; h1.textContent = "Events by provenance & class"; s1.appendChild(h1);
+      renderTable(s1, {
+        columns: ["Dimension", "Bucket", "Count"],
+        rows: [
+          { cells: ["Provenance kind", "production", d.store.byKind.production.toLocaleString()] },
+          { cells: ["Provenance kind", "simulated", d.store.byKind.simulated.toLocaleString()] },
+          { cells: ["Provenance kind", "build-phase-fixture", d.store.byKind.buildPhaseFixture.toLocaleString()] },
+          ...Object.entries(d.store.byClass).map(([cls, n]) => ({ cells: ["Event class", cls, Number(n).toLocaleString()] })),
+        ],
+      });
+
+      // Retention-tier distribution.
+      const s2 = document.createElement("div"); s2.className = "v2-section"; tablesHost.appendChild(s2);
+      const h2 = document.createElement("h2"); h2.className = "v2-section-title"; h2.textContent = "Retention-tier distribution"; s2.appendChild(h2);
+      renderTable(s2, {
+        columns: ["Archival tier", "Event kinds"],
+        rows: d.retentionTiers.map((t) => ({ cells: [v2Esc(t.tier), String(t.count)] })),
+      });
+
+      // Recon-gate health (latest ReconResult per pipeline).
+      const s3 = document.createElement("div"); s3.className = "v2-section"; tablesHost.appendChild(s3);
+      const h3 = document.createElement("h2"); h3.className = "v2-section-title"; h3.textContent = "Recon-gate health"; s3.appendChild(h3);
+      renderTable(s3, {
+        columns: ["Pipeline", "Status", "Fail", "Warn", "As of"],
+        emptyMsg: "No ReconResult events in the current store.",
+        rows: d.recon.latest.map((r) => ({
+          cells: [
+            v2Esc(r.pipeline),
+            r.ok ? (r.warnViolations > 0 ? '<span class="v2-badge v2-badge-warning">advisory</span>' : '<span class="v2-badge v2-badge-success">pass</span>') : '<span class="v2-badge v2-badge-danger">fail</span>',
+            String(r.failViolations),
+            String(r.warnViolations),
+            v2Esc(r.asOf),
+          ],
+        })),
+      });
+
+      renderRefs(tablesHost, {
+        refs: [
+          { label: "D-BANK-WIDE-V2-MIGRATION", href: "#" },
+          { label: "recon:v1-removal-ratchet gate", href: "#" },
+          { label: "Recon-gate detail — Audit › Recon", href: "/v2/audit/recon.html" },
+        ],
+      });
+    });
+  </script>
+</body>
+</html>

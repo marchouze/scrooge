@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Procedures — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-source="/api/v2/procedures">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Governance", href: "/v2/governance/index.html" },
+        { label: "Procedures" },
+      ],
+      title: "Procedure Register",
+      seat: "policy → procedure decomposition (Principle 2) · no-orphans integrity",
+    });
+
+    const tilesHost = document.createElement("div"); main.appendChild(tilesHost);
+    const filterHost = document.createElement("div"); filterHost.className = "v2-filter-bar"; main.appendChild(filterHost);
+    const groupsHost = document.createElement("div"); main.appendChild(groupsHost);
+
+    filterHost.innerHTML = `
+      <input id="f-text" class="v2-filter-input" type="search" placeholder="Filter by title / id / owner / policy…" />
+      <label style="font:var(--text-caption);color:var(--color-text-secondary)"><input type="checkbox" id="f-orphan"> issues only</label>
+      <span id="f-count" class="v2-filter-count"></span>
+    `;
+
+    let groups = [];
+    const statusBadge = (s) => `<span class="v2-badge v2-badge-${/populated|active/i.test(s) ? "success" : /stub|planned|draft/i.test(s) ? "warning" : "neutral"}">${v2Esc(s || "—")}</span>`;
+    const procHref = (f) => `/v2/governance/procedure.html?file=${encodeURIComponent(f)}`;
+
+    function render() {
+      const q = document.getElementById("f-text").value.trim().toLowerCase();
+      const issuesOnly = document.getElementById("f-orphan").checked;
+      const match = (r) =>
+        (!issuesOnly || r.orphan || (r.verifyHints && r.verifyHints.length)) &&
+        (!q || r.title.toLowerCase().includes(q) || String(r.procedureId).toLowerCase().includes(q) || String(r.owner).toLowerCase().includes(q) || String(r.policyParent).toLowerCase().includes(q));
+
+      groupsHost.replaceChildren();
+      let shown = 0;
+      for (const g of groups) {
+        const rows = g.rows.filter(match);
+        if (!rows.length) continue;
+        shown += rows.length;
+        const s = document.createElement("div"); s.className = "v2-section"; groupsHost.appendChild(s);
+        const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = g.domain; s.appendChild(h);
+        renderTable(s, {
+          columns: ["Procedure", "Owner (seat)", "Status", "Policy parent", "Last reviewed", "Integrity"],
+          rows: rows.map((r) => {
+            const integrity = r.orphan
+              ? '<span class="v2-badge v2-badge-danger">orphan — file missing</span>'
+              : (r.verifyHints && r.verifyHints.length)
+                ? `<span class="v2-badge v2-badge-warning">${v2Esc(r.verifyHints.join(", "))}</span>`
+                : '<span class="v2-badge v2-badge-success">ok</span>';
+            const cells = [
+              r.procedureFile && !r.orphan
+                ? `<strong>${v2Esc(r.title)}</strong>${r.procedureId ? ` <code>${v2Esc(r.procedureId)}</code>` : ""}`
+                : `<span>${v2Esc(r.title || r.policyParent || "—")}</span>`,
+              v2Esc(r.owner || "—"),
+              statusBadge(r.status),
+              v2Esc(r.policyParent || "—"),
+              v2Esc(r.lastReviewed || "—"),
+              integrity,
+            ];
+            return r.procedureFile && !r.orphan ? { href: procHref(r.procedureFile), cells } : { cells };
+          }),
+        });
+      }
+      document.getElementById("f-count").textContent = `${shown} procedure(s)`;
+      if (shown === 0) v2RenderError(groupsHost, "no procedures match the filter.");
+    }
+
+    for (const id of ["f-text", "f-orphan"]) document.getElementById(id).addEventListener("input", render);
+
+    v2WireLoader(async () => {
+      let data;
+      try {
+        data = await v2Fetch("/api/v2/procedures");
+      } catch (err) {
+        tilesHost.replaceChildren(); groupsHost.replaceChildren();
+        v2RenderError(groupsHost, v2Esc(err.message));
+        return;
+      }
+      document.getElementById("as-of").textContent = `as of ${new Date(data.asOf).toLocaleString()}`;
+      const s = data.summary;
+      tilesHost.replaceChildren();
+      renderTileGroup(tilesHost, {
+        tiles: [
+          { label: "Procedures", value: String(s.count), unit: "across all domains" },
+          { label: "Authored", value: String(s.authored), unit: "resolve to a file" },
+          { label: "Orphans", value: String(s.orphans), unit: "cited file missing", variant: s.orphans > 0 ? "danger" : "success" },
+          { label: "Populated", value: String(s.statusCounts.POPULATED || 0), unit: "vs stub / planned / draft" },
+        ],
+      });
+      groups = data.groups;
+      render();
+    });
+  </script>
+</body>
+</html>

@@ -49,6 +49,11 @@ const ALLOWLIST = new Set<string>([
   "platform/accounting/fx-subledger-trade-reconciliation.ts",
   // Provenance display classifier (maps kind → badge), not a fold.
   "dashboard/risk-register.ts",
+  // V2 substrate-health view buckets events by exact provenance kind for the
+  // /api/v2/substrate breakdown table (production / simulated / build-phase-
+  // fixture counts) — a display classifier, not an operating-book inclusion
+  // fold. Authority: D-V2-UI-OVERSIGHT-STANDARD.
+  "dashboard/v2-views.ts",
 ]);
 
 /** Forbidden code patterns (inline kind check + local fixture helper). */

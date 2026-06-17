@@ -310,6 +310,20 @@ import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
 import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
 import type { DashboardState } from "./types";
+import {
+  buildDecisionsView,
+  buildNpaRegisterView,
+  buildPoliciesView,
+  buildPolicyDetailView,
+  buildProcedureDetailView,
+  buildProceduresView,
+  buildSchemaDetailView,
+  buildSchemasView,
+  buildSubstrateView,
+  provenanceFilterFromMode,
+  redactDecisionDetailNames,
+  redactNpaDetailNames,
+} from "./v2-views";
 
 const PORT = Number(process.env.BANK_DASHBOARD_PORT ?? 3010);
 const REFRESH_MS = Number(process.env.BANK_DASHBOARD_REFRESH_MS ?? 30_000);
@@ -5425,6 +5439,93 @@ const server = Bun.serve({
     }
     if (req.method === "GET" && url.pathname === "/market-data") {
       return serveStatic("/market-data.html", req);
+    }
+    if (req.method === "GET" && (url.pathname === "/v2" || url.pathname === "/v2/")) {
+      return Response.redirect(new URL("/v2/index.html", req.url), 302);
+    }
+    // ── V2 oversight data layer (clean /api/v2/* surface) ──────────────────
+    // Standing UI guidance: every V2 surface gives a human direct visibility
+    // into what the autonomous AI is doing. Slice 1 = Schemas & substrate.
+    // Authority: D-V2-UI-OVERSIGHT-STANDARD. Spec: docs/v2-ui-oversight-standard.md.
+    // Provenance toggle (?provenance=prod|prod+sim) maps to the filter applied
+    // to every count; pageProvenance is the same filter so the badge matches.
+    if (req.method === "GET" && url.pathname === "/api/v2/schemas") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildSchemasView(eventStore, filter, nowUtc()),
+        pageProvenance: filter,
+      });
+    }
+    if (req.method === "GET" && url.pathname.startsWith("/api/v2/schemas/")) {
+      const type = decodeURIComponent(url.pathname.slice("/api/v2/schemas/".length));
+      if (!type) return jsonResponse({ error: "missing event type" }, 400);
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const detail = buildSchemaDetailView(eventStore, type, filter, nowUtc());
+      if (!detail) return jsonResponse({ error: `unknown event type: ${type}` }, 404);
+      return jsonResponse({ ...detail, pageProvenance: filter });
+    }
+    if (req.method === "GET" && url.pathname === "/api/v2/substrate") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildSubstrateView(eventStore, filter, nowUtc()),
+        pageProvenance: filter,
+      });
+    }
+    // New Product Approval register (Governance). NPA products are governance /
+    // build-phase records (admitted under production-only in build phase), so
+    // both toggle modes show the register; pageProvenance reflects the lens.
+    if (req.method === "GET" && url.pathname === "/api/v2/npa") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildNpaRegisterView(eventStore, nowUtc()),
+        pageProvenance: filter,
+      });
+    }
+    if (req.method === "GET" && url.pathname.startsWith("/api/v2/npa/")) {
+      const productId = decodeURIComponent(url.pathname.slice("/api/v2/npa/".length));
+      if (!productId) return jsonResponse({ error: "missing productId" }, 400);
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const detail = buildProductDetailView(productId, eventStore, nowUtc());
+      if (!detail) return jsonResponse({ error: `unknown product: ${productId}` }, 404);
+      return jsonResponse({ ...redactNpaDetailNames(detail), pageProvenance: filter });
+    }
+    // Decision register (Governance). Decisions are governance/production
+    // records; both toggle modes show them, pageProvenance reflects the lens.
+    if (req.method === "GET" && url.pathname === "/api/v2/decisions") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({ ...buildDecisionsView(cachedState, nowUtc()), pageProvenance: filter });
+    }
+    if (req.method === "GET" && url.pathname.startsWith("/api/v2/decisions/")) {
+      const decisionId = decodeURIComponent(url.pathname.slice("/api/v2/decisions/".length));
+      if (!decisionId) return jsonResponse({ error: "missing decisionId" }, 400);
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const detail = buildDecisionDrillDown(eventStore, cachedState, decisionId);
+      if (!detail) return jsonResponse({ error: `unknown decision: ${decisionId}` }, 404);
+      return jsonResponse({ ...redactDecisionDetailNames(detail), pageProvenance: filter });
+    }
+    // Governance document viewers (Policies + Procedures). Authored governance
+    // source (production category); both toggle modes show them.
+    if (req.method === "GET" && url.pathname === "/api/v2/policies") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({ ...buildPoliciesView(REPO_ROOT, nowUtc()), pageProvenance: filter });
+    }
+    if (req.method === "GET" && url.pathname.startsWith("/api/v2/policies/")) {
+      const filename = decodeURIComponent(url.pathname.slice("/api/v2/policies/".length));
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const detail = buildPolicyDetailView(REPO_ROOT, filename, nowUtc());
+      if (!detail) return jsonResponse({ error: `unknown policy: ${filename}` }, 404);
+      return jsonResponse({ ...detail, pageProvenance: filter });
+    }
+    if (req.method === "GET" && url.pathname === "/api/v2/procedures") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({ ...buildProceduresView(REPO_ROOT, nowUtc()), pageProvenance: filter });
+    }
+    if (req.method === "GET" && url.pathname.startsWith("/api/v2/procedures/")) {
+      const filename = decodeURIComponent(url.pathname.slice("/api/v2/procedures/".length));
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const detail = buildProcedureDetailView(REPO_ROOT, filename, nowUtc());
+      if (!detail) return jsonResponse({ error: `unknown procedure: ${filename}` }, 404);
+      return jsonResponse({ ...detail, pageProvenance: filter });
     }
     if (req.method === "GET") {
       return serveStatic(url.pathname, req);
