@@ -1,5 +1,5 @@
 {
-  "v1OnlyCount": 335,
+  "v1OnlyCount": 306,
   "asOf": "2026-06-17",
-  "authority": "D-BANK-WIDE-V2-MIGRATION (Bucket C bulk batch 2 — flip 68 money-free non-load-bearing control-plane substrate types (CISO/security-process + party/product-lifecycle + legal/privacy-process) v1-only->v2-replaced, -68 rows; was 403 under Bucket C bulk batch 1)"
+  "authority": "D-BANK-WIDE-V2-MIGRATION (Bucket C bulk batch 3 — FINAL non-load-bearing: flip 29 money-free non-load-bearing control-plane substrate types (C-3 agent-lifecycle/runtime remainder incl SubstrateAlert + SubstrateAgentRun* + ScheduledTrigger, C-9 audit/readiness/regulator-process, C-10 agent-performance remainder) v1-only->v2-replaced, -29 rows; was 335 under Bucket C bulk batch 2. ReconciliationBreak EXCLUDED (payments-domain de-dup hazard). After this batch the only bucket-C v1-only types are the 14 load-bearing dispatch/run-lifecycle/RMS types held for the CEO checkpoint)"
 }

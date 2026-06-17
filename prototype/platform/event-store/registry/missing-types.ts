@@ -1146,7 +1146,7 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/camille.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];
 
@@ -1190,7 +1190,7 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/helena.ts; runtime/agents/metadata/owen.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when ICAAP / ILAAP input data is ready for Helena's review.
@@ -1214,7 +1214,7 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/helena.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when Nadia's model validation run completes.
@@ -1250,7 +1250,7 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/nadia.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a model is formally registered in the model inventory.
@@ -1450,7 +1450,7 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/zara.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a sanctions hold is raised on a payment pending resolution.
@@ -1655,7 +1655,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/owen.ts; runtime/agents/metadata/thandiwe.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a MOI change is proposed for the bank's Memorandum of
@@ -1751,7 +1751,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/thandiwe.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when Owen / Thandiwe complete the quarterly audit committee
@@ -1764,7 +1764,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/thandiwe.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Generic policy change event — emitted when any governed policy document
@@ -1777,7 +1777,7 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/anya.ts; runtime/agents/metadata/zara.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Inter-entity transaction proposed between group entities (requires
@@ -1819,7 +1819,7 @@ const PAYMENTS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/tomas.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a payment scheme rule change is published.
@@ -1831,7 +1831,7 @@ const PAYMENTS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/tomas.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a CSP (Common Secure Platform) attestation is due.
@@ -1843,7 +1843,7 @@ const PAYMENTS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/tomas.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];
 
@@ -1898,7 +1898,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/devon.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when the SLO error budget burn rate exceeds the alert threshold.
@@ -1948,7 +1948,7 @@ const INFRA_SECURITY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/devon.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a security incident is raised (cyber attack, data
@@ -2288,7 +2288,7 @@ const REGULATORY_HORIZON_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/mira.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Emitted by Yael when SARS issues new tax guidance.
@@ -2300,7 +2300,7 @@ const REGULATORY_HORIZON_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/yael.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];
 
@@ -2421,7 +2421,7 @@ const READINESS_SNAPSHOT_EXTENDED_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/ravi.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Markets / Saskia readiness snapshot.
@@ -2433,7 +2433,7 @@ const READINESS_SNAPSHOT_EXTENDED_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/saskia.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Payments / Tomas readiness snapshot.
@@ -2445,7 +2445,7 @@ const READINESS_SNAPSHOT_EXTENDED_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/tomas.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Legal / Imani readiness snapshot.
@@ -2457,7 +2457,7 @@ const READINESS_SNAPSHOT_EXTENDED_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/imani.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Tax / Yael readiness snapshot.
@@ -2469,7 +2469,7 @@ const READINESS_SNAPSHOT_EXTENDED_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/yael.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];
 
