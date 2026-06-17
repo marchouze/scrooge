@@ -28,11 +28,22 @@
 // RAS appetite lines seeded: all 17 lines from
 //   platform/risk/ras-appetite-register.ts (byte-faithful snapshot).
 //
+// Reporting-treatment modules seeded (FX menu — the modular-composed-fold
+//   treatment dimensions, scoped fil:type:fx:*; the FX OTC Vanilla product picks
+//   them via reportingTreatmentModuleIds):
+//     ifrs-classification:fx-fvtpl@1.0        — FVTPL + IAS 21 FX revaluation
+//     posting-rules:fx@1.0                    — the three FX V2 posting rules
+//     prudential-treatment:fx-trading-book@1.0 — trading-book / standardised market risk
+//     tax-treatment:fx@1.0                    — s24J accrual + VAT-exempt financial supply
+//   Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD (CEO-approved 2026-06-17),
+//   citing D-DERIVED-EVENT-IRREDUCIBILITY-TEST.
+//
 // Idempotent: skips events whose natural key is already present.
 //
-// Authority: D-V2-BBAAS-BLUEPRINT-SYNTHESIS; D-MODEL-BINDING-CONTRACT-V1.
+// Authority: D-V2-BBAAS-BLUEPRINT-SYNTHESIS; D-MODEL-BINDING-CONTRACT-V1;
+//   D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD.
 // brief: brief:bea:v2-s4-products-coa-ras-as-typed-v2-events-anchor:2026-06-12
-// Author: Bea (Financial Controller, accounting).
+// Author: Bea (Financial Accountant, finance).
 
 import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync } from "node:fs";
@@ -49,6 +60,10 @@ import type {
   V2RiskAppetiteSet,
 } from "../v2-core/banking/events";
 import { moneyWireFromMajorString } from "../v2-core/core/money-wire";
+import {
+  FX_TREATMENT_MODULES,
+  FX_TREATMENT_MODULE_IDS,
+} from "../v2-core/reporting-treatments/fx-modules";
 
 // ---------------------------------------------------------------------------
 // Resolve the v2 anchor store path — NEVER the v1 store
@@ -113,10 +128,12 @@ function alreadySeeded(type: string, naturalKey: string): boolean {
       // For products: naturalKey is productId
       // For CoA: naturalKey is accountTypeKey
       // For RAS: naturalKey is rasLineId
+      // For treatment modules: naturalKey is treatmentId
       if (
         p.productId === naturalKey ||
         p.accountTypeKey === naturalKey ||
-        p.rasLineId === naturalKey
+        p.rasLineId === naturalKey ||
+        p.treatmentId === naturalKey
       ) {
         return true;
       }
@@ -195,10 +212,15 @@ const PRODUCTS: V2ProductRegistered[] = [
     legalEntityIds: ["LE-ZA-HOZ-BANK"],
     jurisdictions: ["ZA"],
     franchiseScope: "institutional",
+    // Modular-composed-fold treatment menu pick (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD):
+    // one module per treatment dimension, all scoped fil:type:fx:*. The id set is
+    // the single-source constant from v2-core/reporting-treatments/fx-modules.ts.
+    reportingTreatmentModuleIds: [...FX_TREATMENT_MODULE_IDS],
     citations: [
       "D-V2-BBAAS-BLUEPRINT-SYNTHESIS",
       "D-FX-OTC-NPA-SCOPE-EXPANSION",
       "D-MARKETS-SCHEMA-FOUNDATION",
+      "D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD",
     ],
   },
   {
@@ -272,6 +294,12 @@ const PRODUCTS: V2ProductRegistered[] = [
   },
 ];
 
+// Section 1b — FX reporting-treatment modules are the canonical declarations in
+// `v2-core/reporting-treatments/fx-modules.ts` (imported as FX_TREATMENT_MODULES);
+// the seed RENDERS them into the v2-anchor store below. Single source: the
+// resolution unit test asserts against the SAME constant, so seed and proof
+// cannot drift. Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD.
+
 // Deprecated product: fx-spot-zar-usd was superseded by otc-vanilla
 const DEPRECATED_PRODUCTS: V2ProductDeprecated[] = [
   {
@@ -338,6 +366,23 @@ for (const d of DEPRECATED_PRODUCTS) {
 
 console.log(
   `\nProducts: ${productsSeeded} seeded, ${deprecationsSeeded} deprecated, ${productsSkipped} skipped.`,
+);
+
+// Seed the FX reporting-treatment modules (the FX menu).
+let treatmentsSeeded = 0;
+let treatmentsSkipped = 0;
+for (const m of FX_TREATMENT_MODULES) {
+  if (alreadySeeded("ReportingTreatmentDeclared", m.treatmentId)) {
+    console.log(`  [SKIP] ReportingTreatmentDeclared ${m.treatmentId}`);
+    treatmentsSkipped++;
+    continue;
+  }
+  append("ReportingTreatmentDeclared", m as unknown as Record<string, unknown>);
+  console.log(`  [OK]   ReportingTreatmentDeclared ${m.treatmentId}`);
+  treatmentsSeeded++;
+}
+console.log(
+  `\nReporting-treatment modules: ${treatmentsSeeded} seeded, ${treatmentsSkipped} skipped.`,
 );
 
 // ---------------------------------------------------------------------------
