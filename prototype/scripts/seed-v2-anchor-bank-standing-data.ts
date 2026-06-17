@@ -48,6 +48,7 @@ import type {
   V2ProductRegistered,
   V2RiskAppetiteSet,
 } from "../v2-core/banking/events";
+import { moneyWireFromMajorString } from "../v2-core/bucket-a-a2/money-wire";
 
 // ---------------------------------------------------------------------------
 // Resolve the v2 anchor store path — NEVER the v1 store
@@ -621,7 +622,14 @@ for (const line of RAS_APPETITE_LINES) {
     tier: line.tier,
     thresholds,
     appliesToScope: { kind: "always" },
-    floorZarMinor: line.floorZar !== undefined ? line.floorZar * 100 : undefined,
+    // Decimal-native floor: the v1 register's `floorZar` is a MAJOR-unit ZAR
+    // figure (R50m = 50_000_000), so it maps DIRECTLY to a MoneyWire MAJOR-unit
+    // string — no `* 100` minor-unit scaling. Currency is sourced from the
+    // register field's declared ZAR denomination (no untyped default).
+    floor:
+      line.floorZar !== undefined
+        ? moneyWireFromMajorString(String(line.floorZar), "ZAR")
+        : undefined,
     citations: [
       "D-V2-BBAAS-BLUEPRINT-SYNTHESIS",
       "D-RAS",

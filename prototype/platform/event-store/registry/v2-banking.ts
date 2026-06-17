@@ -84,6 +84,6 @@ export const V2_BANKING_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     payloadSchema: v2RiskAppetiteSetSchema as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: [...CITATIONS],
     source: "v2-core/banking/events.ts — V2RiskAppetiteSet",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];

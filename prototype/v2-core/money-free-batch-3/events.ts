@@ -418,7 +418,8 @@ export const MONEY_FREE_BATCH_3_REDECLARED_TYPES: readonly MoneyFreeBatch3Redecl
  * event-list register as the re-declared types.
  */
 export const MONEY_FREE_BATCH_3_FOOTHOLD_TYPES: readonly string[] = [
-  // v2-banking (money-free rows; V2RiskAppetiteSet carries floorZarMinor → deferred)
+  // v2-banking (money-free rows; V2RiskAppetiteSet now carries a decimal-native
+  // MoneyWire `floor` — flipped to v2-replaced in its own re-mint, not a money-free row)
   "V2ProductRegistered",
   "V2ProductDeprecated",
   "V2AccountTypeRegistered",

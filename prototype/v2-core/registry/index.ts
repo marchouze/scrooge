@@ -373,8 +373,10 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
   // 2. banking (slice's own schemas — payload carries a `kind` discriminator).
   // BATCH-3 TEE: the three money-free banking types are mirrored verbatim (V1 and
   // v2 share the SAME schema object — these are true footholds, so no anti-drift
-  // re-declaration is needed). V2RiskAppetiteSet carries `floorZarMinor`
-  // (money-bearing) → NOT tee-enabled; deferred to the money-bearing track.
+  // re-declaration is needed). V2RiskAppetiteSet is a v2-NATIVE control-plane
+  // event (emitted directly by the anchor seed, not tee-mirrored); its money
+  // floor was re-minted decimal-native (MoneyWire `floor`), so it is now
+  // v2-replaced — see `platform/event-store/registry/v2-banking.ts`.
   foothold("V2ProductRegistered", "governance", v2ProductRegisteredSchema, {}),
   foothold("V2ProductDeprecated", "governance", v2ProductDeprecatedSchema, {}),
   foothold("V2AccountTypeRegistered", "governance", v2AccountTypeRegisteredSchema, {}),
@@ -606,8 +608,9 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
   //   - runtime/RMS dispatch substrate (Wave-3, leave v1-only).
   //   - money-bearing: model-risk CalculationPerformed (polymorphic value, unit
   //     may be ZAR-minor), regulatory-reporting RwaComputed (*RwaMinor),
-  //     v2-banking V2RiskAppetiteSet (floorZarMinor), financial-instrument
-  //     (notional / par-face value).
+  //     financial-instrument (notional / par-face value).
+  //     (V2RiskAppetiteSet's `floorZarMinor` was redenominated decimal-native to
+  //     a MoneyWire `floor` and flipped v2-replaced — no longer excluded.)
   //
   // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
   // ---------------------------------------------------------------------------

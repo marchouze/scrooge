@@ -71,17 +71,12 @@
 import { z } from "zod";
 
 import type { V2TeeCodec } from "../registry/types";
-import { type MoneyWire, moneyWireFromMajorNumber, moneyWireFromMinorNumber } from "./money-wire";
+import { moneyWireFromMajorNumber, moneyWireFromMinorNumber, moneyWireSchema } from "./money-wire";
 
 // ---------------------------------------------------------------------------
-// Shared MoneyWire Zod schema (v2-native; byte-identical to platform MoneyWire).
+// Shared MoneyWire Zod schema (re-exported from money-wire.ts — the single
+// reusable control-plane money primitive; see V2RiskAppetiteSet.floor too).
 // ---------------------------------------------------------------------------
-
-const moneyWireSchema: z.ZodType<MoneyWire> = z.object({
-  __money: z.literal("v1"),
-  amount: z.string().min(1),
-  currency: z.string().min(1),
-});
 
 /**
  * Read a required numeric money field from a V1 payload, failing CLOSED if it

@@ -29,6 +29,7 @@
 // Author: Bea (Financial Controller, accounting).
 
 import { z } from "zod";
+import { moneyWireSchema } from "../bucket-a-a2/money-wire";
 import { filScopePatternSchema } from "../fil-core/urn";
 import { appliesToScopeSchema } from "../posture/applies-when";
 
@@ -215,11 +216,19 @@ export const v2RiskAppetiteSetSchema = z.object({
    */
   appliesToScope: appliesToScopeSchema,
   /**
-   * Monetary floor (ZAR minor units = cents) for lines that carry an
-   * absolute buffer floor (e.g. intraday HQLA floor R50m = 5_000_000_000
-   * minor units). Absent when the line carries no monetary floor.
+   * Decimal-native monetary floor for lines that carry an absolute buffer floor
+   * (e.g. the intraday HQLA floor R50m → MoneyWire `{ amount: "50000000",
+   * currency: "ZAR" }`, MAJOR units). Absent when the line carries no monetary
+   * floor. Currency is carried EXPLICITLY (Principle 5 — multi-currency at the
+   * type level): ZAR is the only floor denomination today, but it is sourced
+   * from the v1 RAS register's `floorZar` field (declared ZAR major units), not
+   * an untyped `?? "ZAR"` default. Wire shape is the shared control-plane
+   * `MoneyWire` primitive (`v2-core/bucket-a-a2/money-wire.ts`) — the same
+   * decimal-native encoding as the batch-A2 mirrors and the platform money codec
+   * (D-V2-CORE-MONEY-DECIMAL-NATIVE). Replaces the legacy `floorZarMinor`
+   * minor-int field, closing the last bucket-A migration residual.
    */
-  floorZarMinor: z.number().int().nonnegative().optional(),
+  floor: moneyWireSchema.optional(),
   citations: z.array(z.string().min(1)).min(1),
 });
 
