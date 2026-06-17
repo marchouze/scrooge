@@ -46,12 +46,40 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { TrialBalance } from "../accounting/period-close";
+import { foldFxContributionLegs } from "../accounting/posting-rules-v2/fx-fold";
 import { type Money, amountToMinorUnits } from "../core/decimal-money";
 import { type MoneyWire, legAmountMoney } from "../core/money-codec";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
 import type { EventStore } from "../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "./filter";
 import { readWithOutputSnapshot } from "./output-snapshot-cache";
+
+// ---------------------------------------------------------------------------
+// FX read-path separation (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD, 2026-06-17).
+//
+// The FX contribution to the V2 trial balance is now a PURE FOLD over the
+// primary FIL instance events (FilInstrumentCreated/Amended/Terminated, FX)
+// through the lifted FX posting rules — NOT the stored GlPostingEmitted event.
+// Bond / money-market / capital accounts STILL come from GlPostingEmitted.
+//
+// To avoid double-counting if FX GlPostingEmitted events ever exist in the
+// store (the dual-run engine can still emit them for other consumers), every
+// GlPostingEmitted fold below SKIPS legs whose postingRuleId is an FX V2 rule
+// id — those accounts are served by the FIL fold instead. Non-FX postingRuleIds
+// (PR-CAP-*, bond, mm, …) fold from GlPostingEmitted exactly as before.
+// ---------------------------------------------------------------------------
+
+/** FX V2 posting-rule ids whose GlPostingEmitted legs are excluded (FX-fold owns them). */
+const FX_V2_POSTING_RULE_ID_SET: ReadonlySet<string> = new Set([
+  "PR-FX-001-V2",
+  "PR-FX-REVAL-V2",
+  "PR-FX-CLOSE-V2",
+]);
+
+/** True iff a GlPostingEmitted leg was produced by an FX V2 posting rule. */
+function isFxSourcedGlPosting(postingRuleId: string | undefined): boolean {
+  return postingRuleId !== undefined && FX_V2_POSTING_RULE_ID_SET.has(postingRuleId);
+}
 
 // ---------------------------------------------------------------------------
 // ComputeTrialBalanceV2Args — mirrors the V1 ComputeTrialBalanceArgs interface.
@@ -75,6 +103,8 @@ interface GlLeg {
   readonly creditDebit: "credit" | "debit";
   readonly amount: MoneyWire;
   readonly postingDate: string;
+  /** The V2 posting rule that produced this leg — used to exclude FX-sourced legs. */
+  readonly postingRuleId?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -107,6 +137,10 @@ export function computeTrialBalanceV2Uncached(args: ComputeTrialBalanceV2Args): 
     if (!eventMatchesProvenanceFilter(e, provenanceFilter)) continue;
 
     const leg = e.payload as unknown as GlLeg;
+    // FX accounts now come from the FIL fold (below); skip FX-sourced
+    // GlPostingEmitted to avoid double-counting. Non-FX (bond/mm/capital) legs
+    // still fold here exactly as before.
+    if (isFxSourcedGlPosting(leg.postingRuleId)) continue;
     // Date gate: filter against the posting period window.
     if (!leg.postingDate) continue;
     if (leg.postingDate < args.periodStart || leg.postingDate > args.periodEnd) continue;
@@ -124,6 +158,29 @@ export function computeTrialBalanceV2Uncached(args: ComputeTrialBalanceV2Args): 
 
     // Increment count as sequence proxy (consistent with V1 which uses event count
     // as uptoSequence — "the same N events fold to the same TB").
+    uptoSequence += 1;
+  }
+
+  // FX contribution — PURE FOLD over primary FIL FX events (NO GlPostingEmitted).
+  // Same provenance filter + posting-date window. The FX legs accumulate into the
+  // same per-(accountCode,currency) balances map as the non-FX GlPostingEmitted
+  // legs, so the combined TrialBalance shape is unchanged.
+  const fxFold = foldFxContributionLegs({
+    eventStore: args.eventStore,
+    periodStart: args.periodStart,
+    periodEnd: args.periodEnd,
+  });
+  for (const leg of fxFold.legs) {
+    const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
+    const legMinor = Number(amountToMinorUnits(legMoney));
+    const key = `${leg.accountCode}|${leg.amount.currency}`;
+    const row = balances.get(key) ?? {
+      account: leg.accountCode,
+      currency: leg.amount.currency,
+      amount: 0,
+    };
+    row.amount += leg.creditDebit === "debit" ? legMinor : -legMinor;
+    balances.set(key, row);
     uptoSequence += 1;
   }
 
@@ -318,6 +375,8 @@ export function computeGlEntriesV2Uncached(args: ComputeTrialBalanceV2Args): GlL
     if (!eventMatchesProvenanceFilter(e, provenanceFilter)) continue;
 
     const leg = e.payload as unknown as GlPostingLegFull;
+    // FX entries come from the FIL fold (below); skip FX-sourced GlPostingEmitted.
+    if (isFxSourcedGlPosting(leg.postingRuleId)) continue;
     if (!leg.postingDate) continue;
     if (leg.postingDate < args.periodStart || leg.postingDate > args.periodEnd) continue;
 
@@ -342,6 +401,34 @@ export function computeGlEntriesV2Uncached(args: ComputeTrialBalanceV2Args): GlL
       currency: leg.amount.currency,
       ...(typeof leg.sourceEventId === "string" ? { sourceEventId: leg.sourceEventId } : {}),
       ...(typeof leg.postingRuleId === "string" ? { postingRuleId: leg.postingRuleId } : {}),
+    });
+  }
+
+  // FX entries — PURE FOLD over primary FIL FX events. Each folded leg is an
+  // individually-addressable ledger entry sourced from the FIL lifecycle event.
+  const fxFold = foldFxContributionLegs({
+    eventStore: args.eventStore,
+    periodStart: args.periodStart,
+    periodEnd: args.periodEnd,
+  });
+  for (const leg of fxFold.legs) {
+    const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
+    const legMinor = Number(amountToMinorUnits(legMoney));
+    const coa = getCoaEntryV2(leg.accountCode);
+    entries.push({
+      eventId: leg.filEventId,
+      source: "GlPostingEmitted",
+      postedAt: leg.postingDate,
+      description: leg.description,
+      accountId: leg.accountCode,
+      accountName: coa.name,
+      accountCategory: coa.category,
+      debitCredit: leg.creditDebit,
+      amountMinor: legMinor,
+      amount: legMoney,
+      currency: leg.amount.currency,
+      sourceEventId: leg.sourceEventId,
+      postingRuleId: leg.postingRuleId,
     });
   }
 
@@ -393,6 +480,52 @@ export interface GlAccountMasterV2 {
   readonly balances: Record<string, GlAccountBalanceV2>;
 }
 
+/** Accumulate one (accountCode, creditDebit, minor, currency) leg into the account-master map. */
+function accumulateAccountLeg(
+  byAccount: Map<string, Map<string, GlAccountBalanceV2>>,
+  accountCode: string,
+  creditDebit: "debit" | "credit",
+  legMinor: number,
+  currency: string,
+): void {
+  const coa = getCoaEntryV2(accountCode);
+  let byCurrency = byAccount.get(accountCode);
+  if (!byCurrency) {
+    byCurrency = new Map<string, GlAccountBalanceV2>();
+    byAccount.set(accountCode, byCurrency);
+  }
+  const existing = byCurrency.get(currency);
+  const bal: GlAccountBalanceV2 = existing ?? {
+    accountId: accountCode,
+    accountName: coa.name,
+    accountCategory: coa.category,
+    naturalSide: coa.side,
+    balanceMinor: 0,
+    totalDebitsMinor: 0,
+    totalCreditsMinor: 0,
+  };
+
+  // GlAccountBalanceV2 is readonly; rebuild with the accumulated figures.
+  const isDebit = creditDebit === "debit";
+  const signedDelta = isDebit
+    ? bal.naturalSide === "debit"
+      ? legMinor
+      : -legMinor
+    : bal.naturalSide === "credit"
+      ? legMinor
+      : -legMinor;
+
+  byCurrency.set(currency, {
+    accountId: bal.accountId,
+    accountName: bal.accountName,
+    accountCategory: bal.accountCategory,
+    naturalSide: bal.naturalSide,
+    balanceMinor: bal.balanceMinor + signedDelta,
+    totalDebitsMinor: bal.totalDebitsMinor + (isDebit ? legMinor : 0),
+    totalCreditsMinor: bal.totalCreditsMinor + (isDebit ? 0 : legMinor),
+  });
+}
+
 export function computeGlAccountsV2Uncached(args: ComputeTrialBalanceV2Args): GlAccountMasterV2[] {
   // Outer key: accountId; inner key: currency.
   const byAccount = new Map<string, Map<string, GlAccountBalanceV2>>();
@@ -405,49 +538,38 @@ export function computeGlAccountsV2Uncached(args: ComputeTrialBalanceV2Args): Gl
     if (!eventMatchesProvenanceFilter(e, provenanceFilter)) continue;
 
     const leg = e.payload as unknown as GlPostingLegFull;
+    // FX accounts come from the FIL fold (below); skip FX-sourced GlPostingEmitted.
+    if (isFxSourcedGlPosting(leg.postingRuleId)) continue;
     if (!leg.postingDate) continue;
     if (leg.postingDate < args.periodStart || leg.postingDate > args.periodEnd) continue;
 
     const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
     const legMinor = Number(amountToMinorUnits(legMoney));
-    const currency = leg.amount.currency;
-    const coa = getCoaEntryV2(leg.accountCode);
+    accumulateAccountLeg(
+      byAccount,
+      leg.accountCode,
+      leg.creditDebit,
+      legMinor,
+      leg.amount.currency,
+    );
+  }
 
-    let byCurrency = byAccount.get(leg.accountCode);
-    if (!byCurrency) {
-      byCurrency = new Map<string, GlAccountBalanceV2>();
-      byAccount.set(leg.accountCode, byCurrency);
-    }
-    const existing = byCurrency.get(currency);
-    const bal: GlAccountBalanceV2 = existing ?? {
-      accountId: leg.accountCode,
-      accountName: coa.name,
-      accountCategory: coa.category,
-      naturalSide: coa.side,
-      balanceMinor: 0,
-      totalDebitsMinor: 0,
-      totalCreditsMinor: 0,
-    };
-
-    // GlAccountBalanceV2 is readonly; rebuild with the accumulated figures.
-    const isDebit = leg.creditDebit === "debit";
-    const signedDelta = isDebit
-      ? bal.naturalSide === "debit"
-        ? legMinor
-        : -legMinor
-      : bal.naturalSide === "credit"
-        ? legMinor
-        : -legMinor;
-
-    byCurrency.set(currency, {
-      accountId: bal.accountId,
-      accountName: bal.accountName,
-      accountCategory: bal.accountCategory,
-      naturalSide: bal.naturalSide,
-      balanceMinor: bal.balanceMinor + signedDelta,
-      totalDebitsMinor: bal.totalDebitsMinor + (isDebit ? legMinor : 0),
-      totalCreditsMinor: bal.totalCreditsMinor + (isDebit ? 0 : legMinor),
-    });
+  // FX accounts — PURE FOLD over primary FIL FX events.
+  const fxFold = foldFxContributionLegs({
+    eventStore: args.eventStore,
+    periodStart: args.periodStart,
+    periodEnd: args.periodEnd,
+  });
+  for (const leg of fxFold.legs) {
+    const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
+    const legMinor = Number(amountToMinorUnits(legMoney));
+    accumulateAccountLeg(
+      byAccount,
+      leg.accountCode,
+      leg.creditDebit,
+      legMinor,
+      leg.amount.currency,
+    );
   }
 
   const accounts: GlAccountMasterV2[] = [];

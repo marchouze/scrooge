@@ -159,3 +159,15 @@ export const filScopePatternSchema = z
   .string()
   .refine(isFilScopePattern, "must be a valid `fil:type:…` scope pattern (`*` permitted)")
   .transform((s) => s as FilScopePattern);
+
+/**
+ * `true` iff the taxonomy `typeUrn` is covered by the scope `pattern`. A trailing
+ * `*` is a prefix wildcard (e.g. `fil:type:fx:*` matches `fil:type:fx:spot:…`);
+ * otherwise an exact match. This is the single canonical scope-match semantics
+ * (the SA-CCR model + posture `applies-when` carry private copies — they converge
+ * here as they are touched).
+ */
+export function matchesFilScope(pattern: string, typeUrn: string): boolean {
+  if (pattern.endsWith("*")) return typeUrn.startsWith(pattern.slice(0, -1));
+  return pattern === typeUrn;
+}

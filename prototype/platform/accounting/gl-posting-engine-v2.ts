@@ -35,16 +35,32 @@
 //   - iasRule: IFRS/IAS citation
 //   - postingRuleId: e.g. "PR-FX-001-V2"
 //
+// ## Posting rules lifted (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD, 2026-06-17)
+//
+// The pure FX leg logic (initial recognition / revaluation / close) is LIFTED to
+// `posting-rules-v2/fx.ts` as `payload → FxPostingLeg[]` functions. This engine
+// now MATERIALISES those legs into stored GlPostingEmitted events, and the FX
+// trial-balance read path (gl-projection-v2.ts) folds the SAME lifted rules in
+// memory — eliminating the stored GlPostingEmitted from the FX read path while
+// the engine remains the byte-equivalence reference and the non-FX emitter.
+//
+// ## PR-FX-CLOSE-V2 derecognition follow-up (flagged, NOT applied)
+//
+// PR-FX-CLOSE-V2 still posts a zero-amount memo (FilInstrumentTerminated carries
+// no economic terms). Applying a proper derecognition (reverse the prior
+// recognition using the prior notional) would change the legs and break the
+// byte-equivalence golden — so it is a SEPARATE follow-up, NOT done here.
+//
 // ## Package boundary
 //
 // This file is in platform/, NOT v2-core/, so it MAY import from both sides.
 // The v2-core/ package must NOT import from here (recon:v2-no-v1-import).
 //
-// Authority: D-V1-REMOVAL-PHASE-3A (CEO-approved 2026-06-15).
+// Authority: D-V1-REMOVAL-PHASE-3A (CEO-approved 2026-06-15);
+//            D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD (CEO-approved 2026-06-17).
 // Citations: IFRS-9-§3.1.1; IAS-21-§23; P1-EVENTS-AS-TRUTH; P2-SINGLE-GRAPH-DISCIPLINE.
 // Author: Atlas (Substrate Architect, engineering).
 
-import { ANCHOR_TENANT_ID, type TenantId } from "../../v2-core/control-plane/tenant";
 import type { FilInstanceLifecycleEvent } from "../../v2-core/fil-instances/events";
 import type {
   FilInstrumentAmendedPayload,
@@ -52,174 +68,54 @@ import type {
   FilInstrumentTerminatedPayload,
 } from "../../v2-core/fil-instances/events";
 import { newEventId } from "../core/types";
-import {
-  type GlPostingEmittedPayload,
-  makeGlPostingEmitted,
-} from "../event-store/event-types/fx-accounting";
+import { makeGlPostingEmitted } from "../event-store/event-types/fx-accounting";
 import type { EventStore } from "../event-store/store";
 import type { Actor, Event } from "../event-store/types";
 import { readFilInstanceEvents } from "../risk/sa-ccr/fil-instance-positions";
+import {
+  type FxPostingLeg,
+  isFxInstance,
+  postFxCloseLegs,
+  postFxInitialRecognitionLegs,
+  postFxRevaluationLegs,
+} from "./posting-rules-v2/fx";
 
 // ---------------------------------------------------------------------------
-// Supported product types from the FIL taxonomy.
-// ---------------------------------------------------------------------------
-
-const FX_TYPE_PREFIX = "fil:type:fx:";
-
-function isFxInstance(typeUrn: string): boolean {
-  return typeUrn.startsWith(FX_TYPE_PREFIX);
-}
-
-// ---------------------------------------------------------------------------
-// COA account resolution for V2 FX postings.
+// Leg materialiser — turn a pure FxPostingLeg into a GlPostingEmitted event.
 //
-// These are the same accounts the V1 SLA interpreter targets for FX trades.
-// Hardcoded here for Phase 3A scope (FX sub-ledger only). A later phase will
-// introduce a V2 account-resolver that reads the COA registry dynamically.
+// The FX posting RULES are LIFTED to platform/accounting/posting-rules-v2/fx.ts
+// as pure `payload → FxPostingLeg[]` functions (D-ACCT-MODULAR-PRODUCT-COMPOSED-
+// FOLD). This engine remains the DUAL-RUN emitter that materialises those legs
+// into stored GlPostingEmitted events for the non-FX-fold consumers and the
+// byte-equivalence golden. The FX trial-balance read path no longer needs these
+// stored events — it folds the same lifted rules in memory (gl-projection-v2.ts).
 // ---------------------------------------------------------------------------
 
-interface FxAccountSet {
-  /** Trading receivable (debit-natural) in the trade currency. */
-  readonly receivable: string;
-  /** Trading payable (credit-natural) in the trade currency. */
-  readonly payable: string;
-  /** Unrealised P&L — FVTPL (credit-natural, ZAR). */
-  readonly unrealisedPnl: string;
-  /** Realised FX P&L (credit-natural, ZAR). */
-  readonly realisedPnl: string;
-}
-
-/**
- * Resolve the COA account set for a given ISO-4217 currency pair.
- * Only currencies with dedicated per-currency accounts are supported; all
- * others route to the FX Unresolved-Currency Suspense (ACC-2100-007) —
- * matching the V1 SLA interpreter's fail-closed pattern.
- */
-function resolveFxAccountSet(currency: string): FxAccountSet {
-  switch (currency) {
-    case "ZAR":
-      return {
-        receivable: "ACC-2100-001",
-        payable: "ACC-2100-003",
-        unrealisedPnl: "ACC-2100-005",
-        realisedPnl: "ACC-2100-006",
-      };
-    case "USD":
-      return {
-        receivable: "ACC-2100-002",
-        payable: "ACC-2100-004",
-        unrealisedPnl: "ACC-2100-005", // ZAR P&L account
-        realisedPnl: "ACC-2100-006",
-      };
-    case "GBP":
-      return {
-        receivable: "ACC-2100-010",
-        payable: "ACC-2100-011",
-        unrealisedPnl: "ACC-2100-012",
-        realisedPnl: "ACC-2100-006",
-      };
-    case "EUR":
-      return {
-        receivable: "ACC-2100-013",
-        payable: "ACC-2100-014",
-        unrealisedPnl: "ACC-2100-015",
-        realisedPnl: "ACC-2100-006",
-      };
-    case "CHF":
-      return {
-        receivable: "ACC-2100-016",
-        payable: "ACC-2100-017",
-        unrealisedPnl: "ACC-2100-018",
-        realisedPnl: "ACC-2100-006",
-      };
-    case "AUD":
-      return {
-        receivable: "ACC-2100-019",
-        payable: "ACC-2100-020",
-        unrealisedPnl: "ACC-2100-021",
-        realisedPnl: "ACC-2100-006",
-      };
-    case "JPY":
-      return {
-        receivable: "ACC-2100-022",
-        payable: "ACC-2100-023",
-        unrealisedPnl: "ACC-2100-024",
-        realisedPnl: "ACC-2100-006",
-      };
-    default:
-      // Fail-closed: route to unresolved-currency suspense (same as V1).
-      return {
-        receivable: "ACC-2100-007",
-        payable: "ACC-2100-007",
-        unrealisedPnl: "ACC-2100-005",
-        realisedPnl: "ACC-2100-006",
-      };
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Leg factory — emit a single DR or CR GlPostingEmitted event.
-// ---------------------------------------------------------------------------
-
-function makeLeg(
-  creditDebit: "debit" | "credit",
-  accountCode: string,
-  amount: GlPostingEmittedPayload["amount"],
-  postingDate: string,
-  tenantId: TenantId,
-  sourceEventId: string,
-  iasRule: string,
-  postingRuleId: string,
-  description: string,
+function materialiseLeg(
+  leg: FxPostingLeg,
   actor: Actor,
   entity: string,
   citations: string[],
 ): Event {
   return makeGlPostingEmitted({
-    asOf: postingDate,
+    asOf: leg.postingDate,
     entity,
     actor,
     citations,
     payload: {
-      creditDebit,
-      accountCode,
-      amount,
-      postingDate,
-      tenantId,
-      sourceEventId,
-      iasRule,
-      postingRuleId,
-      description,
+      creditDebit: leg.creditDebit,
+      accountCode: leg.accountCode,
+      amount: leg.amount,
+      postingDate: leg.postingDate,
+      tenantId: leg.tenantId,
+      sourceEventId: leg.sourceEventId,
+      iasRule: leg.iasRule,
+      postingRuleId: leg.postingRuleId,
+      description: leg.description,
     },
     eventId: newEventId(),
   });
 }
-
-// ---------------------------------------------------------------------------
-// Encoding helper — convert v2-core Money to MoneyWire shape.
-// Both have the same shape { currency, amount } (decimal string in major units).
-// MoneyWire adds the __money discriminant for type safety; we satisfy it here.
-// ---------------------------------------------------------------------------
-
-function toMoneyWire(money: {
-  currency: string;
-  amount: string;
-}): GlPostingEmittedPayload["amount"] {
-  return {
-    __money: "v1" as const,
-    currency: money.currency,
-    amount: money.amount,
-  };
-}
-
-// ---------------------------------------------------------------------------
-// PR-FX-001-V2 — Initial recognition at trade date (FilInstrumentCreated, FX)
-//
-// IFRS 9 §3.1.1: financial asset/liability recognised at trade date.
-//
-// For a "long" (buy) FX trade: Dr FX Trading Receivable / Cr FX Trading Payable
-// The receivable is in the FCY; the payable is in ZAR (or the quote currency).
-// ---------------------------------------------------------------------------
 
 function postFxInitialRecognition(
   payload: FilInstrumentCreatedPayload,
@@ -227,95 +123,10 @@ function postFxInitialRecognition(
   entity: string,
   citations: string[],
 ): Event[] {
-  const t = payload.economicTerms;
-  const accounts = resolveFxAccountSet(t.currency);
-  const amount = toMoneyWire(t.notional);
-  const postingDate = payload.asOf.substring(0, 10); // ISO date
-  const tenantId = (payload.tenant ?? ANCHOR_TENANT_ID) as TenantId;
-  const sourceEventId = payload.instance;
-  const iasRule = "IFRS 9 §3.1.1 — recognition on trade date";
-  const postingRuleId = "PR-FX-001-V2";
-  const description = `FX Initial Recognition ${t.currency} ${t.direction} (V2)`;
-
-  if (t.direction === "long") {
-    // Dr FX Trading Receivable (FCY) / Cr FX Trading Payable (ZAR)
-    return [
-      makeLeg(
-        "debit",
-        accounts.receivable,
-        amount,
-        postingDate,
-        tenantId,
-        sourceEventId,
-        iasRule,
-        postingRuleId,
-        description,
-        actor,
-        entity,
-        citations,
-      ),
-      makeLeg(
-        "credit",
-        accounts.payable,
-        amount,
-        postingDate,
-        tenantId,
-        sourceEventId,
-        iasRule,
-        postingRuleId,
-        description,
-        actor,
-        entity,
-        citations,
-      ),
-    ];
-  }
-  // direction === "short": Dr FX Trading Payable / Cr FX Trading Receivable
-  return [
-    makeLeg(
-      "debit",
-      accounts.payable,
-      amount,
-      postingDate,
-      tenantId,
-      sourceEventId,
-      iasRule,
-      postingRuleId,
-      description,
-      actor,
-      entity,
-      citations,
-    ),
-    makeLeg(
-      "credit",
-      accounts.receivable,
-      amount,
-      postingDate,
-      tenantId,
-      sourceEventId,
-      iasRule,
-      postingRuleId,
-      description,
-      actor,
-      entity,
-      citations,
-    ),
-  ];
+  return postFxInitialRecognitionLegs(payload).map((l) =>
+    materialiseLeg(l, actor, entity, citations),
+  );
 }
-
-// ---------------------------------------------------------------------------
-// PR-FX-REVAL-V2 — FVTPL revaluation (FilInstrumentAmended, FX)
-//
-// IFRS 9 §5.7.1 / IAS 21 §28: fair-value change recognised in P&L.
-// The amended economic terms carry the updated notional (which represents the
-// new fair value after revaluation). The delta is the difference from the prior
-// economic terms. In Phase 3A we post the full notional change as a memo
-// (advisory); a future phase will compute the delta properly.
-//
-// NOTE: This is an ADVISORY approximation. A proper delta-based revaluation
-// requires reading the prior economic terms from the FIL instance register.
-// Phase 3A posts the updated notional amount as the revaluation basis.
-// ---------------------------------------------------------------------------
 
 function postFxRevaluation(
   payload: FilInstrumentAmendedPayload,
@@ -323,55 +134,8 @@ function postFxRevaluation(
   entity: string,
   citations: string[],
 ): Event[] {
-  const t = payload.economicTerms;
-  const accounts = resolveFxAccountSet(t.currency);
-  const amount = toMoneyWire(t.notional);
-  const postingDate = payload.asOf.substring(0, 10);
-  const tenantId = (payload.tenant ?? ANCHOR_TENANT_ID) as TenantId;
-  const sourceEventId = payload.instance;
-  const iasRule = "IFRS 9 §5.7.1 — FVTPL revaluation";
-  const postingRuleId = "PR-FX-REVAL-V2";
-  const description = `FX Revaluation ${t.currency} (V2 advisory)`;
-
-  // Dr/Cr Unrealised P&L / FX Trading Receivable (simplified basis)
-  return [
-    makeLeg(
-      "debit",
-      accounts.receivable,
-      amount,
-      postingDate,
-      tenantId,
-      sourceEventId,
-      iasRule,
-      postingRuleId,
-      description,
-      actor,
-      entity,
-      citations,
-    ),
-    makeLeg(
-      "credit",
-      accounts.unrealisedPnl,
-      amount,
-      postingDate,
-      tenantId,
-      sourceEventId,
-      iasRule,
-      postingRuleId,
-      description,
-      actor,
-      entity,
-      citations,
-    ),
-  ];
+  return postFxRevaluationLegs(payload).map((l) => materialiseLeg(l, actor, entity, citations));
 }
-
-// ---------------------------------------------------------------------------
-// PR-FX-CLOSE-V2 — Derecognition on settlement/cancellation (FilInstrumentTerminated)
-//
-// IFRS 9 §3.2.3: derecognition when the bank's obligation to deliver cash is met
-// or the instrument is cancelled. We reverse the initial recognition entry.
-// ---------------------------------------------------------------------------
 
 function postFxClose(
   payload: FilInstrumentTerminatedPayload,
@@ -379,60 +143,7 @@ function postFxClose(
   entity: string,
   citations: string[],
 ): Event[] {
-  // FilInstrumentTerminated does NOT carry economic terms — only the terminal
-  // stage and instance URN. A proper derecognition entry needs the notional
-  // from the prior Created/Amended events. In Phase 3A this posts a zero-amount
-  // memo (advisory) to mark the close; a future phase reads the prior state.
-  //
-  // The advisory close is still valuable for the parity gate: it ensures
-  // the V2 trial balance has an entry for every terminated instance, and the
-  // gate can surface the zero-amount difference as a known gap.
-  const postingDate = payload.asOf.substring(0, 10);
-  const tenantId = (payload.tenant ?? ANCHOR_TENANT_ID) as TenantId;
-  const sourceEventId = payload.instance;
-  const iasRule = "IFRS 9 §3.2.3 — derecognition on settlement/cancellation";
-  const postingRuleId = "PR-FX-CLOSE-V2";
-  const description = `FX Derecognition ${payload.terminalStage} (V2 advisory)`;
-
-  // Zero-amount memo — until the prior economic terms are carried on Terminated.
-  // The account code uses ZAR suspense as a placeholder; the parity gate surfaces
-  // the discrepancy for manual resolution.
-  const zeroAmount: GlPostingEmittedPayload["amount"] = {
-    __money: "v1" as const,
-    currency: "ZAR",
-    amount: "0",
-  };
-
-  return [
-    makeLeg(
-      "debit",
-      "ACC-2100-005",
-      zeroAmount,
-      postingDate,
-      tenantId,
-      sourceEventId,
-      iasRule,
-      postingRuleId,
-      description,
-      actor,
-      entity,
-      citations,
-    ),
-    makeLeg(
-      "credit",
-      "ACC-2100-005",
-      zeroAmount,
-      postingDate,
-      tenantId,
-      sourceEventId,
-      iasRule,
-      postingRuleId,
-      description,
-      actor,
-      entity,
-      citations,
-    ),
-  ];
+  return postFxCloseLegs(payload).map((l) => materialiseLeg(l, actor, entity, citations));
 }
 
 // ---------------------------------------------------------------------------
