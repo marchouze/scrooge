@@ -65,7 +65,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "A0 freeze §4 #10",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "AgentDecision",
@@ -77,7 +77,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "A0 freeze §4 #9",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "WorkstreamRegistered",
@@ -101,7 +101,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "Helena risk-cycle spec; Atlas substrate-state",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "RiskResolved",
@@ -113,7 +113,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "WS-RISK-REGISTER-CLOSURE; pairs to a RiskRaised riskId",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "RiskAccepted",
@@ -125,7 +125,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "WS-RISK-REGISTER-CLOSURE; risk-acceptance under named authority",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "RiskMitigated",
@@ -137,7 +137,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "WS-RISK-REGISTER-CLOSURE; finding closed against a mitigating control",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   // The remaining 11 runtime types from A0 §4 — registered without
   // typed payload schemas yet. They flow today via the envelope-only
@@ -162,7 +162,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // bank. 7y to match Companies Act director/officer-decision norms.
     retention: RETENTION_GOVERNANCE_7Y,
     source: "A0 freeze §4 #1; A1.1 registry — platform/agent-runtime/registry.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "AgentRetired",
@@ -174,7 +174,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-01"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "A0 freeze §4 #2",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "IdentityKeyRotated",
@@ -190,7 +190,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // material, which the Principle 1 indefinite-log delivers.
     retention: RETENTION_GOVERNANCE_7Y,
     source: "A0 freeze §4 #3; A1.2 issuer — platform/agent-identity/issuer.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "PermissionPolicyPublished",
@@ -204,7 +204,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // forensic-grade retention for audit reconstruction.
     retention: RETENTION_GOVERNANCE_7Y,
     source: "A0 freeze §4 #4; A1.2 policy — platform/agent-identity/permission-policy.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "ScheduledTrigger",
@@ -276,7 +276,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "A0 freeze §4 #11; A3.1 — platform/escalation/channel.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "AgentEscalationDecided",
@@ -288,7 +288,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "COMPANIES-ACT-71-2008"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "A0 freeze §4 #12; A3.1 — platform/escalation/channel.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "AgentEscalationDelegated",
@@ -300,7 +300,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "A0 freeze §4 #13; A3.1 — platform/escalation/channel.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "AgentEscalationOverdue",
@@ -312,7 +312,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED", "ORG-CY-04"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "A0 freeze §4 #14; A3.1 — platform/escalation/channel.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "SubstrateAlert",
@@ -339,7 +339,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     // High-cardinality dispatch trail — runtime tier.
     retention: RETENTION_RUNTIME_1Y,
     source: "Atlas runtime spec §3.3; A2.2 bus — platform/event-trigger-bus/bus.ts",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     // Substrate-runner lifecycle (S8 / D-AGENT-RUNTIME-AUTHORIZE).
@@ -407,7 +407,7 @@ export const RUNTIME_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_RUNTIME_1Y,
     source:
       "Owner Inbox/2026-05-09_atlas_a22-dispatcher-retire-legacy-spec.md §3.1; D-A22-RETIRE-LEGACY Phase 1",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];
 
@@ -434,7 +434,7 @@ export const GOAL_LOOP_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "platform/agent-runtime/goal-loop.ts; D-AGENT-AUTONOMY-OPERATIONAL Slice 3; Owner Inbox/2026-05-11_atlas_per-persona-goal-loop-substrate-spec.md §3.3",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "AgentGoalSelected",
@@ -447,7 +447,7 @@ export const GOAL_LOOP_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "platform/agent-runtime/goal-loop.ts; D-AGENT-AUTONOMY-OPERATIONAL Slice 3; Owner Inbox/2026-05-11_atlas_per-persona-goal-loop-substrate-spec.md §3.3",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
   {
     type: "AgentGoalDeferred",
@@ -460,7 +460,7 @@ export const GOAL_LOOP_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "platform/agent-runtime/goal-loop.ts; D-AGENT-AUTONOMY-OPERATIONAL Slice 3; Owner Inbox/2026-05-11_atlas_per-persona-goal-loop-substrate-spec.md §3.3",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];
 
@@ -529,6 +529,6 @@ export const AGENT_DECISION_REQUEST_EVENT_TYPES: readonly EventTypeMetadata[] = 
     citationsHint: ["GOV-FRAMEWORK-CEO-RESERVED"],
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/event-store/event-types/decision-request.ts (factory)",
-    v2Status: "v1-only",
+    v2Status: "v2-replaced",
   },
 ];

@@ -1,5 +1,5 @@
 {
-  "v1OnlyCount": 460,
+  "v1OnlyCount": 403,
   "asOf": "2026-06-17",
-  "authority": "D-BANK-WIDE-V2-MIGRATION (Bucket C pilot — flip agent-performance AgentPerformanceEvaluated + AgentFeedbackIssued v1-only->v2-replaced, -2 rows; was 462 under Bucket C prep)"
+  "authority": "D-BANK-WIDE-V2-MIGRATION (Bucket C bulk batch 1 — flip 57 money-free non-load-bearing control-plane substrate types (agent-lifecycle + governance-process + HR) v1-only->v2-replaced, -57 rows; was 460 under Bucket C pilot)"
 }
