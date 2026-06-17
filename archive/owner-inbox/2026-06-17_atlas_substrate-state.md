@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-06-17T20:18:14.528Z
+asOf: 2026-06-17T21:38:58.129Z
 decision-required: false
 ---
 
@@ -9,43 +9,43 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 118655 events across 176 types; 31/31 personas have operating specs; 144 runtime handlers registered; 814 files in /Owner Inbox/; 7 substrate gaps tracked.
+**Headline:** 118817 events across 176 types; 31/31 personas have operating specs; 144 runtime handlers registered; 814 files in /Owner Inbox/; 7 substrate gaps tracked.
 
 ## Event store
 
-Path: `/Users/marc/.local/share/bank/event.db` · Total events: 118655
+Path: `/Users/marc/.local/share/bank/event.db` · Total events: 118817
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
-| `SubstrateAgentRunStarted` | 18898 | 2026-05-26 | 2026-06-17 |
-| `SubstrateAgentRunCompleted` | 18725 | 2026-05-26 | 2026-06-17 |
-| `BusDispatched` | 17484 | 2026-05-25 | 2026-06-17 |
-| `LegacyFanoutShadowed` | 13955 | 2026-05-26 | 2026-06-17 |
+| `SubstrateAgentRunStarted` | 18933 | 2026-05-26 | 2026-06-17 |
+| `SubstrateAgentRunCompleted` | 18760 | 2026-05-26 | 2026-06-17 |
+| `BusDispatched` | 17519 | 2026-05-25 | 2026-06-17 |
+| `LegacyFanoutShadowed` | 13989 | 2026-05-26 | 2026-06-17 |
 | `ProvenanceReclassified` | 11479 | 2026-05-27 | 2026-06-12 |
-| `DashboardProjectionRefreshed` | 3912 | 2026-05-26 | 2026-06-17 |
-| `WorkstreamRegistered` | 3766 | 2026-05-07 | 2026-06-17 |
+| `DashboardProjectionRefreshed` | 3921 | 2026-05-26 | 2026-06-17 |
+| `WorkstreamRegistered` | 3774 | 2026-05-07 | 2026-06-17 |
 | `Decision` | 2858 | 2026-04-30 | 2026-06-17 |
 | `RecordFiled` | 2826 | 2026-05-05 | 2026-06-17 |
 | `ObligationAdopted` | 2520 | 2026-06-04 | 2026-06-15 |
 | `CalculationPerformed` | 2313 | 2026-06-01 | 2026-06-17 |
 | `SubstrateAlert` | 1719 | 2025-01-01 | 2026-06-17 |
-| `ScheduledTrigger` | 1296 | 2026-05-26 | 2026-06-17 |
+| `ScheduledTrigger` | 1297 | 2026-05-26 | 2026-06-17 |
 | `RiskRaised` | 1225 | 2026-05-07 | 2026-06-02 |
-| `AgentGoalEvaluated` | 1076 | 2026-05-26 | 2026-06-17 |
+| `AgentGoalEvaluated` | 1077 | 2026-05-26 | 2026-06-17 |
 | `ReconResult` | 963 | 2026-05-07 | 2026-06-17 |
-| `AgentRunCompleted` | 783 | 2026-05-10 | 2026-06-17 |
-| `AgentRunStarted` | 763 | 2026-05-10 | 2026-06-17 |
+| `AgentRunCompleted` | 784 | 2026-05-10 | 2026-06-17 |
+| `AgentRunStarted` | 764 | 2026-05-10 | 2026-06-17 |
 | `ApplicabilityAssessmentRequested` | 732 | 2026-06-13 | 2026-06-15 |
 | `ApplicabilityAssessmentPerformed` | 732 | 2026-06-13 | 2026-06-15 |
 | `ApplicabilityAssessmentConcluded` | 732 | 2026-06-13 | 2026-06-15 |
 | `AgentPerformanceEvaluated` | 651 | 2026-05-28 | 2026-06-17 |
 | `AgentFeedbackIssued` | 651 | 2026-05-28 | 2026-06-17 |
-| `AgentGoalSelected` | 595 | 2026-05-26 | 2026-06-17 |
+| `AgentGoalSelected` | 596 | 2026-05-26 | 2026-06-17 |
 | `AgentBriefIssued` | 591 | 2026-05-10 | 2026-06-17 |
 | `MarketsProjectionRefreshed` | 555 | 2026-05-09 | 2026-05-09 |
 | `IdentityKeyRotated` | 547 | 2026-05-27 | 2026-06-14 |
 | `AgentGoalDeferred` | 481 | 2026-05-26 | 2026-06-17 |
-| `SubstrateStateSnapshot` | 470 | 2026-05-07 | 2026-06-17 |
+| `SubstrateStateSnapshot` | 471 | 2026-05-07 | 2026-06-17 |
 | `ObligationReviewCompleted` | 454 | 2026-06-09 | 2026-06-10 |
 | `PermissionPolicyPublished` | 411 | 2026-05-26 | 2026-06-14 |
 | `DecisionDistilled` | 299 | 2026-06-12 | 2026-06-15 |
@@ -363,7 +363,7 @@ Tracked engineering items that block agents from running fully autonomously. Eac
 
 ## Atlas's narrative
 
-_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011Cc9T4o9jxzoXGGwzNVhHL"})._
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011Cc9cwQ9Mb68kMVR9mccJC"})._
 
 ## Provenance
 
