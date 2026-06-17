@@ -5,8 +5,18 @@
 // STATUS: PHASE 3A — ADVISORY (ok: true even with warn-severity violations).
 //
 // This gate compares the V1 trial-balance (SubLedgerPostingEmitted → computeTrialBalance)
-// against the V2 trial-balance (GlPostingEmitted → computeTrialBalanceV2) for
-// the anchor entity over a fixed window.
+// against the V2 trial-balance (computeTrialBalanceV2) for the anchor entity over
+// a fixed window.
+//
+// ## V2 trial-balance composition (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD, 2026-06-17)
+//
+// The V2 trial balance is NO LONGER sourced solely from stored GlPostingEmitted
+// events. Its FX contribution is now a PURE FOLD over the primary FIL FX events
+// (gl-projection-v2 → fx-fold); non-FX accounts (bond / money-market / capital)
+// still come from GlPostingEmitted. This gate consumes the combined
+// computeTrialBalanceV2 output and does NOT assume FX is GlPostingEmitted-sourced.
+// The dedicated byte-equivalence proof for the FX fold is
+// `recon:gl-v2-fold-equivalence-fx`.
 //
 // ## Expected outcome at Phase 3A
 //

@@ -278,6 +278,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // tagged) and asserts the computeGlEntriesV2 / computeGlAccountsV2 folds. Not a
   // production access path. T-01 carve-out.
   "platform/projections/gl-projection-v2-entries-accounts.test.ts",
+  // D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD — FX trial-balance fold golden-equivalence
+  // + in-test provenance cohort proof. Same build-phase fixture pattern as the V2
+  // GL tests above: raw EventStore(":memory:") seeds FIL FX events + treatment
+  // modules (production-tagged) and a simulated cohort, runs the engine reference,
+  // asserts the pure FX fold reproduces it byte-for-byte and the cohort is
+  // excluded/reclassified. Not a production access path. T-01 carve-out. F-031.
+  "platform/accounting/posting-rules-v2/fx-fold.test.ts",
   // WS-V2-AUTHORITATIVE S6 — dashboard-shaped V2 ALM-position-snapshot projection
   // unit test. Same build-phase fixture pattern as the V2 GL tests above: raw
   // EventStore(":memory:") seeds V1 / V2 money-market lifecycle events and asserts

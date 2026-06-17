@@ -22,6 +22,7 @@
     "recon:v1-only-count-trend": "bun run platform/recon/v1-only-count-trend.ts",
     "recon:fx-v2-parity": "bun run platform/recon/fx-v2-parity.ts",
     "recon:gl-v2-parity": "bun run platform/recon/gl-v2-parity.ts",
+    "recon:gl-v2-fold-equivalence-fx": "bun run platform/recon/gl-v2-fold-equivalence-fx.ts",
     "recon:ba300-v2-parity": "bun run platform/recon/ba300-v2-parity.ts",
     "recon:bond-gl-v2-parity": "bun run platform/recon/bond-gl-v2-parity.ts",
     "recon:daily-pnl-v2-parity": "bun run platform/recon/daily-pnl-v2-parity.ts",
