@@ -71,6 +71,13 @@ function ownerFor(dimension: string): string {
 export interface RenderFxNpaConsolidatedDocInput {
   readonly row: ProductRegisterRow;
   readonly gate: NpaGateResult;
+  /**
+   * Approval status derived from the dashboard NPA view (latest
+   * ProductApproved / ProductWithheld). Drives the lifecycle prose so the doc
+   * states "withheld" independent of the raw register stage string
+   * (a ProductWithheld maps the register stage to `under-review`).
+   */
+  readonly npaStatus: "approved" | "withheld" | "pending";
   /** ISO-8601 logical instant the doc is filed as. */
   readonly asOf: string;
 }
@@ -81,13 +88,13 @@ export interface RenderFxNpaConsolidatedDocInput {
  * idempotently).
  */
 export function renderFxNpaConsolidatedDoc(input: RenderFxNpaConsolidatedDocInput): string {
-  const { row, gate, asOf } = input;
+  const { row, gate, npaStatus, asOf } = input;
   const lines: string[] = [];
 
   lines.push("# FX OTC Vanilla — Consolidated NPA (treatment-module enrichment)");
   lines.push("");
   lines.push(`- **Product:** \`${row.productId}\` (${row.family}), version ${row.version}`);
-  lines.push(`- **Lifecycle state:** **${row.lifecycleStage}**`);
+  lines.push(`- **Lifecycle state:** **${npaStatus}** (register stage: ${row.lifecycleStage})`);
   lines.push(`- **As of:** ${asOf}`);
   lines.push(
     "- **Authority:** D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD (CEO-approved 2026-06-17); " +
@@ -96,7 +103,7 @@ export function renderFxNpaConsolidatedDoc(input: RenderFxNpaConsolidatedDocInpu
   lines.push("- **Author:** Bea (Financial Accountant, finance).");
   lines.push("");
   lines.push(
-    `> This document records the enrichment of the accounting, capital/prudential and tax dimension attestations so each cites its versioned reporting-treatment module as the canonical source. It is a render of the event log (Principle 1); the \`RecordFiled\` event is the canonical artefact. **It does NOT re-approve the product — the umbrella remains \`${row.lifecycleStage}\` pending a separate re-gate; no \`ProductApproved\` is emitted.**`,
+    `> This document records the enrichment of the accounting, capital/prudential and tax dimension attestations so each cites its versioned reporting-treatment module as the canonical source. It is a render of the event log (Principle 1); the \`RecordFiled\` event is the canonical artefact. **It does NOT re-approve the product — the umbrella remains **${npaStatus}** pending a separate re-gate; no \`ProductApproved\` is emitted.**`,
   );
   lines.push("");
 
@@ -106,9 +113,9 @@ export function renderFxNpaConsolidatedDoc(input: RenderFxNpaConsolidatedDocInpu
   lines.push("## 1. Lifecycle & gate");
   lines.push("");
   lines.push(
-    `The umbrella FX product is **${row.lifecycleStage}** (withheld 2026-06-15, pending re-gate). The NPA gate (D-NPA-GATE-POLICY-REDESIGN) over the current attestations reports \`ready=${gate.ready}\`${gate.missing.length > 0 ? `, blocking dimensions: ${gate.missing.join(", ")}` : ""}${
+    `The umbrella FX product is **${npaStatus}** (withheld 2026-06-15 per the standing CEO decision D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL; register stage ${row.lifecycleStage}; pending re-gate). The NPA gate (D-NPA-GATE-POLICY-REDESIGN) over the current attestations reports \`ready=${gate.ready}\`${gate.missing.length > 0 ? `, blocking dimensions: ${gate.missing.join(", ")}` : ""}${
       gate.openConditions.length > 0 ? `, open conditions: ${gate.openConditions.join("; ")}` : ""
-    }. This enrichment changes neither the gate result nor the lifecycle state.`,
+    }. This enrichment changes neither the gate result nor the approval state.`,
   );
   lines.push("");
 
