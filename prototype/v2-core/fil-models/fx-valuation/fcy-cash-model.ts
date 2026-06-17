@@ -63,8 +63,14 @@ import { requireReporting } from "./reporting-currency-resolver";
 export const FCY_CASH_MODEL_ID = "fcy-cash" as const;
 export const FCY_CASH_MODEL_VERSION = { major: 1, minor: 0 } as const;
 
-/** The FCY-cash taxonomy scope (`fil:type:fx:cash:*` — the monetary cash family). */
-export const FCY_CASH_MODEL_SCOPE = ["fil:type:fx:cash"] as FilScopePattern[];
+/**
+ * The cash taxonomy scope. Re-pointed from the never-minted `fil:type:fx:cash:*`
+ * onto the first-class `cash` asset class `fil:type:cash:*`
+ * (D-CASH-ASSET-CLASS-V1) — cash is SEPARATE from `fx`. The `modelId` stays
+ * `fcy-cash` to preserve existing model registrations; the valuation arithmetic
+ * (`balance × closing rate`, IAS-21 §23) is unchanged.
+ */
+export const FCY_CASH_MODEL_SCOPE = ["fil:type:cash:balance"] as FilScopePattern[];
 
 /** The event-of-record the FCY-cash Valuable mirrors (the FCY balance reval). */
 export const FCY_CASH_MODEL_EMITS = ["FcyCashBalanceRevalued"] as FilEventRef[];

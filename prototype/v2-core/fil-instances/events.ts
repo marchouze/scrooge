@@ -46,15 +46,26 @@ import { instantSchema, moneySchema } from "../fil-core/primitives";
 import { filInstanceUrnSchema, filTypeUrnSchema } from "../fil-core/urn";
 
 // ---------------------------------------------------------------------------
-// SA-CCR asset class — the FIL-native partition the RiskMeasurable consumer
-// keys on. Re-declared here (not imported from fil-facets) to keep the event
-// family's grammar self-contained; the value set is the SA-CCR subset of the
-// taxonomy asset classes. IR + FX are the materialised scope; the wider union
-// is admitted so later slices (credit/equity/commodity) extend without a
-// schema change.
+// FIL economic-terms asset class — the FIL-native partition a RiskMeasurable /
+// Valuable consumer keys on. Re-declared here (not imported from fil-facets) to
+// keep the event family's grammar self-contained; the value set is the
+// SA-CCR-quantifiable subset of the taxonomy asset classes PLUS `cash`. IR + FX
+// are the SA-CCR-materialised scope; `cash` is the post-settlement member of the
+// FX-trading book slice (D-CASH-ASSET-CLASS-V1) — a monetary cash balance that
+// is NOT itself an SA-CCR derivative exposure but IS a real, event-sourced FIL
+// instance (instrument-of-record) carrying its own Valuable. The wider union is
+// admitted so later slices (credit/equity/commodity) extend without a schema
+// change.
 // ---------------------------------------------------------------------------
 
-export const filSaCcrAssetClassSchema = z.enum(["ir", "fx", "credit", "equity", "commodity"]);
+export const filSaCcrAssetClassSchema = z.enum([
+  "ir",
+  "fx",
+  "cash",
+  "credit",
+  "equity",
+  "commodity",
+]);
 
 export type FilSaCcrAssetClass = z.infer<typeof filSaCcrAssetClassSchema>;
 
