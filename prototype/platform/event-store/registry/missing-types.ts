@@ -46,7 +46,6 @@ import {
   roleResearchQueueSnapshotPayloadSchema,
   roleResearchRequestedPayloadSchema,
 } from "../event-types/agent-substrate-extended";
-import { intradayHQLAStressProjectionPayloadSchema } from "../event-types/alco";
 import { almRunCompletedPayloadSchema, irrbBCheckedPayloadSchema } from "../event-types/alm";
 import {
   adverseMediaPublishedPayloadSchema,
@@ -94,8 +93,6 @@ import {
 import {
   alertOpenedPayloadSchema,
   auditCommitteePackPreppedPayloadSchema,
-  auditIssueClosedPayloadSchema,
-  auditIssueOpenedPayloadSchema,
   capacityBreachPayloadSchema,
   changeApprovalRequestedPayloadSchema,
   conflictDeclaredPayloadSchema,
@@ -171,12 +168,6 @@ import {
   tradePostedPayloadSchema,
   transactionPostedPayloadSchema,
 } from "../event-types/markets-trading-extended";
-import {
-  paymentInitiatedPayloadSchema,
-  paymentSettledPayloadSchema,
-  reconciliationBreakPayloadSchema,
-  settlementInstructionReceivedPayloadSchema,
-} from "../event-types/payments";
 import {
   almReadinessSnapshotPayloadSchema,
   appetiteBreachPayloadSchema,
@@ -683,18 +674,10 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     source: "runtime/agents/metadata/bea.ts",
     v2Status: "v1-only",
   },
-  {
-    // Emitted when payment is settled by correspondent / NPS participant.
-    type: "PaymentSettled",
-    class: "markets",
-    payloadSchema: paymentSettledPayloadSchema,
-    issuer: "Tomas",
-    subscribers: ["Bea"],
-    replay: "idempotent-terminal",
-    retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source: "runtime/agents/metadata/bea.ts; platform/event-store/event-types/payments.ts",
-    v2Status: "v1-only",
-  },
+  // NOTE (Bucket C prep, D-BANK-WIDE-V2-MIGRATION): the shadow row for
+  // PaymentSettled was removed here — it duplicated the canonical schema-bearing
+  // row in `registry/payments.ts` (`PAYMENTS_EVENT_TYPES_REGISTRY`, same
+  // payloadSchema) and was inflating the v1-only ratchet row count.
   // ---------------------------------------------------------------------------
   // FX trade lifecycle extension — D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved
   // 2026-05-18). Six new event types covering confirmation, settlement failure,
@@ -1120,21 +1103,12 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     source: "runtime/agents/metadata/ravi.ts",
     v2Status: "v1-only",
   },
-  {
-    // Emitted once per SAMOS window per scenario (8 total per daily run:
-    // 4 windows × 2 scenarios BAU + stress). Records projected HQLA buffer
-    // against the RAS intraday floor. BCBS 248 intraday liquidity monitoring.
-    // D-TREASURY-GAPS-WAVE1; BCBS 248; Banks Act Reg 26.
-    type: "IntradayHQLAStressProjection",
-    class: "markets",
-    payloadSchema: intradayHQLAStressProjectionPayloadSchema,
-    issuer: "Ravi",
-    subscribers: ["Ravi", "Eitan", "Helena", "dashboard"],
-    replay: "append-only-audit",
-    retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source: "runtime/agents/metadata/ravi.ts",
-    v2Status: "v1-only",
-  },
+  // NOTE (Bucket C prep, D-BANK-WIDE-V2-MIGRATION): the shadow row for
+  // IntradayHQLAStressProjection was removed here — it duplicated the canonical
+  // schema-bearing row in `registry/alco.ts` (`ALCO_EVENT_TYPES_REGISTRY`, same
+  // payloadSchema) which — being ordered after missing-types in the combined
+  // registry — already won the dedup Map. Removing the shadow de-duplicates the
+  // ratchet row count and removes the parity-ambiguity hazard.
   {
     // Emitted when a material IFRS classification change is made to a
     // financial instrument (e.g. AFS → FVTPL per IFRS 9 §4.4).
@@ -1758,31 +1732,15 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
     source: "runtime/agents/metadata/imani.ts",
     v2Status: "v1-only",
   },
-  {
-    // Emitted by Thandiwe when an audit issue is opened following a finding.
-    type: "AuditIssueOpened",
-    class: "audit",
-    payloadSchema: auditIssueOpenedPayloadSchema,
-    issuer: "Thandiwe",
-    subscribers: ["Thandiwe"],
-    replay: "pair-coupled",
-    retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source: "runtime/agents/metadata/thandiwe.ts",
-    v2Status: "v1-only",
-  },
-  {
-    // Emitted by Thandiwe when an audit issue is closed and management
-    // action verified.
-    type: "AuditIssueClosed",
-    class: "audit",
-    payloadSchema: auditIssueClosedPayloadSchema,
-    issuer: "Thandiwe",
-    subscribers: ["Thandiwe"],
-    replay: "pair-coupled",
-    retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source: "runtime/agents/metadata/thandiwe.ts",
-    v2Status: "v1-only",
-  },
+  // NOTE (Bucket C prep, D-BANK-WIDE-V2-MIGRATION): the shadow rows for
+  // AuditIssueOpened and AuditIssueClosed were removed here. They duplicated the
+  // canonical schema-bearing rows in `registry/governance.ts` (AUDIT_EVENT_TYPES,
+  // same payloadSchema). The shadows were ALSO mis-attributed (issuer "Thandiwe",
+  // replay "pair-coupled") and — being ordered after governance.ts in the
+  // combined registry — were overriding the correct canonical rows (issuer
+  // "Vera", the actual emitter via vera:issues-tracker; subscribers
+  // [Thandiwe, Vera, dashboard]; replay "append-only-audit"). Removing them both
+  // de-duplicates the ratchet and restores the correct canonical metadata.
   {
     // Emitted when an external auditor formal inquiry is received.
     type: "ExternalAuditorInquiry",
@@ -1844,44 +1802,13 @@ const GOVERNANCE_LEGAL_EVENT_TYPES: readonly EventTypeMetadata[] = [
 // ---------------------------------------------------------------------------
 
 const PAYMENTS_EVENT_TYPES: readonly EventTypeMetadata[] = [
-  {
-    // Emitted when a settlement instruction is received from a counterparty.
-    type: "SettlementInstructionReceived",
-    class: "markets",
-    payloadSchema: settlementInstructionReceivedPayloadSchema,
-    issuer: "Tomas",
-    subscribers: ["Tomas"],
-    replay: "append-only-audit",
-    retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source: "runtime/agents/metadata/tomas.ts; platform/event-store/event-types/payments.ts",
-    v2Status: "v1-only",
-  },
-  {
-    // Emitted when a payment instruction is initiated via the correspondent
-    // bank channel.
-    type: "PaymentInitiated",
-    class: "markets",
-    payloadSchema: paymentInitiatedPayloadSchema,
-    issuer: "Tomas",
-    subscribers: ["Tomas"],
-    replay: "append-only-audit",
-    retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source: "runtime/agents/metadata/tomas.ts; platform/event-store/event-types/payments.ts",
-    v2Status: "v1-only",
-  },
-  {
-    // Emitted when a reconciliation break is detected between the bank's
-    // records and the correspondent's statement.
-    type: "ReconciliationBreak",
-    class: "audit",
-    payloadSchema: reconciliationBreakPayloadSchema,
-    issuer: "Tomas",
-    subscribers: ["Tomas"],
-    replay: "append-only-audit",
-    retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source: "runtime/agents/metadata/tomas.ts; platform/event-store/event-types/payments.ts",
-    v2Status: "v1-only",
-  },
+  // NOTE (Bucket C prep, D-BANK-WIDE-V2-MIGRATION): the shadow rows for
+  // SettlementInstructionReceived, PaymentInitiated and ReconciliationBreak
+  // were removed here — they duplicated the canonical schema-bearing rows in
+  // `registry/payments.ts` (`PAYMENTS_EVENT_TYPES_REGISTRY`, same payloadSchema)
+  // and were inflating the v1-only ratchet row count without representing
+  // distinct types. CutOffBreach below is NOT a duplicate (no canonical row
+  // elsewhere) and is retained.
   {
     // Emitted when a settlement cut-off time breach is detected.
     type: "CutOffBreach",

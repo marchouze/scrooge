@@ -30,7 +30,7 @@ import { resolve } from "node:path";
 
 import { Database } from "bun:sqlite";
 
-import { isMoneyWire } from "../../v2-core/bucket-a-a2/money-wire";
+import { isMoneyWire } from "../../v2-core/core/money-wire";
 import { eqD, toDecimal } from "../../v2-core/fil-core/decimal";
 import { RAS_APPETITE_LINES } from "../risk/ras-appetite-register";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";

@@ -1,5 +1,5 @@
 {
-  "v1OnlyCount": 469,
+  "v1OnlyCount": 462,
   "asOf": "2026-06-17",
-  "authority": "D-V1-REMOVAL-FLIP-BASIS-RBC"
+  "authority": "D-BANK-WIDE-V2-MIGRATION (Bucket C prep — de-dup 7 shadow rows; was 469 under D-V1-REMOVAL-FLIP-BASIS-RBC)"
 }
