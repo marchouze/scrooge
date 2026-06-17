@@ -245,6 +245,7 @@
     "seed:v2-fil-instances-ir-fx": "bun run scripts/seed-v2-fil-instances-ir-fx.ts",
     "backfill:fil-instances": "bun run scripts/backfill-fil-instances.ts",
     "recon:fil-conformance": "bun run platform/recon/fil-conformance.ts",
+    "recon:reporting-treatment-registry-conflict": "bun run platform/recon/reporting-treatment-registry-conflict.ts",
     "recon:v2-saccr-parity": "bun run platform/recon/v2-saccr-parity.ts",
     "recon:v2-posture-register-integrity": "bun run platform/recon/v2-posture-register-integrity.ts",
     "recon:posture-v2-parity": "bun run platform/recon/posture-v2-parity.ts",

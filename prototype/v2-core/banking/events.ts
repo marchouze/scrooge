@@ -67,6 +67,17 @@ export const v2ProductRegisteredSchema = z.object({
   ]),
   /** FIL taxonomy scope pattern(s) this product maps to. */
   filTypeScopes: z.array(filScopePatternSchema).min(1),
+  /**
+   * The reporting-treatment MENU pick (S0b, D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD).
+   * Each entry is a `treatmentId` resolved against the reporting-treatment
+   * registry (`v2-core/reporting-treatments/registry.ts`) — the product composes
+   * its accounting/regulatory treatment (IFRS classification, posting-rule set,
+   * prudential/tax treatment, disclosure lens) by picking treatment modules,
+   * MIRRORING how `filTypeScopes` is the FIL-taxonomy menu pick. OPTIONAL and
+   * additive: existing products / seeds that predate the menu stay valid; the
+   * resolver (S0c) treats an absent pick as "no treatment composed yet".
+   */
+  reportingTreatmentModuleIds: z.array(z.string()).optional(),
   /** v1 product id for parity recon — links back to `prd:bank:…` NPA events. */
   v1ProductId: z.string().min(1).optional(),
   /** ISO 4217 currencies this product trades in (multi-currency — Principle 5). */

@@ -155,6 +155,11 @@ export { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillat
 // WS-V2-BBAAS S0 — FilModelImplementationDeclared (FIL-Models registry).
 // Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1.
 export { FIL_MODELS_EVENT_TYPES_REGISTRY } from "./fil-models";
+// WS-ACCT-MODULAR-FOLD S0a — ReportingTreatmentDeclared (reporting-treatment
+// menu registry). A Product composes its accounting/regulatory treatment by
+// picking treatment modules from this registry; mirrors the FIL-Models pattern.
+// Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD; D-DERIVED-EVENT-IRREDUCIBILITY-TEST.
+export { REPORTING_TREATMENT_EVENT_TYPES_REGISTRY } from "./reporting-treatments";
 // WS-V2-BBAAS — FilInstrumentCreated/Amended/Terminated (FIL instance family).
 // Native fil:inst lifecycle records for the materialised anchor IR + FX book;
 // emitted ONLY into BANK_V2_ANCHOR_DB; never touch the v1 canonical store.
@@ -360,6 +365,7 @@ import { REGULATORY_PA_EVENT_TYPES_REGISTRY } from "./regulatory-pa";
 import { REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory-reporting";
 import { REPO_MMD_IBL_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl";
 import { REPO_MMD_IBL_V2_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl-v2";
+import { REPORTING_TREATMENT_EVENT_TYPES_REGISTRY } from "./reporting-treatments";
 import {
   AGENT_DECISION_REQUEST_EVENT_TYPES,
   AGENT_OPS_EVENT_TYPES,
@@ -521,6 +527,10 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // WS-V2-BBAAS S0 — FilModelImplementationDeclared (FIL-Models registry scaffold).
   // Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1.
   ...FIL_MODELS_EVENT_TYPES_REGISTRY,
+  // WS-ACCT-MODULAR-FOLD S0a — ReportingTreatmentDeclared (reporting-treatment
+  // menu registry; a Product composes its treatment by picking modules).
+  // Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD; D-DERIVED-EVENT-IRREDUCIBILITY-TEST.
+  ...REPORTING_TREATMENT_EVENT_TYPES_REGISTRY,
   // WS-V2-BBAAS — FilInstrumentCreated/Amended/Terminated (FIL instance family).
   // Native fil:inst lifecycle records for the materialised anchor IR + FX book.
   // Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1.

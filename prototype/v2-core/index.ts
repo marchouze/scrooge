@@ -81,6 +81,20 @@ export * from "./fil-models/fx-valuation";
  * Authority: D-FIL-ATTRIBUTION-A1-BUILD (A3); D-VAR-EXPOSURE-INCLUDES-STANDING-NOP. */
 export * from "./fil-models/market-risk-var";
 
+// --- Reporting-treatment menu (shared accounting-composition substrate) -----
+
+/** @tier R — Reporting-treatment module declaration shape: a Product composes
+ * its accounting/regulatory treatment by picking treatment modules (IFRS
+ * classification, posting-rule set, prudential/tax treatment, disclosure lens)
+ * from this registry — modelled on the FIL-Models declaration/registry pattern.
+ * Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD. */
+export * from "./reporting-treatments/declaration";
+
+/** @tier R — Reporting-treatment registry (read-only query surface for R; write
+ * surface for K). Folds ReportingTreatmentDeclared events into a register keyed
+ * (category, scope, version) with the same conflict-detection as FIL-Models. */
+export * from "./reporting-treatments/registry";
+
 // --- V2 type registry (Wave 0) ---------------------------------------------
 
 /** @tier K — v2-native event-type registry + payload validation (the general-host
