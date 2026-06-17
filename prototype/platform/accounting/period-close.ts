@@ -561,6 +561,165 @@ export function closePeriod(args: ClosePeriodArgs): ClosePeriodResult {
 }
 
 // ---------------------------------------------------------------------------
+// closePeriodV2 — FX4: close over the FOLDED V2 trial balance.
+//
+// The fold output (`computeTrialBalanceV2`) is materialised EXACTLY ONCE, at
+// period close — the as-filed recognition act (analogous to OfficialMarkAdopted).
+// This is THE one legitimate derived event in the accounting chain
+// (D-DERIVED-EVENT-IRREDUCIBILITY-TEST): the close snapshot is a CACHE of the
+// fold at a fixed (uptoSequence, asOf), never divergent state. The
+// `recon:tb-snapshot-reproducible` gate proves re-folding the primaries at the
+// snapshot point reproduces the snapshotted rows byte-for-byte.
+//
+// Mirrors `closePeriod` exactly — same open-period discovery, double-close guard,
+// document-store hash, snapshot substrate, and the SAME factories
+// (`makeTrialBalanceSnapshotted` / `makeAccountingPeriodClosed`, unchanged). The
+// ONLY difference is the trial-balance source: the FX-fold-over-FIL V2 path
+// instead of the V1 SubLedgerPostingEmitted fold.
+//
+// DEPENDENCY INVERSION: the V2 fold (`computeTrialBalanceV2`) is INJECTED via
+// `args.computeTrialBalanceV2` rather than imported here. `gl-projection-v2.ts`
+// already imports the `TrialBalance` TYPE from this module; importing its fold
+// VALUE back would form an import cycle (`recon:madge-circular-deps`). Injection
+// keeps `period-close.ts` free of any `gl-projection-v2` import — the caller (the
+// recon gate, the dashboard close path, tests) passes the fold function.
+//
+// Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD (CEO-approved 2026-06-17),
+//   citing D-DERIVED-EVENT-IRREDUCIBILITY-TEST. Principle 1.
+// ---------------------------------------------------------------------------
+
+export interface ClosePeriodV2Args extends ClosePeriodArgs {
+  /**
+   * The V2 folded trial-balance computation — injected (dependency inversion) to
+   * avoid an import cycle with `gl-projection-v2.ts`. Callers pass
+   * `computeTrialBalanceV2` from `platform/projections/gl-projection-v2`.
+   */
+  readonly computeTrialBalanceV2: (a: ComputeTrialBalanceArgs) => TrialBalance;
+}
+
+export function closePeriodV2(args: ClosePeriodV2Args): ClosePeriodResult {
+  // Find the most-recent (by sequence — replay is ordered) open event for the
+  // period; same discovery as the V1 closePeriod.
+  let mostRecentOpen: Event | undefined;
+  for (const e of args.eventStore.replay({
+    entity: args.entity,
+    type: "AccountingPeriodOpened",
+  })) {
+    const p = e.payload as Record<string, unknown>;
+    if (p.periodId === args.periodId) mostRecentOpen = e;
+  }
+  if (!mostRecentOpen) {
+    throw new Error(
+      `closePeriodV2: no AccountingPeriodOpened for (entity=${args.entity}, periodId=${args.periodId})`,
+    );
+  }
+
+  // Reject double-close (same guard as V1 closePeriod).
+  for (const e of args.eventStore.replay({
+    entity: args.entity,
+    type: "AccountingPeriodClosed",
+  })) {
+    const p = e.payload as Record<string, unknown>;
+    if (p.periodId === args.periodId && e.as_of >= mostRecentOpen.as_of) {
+      throw new Error(
+        `closePeriodV2: period ${args.periodId} already closed for entity ${args.entity} (event_id=${e.event_id})`,
+      );
+    }
+  }
+
+  const openedPayload = mostRecentOpen.payload as unknown as AccountingPeriodOpenedPayload;
+
+  // (a) compute the trial balance via the FOLDED V2 path (FX from FIL events).
+  const trialBalance = args.computeTrialBalanceV2({
+    eventStore: args.eventStore,
+    entity: args.entity,
+    periodStart: openedPayload.periodStart,
+    periodEnd: openedPayload.periodEnd,
+  });
+
+  // (b) optionally write trial-balance JSON to the document store.
+  let documentHash: string | undefined;
+  if (args.documentStore) {
+    const json = JSON.stringify({
+      entity: args.entity,
+      periodId: args.periodId,
+      asOf: args.closedAt,
+      uptoSequence: trialBalance.uptoSequence,
+      rows: trialBalance.rows,
+      perCurrencyTotals: trialBalance.perCurrencyTotals,
+    });
+    const put = args.documentStore.put(json);
+    documentHash = put.hash;
+  }
+
+  // (c) construct + append TrialBalanceSnapshotted (REUSED factory, unchanged).
+  const tbPayload: TrialBalanceSnapshottedPayload = {
+    periodId: args.periodId,
+    snapshotKind: "close",
+    snapshotAsOf: args.closedAt,
+    uptoSequence: trialBalance.uptoSequence,
+    rows: [...trialBalance.rows],
+    perCurrencyTotals: [...trialBalance.perCurrencyTotals],
+    ...(documentHash ? { documentHash } : {}),
+  };
+  const tbEvent = makeTrialBalanceSnapshotted({
+    asOf: args.closedAt,
+    entity: args.entity,
+    actor: args.actor,
+    citations: [...args.citations],
+    payload: tbPayload,
+    ...(args.provenance ? { provenance: args.provenance } : {}),
+  });
+  args.eventStore.append(tbEvent);
+
+  const closedAtSequence = args.eventStore.highWatermark();
+
+  // (d) cache the trial balance via the EvSS Slice 2 snapshot substrate.
+  const snapPayload = JSON.stringify({
+    periodId: args.periodId,
+    asOf: args.closedAt,
+    uptoSequence: trialBalance.uptoSequence,
+    rows: trialBalance.rows,
+    perCurrencyTotals: trialBalance.perCurrencyTotals,
+    trialBalanceSnapshotEventId: tbEvent.event_id,
+    ...(documentHash ? { documentHash } : {}),
+  });
+  const snapshotRow = args.eventStore.snapshot({
+    streamKey: periodCloseStreamKey(args.entity),
+    asOf: args.closedAt,
+    uptoSequence: trialBalance.uptoSequence,
+    payload: snapPayload,
+  });
+
+  // (e) append AccountingPeriodClosed referencing the snapshot (REUSED factory).
+  const closedPayload: AccountingPeriodClosedPayload = {
+    periodId: args.periodId,
+    closedAt: args.closedAt,
+    trialBalanceSnapshotEventId: tbEvent.event_id,
+    uptoSequence: trialBalance.uptoSequence,
+    eventSequence: closedAtSequence,
+    ...(documentHash ? { trialBalanceDocumentHash: documentHash } : {}),
+  };
+  const closedEvent = makeAccountingPeriodClosed({
+    asOf: args.closedAt,
+    entity: args.entity,
+    actor: args.actor,
+    citations: [...args.citations],
+    payload: closedPayload,
+    ...(args.provenance ? { provenance: args.provenance } : {}),
+  });
+  args.eventStore.append(closedEvent);
+
+  return {
+    trialBalance,
+    trialBalanceSnapshotEvent: tbEvent,
+    accountingPeriodClosedEvent: closedEvent,
+    ...(documentHash !== undefined ? { documentHash } : {}),
+    snapshotRowId: snapshotRow.id,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Replay helpers (read-side; consumers query close audit chains)
 // ---------------------------------------------------------------------------
 

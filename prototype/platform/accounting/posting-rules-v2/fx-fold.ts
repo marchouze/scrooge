@@ -50,6 +50,11 @@ import type {
   FilInstrumentTerminatedPayload,
 } from "../../../v2-core/fil-instances/events";
 import {
+  type InstanceElectionRegister,
+  findInstanceElection,
+  foldInstanceElectionRegister,
+} from "../../../v2-core/reporting-treatments/instance-election";
+import {
   type ReportingTreatmentRegister,
   foldReportingTreatmentRegister,
 } from "../../../v2-core/reporting-treatments/registry";
@@ -62,6 +67,7 @@ import {
   resolveInstanceTreatment,
 } from "../reporting-treatment-dispatcher";
 import {
+  type FxElectionOverride,
   type FxPostingLeg,
   isFxInstance,
   postFxCloseLegs,
@@ -108,9 +114,27 @@ export interface FxFoldLeg extends FxPostingLeg {
   readonly filEventId: string;
 }
 
+/**
+ * A folded instance whose treatment DEVIATES from the product default because a
+ * per-instance election (FX3) overrode it. Surfaced so the election-provenance
+ * recon gate can assert every deviation has a backing recorded election with a
+ * citation (no silent treatment change).
+ */
+export interface FxFoldDeviation {
+  readonly instance: string;
+  /** The treatment facet the election overrode (e.g. "ifrs-classification"). */
+  readonly facet: string;
+  /** Human-readable description of the deviation (e.g. "FVOCI election → OCI"). */
+  readonly detail: string;
+  /** The citations backing the election (≥1, enforced at the schema level). */
+  readonly cites: readonly string[];
+}
+
 export interface FxFoldResult {
   readonly legs: readonly FxFoldLeg[];
   readonly skipped: readonly FxFoldSkip[];
+  /** Instances whose folded treatment deviated from the product default via an election. */
+  readonly deviations: readonly FxFoldDeviation[];
 }
 
 // ---------------------------------------------------------------------------
@@ -132,6 +156,25 @@ export function foldTreatmentRegisterFromStore(
     payloads.push(e.payload);
   }
   return foldReportingTreatmentRegister(payloads);
+}
+
+/**
+ * Fold the `FilInstanceTreatmentElected` events visible in `store` into the
+ * per-instance election register (FX3). Applies the SAME provenance filter as
+ * the GL fold so elections match the operating book. An election with a missing
+ * citation / mismatched facet value is REJECTED by the schema parse inside the
+ * fold (fail-closed) — surfaced as a thrown error, never silently dropped.
+ */
+export function foldElectionRegisterFromStore(
+  store: Pick<EventStore, "replay">,
+): InstanceElectionRegister {
+  const filter = defaultProvenanceFilter();
+  const payloads: unknown[] = [];
+  for (const e of store.replay({ type: "FilInstanceTreatmentElected" })) {
+    if (!eventMatchesProvenanceFilter(e, filter)) continue;
+    payloads.push(e.payload);
+  }
+  return foldInstanceElectionRegister(payloads);
 }
 
 // ---------------------------------------------------------------------------
@@ -264,8 +307,17 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
   const treatmentStore = args.treatmentStore ?? args.eventStore;
   const register = foldTreatmentRegisterFromStore(treatmentStore);
 
+  // Per-instance accounting elections (FX3) — overrides the product-default
+  // treatment for the elected facet, joined to instances by instance URN below.
+  // Elections live in the treatment store (the same governance store the product
+  // bindings live in). On an empty store the register folds to empty (no override).
+  const electionRegister: InstanceElectionRegister = foldElectionRegisterFromStore(treatmentStore);
+
   const legs: FxFoldLeg[] = [];
   const skipped: FxFoldSkip[] = [];
+  const deviations: FxFoldDeviation[] = [];
+  // De-dup deviation records per (instance, facet) — one election, one deviation.
+  const recordedDeviations = new Set<string>();
 
   // Read the FIL FX lifecycle events from the store in sequence order (stable,
   // matching the engine's iteration). Iterate each registered type stream and
@@ -316,6 +368,31 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
       continue;
     }
 
+    // Per-instance election override (FX3). An election on this instance for the
+    // `ifrs-classification` facet (e.g. an FVOCI election, IFRS 9 §5.7.5) overrides
+    // the product-default treatment for the facet — here it reroutes the
+    // revaluation's fair-value leg to OCI. Absent an election the product default
+    // binds (the byte-identical engine behaviour). The deviation is RECORDED with
+    // its backing citations, never applied silently.
+    const ifrsElection = findInstanceElection(electionRegister, instance, "ifrs-classification");
+    let electionOverride: FxElectionOverride | undefined;
+    if (ifrsElection?.ifrsCategory !== undefined) {
+      electionOverride = { ifrsCategory: ifrsElection.ifrsCategory };
+      // Record the deviation ONCE per (instance, facet) — an election applies to
+      // the whole instance, not per lifecycle event (multiple lifecycle events
+      // for one instance must not double-count the deviation).
+      const devKey = `${instance}::ifrs-classification`;
+      if (!recordedDeviations.has(devKey)) {
+        recordedDeviations.add(devKey);
+        deviations.push({
+          instance,
+          facet: "ifrs-classification",
+          detail: `IFRS classification elected to ${ifrsElection.ifrsCategory} (overrides product default)`,
+          cites: ifrsElection.cites,
+        });
+      }
+    }
+
     // Apply the lifted FX rule for this trigger kind.
     let ruleLegs: FxPostingLeg[];
     switch (p.kind) {
@@ -325,7 +402,10 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
         );
         break;
       case "FilInstrumentAmended":
-        ruleLegs = postFxRevaluationLegs(e.payload as unknown as FilInstrumentAmendedPayload);
+        ruleLegs = postFxRevaluationLegs(
+          e.payload as unknown as FilInstrumentAmendedPayload,
+          electionOverride,
+        );
         break;
       case "FilInstrumentTerminated":
         ruleLegs = postFxCloseLegs(e.payload as unknown as FilInstrumentTerminatedPayload);
@@ -340,5 +420,5 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
     }
   }
 
-  return { legs, skipped };
+  return { legs, skipped, deviations };
 }

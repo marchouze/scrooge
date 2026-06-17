@@ -266,6 +266,20 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // rules byte-for-byte (the legs the dual-run engine emits). Vacuous-pass on a
     // clean store (no FIL FX events). Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD.
     "recon:gl-v2-fold-equivalence-fx",
+    // D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD FX3 — FX-fold election-provenance gate
+    // (ADVISORY). Asserts every folded FX instance whose treatment DEVIATES from
+    // the product default carries a backing recorded election with a citation
+    // (FVOCI election IFRS 9 §5.7.5 etc.) — no silent, un-sourced treatment change.
+    // Vacuous-pass on a store with no FX elections (the build-phase norm).
+    // Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD.
+    "recon:gl-fold-election-provenance",
+    // D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD FX4 — close-snapshot reproducibility
+    // gate (ENFORCING). Proves the period-close TrialBalanceSnapshotted is a
+    // byte-faithful CACHE of the fold: re-folding the primaries at the snapshot's
+    // window reproduces the snapshotted FX rows byte-for-byte (Principle 1 — the
+    // one legitimate derived event in the accounting chain). Vacuous-pass on a
+    // store with no close snapshots. Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD.
+    "recon:tb-snapshot-reproducible",
     // D-V1-REMOVAL-PHASE-3B — V2 money-market LCR-denominator parity gate (advisory).
     // Compares the BA-300 LCR net-cash-outflow denominator from the V1 ALM snapshot
     // against the same denominator folded from the V2-parallel money-market

@@ -223,8 +223,28 @@ function toMoneyWire(money: { currency: string; amount: string }): MoneyWire {
 const FX_IAS_RULES = {
   initialRecognition: "IFRS 9 §3.1.1 — recognition on trade date",
   revaluation: "IFRS 9 §5.7.1 — FVTPL revaluation",
+  revaluationFvoci: "IFRS 9 §5.7.5 — FVOCI election: fair-value movement to OCI",
   close: "IFRS 9 §3.2.3 — derecognition on settlement/cancellation",
 } as const;
+
+/** OCI reserve account a per-instrument FVOCI election (IFRS 9 §5.7.5) routes the
+ * fair-value movement to, INSTEAD of the FVTPL unrealised-P&L account. */
+export const FX_FVOCI_OCI_RESERVE_ACCOUNT = "ACC-2100-008";
+
+/**
+ * A resolved per-instance accounting election that overrides the product-default
+ * treatment for ONE facet (FX3, D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD). Only the
+ * `ifrs-classification` facet currently alters an FX leg (FVOCI → OCI routing);
+ * the other facets (hedge designation, business-model override) are carried so
+ * the fold can record the deviation, but do not yet re-route an FX leg.
+ *
+ * `undefined` (the default) means NO election → product default → byte-identical
+ * to the engine's leg output (the golden reference).
+ */
+export interface FxElectionOverride {
+  /** Elected IFRS classification, e.g. `"fvoci"`. */
+  readonly ifrsCategory?: "fvtpl" | "fvoci" | "amortised-cost";
+}
 
 // ---------------------------------------------------------------------------
 // PR-FX-001-V2 — Initial recognition at trade date (FilInstrumentCreated, FX).
@@ -278,16 +298,28 @@ export function postFxInitialRecognitionLegs(payload: FilInstrumentCreatedPayloa
 // notional basis. IDENTICAL to gl-posting-engine-v2.postFxRevaluation.
 // ---------------------------------------------------------------------------
 
-export function postFxRevaluationLegs(payload: FilInstrumentAmendedPayload): FxPostingLeg[] {
+export function postFxRevaluationLegs(
+  payload: FilInstrumentAmendedPayload,
+  election?: FxElectionOverride,
+): FxPostingLeg[] {
   const t = payload.economicTerms;
   const accounts = resolveFxAccountSet(t.currency);
   const amount = toMoneyWire(t.notional);
   const postingDate = payload.asOf.substring(0, 10);
   const tenantId = (payload.tenant ?? ANCHOR_TENANT_ID) as TenantId;
   const sourceEventId = payload.instance;
-  const iasRule = FX_IAS_RULES.revaluation;
   const postingRuleId = FX_POSTING_RULE_IDS.revaluation;
-  const description = `FX Revaluation ${t.currency} (V2 advisory)`;
+
+  // Per-instrument FVOCI election (IFRS 9 §5.7.5): the fair-value movement is
+  // presented in OCI rather than P&L, so the credit leg routes to the OCI
+  // reserve account instead of the FVTPL unrealised-P&L account. Absent an
+  // election (the default), this is byte-identical to the engine's legs.
+  const isFvoci = election?.ifrsCategory === "fvoci";
+  const creditAccount = isFvoci ? FX_FVOCI_OCI_RESERVE_ACCOUNT : accounts.unrealisedPnl;
+  const iasRule = isFvoci ? FX_IAS_RULES.revaluationFvoci : FX_IAS_RULES.revaluation;
+  const description = isFvoci
+    ? `FX Revaluation ${t.currency} (V2 FVOCI election, OCI)`
+    : `FX Revaluation ${t.currency} (V2 advisory)`;
 
   return [
     {
@@ -303,7 +335,7 @@ export function postFxRevaluationLegs(payload: FilInstrumentAmendedPayload): FxP
     },
     {
       creditDebit: "credit",
-      accountCode: accounts.unrealisedPnl,
+      accountCode: creditAccount,
       amount,
       postingDate,
       tenantId,

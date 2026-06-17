@@ -173,6 +173,13 @@
       "side": "debit"
     },
     {
+      "id": "ACC-2100-008",
+      "name": "OCI Reserve — FX (FVOCI election, IFRS 9 §5.7.5)",
+      "currency": "ZAR",
+      "category": "equity",
+      "side": "credit"
+    },
+    {
       "id": "ACC-2100-009",
       "name": "FX Sub-Ledger Build-Phase Remediation Suspense",
       "currency": "ZAR",
