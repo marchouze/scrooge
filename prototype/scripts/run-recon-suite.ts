@@ -473,6 +473,14 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // in the build phase (all nine data-empty), codec correctness proven by unit
     // test. Authority: D-V2-CORE-MONEY-DECIMAL-NATIVE.
     "recon:bucket-a-a2-v2-parity",
+    // Money-bearing non-financial TAIL — two EMITTABLE numeric-money OPERATIONAL
+    // payments-reconciliation types (ReconciliationBreak, DailyReconciliationReport)
+    // V1-store ↔ v2-control-plane-store DECODED-DECIMAL parity (v2 payload ==
+    // codec(v1 payload); optional minor-unit tradeAmount/paymentAmount lifted to
+    // MoneyWire, currency sourced from payload). ENFORCING; PASS-on-empty on the
+    // money lift in the build phase (codec correctness proven by unit test).
+    // Authority: D-V2-CORE-MONEY-DECIMAL-NATIVE; D-V1-REMOVAL-FLIP-BASIS-RBC.
+    "recon:money-tail-v2-parity",
     "recon:period-close-cursor-integrity",
     "recon:ba310-submission-completeness",
     "recon:ba-returns-vs-gl-balances",

@@ -241,6 +241,7 @@ export function runThreeWayReconciliation(
           description: `Amount mismatch: settlement instruction netCash=${trade.netCash} but payment settled netCash=${payment.netCash} (currency ${trade.currency})`,
           tradeAmount: trade.netCash,
           paymentAmount: payment.netCash,
+          currency: trade.currency,
           detectedAt,
         };
         breaks.push(breakSummary);

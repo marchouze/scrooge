@@ -279,6 +279,15 @@ export const reconciliationBreakPayloadSchema = z.object({
   tradeAmount: z.number().int().positive().optional(),
   /** Payment-leg actual cash amount (minor units). Present for amount breaks. */
   paymentAmount: z.number().int().positive().optional(),
+  /**
+   * ISO 4217 currency of the trade/payment legs (the denomination of
+   * `tradeAmount` / `paymentAmount`). Sourced from the settlement instruction's
+   * `currency` at the amount-break site; present whenever a money amount is.
+   * Carries the denomination so the v2 mirror can lift the minor-unit amounts to
+   * decimal-native MoneyWire without defaulting the currency (Charter cmd 4;
+   * Principle 5 — multi-currency at the type level).
+   */
+  currency: z.string().length(3).optional(),
   /** ISO 8601 timestamp when the break was detected. */
   detectedAt: z.string().min(1),
   /** Minimum 1 citation required (Principle 2). */
@@ -325,6 +334,8 @@ export const reconciliationBreakSummarySchema = z.object({
   description: z.string().min(1),
   tradeAmount: z.number().int().positive().optional(),
   paymentAmount: z.number().int().positive().optional(),
+  /** ISO 4217 currency of the leg amounts (present whenever a money amount is). */
+  currency: z.string().length(3).optional(),
   detectedAt: z.string().min(1),
 });
 
