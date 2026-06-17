@@ -1,5 +1,5 @@
 {
-  "v1OnlyCount": 306,
+  "v1OnlyCount": 302,
   "asOf": "2026-06-17",
-  "authority": "D-BANK-WIDE-V2-MIGRATION (Bucket C bulk batch 3 — FINAL non-load-bearing: flip 29 money-free non-load-bearing control-plane substrate types (C-3 agent-lifecycle/runtime remainder incl SubstrateAlert + SubstrateAgentRun* + ScheduledTrigger, C-9 audit/readiness/regulator-process, C-10 agent-performance remainder) v1-only->v2-replaced, -29 rows; was 335 under Bucket C bulk batch 2. ReconciliationBreak EXCLUDED (payments-domain de-dup hazard). After this batch the only bucket-C v1-only types are the 14 load-bearing dispatch/run-lifecycle/RMS types held for the CEO checkpoint)"
+  "authority": "D-BANK-WIDE-V2-MIGRATION (Bucket C bulk batch 4 — FINAL non-load-bearing, COMPLETES the wave: flip 4 money-free non-load-bearing reference-data-process control-plane substrate types (SanctionsListPublished, PepListPublished, AdverseMediaPublished, TaxClassificationPublished) v1-only->v2-replaced, -4 rows; was 306 under Bucket C bulk batch 3. ReconciliationBreak EXCLUDED (money-bearing tradeAmount/paymentAmount, C/B substrate-financial boundary; held for a dedicated money-bearing slice). After this batch the only bucket-C v1-only types are the 14 load-bearing dispatch/run-lifecycle/RMS types held for the CEO checkpoint: AgentBriefIssued, AgentRunStarted/Completed/Failed, RecordFiled, Decision, DecisionRequested, DocumentRegistered, Feedback, BriefSuperseded, ReconResult, WorkstreamRegistered/Started/Completed)"
 }

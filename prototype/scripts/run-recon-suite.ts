@@ -441,6 +441,16 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // (byte-clean / PASS-on-empty). Empty-population flips tracked as one batch-
     // level gap (scope §5.1). Authority: D-BANK-WIDE-V2-MIGRATION.
     "recon:bucket-c-batch3-v2-parity",
+    // Bucket C bulk BATCH 4 (FINAL non-load-bearing — COMPLETES the wave) — the
+    // 4 money-free reference-data-process boundary types (SanctionsListPublished,
+    // PepListPublished, AdverseMediaPublished, TaxClassificationPublished)
+    // V1-store ↔ v2-control-plane-store VERBATIM {event_id, type, payload} tuple-
+    // fold parity. ENFORCING (byte-clean / PASS-on-empty). Empty-population flips
+    // tracked as one batch-level gap (scope §5.1). ReconciliationBreak EXCLUDED
+    // (money-bearing, C/B boundary). After this batch the ONLY bucket-C v1-only
+    // types are the 14 load-bearing dispatch/run-lifecycle/RMS types (CEO
+    // checkpoint). Authority: D-BANK-WIDE-V2-MIGRATION.
+    "recon:bucket-c-batch4-v2-parity",
     // Wave 2 BUCKET-A BATCH-A2 — nine EMITTABLE numeric-money, non-financial
     // types (ClimateScenarioRun, FeeDisclosureEvent, Correspondent…Sent,
     // NostroStatementReceived, CounterpartyExposureCalculated, STRCandidate,
