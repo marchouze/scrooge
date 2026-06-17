@@ -131,5 +131,7 @@ export function findTreatmentById(
   if (matches.length === 0) return undefined;
   // Latest version wins (rows are sorted by key string; version is the trailing
   // segment, so sort the matches by version descending explicitly).
-  return [...matches].sort((a, b) => b.version.localeCompare(a.version, undefined, { numeric: true }))[0];
+  return [...matches].sort((a, b) =>
+    b.version.localeCompare(a.version, undefined, { numeric: true }),
+  )[0];
 }

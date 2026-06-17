@@ -52,15 +52,15 @@ import {
  */
 export interface ResolvedProductTreatments {
   /** IFRS classification (from the picked `ifrs-classification` module, if any). */
-  readonly ifrsCategory?: IfrsClassificationCategory;
+  readonly ifrsCategory: IfrsClassificationCategory | undefined;
   /** IFRS 13 fair-value hierarchy level (qualifies the classification). */
-  readonly fairValueHierarchy?: FairValueHierarchy;
+  readonly fairValueHierarchy: FairValueHierarchy | undefined;
   /** IFRS 9 business model (qualifies the classification). */
-  readonly businessModel?: BusinessModel;
+  readonly businessModel: BusinessModel | undefined;
   /** Prudential treatment (from the picked `prudential-treatment` module, if any). */
-  readonly prudential?: PrudentialTreatment;
+  readonly prudential: PrudentialTreatment | undefined;
   /** Tax treatment (from the picked `tax-treatment` module, if any). */
-  readonly tax?: TaxTreatment;
+  readonly tax: TaxTreatment | undefined;
   /** Union of every picked module's posting-rule ids, deduplicated + sorted. */
   readonly postingRuleIds: readonly string[];
   /** Union of every picked module's citations, deduplicated + sorted. */
@@ -199,9 +199,7 @@ export interface InstanceTreatmentUnresolved {
   readonly detail: string;
 }
 
-export type InstanceTreatmentResolution =
-  | InstanceTreatmentResolved
-  | InstanceTreatmentUnresolved;
+export type InstanceTreatmentResolution = InstanceTreatmentResolved | InstanceTreatmentUnresolved;
 
 /**
  * Resolve a FIL instance's reporting treatment via:

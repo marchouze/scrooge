@@ -365,6 +365,7 @@ import { REGULATORY_PA_EVENT_TYPES_REGISTRY } from "./regulatory-pa";
 import { REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory-reporting";
 import { REPO_MMD_IBL_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl";
 import { REPO_MMD_IBL_V2_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl-v2";
+import { REPORTING_TREATMENT_EVENT_TYPES_REGISTRY } from "./reporting-treatments";
 import {
   AGENT_DECISION_REQUEST_EVENT_TYPES,
   AGENT_OPS_EVENT_TYPES,
