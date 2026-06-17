@@ -1,5 +1,5 @@
 {
-  "v1OnlyCount": 462,
+  "v1OnlyCount": 460,
   "asOf": "2026-06-17",
-  "authority": "D-BANK-WIDE-V2-MIGRATION (Bucket C prep — de-dup 7 shadow rows; was 469 under D-V1-REMOVAL-FLIP-BASIS-RBC)"
+  "authority": "D-BANK-WIDE-V2-MIGRATION (Bucket C pilot — flip agent-performance AgentPerformanceEvaluated + AgentFeedbackIssued v1-only->v2-replaced, -2 rows; was 462 under Bucket C prep)"
 }

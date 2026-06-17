@@ -416,6 +416,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // v2-eval/context-pack/cross-tenant-csi/applicability; 39 types) V1-store ↔
     // v2-control-plane-store event-list parity. ENFORCING (byte-clean).
     "recon:money-free-batch-3-v2-parity",
+    // Bucket C PILOT — agent-performance domain (AgentPerformanceEvaluated,
+    // AgentFeedbackIssued; 2 types) V1-store ↔ v2-control-plane-store event-list
+    // parity. ENFORCING (byte-clean / PASS-on-empty). Validates the money-free
+    // control-plane store-tee path for the ~195 remaining bucket-C types.
+    "recon:agent-performance-v2-parity",
     // Wave 2 BUCKET-A BATCH-A2 — nine EMITTABLE numeric-money, non-financial
     // types (ClimateScenarioRun, FeeDisclosureEvent, Correspondent…Sent,
     // NostroStatementReceived, CounterpartyExposureCalculated, STRCandidate,

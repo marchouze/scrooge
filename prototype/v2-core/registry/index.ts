@@ -53,6 +53,10 @@
 import type { z } from "zod";
 
 import {
+  agentFeedbackIssuedPayloadSchema,
+  agentPerformanceEvaluatedPayloadSchema,
+} from "../agent-performance/events";
+import {
   applicabilityAssessmentConcludedPayloadSchema,
   applicabilityAssessmentPerformedPayloadSchema,
   applicabilityAssessmentRequestedPayloadSchema,
@@ -323,6 +327,37 @@ function mfb3(
     migrationStatus: "v2-parallel",
     tee: {},
     source: MONEY_FREE_BATCH_3_SOURCE,
+  };
+}
+
+const BUCKET_C_PILOT_SOURCE =
+  "brief:atlas:bucket-c-pilot-agent-performance-domain-to-v2:2026-06-17 — " +
+  "Bucket C PILOT: money-free agent-performance domain migration (tee-enabled, verbatim)";
+
+/**
+ * A Bucket-C pilot migration row: identical to `refData` / `govAtt` / `mfb3`
+ * (ALWAYS tee-enabled, verbatim — money-free) but carrying the bucket-C pilot
+ * source string. The generic store-tee mirrors every V1 append of the type; the
+ * `recon:agent-performance-v2-parity` gate proves byte-clean equivalence (or
+ * PASS-on-empty in the build phase). Onboarding a bucket-C type is one
+ * `bucketCPilot(...)` line — a registry edit, never a callsite edit. This pilot
+ * validates the money-free control-plane store-tee path for the ~195 remaining
+ * bucket-C types.
+ */
+function bucketCPilot(
+  type: string,
+  cls: V2EventTypeMetadata["class"],
+  schema: z.ZodTypeAny,
+): V2EventTypeMetadata {
+  return {
+    type,
+    class: cls,
+    payloadSchema: asPayloadSchema(schema),
+    schemaVersion: 1,
+    retention: V2_RETENTION_RUNTIME_1Y,
+    migrationStatus: "v2-parallel",
+    tee: {},
+    source: BUCKET_C_PILOT_SOURCE,
   };
 }
 
@@ -650,6 +685,28 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
   // 27. regulatory-reporting (MONEY-FREE rows only; RwaComputed deferred)
   mfb3("TradeReportSubmitted", "governance", tradeReportSubmittedPayloadSchema),
   mfb3("SarbSubmissionAttempted", "governance", sarbSubmissionAttemptedPayloadSchema),
+
+  // ---------------------------------------------------------------------------
+  // BUCKET C PILOT — agent-performance domain (TEE-ENABLED, verbatim; money-free).
+  //
+  // The lowest-blast-radius bucket-C domain: money-free, dashboard-read-only, ZERO
+  // coupling to the dispatch CLIs / run-lifecycle / RMS-parity gates. Both types
+  // are mirrored verbatim by the generic store-tee on every V1 append; the generic
+  // backfill replays history. `recon:agent-performance-v2-parity` is the byte-clean
+  // (PASS-on-empty in the build phase) evidence. Schemas are the faithful v2
+  // re-declarations in `agent-performance/events.ts` (no-v1-import boundary),
+  // drift-guarded by `agent-performance-v2-schema-parity.test.ts`. This pilot
+  // validates the money-free control-plane store-tee path before the ~195
+  // remaining bucket-C types are batched. Class `audit` matches the V1 rows.
+  //
+  // OUT OF SCOPE: run-lifecycle types (AgentRunStarted/Completed/Failed), RMS
+  // register events, dispatch-CLI changes — sequenced last on a separate CEO
+  // checkpoint.
+  //
+  // Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-FLIP-BASIS-RBC.
+  // ---------------------------------------------------------------------------
+  bucketCPilot("AgentPerformanceEvaluated", "audit", agentPerformanceEvaluatedPayloadSchema),
+  bucketCPilot("AgentFeedbackIssued", "audit", agentFeedbackIssuedPayloadSchema),
 
   // ---------------------------------------------------------------------------
   // WAVE 2 BUCKET-A BATCH-A2 — nine EMITTABLE numeric-money, non-financial types
