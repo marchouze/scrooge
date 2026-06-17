@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LCR — Scrooge V2</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-content="none">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Scrooge Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Treasury", href: "/v2/treasury/index.html" }, { label: "LCR" }],
+      title: "Liquidity Coverage Ratio (LCR)",
+      seat: "Treasurer · Eitan  ·  BCBS LCR standard / BA-300",
+    });
+    renderTileGroup(main, {
+      tiles: [
+        { label: "LCR", unit: "HQLA / Net 30-day outflows" },
+        { label: "HQLA Stock", unit: "High-Quality Liquid Assets (ZAR)" },
+        { label: "Net Cash Outflows", unit: "30-day stressed (ZAR)" },
+        { label: "Minimum Requirement", unit: "100% (SARB BA-300)" },
+      ],
+    });
+    renderFormula(main, {
+      name: "LCR",
+      numLabel: "Stock of HQLA",
+      denLabel: "Net Cash Outflows (30-day stress)",
+      resultLabel: "LCR (%)",
+      reference: "BCBS LCR Standard Jan 2013; BA-300",
+    });
+    const s = document.createElement("div"); s.className = "v2-section"; main.appendChild(s);
+    const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "HQLA Components"; s.appendChild(h);
+    renderTable(s, { columns: ["Asset Category", "Level", "Haircut %", "Adjusted Value (ZAR)", "Source"] });
+    const s2 = document.createElement("div"); s2.className = "v2-section"; main.appendChild(s2);
+    const h2 = document.createElement("h2"); h2.className = "v2-section-title"; h2.textContent = "Cash Outflow Components"; s2.appendChild(h2);
+    renderTable(s2, { columns: ["Outflow Category", "Gross (ZAR)", "Run-off Rate %", "Net Outflow (ZAR)"] });
+    renderRefs(main, {
+      refs: [
+        { label: "BCBS LCR Standard (January 2013)", href: "#" },
+        { label: "SARB BA-300 Liquidity Return", href: "#" },
+        { label: "Banks Act Reg 26 — Liquidity Risk", href: "#" },
+      ],
+    });
+  </script>
+</body>
+</html>

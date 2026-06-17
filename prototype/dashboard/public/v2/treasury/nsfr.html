@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NSFR — Scrooge V2</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-content="none">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Scrooge Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Treasury", href: "/v2/treasury/index.html" }, { label: "NSFR" }],
+      title: "Net Stable Funding Ratio (NSFR)",
+      seat: "Treasurer · Eitan  ·  BCBS NSFR standard",
+    });
+    renderTileGroup(main, {
+      tiles: [
+        { label: "NSFR", unit: "ASF / RSF" },
+        { label: "Available Stable Funding", unit: "ZAR" },
+        { label: "Required Stable Funding", unit: "ZAR" },
+        { label: "Minimum Requirement", unit: "100% (SARB)" },
+      ],
+    });
+    renderFormula(main, {
+      name: "NSFR",
+      numLabel: "Available Stable Funding (ASF)",
+      denLabel: "Required Stable Funding (RSF)",
+      resultLabel: "NSFR (%)",
+      reference: "BCBS NSFR Standard Oct 2014",
+    });
+    const s = document.createElement("div"); s.className = "v2-section"; main.appendChild(s);
+    const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "ASF by Liability Category"; s.appendChild(h);
+    renderTable(s, { columns: ["Liability / Equity Category", "Carrying Value (ZAR)", "ASF Factor %", "Weighted ASF (ZAR)"] });
+    const s2 = document.createElement("div"); s2.className = "v2-section"; main.appendChild(s2);
+    const h2 = document.createElement("h2"); h2.className = "v2-section-title"; h2.textContent = "RSF by Asset Category"; s2.appendChild(h2);
+    renderTable(s2, { columns: ["Asset Category", "Carrying Value (ZAR)", "RSF Factor %", "Weighted RSF (ZAR)"] });
+    renderRefs(main, {
+      refs: [
+        { label: "BCBS NSFR Standard (October 2014)", href: "#" },
+        { label: "Banks Act Reg 26 — Structural Liquidity", href: "#" },
+      ],
+    });
+  </script>
+</body>
+</html>

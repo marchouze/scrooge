@@ -5426,6 +5426,9 @@ const server = Bun.serve({
     if (req.method === "GET" && url.pathname === "/market-data") {
       return serveStatic("/market-data.html", req);
     }
+    if (req.method === "GET" && (url.pathname === "/v2" || url.pathname === "/v2/")) {
+      return Response.redirect(new URL("/v2/index.html", req.url), 302);
+    }
     if (req.method === "GET") {
       return serveStatic(url.pathname, req);
     }

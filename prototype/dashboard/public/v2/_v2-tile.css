@@ -1,0 +1,150 @@
+/*
+ * _v2-tile.css — Clickable metric tile components.
+ * Every tile is an <a> element — no onclick, no modals.
+ */
+
+/* ── Tile grid ───────────────────────────────────────────────── */
+
+.v2-tile-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.v2-tile-group-wide {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+/* ── Tile ────────────────────────────────────────────────────── */
+
+.v2-tile {
+  display: block;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: box-shadow 150ms, border-color 150ms, transform 100ms;
+  position: relative;
+}
+
+.v2-tile:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+.v2-tile:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* drill-in arrow */
+.v2-tile::after {
+  content: "›";
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-4);
+  font-size: 16px;
+  color: var(--color-text-disabled);
+  transition: color 150ms, right 150ms;
+}
+.v2-tile:hover::after {
+  color: var(--color-accent);
+  right: calc(var(--space-4) - 2px);
+}
+
+/* ── Tile content ────────────────────────────────────────────── */
+
+.v2-tile__label {
+  font: var(--text-caption);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-2);
+  padding-right: var(--space-4);
+}
+
+.v2-tile__value {
+  font: 600 22px / 1.2 var(--font-sans);
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+  min-height: 27px;
+}
+
+.v2-tile__value.pending {
+  color: var(--color-text-disabled);
+  font-size: 18px;
+}
+
+.v2-tile__unit {
+  font: var(--text-caption);
+  color: var(--color-text-disabled);
+  margin-bottom: var(--space-2);
+}
+
+.v2-tile__secondary {
+  font: var(--text-caption);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-2);
+}
+
+/* ── Tile variants ───────────────────────────────────────────── */
+
+.v2-tile.v2-tile--danger {
+  border-color: var(--color-danger);
+  background: var(--color-danger-bg);
+}
+.v2-tile.v2-tile--danger .v2-tile__value {
+  color: var(--color-danger);
+}
+
+.v2-tile.v2-tile--warning {
+  border-color: var(--color-warning);
+  background: var(--color-warning-bg);
+}
+.v2-tile.v2-tile--warning .v2-tile__value {
+  color: var(--color-warning);
+}
+
+.v2-tile.v2-tile--success {
+  border-color: var(--color-success);
+  background: var(--color-success-bg);
+}
+.v2-tile.v2-tile--success .v2-tile__value {
+  color: var(--color-success);
+}
+
+/* ── Stat row (alternative to tile grid — horizontal key-values) */
+
+.v2-stat-row {
+  display: flex;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-6);
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.v2-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.v2-stat__label {
+  font: var(--text-caption);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.v2-stat__value {
+  font: var(--text-h2);
+  color: var(--color-text-primary);
+}

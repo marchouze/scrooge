@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Workstreams — Scrooge V2</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-content="none">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Scrooge Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Governance", href: "/v2/governance/index.html" }, { label: "Workstreams" }],
+      title: "Workstream Register",
+      seat: "CoSec · Owen  ·  WorkstreamOpened",
+    });
+    renderTileGroup(main, {
+      tiles: [
+        { label: "Active Workstreams", unit: "In progress" },
+        { label: "Completed", unit: "Closed workstreams" },
+        { label: "Blocked", unit: "Waiting on dependency" },
+        { label: "Live Briefs", unit: "Across all workstreams" },
+      ],
+    });
+    const s = document.createElement("div"); s.className = "v2-section"; main.appendChild(s);
+    const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "Workstream Register"; s.appendChild(h);
+    renderTable(s, { columns: ["Workstream ID", "Title", "Owner", "Status", "Opened", "Briefs", "Last Activity"] });
+    renderRefs(main, {
+      refs: [
+        { label: "WorkstreamOpened event schema", href: "#" },
+        { label: "D-RMS-PHASE-1 — Workstreams register", href: "#" },
+      ],
+    });
+  </script>
+</body>
+</html>

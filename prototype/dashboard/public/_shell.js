@@ -97,6 +97,11 @@
       ],
     },
     {
+      group: "V2 Dashboard",
+      owner: "CEO",
+      pages: [{ label: "V2 Dashboard →", href: "/v2/index.html" }],
+    },
+    {
       group: "Platform",
       owner: "Platform Eng",
       pages: [

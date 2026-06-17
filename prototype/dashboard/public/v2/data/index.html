@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Data &amp; Privacy — Scrooge V2</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-content="none">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Scrooge Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Data & Privacy" }],
+      title: "Data & Privacy",
+      seat: "Information Officer · Iris",
+    });
+    renderTileGroup(main, {
+      title: "Data Assets",
+      tiles: [
+        { label: "Data Assets", unit: "Registered", href: "/v2/data/register.html" },
+        { label: "Personal Information", unit: "POPIA-classified assets", href: "/v2/data/register.html" },
+        { label: "Open DSARs", unit: "Awaiting response", href: "/v2/data/dsars.html" },
+        { label: "Overdue DSARs", unit: "Past SLA", href: "/v2/data/dsars.html", variant: "danger" },
+      ],
+    });
+    renderTileGroup(main, {
+      title: "Compliance",
+      tiles: [
+        { label: "POPIA Posture", unit: "s.19–22 controls", href: "/v2/security/posture.html" },
+        { label: "Retention Policies", unit: "Asset-linked", href: "/v2/data/register.html" },
+        { label: "Cross-Border Transfers", unit: "Active authorisations" },
+        { label: "Breach Notifications", unit: "Filed this period" },
+      ],
+    });
+  </script>
+</body>
+</html>
