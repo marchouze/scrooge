@@ -23,6 +23,8 @@
     "recon:fx-v2-parity": "bun run platform/recon/fx-v2-parity.ts",
     "recon:gl-v2-parity": "bun run platform/recon/gl-v2-parity.ts",
     "recon:gl-v2-fold-equivalence-fx": "bun run platform/recon/gl-v2-fold-equivalence-fx.ts",
+    "recon:gl-fold-election-provenance": "bun run platform/recon/gl-fold-election-provenance.ts",
+    "recon:tb-snapshot-reproducible": "bun run platform/recon/tb-snapshot-reproducible.ts",
     "recon:ba300-v2-parity": "bun run platform/recon/ba300-v2-parity.ts",
     "recon:bond-gl-v2-parity": "bun run platform/recon/bond-gl-v2-parity.ts",
     "recon:daily-pnl-v2-parity": "bun run platform/recon/daily-pnl-v2-parity.ts",
