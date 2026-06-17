@@ -30,7 +30,8 @@
 //      FX today is unambiguous (one `posting-rules:fx` module scoped
 //      `fil:type:fx:*`). When S0d lands (booking-time product binding), every
 //      trade carries a `productId` and path 1 always wins — this fallback is then
-//      DEAD and is removed. Tracked: see the `// TODO(S0d)` note below.
+//      DEAD and is removed. Tracked: the retire-by-S0d note below cites
+//      D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD (S0d).
 //
 // FAIL-CLOSED is observable: `foldFxContributionLegs` returns the produced legs
 // AND the list of skipped instances with a typed reason, so a caller / recon can
@@ -193,9 +194,9 @@ function decideFxTreatment(
 
   // Path 2 — build-phase fallback (retired-by-S0d). Exactly-one match required.
   //
-  // TODO(S0d): when booking-time product binding lands (trade.productId + NPA
-  // gate), path 1 always resolves and this fallback is DEAD CODE — remove it
-  // then. Tracked under D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD S0d.
+  // TODO(D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD, S0d): when booking-time product
+  // binding lands (trade.productId + NPA gate), path 1 always resolves and this
+  // fallback is DEAD CODE — remove it then.
   const matches = register.rows.filter(
     (r) => r.category === POSTING_RULES_CATEGORY && r.scope.some((s) => matchesFilScope(s, type)),
   );
