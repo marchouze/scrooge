@@ -88,10 +88,12 @@ export const EXPLICIT_PROVENANCE_ALLOWLIST: Readonly<Record<string, string>> = {
   "platform/markets/products/npa-attestation-runner.ts":
     "build-phase-fixture tag — the third provenance kind is deliberately not expressible in the " +
     "category policy (real build-phase bank state, not mode-dependent).",
-  "platform/markets/products/npa-fx-verification-pass-2.ts":
-    "build-phase-fixture tag on NPA dimension attestations (same basis as npa-attestation-runner.ts) — " +
-    "the third provenance kind is deliberately not expressible in the category policy " +
-    "(real build-phase bank state, not mode-dependent).",
+  "platform/markets/products/fx-otc-vanilla-npa-cycle.ts":
+    "build-phase-fixture tag on the SINGLE clean FX OTC vanilla NPA cycle (D-FX-NPA-RESTART) — " +
+    "the sole canonical authoring of the FX NPA (proposal/conceptualised/15 attestations/" +
+    "due-diligence/gate). Same basis as npa-attestation-runner.ts: the third provenance kind is " +
+    "deliberately not expressible in the category policy (real build-phase bank state, not " +
+    "mode-dependent).",
   "platform/markets/products/npa-fx-conduct-attestation.ts":
     "build-phase-fixture tag on the FX conduct-dimension attestation (same basis as " +
     "npa-fx-verification-pass-2.ts) — the third provenance kind is deliberately not expressible in the " +
@@ -120,19 +122,9 @@ export const EXPLICIT_PROVENANCE_ALLOWLIST: Readonly<Record<string, string>> = {
     "build-phase-fixture tag on the FX privacy-dimension attestation (same basis as " +
     "npa-fx-verification-pass-2.ts) — the third provenance kind is deliberately not expressible in the " +
     "category policy (real build-phase bank state, not mode-dependent).",
-  "platform/markets/products/npa-fx-legal-conditions-post-withdrawal.ts":
-    "build-phase-fixture tag on the FX legal-dimension design-attested-with-conditions event " +
-    "(post-withdrawal under D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL 2026-06-15) — same basis as " +
-    "npa-fx-legal-attestation.ts; the third provenance kind is deliberately not expressible in the " +
-    "category policy (real build-phase bank state, not mode-dependent).",
   "platform/markets/products/npa-fx-tax-attestation.ts":
     "build-phase-fixture tag on the FX tax-dimension attestation (same basis as " +
     "npa-fx-privacy-attestation.ts) — the third provenance kind is deliberately not expressible in the " +
-    "category policy (real build-phase bank state, not mode-dependent).",
-  "platform/markets/products/npa-fx-treatment-module-enrichment.ts":
-    "build-phase-fixture tag on the FX accounting/capital/tax dimension-attestation enrichments " +
-    "(same basis as npa-fx-tax-attestation.ts) — re-emits the existing attestations citing the " +
-    "versioned treatment modules; the third provenance kind is deliberately not expressible in the " +
     "category policy (real build-phase bank state, not mode-dependent).",
   "platform/market-data/sarb-fixing-ingester.ts":
     "structurally simulated fixture ingester — the source is a JSON fixture regardless of bank mode; " +

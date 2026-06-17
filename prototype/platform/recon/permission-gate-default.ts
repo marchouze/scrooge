@@ -535,12 +535,6 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // retail-flag assertions, not a production access path. T-01 carve-out.
   // Citation: D-FX-CONDUCT-SURVEILLANCE-REMEDIATION-DISPATCH, P4-SECURITY-DESIGNED-IN.
   "platform/conduct/fx-conduct-surveillance-sweep.test.ts",
-  // D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD — FX NPA treatment-module enrichment
-  // unit test. Co-located per the per-module test convention. Raw
-  // EventStore(":memory:") is a build-phase fixture (runs the enrichment, asserts
-  // module-citation resolution / gap preservation / idempotency / no-re-approval),
-  // not a production access path. T-01 carve-out. F-031.
-  "platform/markets/products/npa-fx-treatment-module-enrichment.test.ts",
 ]);
 
 // Directories whose contents are exempt entirely (tests, scenarios, scripts,
