@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NPA Product — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-source="/api/v2/npa">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    const id = new URLSearchParams(location.search).get("id");
+
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Governance", href: "/v2/governance/index.html" },
+        { label: "New Product Approval", href: "/v2/governance/npa.html" },
+        { label: id || "Detail" },
+      ],
+      title: id ? `Product: ${id}` : "NPA Product Detail",
+    });
+
+    const bodyHost = document.createElement("div"); main.appendChild(bodyHost);
+
+    const dimBadge = (s) => {
+      const v = s === "implementation-attested" ? "success" : s === "design-attested" ? "info" : s === "failed" ? "danger" : "warning";
+      return `<span class="v2-badge v2-badge-${v}">${v2Esc(s)}</span>`;
+    };
+    const sevBadge = (s) => `<span class="v2-badge v2-badge-${s === "critical" ? "danger" : s === "high" ? "warning" : "neutral"}">${v2Esc(s)}</span>`;
+
+    if (!id) {
+      v2RenderError(bodyHost, `no product selected — choose from the <a href="/v2/governance/npa.html">NPA register</a>.`);
+    } else {
+      v2WireLoader(async () => {
+        bodyHost.replaceChildren();
+        let d;
+        try {
+          d = await v2Fetch(`/api/v2/npa/${encodeURIComponent(id)}`);
+        } catch (err) {
+          v2RenderError(bodyHost, v2Esc(err.message));
+          return;
+        }
+        document.getElementById("as-of").textContent = `as of ${new Date(d.asOf).toLocaleString()}`;
+
+        const dims = d.dimensions || [];
+        const attested = dims.filter((x) => x.attestation && x.attestation.status !== "pending").length;
+        const fullyAttested = dims.filter((x) => x.attestation && x.attestation.status === "implementation-attested").length;
+        const openFindings = (d.postApprovalFindings || []).filter((f) => f.status !== "reviewed").length;
+        const p = d.product || {};
+
+        renderTileGroup(bodyHost, {
+          tiles: [
+            { label: "Lifecycle", value: v2Esc(p.lifecycle || "—"), unit: `${v2Esc(p.family || "")} · ${v2Esc(p.currency || "")}` },
+            { label: "Dimensions attested", value: `${attested}/${dims.length}`, unit: `${fullyAttested} implementation-attested`, variant: fullyAttested === dims.length && dims.length > 0 ? "success" : "warning" },
+            { label: "Open findings", value: String(openFindings), unit: "post-approval", variant: openFindings > 0 ? "danger" : "success" },
+            { label: "Jurisdiction", value: v2Esc(p.jurisdiction || "—"), unit: "legal entity scope" },
+          ],
+        });
+
+        // 15-dimension attestation matrix.
+        const dsec = document.createElement("div"); dsec.className = "v2-section"; bodyHost.appendChild(dsec);
+        const dh = document.createElement("h2"); dh.className = "v2-section-title"; dh.textContent = `Attestation matrix (${dims.length} dimensions)`; dsec.appendChild(dh);
+        renderTable(dsec, {
+          columns: ["Dimension", "Status", "Attested by", "Owner"],
+          emptyMsg: "No dimension cards.",
+          rows: dims.map((x) => ({
+            cells: [
+              `<strong>${v2Esc(x.label || x.dimension)}</strong>`,
+              dimBadge(x.attestation ? x.attestation.status : "pending"),
+              v2Esc(x.attestation && x.attestation.attestedBy ? x.attestation.attestedBy : "—"),
+              v2Esc(x.owner ? `${x.owner.name} · ${x.owner.position}` : "—"),
+            ],
+          })),
+        });
+
+        // Post-approval findings.
+        const fsec = document.createElement("div"); fsec.className = "v2-section"; bodyHost.appendChild(fsec);
+        const fh = document.createElement("h2"); fh.className = "v2-section-title"; fh.textContent = "Post-approval findings"; fsec.appendChild(fh);
+        renderTable(fsec, {
+          columns: ["Finding", "Severity", "Missed dimension", "Status", "Discovered"],
+          emptyMsg: "No post-approval findings.",
+          rows: (d.postApprovalFindings || []).map((f) => ({
+            cells: [
+              v2Esc(f.title),
+              sevBadge(f.severity),
+              v2Esc(f.missedDimension),
+              `<span class="v2-badge v2-badge-${f.status === "reviewed" ? "success" : f.status === "overdue" ? "danger" : "warning"}">${v2Esc(f.status)}</span>`,
+              v2Esc(f.discoveredAt),
+            ],
+          })),
+        });
+
+        // Lifecycle event journal.
+        const jsec = document.createElement("div"); jsec.className = "v2-section"; bodyHost.appendChild(jsec);
+        const jh = document.createElement("h2"); jh.className = "v2-section-title"; jh.textContent = "Lifecycle event journal"; jsec.appendChild(jh);
+        renderTable(jsec, {
+          columns: ["Event type", "Posting rule"],
+          emptyMsg: "No lifecycle events mapped.",
+          rows: (d.journalEntries || []).map((j) => ({
+            cells: [
+              `<a href="/v2/operations/schemas.html?type=${encodeURIComponent(j.eventType)}">${v2Esc(j.eventType)}</a>`,
+              j.status === "present" ? v2Esc(j.rule ? j.rule.ruleId || "mapped" : "mapped") : '<span class="v2-badge v2-badge-warning">no posting rule</span>',
+            ],
+          })),
+        });
+
+        renderRefs(bodyHost, {
+          refs: [
+            { label: "D-NEW-PRODUCT-APPROVAL-POLICY", href: "#" },
+            { label: "Back to NPA register", href: "/v2/governance/npa.html" },
+          ],
+        });
+      });
+    }
+  </script>
+</body>
+</html>

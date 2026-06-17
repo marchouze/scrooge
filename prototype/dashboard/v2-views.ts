@@ -30,6 +30,7 @@ import type { EventTypeMetadata } from "../platform/event-store/registry/index";
 import type { EventStore } from "../platform/event-store/store";
 import { eventMatchesProvenanceFilter } from "../platform/projections/filter";
 import type { ProvenanceFilter } from "../platform/projections/filter";
+import { NPA_DIMENSIONS, buildProductListView } from "./products-view";
 
 // ---------------------------------------------------------------------------
 // Zod payload introspection (top-level field shape).
@@ -442,6 +443,98 @@ export function buildSubstrateView(
       advisory,
       latest,
     },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// /api/v2/npa — New Product Approval register (Governance).
+// ---------------------------------------------------------------------------
+//
+// Reuses the canonical buildProductListView projection (15-dimension NPA model,
+// D-NEW-PRODUCT-APPROVAL-POLICY) and reshapes it into a register summary + rows.
+// The detail page reuses buildProductDetailView directly in the route handler.
+
+export interface NpaRow {
+  readonly productId: string;
+  readonly name: string;
+  readonly family: string;
+  readonly lifecycle: string;
+  readonly approvalStatus: string;
+  readonly attestedCount: number;
+  readonly totalDimensions: number;
+  readonly gateReady: boolean;
+  readonly deferredGapCount: number;
+  readonly hasOpenCriticalFinding: boolean;
+  readonly origin: string;
+}
+
+export interface NpaView {
+  readonly asOf: string;
+  readonly summary: {
+    readonly total: number;
+    readonly approved: number;
+    readonly pending: number;
+    readonly withheld: number;
+    readonly launched: number;
+    readonly awaitingAttestation: number;
+    readonly openDeferredGaps: number;
+    readonly openCriticalFindings: number;
+    readonly totalDimensions: number;
+  };
+  readonly products: readonly NpaRow[];
+}
+
+export function buildNpaRegisterView(store: EventStore, asOf: string): NpaView {
+  const list = buildProductListView(store, asOf);
+
+  let approved = 0;
+  let pending = 0;
+  let withheld = 0;
+  let launched = 0;
+  let awaitingAttestation = 0;
+  let openDeferredGaps = 0;
+  let openCriticalFindings = 0;
+
+  const products: NpaRow[] = list.products.map((p) => {
+    if (p.approval.status === "approved") approved += 1;
+    else if (p.approval.status === "withheld") withheld += 1;
+    else pending += 1;
+    if (p.lifecycle === "launched") launched += 1;
+    if (!p.npaGateStatus.ready) awaitingAttestation += 1;
+    openDeferredGaps += p.deferredGaps.length;
+    if (p.hasOpenCriticalFinding) openCriticalFindings += 1;
+
+    return {
+      productId: p.productId,
+      name: p.name,
+      family: p.family,
+      lifecycle: p.lifecycle,
+      approvalStatus: p.approval.status,
+      attestedCount: p.npaGateStatus.attestedCount,
+      totalDimensions: p.npaGateStatus.totalDimensions,
+      gateReady: p.npaGateStatus.ready,
+      deferredGapCount: p.deferredGaps.length,
+      hasOpenCriticalFinding: p.hasOpenCriticalFinding,
+      origin: p.origin,
+    };
+  });
+
+  products.sort((a, b) => a.name.localeCompare(b.name));
+
+  return {
+    asOf,
+    summary: {
+      total: products.length,
+      approved,
+      pending,
+      withheld,
+      launched,
+      awaitingAttestation,
+      openDeferredGaps,
+      openCriticalFindings,
+      totalDimensions: NPA_DIMENSIONS.length,
+    },
+    products,
   };
 }
 

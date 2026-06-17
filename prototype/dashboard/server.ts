@@ -311,6 +311,7 @@ import { buildTaxonomiesView } from "./taxonomy-view";
 import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
 import type { DashboardState } from "./types";
 import {
+  buildNpaRegisterView,
   buildSchemaDetailView,
   buildSchemasView,
   buildSubstrateView,
@@ -5462,6 +5463,24 @@ const server = Bun.serve({
         ...buildSubstrateView(eventStore, filter, nowUtc()),
         pageProvenance: filter,
       });
+    }
+    // New Product Approval register (Governance). NPA products are governance /
+    // build-phase records (admitted under production-only in build phase), so
+    // both toggle modes show the register; pageProvenance reflects the lens.
+    if (req.method === "GET" && url.pathname === "/api/v2/npa") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildNpaRegisterView(eventStore, nowUtc()),
+        pageProvenance: filter,
+      });
+    }
+    if (req.method === "GET" && url.pathname.startsWith("/api/v2/npa/")) {
+      const productId = decodeURIComponent(url.pathname.slice("/api/v2/npa/".length));
+      if (!productId) return jsonResponse({ error: "missing productId" }, 400);
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const detail = buildProductDetailView(productId, eventStore, nowUtc());
+      if (!detail) return jsonResponse({ error: `unknown product: ${productId}` }, 404);
+      return jsonResponse({ ...detail, pageProvenance: filter });
     }
     if (req.method === "GET") {
       return serveStatic(url.pathname, req);
