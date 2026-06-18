@@ -102,10 +102,18 @@ describe("Nadia cash-rename challenger — currency-agnostic Valuable", () => {
 
   test("ZAR and USD use the SAME kernel — a USD leg at rate 1.0 equals a ZAR leg of the same notional", () => {
     const zar = cashValuable(
-      cashFromSettledReceivable({ currency: "ZAR", signedNotional: "500.00", reporting: REPORTING }),
+      cashFromSettledReceivable({
+        currency: "ZAR",
+        signedNotional: "500.00",
+        reporting: REPORTING,
+      }),
     ).value(marks({}), ASOF).value.amount;
     const usdAtRate1 = cashValuable(
-      cashFromSettledReceivable({ currency: "USD", signedNotional: "500.00", reporting: REPORTING }),
+      cashFromSettledReceivable({
+        currency: "USD",
+        signedNotional: "500.00",
+        reporting: REPORTING,
+      }),
     ).value(marks({ "USD/ZAR": 1 }), ASOF).value.amount;
     expect(usdAtRate1).toBe(zar);
   });
@@ -127,7 +135,9 @@ describe("Nadia cash-rename challenger — methodology-hash re-anchor", () => {
     // that movement is exactly what re-opened this validation (D-MODEL-BINDING-
     // CONTRACT-V1 §3). A silent revert to `fcy-cash` would fail here.
     expect(renamedHash).not.toBe(legacyHash);
-    expect(CASH_MODEL_METHODOLOGY_HASH).toBe(renamedHash);
+    // CASH_MODEL_METHODOLOGY_HASH is the branded MethodologyHash; compare its
+    // string value against the freshly-recomputed hash (same FNV-1a pin).
+    expect(String(CASH_MODEL_METHODOLOGY_HASH)).toBe(renamedHash);
   });
 });
 
@@ -150,7 +160,11 @@ describe("Nadia cash-rename challenger — settlement continuity (model level)",
           reporting: REPORTING,
         }).value(marks({ [`${ccy}/ZAR`]: rate }), ASOF).value.amount;
         const post = cashValuable(
-          cashFromSettledReceivable({ currency: ccy, signedNotional: notional, reporting: REPORTING }),
+          cashFromSettledReceivable({
+            currency: ccy,
+            signedNotional: notional,
+            reporting: REPORTING,
+          }),
         ).value(marks({ [`${ccy}/ZAR`]: rate }), ASOF).value.amount;
         expect(post).toBe(pre);
       }
@@ -209,7 +223,11 @@ describe("Nadia cash-rename challenger — MV-CASH-001 degenerate-match defect s
       reporting: REPORTING,
     }).value(marks({ "USD/ZAR": 18.52 }), ASOF).value.amount;
     const usdReceivedPost = cashValuable(
-      cashFromSettledReceivable({ currency: "USD", signedNotional: "100000.00", reporting: REPORTING }),
+      cashFromSettledReceivable({
+        currency: "USD",
+        signedNotional: "100000.00",
+        reporting: REPORTING,
+      }),
     ).value(marks({ "USD/ZAR": 18.52 }), ASOF).value.amount;
     expect(usdReceivedPost).toBe(fxUsdPre);
   });

@@ -126,12 +126,12 @@ const FINDINGS: Array<{
     findingId: "MV-CASH-003",
     severity: "medium",
     description:
-      "FX-SPOT MODEL `validationStatus:\"submitted\"` IS OUT OF SCOPE FOR THIS PASS — TRACK SEPARATELY. The brief " +
+      'FX-SPOT MODEL `validationStatus:"submitted"` IS OUT OF SCOPE FOR THIS PASS — TRACK SEPARATELY. The brief ' +
       "asks whether the lingering fx-spot `submitted` status belongs in this validation. Decision: NO. This pass " +
       "validates the CASH Valuable model re-opened by the `fcy-cash`→`cash` rename. The fx-valuation/fx-spot model " +
       "is a DISTINCT model id with its own methodology hash; it was validated-with-conditions under the A2 pass " +
       "(ModelValidationApproved for `fx-valuation` v1.0, brief …fx-valuable-fil-model-a4-:2026-06-13). The CASH_MODEL_" +
-      "DECLARATION also still carries validationStatus:\"submitted\" in code — that is the DECLARATION-time default; " +
+      'DECLARATION also still carries validationStatus:"submitted" in code — that is the DECLARATION-time default; ' +
       "this validation's ModelValidationApproved event is the second-line attestation that supersedes it (the register " +
       "row's status derives from the latest validation event, Principle 1, not the code literal). If the fx-spot " +
       "declaration's code-literal `submitted` is intended to reflect the register, that is a SEPARATE housekeeping " +
