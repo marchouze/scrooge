@@ -1,7 +1,7 @@
 ---
 agent: Helena
 trigger: risk-appetite-watch
-asOf: 2026-06-18T04:30:04.793Z
+asOf: 2026-06-18T04:47:53.606Z
 decision-required: false
 ---
 
@@ -58,7 +58,7 @@ _Zero breach events in the store — consistent with the build-phase posture (no
 
 ## Helena's narrative
 
-_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CcA6YYHsPu61eBD1M6rwn"})._
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CcA7vZ7xRA5uyVtN9eSZ2"})._
 
 ## Provenance
 
