@@ -569,6 +569,10 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:odp-collateral-segregation-breach-staleness",
     "recon:odp-repo-recon-dispute-staleness",
     "recon:coa-name-no-currency",
+    // WS-ACCT-FX-COMPLETENESS Slice 0 — accounting-schema canonical-home gate.
+    // ADVISORY at landing (its output is the scope map for slices 1–2); hardened
+    // to ENFORCING in Slice 4. Authority: D-ACCT-SCHEMA-CANONICAL-HOME.
+    "recon:accounting-schema-home",
     "recon:fx-supported-currency-no-suspense",
     "recon:account-designated-currency",
     "recon:valuation-adjustment-additive",
