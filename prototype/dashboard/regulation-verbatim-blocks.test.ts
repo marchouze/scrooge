@@ -176,9 +176,15 @@ describe("parseVerbatimBlocks", () => {
     ].join("\n");
     const blocks = parseVerbatimBlocks(text);
     expect(blocks.map((b) => b.kind)).toEqual(["paragraph", "heading", "paragraph"]);
-    expect(blocks[0]).toMatchObject({ kind: "paragraph", text: "An introductory clause of the regulation." });
+    expect(blocks[0]).toMatchObject({
+      kind: "paragraph",
+      text: "An introductory clause of the regulation.",
+    });
     expect(blocks[1]).toMatchObject({ kind: "heading", level: 4, text: "Subregulation (1)" });
-    expect(blocks[2]).toMatchObject({ kind: "paragraph", text: "The substantive requirement follows here." });
+    expect(blocks[2]).toMatchObject({
+      kind: "paragraph",
+      text: "The substantive requirement follows here.",
+    });
   });
 
   it("(heading-b') a heading directly adjacent to prose still splits the paragraph", () => {

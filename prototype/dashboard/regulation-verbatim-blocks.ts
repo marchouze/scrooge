@@ -45,10 +45,7 @@ export interface VerbatimHeadingBlock {
   text: string;
 }
 
-export type VerbatimBlock =
-  | VerbatimTableBlock
-  | VerbatimParagraphBlock
-  | VerbatimHeadingBlock;
+export type VerbatimBlock = VerbatimTableBlock | VerbatimParagraphBlock | VerbatimHeadingBlock;
 
 /** Matches a markdown ATX heading line: 1–6 leading hashes, at least one
  *  space, then the heading text (which must be non-empty after trimming any
