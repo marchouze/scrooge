@@ -37,6 +37,11 @@ import type { RegulatorySourceReviewedPayload } from "../../platform/event-store
 import type { RecordFiledPayload } from "../../platform/event-store/event-types/rms";
 import { getDb } from "../../platform/regulatory/graph/db";
 import { getApplicabilityStatus } from "../../platform/regulatory/graph/seed-projection";
+import type {
+  NormalizedDoc,
+  NormalizedProvision,
+} from "../../platform/regulatory/structured-doc-loader";
+import { loadNormalizedDocBySlug } from "../../platform/regulatory/structured-doc-loader";
 import type { StructuredSourceDocument } from "../../platform/regulatory/structured-source-schema";
 
 // ---------------------------------------------------------------------------
@@ -46,6 +51,28 @@ import type { StructuredSourceDocument } from "../../platform/regulatory/structu
 type ApplicabilityStatus = "direct" | "transposed" | "reference" | "unknown";
 
 type ReviewStatus = "reviewed" | "stale" | "unreviewed";
+
+/**
+ * How the structured doc's text content came to exist — a DERIVED lineage tag,
+ * not authored state:
+ *   - "bcbs-enriched"  : a BCBS instrument, text folded from chapter-text.json.
+ *   - "pdf-extract"    : a golden source hash is present AND at least one
+ *                        provision carries a `pages` field — i.e. the text was
+ *                        machine-extracted from a paginated PDF.
+ *   - "hand-authored"  : everything else (including sources with a hash but no
+ *                        page stamps — the hash is provenance, not extraction
+ *                        lineage; rrb is the canonical example).
+ */
+type AuthoringPath = "pdf-extract" | "bcbs-enriched" | "hand-authored";
+
+/** Per-source tally of provision nodes by Slice-1 completeness tier. */
+interface ContentCompleteness {
+  verbatim: number;
+  summary: number;
+  headingOnly: number;
+  enriched: number;
+  total: number;
+}
 
 export interface SourceCoverageRow {
   instrumentId: string | null;
@@ -68,6 +95,19 @@ export interface SourceCoverageRow {
   reviewStatus: ReviewStatus;
   /** The reviewedSourceHash carried by the latest review event, or null. */
   reviewedSourceHash: string | null;
+  /**
+   * DERIVED text-lineage tag (see AuthoringPath). Inferred from slug prefix,
+   * golden-source-hash presence, and whether any provision carries a `pages`
+   * stamp — never authored.
+   */
+  authoringPath: AuthoringPath;
+  /**
+   * DERIVED per-source completeness tally, computed by walking the Slice-1
+   * normalizer (`loadNormalizedDocBySlug`) over every provision node (sections
+   * AND nested subsections), counted once each. Makes the rrb false-confidence
+   * visible: a hand-authored source with 31 summary / 7 verbatim provisions.
+   */
+  contentCompleteness: ContentCompleteness;
 }
 
 export interface SourceCoverageReport {
@@ -309,6 +349,72 @@ function countExpressesEdgesForSlug(slugUpper: string, goldenSourceHash: string 
 }
 
 // ---------------------------------------------------------------------------
+// Derived: per-source content completeness (walk the Slice-1 normalizer)
+// ---------------------------------------------------------------------------
+
+/** Does any provision in the normalized tree carry a `pages` stamp? */
+function anyProvisionHasPages(doc: NormalizedDoc): boolean {
+  const walk = (p: NormalizedProvision): boolean => {
+    if (p.pages !== undefined && p.pages !== "") return true;
+    return p.subsections.some(walk);
+  };
+  return doc.chapters.some((ch) => ch.sections.some(walk));
+}
+
+/**
+ * Tally every provision node (sections + nested subsections, each counted once)
+ * by its Slice-1 `completeness` tier. Pure walk over the normalized tree.
+ */
+function tallyContentCompleteness(doc: NormalizedDoc | null): ContentCompleteness {
+  const tally: ContentCompleteness = {
+    verbatim: 0,
+    summary: 0,
+    headingOnly: 0,
+    enriched: 0,
+    total: 0,
+  };
+  if (!doc) return tally;
+  const walk = (p: NormalizedProvision): void => {
+    tally.total++;
+    switch (p.completeness) {
+      case "verbatim":
+        tally.verbatim++;
+        break;
+      case "summary":
+        tally.summary++;
+        break;
+      case "heading-only":
+        tally.headingOnly++;
+        break;
+      case "enriched":
+        tally.enriched++;
+        break;
+    }
+    for (const ss of p.subsections) walk(ss);
+  };
+  for (const ch of doc.chapters) for (const s of ch.sections) walk(s);
+  return tally;
+}
+
+/**
+ * Infer the DERIVED authoring/extraction lineage of a source. Order matters:
+ * a BCBS instrument is always "bcbs-enriched" regardless of hash/pages; a
+ * non-BCBS source counts as "pdf-extract" only when it has BOTH a golden-source
+ * hash AND a page-stamped provision (machine extraction); otherwise it is
+ * "hand-authored" (rrb: hash present, no pages → hash is provenance, not
+ * extraction lineage).
+ */
+function inferAuthoringPath(
+  slug: string,
+  goldenSourceHash: string | null,
+  normalized: NormalizedDoc | null,
+): AuthoringPath {
+  if (slug.startsWith("bcbs-")) return "bcbs-enriched";
+  if (goldenSourceHash && normalized && anyProvisionHasPages(normalized)) return "pdf-extract";
+  return "hand-authored";
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -346,6 +452,8 @@ export function buildSourceCoverage(): SourceCoverageReport {
         reviewedAt: null,
         reviewStatus: "unreviewed",
         reviewedSourceHash: null,
+        authoringPath: "hand-authored",
+        contentCompleteness: tallyContentCompleteness(null),
       });
       continue;
     }
@@ -389,6 +497,13 @@ export function buildSourceCoverage(): SourceCoverageReport {
         goldenSourceHash && review.reviewedSourceHash === goldenSourceHash ? "reviewed" : "stale";
     }
 
+    // DERIVED content lineage + completeness — walk the Slice-1 normalizer over
+    // this source's structured doc. Read from disk + normalizer (NOT graph.db),
+    // so stable regardless of the launchd graph-reset cadence.
+    const normalized = loadNormalizedDocBySlug(slug, root);
+    const contentCompleteness = tallyContentCompleteness(normalized);
+    const authoringPath = inferAuthoringPath(slug, goldenSourceHash, normalized);
+
     rows.push({
       instrumentId: filing?.instrumentId ?? null,
       slug,
@@ -403,6 +518,8 @@ export function buildSourceCoverage(): SourceCoverageReport {
       reviewedAt: review?.reviewedAt ?? null,
       reviewStatus,
       reviewedSourceHash: review?.reviewedSourceHash ?? null,
+      authoringPath,
+      contentCompleteness,
     });
   }
 
@@ -446,6 +563,11 @@ export function buildSourceCoverage(): SourceCoverageReport {
       reviewedAt: review?.reviewedAt ?? null,
       reviewStatus,
       reviewedSourceHash: review?.reviewedSourceHash ?? null,
+      // Filed-only sources have no structured doc on disk → no normalizer walk
+      // (empty tally). authoringPath still honours the slug prefix so a filed
+      // bcbs-* source resolves "bcbs-enriched".
+      authoringPath: inferAuthoringPath(slug, filing.documentHash, null),
+      contentCompleteness: tallyContentCompleteness(null),
     });
   }
 

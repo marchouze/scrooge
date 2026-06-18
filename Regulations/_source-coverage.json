@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-18T06:12:24.332Z",
+  "generatedAt": "2026-06-18T11:42:56.161Z",
   "totalInstruments": 158,
   "byStatus": {
     "direct": 126,
@@ -27,7 +27,15 @@
       "structuredJsonPath": "Regulations/SARB-PA/source-docs/banks-act-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 330,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 330
+      }
     },
     {
       "instrumentId": "BANKS-C1-2026",
@@ -42,7 +50,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c1-2026-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 93,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 93
+      }
     },
     {
       "instrumentId": "BANKS-C2-2014",
@@ -57,7 +73,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c2-2014-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 3,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 3
+      }
     },
     {
       "instrumentId": "BANKS-C2-2018",
@@ -72,7 +96,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c2-2018-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 1,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 1
+      }
     },
     {
       "instrumentId": "BANKS-C2-2020",
@@ -87,7 +119,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c2-2020-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 4,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 4
+      }
     },
     {
       "instrumentId": "BANKS-C2-2023",
@@ -102,7 +142,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c2-2023-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.939Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:93a1bd39c6dee2b5e5185ce393c93add92e86bafb28d1db602cc14d0bfd5163a"
+      "reviewedSourceHash": "blake3:93a1bd39c6dee2b5e5185ce393c93add92e86bafb28d1db602cc14d0bfd5163a",
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 13,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 13
+      }
     },
     {
       "instrumentId": "BANKS-C3-2013",
@@ -117,7 +165,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c3-2013-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 4,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 4
+      }
     },
     {
       "instrumentId": "BANKS-C3-2020",
@@ -132,7 +188,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c3-2020-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 4,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 4
+      }
     },
     {
       "instrumentId": "BANKS-C3-2023",
@@ -147,7 +211,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c3-2023-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 13,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 13
+      }
     },
     {
       "instrumentId": "BANKS-C3-2025",
@@ -162,7 +234,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c3-2025-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 5,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 5
+      }
     },
     {
       "instrumentId": "BANKS-C4-2013",
@@ -177,7 +257,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c4-2013-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 4,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 4
+      }
     },
     {
       "instrumentId": "BANKS-C4-2015",
@@ -192,7 +280,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c4-2015-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 4,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 4
+      }
     },
     {
       "instrumentId": "BANKS-C4-2016",
@@ -207,7 +303,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c4-2016-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 14,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 14
+      }
     },
     {
       "instrumentId": "BANKS-C4-2025",
@@ -222,7 +326,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c4-2025-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 16,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 16
+      }
     },
     {
       "instrumentId": "BANKS-C5-2013",
@@ -237,7 +349,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c5-2013-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 6,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 6
+      }
     },
     {
       "instrumentId": "BANKS-C5-2015",
@@ -252,7 +372,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c5-2015-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 4,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 4
+      }
     },
     {
       "instrumentId": "BANKS-C5-2016",
@@ -267,7 +395,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c5-2016-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 3,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 3
+      }
     },
     {
       "instrumentId": "BANKS-C7-2014",
@@ -282,7 +418,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c7-2014-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 4,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 4
+      }
     },
     {
       "instrumentId": "BANKS-C7-2016",
@@ -297,7 +441,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c7-2016-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 4,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 4
+      }
     },
     {
       "instrumentId": "BANKS-C8-2015",
@@ -312,7 +464,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-c8-2015-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 5,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 5
+      }
     },
     {
       "instrumentId": "BANKS-D1-2008",
@@ -327,7 +487,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d1-2008-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 9,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 9
+      }
     },
     {
       "instrumentId": "BANKS-D1-2012",
@@ -342,7 +510,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d1-2012-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 9,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 9
+      }
     },
     {
       "instrumentId": "BANKS-D1-2015",
@@ -357,7 +533,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d1-2015-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 54,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 54
+      }
     },
     {
       "instrumentId": "BANKS-D1-2017",
@@ -372,7 +556,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d1-2017-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 4,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 4
+      }
     },
     {
       "instrumentId": "BANKS-D1-2022",
@@ -387,7 +579,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d1-2022-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 36,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 36
+      }
     },
     {
       "instrumentId": "BANKS-D1-2023",
@@ -402,7 +602,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d1-2023-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 34,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 34
+      }
     },
     {
       "instrumentId": "BANKS-D1-2024",
@@ -417,7 +625,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d1-2024-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 4,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 4
+      }
     },
     {
       "instrumentId": "BANKS-D1-2026",
@@ -432,7 +648,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d1-2026-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 9,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 9
+      }
     },
     {
       "instrumentId": "BANKS-D10-2013",
@@ -447,7 +671,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d10-2013-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 9,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 9
+      }
     },
     {
       "instrumentId": "BANKS-D10-2015",
@@ -462,7 +694,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d10-2015-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 5,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 5
+      }
     },
     {
       "instrumentId": "BANKS-D10-2022",
@@ -477,7 +717,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d10-2022-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 34,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 34
+      }
     },
     {
       "instrumentId": "BANKS-D10-2025",
@@ -492,7 +740,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d10-2025-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 85,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 85
+      }
     },
     {
       "instrumentId": "BANKS-D11-2022",
@@ -507,7 +763,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d11-2022-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 19,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 19
+      }
     },
     {
       "instrumentId": "BANKS-D11-2025",
@@ -522,7 +786,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d11-2025-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 125,
+        "summary": 0,
+        "headingOnly": 2,
+        "enriched": 0,
+        "total": 127
+      }
     },
     {
       "instrumentId": "BANKS-D12-2025",
@@ -537,7 +809,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d12-2025-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 17,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 17
+      }
     },
     {
       "instrumentId": "BANKS-D13-2013",
@@ -552,7 +832,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d13-2013-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 9,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 9
+      }
     },
     {
       "instrumentId": "BANKS-D13-2025",
@@ -567,7 +855,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d13-2025-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 15,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 15
+      }
     },
     {
       "instrumentId": "BANKS-D14-2025",
@@ -582,7 +878,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d14-2025-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 73,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 73
+      }
     },
     {
       "instrumentId": "BANKS-D2-2008",
@@ -597,7 +901,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2008-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 9,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 9
+      }
     },
     {
       "instrumentId": "BANKS-D2-2011",
@@ -612,7 +924,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2011-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 9,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 9
+      }
     },
     {
       "instrumentId": "BANKS-D2-2014",
@@ -627,7 +947,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2014-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 3,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 3
+      }
     },
     {
       "instrumentId": "BANKS-D2-2015",
@@ -642,7 +970,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2015-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 1,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 1
+      }
     },
     {
       "instrumentId": "BANKS-D2-2017",
@@ -657,7 +993,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2017-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 4,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 4
+      }
     },
     {
       "instrumentId": "BANKS-D2-2018",
@@ -672,7 +1016,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2018-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 1,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 1
+      }
     },
     {
       "instrumentId": "BANKS-D2-2019",
@@ -687,7 +1039,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2019-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 22,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 22
+      }
     },
     {
       "instrumentId": "BANKS-D2-2021",
@@ -702,7 +1062,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2021-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 12,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 12
+      }
     },
     {
       "instrumentId": "BANKS-D2-2022",
@@ -717,7 +1085,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2022-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 24,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 24
+      }
     },
     {
       "instrumentId": "BANKS-D2-2023",
@@ -732,7 +1108,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2023-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 29,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 29
+      }
     },
     {
       "instrumentId": "BANKS-D2-2024",
@@ -747,7 +1131,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2024-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 14,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 14
+      }
     },
     {
       "instrumentId": "BANKS-D2-2025",
@@ -762,7 +1154,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d2-2025-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 26,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 26
+      }
     },
     {
       "instrumentId": "BANKS-D3-2008",
@@ -777,7 +1177,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d3-2008-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 9,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 9
+      }
     },
     {
       "instrumentId": "BANKS-D3-2017",
@@ -792,7 +1200,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d3-2017-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 64,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 64
+      }
     },
     {
       "instrumentId": "BANKS-D3-2018",
@@ -807,7 +1223,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d3-2018-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 4,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 4
+      }
     },
     {
       "instrumentId": "BANKS-D3-2023",
@@ -822,7 +1246,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d3-2023-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 16,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 16
+      }
     },
     {
       "instrumentId": "BANKS-D3-2024",
@@ -837,7 +1269,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d3-2024-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 27,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 27
+      }
     },
     {
       "instrumentId": "BANKS-D3-2025",
@@ -852,7 +1292,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d3-2025-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 26,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 26
+      }
     },
     {
       "instrumentId": "BANKS-D4-2008",
@@ -867,7 +1315,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d4-2008-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 9,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 9
+      }
     },
     {
       "instrumentId": "BANKS-D4-2015",
@@ -882,7 +1338,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d4-2015-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 106,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 106
+      }
     },
     {
       "instrumentId": "BANKS-D4-2017",
@@ -897,7 +1361,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d4-2017-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 1,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 1
+      }
     },
     {
       "instrumentId": "BANKS-D4-2021",
@@ -912,7 +1384,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d4-2021-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 28,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 28
+      }
     },
     {
       "instrumentId": "BANKS-D4-2022",
@@ -927,7 +1407,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d4-2022-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 6,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 6
+      }
     },
     {
       "instrumentId": "BANKS-D4-2023",
@@ -942,7 +1430,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d4-2023-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 28,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 28
+      }
     },
     {
       "instrumentId": "BANKS-D4-2025",
@@ -957,7 +1453,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d4-2025-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 5,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 5
+      }
     },
     {
       "instrumentId": "BANKS-D5-2011",
@@ -972,7 +1476,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d5-2011-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 1,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 1
+      }
     },
     {
       "instrumentId": "BANKS-D5-2016",
@@ -987,7 +1499,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d5-2016-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 1,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 1
+      }
     },
     {
       "instrumentId": "BANKS-D5-2020",
@@ -1002,7 +1522,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d5-2020-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 93,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 93
+      }
     },
     {
       "instrumentId": "BANKS-D5-2021",
@@ -1017,7 +1545,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d5-2021-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 15,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 15
+      }
     },
     {
       "instrumentId": "BANKS-D5-2022",
@@ -1032,7 +1568,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d5-2022-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 9,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 9
+      }
     },
     {
       "instrumentId": "BANKS-D5-2024",
@@ -1047,7 +1591,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d5-2024-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 45,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 45
+      }
     },
     {
       "instrumentId": "BANKS-D5-2025",
@@ -1062,7 +1614,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d5-2025-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 47,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 47
+      }
     },
     {
       "instrumentId": "BANKS-D6-2008",
@@ -1077,7 +1637,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d6-2008-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 9,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 9
+      }
     },
     {
       "instrumentId": "BANKS-D6-2017",
@@ -1092,7 +1660,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d6-2017-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 9,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 9
+      }
     },
     {
       "instrumentId": "BANKS-D6-2021",
@@ -1107,7 +1683,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d6-2021-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 14,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 14
+      }
     },
     {
       "instrumentId": "BANKS-D6-2022",
@@ -1122,7 +1706,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d6-2022-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 17,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 17
+      }
     },
     {
       "instrumentId": "BANKS-D6-2024",
@@ -1137,7 +1729,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d6-2024-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 1,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 1
+      }
     },
     {
       "instrumentId": "BANKS-D6-2025",
@@ -1152,7 +1752,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d6-2025-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 5,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 5
+      }
     },
     {
       "instrumentId": "BANKS-D7-2015",
@@ -1167,7 +1775,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d7-2015-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 55,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 55
+      }
     },
     {
       "instrumentId": "BANKS-D7-2016",
@@ -1182,7 +1798,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d7-2016-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 3,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 3
+      }
     },
     {
       "instrumentId": "BANKS-D7-2020",
@@ -1197,7 +1821,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d7-2020-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.938Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:d240015402f7e435e3d35af1864dce3772e7f48c48141eb884b0b175f65cd2b7"
+      "reviewedSourceHash": "blake3:d240015402f7e435e3d35af1864dce3772e7f48c48141eb884b0b175f65cd2b7",
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 26,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 26
+      }
     },
     {
       "instrumentId": "BANKS-D7-2022",
@@ -1212,7 +1844,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d7-2022-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 31,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 31
+      }
     },
     {
       "instrumentId": "BANKS-D7-2023",
@@ -1227,7 +1867,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d7-2023-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.934Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:985b9578e968022c544c23e2effa82f5feb219e02cff6347f25112573fadde80"
+      "reviewedSourceHash": "blake3:985b9578e968022c544c23e2effa82f5feb219e02cff6347f25112573fadde80",
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 42,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 42
+      }
     },
     {
       "instrumentId": "BANKS-D7-2025",
@@ -1242,7 +1890,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d7-2025-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 5,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 5
+      }
     },
     {
       "instrumentId": "BANKS-D8-2014",
@@ -1257,7 +1913,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d8-2014-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 20,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 20
+      }
     },
     {
       "instrumentId": "BANKS-D8-2016",
@@ -1272,7 +1936,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d8-2016-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 1,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 1
+      }
     },
     {
       "instrumentId": "BANKS-D8-2025",
@@ -1287,7 +1959,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d8-2025-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 4,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 4
+      }
     },
     {
       "instrumentId": "BANKS-D9-2013",
@@ -1302,7 +1982,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d9-2013-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 34,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 34
+      }
     },
     {
       "instrumentId": "BANKS-D9-2021",
@@ -1317,7 +2005,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d9-2021-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 9,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 9
+      }
     },
     {
       "instrumentId": "BANKS-D9-2022",
@@ -1332,7 +2028,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d9-2022-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 9,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 9
+      }
     },
     {
       "instrumentId": "BANKS-D9-2025",
@@ -1347,7 +2051,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-d9-2025-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 23,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 23
+      }
     },
     {
       "instrumentId": "BANKS-GN1-2008",
@@ -1362,7 +2074,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn1-2008-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 1,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 1
+      }
     },
     {
       "instrumentId": "BANKS-GN1-2026",
@@ -1377,7 +2097,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn1-2026-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 34,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 34
+      }
     },
     {
       "instrumentId": "BANKS-GN10-2022",
@@ -1392,7 +2120,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn10-2022-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 43,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 43
+      }
     },
     {
       "instrumentId": "BANKS-GN12-2022",
@@ -1407,7 +2143,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn12-2022-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 77,
+        "summary": 0,
+        "headingOnly": 1,
+        "enriched": 0,
+        "total": 78
+      }
     },
     {
       "instrumentId": "BANKS-GN2-2008",
@@ -1422,7 +2166,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn2-2008-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 18,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 18
+      }
     },
     {
       "instrumentId": "BANKS-GN2-2024",
@@ -1437,7 +2189,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn2-2024-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 70,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 70
+      }
     },
     {
       "instrumentId": "BANKS-GN2-2025",
@@ -1452,7 +2212,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn2-2025-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 42,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 42
+      }
     },
     {
       "instrumentId": "BANKS-GN3-2010",
@@ -1467,7 +2235,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn3-2010-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 9,
+        "summary": 0,
+        "headingOnly": 2,
+        "enriched": 0,
+        "total": 11
+      }
     },
     {
       "instrumentId": "BANKS-GN3-2011",
@@ -1482,7 +2258,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn3-2011-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 5,
+        "summary": 0,
+        "headingOnly": 3,
+        "enriched": 0,
+        "total": 8
+      }
     },
     {
       "instrumentId": "BANKS-GN3-2014",
@@ -1497,7 +2281,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn3-2014-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 10,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 10
+      }
     },
     {
       "instrumentId": "BANKS-GN3-2016",
@@ -1512,7 +2304,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn3-2016-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 6,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 6
+      }
     },
     {
       "instrumentId": "BANKS-GN3-2017",
@@ -1527,7 +2327,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn3-2017-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 3,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 3
+      }
     },
     {
       "instrumentId": "BANKS-GN3-2025",
@@ -1542,7 +2350,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn3-2025-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 102,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 102
+      }
     },
     {
       "instrumentId": "BANKS-GN4-2014",
@@ -1557,7 +2373,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn4-2014-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 41,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 41
+      }
     },
     {
       "instrumentId": "BANKS-GN4-2015",
@@ -1572,7 +2396,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn4-2015-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 144,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 144
+      }
     },
     {
       "instrumentId": "BANKS-GN4-2016",
@@ -1587,7 +2419,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn4-2016-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 5,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 5
+      }
     },
     {
       "instrumentId": "BANKS-GN4-2023",
@@ -1602,7 +2442,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn4-2023-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 135,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 135
+      }
     },
     {
       "instrumentId": "BANKS-GN4-2024",
@@ -1617,7 +2465,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn4-2024-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 22,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 22
+      }
     },
     {
       "instrumentId": "BANKS-GN5-2008",
@@ -1632,7 +2488,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn5-2008-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 4,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 4
+      }
     },
     {
       "instrumentId": "BANKS-GN5-2013",
@@ -1647,7 +2511,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn5-2013-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 3,
+        "summary": 0,
+        "headingOnly": 2,
+        "enriched": 0,
+        "total": 5
+      }
     },
     {
       "instrumentId": "BANKS-GN5-2014",
@@ -1662,7 +2534,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn5-2014-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 172,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 172
+      }
     },
     {
       "instrumentId": "BANKS-GN5-2016",
@@ -1677,7 +2557,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn5-2016-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 14,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 14
+      }
     },
     {
       "instrumentId": "BANKS-GN5-2018",
@@ -1692,7 +2580,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn5-2018-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 20,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 20
+      }
     },
     {
       "instrumentId": "BANKS-GN5-2022",
@@ -1707,7 +2603,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn5-2022-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 47,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 47
+      }
     },
     {
       "instrumentId": "BANKS-GN5-2024",
@@ -1722,7 +2626,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn5-2024-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 128,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 128
+      }
     },
     {
       "instrumentId": "BANKS-GN6-2022",
@@ -1737,7 +2649,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn6-2022-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 105,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 105
+      }
     },
     {
       "instrumentId": "BANKS-GN7-2008",
@@ -1752,7 +2672,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn7-2008-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 4,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 4
+      }
     },
     {
       "instrumentId": "BANKS-GN7-2016",
@@ -1767,7 +2695,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn7-2016-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 4,
+        "summary": 0,
+        "headingOnly": 1,
+        "enriched": 0,
+        "total": 5
+      }
     },
     {
       "instrumentId": "BANKS-GN7-2022",
@@ -1782,7 +2718,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn7-2022-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 74,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 74
+      }
     },
     {
       "instrumentId": "BANKS-GN8-2008",
@@ -1797,7 +2741,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn8-2008-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 3,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 3
+      }
     },
     {
       "instrumentId": "BANKS-GN8-2020",
@@ -1812,7 +2764,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn8-2020-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 40,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 40
+      }
     },
     {
       "instrumentId": "BANKS-GN9-2008",
@@ -1827,7 +2787,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn9-2008-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 76,
+        "summary": 0,
+        "headingOnly": 1,
+        "enriched": 0,
+        "total": 77
+      }
     },
     {
       "instrumentId": "BANKS-GN9-2022",
@@ -1842,7 +2810,15 @@
       "structuredJsonPath": "Regulations/Banks/source-docs/banks-gn9-2022-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 106,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 106
+      }
     },
     {
       "instrumentId": "FAIS-ACT-37-2002",
@@ -1857,7 +2833,15 @@
       "structuredJsonPath": "Regulations/FSCA/source-docs/fais-act-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 264,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 264
+      }
     },
     {
       "instrumentId": "JN-2-2024",
@@ -1872,7 +2856,15 @@
       "structuredJsonPath": "Regulations/ODP/source-docs/jn-2-2024-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 10,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 10
+      }
     },
     {
       "instrumentId": "JS-2-2020",
@@ -1887,7 +2879,15 @@
       "structuredJsonPath": "Regulations/ODP/source-docs/js-2-2020-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 72,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 72
+      }
     },
     {
       "instrumentId": "REGS-RELATING-TO-BANKS",
@@ -1902,7 +2902,15 @@
       "structuredJsonPath": "Regulations/SARB-PA/source-docs/rrb-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 112,
+        "summary": 31,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 143
+      }
     },
     {
       "instrumentId": "BCBS-BCP",
@@ -1917,7 +2925,15 @@
       "structuredJsonPath": "Regulations/BCBS/source-docs/bcp-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "bcbs-enriched",
+      "contentCompleteness": {
+        "verbatim": 2,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 154,
+        "total": 156
+      }
     },
     {
       "instrumentId": "BCBS-CAP",
@@ -1932,7 +2948,15 @@
       "structuredJsonPath": "Regulations/BCBS/source-docs/cap-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.944Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:4fbeb1e0d69badf79464428f84f1ba460ab45643ae1957c52ed4204ec764bc07"
+      "reviewedSourceHash": "blake3:4fbeb1e0d69badf79464428f84f1ba460ab45643ae1957c52ed4204ec764bc07",
+      "authoringPath": "bcbs-enriched",
+      "contentCompleteness": {
+        "verbatim": 0,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 112,
+        "total": 112
+      }
     },
     {
       "instrumentId": "BCBS-CRE",
@@ -1947,7 +2971,15 @@
       "structuredJsonPath": "Regulations/BCBS/source-docs/cre-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.947Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:3142bf7ec937a886309e6808ae10866ae9f12f7f425ba4575396a1e942308d82"
+      "reviewedSourceHash": "blake3:3142bf7ec937a886309e6808ae10866ae9f12f7f425ba4575396a1e942308d82",
+      "authoringPath": "bcbs-enriched",
+      "contentCompleteness": {
+        "verbatim": 0,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 1198,
+        "total": 1198
+      }
     },
     {
       "instrumentId": "BCBS-DIS",
@@ -1962,7 +2994,15 @@
       "structuredJsonPath": "Regulations/BCBS/source-docs/dis-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.957Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:245a2dce8089a80dff0b67a4ea74d61aeca8866cda7735def06436eb5dc17c23"
+      "reviewedSourceHash": "blake3:245a2dce8089a80dff0b67a4ea74d61aeca8866cda7735def06436eb5dc17c23",
+      "authoringPath": "bcbs-enriched",
+      "contentCompleteness": {
+        "verbatim": 0,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 109,
+        "total": 109
+      }
     },
     {
       "instrumentId": "BCBS-LCR",
@@ -1977,7 +3017,15 @@
       "structuredJsonPath": "Regulations/BCBS/source-docs/lcr-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.951Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:1c41d03ede025b13d608a9ea86d3e778fe6756948e91b53bfc0c941e12d96da0"
+      "reviewedSourceHash": "blake3:1c41d03ede025b13d608a9ea86d3e778fe6756948e91b53bfc0c941e12d96da0",
+      "authoringPath": "bcbs-enriched",
+      "contentCompleteness": {
+        "verbatim": 0,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 228,
+        "total": 228
+      }
     },
     {
       "instrumentId": "BCBS-LEV",
@@ -1992,7 +3040,15 @@
       "structuredJsonPath": "Regulations/BCBS/source-docs/lev-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.949Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:fb8c3085e3c97e41242bfac6f83be999a029f590be72ff0d17e00a2385fc5ccc"
+      "reviewedSourceHash": "blake3:fb8c3085e3c97e41242bfac6f83be999a029f590be72ff0d17e00a2385fc5ccc",
+      "authoringPath": "bcbs-enriched",
+      "contentCompleteness": {
+        "verbatim": 0,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 76,
+        "total": 76
+      }
     },
     {
       "instrumentId": "BCBS-LEX",
@@ -2007,7 +3063,15 @@
       "structuredJsonPath": "Regulations/BCBS/source-docs/lex-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.954Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:6acf15967da240e085905834517be3eda3bf8ae09fc3ea041c172487d8663e50"
+      "reviewedSourceHash": "blake3:6acf15967da240e085905834517be3eda3bf8ae09fc3ea041c172487d8663e50",
+      "authoringPath": "bcbs-enriched",
+      "contentCompleteness": {
+        "verbatim": 0,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 87,
+        "total": 87
+      }
     },
     {
       "instrumentId": "BCBS-MAR",
@@ -2022,7 +3086,15 @@
       "structuredJsonPath": "Regulations/BCBS/source-docs/mar-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.941Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:0ac8574ef0e5436013d4d65d8204f393c95dbc0d0b4acc8f8b462f2664238b45"
+      "reviewedSourceHash": "blake3:0ac8574ef0e5436013d4d65d8204f393c95dbc0d0b4acc8f8b462f2664238b45",
+      "authoringPath": "bcbs-enriched",
+      "contentCompleteness": {
+        "verbatim": 0,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 542,
+        "total": 542
+      }
     },
     {
       "instrumentId": "BCBS-MGN",
@@ -2037,7 +3109,15 @@
       "structuredJsonPath": "Regulations/BCBS/source-docs/mgn-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.955Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:504be1edd0a169112e2b2ba559ae8ecff08e26327e4ddf930e88e95de1bb3e4c"
+      "reviewedSourceHash": "blake3:504be1edd0a169112e2b2ba559ae8ecff08e26327e4ddf930e88e95de1bb3e4c",
+      "authoringPath": "bcbs-enriched",
+      "contentCompleteness": {
+        "verbatim": 0,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 70,
+        "total": 70
+      }
     },
     {
       "instrumentId": "BCBS-NSF",
@@ -2052,7 +3132,15 @@
       "structuredJsonPath": "Regulations/BCBS/source-docs/nsf-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.952Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:6545e9c2e9ddbd1712daeab9ae613f9adff44a3ff4cdb2e45a3345420df538dd"
+      "reviewedSourceHash": "blake3:6545e9c2e9ddbd1712daeab9ae613f9adff44a3ff4cdb2e45a3345420df538dd",
+      "authoringPath": "bcbs-enriched",
+      "contentCompleteness": {
+        "verbatim": 0,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 56,
+        "total": 56
+      }
     },
     {
       "instrumentId": "BCBS-OPE",
@@ -2067,7 +3155,15 @@
       "structuredJsonPath": "Regulations/BCBS/source-docs/ope-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.948Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:ad7465ba16923a479c85bf6c9babd0e0fb958baadedbd58151a55c76093e8a58"
+      "reviewedSourceHash": "blake3:ad7465ba16923a479c85bf6c9babd0e0fb958baadedbd58151a55c76093e8a58",
+      "authoringPath": "bcbs-enriched",
+      "contentCompleteness": {
+        "verbatim": 0,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 43,
+        "total": 43
+      }
     },
     {
       "instrumentId": "BCBS-RBC",
@@ -2082,7 +3178,15 @@
       "structuredJsonPath": "Regulations/BCBS/source-docs/rbc-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.945Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:aea7b12036405fc4a92ff094fd236abbae277b35d9c062f0d9d30076244496ad"
+      "reviewedSourceHash": "blake3:aea7b12036405fc4a92ff094fd236abbae277b35d9c062f0d9d30076244496ad",
+      "authoringPath": "bcbs-enriched",
+      "contentCompleteness": {
+        "verbatim": 0,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 101,
+        "total": 101
+      }
     },
     {
       "instrumentId": "BCBS-SCO",
@@ -2097,7 +3201,15 @@
       "structuredJsonPath": "Regulations/BCBS/source-docs/sco-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.942Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:2dfecef3b51214a7deb4321043c7b1293788de0e8a3113ef894acaf86eea6c07"
+      "reviewedSourceHash": "blake3:2dfecef3b51214a7deb4321043c7b1293788de0e8a3113ef894acaf86eea6c07",
+      "authoringPath": "bcbs-enriched",
+      "contentCompleteness": {
+        "verbatim": 0,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 197,
+        "total": 197
+      }
     },
     {
       "instrumentId": "BCBS-SRP",
@@ -2112,7 +3224,15 @@
       "structuredJsonPath": "Regulations/BCBS/source-docs/srp-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.956Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:a170634075603a33f8dccc957b71fea73a46c6d5b5b3415025dd74570edb21d8"
+      "reviewedSourceHash": "blake3:a170634075603a33f8dccc957b71fea73a46c6d5b5b3415025dd74570edb21d8",
+      "authoringPath": "bcbs-enriched",
+      "contentCompleteness": {
+        "verbatim": 0,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 554,
+        "total": 554
+      }
     },
     {
       "instrumentId": "IFRS-13",
@@ -2127,7 +3247,15 @@
       "structuredJsonPath": "Regulations/INTL/IASB/source-docs/ifrs-13-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.960Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:8aa3b9b98f23212456d5c9e50c77c5a1ead063054395babb67989a9ed2fb6bc8"
+      "reviewedSourceHash": "blake3:8aa3b9b98f23212456d5c9e50c77c5a1ead063054395babb67989a9ed2fb6bc8",
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 0,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 0
+      }
     },
     {
       "instrumentId": "IFRS-7",
@@ -2142,7 +3270,15 @@
       "structuredJsonPath": "Regulations/INTL/IASB/source-docs/ifrs-7-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.962Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:07d54895ddf48c73579f080a0fe8eb2e73d720ca03205a53f6dadd5bf073c21c"
+      "reviewedSourceHash": "blake3:07d54895ddf48c73579f080a0fe8eb2e73d720ca03205a53f6dadd5bf073c21c",
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 0,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 0
+      }
     },
     {
       "instrumentId": "IFRS-9",
@@ -2157,7 +3293,15 @@
       "structuredJsonPath": "Regulations/INTL/IASB/source-docs/ifrs-9-structured.json",
       "reviewedAt": "2026-06-15T11:44:49.958Z",
       "reviewStatus": "reviewed",
-      "reviewedSourceHash": "blake3:c09ab457fe07a3c3f7498eabfd07c75e19e40a5998d8e634bcf369be53b47d59"
+      "reviewedSourceHash": "blake3:c09ab457fe07a3c3f7498eabfd07c75e19e40a5998d8e634bcf369be53b47d59",
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 0,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 0
+      }
     },
     {
       "instrumentId": null,
@@ -2172,7 +3316,15 @@
       "structuredJsonPath": "Regulations/ODP/source-docs/cs-1-2018-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 119,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 119
+      }
     },
     {
       "instrumentId": null,
@@ -2187,7 +3339,15 @@
       "structuredJsonPath": "Regulations/ODP/source-docs/cs-2-2018-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 113,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 113
+      }
     },
     {
       "instrumentId": null,
@@ -2202,7 +3362,15 @@
       "structuredJsonPath": "Regulations/ODP/source-docs/cs-3-2018-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 30,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 30
+      }
     },
     {
       "instrumentId": null,
@@ -2217,7 +3385,15 @@
       "structuredJsonPath": "Regulations/CoopBanks/source-docs/d1-2023-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 15,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 15
+      }
     },
     {
       "instrumentId": null,
@@ -2232,7 +3408,15 @@
       "structuredJsonPath": "Regulations/SARB-FinSurv/source-docs/excon-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 230,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 230
+      }
     },
     {
       "instrumentId": "FAIS-GCC-2003",
@@ -2247,7 +3431,15 @@
       "structuredJsonPath": "Regulations/FSCA/source-docs/fais-gcc-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "pdf-extract",
+      "contentCompleteness": {
+        "verbatim": 229,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 229
+      }
     },
     {
       "instrumentId": null,
@@ -2262,7 +3454,15 @@
       "structuredJsonPath": "Regulations/FIC/source-docs/fic-act-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 318,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 318
+      }
     },
     {
       "instrumentId": null,
@@ -2277,7 +3477,15 @@
       "structuredJsonPath": "Regulations/CoopBanks/source-docs/gn1-2019-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 59,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 59
+      }
     },
     {
       "instrumentId": null,
@@ -2292,7 +3500,15 @@
       "structuredJsonPath": "Regulations/CoopBanks/source-docs/gn1-2020-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 358,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 358
+      }
     },
     {
       "instrumentId": null,
@@ -2307,7 +3523,15 @@
       "structuredJsonPath": "Regulations/CoopBanks/source-docs/gn1-2021-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 43,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 43
+      }
     },
     {
       "instrumentId": null,
@@ -2322,7 +3546,15 @@
       "structuredJsonPath": "Regulations/CoopBanks/source-docs/gn1-2026-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 10,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 10
+      }
     },
     {
       "instrumentId": null,
@@ -2337,7 +3569,15 @@
       "structuredJsonPath": "Regulations/CoopBanks/source-docs/gn2-2019-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 25,
+        "summary": 0,
+        "headingOnly": 7,
+        "enriched": 0,
+        "total": 32
+      }
     },
     {
       "instrumentId": null,
@@ -2352,7 +3592,15 @@
       "structuredJsonPath": "Regulations/CoopBanks/source-docs/gn2-2020-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 35,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 35
+      }
     },
     {
       "instrumentId": null,
@@ -2367,7 +3615,15 @@
       "structuredJsonPath": "Regulations/Joint-Standards/source-docs/js2-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 241,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 241
+      }
     },
     {
       "instrumentId": null,
@@ -2382,7 +3638,15 @@
       "structuredJsonPath": "Regulations/Information-Regulator/source-docs/popia-structured.json",
       "reviewedAt": null,
       "reviewStatus": "unreviewed",
-      "reviewedSourceHash": null
+      "reviewedSourceHash": null,
+      "authoringPath": "hand-authored",
+      "contentCompleteness": {
+        "verbatim": 287,
+        "summary": 0,
+        "headingOnly": 0,
+        "enriched": 0,
+        "total": 287
+      }
     }
   ]
 }
