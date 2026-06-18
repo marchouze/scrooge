@@ -7,6 +7,9 @@
 //
 // Author: Mira (Compliance / RegTech engineer, engineering).
 
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { describe, expect, it } from "bun:test";
 
 import { buildProvisionTree, getLeafDescendants } from "./graph/provision-tree";
@@ -72,8 +75,6 @@ describe("discoverStructuredDocPaths — nested regulator dirs", () => {
   // Reproduce the OLD direct-children-only scan so the nested-recursion fix can
   // be asserted as a strict superset (only ADDS nested slugs, never drops one).
   const directChildrenOnlySlugs = (): Set<string> => {
-    const { existsSync, readFileSync, readdirSync } = require("node:fs") as typeof import("node:fs");
-    const { resolve } = require("node:path") as typeof import("node:path");
     // import.meta.dir = <worktree>/prototype/platform/regulatory
     const regsDir = resolve(import.meta.dir, "..", "..", "..", "Regulations");
     const slugs = new Set<string>();
