@@ -28,6 +28,12 @@
     .rd-section-num { font-weight:700; color:var(--color-accent); }
     .rd-section-heading { font-weight:600; color:var(--color-text-primary); }
     .rd-text { color:var(--color-text-primary); line-height:1.65; white-space:pre-wrap; font:var(--text-body); }
+    .rd-sub { display:flex; gap:var(--space-3); margin-top:var(--space-2); line-height:1.6; }
+    .rd-sub-num { flex-shrink:0; min-width:36px; color:var(--color-accent); font-weight:600; font-variant-numeric:tabular-nums; }
+    .rd-sub-text { color:var(--color-text-primary); white-space:pre-wrap; }
+    .rd-excerpt { margin:var(--space-3) 0; }
+    .rd-excerpt img { max-width:100%; border:1px solid var(--color-border); border-radius:var(--radius-sm); }
+    .rd-excerpt figcaption { font:var(--text-caption); color:var(--color-text-secondary); margin-top:4px; }
     .rd-aside { border-left:1px solid var(--color-border); padding-left:var(--space-4); }
     .rd-obls-lbl { font-size:0.7em; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;
       color:var(--color-accent); margin-bottom:var(--space-2); }
@@ -127,8 +133,13 @@
                 </div>
                 ${o.ownerSeatTitle ? `<div class="rd-obl-meta">${v2Esc(o.ownerSeatTitle)}</div>` : ""}
               </a>`).join("");
-            const textHtml = s.text
-              ? `<div class="rd-text">${v2Esc(s.text)}</div>`
+            const subsHtml = (s.subsections || []).map((ss) =>
+              `<div class="rd-sub"><span class="rd-sub-num">${v2Esc(ss.number || "")}</span><span class="rd-sub-text">${v2Esc(ss.text || "")}</span></div>`).join("");
+            const excHtml = (s.excerpts || []).map((e) =>
+              `<figure class="rd-excerpt"><img loading="lazy" alt="${v2Esc(e.caption || ("Excerpt " + e.id))}" src="/api/regulation-reader/${encodeURIComponent(d.slug)}/excerpt/${encodeURIComponent(e.id)}">${e.caption ? `<figcaption>${v2Esc(e.caption)}${e.pages ? ` (p.${v2Esc(e.pages)})` : ""}</figcaption>` : ""}</figure>`).join("");
+            const hasBody = (s.text && s.text.trim()) || subsHtml || excHtml;
+            const textHtml = hasBody
+              ? `${s.text ? `<div class="rd-text">${v2Esc(s.text)}</div>` : ""}${subsHtml}${excHtml}`
               : `<div class="rd-obl-meta">No verbatim text extracted for this section.</div>`;
             const hd = `<div class="rd-section-hd"><span class="rd-section-num">${v2Esc(s.number || "")}</span><span class="rd-section-heading">${v2Esc(s.heading || "")}</span></div>`;
             if (!tiles) {

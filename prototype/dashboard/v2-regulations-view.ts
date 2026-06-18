@@ -109,11 +109,28 @@ export interface V2SectionObligation {
   ownerSeatTitle: string | null;
 }
 
+/** A subsection's verbatim provision text (the bulk of most regulations). */
+export interface V2RegulationSubsection {
+  number: string;
+  text: string;
+}
+
+/** An image excerpt (image-only source PDFs), streamed via the reader excerpt route. */
+export interface V2RegulationExcerpt {
+  id: string;
+  caption: string;
+  pages: string;
+}
+
 export interface V2RegulationSection {
   number: string;
   heading: string;
   text: string;
   verbatim: boolean;
+  /** Nested subsection provision text, in document order (flattened). */
+  subsections: V2RegulationSubsection[];
+  /** Image excerpts to render inline (resolved via /api/regulation-reader/:slug/excerpt/:id). */
+  excerpts: V2RegulationExcerpt[];
   obligations: V2SectionObligation[];
 }
 
@@ -142,6 +159,26 @@ const toSectionObligation = (r: EnrichedObligationRef): V2SectionObligation => (
   ownerSeatTitle: r.ownerSeatTitle,
 });
 
+/** Minimal nested subsection shape (the reader type only declares one level). */
+interface RawSubsection {
+  number?: string;
+  text?: string;
+  subsections?: RawSubsection[];
+}
+
+/**
+ * Flatten a section's subsection tree into ordered {number,text} provisions —
+ * the bulk of a regulation's verbatim wording lives here, not at section level.
+ */
+function flattenSubsections(subs: readonly RawSubsection[] | undefined): V2RegulationSubsection[] {
+  const out: V2RegulationSubsection[] = [];
+  for (const ss of subs ?? []) {
+    if ((ss.text ?? "").trim()) out.push({ number: ss.number ?? "", text: ss.text ?? "" });
+    if (Array.isArray(ss.subsections)) out.push(...flattenSubsections(ss.subsections));
+  }
+  return out;
+}
+
 export function buildV2RegulationDetailView(
   repoRoot: string,
   slug: string,
@@ -165,6 +202,12 @@ export function buildV2RegulationDetailView(
         heading: s.heading ?? s.title ?? "",
         text: s.text ?? "",
         verbatim: s.verbatim ?? false,
+        subsections: flattenSubsections(s.subsections as RawSubsection[] | undefined),
+        excerpts: (s.excerpts ?? []).map((e) => ({
+          id: e.id,
+          caption: e.caption ?? "",
+          pages: e.pages ?? "",
+        })),
         obligations: (s.derivedObligations ?? []).map(toSectionObligation),
       })),
     })),

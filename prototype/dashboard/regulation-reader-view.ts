@@ -758,11 +758,29 @@ export function verbatimForProvisions(
   if (!doc) return [];
   const want = new Set(provisionIds);
   const out: VerbatimProvision[] = [];
+  // Collect a section's full verbatim text — section body PLUS its subsection
+  // tree (where most regulatory wording actually lives), in document order.
+  interface TextNode {
+    text?: string;
+    number?: string;
+    subsections?: TextNode[];
+  }
+  const collectText = (node: TextNode): string => {
+    const parts: string[] = [];
+    const body = (node.text ?? "").trim();
+    if (body) parts.push(body);
+    for (const ss of node.subsections ?? []) {
+      const sub = collectText(ss);
+      if (sub) parts.push(ss.number ? `${ss.number}  ${sub}` : sub);
+    }
+    return parts.join("\n\n");
+  };
   for (const chapter of doc.chapters) {
     for (const section of chapter.sections) {
       const hit = candidateProvisionIds(slug, section).some((c) => want.has(c));
-      const text = (section.text ?? "").trim();
-      if (!hit || !text) continue;
+      if (!hit) continue;
+      const text = collectText(section as TextNode).trim();
+      if (!text) continue;
       const num = section.number ?? section.sectionNumber ?? "";
       const heading = section.heading ?? section.title ?? "";
       out.push({ label: [num, heading].filter(Boolean).join(" "), text });
