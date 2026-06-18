@@ -45,10 +45,20 @@
 
 import { matchesFilScope } from "../../../v2-core/fil-core/urn";
 import type {
+  FilFxSettlementConfirmedPayload,
   FilInstrumentAmendedPayload,
   FilInstrumentCreatedPayload,
   FilInstrumentTerminatedPayload,
+  FilNdfFixingObservedPayload,
 } from "../../../v2-core/fil-instances/events";
+import {
+  postFxDerecognitionLegs,
+  postFxFvociReclassLegs,
+  postFxNdfFixingLegs,
+  postFxSettlementLegs,
+  postFxSwapFarLegLegs,
+  postFxSwapNearLegLegs,
+} from "../../../v2-core/posting-rules/fx-settlement";
 import {
   type InstanceElectionRegister,
   findInstanceElection,
@@ -83,11 +93,18 @@ const FX_FIL_EVENT_TYPES = [
   "FilInstrumentCreated",
   "FilInstrumentAmended",
   "FilInstrumentTerminated",
+  "FilFxSettlementConfirmed",
+  "FilNdfFixingObserved",
 ] as const;
 
 /** The trimmed payload the fold reads off each FIL lifecycle event. */
 interface FilLifecyclePayloadMinimal {
-  readonly kind: "FilInstrumentCreated" | "FilInstrumentAmended" | "FilInstrumentTerminated";
+  readonly kind:
+    | "FilInstrumentCreated"
+    | "FilInstrumentAmended"
+    | "FilInstrumentTerminated"
+    | "FilFxSettlementConfirmed"
+    | "FilNdfFixingObserved";
   readonly type?: string;
   readonly instance?: string;
   readonly originatingEvent?: { readonly eventType: string; readonly eventId: string };
@@ -274,6 +291,97 @@ function decideFxTreatment(
 }
 
 // ---------------------------------------------------------------------------
+// Settlement / terminal / NDF-fixing rule adapters (WS-FIL-FX-SETTLEMENT-EVENTS).
+//
+// The completeness rules in `v2-core/posting-rules/fx-settlement.ts` are pure
+// `economic-input → balanced leg[]` functions over an EXPLICIT input shape (not
+// over a FIL event — that was their deferred-gap state). These adapters bind the
+// new FIL settlement / NDF / enriched-terminal events to those rule inputs so the
+// rules fire at fold time. Money is decimal-native `{currency,amount}`; the rule
+// inputs take the signed major-unit amount string verbatim (no float).
+//
+// Authority: D-FIL-FX-SETTLEMENT-EVENTS; D-ACCT-FX-IFRS-POSTING-COMPLETENESS.
+// ---------------------------------------------------------------------------
+
+/**
+ * Termination fold: when the terminal event carries the enriched economic terms
+ * (WS-FIL-FX-SETTLEMENT-EVENTS), fire the reworked derecognition reversal
+ * (PR-FX-CLOSE-V2) and, for an FVOCI-elected instrument, the FVOCI→P&L recycle
+ * (PR-FX-FVOCI-RECLASS-V2). When NEITHER term is present, fall back to the clean
+ * zero-amount derecognition memo — the pre-WS behaviour, preserved byte-for-byte
+ * so existing terminal events fold unchanged.
+ */
+function postFxTerminationLegs(payload: FilInstrumentTerminatedPayload): FxPostingLeg[] {
+  const { derecognitionTerms, fvociReclassTerms } = payload;
+  if (derecognitionTerms === undefined && fvociReclassTerms === undefined) {
+    return postFxCloseLegs(payload);
+  }
+  const postingDate = payload.asOf.substring(0, 10);
+  const legs: FxPostingLeg[] = [];
+  if (derecognitionTerms !== undefined) {
+    legs.push(
+      ...postFxDerecognitionLegs({
+        instanceId: payload.instance,
+        tenantId: payload.tenant,
+        postingDate,
+        currency: derecognitionTerms.accumulatedUnrealised.currency,
+        accumulatedUnrealised: derecognitionTerms.accumulatedUnrealised.amount,
+      }),
+    );
+  }
+  if (fvociReclassTerms !== undefined) {
+    legs.push(
+      ...postFxFvociReclassLegs({
+        instanceId: payload.instance,
+        tenantId: payload.tenant,
+        postingDate,
+        currency: fvociReclassTerms.accumulatedOci.currency,
+        accumulatedOci: fvociReclassTerms.accumulatedOci.amount,
+      }),
+    );
+  }
+  return legs;
+}
+
+/**
+ * Settlement fold: dispatch on `legRole` to the spot settlement (PR-FX-SETTLE-V2)
+ * or the swap near/far-leg settlement (PR-FX-SWAP-NEAR-V2 / PR-FX-SWAP-FAR-V2).
+ * Each carries the same per-leg booked/settled economic terms.
+ */
+function postFxSettlementConfirmedLegs(payload: FilFxSettlementConfirmedPayload): FxPostingLeg[] {
+  const settlementInput = {
+    instanceId: payload.instance,
+    tenantId: payload.tenant,
+    postingDate: payload.asOf.substring(0, 10),
+    boughtCurrency: payload.boughtBooked.currency,
+    boughtBookedAmount: payload.boughtBooked.amount,
+    boughtSettledAmount: payload.boughtSettled.amount,
+    soldCurrency: payload.soldBooked.currency,
+    soldBookedAmount: payload.soldBooked.amount,
+    soldSettledAmount: payload.soldSettled.amount,
+  };
+  switch (payload.legRole) {
+    case "spot":
+      return postFxSettlementLegs(settlementInput);
+    case "swap-near":
+      return postFxSwapNearLegLegs(settlementInput);
+    case "swap-far":
+      return postFxSwapFarLegLegs(settlementInput);
+  }
+}
+
+/** NDF-fixing fold: cash-settled realised P&L (PR-FX-NDF-FIX-V2), no principal. */
+function postFxNdfFixingObservedLegs(payload: FilNdfFixingObservedPayload): FxPostingLeg[] {
+  return postFxNdfFixingLegs({
+    instanceId: payload.instance,
+    tenantId: payload.tenant,
+    postingDate: payload.asOf.substring(0, 10),
+    settlementCurrency: payload.settlementCurrency,
+    netCashDifference: payload.netCashDifference.amount,
+  });
+}
+
+// ---------------------------------------------------------------------------
 // The fold.
 // ---------------------------------------------------------------------------
 
@@ -346,8 +454,11 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
 
     // Terminated events do not carry the taxonomy type in the same FX-guarded
     // way; the engine treats every termination as an FX close at this scope.
-    // Mirror that: a created/amended must be an FX instance; a terminated is
-    // always processed (the engine's documented Phase-3A behaviour).
+    // Mirror that: a created/amended (and the new settlement / NDF-fixing events,
+    // which carry the type URN) must be an FX instance; a terminated is always
+    // processed (the engine's documented Phase-3A behaviour). The settlement /
+    // NDF events are FX-only by construction but still pass through the same
+    // isFxInstance guard so a mis-typed event fails closed (no non-FX leakage).
     if (p.kind !== "FilInstrumentTerminated") {
       if (type === undefined || !isFxInstance(type)) continue; // non-FX → not this fold's concern
     }
@@ -408,7 +519,15 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
         );
         break;
       case "FilInstrumentTerminated":
-        ruleLegs = postFxCloseLegs(e.payload as unknown as FilInstrumentTerminatedPayload);
+        ruleLegs = postFxTerminationLegs(e.payload as unknown as FilInstrumentTerminatedPayload);
+        break;
+      case "FilFxSettlementConfirmed":
+        ruleLegs = postFxSettlementConfirmedLegs(
+          e.payload as unknown as FilFxSettlementConfirmedPayload,
+        );
+        break;
+      case "FilNdfFixingObserved":
+        ruleLegs = postFxNdfFixingObservedLegs(e.payload as unknown as FilNdfFixingObservedPayload);
         break;
     }
 
