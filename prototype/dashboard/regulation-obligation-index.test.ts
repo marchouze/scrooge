@@ -21,7 +21,11 @@ import { makeObligationAdopted } from "../platform/event-store/event-types/oblig
 import { EventStore } from "../platform/event-store/store";
 import type { Actor } from "../platform/event-store/types";
 import { SEAT_AGENT } from "../platform/regulatory/domain-ownership-map";
-import { buildRegulationObligationIndex } from "./regulation-obligation-index";
+import {
+  buildRegulationObligationIndex,
+  graphProvisionSlug,
+  provisionKey,
+} from "./regulation-obligation-index";
 
 const ACTOR: Actor = { type: "service", id: "agent:test" };
 const ENTITY = "LE-ZA-HOZ-BANK";
@@ -132,7 +136,7 @@ function concludeApplicability(
 }
 
 describe("buildRegulationObligationIndex", () => {
-  it("maps a section-anchored obligation back to its provision via EXPRESSES", () => {
+  it("maps a section-anchored obligation back to its provision via EXPRESSES (slug-qualified)", () => {
     const store = new EventStore();
     const db = makeGraph();
     adopt(store, "ORG-FC-02");
@@ -140,20 +144,29 @@ describe("buildRegulationObligationIndex", () => {
 
     const index = buildRegulationObligationIndex(store, db);
 
-    const refs = index.byProvision.get("PROV-FICA-s29") ?? [];
-    expect(refs.map((r) => r.id)).toContain("ORG-FC-02");
-    expect(index.provisionsForObligation.get("ORG-FC-02")).toContain("PROV-FICA-s29");
+    // The graph node id carries its own slug ("fica").
+    const key = provisionKey(graphProvisionSlug("PROV-FICA-s29") ?? "", "PROV-FICA-s29");
+    expect((index.byProvision.get(key) ?? []).map((r) => r.id)).toContain("ORG-FC-02");
+    expect(index.provisionsForObligation.get("ORG-FC-02")).toContainEqual({
+      slug: "fica",
+      provId: "PROV-FICA-s29",
+    });
     expect(index.byObligationId.get("ORG-FC-02")?.status).toBe("active");
   });
 
-  it("maps a tick-flow obligation back via derivesFrom (no EXPRESSES edge)", () => {
+  it("anchors tick-flow derivesFrom to the citation slug (bare id qualified)", () => {
     const store = new EventStore();
     const db = makeGraph();
-    adopt(store, "ORG-FC-09", { derivesFrom: ["banks-act-60"] });
+    // citation is a real structured-doc slug → its bare provision ids belong to it.
+    adopt(store, "ORG-FC-09", { citation: "banks-act", derivesFrom: ["s4-1"] });
 
     const index = buildRegulationObligationIndex(store, db);
 
-    expect((index.byProvision.get("banks-act-60") ?? []).map((r) => r.id)).toContain("ORG-FC-09");
+    expect(
+      (index.byProvision.get(provisionKey("banks-act", "s4-1")) ?? []).map((r) => r.id),
+    ).toContain("ORG-FC-09");
+    // It must NOT surface under another instrument's same-numbered section.
+    expect(index.byProvision.get(provisionKey("js-2-2020", "s4-1"))).toBeUndefined();
   });
 
   it("enriches the ref with the latest applicability verdict", () => {
@@ -186,7 +199,7 @@ describe("buildRegulationObligationIndex", () => {
     expect(everyName).not.toContain(title);
   });
 
-  it("excludes un-adopted obligations and dedups across provisions", () => {
+  it("dedups when EXPRESSES and derivesFrom name the same qualified provision", () => {
     const store = new EventStore();
     const db = makeGraph();
     adopt(store, "ORG-FC-02", { derivesFrom: ["PROV-FICA-s29"] });
@@ -195,7 +208,8 @@ describe("buildRegulationObligationIndex", () => {
 
     const index = buildRegulationObligationIndex(store, db);
 
-    const refs = index.byProvision.get("PROV-FICA-s29") ?? [];
+    const key = provisionKey("fica", "PROV-FICA-s29");
+    const refs = index.byProvision.get(key) ?? [];
     expect(refs.filter((r) => r.id === "ORG-FC-02")).toHaveLength(1);
   });
 });

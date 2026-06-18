@@ -20,25 +20,35 @@
     .rd-section { padding:var(--space-4); border:1px solid var(--color-border); border-radius:var(--radius-lg);
       background:var(--color-surface); margin-bottom:var(--space-3); }
     .rd-section:target, .rd-section.rd-flash { border-color:var(--color-accent); background:var(--color-accent-bg); }
+    /* Sections that give rise to obligations: highlighted + two-column —
+       verbatim text left, obligation tile(s) on the RHS aligned to the block. */
+    .rd-section.rd-has-obls { border-left:3px solid var(--color-accent); display:grid;
+      grid-template-columns:1fr 300px; gap:var(--space-4); align-items:start; }
     .rd-section-hd { display:flex; gap:var(--space-2); align-items:baseline; margin-bottom:var(--space-2); }
     .rd-section-num { font-weight:700; color:var(--color-accent); }
     .rd-section-heading { font-weight:600; color:var(--color-text-primary); }
     .rd-text { color:var(--color-text-primary); line-height:1.65; white-space:pre-wrap; font:var(--text-body); }
-    .rd-obls { margin-top:var(--space-3); padding-top:var(--space-3); border-top:1px dashed var(--color-border); }
-    .rd-obls-lbl { font-size:0.72em; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;
+    .rd-aside { border-left:1px solid var(--color-border); padding-left:var(--space-4); }
+    .rd-obls-lbl { font-size:0.7em; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;
       color:var(--color-accent); margin-bottom:var(--space-2); }
-    .rd-obl { display:flex; gap:var(--space-2); align-items:center; flex-wrap:wrap; padding:6px 0; }
-    .rd-obl a { color:var(--color-accent); font-weight:600; font-family:ui-monospace,monospace; text-decoration:none; }
-    .rd-obl a:hover { text-decoration:underline; }
-    .rd-obl-title { color:var(--color-text-primary); }
-    .rd-obl-meta { color:var(--color-text-secondary); font-size:0.85em; }
+    .rd-tile { display:block; padding:var(--space-3); border:1px solid var(--color-border); border-radius:var(--radius-sm);
+      background:var(--color-bg); margin-bottom:var(--space-2); text-decoration:none; }
+    .rd-tile:hover { border-color:var(--color-accent); }
+    .rd-tile-id { font-weight:700; font-family:ui-monospace,monospace; color:var(--color-accent); font-size:0.85em; }
+    .rd-tile-title { color:var(--color-text-primary); margin:3px 0; font-size:0.92em; }
+    .rd-tile-meta { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top:6px; }
+    .rd-obl-meta { color:var(--color-text-secondary); font-size:0.8em; }
     .v2-chip { display:inline-flex; align-items:center; padding:1px 8px; border-radius:10px; font-size:0.76em; font-weight:600; }
     .v2-chip--applies { background:var(--color-success-bg); color:var(--color-success); }
     .v2-chip--partially-applies { background:var(--color-warning-bg); color:var(--color-warning); }
     .v2-chip--does-not-apply { background:var(--color-surface-raised); color:var(--color-text-secondary); }
     .v2-chip--na { background:var(--color-surface-raised); color:var(--color-text-disabled); }
     .v2-chip--status { background:var(--color-info-bg); color:var(--color-info); }
-    body.rd-hide-obls .rd-obls { display:none; }
+    body.rd-hide-obls .rd-section.rd-has-obls { display:block; border-left:1px solid var(--color-border); }
+    body.rd-hide-obls .rd-aside { display:none; }
+    @media (max-width:1000px){ .rd-section.rd-has-obls { display:block; }
+      .rd-aside { border-left:none; border-top:1px dashed var(--color-border); padding-left:0;
+        padding-top:var(--space-3); margin-top:var(--space-3); } }
   </style>
 </head>
 <body data-provenance-content="none">
@@ -106,19 +116,28 @@
         let html = "";
         for (const ch of d.chapters || []) {
           const secs = (ch.sections || []).map((s) => {
-            const obls = (s.obligations || []).map((o) => `
-              <div class="rd-obl">
-                <a href="/v2/compliance/obligation.html?id=${encodeURIComponent(o.id)}">${v2Esc(o.id)}</a>
-                <span class="rd-obl-title">${v2Esc(o.title || "")}</span>
-                <span class="v2-chip v2-chip--status">${v2Esc(o.status || "—")}</span>
-                ${chip(o.verdict)}
-                ${o.ownerSeatTitle ? `<span class="rd-obl-meta">${v2Esc(o.ownerSeatTitle)}</span>` : ""}
-              </div>`).join("");
-            const oblBlock = obls ? `<div class="rd-obls"><div class="rd-obls-lbl">Obligations identified from this section</div>${obls}</div>` : "";
-            return `<div class="rd-section">
-              <div class="rd-section-hd"><span class="rd-section-num">${v2Esc(s.number || "")}</span><span class="rd-section-heading">${v2Esc(s.heading || "")}</span></div>
-              ${s.text ? `<div class="rd-text">${v2Esc(s.text)}</div>` : `<div class="rd-obl-meta">No verbatim text extracted for this section.</div>`}
-              ${oblBlock}
+            const list = s.obligations || [];
+            const tiles = list.map((o) => `
+              <a class="rd-tile" href="/v2/compliance/obligation.html?id=${encodeURIComponent(o.id)}">
+                <span class="rd-tile-id">${v2Esc(o.id)}</span>
+                <div class="rd-tile-title">${v2Esc(o.title || "")}</div>
+                <div class="rd-tile-meta">
+                  <span class="v2-chip v2-chip--status">${v2Esc(o.status || "—")}</span>
+                  ${chip(o.verdict)}
+                </div>
+                ${o.ownerSeatTitle ? `<div class="rd-obl-meta">${v2Esc(o.ownerSeatTitle)}</div>` : ""}
+              </a>`).join("");
+            const textHtml = s.text
+              ? `<div class="rd-text">${v2Esc(s.text)}</div>`
+              : `<div class="rd-obl-meta">No verbatim text extracted for this section.</div>`;
+            const hd = `<div class="rd-section-hd"><span class="rd-section-num">${v2Esc(s.number || "")}</span><span class="rd-section-heading">${v2Esc(s.heading || "")}</span></div>`;
+            if (!tiles) {
+              return `<div class="rd-section">${hd}${textHtml}</div>`;
+            }
+            // Two-column: verbatim source text left, obligation tile(s) on the RHS.
+            return `<div class="rd-section rd-has-obls">
+              <div class="rd-section-main">${hd}${textHtml}</div>
+              <aside class="rd-aside"><div class="rd-obls-lbl">Obligations from this section</div>${tiles}</aside>
             </div>`;
           }).join("");
           html += `<div class="rd-chapter">${ch.heading || ch.number ? `<div class="rd-chapter-h">${v2Esc(ch.heading || ch.number)}</div>` : ""}${secs}</div>`;

@@ -19,6 +19,14 @@
       color:var(--color-accent); font:var(--text-caption); font-weight:600; text-decoration:none; }
     .od-source-btn:hover { filter:brightness(0.97); }
     .od-hist { font:var(--text-caption); color:var(--color-text-secondary); padding:3px 0; border-bottom:1px solid var(--color-border); }
+    .od-source { border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-surface);
+      padding:var(--space-4); margin-bottom:var(--space-3); }
+    .od-source-hd { display:flex; align-items:center; justify-content:space-between; gap:var(--space-3);
+      margin-bottom:var(--space-3); padding-bottom:var(--space-2); border-bottom:1px solid var(--color-border); }
+    .od-source-slug { font:var(--text-h3); color:var(--color-text-primary); font-family:ui-monospace,monospace; }
+    .od-srcblock { margin-bottom:var(--space-3); padding-left:var(--space-3); border-left:3px solid var(--color-accent); }
+    .od-srclabel { font-size:0.78em; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;
+      color:var(--color-accent); margin-bottom:4px; }
   </style>
 </head>
 <body data-provenance-content="none">
@@ -78,14 +86,6 @@
             variant: d.applicability?.verdict === "applies" ? "success" : d.applicability?.verdict === "does-not-apply" ? "" : "warning" },
         ]});
 
-        // Source-regulation links (backward jump into the reader).
-        if ((d.sourceLinks || []).length) {
-          const linkBox = document.createElement("div"); linkBox.style.marginBottom = "var(--space-4)";
-          linkBox.innerHTML = (d.sourceLinks).map((l) =>
-            `<a class="od-source-btn" href="/v2/compliance/reader.html?slug=${encodeURIComponent(l.slug)}">View in source regulation — ${v2Esc(l.slug)} →</a>`).join(" ");
-          main.appendChild(linkBox);
-        }
-
         const mkSection = (title, inner) => {
           const s = document.createElement("div"); s.className = "v2-section";
           const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = title; s.appendChild(h);
@@ -100,9 +100,26 @@
 
         mkSection("Domain", `<div class="od-prose">${v2Esc(d.domain || "—")}</div>`);
 
-        mkSection("Regulatory source text", d.sourceText
-          ? `<div class="od-prose">${v2Esc(d.sourceText)}</div>`
-          : `<div class="od-prose" style="color:var(--color-text-secondary)">No verbatim source text resolved for this obligation.</div>`);
+        // Source regulations — each cited regulation with its verbatim provision
+        // text, grouped, plus a "view in source regulation" jump.
+        const sources = d.sources || [];
+        if (!sources.length) {
+          mkSection("Regulatory source", `<div class="od-prose" style="color:var(--color-text-secondary)">No source regulation resolved for this obligation.</div>`);
+        } else {
+          const wrap = sources.map((src) => {
+            const blocks = (src.sections || []).map((sec) =>
+              `<div class="od-srcblock"><div class="od-srclabel">${v2Esc(sec.label || "")}</div><div class="od-prose">${v2Esc(sec.text)}</div></div>`).join("")
+              || `<div class="od-prose" style="color:var(--color-text-secondary)">No verbatim text extracted for the cited provisions.</div>`;
+            return `<div class="od-source">
+              <div class="od-source-hd">
+                <span class="od-source-slug">${v2Esc(src.slug)}</span>
+                <a class="od-source-btn" href="/v2/compliance/reader.html?slug=${encodeURIComponent(src.slug)}">View in source regulation →</a>
+              </div>
+              ${blocks}
+            </div>`;
+          }).join("");
+          mkSection(sources.length > 1 ? `Source regulations (${sources.length})` : "Source regulation", wrap);
+        }
 
         if ((d.history || []).length)
           mkSection("Lifecycle history", d.history.map((h) =>

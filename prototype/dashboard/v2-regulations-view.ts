@@ -23,6 +23,7 @@ import {
   buildInstrumentDetailView,
   buildInstrumentsListView,
   sourceLinksForObligation,
+  verbatimForProvisions,
 } from "./regulation-reader-view";
 
 /**
@@ -213,9 +214,11 @@ function cleanRequirementProse(raw: string): string {
 // Obligation detail
 // ---------------------------------------------------------------------------
 
-export interface V2ObligationSourceLink {
+/** One cited source regulation with its verbatim provision text. */
+export interface V2ObligationSource {
   slug: string;
   provisionIds: string[];
+  sections: Array<{ label: string; text: string }>;
 }
 
 export interface V2ObligationDetail {
@@ -228,9 +231,12 @@ export interface V2ObligationDetail {
   ownerSeatTitle: string | null;
   requirement: string;
   applicability: { verdict: string; rationale: string } | null;
-  /** Verbatim regulatory source text resolved for this obligation (clean). */
-  sourceText: string;
-  sourceLinks: V2ObligationSourceLink[];
+  /**
+   * Each regulation this obligation validly cites, with the verbatim text of
+   * the cited provisions — so a multi-source obligation shows every citing,
+   * grouped per regulation (not one merged blob).
+   */
+  sources: V2ObligationSource[];
   history: Array<{ at: string; kind: string; status: string }>;
 }
 
@@ -246,10 +252,14 @@ export function buildV2ObligationDetailView(
   const requirementRaw = d.seed?.requirement ?? d.projection?.requirement ?? "";
   const seat = seatForObligation({ id, citation, requirement: requirementRaw });
 
-  const sourceText = d.headingGroups
-    .flatMap((g) => g.paragraphs.map((p) => `${p.paragraph ? `${p.paragraph}  ` : ""}${p.text}`))
-    .join("\n\n")
-    .trim();
+  const sources: V2ObligationSource[] = sourceLinksForObligation(repoRoot, store, id).map((l) => ({
+    slug: l.slug,
+    provisionIds: l.provisionIds,
+    sections: verbatimForProvisions(repoRoot, l.slug, l.provisionIds).map((s) => ({
+      label: s.label,
+      text: redactAgentNames(s.text),
+    })),
+  }));
 
   return {
     id: d.id,
@@ -263,8 +273,7 @@ export function buildV2ObligationDetailView(
     applicability: d.applicability
       ? { verdict: d.applicability.verdict, rationale: redactAgentNames(d.applicability.rationale) }
       : null,
-    sourceText: sourceText || (d.verbatimText ? redactAgentNames(d.verbatimText) : ""),
-    sourceLinks: sourceLinksForObligation(repoRoot, store, id),
+    sources,
     history: d.history.map((h) => ({ at: h.at, kind: h.kind, status: h.status ?? "" })),
   };
 }

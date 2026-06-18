@@ -26,6 +26,7 @@ import {
   type EnrichedObligationRef,
   type RegulationObligationIndex,
   buildRegulationObligationIndex,
+  provisionKey,
 } from "./regulation-obligation-index";
 
 /** Normalise a section reference: lowercase + dots stripped. */
@@ -573,7 +574,9 @@ function derivedObligationsForSection(
   const seen = new Set<string>();
   const refs: EnrichedObligationRef[] = [];
   for (const provId of candidateProvisionIds(slug, section)) {
-    for (const ref of index.byProvision.get(provId) ?? []) {
+    // Qualify the lookup by THIS instrument's slug so a bare section id does not
+    // pull obligations that trace to a same-numbered section in another reg.
+    for (const ref of index.byProvision.get(provisionKey(slug, provId)) ?? []) {
       if (seen.has(ref.id)) continue;
       seen.add(ref.id);
       refs.push(ref);
@@ -702,32 +705,6 @@ export function buildInstrumentsListView(
 // Backward navigation: obligation → its source provision(s) in the reader
 // ---------------------------------------------------------------------------
 
-let _provisionSlugCache: Map<string, string> | null = null;
-
-/**
- * Map every candidate provision id (both id spaces) back to the instrument slug
- * that owns it, scanning all structured docs once. Powers the obligation
- * drill-down's "View in source regulation" jump (the reverse direction). Cached
- * for the process; the structured docs are committed reference data.
- */
-function buildProvisionSlugMap(repoRoot: string): Map<string, string> {
-  if (_provisionSlugCache) return _provisionSlugCache;
-  const map = new Map<string, string>();
-  for (const slug of discoverSlugPaths(repoRoot).keys()) {
-    const doc = loadStructuredDoc(repoRoot, slug);
-    if (!doc) continue;
-    for (const chapter of doc.chapters) {
-      for (const section of chapter.sections) {
-        for (const pid of candidateProvisionIds(doc.slug, section)) {
-          if (!map.has(pid)) map.set(pid, doc.slug);
-        }
-      }
-    }
-  }
-  _provisionSlugCache = map;
-  return map;
-}
-
 /** One instrument the obligation traces into, with the matched provision ids. */
 export interface ObligationSourceLink {
   slug: string;
@@ -736,29 +713,62 @@ export interface ObligationSourceLink {
 
 /**
  * Resolve the source instrument(s) and provision id(s) an obligation derives
- * from — the deep-link target for the backward jump. Pure read-side join of the
- * reverse index (Plane B) against the provision→slug map (Plane A).
+ * from — the deep-link target for the backward jump. Reads the reverse index's
+ * already-qualified provisions (each carries its owning slug), so an obligation
+ * surfaces ONLY under the regulation(s) it genuinely traces to (no bare-id
+ * cross-instrument collisions).
  */
 export function sourceLinksForObligation(
-  repoRoot: string,
+  _repoRoot: string,
   store: EventStore,
   id: string,
 ): ObligationSourceLink[] {
   const index = buildRegulationObligationIndex(store);
-  const provIds = index.provisionsForObligation.get(id) ?? [];
-  const slugMap = buildProvisionSlugMap(repoRoot);
+  const owned = index.provisionsForObligation.get(id) ?? [];
   const bySlug = new Map<string, string[]>();
-  for (const pid of provIds) {
-    const slug = slugMap.get(pid);
-    if (!slug) continue;
+  for (const { slug, provId } of owned) {
     const list = bySlug.get(slug) ?? [];
-    list.push(pid);
+    list.push(provId);
     bySlug.set(slug, list);
   }
   return [...bySlug.entries()].map(([slug, provisionIds]) => ({
     slug,
     provisionIds: provisionIds.sort(),
   }));
+}
+
+/** A resolved verbatim provision: a stable label + its source text. */
+export interface VerbatimProvision {
+  label: string;
+  text: string;
+}
+
+/**
+ * Verbatim source text for a set of provision ids within ONE instrument, in
+ * document order. Used by the obligation detail to show each cited source's
+ * actual wording (grouped per regulation). Sections with no extractable text
+ * are skipped.
+ */
+export function verbatimForProvisions(
+  repoRoot: string,
+  slug: string,
+  provisionIds: readonly string[],
+): VerbatimProvision[] {
+  const doc = loadStructuredDoc(repoRoot, slug);
+  if (!doc) return [];
+  const want = new Set(provisionIds);
+  const out: VerbatimProvision[] = [];
+  for (const chapter of doc.chapters) {
+    for (const section of chapter.sections) {
+      const hit = candidateProvisionIds(slug, section).some((c) => want.has(c));
+      const text = (section.text ?? "").trim();
+      if (!hit || !text) continue;
+      const num = section.number ?? section.sectionNumber ?? "";
+      const heading = section.heading ?? section.title ?? "";
+      out.push({ label: [num, heading].filter(Boolean).join(" "), text });
+    }
+  }
+  return out;
 }
 
 export function buildInstrumentDetailView(

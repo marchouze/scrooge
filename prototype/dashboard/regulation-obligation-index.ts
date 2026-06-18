@@ -31,6 +31,7 @@ import {
   seatForObligation,
 } from "../platform/regulatory/domain-ownership-map";
 import { getDb } from "../platform/regulatory/graph/db";
+import { loadStructuredDocBySlug } from "../platform/regulatory/structured-doc-loader";
 import {
   type LatestApplicability,
   foldLatestApplicabilityBySubject,
@@ -43,6 +44,38 @@ import {
  */
 export function seatTitle(seat: Seat | null): string | null {
   return seat ? SEAT_AGENT[seat].position : null;
+}
+
+/** A provision the obligation traces to, qualified by its owning regulation. */
+export interface OwnedProvision {
+  slug: string;
+  provId: string;
+}
+
+const KEY_SEP = "::";
+
+/**
+ * Compose the qualified key used by `byProvision`. Provision ids alone are NOT
+ * globally unique — a bare section id like "s4-1" recurs across regulations, so
+ * an obligation tracing to banks-d7-2023 §4.1 must not surface under another
+ * instrument's §4.1. Qualifying by slug eliminates that collision.
+ */
+export function provisionKey(slug: string, provId: string): string {
+  return `${slug}${KEY_SEP}${provId}`;
+}
+
+/**
+ * Parse the owning slug out of a GRAPH provision node id. SA provisions are
+ * `PROV-<SLUG-UPPER>-s<n>`; BCBS are `urn:reg:bcbs:<chapter>:<para>`. Returns
+ * null when the id carries no resolvable slug (then the obligation's anchor
+ * regulation is used instead).
+ */
+export function graphProvisionSlug(provId: string): string | null {
+  const sa = provId.match(/^PROV-(.+?)-s[^-]*$/i);
+  if (sa?.[1]) return sa[1].toLowerCase();
+  const bcbs = provId.match(/^urn:reg:bcbs:([a-z]+):/i);
+  if (bcbs?.[1]) return `bcbs-${bcbs[1].toLowerCase()}`;
+  return null;
 }
 
 /** One adopted bank obligation as it appears back-populated onto a provision. */
@@ -65,16 +98,19 @@ export interface EnrichedObligationRef {
 
 export interface RegulationObligationIndex {
   /**
-   * Provision id → adopted obligations tracing back to it. Keys span BOTH
-   * provision-id spaces in play, so a reader can look up whichever id it holds:
-   *   - graph `EXPRESSES` edge ids (`PROV-<SLUG>-s<n>`)
-   *   - structured-doc ids carried in `derivesFrom` (`<slug>-<num>`, tick-flow)
+   * `provisionKey(slug, provId)` → adopted obligations tracing back to that
+   * provision. The key is QUALIFIED by the owning regulation slug so a bare
+   * section id (e.g. "s4-1") cannot collide across instruments. A reader looks
+   * up `provisionKey(itsSlug, candidateId)` for each candidate provision id.
    */
   byProvision: Map<string, EnrichedObligationRef[]>;
   /** Obligation id → its enriched ref (for the forward list + dedup). */
   byObligationId: Map<string, EnrichedObligationRef>;
-  /** Obligation id → the provision ids it traces to (the backward jump target). */
-  provisionsForObligation: Map<string, string[]>;
+  /**
+   * Obligation id → the provisions it traces to, each qualified by its owning
+   * regulation slug (the backward "view in source regulation" jump target).
+   */
+  provisionsForObligation: Map<string, OwnedProvision[]>;
 }
 
 /**
@@ -110,7 +146,20 @@ export function buildRegulationObligationIndex(
 
   const byProvision = new Map<string, EnrichedObligationRef[]>();
   const byObligationId = new Map<string, EnrichedObligationRef>();
-  const provisionsForObligation = new Map<string, string[]>();
+  const provisionsForObligation = new Map<string, OwnedProvision[]>();
+
+  // Memoise "is this citation a structured-doc slug?" — distinct citations are
+  // few (~one per instrument) so this caps the file probes loadStructuredDocBySlug
+  // would otherwise do per obligation.
+  const slugCitationCache = new Map<string, boolean>();
+  const citationIsSlug = (c: string): boolean => {
+    if (!c) return false;
+    const cached = slugCitationCache.get(c);
+    if (cached !== undefined) return cached;
+    const ok = loadStructuredDocBySlug(c) !== null;
+    slugCitationCache.set(c, ok);
+    return ok;
+  };
 
   for (const o of adopted) {
     const seat = seatForObligation({
@@ -130,17 +179,40 @@ export function buildRegulationObligationIndex(
     };
     byObligationId.set(o.id, ref);
 
-    // Provision ids from BOTH spaces — graph EXPRESSES edges + the obligation's
-    // own derivesFrom (tick-flow obligations carry structured-doc provision ids
-    // directly and have no EXPRESSES edge).
-    const provs = new Set<string>(provisionsByObl.get(o.id) ?? []);
-    for (const p of o.derivesFrom) provs.add(p);
+    // Resolve each provision to its OWNING regulation slug:
+    //   - graph EXPRESSES edges carry a slug in the node id itself.
+    //   - derivesFrom ids (tick-flow) belong to the obligation's anchor
+    //     regulation = its `citation` when that is a structured-doc slug. This
+    //     correctly attributes bare ids (e.g. "s4-1") that would otherwise
+    //     collide with same-numbered sections in unrelated instruments.
+    const anchorSlug = citationIsSlug(o.citation) ? o.citation : null;
+    const owned: OwnedProvision[] = [];
+    const seen = new Set<string>();
+    const add = (slug: string | null, provId: string) => {
+      if (!slug) return;
+      const key = provisionKey(slug, provId);
+      if (seen.has(key)) return;
+      seen.add(key);
+      owned.push({ slug, provId });
+    };
+    for (const fromId of provisionsByObl.get(o.id) ?? []) {
+      add(graphProvisionSlug(fromId), fromId);
+    }
+    for (const p of o.derivesFrom) {
+      add(anchorSlug ?? graphProvisionSlug(p), p);
+    }
 
-    provisionsForObligation.set(o.id, [...provs].sort());
-    for (const p of provs) {
-      const list = byProvision.get(p) ?? [];
+    provisionsForObligation.set(
+      o.id,
+      [...owned].sort((a, b) =>
+        a.slug !== b.slug ? a.slug.localeCompare(b.slug) : a.provId.localeCompare(b.provId),
+      ),
+    );
+    for (const { slug, provId } of owned) {
+      const key = provisionKey(slug, provId);
+      const list = byProvision.get(key) ?? [];
       list.push(ref);
-      byProvision.set(p, list);
+      byProvision.set(key, list);
     }
   }
 
