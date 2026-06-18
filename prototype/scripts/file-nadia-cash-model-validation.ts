@@ -35,7 +35,7 @@
 
 import "../platform/event-store/resolve-event-db-boot";
 
-import { clock, eventStore } from "../platform/composition";
+import { eventStore } from "../platform/composition";
 import { BANK_ZA_001 } from "../platform/core/types";
 import {
   makeModelValidationApproved,
@@ -47,6 +47,13 @@ const RECORD_ID = "record:documents:nadia:cash-model-validation:2026-06-18";
 const MODEL_ID = "cash";
 const MODEL_VERSION = "1.0";
 const ENTITY = String(BANK_ZA_001);
+
+// Fixed `asOf` so re-runs are byte-idempotent (Engineering Charter cmd 9 —
+// replay-safe & append-only). The validation was performed on 2026-06-18; the
+// instant is pinned rather than read from `clock.now()` so re-filing against the
+// shared store reproduces identical events (the RecordFiled idempotency skip
+// above is the primary guard; this keeps any pre-skip emission deterministic).
+const ASOF = "2026-06-18T06:30:00.000Z";
 
 const ACTOR = { type: "service" as const, id: "agent:nadia:model-validation" };
 const CITATIONS = [
@@ -142,7 +149,7 @@ const FINDINGS: Array<{
 
 for (const f of FINDINGS) {
   const ev = makeValidationFindingRaised({
-    asOf: clock.now(),
+    asOf: ASOF,
     entity: ENTITY,
     actor: ACTOR,
     citations: CITATIONS,
@@ -168,7 +175,7 @@ for (const f of FINDINGS) {
 // ---------------------------------------------------------------------------
 
 const approval = makeModelValidationApproved({
-  asOf: clock.now(),
+  asOf: ASOF,
   entity: ENTITY,
   actor: ACTOR,
   citations: CITATIONS,
@@ -286,7 +293,7 @@ const result = recordFiled(
       date: "2026-06-18",
     },
   },
-  clock.now(),
+  ASOF,
 );
 
 console.log(
