@@ -244,9 +244,9 @@ describe("BCBS byte-stability guard", () => {
     expect(s10?.completeness).toBe("enriched");
     // Byte-stability: same head + same length as the captured baseline.
     expect(s10?.verbatimText.length).toBe(8860);
-    expect(s10?.verbatimText.startsWith("10.1  Market risk: the risk of losses in on- and off-balance")).toBe(
-      true,
-    );
+    expect(
+      s10?.verbatimText.startsWith("10.1  Market risk: the risk of losses in on- and off-balance"),
+    ).toBe(true);
     expect(byNumber.get("11")?.verbatimText.length).toBe(9337);
     expect(byNumber.get("12")?.verbatimText.length).toBe(7333);
   });
