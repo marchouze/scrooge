@@ -19,6 +19,15 @@ export interface StructuredSection {
   heading?: string;
   title?: string; // legacy alias
   text?: string;
+  /**
+   * Editorial one-line précis of a section whose full verbatim text was not
+   * extracted (e.g. forms-listing or fee-schedule regulations). Present in the
+   * on-disk data (e.g. 31 rrb sections) but historically untyped and read by no
+   * code, so those sections rendered blank. The normalizer
+   * (`normalizeStructuredDoc`) falls back to this as `completeness:"summary"`
+   * when there is no own/folded verbatim text. Never overrides verbatim text.
+   */
+  summary?: string;
   verbatim?: boolean;
   /** PDF page range this section spans, e.g. "12–14". */
   pages?: string;

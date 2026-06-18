@@ -21,7 +21,15 @@ import { basename, resolve } from "node:path";
 import type { EventStore } from "../platform/event-store/store";
 import { getDb } from "../platform/regulatory/graph/db";
 import { getObligationCountForDocument } from "../platform/regulatory/graph/query";
-import { ensureProvisionIds, normSectionRef } from "../platform/regulatory/structured-doc-loader";
+import {
+  type CompletenessTier,
+  type LoaderDoc,
+  type NormalizedProvision,
+  type TextSource,
+  loadStructuredDocBySlug,
+  normSectionRef,
+  normalizeStructuredDoc,
+} from "../platform/regulatory/structured-doc-loader";
 import {
   type EnrichedObligationRef,
   type RegulationObligationIndex,
@@ -36,8 +44,14 @@ import {
 interface RegSubsection {
   id: string;
   number: string;
+  /** Assembled verbatim text (was `text`); from the canonical normalizer. */
   text: string;
   verbatim: boolean;
+  /** Completeness tier rolled up over the subtree. */
+  completeness: CompletenessTier;
+  /** Provenance of the assembled text. */
+  textSource: TextSource;
+  subsections?: RegSubsection[];
 }
 
 interface RegSection {
@@ -46,14 +60,21 @@ interface RegSection {
    * Canonical numeric/alphanumeric section number, e.g. "1", "21A", "3.1".
    * Some instrument files (rrb, excon) omit `number` and carry the human-
    * readable `sectionNumber` form ("Regulation 1") instead — the view
-   * derives the canonical key via `numberFromSection`.
+   * derives the canonical key via `numberFromSection`. PRESERVED verbatim from
+   * the loaded doc (the normalizer never re-keys it).
    */
   number?: string;
   sectionNumber?: string;
   heading?: string;
   title?: string;
+  /** Assembled verbatim text from the canonical normalizer (was `text`). */
   text: string;
   verbatim: boolean;
+  /** Completeness tier (verbatim | summary | heading-only | enriched). */
+  completeness: CompletenessTier;
+  /** Provenance of the assembled text (own | folded | enriched | summary | heading). */
+  textSource: TextSource;
+  isComposite: boolean;
   subsections?: RegSubsection[];
   /**
    * Excerpt records filed via recordRegulatoryExcerpt()
@@ -251,83 +272,116 @@ function discoverSlugPaths(repoRoot: string): Map<string, string> {
 }
 
 // ---------------------------------------------------------------------------
-// BCBS chapter-text enrichment
+// Loader — single canonical path via structured-doc-loader
 //
-// BCBS *-structured.json files carry section metadata (number, heading) but
-// empty `text` fields. The actual paragraph text lives in chapter-text.json,
-// keyed as <INSTRUMENT_PREFIX><section_number> (e.g. MAR10, MAR11…).
-// This function fills the gap at load time so the reader renders real content.
+// Text assembly (BCBS chapter-text enrichment, subsection folding, summary
+// fallback, completeness tagging) is now owned ENTIRELY by the shared
+// normalizer (`normalizeStructuredDoc`). This view used to carry a byte-
+// identical copy of the BCBS enrichment + a local `collectText` fold; both are
+// deleted. Here we zip the RAW loaded section tree (which carries the
+// resolution keys `number` / `sectionNumber` / `id` / subsection ids that
+// `numberFromSection` + the reverse index depend on, PRESERVED byte-for-byte)
+// with the normalized provision tree (which carries the assembled text), so
+// the obligation-lookup functions stay untouched while text comes from the one
+// canonical source.
 // ---------------------------------------------------------------------------
 
-interface ChapterTextEntry {
-  paragraph: string;
-  heading: string;
-  text: string;
+/** A raw section/subsection from the loaded (enriched, id-assigned) LoaderDoc. */
+interface RawNode {
+  id?: string;
+  number?: string;
+  sectionNumber?: string;
+  heading?: string;
+  title?: string;
+  subsections?: RawNode[];
+  excerpts?: RegSection["excerpts"];
 }
 
-let _bcbsChapterTextCache: Record<string, ChapterTextEntry[]> | null = null;
-
-function loadBcbsChapterText(repoRoot: string): Record<string, ChapterTextEntry[]> {
-  if (_bcbsChapterTextCache) return _bcbsChapterTextCache;
-  const path = resolve(repoRoot, "Regulations", "BCBS", "chapter-text.json");
-  if (!existsSync(path)) {
-    _bcbsChapterTextCache = {};
-    return _bcbsChapterTextCache;
-  }
-  try {
-    const raw = JSON.parse(readFileSync(path, "utf-8")) as {
-      chapters: Record<string, ChapterTextEntry[]>;
-    };
-    _bcbsChapterTextCache = raw.chapters ?? {};
-  } catch {
-    _bcbsChapterTextCache = {};
-  }
-  return _bcbsChapterTextCache;
+/** Zip a raw subsection with its normalized counterpart (lockstep tree walk). */
+function toRegSubsection(raw: RawNode, norm: NormalizedProvision): RegSubsection {
+  return {
+    id: norm.id,
+    number: raw.number ?? raw.sectionNumber ?? norm.number,
+    text: norm.verbatimText,
+    verbatim: norm.textSource === "own" || norm.textSource === "enriched",
+    completeness: norm.completeness,
+    textSource: norm.textSource,
+    subsections: (raw.subsections ?? []).map((r, i) =>
+      toRegSubsection(r, norm.subsections[i] ?? emptyNorm(r.id ?? "")),
+    ),
+  };
 }
 
-function enrichBcbsDocSections(repoRoot: string, doc: RegStructuredDoc): void {
-  if (!doc.slug.startsWith("bcbs-")) return;
-
-  const chapterText = loadBcbsChapterText(repoRoot);
-  // slug "bcbs-mar" → prefix "MAR"; "bcbs-cre" → "CRE"
-  const prefix = doc.slug.replace(/^bcbs-/, "").toUpperCase();
-
-  for (const chapter of doc.chapters) {
-    for (const section of chapter.sections) {
-      if (section.text) continue; // already populated
-      const num = section.number?.trim();
-      if (!num) continue;
-
-      const key = `${prefix}${num}`; // e.g. "MAR10"
-      const paras = chapterText[key];
-      if (!paras || paras.length === 0) continue;
-
-      section.text = paras.map((p) => `${p.paragraph}  ${p.text}`).join("\n\n");
-      section.verbatim = true;
-      if (!section.id) section.id = `${doc.slug}-${num}`;
-    }
-  }
+/** Zip a raw section with its normalized counterpart. */
+function toRegSection(raw: RawNode, norm: NormalizedProvision): RegSection {
+  return {
+    id: norm.id,
+    ...(raw.number !== undefined ? { number: raw.number } : {}),
+    ...(raw.sectionNumber !== undefined ? { sectionNumber: raw.sectionNumber } : {}),
+    ...(raw.heading !== undefined ? { heading: raw.heading } : {}),
+    ...(raw.title !== undefined ? { title: raw.title } : {}),
+    text: norm.verbatimText,
+    verbatim: norm.textSource === "own" || norm.textSource === "enriched",
+    completeness: norm.completeness,
+    textSource: norm.textSource,
+    isComposite: norm.isComposite,
+    subsections: (raw.subsections ?? []).map((r, i) =>
+      toRegSubsection(r, norm.subsections[i] ?? emptyNorm(r.id ?? "")),
+    ),
+    ...(raw.excerpts !== undefined ? { excerpts: raw.excerpts } : {}),
+  };
 }
 
-// ---------------------------------------------------------------------------
-// Loaders
-// ---------------------------------------------------------------------------
+/** Defensive fallback when raw/normalized trees diverge (should never happen). */
+function emptyNorm(id: string): NormalizedProvision {
+  return {
+    id,
+    number: "",
+    heading: "",
+    verbatimText: "",
+    textSource: "heading",
+    completeness: "heading-only",
+    isComposite: false,
+    excerpts: [],
+    subsections: [],
+  };
+}
 
 function loadStructuredDoc(repoRoot: string, slug: string): RegStructuredDoc | null {
-  const absPath = discoverSlugPaths(repoRoot).get(slug);
-  if (!absPath || !existsSync(absPath)) return null;
-
-  try {
-    const doc = JSON.parse(readFileSync(absPath, "utf-8")) as RegStructuredDoc;
-    enrichBcbsDocSections(repoRoot, doc);
-    // Same deterministic id assignment as the adopt/distill routes and the
-    // drift recon (platform/regulatory/structured-doc-loader.ts) — the
-    // client-rendered scopeIds MUST match the server-resolved provision tree.
-    ensureProvisionIds(doc as unknown as Parameters<typeof ensureProvisionIds>[0]);
-    return doc;
-  } catch {
-    return null;
-  }
+  const raw = loadStructuredDocBySlug(slug, repoRoot);
+  if (!raw) return null;
+  const norm = normalizeStructuredDoc(raw);
+  const meta = raw as LoaderDoc & {
+    shortTitle?: string;
+    regulator?: string;
+    year?: number;
+    citationPatterns?: string[];
+    priority?: number;
+  };
+  return {
+    slug: raw.slug,
+    title: raw.title ?? "",
+    shortTitle: meta.shortTitle ?? "",
+    regulator: meta.regulator ?? "",
+    year: meta.year ?? 0,
+    citationPatterns: meta.citationPatterns ?? [],
+    priority: meta.priority ?? 0,
+    chapters: raw.chapters.map((chapter, ci) => {
+      const chTitle = (chapter as { title?: string }).title;
+      return {
+        id: norm.chapters[ci]?.id ?? chapter.id ?? "",
+        ...(chapter.number !== undefined ? { number: chapter.number } : {}),
+        ...(chapter.heading !== undefined ? { heading: chapter.heading } : {}),
+        ...(chTitle !== undefined ? { title: chTitle } : {}),
+        sections: chapter.sections.map((section, si) =>
+          toRegSection(
+            section as RawNode,
+            norm.chapters[ci]?.sections[si] ?? emptyNorm(section.id ?? ""),
+          ),
+        ),
+      };
+    }),
+  };
 }
 
 function loadObligationsMap(repoRoot: string): Record<string, ObligationRow> {
@@ -755,28 +809,15 @@ export function verbatimForProvisions(
   if (!doc) return [];
   const want = new Set(provisionIds);
   const out: VerbatimProvision[] = [];
-  // Collect a section's full verbatim text — section body PLUS its subsection
-  // tree (where most regulatory wording actually lives), in document order.
-  interface TextNode {
-    text?: string;
-    number?: string;
-    subsections?: TextNode[];
-  }
-  const collectText = (node: TextNode): string => {
-    const parts: string[] = [];
-    const body = (node.text ?? "").trim();
-    if (body) parts.push(body);
-    for (const ss of node.subsections ?? []) {
-      const sub = collectText(ss);
-      if (sub) parts.push(ss.number ? `${ss.number}  ${sub}` : sub);
-    }
-    return parts.join("\n\n");
-  };
+  // The section's assembled verbatim text (own/folded/summary) already comes
+  // from the canonical normalizer — `section.text` IS the folded body + its
+  // subsection tree. (The local `collectText` fold that used to live here was
+  // lifted into the loader as `foldNodeText`; this is the same wording.)
   for (const chapter of doc.chapters) {
     for (const section of chapter.sections) {
       const hit = candidateProvisionIds(slug, section).some((c) => want.has(c));
       if (!hit) continue;
-      const text = collectText(section as TextNode).trim();
+      const text = section.text.trim();
       if (!text) continue;
       const num = section.number ?? section.sectionNumber ?? "";
       const heading = section.heading ?? section.title ?? "";
