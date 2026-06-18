@@ -12,6 +12,8 @@ import {
   type ExtractQualityRow,
   type StructuralCheckRow,
   type StructuralIssueEntry,
+  type SummaryCompletenessRow,
+  type SummaryFormAllowlistEntry,
   bodyCharCount,
   hasContentLoss,
   hasHeadingInBody,
@@ -19,6 +21,7 @@ import {
   hasTableCellAsHeading,
   isSingleBlob,
   run,
+  summaryCompletenessTally,
 } from "./regulatory-source-extract-quality";
 
 const ALLOW: Record<string, AllowlistEntry> = {
@@ -599,5 +602,181 @@ describe("regulatory-source-extract-quality gate — structural checks", () => {
     expect(r.ok).toBe(true); // all structural checks are warn-only
     expect(r.structuralFindings).toBe(4);
     expect(r.violations.every((v) => v.severity === "warn")).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Slice 3 (2026-06-18): per-section summary-only completeness detector
+// ---------------------------------------------------------------------------
+
+const SUMMARY_ALLOW: Record<string, SummaryFormAllowlistEntry> = {
+  rrb: { knownGap: 31, note: "editorial summaries pending backfill" },
+};
+
+describe("summaryCompletenessTally", () => {
+  it("counts summary + heading-only provisions across the normalized tree", () => {
+    const doc = {
+      slug: "t",
+      title: "T",
+      goldenSourceHash: null,
+      chapters: [
+        {
+          id: "c1",
+          number: "1",
+          heading: "Ch1",
+          sections: [
+            // verbatim
+            {
+              id: "s1",
+              number: "1",
+              heading: "S1",
+              verbatimText: "real text",
+              textSource: "own" as const,
+              completeness: "verbatim" as const,
+              isComposite: false,
+              excerpts: [],
+              subsections: [
+                // heading-only child
+                {
+                  id: "s1-1",
+                  number: "1.1",
+                  heading: "S1.1",
+                  verbatimText: "",
+                  textSource: "heading" as const,
+                  completeness: "heading-only" as const,
+                  isComposite: false,
+                  excerpts: [],
+                  subsections: [],
+                },
+              ],
+            },
+            // summary
+            {
+              id: "s2",
+              number: "2",
+              heading: "S2",
+              verbatimText: "an editorial summary",
+              textSource: "summary" as const,
+              completeness: "summary" as const,
+              isComposite: false,
+              excerpts: [],
+              subsections: [],
+            },
+          ],
+        },
+      ],
+    };
+    const t = summaryCompletenessTally(doc as never);
+    expect(t.summary).toBe(1);
+    expect(t.headingOnly).toBe(1);
+    expect(t.total).toBe(3);
+  });
+});
+
+describe("regulatory-source-extract-quality gate — summary-only-sections (advisory)", () => {
+  it("(a) an allowlisted source with summary sections produces NO fail (advisory only)", () => {
+    const summaryRows: SummaryCompletenessRow[] = [
+      { slug: "rrb", summary: 31, headingOnly: 0, total: 143 },
+    ];
+    const r = run({
+      rows: [],
+      allowlist: {},
+      shortFormAllowlist: {},
+      structuralAllowlist: {},
+      structuralRows: [],
+      summaryFormAllowlist: SUMMARY_ALLOW,
+      summaryRows,
+      asOfDate: POST,
+    });
+    expect(r.ok).toBe(true); // advisory, never flips ok
+    expect(r.summaryOnlyFindings).toBe(1);
+    expect(r.summaryAllowlistStale).toBe(0);
+    expect(
+      r.violations.some(
+        (v) =>
+          v.severity === "warn" &&
+          v.subject.includes("rrb") &&
+          v.subject.includes("summary-only-sections") &&
+          v.subject.includes("allowlisted"),
+      ),
+    ).toBe(true);
+    // No fail-severity violation anywhere.
+    expect(r.violations.every((v) => v.severity !== "fail")).toBe(true);
+  });
+
+  it("(b) a non-allowlisted source with summary/heading-only sections produces an advisory finding", () => {
+    const summaryRows: SummaryCompletenessRow[] = [
+      { slug: "banks-new-gap", summary: 2, headingOnly: 3, total: 40 },
+    ];
+    const r = run({
+      rows: [],
+      allowlist: {},
+      shortFormAllowlist: {},
+      structuralAllowlist: {},
+      structuralRows: [],
+      summaryFormAllowlist: SUMMARY_ALLOW, // does NOT contain banks-new-gap
+      summaryRows,
+      asOfDate: POST,
+    });
+    expect(r.ok).toBe(true); // still advisory, not a hard fail
+    expect(r.summaryOnlyFindings).toBe(1);
+    expect(
+      r.violations.some(
+        (v) =>
+          v.severity === "warn" &&
+          v.subject.includes("banks-new-gap") &&
+          v.subject.includes("summary-only-sections") &&
+          !v.subject.includes("allowlisted"),
+      ),
+    ).toBe(true);
+    // The seeded allowlist entry (rrb) is now stale (no row), so self-check fires.
+    expect(r.summaryAllowlistStale).toBe(1);
+  });
+
+  it("(c) stale-entry self-check: an allowlisted source with zero gap is flagged", () => {
+    // rrb is allowlisted but no longer appears with a gap (backfilled) -> stale.
+    const summaryRows: SummaryCompletenessRow[] = [];
+    const r = run({
+      rows: [],
+      allowlist: {},
+      shortFormAllowlist: {},
+      structuralAllowlist: {},
+      structuralRows: [],
+      summaryFormAllowlist: SUMMARY_ALLOW,
+      summaryRows,
+      asOfDate: POST,
+    });
+    expect(r.ok).toBe(true); // stale is warn, not fail
+    expect(r.summaryAllowlistStale).toBe(1);
+    expect(r.summaryOnlyFindings).toBe(0);
+    expect(
+      r.violations.some(
+        (v) =>
+          v.severity === "warn" &&
+          v.subject.includes("rrb") &&
+          v.subject.includes("summary-form-allowlist") &&
+          v.subject.includes("stale"),
+      ),
+    ).toBe(true);
+  });
+
+  it("ignores rows whose per-section gap is zero (no finding, no stale)", () => {
+    const summaryRows: SummaryCompletenessRow[] = [
+      { slug: "rrb", summary: 31, headingOnly: 0, total: 143 },
+      { slug: "fully-verbatim", summary: 0, headingOnly: 0, total: 50 },
+    ];
+    const r = run({
+      rows: [],
+      allowlist: {},
+      shortFormAllowlist: {},
+      structuralAllowlist: {},
+      structuralRows: [],
+      summaryFormAllowlist: SUMMARY_ALLOW,
+      summaryRows,
+      asOfDate: POST,
+    });
+    expect(r.summaryOnlyFindings).toBe(1); // only rrb
+    expect(r.summaryAllowlistStale).toBe(0);
+    expect(r.violations.some((v) => v.subject.includes("fully-verbatim"))).toBe(false);
   });
 });
