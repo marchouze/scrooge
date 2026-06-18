@@ -246,11 +246,16 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   // ACC-2100-009 — FX Sub-Ledger Build-Phase Remediation Suspense.
   // RECONCILED into the canonical registry (Slice 1): live since PR #958
   // (fx-subledger-trade-reconciliation.ts FX_REMEDIATION_SUSPENSE) but JSON-only.
+  // `currency` is OMITTED (multi-currency by design — like the FX suspense
+  // ACC-2100-007 and the write-off ACC-2105-001): the build-phase residue is
+  // stranded across CHF/GBP/JPY/USD/ZAR, with each SubLedgerLeg.currency
+  // authoritative. The earlier JSON `currency: "ZAR"` was a defect that would
+  // trip recon:account-designated-currency on the multi-currency residue
+  // (D-COA-CURRENCY-DECOUPLING / D-ACCOUNT-DESIGNATED-CURRENCY-REBOOK).
   {
     id: "ACC-2100-009",
     name: "FX Sub-Ledger Build-Phase Remediation Suspense",
     category: "asset-suspense",
-    currency: "ZAR",
     side: "debit",
   },
 
