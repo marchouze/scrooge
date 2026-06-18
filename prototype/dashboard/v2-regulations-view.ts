@@ -161,6 +161,14 @@ export interface V2RegulationDetailView {
   year: number;
   bankObligations: number;
   statusRollup: Record<string, number>;
+  /**
+   * BLAKE3 hash of the regulator's published source PDF (`blake3:…`), or null
+   * for hand-authored structured-first sources (popia, fic-act) with no golden
+   * PDF. Provenance metadata only — the structured tree stays the default
+   * render; the reader offers a PDF download when present
+   * (D-REGULATORY-STRUCTURED-FIRST-CANONICAL).
+   */
+  goldenSourceHash: string | null;
   chapters: V2RegulationChapter[];
 }
 
@@ -220,6 +228,7 @@ export function buildV2RegulationDetailView(
     year: d.year,
     bankObligations: d.derivedObligationCount,
     statusRollup: d.derivedStatusRollup,
+    goldenSourceHash: d.goldenSourceHash,
     chapters: d.chapters.map((ch) => ({
       number: ch.number ?? "",
       heading: ch.heading ?? "",

@@ -106,6 +106,13 @@ interface RegStructuredDoc {
   year: number;
   citationPatterns: string[];
   priority: number;
+  /**
+   * BLAKE3 hash of the regulator's published source PDF in the content-addressed
+   * document store (`blake3:…`), when the structured doc carries one. `null` for
+   * hand-authored structured-first sources (popia, fic-act) with no golden PDF.
+   * Metadata only — surfaced for provenance download, never re-derived here.
+   */
+  goldenSourceHash: string | null;
   chapters: RegChapter[];
 }
 
@@ -213,6 +220,13 @@ export interface InstrumentDetailView {
   derivedObligationCount: number;
   /** Status histogram across the derived obligations (status → count). */
   derivedStatusRollup: Record<string, number>;
+  /**
+   * BLAKE3 hash of the regulator's published source PDF (`blake3:…`), or null
+   * for hand-authored structured-first sources with no golden PDF. Surfaced so
+   * the reader can offer a provenance download WITHOUT changing the default
+   * structured-tree render (D-REGULATORY-STRUCTURED-FIRST-CANONICAL).
+   */
+  goldenSourceHash: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -366,6 +380,9 @@ function loadStructuredDoc(repoRoot: string, slug: string): RegStructuredDoc | n
     year: meta.year ?? 0,
     citationPatterns: meta.citationPatterns ?? [],
     priority: meta.priority ?? 0,
+    // From the canonical normalizer's doc-level metadata (already loaded; not
+    // re-derived). null for hand-authored no-PDF sources.
+    goldenSourceHash: norm.goldenSourceHash,
     chapters: raw.chapters.map((chapter, ci) => {
       const chTitle = (chapter as { title?: string }).title;
       return {
@@ -897,5 +914,6 @@ export function buildInstrumentDetailView(
     chapters,
     derivedObligationCount: derivedIds.size,
     derivedStatusRollup,
+    goldenSourceHash: doc.goldenSourceHash,
   };
 }
