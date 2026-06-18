@@ -358,7 +358,9 @@ export function runPostTradeLifecycle(
       receiveAmountMajor: Math.abs(receiveNotionalMinor) / 100,
       counterpartyId: trade.counterparty.partyId,
       settledAsOf: settlementDateIso,
-      isForward: String(trade.productTaxonomy ?? "").toLowerCase().includes("forward"),
+      isForward: String(trade.productTaxonomy ?? "")
+        .toLowerCase()
+        .includes("forward"),
     });
   }
 

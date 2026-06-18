@@ -140,10 +140,7 @@ function negateDecimalString(amount: string): string {
  *  (`<foreign>/<reporting>`), falling back to the instance currency when the tag
  *  is absent. The foreign leg is the one whose value moves with the FX rate — the
  *  economically non-degenerate side of the continuity proof. */
-function foreignCurrencyOf(
-  hedgingSetTag: string | undefined,
-  fallbackCurrency: string,
-): string {
+function foreignCurrencyOf(hedgingSetTag: string | undefined, fallbackCurrency: string): string {
   if (hedgingSetTag) {
     const base = hedgingSetTag.split("/")[0];
     if (base && base.length > 0) return base;

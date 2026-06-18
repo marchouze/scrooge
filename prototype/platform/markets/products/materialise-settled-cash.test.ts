@@ -44,7 +44,7 @@ function readCash(dbPath: string): Array<Record<string, unknown>> {
 const FX_SPOT_TYPE_URN = "fil:type:fx:spot:otc-vanilla@1.0";
 const fxInstance = "fil:inst:LE-ZA-HOZ-BANK:T-USD-1";
 
-function baseFx(dbPath: string): SettledFxForCashMaterialisation {
+function baseFx(): SettledFxForCashMaterialisation {
   return {
     tradeId: "T-USD-1",
     fxInstance,
@@ -65,7 +65,7 @@ function baseFx(dbPath: string): SettledFxForCashMaterialisation {
 describe("materialiseSettledCash (live settlement-handler emission)", () => {
   test("materialises BOTH legs, foreign-ccy denominated, with originatingInstrument back-ref", () => {
     const dbPath = tmpDb();
-    const fx = baseFx(dbPath);
+    const fx = baseFx();
     const emitted = materialiseSettledCash(fx, { dbPath });
     expect(emitted).toBe(2);
 
@@ -97,7 +97,7 @@ describe("materialiseSettledCash (live settlement-handler emission)", () => {
 
   test("is idempotent — a re-run emits nothing (replay-safe, append-only)", () => {
     const dbPath = tmpDb();
-    const fx = baseFx(dbPath);
+    const fx = baseFx();
     expect(materialiseSettledCash(fx, { dbPath })).toBe(2);
     expect(materialiseSettledCash(fx, { dbPath })).toBe(0);
     expect(readCash(dbPath).length).toBe(2);
@@ -106,7 +106,7 @@ describe("materialiseSettledCash (live settlement-handler emission)", () => {
   test("product-driven — a FIL type the FX OTC NPA does NOT govern materialises nothing", () => {
     const dbPath = tmpDb();
     const fx: SettledFxForCashMaterialisation = {
-      ...baseFx(dbPath),
+      ...baseFx(),
       fxTypeUrn: "fil:type:equity:listed:vanilla@1.0",
     };
     expect(materialiseSettledCash(fx, { dbPath })).toBe(0);

@@ -25,10 +25,7 @@
 
 import { formatInstanceUrn, formatTypeUrn } from "../../../v2-core/fil-core/urn";
 import { anchorFunctionalCurrency } from "../../identity/functional-currency";
-import {
-  type SettledCashLeg,
-  materialiseSettledCash,
-} from "./materialise-settled-cash";
+import { type SettledCashLeg, materialiseSettledCash } from "./materialise-settled-cash";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const TENANT = ENTITY;

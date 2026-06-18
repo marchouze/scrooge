@@ -225,7 +225,9 @@ export function settleMaturedTrades(store: EventStore, todayIso: string): number
         receiveAmountMajor: Math.abs(data.rcvMinor) / 100,
         counterpartyId,
         settledAsOf: settlementDate,
-        isForward: String(trade?.productTaxonomy ?? "").toLowerCase().includes("forward"),
+        isForward: String(trade?.productTaxonomy ?? "")
+          .toLowerCase()
+          .includes("forward"),
       });
     }
 

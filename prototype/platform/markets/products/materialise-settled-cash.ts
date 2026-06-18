@@ -57,7 +57,7 @@ import { dirname, resolve } from "node:path";
 
 import { Database } from "bun:sqlite";
 
-import { divD, roundDecimal, toDecimal } from "../../../v2-core/fil-core/decimal";
+import { roundDecimal, toDecimal } from "../../../v2-core/fil-core/decimal";
 import { type Money, moneyFromDecimal } from "../../../v2-core/fil-core/primitives";
 import { formatInstanceUrn } from "../../../v2-core/fil-core/urn";
 import { newEventId } from "../../core/types";
