@@ -21,16 +21,13 @@ import { basename, resolve } from "node:path";
 import type { EventStore } from "../platform/event-store/store";
 import { getDb } from "../platform/regulatory/graph/db";
 import { getObligationCountForDocument } from "../platform/regulatory/graph/query";
-import { ensureProvisionIds } from "../platform/regulatory/structured-doc-loader";
+import { ensureProvisionIds, normSectionRef } from "../platform/regulatory/structured-doc-loader";
 import {
   type EnrichedObligationRef,
   type RegulationObligationIndex,
   buildRegulationObligationIndex,
   provisionKey,
 } from "./regulation-obligation-index";
-
-/** Normalise a section reference: lowercase + dots stripped. */
-const normSectionRef = (raw: string) => raw.toLowerCase().replace(/\./g, "");
 
 // ---------------------------------------------------------------------------
 // Structured regulation JSON types
@@ -509,10 +506,10 @@ function getObligationsForSection(
   obligationsMap: Record<string, ObligationRow>,
   repoRoot: string,
 ): ObligationOnSection[] {
-  const raw = numberFromSection(section);
-  if (!raw) return [];
+  // numberFromSection already returns the canonical `normSectionRef` form.
+  const normSect = numberFromSection(section);
+  if (!normSect) return [];
 
-  const normSect = normSectionRef(raw);
   const provisionId = `PROV-${slug.toUpperCase()}-s${normSect}`;
 
   const db = getDb();

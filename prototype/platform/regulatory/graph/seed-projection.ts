@@ -26,6 +26,7 @@ import {
   normaliseInstrumentId,
   parseObligationsRegister,
 } from "../obligation-linker";
+import { normSectionRef } from "../structured-doc-loader";
 import { INFRA_CAPABILITY_SLUGS, isOrphanAllowlisted } from "./capability-infra";
 import { parseSystemCapabilityValue } from "./capability-parser";
 import {
@@ -236,9 +237,6 @@ const FRAMEWORK_APPLICABILITY: Record<string, DocumentApplicabilityStatus> = {
 // ---------------------------------------------------------------------------
 // Local helpers
 // ---------------------------------------------------------------------------
-
-/** Normalise a section reference: lowercase + dots stripped. */
-const normSectionRef = (raw: string) => raw.toLowerCase().replace(/\./g, "");
 
 /** A section (or subsection) in an SA `*-structured.json` source doc. Some
  * instruments (e.g. the RRB) carry their text in nested `subsections[].text`
