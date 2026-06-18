@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-06-18T05:00:44.862Z
+asOf: 2026-06-18T06:00:56.694Z
 decision-required: false
 ---
 
@@ -9,43 +9,43 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 120381 events across 176 types; 31/31 personas have operating specs; 144 runtime handlers registered; 822 files in /Owner Inbox/; 7 substrate gaps tracked.
+**Headline:** 120851 events across 176 types; 31/31 personas have operating specs; 144 runtime handlers registered; 827 files in /Owner Inbox/; 14 substrate gaps tracked.
 
 ## Event store
 
-Path: `/Users/marc/.local/share/bank/event.db` · Total events: 120381
+Path: `/Users/marc/.local/share/bank/event.db` · Total events: 120851
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
-| `SubstrateAgentRunStarted` | 19202 | 2026-05-26 | 2026-06-18 |
-| `SubstrateAgentRunCompleted` | 19029 | 2026-05-26 | 2026-06-18 |
-| `BusDispatched` | 17788 | 2026-05-25 | 2026-06-18 |
-| `LegacyFanoutShadowed` | 14242 | 2026-05-26 | 2026-06-18 |
+| `SubstrateAgentRunStarted` | 19259 | 2026-05-26 | 2026-06-18 |
+| `SubstrateAgentRunCompleted` | 19086 | 2026-05-26 | 2026-06-18 |
+| `BusDispatched` | 17845 | 2026-05-25 | 2026-06-18 |
+| `LegacyFanoutShadowed` | 14288 | 2026-05-26 | 2026-06-18 |
 | `ProvenanceReclassified` | 11479 | 2026-05-27 | 2026-06-12 |
-| `DashboardProjectionRefreshed` | 3984 | 2026-05-26 | 2026-06-18 |
-| `WorkstreamRegistered` | 3830 | 2026-05-07 | 2026-06-18 |
-| `RecordFiled` | 2865 | 2026-05-05 | 2026-06-18 |
-| `Decision` | 2859 | 2026-04-30 | 2026-06-18 |
+| `DashboardProjectionRefreshed` | 3993 | 2026-05-26 | 2026-06-18 |
+| `WorkstreamRegistered` | 3838 | 2026-05-07 | 2026-06-18 |
+| `RecordFiled` | 2873 | 2026-05-05 | 2026-06-18 |
+| `Decision` | 2862 | 2026-04-30 | 2026-06-18 |
 | `ObligationAdopted` | 2520 | 2026-06-04 | 2026-06-15 |
-| `CalculationPerformed` | 2385 | 2026-06-01 | 2026-06-18 |
-| `SubstrateAlert` | 1781 | 2025-01-01 | 2026-06-18 |
-| `ScheduledTrigger` | 1315 | 2026-05-26 | 2026-06-18 |
+| `CalculationPerformed` | 2469 | 2026-06-01 | 2026-06-18 |
+| `SubstrateAlert` | 1854 | 2025-01-01 | 2026-06-18 |
+| `ScheduledTrigger` | 1325 | 2026-05-26 | 2026-06-18 |
 | `RiskRaised` | 1225 | 2026-05-07 | 2026-06-02 |
-| `AgentGoalEvaluated` | 1095 | 2026-05-26 | 2026-06-18 |
+| `AgentGoalEvaluated` | 1096 | 2026-05-26 | 2026-06-18 |
 | `ReconResult` | 999 | 2026-05-07 | 2026-06-18 |
-| `AgentRunCompleted` | 796 | 2026-05-10 | 2026-06-18 |
-| `AgentRunStarted` | 776 | 2026-05-10 | 2026-06-18 |
+| `AgentRunCompleted` | 799 | 2026-05-10 | 2026-06-18 |
+| `AgentRunStarted` | 779 | 2026-05-10 | 2026-06-18 |
 | `ApplicabilityAssessmentRequested` | 732 | 2026-06-13 | 2026-06-15 |
 | `ApplicabilityAssessmentPerformed` | 732 | 2026-06-13 | 2026-06-15 |
 | `ApplicabilityAssessmentConcluded` | 732 | 2026-06-13 | 2026-06-15 |
 | `AgentPerformanceEvaluated` | 682 | 2026-05-28 | 2026-06-18 |
 | `AgentFeedbackIssued` | 682 | 2026-05-28 | 2026-06-18 |
-| `AgentGoalSelected` | 607 | 2026-05-26 | 2026-06-18 |
-| `AgentBriefIssued` | 592 | 2026-05-10 | 2026-06-18 |
+| `AgentGoalSelected` | 608 | 2026-05-26 | 2026-06-18 |
+| `AgentBriefIssued` | 596 | 2026-05-10 | 2026-06-18 |
 | `MarketsProjectionRefreshed` | 555 | 2026-05-09 | 2026-05-09 |
 | `IdentityKeyRotated` | 547 | 2026-05-27 | 2026-06-14 |
 | `AgentGoalDeferred` | 488 | 2026-05-26 | 2026-06-18 |
-| `SubstrateStateSnapshot` | 478 | 2026-05-07 | 2026-06-18 |
+| `SubstrateStateSnapshot` | 479 | 2026-05-07 | 2026-06-18 |
 | `ObligationReviewCompleted` | 454 | 2026-06-09 | 2026-06-10 |
 | `PermissionPolicyPublished` | 411 | 2026-05-26 | 2026-06-14 |
 | `DecisionDistilled` | 299 | 2026-06-12 | 2026-06-15 |
@@ -54,15 +54,15 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 120381
 | `ProductDimensionAttested` | 224 | 2026-05-26 | 2026-06-17 |
 | `M1CitationTrancheRegistered` | 172 | 2026-05-09 | 2026-05-09 |
 | `SubstrateAgentRunFailed` | 168 | 2026-05-26 | 2026-06-09 |
-| `IRRBBChecked` | 150 | 2026-06-02 | 2026-06-17 |
+| `IRRBBChecked` | 160 | 2026-06-02 | 2026-06-18 |
 | `DecisionRequested` | 129 | 2026-05-10 | 2026-05-10 |
-| `IntradayHQLAStressProjection` | 120 | 2026-06-02 | 2026-06-17 |
+| `IntradayHQLAStressProjection` | 128 | 2026-06-02 | 2026-06-18 |
 | `ConflictOfInterestDisclosed` | 97 | 2026-05-17 | 2026-06-11 |
 | `PartyAttributeChanged` | 92 | 2026-06-01 | 2026-06-14 |
+| `IntradayLiquidityReported` | 91 | 2026-06-11 | 2026-06-18 |
 | `LiquidityLimitBreached` | 86 | 2026-05-21 | 2026-05-23 |
 | `LiquidityLimitBreachDisposed` | 86 | 2026-05-22 | 2026-05-24 |
 | `Feedback` | 86 | 2026-05-10 | 2026-05-10 |
-| `IntradayLiquidityReported` | 84 | 2026-06-11 | 2026-06-17 |
 | `AgentRegistered` | 68 | 2026-05-26 | 2026-06-13 |
 | `AgentEscalation` | 66 | 2026-05-07 | 2026-06-12 |
 | `DataProjectionSnapshot` | 66 | 2026-05-07 | 2026-06-18 |
@@ -82,15 +82,16 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 120381
 | `PaNotificationSubmitted` | 43 | 2026-05-11 | 2026-05-11 |
 | `SecuritySubstrateSnapshot` | 43 | 2026-05-07 | 2026-06-11 |
 | `GovernanceCyclePrep` | 42 | 2026-05-07 | 2026-06-17 |
+| `ALMReadinessSnapshot` | 38 | 2026-05-29 | 2026-06-18 |
 | `PostureRegistered` | 38 | 2026-06-12 | 2026-06-15 |
 | `PostureActivated` | 38 | 2026-06-12 | 2026-06-15 |
-| `ALMReadinessSnapshot` | 37 | 2026-05-29 | 2026-06-17 |
-| `FtpCurvePublished` | 36 | 2026-05-26 | 2026-06-18 |
+| `FtpCurvePublished` | 37 | 2026-05-26 | 2026-06-18 |
 | `PartyRelationshipAsserted` | 36 | 2026-06-01 | 2026-06-01 |
-| `AccountingReadinessSnapshot` | 34 | 2026-05-26 | 2026-06-17 |
-| `ModelValidationApproved` | 32 | 2026-05-27 | 2026-06-13 |
+| `AccountingReadinessSnapshot` | 35 | 2026-05-26 | 2026-06-18 |
+| `ModelValidationApproved` | 33 | 2026-05-27 | 2026-06-18 |
 | `LiquiditySnapshot` | 30 | 2026-06-02 | 2026-06-17 |
 | `RiskRunCompleted` | 29 | 2026-06-02 | 2026-06-18 |
+| `DailyPnLReportGenerated` | 28 | 2026-06-14 | 2026-06-18 |
 | `ModelSubmitted` | 26 | 2026-05-27 | 2026-05-29 |
 | `ModelTierClassified` | 26 | 2026-05-27 | 2026-05-29 |
 | `KYCIdentityCollected` | 26 | 2026-06-01 | 2026-06-01 |
@@ -106,7 +107,6 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 120381
 | `NSFRComputed` | 24 | 2026-06-02 | 2026-06-18 |
 | `ObligationEquivalenceClassified` | 22 | 2026-06-09 | 2026-06-09 |
 | `ISDACSAAssessmentCompleted` | 21 | 2026-05-20 | 2026-06-11 |
-| `DailyPnLReportGenerated` | 21 | 2026-06-14 | 2026-06-18 |
 | `AgentEscalationDecided` | 20 | 2026-05-26 | 2026-06-12 |
 | `PaymentsReadinessSnapshot` | 20 | 2026-05-29 | 2026-06-18 |
 | `CounterpartyFaisClassified` | 19 | 2026-06-11 | 2026-06-11 |
@@ -115,15 +115,15 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 120381
 | `SanctionsClearancePassed` | 19 | 2026-06-12 | 2026-06-12 |
 | `RegulatorySourceReviewed` | 19 | 2026-06-15 | 2026-06-15 |
 | `CounterpartyBaselClassAssigned` | 18 | 2026-06-11 | 2026-06-11 |
+| `ValidationFindingRaised` | 16 | 2026-05-27 | 2026-06-18 |
+| `ALMRunCompleted` | 16 | 2026-06-02 | 2026-06-18 |
 | `OfficialMarkAdopted` | 16 | 2026-06-15 | 2026-06-17 |
-| `ALMRunCompleted` | 15 | 2026-06-02 | 2026-06-17 |
 | `CollateralInventorySnapshotted` | 15 | 2026-06-02 | 2026-06-17 |
-| `ValidationFindingRaised` | 13 | 2026-05-27 | 2026-06-13 |
 | `AgentPromptOptimizationApplied` | 13 | 2026-05-27 | 2026-05-27 |
 | `FinancialInstrumentDefined` | 13 | 2026-06-02 | 2026-06-02 |
 | `EntityReclassified` | 13 | 2026-06-11 | 2026-06-11 |
+| `IntradayLiquidityMetricsComputed` | 13 | 2026-06-11 | 2026-06-18 |
 | `MarketRiskMeasureComputed` | 12 | 2026-06-03 | 2026-06-18 |
-| `IntradayLiquidityMetricsComputed` | 12 | 2026-06-11 | 2026-06-17 |
 | `ValuationAdjustmentComputed` | 12 | 2026-06-15 | 2026-06-17 |
 | `ProductApproved` | 11 | 2026-05-26 | 2026-06-17 |
 | `InboundMessageReceived` | 11 | 2026-06-01 | 2026-06-02 |
@@ -133,13 +133,13 @@ Path: `/Users/marc/.local/share/bank/event.db` · Total events: 120381
 | `MessageCorrelated` | 10 | 2026-06-01 | 2026-06-02 |
 | `FinancialInstrumentClassified` | 9 | 2026-06-02 | 2026-06-02 |
 | `ObligationLifecycleTransitioned` | 8 | 2026-06-04 | 2026-06-12 |
+| `DailyReconciliationReport` | 8 | 2026-06-10 | 2026-06-18 |
 | `CsiCategoryRegistered` | 8 | 2026-06-13 | 2026-06-13 |
+| `ProductWithheld` | 8 | 2026-06-15 | 2026-06-18 |
 | `BalanceSheetProjected` | 7 | 2026-05-27 | 2026-06-17 |
 | `RiskResolved` | 7 | 2026-06-02 | 2026-06-02 |
-| `DailyReconciliationReport` | 7 | 2026-06-10 | 2026-06-17 |
-| `DecisionComment` | 6 | 2026-06-05 | 2026-06-06 |
+| `DecisionComment` | 7 | 2026-06-05 | 2026-06-18 |
 | `FilInstrumentCreated` | 6 | 2026-06-01 | 2026-06-03 |
-| `ProductWithheld` | 6 | 2026-06-15 | 2026-06-18 |
 | `MLROAttestation` | 5 | 2026-05-26 | 2026-06-15 |
 | `CdmBindingsRegenerated` | 5 | 2026-05-26 | 2026-06-15 |
 | `AgentOpsReadinessSnapshot` | 5 | 2026-05-26 | 2026-06-12 |
@@ -360,10 +360,17 @@ Tracked engineering items that block agents from running fully autonomously. Eac
 - Projection-cache persistence: closed by `anya:projection-refresh`, an event-driven handler subscribed to SubstrateStateSnapshot / WorkstreamRegistered / WorkstreamCompleted / CeoDecision. Re-derives the dashboard projection from canonical sources + the live event store and writes it to the runtime cache `prototype/.local/dashboard-state.json` (gitignored). D-EVENT-STORE-SCALING Slice 3a (PR #138, 2026-05-10) split this runtime path off the previously-committed seed; Slice 3b (same day) removed the seed from the commit graph entirely — the recon harness now derives + asserts internal consistency at recon time rather than comparing against a stored cache.
 - Citation gate: now wrapped as `mira:citation-gate` (on-request). Walks the event store, emits `CitationGatePassed` / `CitationGateFailed` and one `AuditFinding` per missing-citation event. Workflow at `.github/workflows/agent-runtime-mira-citation-gate.yml` (workflow_dispatch only — the gate is also still part of the `ci` script for synchronous CI verification).
 - GitHub Actions cron unreliability — interim substrate. GH Actions silently dropped Anya 03:00 UTC + Scrooge 04:00 UTC daily slots overnight 2026-05-07/08; Vera 02:00 UTC fired 2h46m late. All ten scheduled workflows re-pinned 2026-05-08 to off-the-hour distinct minutes (Vera 02:13, Anya 03:17, Scrooge 04:27, Helena 04:30, Devon Mon 05:23, Zara Mon 05:30, Atlas Mon 06:19, Owen Tue 07:31, Mira Wed 07:29, Senna Thu 07:37). Permanent fix is A2.1 — substrate scheduler emitting typed `ScheduledTrigger` events from a Bun process — at which point cron files become thin shims or retire entirely.
+- prd:bank:equity:jse-equity-cash (JSE listed cash equity, M1) was approved 2026-05-26 under the superseded 14-dimension gate policy and withdrawn via ProductWithheld under D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION. Must be re-run through a clean 15-dimension NPA cycle (incl. data-quality dimension, no design-attested-without-tracked-gaps) before re-approval. Trigger: substrate ready → clean NPA cycle. Authority: D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION; D-NPA-GATE-POLICY-REDESIGN.
+- prd:bank:bond:sagb-fixed-coupon (SAGB fixed-coupon bond) was approved 2026-05-26 under the superseded 14-dimension gate policy and withdrawn via ProductWithheld under D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION. Must be re-run through a clean 15-dimension NPA cycle before re-approval. Trigger: substrate ready → clean NPA cycle. Authority: D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION; D-NPA-GATE-POLICY-REDESIGN.
+- prd:bank:bond:open-repo-gmra (open repo under GMRA) was approved 2026-05-26 under the superseded 14-dimension gate policy and withdrawn via ProductWithheld under D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION. Must be re-run through a clean 15-dimension NPA cycle before re-approval. Trigger: substrate ready → clean NPA cycle. Authority: D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION; D-NPA-GATE-POLICY-REDESIGN.
+- prd:bank:ird:vanilla-zar-fix-zaronia (vanilla ZAR fixed-vs-ZARONIA IRS) was approved 2026-05-26 under the superseded 14-dimension gate policy and withdrawn via ProductWithheld under D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION. Must be re-run through a clean 15-dimension NPA cycle before re-approval. Trigger: substrate ready → clean NPA cycle. Authority: D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION; D-NPA-GATE-POLICY-REDESIGN.
+- prd:bank:treasury:repo-sagb-term (SAGB-backed term repo, M5) was approved 2026-05-28 under the superseded 14-dimension gate policy and withdrawn via ProductWithheld under D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION. Must be re-run through a clean 15-dimension NPA cycle before re-approval. Trigger: substrate ready → clean NPA cycle. Authority: D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION; D-NPA-GATE-POLICY-REDESIGN.
+- prd:bank:treasury:mmd-deposit (Money Market Deposit, M6) was approved 2026-05-28 under the superseded 14-dimension gate policy and withdrawn via ProductWithheld under D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION. Must be re-run through a clean 15-dimension NPA cycle before re-approval. Trigger: substrate ready → clean NPA cycle. Authority: D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION; D-NPA-GATE-POLICY-REDESIGN.
+- prd:bank:treasury:funding-line (Committed Funding Line, M7) was approved 2026-05-28 under the superseded 14-dimension gate policy and withdrawn via ProductWithheld under D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION. Must be re-run through a clean 15-dimension NPA cycle before re-approval. Trigger: substrate ready → clean NPA cycle. Authority: D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION; D-NPA-GATE-POLICY-REDESIGN.
 
 ## Atlas's narrative
 
-_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CcA8ugdjXTugffGXdPyoZ"})._
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CcADVcf2qxCqrTaq6dqxJ"})._
 
 ## Provenance
 
