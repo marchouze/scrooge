@@ -51,7 +51,7 @@ import {
   foldFilInstances,
   fxValuable,
 } from "../../v2-core";
-import type { FilInstanceLifecycleEvent } from "../../v2-core";
+import type { FilInstanceLifecycleEvent, FilInstanceRow } from "../../v2-core";
 import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
@@ -185,17 +185,42 @@ export function run(opts: RunOpts = {}): ReconResult {
   }
 
   // -------------------------------------------------------------------------
-  // (2) HISTORY proof — for every SETTLED FX instance in the v2 anchor store,
-  //     value the position and the FCY cash that replaces it at the settlement-
-  //     date closing rate and assert equality. Because value() is lifecycle-
-  //     free and the FCY cash carries the same notional, this holds by
-  //     construction; the gate proves no instance materialisation broke it.
+  // (2) HISTORY proof — re-based on the REAL Cash FIL instance (Slice 2,
+  //     D-CASH-ASSET-CLASS-V1). For every SETTLED FX instance, find the `cash`
+  //     instance the settlement MATERIALISED (linked by
+  //     `economicTerms.originatingInstrument`) and assert that the FX position's
+  //     value at the settlement-date rate equals the matching cash leg's value at
+  //     the SAME rate. Both sides are now instruments OF RECORD — the phantom
+  //     projection-time position is gone. Because value() is lifecycle-free and
+  //     the materialised cash carries the same per-currency notional, this holds
+  //     by construction; the gate proves no materialisation broke it.
+  //
+  //     The settlement-date closing rate is not stored; the invariant is
+  //     rate-INDEPENDENT (both sides apply the SAME rate), so we assert equality
+  //     at a representative settlement-date rate.
   // -------------------------------------------------------------------------
   const filEvents = opts.filEvents ?? readFilInstanceEvents();
   // Fold to the LATEST state (no asOf bound) so terminated/settled instances
   // surface with their terminal stage.
   const register = foldFilInstances(filEvents);
+
+  // Index live `cash` instances by their originating FX instance URN. The FX
+  // OTC NPA materialises BOTH legs (received + paid); the continuity invariant is
+  // checked against the leg whose currency matches the FX position's currency
+  // (the position is denominated in that currency).
+  const cashByOrigin = new Map<string, FilInstanceRow[]>();
+  for (const row of register.values()) {
+    if (row.economicTerms.assetClass !== "cash") continue;
+    const origin = row.economicTerms.originatingInstrument;
+    if (!origin) continue;
+    const list = cashByOrigin.get(origin) ?? [];
+    list.push(row);
+    cashByOrigin.set(origin, list);
+  }
+
+  const settlementRate = 18.75;
   let settledFxChecked = 0;
+  let cashPaired = 0;
   for (const row of register.values()) {
     if (row.economicTerms.assetClass !== "fx") continue;
     if (row.stage !== "settled") continue;
@@ -207,11 +232,6 @@ export function run(opts: RunOpts = {}): ReconResult {
       terms.direction === "short"
         ? negateDecimalString(terms.notional.amount)
         : terms.notional.amount;
-    // The settlement-date closing rate is not stored on the gate; the invariant
-    // is rate-INDEPENDENT (both sides apply the SAME rate), so we assert equality
-    // at a representative settlement-date rate. A real rate feed makes no
-    // difference — the equality is structural.
-    const settlementRate = 18.75;
     const marks = singleRate(terms.currency, settlementRate, row.lastAsOf);
 
     const valuePre = fxValuable({
@@ -221,10 +241,30 @@ export function run(opts: RunOpts = {}): ReconResult {
       reporting: REPORTING,
     }).value(marks, row.lastAsOf as Instant).value;
 
+    // Find the materialised cash leg in the SAME currency as the FX position.
+    const cashLegs = cashByOrigin.get(row.instance) ?? [];
+    const matchingLeg = cashLegs.find((c) => c.economicTerms.currency === terms.currency);
+
+    if (!matchingLeg) {
+      violations.push({
+        subject: `history:${row.instance}`,
+        message: `settled FX instance ${row.instance} has NO materialised cash instance in currency ${terms.currency} (expected the FX OTC NPA's received/paid leg, linked by originatingInstrument). The maturity→cash materialisation did not run — instrument-of-record continuity is broken.`,
+        severity: "fail",
+      });
+      continue;
+    }
+    cashPaired += 1;
+
+    const cashTerms = matchingLeg.economicTerms;
+    const cashSignedNotional =
+      cashTerms.direction === "short"
+        ? negateDecimalString(cashTerms.notional.amount)
+        : cashTerms.notional.amount;
+
     const valuePost = cashValuable(
       cashFromSettledReceivable({
-        currency: terms.currency,
-        signedNotional,
+        currency: cashTerms.currency,
+        signedNotional: cashSignedNotional,
         reporting: REPORTING,
       }),
     ).value(marks, row.lastAsOf as Instant).value;
@@ -232,7 +272,7 @@ export function run(opts: RunOpts = {}): ReconResult {
     if (!sameMoney(valuePre, valuePost)) {
       violations.push({
         subject: `history:${row.instance}`,
-        message: `settlement-continuity breach for settled FX instance ${row.instance}: value_pre ${valuePre.amount} != value_post ${valuePost.amount} at the settlement-date rate`,
+        message: `settlement-continuity breach: settled FX instance ${row.instance} value_pre ${valuePre.amount} != materialised cash instance ${matchingLeg.instance} value_post ${valuePost.amount} at the settlement-date rate`,
         severity: "fail",
       });
     }
@@ -249,7 +289,7 @@ export function run(opts: RunOpts = {}): ReconResult {
 
   result.violations = violations;
   result.ok = violations.every((v) => v.severity !== "fail");
-  result.asOf = `fx-settlement-continuity: ${sweep.length} structural cases + ${settledFxChecked} settled FX instance(s) checked; value() is lifecycle-free (structural invariant).`;
+  result.asOf = `fx-settlement-continuity: ${sweep.length} structural cases + ${settledFxChecked} settled FX instance(s) checked (${cashPaired} paired to a materialised cash instance-of-record); value() is lifecycle-free (structural invariant).`;
   return result;
 }
 

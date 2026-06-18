@@ -112,6 +112,18 @@ export const filEconomicTermsSchema = z.object({
   settlementDate: z.string().min(1),
   /** Hedging-set tag (FX pair, e.g. `EUR/ZAR`; IR currency/bucket). */
   hedgingSetTag: z.string().min(1).optional(),
+  /**
+   * Originating-instrument back-reference (D-CASH-ASSET-CLASS-V1). When a
+   * settled trade MATERIALISES a successor instrument — an FX spot settling into
+   * a `cash` asset (the FX OTC NPA declares the maturity→cash rule) — the
+   * successor carries the FIL instance URN of the originating instrument here, so
+   * the single-graph link from the cash holding back to the trade that produced
+   * it is EXPLICIT (Principle 1 / Principle 2 — no orphan node). The Slice-3
+   * recon gate fails closed on any `cash`-asset-class instance that lacks this
+   * back-ref. Optional at the schema level because origin-less instruments (an
+   * FX trade created directly from execution) legitimately have no predecessor.
+   */
+  originatingInstrument: filInstanceUrnSchema.optional(),
 });
 
 export type FilEconomicTerms = z.infer<typeof filEconomicTermsSchema>;

@@ -287,6 +287,7 @@
     "recon:v2-onboarding-readiness": "bun run platform/recon/v2-onboarding-readiness.ts",
     "rehearse:v2-onboarding": "bun run scripts/v2-onboarding-rehearsal.ts",
     "recon:fx-settlement-continuity": "bun run platform/recon/fx-settlement-continuity.ts",
+    "recon:cash-materialisation-integrity": "bun run platform/recon/cash-materialisation-integrity.ts",
     "recon:fx-book-nop-parity": "bun run platform/recon/fx-book-nop-parity.ts",
     "recon:no-hardcoded-reporting-currency": "bun run platform/recon/no-hardcoded-reporting-currency.ts",
     "seed:v2-anchor-tenant": "bun run scripts/seed-v2-anchor-tenant.ts",
