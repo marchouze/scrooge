@@ -274,6 +274,10 @@ export interface V2ObligationDetail {
   ownerSeatTitle: string | null;
   requirement: string;
   applicability: { verdict: string; rationale: string } | null;
+  /** Fulfilment policy node ids (POL-*) implementing this obligation. */
+  policies: string[];
+  /** Golden-source page range of the cited provision, when stamped. */
+  sourcePages: string | null;
   /**
    * Each regulation this obligation validly cites, with the verbatim text of
    * the cited provisions — so a multi-source obligation shows every citing,
@@ -316,6 +320,8 @@ export function buildV2ObligationDetailView(
     applicability: d.applicability
       ? { verdict: d.applicability.verdict, rationale: redactAgentNames(d.applicability.rationale) }
       : null,
+    policies: d.policies ?? [],
+    sourcePages: d.sourcePages ?? null,
     sources,
     history: d.history.map((h) => ({ at: h.at, kind: h.kind, status: h.status ?? "" })),
   };
