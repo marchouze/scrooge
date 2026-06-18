@@ -160,6 +160,7 @@ describe("doc-side ↔ citation-side convergence", () => {
   it("§4 citation token matches a (4) / 4 doc section", () => {
     const fromCitation = normaliseSectionRef("§ 4"); // "s4"
     expect(fromCitation).toBe("s4");
+    if (fromCitation === null) throw new Error("citation normaliser returned null");
     for (const docNumber of ["4", "(4)", "§4", "s.4"]) {
       expect(`s${normSectionRef(docNumber)}`).toBe(fromCitation);
     }
@@ -170,6 +171,8 @@ describe("doc-side ↔ citation-side convergence", () => {
     // the obligations register cites "POPIA s.11". Before the fix the doc side
     // minted PROV-POPIA-s11(1) and the link stayed PARTIAL.
     const fromCitation = normaliseSectionRef("s.11"); // "s11"
+    expect(fromCitation).toBe("s11");
+    if (fromCitation === null) throw new Error("citation normaliser returned null");
     expect(`s${normSectionRef("11(1)")}`).toBe(fromCitation);
     expect(`s${normSectionRef("11(3)")}`).toBe(fromCitation);
   });
