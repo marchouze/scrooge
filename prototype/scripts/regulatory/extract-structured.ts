@@ -181,9 +181,7 @@ function isIasbParagraph(line: string): { number: string; heading: string } | nu
   if (/^\s/.test(line)) return null;
   // <id>  <text> — id is alnum with dots, 2+ spaces, then operative text.
   // id forms: 72 | 21A | 5.5.1 | 4.1.2A | B2.1 | BC10 | C1 | D1 | IG2 | IE5
-  const m = line.match(
-    /^((?:[A-Z]{1,3})?\d+(?:\.\d+)*[A-Z]?)\s{2,}(\S.*)$/,
-  );
+  const m = line.match(/^((?:[A-Z]{1,3})?\d+(?:\.\d+)*[A-Z]?)\s{2,}(\S.*)$/);
   if (!m) return null;
   const id = m[1] ?? "";
   const text = (m[2] ?? "").trim();
