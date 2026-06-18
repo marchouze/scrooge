@@ -39,6 +39,8 @@ function makeRow(overrides: Partial<SourceCoverageRow> = {}): SourceCoverageRow 
     reviewedAt: null,
     reviewStatus: "unreviewed",
     reviewedSourceHash: null,
+    authoringPath: "hand-authored",
+    contentCompleteness: { verbatim: 0, summary: 0, headingOnly: 0, enriched: 0, total: 0 },
     ...overrides,
   };
 }
