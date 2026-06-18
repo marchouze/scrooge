@@ -36,23 +36,9 @@
               "verbatim": true,
               "subsections": [
                 {
-                  "id": "s1-1-1",
-                  "number": "1.1.1",
-                  "text": "",
-                  "verbatim": true,
-                  "subsections": []
-                },
-                {
                   "id": "s1-1-2",
                   "number": "1.1.2",
                   "text": "The Co-operatives Act, 2005 (Act No. 14 of 2005) (Co-operatives Act); The Co-operative Banks Act, 2007 (Act No. 40 of 2007) (Co-operative Banks Act);",
-                  "verbatim": true,
-                  "subsections": []
-                },
-                {
-                  "id": "s1-1-3",
-                  "number": "1.1.3",
-                  "text": "",
                   "verbatim": true,
                   "subsections": []
                 },
@@ -71,27 +57,6 @@
                   "subsections": []
                 }
               ]
-            },
-            {
-              "id": "s1-2",
-              "number": "1.2",
-              "text": "",
-              "verbatim": true,
-              "subsections": []
-            },
-            {
-              "id": "s1-3",
-              "number": "1.3",
-              "text": "",
-              "verbatim": true,
-              "subsections": []
-            },
-            {
-              "id": "s1-4",
-              "number": "1.4",
-              "text": "",
-              "verbatim": true,
-              "subsections": []
             },
             {
               "id": "s1-5",
@@ -121,22 +86,8 @@
                   "text": "its common economic and social objectives and aspirations together with a description of the short and long term strategies for achieving those needs; and",
                   "verbatim": true,
                   "subsections": []
-                },
-                {
-                  "id": "s1-1-2",
-                  "number": "1.1.2",
-                  "text": "",
-                  "verbatim": true,
-                  "subsections": []
                 }
               ]
-            },
-            {
-              "id": "s1-2",
-              "number": "1.2",
-              "text": "",
-              "verbatim": true,
-              "subsections": []
             },
             {
               "id": "s1-3",
@@ -166,7 +117,7 @@
         {
           "id": "s4",
           "number": "4",
-          "heading": "Savings products Savings products Savings products Savings products Savings products Savings products Savings products",
+          "heading": "Savings products",
           "text": "Savings products Savings products Savings products Savings products Savings products Savings products Savings products Savings products Savings products Savings products Savings products Savings products Savings products Savings products Savings products Savings products Savings products Savings products Savings products Savings products Savings products Savings products",
           "verbatim": true,
           "subsections": []
@@ -174,7 +125,7 @@
         {
           "id": "s5",
           "number": "5",
-          "heading": "Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products",
+          "heading": "Loans products",
           "text": "Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products Loans products",
           "verbatim": true,
           "subsections": []
@@ -246,7 +197,7 @@
         {
           "id": "s14",
           "number": "14",
-          "heading": "Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies",
+          "heading": "Other policies",
           "text": "Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies Other policies",
           "verbatim": true,
           "subsections": []

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-18T14:22:23.624Z",
+  "generatedAt": "2026-06-18T14:44:31.930Z",
   "totalInstruments": 158,
   "byStatus": {
     "direct": 126,
@@ -791,9 +791,9 @@
       "contentCompleteness": {
         "verbatim": 125,
         "summary": 0,
-        "headingOnly": 2,
+        "headingOnly": 0,
         "enriched": 0,
-        "total": 127
+        "total": 125
       }
     },
     {
@@ -2148,9 +2148,9 @@
       "contentCompleteness": {
         "verbatim": 77,
         "summary": 0,
-        "headingOnly": 1,
+        "headingOnly": 0,
         "enriched": 0,
-        "total": 78
+        "total": 77
       }
     },
     {
@@ -2240,9 +2240,9 @@
       "contentCompleteness": {
         "verbatim": 9,
         "summary": 0,
-        "headingOnly": 2,
+        "headingOnly": 0,
         "enriched": 0,
-        "total": 11
+        "total": 9
       }
     },
     {
@@ -2263,9 +2263,9 @@
       "contentCompleteness": {
         "verbatim": 5,
         "summary": 0,
-        "headingOnly": 3,
+        "headingOnly": 0,
         "enriched": 0,
-        "total": 8
+        "total": 5
       }
     },
     {
@@ -2516,9 +2516,9 @@
       "contentCompleteness": {
         "verbatim": 3,
         "summary": 0,
-        "headingOnly": 2,
+        "headingOnly": 0,
         "enriched": 0,
-        "total": 5
+        "total": 3
       }
     },
     {
@@ -2700,9 +2700,9 @@
       "contentCompleteness": {
         "verbatim": 4,
         "summary": 0,
-        "headingOnly": 1,
+        "headingOnly": 0,
         "enriched": 0,
-        "total": 5
+        "total": 4
       }
     },
     {
@@ -2792,9 +2792,9 @@
       "contentCompleteness": {
         "verbatim": 76,
         "summary": 0,
-        "headingOnly": 1,
+        "headingOnly": 0,
         "enriched": 0,
-        "total": 77
+        "total": 76
       }
     },
     {
@@ -3574,9 +3574,9 @@
       "contentCompleteness": {
         "verbatim": 25,
         "summary": 0,
-        "headingOnly": 7,
+        "headingOnly": 0,
         "enriched": 0,
-        "total": 32
+        "total": 25
       }
     },
     {
