@@ -26,6 +26,8 @@ import {
   sourceLinksForObligation,
   verbatimForProvisions,
 } from "./regulation-reader-view";
+import { parseVerbatimBlocks } from "./regulation-verbatim-blocks";
+import type { VerbatimBlock } from "./regulation-verbatim-blocks";
 
 /**
  * A display-safe obligation label for V2 surfaces. Many `ORG-*` rows carry
@@ -131,6 +133,13 @@ export interface V2RegulationSection {
   number: string;
   heading: string;
   text: string;
+  /**
+   * Server-parsed render blocks for `text`: markdown pipe-tables become
+   * `{kind:"table"}` (rendered as real <table>s, cells escaped client-side),
+   * everything else stays faithful paragraph text. Empty for heading-only /
+   * summary sections. `text` is kept too (client search filter + back-compat).
+   */
+  blocks: VerbatimBlock[];
   verbatim: boolean;
   /**
    * Completeness tier of the assembled text from the canonical normalizer
@@ -236,6 +245,7 @@ export function buildV2RegulationDetailView(
         number: s.number ?? s.sectionNumber ?? "",
         heading: s.heading ?? s.title ?? "",
         text: s.text ?? "",
+        blocks: parseVerbatimBlocks(s.text ?? ""),
         verbatim: s.verbatim ?? false,
         completeness: s.completeness,
         textSource: s.textSource,

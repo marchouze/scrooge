@@ -27,7 +27,35 @@
     .rd-section-hd { display:flex; gap:var(--space-2); align-items:baseline; margin-bottom:var(--space-2); }
     .rd-section-num { font-weight:700; color:var(--color-accent); }
     .rd-section-heading { font-weight:600; color:var(--color-text-primary); }
-    .rd-text { color:var(--color-text-primary); line-height:1.65; white-space:pre-wrap; font:var(--text-body); }
+    .rd-text { color:var(--color-text-primary); line-height:1.65; white-space:pre-wrap; font:var(--text-body); margin:0 0 var(--space-2); }
+    .rd-text:last-child { margin-bottom:0; }
+    .rd-table-wrap { overflow-x:auto; margin:var(--space-3) 0; }
+    .rd-table { border-collapse:collapse; width:100%; font:var(--text-caption); }
+    .rd-table th, .rd-table td { border:1px solid var(--color-border); padding:4px 8px;
+      text-align:left; vertical-align:top; white-space:pre-wrap; color:var(--color-text-primary); }
+    .rd-table th { background:var(--color-surface-raised); font-weight:600;
+      color:var(--color-text-secondary); position:sticky; top:0; }
+    .rd-table tbody tr:nth-child(even) td { background:var(--color-bg); }
+    /* Outline / contents panel */
+    .rd-shell { display:grid; grid-template-columns:240px 1fr; gap:var(--space-5); align-items:start; }
+    .rd-outline { position:sticky; top:var(--space-3); max-height:calc(100vh - 120px); overflow-y:auto;
+      border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-surface);
+      padding:var(--space-3); }
+    .rd-outline-h { font:var(--text-caption); font-weight:700; text-transform:uppercase;
+      letter-spacing:0.06em; color:var(--color-text-secondary); margin:0 0 var(--space-2); }
+    .rd-outline-ch { font:var(--text-caption); font-weight:700; color:var(--color-text-secondary);
+      text-transform:uppercase; letter-spacing:0.04em; margin:var(--space-3) 0 4px; }
+    .rd-outline-ch:first-of-type { margin-top:0; }
+    .rd-outline-link { display:block; font:var(--text-caption); color:var(--color-text-primary);
+      text-decoration:none; padding:3px 6px; border-radius:var(--radius-sm); line-height:1.4; }
+    .rd-outline-link:hover { background:var(--color-accent-bg); color:var(--color-accent); }
+    .rd-outline-link.rd-outline-active { background:var(--color-accent-bg); color:var(--color-accent); font-weight:600; }
+    .rd-outline-link[hidden] { display:none; }
+    html { scroll-behavior:smooth; }
+    @media (max-width:900px){
+      .rd-shell { grid-template-columns:1fr; }
+      .rd-outline { position:static; max-height:none; margin-bottom:var(--space-3); }
+    }
     .rd-sub { display:flex; gap:var(--space-3); margin-top:var(--space-2); line-height:1.6; }
     .rd-sub-num { flex-shrink:0; min-width:36px; color:var(--color-accent); font-weight:600; font-variant-numeric:tabular-nums; }
     .rd-sub-text { color:var(--color-text-primary); white-space:pre-wrap; }
@@ -106,6 +134,26 @@
       main.appendChild(e);
     } else {
       const chip = (v) => v ? `<span class="v2-chip v2-chip--${v}">${v2Esc(v)}</span>` : `<span class="v2-chip v2-chip--na">unassessed</span>`;
+      // Stable, collision-resistant DOM id for a section anchor (outline target).
+      const slugifyPart = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      const sectionId = (sl, num, idx) => `sec-${slugifyPart(sl)}-${slugifyPart(num) || ("n" + idx)}`;
+      // Render server-parsed verbatim blocks. Tables → real <table> with EVERY
+      // cell escaped (XSS-safe — never raw innerHTML of source); paragraphs →
+      // escaped <p>. Falls back to the raw escaped text when blocks are absent.
+      const renderBlocks = (s) => {
+        const blocks = Array.isArray(s.blocks) ? s.blocks : null;
+        if (!blocks || blocks.length === 0) {
+          return s.text ? `<div class="rd-text">${v2Esc(s.text)}</div>` : "";
+        }
+        return blocks.map((b) => {
+          if (b.kind === "table") {
+            const thead = `<thead><tr>${(b.headers || []).map((h) => `<th>${v2Esc(h)}</th>`).join("")}</tr></thead>`;
+            const tbody = `<tbody>${(b.rows || []).map((r) => `<tr>${(r || []).map((c) => `<td>${v2Esc(c)}</td>`).join("")}</tr>`).join("")}</tbody>`;
+            return `<div class="rd-table-wrap"><table class="rd-table">${thead}${tbody}</table></div>`;
+          }
+          return `<p class="rd-text">${v2Esc(b.text || "")}</p>`;
+        }).join("");
+      };
       v2WireLoader(async () => {
         main.innerHTML = "";
         let d;
@@ -142,10 +190,21 @@
           <label class="rd-toggle"><input type="checkbox" id="showObls" checked> Show obligation summary</label>`;
         main.appendChild(toolbar);
 
-        const body = document.createElement("div"); main.appendChild(body);
+        // Two-pane shell: outline (left) + scrollable document (right).
+        const shell = document.createElement("div"); shell.className = "rd-shell";
+        const outline = document.createElement("nav"); outline.className = "rd-outline"; outline.setAttribute("aria-label", "Contents");
+        const body = document.createElement("div");
+        shell.appendChild(outline); shell.appendChild(body);
+        main.appendChild(shell);
+
         let html = "";
+        let outlineHtml = `<div class="rd-outline-h">Contents</div>`;
+        let secIdx = 0;
         for (const ch of d.chapters || []) {
+          const chTitle = ch.heading || ch.number || "";
+          const linkItems = [];
           const secs = (ch.sections || []).map((s) => {
+            const id = sectionId(d.slug, s.number, secIdx++);
             const list = s.obligations || [];
             const tiles = list.map((o) => `
               <a class="rd-tile" href="/v2/compliance/obligation.html?id=${encodeURIComponent(o.id)}">
@@ -169,29 +228,52 @@
               ? `<div class="rd-completeness-badge">summary — full verbatim pending</div>`
               : "";
             const textHtml = hasBody
-              ? `${badge}${s.text ? `<div class="rd-text">${v2Esc(s.text)}</div>` : ""}${subsHtml}${excHtml}`
+              ? `${badge}${renderBlocks(s)}${subsHtml}${excHtml}`
               : `<div class="rd-obl-meta">No verbatim text extracted for this section.</div>`;
             const hd = `<div class="rd-section-hd"><span class="rd-section-num">${v2Esc(s.number || "")}</span><span class="rd-section-heading">${v2Esc(s.heading || "")}</span></div>`;
+            // Outline link (chapter → regulation depth).
+            const label = [s.number, s.heading].filter(Boolean).join(" — ") || s.number || s.heading || "(section)";
+            linkItems.push(`<a class="rd-outline-link" href="#${id}" data-target="${id}">${v2Esc(label)}</a>`);
             if (!tiles) {
-              return `<div class="rd-section">${hd}${textHtml}</div>`;
+              return `<div class="rd-section" id="${id}">${hd}${textHtml}</div>`;
             }
             // Two-column: verbatim source text left, obligation tile(s) on the RHS.
-            return `<div class="rd-section rd-has-obls">
+            return `<div class="rd-section rd-has-obls" id="${id}">
               <div class="rd-section-main">${hd}${textHtml}</div>
               <aside class="rd-aside"><div class="rd-obls-lbl">Obligations from this section</div>${tiles}</aside>
             </div>`;
           }).join("");
-          html += `<div class="rd-chapter">${ch.heading || ch.number ? `<div class="rd-chapter-h">${v2Esc(ch.heading || ch.number)}</div>` : ""}${secs}</div>`;
+          html += `<div class="rd-chapter">${chTitle ? `<div class="rd-chapter-h">${v2Esc(chTitle)}</div>` : ""}${secs}</div>`;
+          if (linkItems.length) {
+            outlineHtml += `${chTitle ? `<div class="rd-outline-ch">${v2Esc(chTitle)}</div>` : ""}${linkItems.join("")}`;
+          }
         }
         body.innerHTML = html || `<div class="v2-empty"><div class="v2-empty-msg">No sections available for this regulation.</div></div>`;
+        outline.innerHTML = outlineHtml;
+
+        // Smooth-scroll to a section on outline click (also works via the native
+        // #anchor since scroll-behavior:smooth is set on <html>).
+        outline.addEventListener("click", (e) => {
+          const a = e.target.closest(".rd-outline-link");
+          if (!a) return;
+          const el = document.getElementById(a.getAttribute("data-target"));
+          if (el) { e.preventDefault(); el.scrollIntoView({ behavior: "smooth", block: "start" });
+            el.classList.add("rd-flash"); setTimeout(() => el.classList.remove("rd-flash"), 1200);
+            history.replaceState(null, "", "#" + a.getAttribute("data-target")); }
+        });
 
         document.getElementById("showObls").addEventListener("change", (e) => {
           document.body.classList.toggle("rd-hide-obls", !e.target.checked);
         });
         document.getElementById("q").addEventListener("input", (e) => {
           const q = e.target.value.trim().toLowerCase();
-          for (const sec of body.querySelectorAll(".rd-section"))
-            sec.style.display = !q || sec.textContent.toLowerCase().includes(q) ? "" : "none";
+          for (const sec of body.querySelectorAll(".rd-section")) {
+            const show = !q || sec.textContent.toLowerCase().includes(q);
+            sec.style.display = show ? "" : "none";
+            // Keep the outline in sync: dim/hide the matching entry too.
+            const link = outline.querySelector(`.rd-outline-link[data-target="${sec.id}"]`);
+            if (link) link.hidden = !show;
+          }
         });
       });
     }
