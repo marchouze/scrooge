@@ -75,6 +75,11 @@ import {
   POOR_TIERS,
   scoreExtractQuality,
 } from "../regulatory/extract-quality";
+import {
+  type NormalizedDoc,
+  type NormalizedProvision,
+  loadNormalizedDocBySlug,
+} from "../regulatory/structured-doc-loader";
 import type {
   StructuredSection,
   StructuredSourceDocument,
@@ -282,6 +287,79 @@ export interface ExtractQualityRow {
 }
 
 // ---------------------------------------------------------------------------
+// Slice 3 (2026-06-18): per-section summary-only completeness detector
+// (ADVISORY) -- a ratcheting backlog of sources whose verbatim coverage is
+// incomplete at the provision level.
+// ---------------------------------------------------------------------------
+
+/**
+ * The `summary-only-sections` detector complements the TOTAL-char thin-form
+ * check with a PER-SECTION view. The thin-form floor measures aggregate body
+ * size; it can pass while individual provisions still lack verbatim text (the
+ * rrb false-confidence case: comfortably above the char floor, yet 31 of its
+ * 143 provisions are editorial summaries rather than verbatim regulator text).
+ *
+ * For each in-scope source the detector walks the canonical Slice-1 normalizer
+ * (`loadNormalizedDocBySlug`, the SAME data path `build-source-coverage.ts`
+ * uses to write each row's `contentCompleteness`) and tallies provisions whose
+ * `completeness ∈ {"summary","heading-only"}`. Any source with a non-zero gap
+ * that is NOT on `SUMMARY_FORM_ALLOWLIST` emits an ADVISORY (warn) finding --
+ * it NEVER flips `ok` to false / NEVER hard-fails CI. The allowlist is the
+ * tracked backlog Slice 5 backfill will burn down.
+ */
+export interface SummaryFormAllowlistEntry {
+  /** Expected summary+heading-only provision count at the time of seeding. */
+  knownGap: number;
+  note: string;
+}
+
+/**
+ * Governed allowlist for the `summary-only-sections` ADVISORY detector. Seeded
+ * 2026-06-18 with the CURRENT known per-section verbatim gap (counts verified
+ * against `Regulations/_source-coverage.json`).
+ *
+ * RATCHET-HARDENING-ONLY: this list may only ever SHRINK. As Slice 5 backfill
+ * replaces summary / heading-only provisions with verbatim regulator text, the
+ * corresponding entry is removed. A new source landing with summary/heading-only
+ * provisions is a NEW finding (advisory), not an excuse to grow this list --
+ * adding an entry requires a recorded Decision. The stale-entry self-check below
+ * (a source whose gap has reached zero but is still listed) keeps the list
+ * honest: a backfilled source left here becomes a finding, forcing its removal.
+ *
+ * `knownGap` records the summary+heading-only count at seeding time so the
+ * backlog is legible; the detector does not gate on the number matching (a gap
+ * that grew or shrank but is still > 0 stays allowlisted-silent), only on the
+ * gap reaching zero (which trips the stale-entry self-check).
+ */
+export const SUMMARY_FORM_ALLOWLIST: Record<string, SummaryFormAllowlistEntry> = {
+  // --- hand-authored editorial summaries pending verbatim backfill -----------
+  rrb: {
+    knownGap: 31,
+    note: "31 provisions are editorial summaries; verbatim Regulations Relating to Banks text pending Slice-5 backfill",
+  },
+  // --- heading-only provisions (structure captured, body text pending) -------
+  //
+  // NOTE on scope: the original Slice-3 backlog (derived from
+  // `Regulations/_source-coverage.json`, which scans ALL regulator corpora)
+  // listed 9 sources including `gn2-2019` (7 heading-only). That source lives in
+  // `Regulations/CoopBanks/source-docs`, which is NOT among this gate's
+  // `SOURCE_DIRS` (Banks / SARB-PA / INTL-IASB only). To avoid a perpetually
+  // stale allowlist entry — and to avoid silently broadening this enforcing
+  // gate's scan scope over 8 untested corpora and tripping its FAILING detectors
+  // — `gn2-2019` is intentionally NOT seeded here. Its per-section gap remains
+  // tracked by the coverage report; bringing the CoopBanks corpus under this
+  // gate is a separate, scoped change. The remaining 8 in-scope sources are
+  // seeded below with counts verified against `_source-coverage.json`.
+  "banks-gn3-2011": { knownGap: 3, note: "3 heading-only provisions; body text pending backfill" },
+  "banks-d11-2025": { knownGap: 2, note: "2 heading-only provisions; body text pending backfill" },
+  "banks-gn3-2010": { knownGap: 2, note: "2 heading-only provisions; body text pending backfill" },
+  "banks-gn5-2013": { knownGap: 2, note: "2 heading-only provisions; body text pending backfill" },
+  "banks-gn12-2022": { knownGap: 1, note: "1 heading-only provision; body text pending backfill" },
+  "banks-gn7-2016": { knownGap: 1, note: "1 heading-only provision; body text pending backfill" },
+  "banks-gn9-2008": { knownGap: 1, note: "1 heading-only provision; body text pending backfill" },
+};
+
+// ---------------------------------------------------------------------------
 // Structural defect check helpers
 // ---------------------------------------------------------------------------
 
@@ -409,6 +487,31 @@ export function bodyCharCount(doc: StructuredSourceDocument): number {
   return countTextCharsRecursive(topSectionsOf(doc));
 }
 
+/**
+ * Per-section completeness tally over the canonical Slice-1 normalized tree.
+ * Counts every provision node (sections + nested subsections, each once) whose
+ * `completeness` is `summary` or `heading-only`. This is the EXACT walk
+ * `build-source-coverage.ts` performs to write `contentCompleteness` -- one data
+ * path, no divergence. Returns the gap (summary + heading-only) and the total.
+ */
+export function summaryCompletenessTally(doc: NormalizedDoc): {
+  summary: number;
+  headingOnly: number;
+  total: number;
+} {
+  let summary = 0;
+  let headingOnly = 0;
+  let total = 0;
+  const walk = (p: NormalizedProvision): void => {
+    total++;
+    if (p.completeness === "summary") summary++;
+    else if (p.completeness === "heading-only") headingOnly++;
+    for (const ss of p.subsections) walk(ss);
+  };
+  for (const ch of doc.chapters) for (const s of ch.sections) walk(s);
+  return { summary, headingOnly, total };
+}
+
 // ---------------------------------------------------------------------------
 // Disk-scan helpers
 // ---------------------------------------------------------------------------
@@ -426,6 +529,17 @@ export interface StructuralCheckRow {
   bodyChars: number;
 }
 
+/**
+ * Per-source summary-only completeness row (Slice 3, 2026-06-18). Injectable for
+ * tests. `summary` + `headingOnly` is the per-section verbatim gap.
+ */
+export interface SummaryCompletenessRow {
+  slug: string;
+  summary: number;
+  headingOnly: number;
+  total: number;
+}
+
 export interface ExtractQualityDeps {
   /** Override the scored rows (tests inject). */
   readonly rows?: readonly ExtractQualityRow[];
@@ -441,6 +555,10 @@ export interface ExtractQualityDeps {
   readonly asOfDate?: string;
   /** Override structural check rows (tests inject). */
   readonly structuralRows?: readonly StructuralCheckRow[];
+  /** Override the summary-form allowlist (tests). Default `SUMMARY_FORM_ALLOWLIST`. */
+  readonly summaryFormAllowlist?: Record<string, SummaryFormAllowlistEntry>;
+  /** Override per-source summary-completeness rows (tests inject). */
+  readonly summaryRows?: readonly SummaryCompletenessRow[];
 }
 
 const SOURCE_DIRS = [
@@ -518,6 +636,45 @@ function structuralRowsFromDisk(): StructuralCheckRow[] {
   return rows;
 }
 
+/**
+ * Per-source summary-only completeness rows, derived by walking the canonical
+ * Slice-1 normalizer (`loadNormalizedDocBySlug`) over every in-scope structured
+ * source. Same disk-scan loop + same `SOURCE_DIRS` as the other detectors; the
+ * slug is taken from the doc (falling back to the filename), then normalized via
+ * the one canonical data path -- no second source. Sources whose normalizer
+ * returns no doc (or that have zero gap) are omitted from the rows.
+ */
+function summaryRowsFromDisk(): SummaryCompletenessRow[] {
+  const root = repoRoot();
+  const rows: SummaryCompletenessRow[] = [];
+  for (const rel of SOURCE_DIRS) {
+    const dir = join(root, rel);
+    if (!existsSync(dir)) continue;
+    for (const f of readdirSync(dir, { encoding: "utf-8" })) {
+      if (!f.endsWith("-structured.json")) continue;
+      const abs = join(dir, f);
+      let slug: string;
+      try {
+        const parsed = JSON.parse(readFileSync(abs, "utf-8")) as { slug?: string };
+        slug = parsed.slug ?? f.replace(/-structured\.json$/, "");
+      } catch {
+        continue;
+      }
+      const normalized = loadNormalizedDocBySlug(slug, root);
+      if (!normalized) continue;
+      const tally = summaryCompletenessTally(normalized);
+      if (tally.summary + tally.headingOnly === 0) continue;
+      rows.push({
+        slug,
+        summary: tally.summary,
+        headingOnly: tally.headingOnly,
+        total: tally.total,
+      });
+    }
+  }
+  return rows;
+}
+
 export function run(deps: ExtractQualityDeps = {}): ReconResult & {
   total: number;
   poor: number;
@@ -525,6 +682,8 @@ export function run(deps: ExtractQualityDeps = {}): ReconResult & {
   staleAllowlist: number;
   advisoryUntil: string;
   structuralFindings: number;
+  summaryOnlyFindings: number;
+  summaryAllowlistStale: number;
 } {
   const result = emptyResult(PIPELINE);
   const violations: ReconViolation[] = [];
@@ -532,12 +691,14 @@ export function run(deps: ExtractQualityDeps = {}): ReconResult & {
   const allowlist = deps.allowlist ?? POOR_QUALITY_ALLOWLIST;
   const shortFormAllowlist = deps.shortFormAllowlist ?? SHORT_FORM_ALLOWLIST;
   const structuralAllowlist = deps.structuralAllowlist ?? STRUCTURAL_ISSUE_ALLOWLIST;
+  const summaryFormAllowlist = deps.summaryFormAllowlist ?? SUMMARY_FORM_ALLOWLIST;
   const advisoryUntil = deps.advisoryUntil ?? ADVISORY_UNTIL;
   const asOfDate = (deps.asOfDate ?? clock.now()).slice(0, 10);
   const postAdvisory = asOfDate >= advisoryUntil;
 
   const rows = deps.rows !== undefined ? deps.rows : scoreRowsFromDisk();
   const sRows = deps.structuralRows !== undefined ? deps.structuralRows : structuralRowsFromDisk();
+  const summaryRows = deps.summaryRows !== undefined ? deps.summaryRows : summaryRowsFromDisk();
 
   let total = 0;
   let poor = 0;
@@ -676,6 +837,52 @@ export function run(deps: ExtractQualityDeps = {}): ReconResult & {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // summary-only-sections (Slice 3, 2026-06-18) -- ADVISORY (warn) ONLY
+  // Per-section completeness view complementing the TOTAL-char thin-form check.
+  // A source with any summary / heading-only provisions that is NOT on the
+  // ratcheting SUMMARY_FORM_ALLOWLIST warns; it NEVER flips `ok` to false.
+  // ---------------------------------------------------------------------------
+  let summaryOnlyFindings = 0;
+  const seenSummaryGap = new Set<string>();
+
+  for (const sr of summaryRows) {
+    const gap = sr.summary + sr.headingOnly;
+    if (gap === 0) continue;
+    result.asserted++;
+    seenSummaryGap.add(sr.slug);
+    const entry = summaryFormAllowlist[sr.slug];
+    summaryOnlyFindings++;
+    if (entry) {
+      violations.push({
+        subject: `${sr.slug} (summary-only-sections, allowlisted)`,
+        message: `\`${sr.slug}\` has ${sr.summary} summary + ${sr.headingOnly} heading-only of ${sr.total} provisions (${gap} non-verbatim) — allowlisted backlog (seeded gap ${entry.knownGap}): ${entry.note}. Tracked for Slice-5 verbatim backfill; allowlist may only shrink.`,
+        severity: "warn",
+      });
+    } else {
+      violations.push({
+        subject: `${sr.slug} (summary-only-sections)`,
+        message: `\`${sr.slug}\` has ${sr.summary} summary + ${sr.headingOnly} heading-only of ${sr.total} provisions (${gap} non-verbatim) and is NOT on SUMMARY_FORM_ALLOWLIST — passes the TOTAL-char thin-form floor while lacking per-section verbatim text. Backfill verbatim regulator text, or add a governed allowlist entry (requires a recorded Decision). Citation: D-REGULATORY-STRUCTURED-FIRST-CANONICAL.`,
+        severity: "warn",
+      });
+    }
+  }
+
+  // Stale-entry self-check: an allowlisted source whose per-section gap has
+  // reached zero (or is no longer present in scope) must be removed — the
+  // ratchet hardens. A backfilled source left in the allowlist is a finding.
+  let summaryAllowlistStale = 0;
+  for (const slug of Object.keys(summaryFormAllowlist)) {
+    if (!seenSummaryGap.has(slug)) {
+      summaryAllowlistStale++;
+      violations.push({
+        subject: `${slug} (summary-form-allowlist, stale)`,
+        message: `Allowlist entry \`${slug}\` no longer has any summary / heading-only provisions (gap reached zero) — remove it from SUMMARY_FORM_ALLOWLIST (ratchet self-clean).`,
+        severity: "warn",
+      });
+    }
+  }
+
   result.violations = violations;
   result.ok = violations.every((v) => v.severity !== "fail");
 
@@ -687,6 +894,8 @@ export function run(deps: ExtractQualityDeps = {}): ReconResult & {
     staleAllowlist,
     advisoryUntil,
     structuralFindings,
+    summaryOnlyFindings,
+    summaryAllowlistStale,
   };
 }
 
@@ -705,10 +914,12 @@ if (import.meta.main) {
       allowlisted: r.allowlisted,
       staleAllowlist: r.staleAllowlist,
       structuralFindings: r.structuralFindings,
+      summaryOnlyFindings: r.summaryOnlyFindings,
+      summaryAllowlistStale: r.summaryAllowlistStale,
       advisoryUntil: r.advisoryUntil,
       ok: r.ok,
       msg: r.ok
-        ? `regulatory-source-extract-quality: ${r.total} instruments, ${r.poor} poor (${r.allowlisted} allowlisted), ${r.structuralFindings} structural findings`
+        ? `regulatory-source-extract-quality: ${r.total} instruments, ${r.poor} poor (${r.allowlisted} allowlisted), ${r.structuralFindings} structural findings, ${r.summaryOnlyFindings} summary-only (advisory)`
         : "regulatory-source-extract-quality FAILED -- non-allowlisted poor extract(s)",
       detail: r.violations.filter((v) => v.severity === "fail").slice(0, 40),
     }),
