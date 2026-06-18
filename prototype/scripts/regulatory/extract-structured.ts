@@ -157,6 +157,42 @@ function splitPages(raw: string): ParsedPage[] {
   }));
 }
 
+/**
+ * IASB paragraph-id heuristic. IFRS/IAS standards number operative paragraphs
+ * as `<id><2+ spaces><text>` where `<id>` is one of:
+ *   - a core paragraph: `72`, `21`, `21A`, `21B`
+ *   - a hierarchical sub-paragraph: `5.5.1`, `5.5.13`, `4.1.2A`
+ *   - an appendix paragraph: `B2.1`, `BC10`, `C1`, `D1`, `IG2`, `IE5`
+ * Sub-list markers like `(a)`/`(b)` and definition lines are continuation text,
+ * NOT new paragraphs, so they fall through and accrete onto the current
+ * paragraph (preserving verbatim structure).
+ *
+ * Returns the paragraph id + the inline text that followed it, or null.
+ *
+ * Calibration: requires the id to start at column 0 (no leading whitespace) and
+ * be followed by >=2 spaces, which is how `pdftotext -layout` renders the
+ * IASB hanging-indent paragraph style. Continuation lines are indented, so they
+ * never match. This is far stricter than the generic `^\d+\.` rule and does NOT
+ * latch onto stray year numbers ("2010") that appear mid-prose (those are never
+ * at column 0 followed by the hanging indent).
+ */
+function isIasbParagraph(line: string): { number: string; heading: string } | null {
+  // Must begin at column 0 (no indent) to be a paragraph id.
+  if (/^\s/.test(line)) return null;
+  // <id>  <text> — id is alnum with dots, 2+ spaces, then operative text.
+  // id forms: 72 | 21A | 5.5.1 | 4.1.2A | B2.1 | BC10 | C1 | D1 | IG2 | IE5
+  const m = line.match(/^((?:[A-Z]{1,3})?\d+(?:\.\d+)*[A-Z]?)\s{2,}(\S.*)$/);
+  if (!m) return null;
+  const id = m[1] ?? "";
+  const text = (m[2] ?? "").trim();
+  // Reject bare 4-digit years masquerading as paragraph ids (e.g. effective-date
+  // and amendment-history pages: "2010   ...", "2014   ...").
+  if (/^(19|20)\d{2}$/.test(id)) return null;
+  // Require at least a few words of operative text to avoid table-cell noise.
+  if (text.length < 3) return null;
+  return { number: id, heading: text };
+}
+
 /** Detect section-heading lines: "1.", "Section 1", "(1)", etc. */
 function isSectionHeading(line: string): { number: string; heading: string } | null {
   const trimmed = line.trim();
@@ -273,6 +309,73 @@ function extractSectionsFromPages(pages: ParsedPage[]): ExtractedSection[] {
         return true;
       });
     }
+    result.push(entry);
+  }
+  return result;
+}
+
+/**
+ * IASB paragraph-profile extractor. Walks the pdftotext pages and opens a new
+ * section every time a line matches an IASB paragraph id (`isIasbParagraph`).
+ * Continuation lines (sub-list markers, indented prose) accrete onto the
+ * current paragraph's text verbatim. Each emitted section carries the paragraph
+ * id as both `number` and `id` (prefixed `p` so the id is a valid token), the
+ * page range it spans, and `verbatim: true`.
+ *
+ * Unlike `extractSectionsFromPages`, this does NOT collapse the document into a
+ * handful of `^\d+\.`-style sections — IFRS/IAS standards number every operative
+ * paragraph (`5.5.1`, `72`, `21A`, `B2.1`), so this yields hundreds of
+ * granular, individually-citable provisions.
+ */
+function extractIasbParagraphs(pages: ParsedPage[]): ExtractedSection[] {
+  interface Para {
+    number: string;
+    startPage: number;
+    endPage: number;
+    lines: string[];
+  }
+  const paras: Para[] = [];
+  let current: Para | null = null;
+
+  for (const page of pages) {
+    const { pageNum, lines } = page;
+    for (const line of lines) {
+      const hit = isIasbParagraph(line);
+      if (hit) {
+        current = {
+          number: hit.number,
+          startPage: pageNum,
+          endPage: pageNum,
+          lines: [line.trimEnd()],
+        };
+        paras.push(current);
+      } else if (current) {
+        // Continuation — keep verbatim (including indentation for sub-lists),
+        // but skip pure page-number / form-feed noise lines.
+        const trimmed = line.trim();
+        if (trimmed.length > 0) {
+          current.endPage = pageNum;
+          current.lines.push(line.replace(/\s+$/, ""));
+        }
+      }
+    }
+  }
+
+  const result: ExtractedSection[] = [];
+  const seen = new Set<string>();
+  for (const p of paras) {
+    // Deduplicate repeated paragraph ids (running headers can re-emit an id);
+    // keep the first (richest) occurrence.
+    if (seen.has(p.number)) continue;
+    seen.add(p.number);
+    const text = p.lines.join("\n").trim();
+    if (text.length === 0) continue;
+    const entry: ExtractedSection = {
+      id: `p${p.number.toLowerCase().replace(/\./g, "-")}`,
+      number: p.number,
+      text,
+      pages: p.startPage === p.endPage ? String(p.startPage) : `${p.startPage}–${p.endPage}`,
+    };
     result.push(entry);
   }
   return result;
@@ -600,6 +703,7 @@ function fullExtractionMode(
   outPath: string | undefined,
   goldenHash: string | undefined,
   withExcerpts: boolean,
+  profile: "default" | "iasb",
 ): void {
   if (!existsSync(fromPdf)) die(`--from path not found: ${fromPdf}`);
   if (!existsSync(PDFTOTEXT_BIN)) {
@@ -618,7 +722,8 @@ function fullExtractionMode(
   }
 
   const pages = splitPages(rawText);
-  const extractedSections = extractSectionsFromPages(pages);
+  const extractedSections =
+    profile === "iasb" ? extractIasbParagraphs(pages) : extractSectionsFromPages(pages);
   const extractedMap = new Map<string, ExtractedSection>(
     extractedSections.map((s) => [s.number.replace(/\./g, ""), s]),
   );
@@ -637,6 +742,30 @@ function fullExtractionMode(
       ...chap,
       sections: mergeExtracted(chap.sections ?? [], extractedMap) as typeof chap.sections,
     }));
+  } else if (profile === "iasb") {
+    // Build from scratch — IASB paragraph profile. One section per operative
+    // paragraph, verbatim text, with a short heading label derived from the
+    // paragraph's opening clause (keeps headings short so the quality gate's
+    // prose-heading / heading-in-body advisories do not fire spuriously).
+    const chapters = [
+      {
+        id: `ch-${slug}-paragraphs`,
+        heading: "Operative paragraphs",
+        sections: extractedSections.map((s) => ({
+          id: s.id,
+          number: s.number,
+          heading: `${s.number}`,
+          ...(s.text ? { text: s.text } : {}),
+          verbatim: true,
+          ...(s.pages ? { pages: s.pages } : {}),
+        })),
+      },
+    ];
+    doc = {
+      slug,
+      title: slug,
+      chapters,
+    };
   } else {
     // Build from scratch
     const chapters = [
@@ -723,6 +852,11 @@ function main(): void {
   const hashFlag = optionalString(args, "hash");
   const fromPdf = optionalString(args, "from");
   const outPath = optionalString(args, "out");
+  const profileFlag = optionalString(args, "profile") ?? "default";
+  if (profileFlag !== "default" && profileFlag !== "iasb") {
+    die(`Unknown --profile "${profileFlag}". Expected "default" or "iasb".`);
+  }
+  const profile = profileFlag as "default" | "iasb";
 
   if (!hashFlag && !fromPdf) {
     die("One of --hash <blake3:...> or --from <local-pdf> is required.");
@@ -733,7 +867,7 @@ function main(): void {
     hashStampMode(slug, hashFlag, outPath);
   } else if (fromPdf) {
     // Full-extraction mode — pdftotext + merge + optionally stamp hash + excerpts
-    fullExtractionMode(slug, fromPdf, outPath, hashFlag, withExcerpts);
+    fullExtractionMode(slug, fromPdf, outPath, hashFlag, withExcerpts, profile);
   }
 }
 

@@ -93,16 +93,22 @@ function repoRoot(): string {
   return pathResolve(import.meta.dir, "..", "..", "..");
 }
 
-/** Find all `*-structured.json` files under `Regulations/`. */
+/**
+ * Find all `*-structured.json` files under any `source-docs/` directory nested
+ * within `Regulations/`. Recurses so nested regulator paths such as
+ * `Regulations/INTL/IASB/source-docs` (IASB-transposed IFRS) are discovered, not
+ * just the single-level `Regulations/<reg>/source-docs` layout. Bounded depth +
+ * skips `_`-prefixed register dirs to stay cheap.
+ */
 function findStructuredJsonPaths(): string[] {
   const root = repoRoot();
   const regsDir = join(root, "Regulations");
   if (!existsSync(regsDir)) return [];
 
   const paths: string[] = [];
-  for (const sub of readdirSync(regsDir, { encoding: "utf-8" })) {
-    const sourceDocsDir = join(regsDir, sub, "source-docs");
-    if (!existsSync(sourceDocsDir)) continue;
+
+  const collectFromSourceDocs = (sourceDocsDir: string): void => {
+    if (!existsSync(sourceDocsDir)) return;
     try {
       for (const f of readdirSync(sourceDocsDir, { encoding: "utf-8" })) {
         if (f.endsWith("-structured.json")) {
@@ -112,7 +118,29 @@ function findStructuredJsonPaths(): string[] {
     } catch {
       // sub-dir not readable — skip
     }
-  }
+  };
+
+  const walk = (dir: string, depth: number): void => {
+    if (depth > 4) return;
+    let entries: import("node:fs").Dirent[];
+    try {
+      entries = readdirSync(dir, { encoding: "utf-8", withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      if (entry.name.startsWith("_") || entry.name.startsWith(".")) continue;
+      const child = join(dir, entry.name);
+      if (entry.name === "source-docs") {
+        collectFromSourceDocs(child);
+      } else {
+        walk(child, depth + 1);
+      }
+    }
+  };
+
+  walk(regsDir, 0);
   return paths;
 }
 

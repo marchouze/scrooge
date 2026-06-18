@@ -60,7 +60,7 @@
 // their extracts via heuristics -- the underlying PDF simply has no embedded text
 // layer or is not publicly accessible. Authority: GAP-PA-SOURCE-OCR (2026-06-11).
 //
-// Input: walks `Regulations/{Banks,SARB-PA}/source-docs/*-structured.json`
+// Input: walks `Regulations/{Banks,SARB-PA,INTL/IASB}/source-docs/*-structured.json`
 // relative to the monorepo root. No network, no LLM.
 //
 // Authority: D-PA-SOURCE-EXTRACT-QUALITY-REMEDIATION (CEO session-delegation 2026-06-11).
@@ -443,7 +443,14 @@ export interface ExtractQualityDeps {
   readonly structuralRows?: readonly StructuralCheckRow[];
 }
 
-const SOURCE_DIRS = ["Regulations/Banks/source-docs", "Regulations/SARB-PA/source-docs"];
+const SOURCE_DIRS = [
+  "Regulations/Banks/source-docs",
+  "Regulations/SARB-PA/source-docs",
+  // IASB-transposed standards (IFRS 9/7/13) extracted 2026-06-18 — brought under
+  // the enforcing quality gate so the verbatim paragraph extracts are held to the
+  // same thin-form / structural floor as the SARB-PA corpus going forward.
+  "Regulations/INTL/IASB/source-docs",
+];
 
 function repoRoot(): string {
   // import.meta.dir = <worktree>/prototype/platform/recon
