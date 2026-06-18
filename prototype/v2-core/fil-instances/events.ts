@@ -46,15 +46,26 @@ import { instantSchema, moneySchema } from "../fil-core/primitives";
 import { filInstanceUrnSchema, filTypeUrnSchema } from "../fil-core/urn";
 
 // ---------------------------------------------------------------------------
-// SA-CCR asset class — the FIL-native partition the RiskMeasurable consumer
-// keys on. Re-declared here (not imported from fil-facets) to keep the event
-// family's grammar self-contained; the value set is the SA-CCR subset of the
-// taxonomy asset classes. IR + FX are the materialised scope; the wider union
-// is admitted so later slices (credit/equity/commodity) extend without a
-// schema change.
+// FIL economic-terms asset class — the FIL-native partition a RiskMeasurable /
+// Valuable consumer keys on. Re-declared here (not imported from fil-facets) to
+// keep the event family's grammar self-contained; the value set is the
+// SA-CCR-quantifiable subset of the taxonomy asset classes PLUS `cash`. IR + FX
+// are the SA-CCR-materialised scope; `cash` is the post-settlement member of the
+// FX-trading book slice (D-CASH-ASSET-CLASS-V1) — a monetary cash balance that
+// is NOT itself an SA-CCR derivative exposure but IS a real, event-sourced FIL
+// instance (instrument-of-record) carrying its own Valuable. The wider union is
+// admitted so later slices (credit/equity/commodity) extend without a schema
+// change.
 // ---------------------------------------------------------------------------
 
-export const filSaCcrAssetClassSchema = z.enum(["ir", "fx", "credit", "equity", "commodity"]);
+export const filSaCcrAssetClassSchema = z.enum([
+  "ir",
+  "fx",
+  "cash",
+  "credit",
+  "equity",
+  "commodity",
+]);
 
 export type FilSaCcrAssetClass = z.infer<typeof filSaCcrAssetClassSchema>;
 
@@ -101,6 +112,18 @@ export const filEconomicTermsSchema = z.object({
   settlementDate: z.string().min(1),
   /** Hedging-set tag (FX pair, e.g. `EUR/ZAR`; IR currency/bucket). */
   hedgingSetTag: z.string().min(1).optional(),
+  /**
+   * Originating-instrument back-reference (D-CASH-ASSET-CLASS-V1). When a
+   * settled trade MATERIALISES a successor instrument — an FX spot settling into
+   * a `cash` asset (the FX OTC NPA declares the maturity→cash rule) — the
+   * successor carries the FIL instance URN of the originating instrument here, so
+   * the single-graph link from the cash holding back to the trade that produced
+   * it is EXPLICIT (Principle 1 / Principle 2 — no orphan node). The Slice-3
+   * recon gate fails closed on any `cash`-asset-class instance that lacks this
+   * back-ref. Optional at the schema level because origin-less instruments (an
+   * FX trade created directly from execution) legitimately have no predecessor.
+   */
+  originatingInstrument: filInstanceUrnSchema.optional(),
 });
 
 export type FilEconomicTerms = z.infer<typeof filEconomicTermsSchema>;

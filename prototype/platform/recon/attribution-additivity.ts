@@ -37,8 +37,8 @@ import {
   type MarketDataSlice,
   type ResolvedMember,
   type SliceMember,
-  fcyCashFromSettledReceivable,
-  fcyCashValuable,
+  cashFromSettledReceivable,
+  cashValuable,
   fxPnlMetric,
   fxValuable,
   isAdditive,
@@ -151,8 +151,8 @@ export function run(): ReconResult {
     );
     const b = mkMember(
       "b",
-      fcyCashValuable(
-        fcyCashFromSettledReceivable({
+      cashValuable(
+        cashFromSettledReceivable({
           currency: "EUR",
           signedNotional: "50000",
           reporting: REPORTING,

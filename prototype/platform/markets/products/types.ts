@@ -282,6 +282,44 @@ export const productScopeSchema = z.object({
 export type ProductScope = z.infer<typeof productScopeSchema>;
 
 // ---------------------------------------------------------------------------
+// Maturity materialisation rule (D-CASH-ASSET-CLASS-V1).
+//
+// The PRODUCT declares what a maturing/settling trade materialises into. For FX
+// the rule is "on settlement of a settled leg, materialise a `cash` FIL asset".
+// This is the load-bearing decoupling: the maturity→cash coupling is a PRODUCT
+// fact carried here and read by the settlement path — NOT a hardwired kernel
+// dependency between the `fx` and `cash` asset classes. The kernel stays
+// asset-class-agnostic; any product (FX, a deposit, settlement of any asset
+// class) opts in by declaring this rule.
+//
+// `materialisesAssetClass` is the FIL asset class the settled value becomes
+// (`cash`); `onLifecycleStage` is the lifecycle stage that triggers it
+// (`settled`); `bothLegs` records whether both cash flows of a two-flow trade
+// (received + paid) materialise (FX spot = two cash flows).
+// ---------------------------------------------------------------------------
+
+export const maturityMaterialisationSchema = z.object({
+  /** The FIL asset class the settled value materialises into. */
+  materialisesAssetClass: z.literal("cash"),
+  /** The FIL type URN the materialised instance is created under. */
+  materialisesTypeUrn: z
+    .string()
+    .min(1)
+    .regex(/^fil:type:cash:/, {
+      message: "maturity materialisation must target a `fil:type:cash:*` type",
+    }),
+  /** The lifecycle stage that triggers materialisation (FX spot: `settled`). */
+  onLifecycleStage: z.enum(["settled", "matured"]),
+  /**
+   * `true` ⇒ materialise BOTH cash flows of a two-flow trade (FX spot receives
+   * CCY1, pays CCY2 — both become cash balances, one positive one negative).
+   */
+  bothLegs: z.boolean(),
+});
+
+export type MaturityMaterialisation = z.infer<typeof maturityMaterialisationSchema>;
+
+// ---------------------------------------------------------------------------
 // Product — single canonical type, family-discriminated.
 //
 // Twelve required fields per §2 of the source brief. Multi-X discipline
@@ -366,6 +404,15 @@ export const productSchema = z.object({
    * counterparty eligibility / venue here so the scope is queryable.
    */
   scope: productScopeSchema.optional(),
+
+  /**
+   * Maturity materialisation rule (D-CASH-ASSET-CLASS-V1). Optional: only
+   * products that materialise a successor asset on settlement carry it (the FX
+   * OTC NPA declares cash materialisation). The settlement path reads this rule
+   * to decide whether — and into which FIL type — to materialise a cash asset;
+   * the kernel does not encode the fx→cash coupling.
+   */
+  maturityMaterialisation: maturityMaterialisationSchema.optional(),
 
   /**
    * Current lifecycle stage. Per Principle 1, this is a *projection* over

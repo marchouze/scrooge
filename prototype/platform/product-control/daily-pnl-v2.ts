@@ -10,7 +10,7 @@
 //   5. const marketDataAsOf = clockNow() — freeze the snapshot timestamp (once per run).
 //   6. Build ONE MarketDataSlice: for each pair call MarketDataStore.getLatest(pair).
 //      Missing pairs get null (mark unavailable — no-silent-zero).
-//   7. For each open FIL instrument, call fcyCashValuable(pos).value(slice) → Money (reporting-ccy major).
+//   7. For each open FIL instrument, call cashValuable(pos).value(slice) → Money (reporting-ccy major).
 //      Missing pair → markStatus: "unavailable" (never fold as 0).
 //   8. Aggregate by currency / counterparty / book (same shape as V1 daily-pnl.ts).
 //   9. Set marketDataAsOf on the returned payload.
@@ -35,8 +35,8 @@
 import type { Instant } from "../../v2-core/fil-core/primitives";
 import type { MarketDataSlice } from "../../v2-core/fil-facets/facets";
 import {
-  fcyCashFromSettledReceivable,
-  fcyCashValuable,
+  cashFromSettledReceivable,
+  cashValuable,
   spotObservableId,
 } from "../../v2-core/fil-models/fx-valuation";
 import { toDecimal } from "../core/decimal-engine";
@@ -120,7 +120,7 @@ function buildMarketDataSlice(
     });
     if (quote !== null && quote.rate > 0) {
       // Key the observable by the pair in the canonical direction
-      // (currency/reporting). The FIL fcyCashValuable reads
+      // (currency/reporting). The FIL cashValuable reads
       // `spotObservableId(currency, reporting)` from the slice.
       // lookupQuoteWithInverse already handles direction inversion — the
       // returned rate is ALWAYS in the requested pair direction.
@@ -304,18 +304,18 @@ export function computeDailyPnLV2(
       marksUnavailableCount++;
       unmarkableInstanceUrns.push(inst.instanceUrn);
     } else {
-      // Call Valuable.value(slice) via fcyCashValuable (the canonical V2 FX
+      // Call Valuable.value(slice) via cashValuable (the canonical V2 FX
       // valuation path; same lifecycle-free arithmetic as the FX Valuable).
       // The FCY-cash Valuable accepts the signedNotional + currency + reporting
       // and looks up observables[`spotObservableId(currency, reporting)`] from
       // the slice.
       try {
-        const position = fcyCashFromSettledReceivable({
+        const position = cashFromSettledReceivable({
           currency: inst.currency,
           signedNotional: inst.signedNotional,
           reporting,
         });
-        const valuable = fcyCashValuable(position);
+        const valuable = cashValuable(position);
         const revalRecord = valuable.value(slice, marketDataAsOf as Instant);
         // revalRecord.value is Money { currency: reporting, amount: string (major) }
         // Convert to reporting-currency minor integer for V1-compatible aggregation

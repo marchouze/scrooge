@@ -32,11 +32,7 @@ import {
 } from "../../fil-attribution";
 import type { FilInstanceUrn } from "../../fil-core/urn";
 import type { MarketDataSlice } from "../../fil-facets/facets";
-import {
-  fcyCashFromSettledReceivable,
-  fcyCashRiskMeasurable,
-  fcyCashValuable,
-} from "../fx-valuation";
+import { cashFromSettledReceivable, cashRiskMeasurable, cashValuable } from "../fx-valuation";
 import { type VarReturnMatrix, jointVar, makeVarMetric, varStageScope } from "./index";
 
 const T = ANCHOR_TENANT_ID as TenantId;
@@ -63,12 +59,12 @@ function varMember(args: {
 }): ResolvedMember {
   const signedNotional = (Math.round(args.exposureZar * 100) / 100).toFixed(2);
   // Value the member in ZAR at a unit rate (exposure already in ZAR).
-  const zarPos = fcyCashFromSettledReceivable({
+  const zarPos = cashFromSettledReceivable({
     currency: "ZAR",
     signedNotional,
     reporting: "ZAR",
   });
-  const ccyPos = fcyCashFromSettledReceivable({
+  const ccyPos = cashFromSettledReceivable({
     currency: args.currency,
     signedNotional,
     reporting: "ZAR",
@@ -78,8 +74,8 @@ function varMember(args: {
     stage: "settled",
     tenantId: T,
     facets: {
-      Valuable: fcyCashValuable(zarPos),
-      RiskMeasurable: fcyCashRiskMeasurable(ccyPos),
+      Valuable: cashValuable(zarPos),
+      RiskMeasurable: cashRiskMeasurable(ccyPos),
     },
     groupKey: args.desk,
   };

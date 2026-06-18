@@ -206,6 +206,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // shared standing-NOP fold (deriveNetFxPositionByCurrency), read-only /
     // parallel to v1. Authority: D-FIL-ATTRIBUTION-A1-BUILD (A2).
     "recon:fx-settlement-continuity",
+    // Slice-3 fail-closed gate (D-CASH-ASSET-CLASS-V1): every `cash` FIL instance
+    // carries an originatingInstrument back-ref (no orphan), and every settled FX
+    // instance under a cash-materialising NPA has a matching cash instance (the
+    // settlement path ran the product rule). Authority: D-CASH-ASSET-CLASS-V1.
+    "recon:cash-materialisation-integrity",
     "recon:fx-book-nop-parity",
     // WS-MULTI-BASE-CURRENCY (D-MULTI-BASE-CURRENCY-FOUNDATION) — ENFORCING,
     // harden-only. Asserts no literal reporting/base currency in the V2 FX

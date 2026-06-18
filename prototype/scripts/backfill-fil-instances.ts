@@ -80,6 +80,7 @@ import { anchorFunctionalCurrency } from "../platform/identity/functional-curren
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../platform/market-data/store";
 import { MIN_RETURN_OBSERVATIONS } from "../platform/market-risk/var-engine";
+import { resolveMaturityMaterialisation } from "../platform/markets/products/maturity-materialisation";
 import { divD, roundDecimal, toDecimal } from "../v2-core/fil-core/decimal";
 import { type Money, moneyFromDecimal } from "../v2-core/fil-core/primitives";
 import { formatInstanceUrn, formatTypeUrn } from "../v2-core/fil-core/urn";
@@ -136,6 +137,21 @@ function minorNumberToMajorMoney(minorUnits: number, currency: string): Money {
 // the deterministic fixture book (when the store has no trades).
 // ---------------------------------------------------------------------------
 
+// The two cash flows of a settling FX trade — the leg the bank RECEIVES (signed
+// positive) and the leg it PAYS (signed negative). Each becomes a `cash` FIL
+// instance at settlement when the governing product (FX OTC NPA) declares the
+// maturity→cash rule (D-CASH-ASSET-CLASS-V1). Amounts are MAJOR-unit numbers
+// here; the emitter converts to decimal-native Money. `bothLegs:false` would
+// drop the funding (paid) leg — the FX OTC NPA declares `bothLegs:true`.
+interface CashLeg {
+  /** ISO-4217 alpha-3 of the cash flow. */
+  readonly currency: string;
+  /** Signed amount in MAJOR units (+ received, − paid). */
+  readonly signedMajor: number;
+  /** `received` | `paid` — for the deterministic leg URN suffix. */
+  readonly side: "received" | "paid";
+}
+
 interface FilDescriptor {
   readonly tradeId: string;
   readonly economicTerms: FilEconomicTerms;
@@ -146,6 +162,12 @@ interface FilDescriptor {
   readonly originatingEventId: string;
   /** Terminal stage + asOf if the instrument is closed. */
   readonly terminal?: { stage: "settled" | "matured" | "cancelled"; asOf: string };
+  /**
+   * The two settled cash flows (received + paid). Present only on FX descriptors;
+   * materialised into `cash` FIL instances when the trade settles AND the
+   * governing product declares the maturity→cash rule (the FX OTC NPA does).
+   */
+  readonly cashLegs?: readonly CashLeg[];
 }
 
 // ---------------------------------------------------------------------------
@@ -205,6 +227,32 @@ const FIXTURE_BOOK: readonly FixtureLeg[] = [
   },
 ];
 
+// Derive the two cash flows of a settling spot from a fixture leg. The base-ccy
+// amount is the reporting notional divided by the (fixture) settlement rate; the
+// reporting-ccy amount is the reporting notional itself. A `long` base position
+// RECEIVES the base currency and PAYS the reporting currency (and vice-versa for
+// `short`). Sign convention: received = +, paid = −. Float division is fine for a
+// fixture amount derivation — the emitted Money goes through the decimal engine.
+function fixtureCashLegs(ft: FixtureLeg): CashLeg[] {
+  const rate = FIXTURE_RATES[ft.base];
+  if (!rate || rate <= 0) return [];
+  const baseMajor = ft.reportingNotionalMajor / rate;
+  const reportingMajor = ft.reportingNotionalMajor;
+  const receivesBase = ft.direction === "long";
+  return [
+    {
+      currency: ft.base,
+      signedMajor: receivesBase ? baseMajor : -baseMajor,
+      side: receivesBase ? "received" : "paid",
+    },
+    {
+      currency: REPORTING,
+      signedMajor: receivesBase ? -reportingMajor : reportingMajor,
+      side: receivesBase ? "paid" : "received",
+    },
+  ];
+}
+
 function fixtureDescriptors(): FilDescriptor[] {
   return FIXTURE_BOOK.map((ft) => ({
     tradeId: ft.tradeId,
@@ -213,6 +261,7 @@ function fixtureDescriptors(): FilDescriptor[] {
     originatingEventType: "Ws-v2-s1-fixture-book",
     originatingEventId: `s1-fixture:${ft.tradeId}`,
     ...(ft.settled ? { terminal: { stage: "settled" as const, asOf: FIXTURE_SETTLE_TS } } : {}),
+    cashLegs: fixtureCashLegs(ft),
     economicTerms: {
       assetClass: "fx",
       notional: majorNumberToMoney(ft.reportingNotionalMajor, REPORTING),
@@ -294,6 +343,29 @@ function descriptorsFromExistingTrades(): FilDescriptor[] {
       : FX_SPOT_TYPE_URN;
     const term = terminals.get(tradeId);
 
+    // The two settled cash flows. `near.notional` is the base-currency amount,
+    // `near.counterNotional` the quote-currency amount. A `buy` (long) RECEIVES
+    // the base and PAYS the quote; a `sell` (short) does the reverse. amountMinor
+    // → MAJOR via /100 in majorNumberToMoney's path (here we pass MAJOR numbers).
+    const receivesBase = side !== "sell";
+    const baseMajorAbs = Math.abs(near.notional.amountMinor ?? 0) / 100;
+    const quoteMajorAbs = Math.abs(near.counterNotional.amountMinor ?? 0) / 100;
+    const cashLegs: CashLeg[] =
+      near.notional.currency && near.counterNotional.currency
+        ? [
+            {
+              currency: near.notional.currency,
+              signedMajor: receivesBase ? baseMajorAbs : -baseMajorAbs,
+              side: receivesBase ? "received" : "paid",
+            },
+            {
+              currency: near.counterNotional.currency,
+              signedMajor: receivesBase ? -quoteMajorAbs : quoteMajorAbs,
+              side: receivesBase ? "paid" : "received",
+            },
+          ]
+        : [];
+
     out.push({
       tradeId,
       typeUrn,
@@ -301,6 +373,7 @@ function descriptorsFromExistingTrades(): FilDescriptor[] {
       originatingEventType: "FxTradeExecuted",
       originatingEventId: e.event_id,
       ...(term ? { terminal: term } : {}),
+      cashLegs,
       economicTerms: {
         assetClass: "fx",
         notional: minorNumberToMajorMoney(Math.abs(reportingMinor), REPORTING),
@@ -329,14 +402,98 @@ function existingFilInstances(type: string): Set<string> {
   return out;
 }
 
+// ---------------------------------------------------------------------------
+// Slice 2 (D-CASH-ASSET-CLASS-V1) — materialise the settled cash leg(s) of a
+// settling FX trade as REAL `cash` FIL instances. PRODUCT-DRIVEN: the legs are
+// emitted ONLY when the governing product (resolved by FIL type URN — the FX OTC
+// NPA) declares a `maturityMaterialisation` rule with `materialisesAssetClass:
+// "cash"`. The kernel stays asset-class-agnostic; fx→cash is a product fact. The
+// `bothLegs` flag selects whether the paid (funding) leg is materialised too.
+// Each cash instance carries the originating FX instance URN as an explicit
+// single-graph back-ref (`economicTerms.originatingInstrument`), which the
+// Slice-3 recon gate asserts fail-closed.
+// ---------------------------------------------------------------------------
+
+function emitCashLegsForSettled(
+  d: FilDescriptor,
+  fxInstance: string,
+  haveCreated: Set<string>,
+): number {
+  // Only a SETTLED terminal materialises cash (matured/cancelled do not produce
+  // a held cash balance in this slice).
+  if (!d.terminal || d.terminal.stage !== "settled") return 0;
+  if (!d.cashLegs || d.cashLegs.length === 0) return 0;
+
+  // PRODUCT DECISION — read the maturity→cash rule off the governing product.
+  const rule = resolveMaturityMaterialisation(d.typeUrn);
+  if (!rule || rule.materialisesAssetClass !== "cash") return 0;
+  if (rule.onLifecycleStage !== "settled") return 0;
+
+  const legs = rule.bothLegs ? d.cashLegs : d.cashLegs.filter((l) => l.side === "received");
+  let emitted = 0;
+
+  for (const leg of legs) {
+    // Instance-id grammar is `[A-Za-z0-9._-]+` (no colons) — use a hyphen
+    // separator for the deterministic cash-leg suffix.
+    const cashInstance = formatInstanceUrn({
+      tenant: TENANT,
+      instanceId: `${d.tradeId}-cash-${leg.side}`,
+    });
+    if (haveCreated.has(cashInstance)) continue;
+
+    // Sign → direction: a RECEIVED balance is a long (asset) cash position; a
+    // PAID/funding balance is a short. The Money notional is always positive
+    // (the schema requires it); the sign lives in `direction`.
+    const direction: "long" | "short" = leg.signedMajor >= 0 ? "long" : "short";
+
+    eventStore.append(
+      makeFilInstrumentCreated({
+        asOf: d.terminal.asOf,
+        entity: ENTITY,
+        actor: BACKFILL_ACTOR,
+        citations: [...FIL_CITATIONS, "D-CASH-ASSET-CLASS-V1"],
+        payload: {
+          kind: "FilInstrumentCreated",
+          instance: cashInstance,
+          type: rule.materialisesTypeUrn,
+          tenant: TENANT,
+          asOf: d.terminal.asOf,
+          // The driving event is the FX settlement; the originating INSTRUMENT is
+          // the FX spot (carried in economicTerms for the single-graph link).
+          originatingEvent: { eventType: d.originatingEventType, eventId: d.originatingEventId },
+          initialStage: "active",
+          economicTerms: {
+            assetClass: "cash",
+            notional: majorNumberToMoney(Math.abs(leg.signedMajor), leg.currency),
+            direction,
+            counterpartyId: d.economicTerms.counterpartyId,
+            nettingSetId: d.economicTerms.nettingSetId,
+            currency: leg.currency,
+            // A settled cash balance is held from the settlement date onward; it
+            // has no contractual maturity, so the settlement date is its as-of.
+            settlementDate: d.terminal.asOf,
+            hedgingSetTag: `${leg.currency}/${REPORTING}`,
+            originatingInstrument: fxInstance,
+          },
+        },
+      }),
+    );
+    haveCreated.add(cashInstance);
+    emitted += 1;
+  }
+  return emitted;
+}
+
 function emitFilInstances(descriptors: readonly FilDescriptor[]): {
   created: number;
   terminated: number;
+  cashMaterialised: number;
 } {
   const haveCreated = existingFilInstances("FilInstrumentCreated");
   const haveTerminated = existingFilInstances("FilInstrumentTerminated");
   let created = 0;
   let terminated = 0;
+  let cashMaterialised = 0;
 
   for (const d of descriptors) {
     const instance = formatInstanceUrn({ tenant: TENANT, instanceId: d.tradeId });
@@ -385,8 +542,11 @@ function emitFilInstances(descriptors: readonly FilDescriptor[]): {
       haveTerminated.add(instance);
       terminated += 1;
     }
+
+    // Slice 2 — materialise the settled cash leg(s), product-driven.
+    cashMaterialised += emitCashLegsForSettled(d, instance, haveCreated);
   }
-  return { created, terminated };
+  return { created, terminated, cashMaterialised };
 }
 
 // ---------------------------------------------------------------------------
@@ -465,7 +625,9 @@ console.log(
 );
 
 const fil = emitFilInstances(descriptors);
-console.log(`FIL instances   : ${fil.created} created, ${fil.terminated} terminated`);
+console.log(
+  `FIL instances   : ${fil.created} created, ${fil.terminated} terminated, ${fil.cashMaterialised} cash leg(s) materialised (D-CASH-ASSET-CLASS-V1)`,
+);
 
 const md = seedMarketData(descriptors);
 console.log(`market data     : ${md.pairs} pair(s), ${md.ticksSeeded} new production tick(s)`);

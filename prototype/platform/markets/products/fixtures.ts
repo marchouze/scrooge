@@ -495,6 +495,17 @@ export const M4_FX_OTC_VANILLA_FIXTURE: Product = {
     // D-FX-COUNTERPARTY-SCOPE-INSTITUTIONAL.
     counterpartyEligibility: "institutional",
   },
+  // PRODUCT-DECLARED maturity→cash rule (D-CASH-ASSET-CLASS-V1). On settlement of
+  // a settled FX leg, the product materialises a `cash` FIL asset (both cash
+  // flows of the spot: received + paid). The settlement path reads THIS rule;
+  // the kernel does not hardcode fx→cash. `cash` is a first-class FIL asset class
+  // SEPARATE from `fx`.
+  maturityMaterialisation: {
+    materialisesAssetClass: "cash",
+    materialisesTypeUrn: "fil:type:cash:balance:vanilla@1.0",
+    onLifecycleStage: "settled",
+    bothLegs: true,
+  },
   cdmComposition: {
     primitives: [
       {

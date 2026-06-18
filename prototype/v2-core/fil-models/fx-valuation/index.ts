@@ -13,6 +13,8 @@
 export * from "./methodology";
 export * from "./reporting-currency-resolver";
 export * from "./fx-model";
-export * from "./fcy-cash-model";
+export * from "./cash-model";
 export * from "./fx-pnl-metric";
 export * from "../fx/index.ts";
+// Cash FIL asset class (D-CASH-ASSET-CLASS-V1) — first-class, separate from fx.
+export * from "../cash/index.ts";

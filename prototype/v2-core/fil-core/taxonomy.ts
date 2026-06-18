@@ -40,6 +40,13 @@ export const FIL_ASSET_CLASSES = [
   "credit",
   "commodity",
   "funding",
+  // `cash` — a first-class asset class for monetary cash balances (FCY/domestic),
+  // SEPARATE from `fx` (D-CASH-ASSET-CLASS-V1). A settled FX trade MATURING into a
+  // cash asset is a PRODUCT/NPA fact (the FX OTC NPA declares the materialisation),
+  // NOT a kernel dependency between the `fx` and `cash` classes — the kernel stays
+  // asset-class-agnostic. Cash is atomic, implements Valuable, and carries the
+  // standing-NOP risk contribution post-settlement.
+  "cash",
   "hybrid",
 ] as const;
 

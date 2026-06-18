@@ -30,7 +30,7 @@
 import { describe, expect, test } from "bun:test";
 
 import type { Instant, MarketDataSlice } from "../../../v2-core";
-import { fcyCashFromSettledReceivable, fcyCashValuable, fxValuable } from "../../../v2-core";
+import { cashFromSettledReceivable, cashValuable, fxValuable } from "../../../v2-core";
 
 const ASOF = "2026-06-13T00:00:00.000Z" as Instant;
 
@@ -271,8 +271,8 @@ describe("Nadia challenger — JPY non-2dp deferred-gap probe", () => {
         isForward: false,
         reporting: "ZAR",
       }).value(marks({ "JPY/ZAR": rate }), ASOF).value.amount;
-      const post = fcyCashValuable(
-        fcyCashFromSettledReceivable({
+      const post = cashValuable(
+        cashFromSettledReceivable({
           currency: "JPY",
           signedNotional: notional,
           reporting: "ZAR",

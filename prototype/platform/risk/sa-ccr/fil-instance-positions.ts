@@ -36,6 +36,7 @@ import {
   remainingYears,
 } from "../../../v2-core/fil-instances";
 import type { SaCcrTradeSummary as V2TradeSummary } from "../../../v2-core/fil-models/sa-ccr";
+import type { SaCcrAssetClass } from "./types";
 
 // ---------------------------------------------------------------------------
 // v2 anchor store resolution (mirrors the seed + S4 recon).
@@ -102,14 +103,35 @@ export function readFilInstanceEvents(dbPath = resolveV2AnchorDb()): FilInstance
 // v1 adapter's `remainingYears`).
 // ---------------------------------------------------------------------------
 
-function rowToTradeSummary(row: FilInstanceRow, asOf: string): V2TradeSummary {
+// The SA-CCR-quantifiable asset classes (the derivative exposures SA-CCR keys
+// on). `cash` is DELIBERATELY excluded (D-CASH-ASSET-CLASS-V1): a settled cash
+// balance is a monetary item, NOT a derivative add-on exposure — it never enters
+// a SA-CCR netting set. This guard is the fail-closed boundary that keeps the
+// cash asset class out of the counterparty-credit calculation.
+const SA_CCR_ASSET_CLASSES: readonly SaCcrAssetClass[] = [
+  "ir",
+  "fx",
+  "credit",
+  "equity",
+  "commodity",
+];
+
+function isSaCcrAssetClass(assetClass: string): assetClass is SaCcrAssetClass {
+  return (SA_CCR_ASSET_CLASSES as readonly string[]).includes(assetClass);
+}
+
+function rowToTradeSummary(
+  row: FilInstanceRow,
+  asOf: string,
+  saCcrAssetClass: SaCcrAssetClass,
+): V2TradeSummary {
   const t = row.economicTerms;
   const tradeId = row.instance.split(":").pop() ?? row.instance;
   return {
     tradeId,
     counterpartyId: t.counterpartyId,
     nettingSetId: t.nettingSetId,
-    assetClass: t.assetClass,
+    assetClass: saCcrAssetClass,
     notional: t.notional,
     direction: t.direction,
     remainingYears: remainingYears(t.settlementDate, asOf),
@@ -140,7 +162,11 @@ export function buildSaCcrTradeSummariesFromFilInstances(
   const groups = new Map<string, FilNettingSetGroup>();
 
   for (const row of liveInstances(register)) {
-    const summary = rowToTradeSummary(row, asOf);
+    // Skip non-SA-CCR asset classes (notably `cash` — a settled monetary balance
+    // is not a derivative add-on exposure; D-CASH-ASSET-CLASS-V1). Fail-closed:
+    // an unknown asset class is excluded rather than mis-bucketed.
+    if (!isSaCcrAssetClass(row.economicTerms.assetClass)) continue;
+    const summary = rowToTradeSummary(row, asOf, row.economicTerms.assetClass);
     const key = summary.nettingSetId;
     const grp = groups.get(key);
     if (grp) grp.trades.push(summary);

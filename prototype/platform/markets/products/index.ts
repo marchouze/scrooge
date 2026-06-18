@@ -10,3 +10,4 @@
 export * from "./types";
 export * from "./composeProduct";
 export * from "./dcam-mapping";
+export * from "./maturity-materialisation";

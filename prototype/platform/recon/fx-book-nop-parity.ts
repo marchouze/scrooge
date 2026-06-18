@@ -47,9 +47,9 @@ import {
   type Slice,
   type SliceMember,
   type TenantId,
+  cashFromSettledReceivable,
+  cashValuable,
   evaluateSlice,
-  fcyCashFromSettledReceivable,
-  fcyCashValuable,
   fxPnlMetric,
 } from "../../v2-core";
 import { eventStore } from "../composition";
@@ -97,8 +97,8 @@ function buildFxTradingBookMembers(net: Map<string, number>): {
     const signedMinor = BigInt(Math.round(positionMajor * 100));
     if (signedMinor === 0n) continue;
     perCurrencyNetMinor.set(ccy, signedMinor);
-    const valuable = fcyCashValuable(
-      fcyCashFromSettledReceivable({
+    const valuable = cashValuable(
+      cashFromSettledReceivable({
         currency: ccy,
         signedNotional: minorBigintToMajorString(signedMinor),
         reporting: REPORTING,
