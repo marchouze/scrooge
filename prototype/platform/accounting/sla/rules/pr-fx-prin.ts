@@ -18,6 +18,18 @@
 // account-resolution-misses → suspense (ACC-2100-007) + urgent-correction alert,
 // NEVER the silent legacy USD/EUR fallback.
 //
+// CASH INSTRUMENT-OF-RECORD RECONCILIATION (D-CASH-ASSET-CLASS-V1,
+// WS-CASH-ASSET-CLASS): on FX maturity the settlement path also materialises the
+// settled leg(s) as REAL Cash FIL instances (`fil:type:cash:balance:vanilla@1.0`,
+// FilInstrumentCreated, both legs). The GL cash recognised here (received →
+// Dr fx.nostro[ccy]; deliver → Cr fx.nostro[ccy]) and that Cash instrument MUST
+// be two renders of ONE settled cash position (Principle 1) — not independently
+// derived. The signed GL recognition (received = +notional, paid = −notional, by
+// currency) equals the Cash instrument's `notional × direction-sign`. The
+// fail-closed gate `recon:fx-cash-gl-recognition-integrity` asserts that tie for
+// every settled FX under a cash-materialising NPA (determinacy + two-sided
+// balance + net non-vacuity); a one-legged or vacuous recognition fails the gate.
+//
 // Authored by: Bea (Accounting & financial reporting engineer, engineering).
 // Authority: D-SLA-ENGINE-RULES-AS-DATA (CEO-approved 2026-06-05);
 //            D-SLA-RESOLVER-UNRESOLVED-TO-SUSPENSE (CEO-approved 2026-06-05).
