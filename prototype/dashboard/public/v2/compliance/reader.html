@@ -66,7 +66,8 @@
       .rd-shell { grid-template-columns:1fr; }
       .rd-outline { position:static; max-height:none; margin-bottom:var(--space-3); }
     }
-    .rd-sub { display:flex; gap:var(--space-3); margin-top:var(--space-2); line-height:1.6; }
+    .rd-sub { display:flex; gap:var(--space-3); margin-top:var(--space-2); line-height:1.6; scroll-margin-top:var(--space-5); }
+    .rd-sub:target { background:var(--color-accent-bg); border-radius:var(--radius-sm); outline:2px solid var(--color-accent); outline-offset:2px; }
     .rd-sub-num { flex-shrink:0; min-width:36px; color:var(--color-accent); font-weight:600; font-variant-numeric:tabular-nums; }
     .rd-sub-text { color:var(--color-text-primary); white-space:pre-wrap; }
     .rd-provenance { margin:var(--space-3) 0 0; }
@@ -233,11 +234,25 @@
                 </div>
                 ${o.ownerSeatTitle ? `<div class="rd-obl-meta">${v2Esc(o.ownerSeatTitle)}</div>` : ""}
               </a>`).join("");
-            const subsHtml = (s.subsections || []).map((ss) =>
-              `<div class="rd-sub"><span class="rd-sub-num">${v2Esc(ss.number || "")}</span><span class="rd-sub-text">${v2Esc(ss.text || "")}</span></div>`).join("");
+            // Each paragraph (subsection) carries its OWN stable DOM id derived
+            // the same way as a section anchor (`sec-<slug>-<num>`), so a deep
+            // anchor like #sec-ifrs-9-3-2-2 resolves to the paragraph even after
+            // it is nested under its section ("3.2 Derecognition…"). Preserves
+            // pre-restructure anchors when a paragraph moves from top-level
+            // section to subsection.
+            const subsHtml = (s.subsections || []).map((ss) => {
+              const subId = ss.number ? ` id="${sectionId(d.slug, ss.number, secIdx++)}"` : "";
+              return `<div class="rd-sub"${subId}><span class="rd-sub-num">${v2Esc(ss.number || "")}</span><span class="rd-sub-text">${v2Esc(ss.text || "")}</span></div>`;
+            }).join("");
             const excHtml = (s.excerpts || []).map((e) =>
               `<figure class="rd-excerpt"><img loading="lazy" alt="${v2Esc(e.caption || ("Excerpt " + e.id))}" src="/api/regulation-reader/${encodeURIComponent(d.slug)}/excerpt/${encodeURIComponent(e.id)}">${e.caption ? `<figcaption>${v2Esc(e.caption)}${e.pages ? ` (p.${v2Esc(e.pages)})` : ""}</figcaption>` : ""}</figure>`).join("");
             const hasBody = (s.text && s.text.trim()) || subsHtml || excHtml;
+            // A "folded" section carries no own text — its `text` is purely the
+            // canonical normalizer's FOLD of its subsections, so rendering both the
+            // fold and the subsection rows double-prints. Suppress the fold and let
+            // the subsections speak. Sections with their OWN text (own/enriched/
+            // summary) keep their intro block — that text is NOT in any subsection.
+            const sectionBody = s.textSource === "folded" ? "" : renderBlocks(s);
             // Slice-2 completeness badge: a "summary" section renders its editorial
             // précis WITH a neutral label flagging that full verbatim is still pending;
             // verbatim/enriched render clean; heading-only keeps the empty-state line.
@@ -245,11 +260,23 @@
               ? `<div class="rd-completeness-badge">summary — full verbatim pending</div>`
               : "";
             const textHtml = hasBody
-              ? `${badge}${renderBlocks(s)}${subsHtml}${excHtml}`
+              ? `${badge}${sectionBody}${subsHtml}${excHtml}`
               : `<div class="rd-obl-meta">No verbatim text extracted for this section.</div>`;
             const hd = `<div class="rd-section-hd"><span class="rd-section-num">${v2Esc(s.number || "")}</span><span class="rd-section-heading">${v2Esc(s.heading || "")}</span></div>`;
-            // Outline link (chapter → regulation depth).
-            const label = [s.number, s.heading].filter(Boolean).join(" — ") || s.number || s.heading || "(section)";
+            // Outline link (chapter → regulation depth). A grouping section with
+            // neither number nor heading (e.g. a chapter's direct paragraphs)
+            // falls back to its first/last paragraph number range so the entry is
+            // still meaningful rather than a bare "(section)".
+            const subNums = (s.subsections || []).map((ss) => ss.number).filter(Boolean);
+            const rangeLabel = subNums.length
+              ? subNums.length > 1 ? `${subNums[0]}–${subNums[subNums.length - 1]}` : subNums[0]
+              : "";
+            const label =
+              [s.number, s.heading].filter(Boolean).join(" — ") ||
+              s.number ||
+              s.heading ||
+              rangeLabel ||
+              "(section)";
             linkItems.push(`<a class="rd-outline-link" href="#${id}" data-target="${id}">${v2Esc(label)}</a>`);
             if (!tiles) {
               return `<div class="rd-section" id="${id}">${hd}${textHtml}</div>`;
