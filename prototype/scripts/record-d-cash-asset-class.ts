@@ -44,37 +44,41 @@
 // brief: brief:atlas:cash-as-a-first-class-fil-asset-class-fx-maturit:2026-06-17
 // Author: Atlas (Core banking platform architect, engineering).
 import "../platform/event-store/resolve-event-db-boot";
-import { recordDecision } from "../runtime/decisions/record";
+import { recordDecision, requestDecision } from "../runtime/decisions/record";
 
+// Fixed instants so the ci:migrate replay is byte-stable. The decision-symmetry
+// recon gate requires every closed decision to carry a `requested` phase before
+// its terminal phase (D-DECISIONS-FRAMEWORK-REDESIGN) — emit both.
+const REQUESTED = "2026-06-17T11:55:00.000Z";
 const APPROVED = "2026-06-17T12:00:00.000Z";
 
-const r = recordDecision(
-  {
-    decisionId: "D-CASH-ASSET-CLASS-V1",
-    phase: "approved",
-    authority: "CEO",
-    authorityRef: "marc@tgv.co.za",
-    title:
-      "Cash as a first-class FIL asset class; FX maturity materialises a Cash asset (NPA-linked)",
-    category: "engineering",
-    recommendation:
-      "Add `cash` to the closed FIL asset-class set and mint a Cash FIL type (fil:type:cash:balance:vanilla@1.0 — currency-agnostic slug, currency is an instance-level term) — atomic, lifecycle held → {drawn-down | swept | closed}, implementing Valuable and the standing-NOP RiskMeasurable. Re-point the orphan cash Valuable model (scope was the never-minted fil:type:fx:cash:*) onto the new fil:type:cash:* scope, and rename its modelId `fcy-cash` → `cash` (currency-agnostic; replay-safe). On FX spot SettlementConfirmed, materialise the settled cash leg(s) as real Cash FIL instances (FilInstrumentCreated) in addition to terminating the spot — the trigger declared by a product-level rule on the FX OTC NPA (prd:bank:fx:otc-vanilla) and read by the settlement path, so the kernel stays asset-class-agnostic and fx→cash is a product fact, not a kernel dependency. Re-base recon:fx-settlement-continuity on the real Cash FIL instance (instrument-of-record) and add a fail-closed recon gate: every cash instance carries an originating-instrument back-ref, and every settled FX trade whose NPA declares cash materialisation has matching Cash instance(s). Cash terms use decimal-native MAJOR-unit Money (never minorUnits).",
-    rationale:
-      "Today a settled FX spot only transitions active→settled (FilInstrumentTerminated) — no successor instrument is created. The resulting cash holding exists only as a transient projection-time FcyCashPosition plus GL/nostro postings: no FIL URN, no lifecycle, no citable single-graph node. That under-serves Principle 1 (a real cash holding not event-sourced as an instrument of record) and Principle 2 (nothing to trace to). The existing FCY_CASH_MODEL already declares a Valuable scoped at fil:type:fx:cash:* — a model waiting for a type that was never minted. Marc directed that cash be its own first-class asset class, decoupled from fx, with the maturity→cash coupling expressed at the product/NPA level rather than hardwired between asset classes, so other products (deposits, settlement of any asset class) can materialise cash the same way without a kernel change.",
-    sourceDocHashes: [],
-    citations: [
-      "D-FIL-FRAMEWORK-UNIFICATION",
-      "prd:bank:fx:otc-vanilla",
-      "D-VAR-EXPOSURE-INCLUDES-STANDING-NOP",
-      "D-V2-CORE-MONEY-DECIMAL-NATIVE",
-      "D-ENGINEERING-INTEGRITY-CHARTER",
-      "Principles/1-events-are-truth.md",
-      "Principles/2-single-graph-discipline.md",
-    ],
-    recordedVia: "scrooge:session-delegation",
-  },
-  APPROVED,
-);
+const base = {
+  decisionId: "D-CASH-ASSET-CLASS-V1",
+  authority: "CEO" as const,
+  authorityRef: "marc@tgv.co.za",
+  title:
+    "Cash as a first-class FIL asset class; FX maturity materialises a Cash asset (NPA-linked)",
+  category: "engineering" as const,
+  recommendation:
+    "Add `cash` to the closed FIL asset-class set and mint a Cash FIL type (fil:type:cash:balance:vanilla@1.0 — currency-agnostic slug, currency is an instance-level term) — atomic, lifecycle held → {drawn-down | swept | closed}, implementing Valuable and the standing-NOP RiskMeasurable. Re-point the orphan cash Valuable model (scope was the never-minted fil:type:fx:cash:*) onto the new fil:type:cash:* scope, and rename its modelId `fcy-cash` → `cash` (currency-agnostic; replay-safe). On FX spot SettlementConfirmed, materialise the settled cash leg(s) as real Cash FIL instances (FilInstrumentCreated) in addition to terminating the spot — the trigger declared by a product-level rule on the FX OTC NPA (prd:bank:fx:otc-vanilla) and read by the settlement path, so the kernel stays asset-class-agnostic and fx→cash is a product fact, not a kernel dependency. Re-base recon:fx-settlement-continuity on the real Cash FIL instance (instrument-of-record) and add a fail-closed recon gate: every cash instance carries an originating-instrument back-ref, and every settled FX trade whose NPA declares cash materialisation has matching Cash instance(s). Cash terms use decimal-native MAJOR-unit Money (never minorUnits).",
+  rationale:
+    "Today a settled FX spot only transitions active→settled (FilInstrumentTerminated) — no successor instrument is created. The resulting cash holding exists only as a transient projection-time FcyCashPosition plus GL/nostro postings: no FIL URN, no lifecycle, no citable single-graph node. That under-serves Principle 1 (a real cash holding not event-sourced as an instrument of record) and Principle 2 (nothing to trace to). The existing FCY_CASH_MODEL already declares a Valuable scoped at fil:type:fx:cash:* — a model waiting for a type that was never minted. Marc directed that cash be its own first-class asset class, decoupled from fx, with the maturity→cash coupling expressed at the product/NPA level rather than hardwired between asset classes, so other products (deposits, settlement of any asset class) can materialise cash the same way without a kernel change.",
+  sourceDocHashes: [],
+  citations: [
+    "D-FIL-FRAMEWORK-UNIFICATION",
+    "prd:bank:fx:otc-vanilla",
+    "D-VAR-EXPOSURE-INCLUDES-STANDING-NOP",
+    "D-V2-CORE-MONEY-DECIMAL-NATIVE",
+    "D-ENGINEERING-INTEGRITY-CHARTER",
+    "Principles/1-events-are-truth.md",
+    "Principles/2-single-graph-discipline.md",
+  ],
+  recordedVia: "scrooge:session-delegation",
+};
+
+// Symmetric phase chain: requested → approved (idempotent on the fixed instants).
+requestDecision(base, REQUESTED);
+const r = recordDecision({ ...base, phase: "approved" as const }, APPROVED);
 
 console.log(
   JSON.stringify({ ok: true, eventId: r.eventId, decisionId: "D-CASH-ASSET-CLASS-V1" }, null, 2),
