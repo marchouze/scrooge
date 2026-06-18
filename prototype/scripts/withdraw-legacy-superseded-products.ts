@@ -41,13 +41,13 @@
 // Author: Saskia (Head of Global Markets, governance)
 
 import { eventStore } from "../platform/composition";
-import { buildPhaseFixtureTag } from "../platform/event-store/provenance";
 import {
   makeProductApproved,
   makeProductDimensionAttested,
   makeProductProposalRegistered,
   makeProductWithheld,
 } from "../platform/event-store/event-types/product";
+import { buildPhaseFixtureTag } from "../platform/event-store/provenance";
 import type { EventStore } from "../platform/event-store/store";
 import { logger } from "../platform/observability/logger";
 

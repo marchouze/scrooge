@@ -101,6 +101,62 @@ export const SUBSTRATE_GAP_REGISTER: readonly SubstrateGapRecord[] = [
     status: "planned",
     mitigation: "none",
   },
+  // ---------------------------------------------------------------------------
+  // Legacy product re-NPA backlog (D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION,
+  // CEO-approved 2026-06-18). Five products approved 2026-05-26..28 under the
+  // superseded 14-dimension gate policy were withdrawn via ProductWithheld
+  // (scripts/withdraw-legacy-superseded-products.ts). Each must be re-run
+  // through a clean 15-dimension NPA cycle (the FX-OTC pattern, per
+  // platform/markets/products/fx-otc-vanilla-npa-cycle.ts) once the per-product
+  // substrate is ready. Tracked here so the re-NPA work is never silently
+  // dropped (Engineering Charter: no silent deferral). Trigger for every entry:
+  // "substrate ready → clean NPA cycle".
+  // ---------------------------------------------------------------------------
+  {
+    id: "re-npa-jse-equity-cash",
+    title: "Re-run clean NPA cycle — prd:bank:equity:jse-equity-cash",
+    description:
+      "prd:bank:equity:jse-equity-cash (JSE listed cash equity, M1) was approved 2026-05-26 under the superseded 14-dimension gate policy and withdrawn via ProductWithheld under D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION. Must be re-run through a clean 15-dimension NPA cycle (incl. data-quality dimension, no design-attested-without-tracked-gaps) before re-approval. Trigger: substrate ready → clean NPA cycle. Authority: D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION; D-NPA-GATE-POLICY-REDESIGN.",
+    severity: "high",
+    status: "planned",
+    mitigation: "none",
+  },
+  {
+    id: "re-npa-sagb-fixed-coupon",
+    title: "Re-run clean NPA cycle — prd:bank:bond:sagb-fixed-coupon",
+    description:
+      "prd:bank:bond:sagb-fixed-coupon (SAGB fixed-coupon bond) was approved 2026-05-26 under the superseded 14-dimension gate policy and withdrawn via ProductWithheld under D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION. Must be re-run through a clean 15-dimension NPA cycle before re-approval. Trigger: substrate ready → clean NPA cycle. Authority: D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION; D-NPA-GATE-POLICY-REDESIGN.",
+    severity: "high",
+    status: "planned",
+    mitigation: "none",
+  },
+  {
+    id: "re-npa-open-repo-gmra",
+    title: "Re-run clean NPA cycle — prd:bank:bond:open-repo-gmra",
+    description:
+      "prd:bank:bond:open-repo-gmra (open repo under GMRA) was approved 2026-05-26 under the superseded 14-dimension gate policy and withdrawn via ProductWithheld under D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION. Must be re-run through a clean 15-dimension NPA cycle before re-approval. Trigger: substrate ready → clean NPA cycle. Authority: D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION; D-NPA-GATE-POLICY-REDESIGN.",
+    severity: "high",
+    status: "planned",
+    mitigation: "none",
+  },
+  {
+    id: "re-npa-vanilla-zar-fix-zaronia",
+    title: "Re-run clean NPA cycle — prd:bank:ird:vanilla-zar-fix-zaronia",
+    description:
+      "prd:bank:ird:vanilla-zar-fix-zaronia (vanilla ZAR fixed-vs-ZARONIA IRS) was approved 2026-05-26 under the superseded 14-dimension gate policy and withdrawn via ProductWithheld under D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION. Must be re-run through a clean 15-dimension NPA cycle before re-approval. Trigger: substrate ready → clean NPA cycle. Authority: D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION; D-NPA-GATE-POLICY-REDESIGN.",
+    severity: "high",
+    status: "planned",
+    mitigation: "none",
+  },
+  {
+    id: "re-npa-repo-sagb-term",
+    title: "Re-run clean NPA cycle — prd:bank:treasury:repo-sagb-term",
+    description:
+      "prd:bank:treasury:repo-sagb-term (SAGB-backed term repo, M5) was approved 2026-05-28 under the superseded 14-dimension gate policy and withdrawn via ProductWithheld under D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION. Must be re-run through a clean 15-dimension NPA cycle before re-approval. Trigger: substrate ready → clean NPA cycle. Authority: D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION; D-NPA-GATE-POLICY-REDESIGN.",
+    severity: "high",
+    status: "planned",
+    mitigation: "none",
+  },
 ];
 
 /** Look up a gap record by id. */
