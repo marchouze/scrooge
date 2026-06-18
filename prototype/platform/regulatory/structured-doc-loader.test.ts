@@ -12,7 +12,9 @@ import { describe, expect, it } from "bun:test";
 import { buildProvisionTree, getLeafDescendants } from "./graph/provision-tree";
 import { normaliseSectionRef } from "./obligation-linker";
 import {
+  discoverStructuredDocPaths,
   ensureProvisionIds,
+  loadNormalizedDocBySlug,
   loadStructuredDocBySlug,
   normSectionRef,
 } from "./structured-doc-loader";
@@ -63,6 +65,89 @@ describe("loadStructuredDocBySlug", () => {
 
   it("returns null for unknown slugs", () => {
     expect(loadStructuredDocBySlug("no-such-instrument")).toBeNull();
+  });
+});
+
+describe("discoverStructuredDocPaths — nested regulator dirs", () => {
+  // Reproduce the OLD direct-children-only scan so the nested-recursion fix can
+  // be asserted as a strict superset (only ADDS nested slugs, never drops one).
+  const directChildrenOnlySlugs = (): Set<string> => {
+    const { existsSync, readFileSync, readdirSync } = require("node:fs") as typeof import("node:fs");
+    const { resolve } = require("node:path") as typeof import("node:path");
+    // import.meta.dir = <worktree>/prototype/platform/regulatory
+    const regsDir = resolve(import.meta.dir, "..", "..", "..", "Regulations");
+    const slugs = new Set<string>();
+    for (const d of readdirSync(regsDir, { withFileTypes: true })) {
+      if (!d.isDirectory() || d.name.startsWith("_")) continue;
+      const dir = resolve(regsDir, d.name, "source-docs");
+      if (!existsSync(dir)) continue;
+      for (const f of readdirSync(dir).filter((x) => x.endsWith("-structured.json"))) {
+        let slug = f.replace(/-structured\.json$/, "");
+        try {
+          const raw = JSON.parse(readFileSync(resolve(dir, f), "utf-8")) as { slug?: string };
+          if (raw.slug) slug = raw.slug;
+        } catch {
+          // fall back to filename-derived slug
+        }
+        slugs.add(slug);
+      }
+    }
+    return slugs;
+  };
+
+  it("discovers nested-dir IFRS slugs (Regulations/INTL/IASB/source-docs)", () => {
+    const paths = discoverStructuredDocPaths();
+    for (const slug of ["ifrs-9", "ifrs-7", "ifrs-13"]) {
+      expect(paths.has(slug)).toBe(true);
+      expect(paths.get(slug)).toContain("INTL/IASB/source-docs");
+    }
+  });
+
+  it("still discovers direct-child slugs (rrb, banks-act)", () => {
+    const paths = discoverStructuredDocPaths();
+    expect(paths.has("rrb")).toBe(true);
+    expect(paths.has("banks-act")).toBe(true);
+  });
+
+  it("is a strict superset of the direct-children-only scan", () => {
+    const direct = directChildrenOnlySlugs();
+    const discovered = new Set(discoverStructuredDocPaths().keys());
+    // No previously-discovered slug was dropped.
+    for (const slug of direct) expect(discovered.has(slug)).toBe(true);
+    // The nested IFRS slugs are genuinely NEW (proves the recursion adds value).
+    expect(direct.has("ifrs-9")).toBe(false);
+    expect(discovered.has("ifrs-9")).toBe(true);
+    expect(discovered.size).toBeGreaterThan(direct.size);
+  });
+});
+
+describe("loadNormalizedDocBySlug — nested IFRS verbatim", () => {
+  const countProvisions = (slug: string): number => {
+    const doc = loadNormalizedDocBySlug(slug);
+    if (!doc) return 0;
+    let n = 0;
+    const walk = (p: { subsections: unknown[] }): void => {
+      n++;
+      for (const ss of p.subsections) walk(ss as { subsections: unknown[] });
+    };
+    for (const ch of doc.chapters) for (const s of ch.sections) walk(s);
+    return n;
+  };
+
+  it("returns >100 verbatim provisions for ifrs-9 (nested-dir doc)", () => {
+    const doc = loadNormalizedDocBySlug("ifrs-9");
+    expect(doc).not.toBeNull();
+    expect(countProvisions("ifrs-9")).toBeGreaterThan(100);
+    // The top-level sections carry real verbatim text (not heading-only stubs).
+    const verbatim = (doc?.chapters ?? [])
+      .flatMap((ch) => ch.sections)
+      .filter((s) => s.verbatimText.trim().length > 0);
+    expect(verbatim.length).toBeGreaterThan(0);
+  });
+
+  it("returns provisions for ifrs-7 and ifrs-13 too", () => {
+    expect(countProvisions("ifrs-7")).toBeGreaterThan(100);
+    expect(countProvisions("ifrs-13")).toBeGreaterThan(100);
   });
 });
 
