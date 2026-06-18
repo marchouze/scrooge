@@ -79,7 +79,11 @@ import { resolve } from "node:path";
 
 import { Database } from "bun:sqlite";
 
-import { type FilInstanceLifecycleEvent, type FilInstanceRow, foldFilInstances } from "../../v2-core";
+import {
+  type FilInstanceLifecycleEvent,
+  type FilInstanceRow,
+  foldFilInstances,
+} from "../../v2-core";
 import { isZeroD, toDecimal } from "../../v2-core/fil-core/decimal";
 import { resolveMaturityMaterialisation } from "../markets/products/maturity-materialisation";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
@@ -197,7 +201,7 @@ export function run(opts: RunOpts = {}): ReconResult {
 
     // Per-currency signed GL cash recognition, derived from the Cash
     // instrument-of-record via PR-FX-PRIN's sign convention.
-    const netByCurrency = new Map<string, import("../../v2-core").Money["amount"]>();
+    const netByCurrency = new Map<string, string>();
     let receivedSides = 0;
     let paidSides = 0;
 

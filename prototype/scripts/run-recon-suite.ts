@@ -211,6 +211,12 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // instance under a cash-materialising NPA has a matching cash instance (the
     // settlement path ran the product rule). Authority: D-CASH-ASSET-CLASS-V1.
     "recon:cash-materialisation-integrity",
+    // WS-CASH-ASSET-CLASS fail-closed gate (D-CASH-ASSET-CLASS-V1): ties
+    // FX-settlement GL cash recognition to the Cash FIL instrument-of-record —
+    // the sub-ledger cash leg (PR-FX-PRIN: received → Dr nostro, paid → Cr
+    // nostro) and the FilInstrumentCreated{cash} instance are two renders of one
+    // truth (Principle 1). Determinacy + two-sided balance + net non-vacuity.
+    "recon:fx-cash-gl-recognition-integrity",
     "recon:fx-book-nop-parity",
     // WS-MULTI-BASE-CURRENCY (D-MULTI-BASE-CURRENCY-FOUNDATION) — ENFORCING,
     // harden-only. Asserts no literal reporting/base currency in the V2 FX
