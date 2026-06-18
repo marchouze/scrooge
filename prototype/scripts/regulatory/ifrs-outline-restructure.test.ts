@@ -20,10 +20,10 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "bun:test";
 
 import {
+  type FlatDoc,
   classifyDotted,
   compareProvisionNumbers,
   restructureIfrsDoc,
-  type FlatDoc,
 } from "./ifrs-outline-restructure";
 
 const REPO_ROOT = resolve(import.meta.dir, "..", "..", "..");
@@ -60,12 +60,48 @@ const flatInput = (): FlatDoc => ({
       id: "ch",
       heading: "Operative paragraphs",
       sections: [
-        { id: "p-a384", number: "A384", text: "A384 page header spillover", verbatim: true, pages: "10–11" },
-        { id: "p-3-2-2", number: "3.2.2", text: "3.2.2 Before evaluating…", verbatim: true, pages: "11" },
-        { id: "p-3-1-1", number: "3.1.1", text: "3.1.1 An entity shall recognise…", verbatim: true, pages: "10" },
-        { id: "p-3-2-10", number: "3.2.10", text: "3.2.10 If an entity transfers…", verbatim: true, pages: "14" },
-        { id: "p-3-2-1", number: "3.2.1", text: "3.2.1 In consolidated…", verbatim: true, pages: "10" },
-        { id: "p-b2-1", number: "B2.1", text: "B2.1 Some contracts require…", verbatim: true, pages: "74" },
+        {
+          id: "p-a384",
+          number: "A384",
+          text: "A384 page header spillover",
+          verbatim: true,
+          pages: "10–11",
+        },
+        {
+          id: "p-3-2-2",
+          number: "3.2.2",
+          text: "3.2.2 Before evaluating…",
+          verbatim: true,
+          pages: "11",
+        },
+        {
+          id: "p-3-1-1",
+          number: "3.1.1",
+          text: "3.1.1 An entity shall recognise…",
+          verbatim: true,
+          pages: "10",
+        },
+        {
+          id: "p-3-2-10",
+          number: "3.2.10",
+          text: "3.2.10 If an entity transfers…",
+          verbatim: true,
+          pages: "14",
+        },
+        {
+          id: "p-3-2-1",
+          number: "3.2.1",
+          text: "3.2.1 In consolidated…",
+          verbatim: true,
+          pages: "10",
+        },
+        {
+          id: "p-b2-1",
+          number: "B2.1",
+          text: "B2.1 Some contracts require…",
+          verbatim: true,
+          pages: "74",
+        },
       ],
     },
   ],
@@ -80,25 +116,25 @@ describe("restructureIfrsDoc — dotted nesting + ordering", () => {
   });
 
   it("titles section 3.1 / 3.2 from the contents page", () => {
-    const ch3 = out.chapters.find((c) => c.number === "3")!;
-    expect(ch3.sections.find((s) => s.number === "3.1")?.heading).toBe("Initial recognition");
-    expect(ch3.sections.find((s) => s.number === "3.2")?.heading).toBe(
+    const ch3 = out.chapters.find((c) => c.number === "3");
+    expect(ch3?.sections.find((s) => s.number === "3.1")?.heading).toBe("Initial recognition");
+    expect(ch3?.sections.find((s) => s.number === "3.2")?.heading).toBe(
       "Derecognition of financial assets",
     );
   });
 
   it("nests 3.2.2 under section 3.2 with text unchanged", () => {
-    const ch3 = out.chapters.find((c) => c.number === "3")!;
-    const s32 = ch3.sections.find((s) => s.number === "3.2")!;
-    const p = s32.subsections.find((x) => x.number === "3.2.2");
+    const ch3 = out.chapters.find((c) => c.number === "3");
+    const s32 = ch3?.sections.find((s) => s.number === "3.2");
+    const p = s32?.subsections.find((x) => x.number === "3.2.2");
     expect(p).toBeDefined();
     expect(p?.text).toBe("3.2.2 Before evaluating…");
   });
 
   it("orders paragraphs numerically (3.2.1 < 3.2.2 < 3.2.10)", () => {
-    const ch3 = out.chapters.find((c) => c.number === "3")!;
-    const s32 = ch3.sections.find((s) => s.number === "3.2")!;
-    expect(s32.subsections.map((p) => p.number)).toEqual(["3.2.1", "3.2.2", "3.2.10"]);
+    const ch3 = out.chapters.find((c) => c.number === "3");
+    const s32 = ch3?.sections.find((s) => s.number === "3.2");
+    expect(s32?.subsections.map((p) => p.number)).toEqual(["3.2.1", "3.2.2", "3.2.10"]);
   });
 
   it("routes the appendix-page chunk and B paragraph out of the main flow", () => {
@@ -177,7 +213,14 @@ describe("committed IFRS artefacts carry the outline (regression guard)", () => 
   it("ifrs-9 chapter 3 reads as the Contents page", () => {
     const doc = iasbDoc("ifrs-9");
     const ch3 = doc.chapters.find((c) => (c as { number?: string }).number === "3") as
-      | { heading: string; sections: Array<{ number?: string; heading?: string; subsections: Array<{ number: string; text: string }> }> }
+      | {
+          heading: string;
+          sections: Array<{
+            number?: string;
+            heading?: string;
+            subsections: Array<{ number: string; text: string }>;
+          }>;
+        }
       | undefined;
     expect(ch3?.heading).toBe("Recognition and derecognition");
     const s31 = ch3?.sections.find((s) => s.number === "3.1");

@@ -192,7 +192,7 @@ export function parseIfrsContents(pdfText: string): ParsedContents {
   // Decide shape: dotted iff any body line opens with a dotted number AND a ref.
   const shape: "dotted" | "flat" = body.some((l) => {
     const m = l.match(LEADING_NUMBER);
-    return Boolean(m && m[1]?.includes("."));
+    return Boolean(m?.[1]?.includes("."));
   })
     ? "dotted"
     : "flat";
@@ -255,7 +255,7 @@ export function parseIfrsContents(pdfText: string): ParsedContents {
           // happen on well-formed IFRS contents; we never invent a ref).
           pending = null;
         }
-        if (split && split.left.match(LEADING_NUMBER)) {
+        if (split?.left.match(LEADING_NUMBER)) {
           // Single line: "<num> <title> <ref>" — strip number from left text.
           const leftNoNum = (split.left.match(LEADING_NUMBER)?.[2] ?? "").trim();
           pending = {

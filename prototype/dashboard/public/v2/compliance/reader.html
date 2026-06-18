@@ -247,6 +247,12 @@
             const excHtml = (s.excerpts || []).map((e) =>
               `<figure class="rd-excerpt"><img loading="lazy" alt="${v2Esc(e.caption || ("Excerpt " + e.id))}" src="/api/regulation-reader/${encodeURIComponent(d.slug)}/excerpt/${encodeURIComponent(e.id)}">${e.caption ? `<figcaption>${v2Esc(e.caption)}${e.pages ? ` (p.${v2Esc(e.pages)})` : ""}</figcaption>` : ""}</figure>`).join("");
             const hasBody = (s.text && s.text.trim()) || subsHtml || excHtml;
+            // A "folded" section carries no own text — its `text` is purely the
+            // canonical normalizer's FOLD of its subsections, so rendering both the
+            // fold and the subsection rows double-prints. Suppress the fold and let
+            // the subsections speak. Sections with their OWN text (own/enriched/
+            // summary) keep their intro block — that text is NOT in any subsection.
+            const sectionBody = s.textSource === "folded" ? "" : renderBlocks(s);
             // Slice-2 completeness badge: a "summary" section renders its editorial
             // précis WITH a neutral label flagging that full verbatim is still pending;
             // verbatim/enriched render clean; heading-only keeps the empty-state line.
@@ -254,11 +260,23 @@
               ? `<div class="rd-completeness-badge">summary — full verbatim pending</div>`
               : "";
             const textHtml = hasBody
-              ? `${badge}${renderBlocks(s)}${subsHtml}${excHtml}`
+              ? `${badge}${sectionBody}${subsHtml}${excHtml}`
               : `<div class="rd-obl-meta">No verbatim text extracted for this section.</div>`;
             const hd = `<div class="rd-section-hd"><span class="rd-section-num">${v2Esc(s.number || "")}</span><span class="rd-section-heading">${v2Esc(s.heading || "")}</span></div>`;
-            // Outline link (chapter → regulation depth).
-            const label = [s.number, s.heading].filter(Boolean).join(" — ") || s.number || s.heading || "(section)";
+            // Outline link (chapter → regulation depth). A grouping section with
+            // neither number nor heading (e.g. a chapter's direct paragraphs)
+            // falls back to its first/last paragraph number range so the entry is
+            // still meaningful rather than a bare "(section)".
+            const subNums = (s.subsections || []).map((ss) => ss.number).filter(Boolean);
+            const rangeLabel = subNums.length
+              ? subNums.length > 1 ? `${subNums[0]}–${subNums[subNums.length - 1]}` : subNums[0]
+              : "";
+            const label =
+              [s.number, s.heading].filter(Boolean).join(" — ") ||
+              s.number ||
+              s.heading ||
+              rangeLabel ||
+              "(section)";
             linkItems.push(`<a class="rd-outline-link" href="#${id}" data-target="${id}">${v2Esc(label)}</a>`);
             if (!tiles) {
               return `<div class="rd-section" id="${id}">${hd}${textHtml}</div>`;

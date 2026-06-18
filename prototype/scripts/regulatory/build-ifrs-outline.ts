@@ -29,7 +29,7 @@ import { join, resolve } from "node:path";
 import { defaultDocumentStore } from "../../platform/document-store";
 import type { DocumentHash } from "../../platform/document-store";
 import { loadNormalizedDocBySlug } from "../../platform/regulatory/structured-doc-loader";
-import { restructureIfrsDoc, type FlatDoc } from "./ifrs-outline-restructure";
+import { type FlatDoc, restructureIfrsDoc } from "./ifrs-outline-restructure";
 
 const SLUGS = ["ifrs-9", "ifrs-7", "ifrs-13"] as const;
 
@@ -69,9 +69,7 @@ function pdfToText(pdfBytes: Uint8Array, slug: string): string {
       execFileSync("pdftotext", ["-layout", pdfFile, txtFile], { stdio: "pipe" });
     } catch (e) {
       throw new Error(
-        `pdftotext is unavailable or failed for ${slug} — STOPPING (titles must come ` +
-          `from the source PDF, never invented). Install poppler/pdftotext. ` +
-          `Underlying: ${(e as Error).message}`,
+        `pdftotext is unavailable or failed for ${slug} — STOPPING (titles must come from the source PDF, never invented). Install poppler/pdftotext. Underlying: ${(e as Error).message}`,
       );
     }
     return readFileSync(txtFile, "utf-8");
@@ -91,7 +89,11 @@ interface SafetyResult {
 }
 
 /** Assert verbatim preservation + paragraph coverage; throw on any drift. */
-function assertSafety(before: FlatDoc, after: ReturnType<typeof restructureIfrsDoc>, slug: string): SafetyResult {
+function assertSafety(
+  before: FlatDoc,
+  after: ReturnType<typeof restructureIfrsDoc>,
+  slug: string,
+): SafetyResult {
   const inTexts: string[] = [];
   for (const ch of before.chapters) {
     for (const s of ch.sections) {
@@ -118,10 +120,14 @@ function assertSafety(before: FlatDoc, after: ReturnType<typeof restructureIfrsD
     );
   }
   if (charsIn !== charsOut) {
-    throw new Error(`[${slug}] total paragraph CHAR count changed: in=${charsIn} out=${charsOut} — text was altered`);
+    throw new Error(
+      `[${slug}] total paragraph CHAR count changed: in=${charsIn} out=${charsOut} — text was altered`,
+    );
   }
   if (!multisetEqual) {
-    throw new Error(`[${slug}] paragraph-text MULTISET changed — a paragraph's verbatim text was altered`);
+    throw new Error(
+      `[${slug}] paragraph-text MULTISET changed — a paragraph's verbatim text was altered`,
+    );
   }
   return {
     slug,

@@ -32,7 +32,7 @@
 // Authority: D-REGULATORY-STRUCTURED-FIRST-CANONICAL.
 // Author: Mira (Compliance / RegTech engineer, engineering).
 
-import { parseIfrsContents, dottedTitleMap, type ParsedContents } from "./ifrs-contents-parser";
+import { type ParsedContents, dottedTitleMap, parseIfrsContents } from "./ifrs-contents-parser";
 
 // ---------------------------------------------------------------------------
 // Input / output shapes (intentionally loose pass-through of unknown fields)
@@ -197,7 +197,6 @@ export function classifyFlat(number: string): "main" | "appendix-page" | { appen
 // Restructure
 // ---------------------------------------------------------------------------
 
-
 function appendixHeading(letter: string, parsed: ParsedContents): string {
   const found = parsed.appendices.find((a) => a.letter === letter);
   return found ? `Appendix ${letter} — ${found.title}` : `Appendix ${letter}`;
@@ -285,7 +284,11 @@ export function restructureIfrsDoc(doc: FlatDoc, contentsPdfText: string): Outli
     for (const p of leaves) {
       const cls = classifyDotted(p.number);
       if (cls.kind === "main") {
-        const ch = ensureChapter(cls.chapter, titles.get(cls.chapter) ?? "", cls.chapter.padStart(3, "0"));
+        const ch = ensureChapter(
+          cls.chapter,
+          titles.get(cls.chapter) ?? "",
+          cls.chapter.padStart(3, "0"),
+        );
         if (cls.section) {
           addToSection(ch, cls.section, cls.section, titles.get(cls.section) ?? "", p);
         } else {
@@ -307,7 +310,8 @@ export function restructureIfrsDoc(doc: FlatDoc, contentsPdfText: string): Outli
         // Appendix B paras may be dotted ("B3.1.1") — group by their 2-comp
         // prefix into sections; flat appendix paras ("C1") sit as own sections.
         const comps = p.number.split(".");
-        if (comps.length >= 3) addToSection(ch, `${comps[0]}.${comps[1]}`, `${comps[0]}.${comps[1]}`, "", p);
+        if (comps.length >= 3)
+          addToSection(ch, `${comps[0]}.${comps[1]}`, `${comps[0]}.${comps[1]}`, "", p);
         else addToSection(ch, `direct:${p.number}`, p.number, "", p);
       }
     }
@@ -330,7 +334,13 @@ export function restructureIfrsDoc(doc: FlatDoc, contentsPdfText: string): Outli
         chOrd++;
         chNum = `C${chOrd}`;
         chTitle = e.title;
-        ranges.push({ first: e.firstParagraph, chapterNum: chNum, chapterTitle: chTitle, sectionKey: null, sectionTitle: "" });
+        ranges.push({
+          first: e.firstParagraph,
+          chapterNum: chNum,
+          chapterTitle: chTitle,
+          sectionKey: null,
+          sectionTitle: "",
+        });
       } else {
         if (!chNum) {
           chOrd++;
@@ -383,9 +393,14 @@ export function restructureIfrsDoc(doc: FlatDoc, contentsPdfText: string): Outli
         const ch = ensureChapter("PAGES", PAGES_HEADING, PAGES_SORTKEY);
         addToSection(ch, `direct:${p.number}`, p.number, "", p);
       } else {
-        const ch = ensureChapter(`Appendix ${c.appendix}`, appendixHeading(c.appendix, parsed), appendixSortKey(c.appendix));
+        const ch = ensureChapter(
+          `Appendix ${c.appendix}`,
+          appendixHeading(c.appendix, parsed),
+          appendixSortKey(c.appendix),
+        );
         const comps = p.number.split(".");
-        if (comps.length >= 3) addToSection(ch, `${comps[0]}.${comps[1]}`, `${comps[0]}.${comps[1]}`, "", p);
+        if (comps.length >= 3)
+          addToSection(ch, `${comps[0]}.${comps[1]}`, `${comps[0]}.${comps[1]}`, "", p);
         else addToSection(ch, `direct:${p.number}`, p.number, "", p);
       }
     }
