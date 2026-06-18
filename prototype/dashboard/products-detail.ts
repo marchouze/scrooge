@@ -16,8 +16,13 @@
 
 import { resolve as resolvePath } from "node:path";
 
+import {
+  POSTING_RULE_REGISTRY,
+  type PostingRuleEntry,
+} from "../platform/accounting/posting-rule-registry";
 import type { EventStore } from "../platform/event-store/store";
 import type { Product } from "../platform/markets/products";
+import { FX_SETTLEMENT_DEFERRED_GAPS } from "../v2-core/posting-rules/fx-settlement";
 
 import { normaliseDimensionKey } from "../platform/markets/products/dimension-key-alias";
 import {
@@ -577,10 +582,103 @@ export interface PostApprovalFindingRow {
   status: "open" | "reviewed" | "overdue";
 }
 
+// ---------------------------------------------------------------------------
+// Accounting-treatment surface (WS-ACCT-FX-COMPLETENESS Slice 5).
+//
+// Name-free DTO (no agent names cross /api/v2): the product's IFRS/IAS
+// determination + the posting rules its asset class applies, each with its IFRS
+// citation and whether its trigger-wiring is a tracked deferred gap. Rendered as
+// the "Accounting treatment" section on the V2 NPA product page.
+// ---------------------------------------------------------------------------
+
+export interface AccountingTreatmentPostingRule {
+  /** Stable posting-rule id (e.g. PR-FX-001-V2). */
+  readonly postingRuleId: string;
+  /** The lifecycle event that triggers it. */
+  readonly triggerEventType: string;
+  /** Where in the lifecycle (opening / in-flight / terminal). */
+  readonly lifecycleStage: string;
+  /** When a posting is expected (always / non-zero-delta / …). */
+  readonly condition: string;
+  /** IFRS / IAS citation + rationale (from the registry conditionDetail). */
+  readonly ifrs: string;
+  /** True when the rule's trigger-wiring is a tracked ProductDeferredGap. */
+  readonly deferred: boolean;
+  /** Deferred-gap target trigger (present iff deferred). */
+  readonly deferredTargetTrigger?: string;
+}
+
+export interface AccountingTreatmentView {
+  /** IFRS 9 classification family. */
+  readonly ifrs9Family: string;
+  /** IFRS 13 fair-value hierarchy. */
+  readonly ifrs13FairValueHierarchy: string;
+  /** IAS 21 FX treatment. */
+  readonly ias21FxTreatment: string;
+  /** BA-return line refs the postings flow into. */
+  readonly baReturnLineMapping: readonly string[];
+  /** Posting rules the product's asset class applies, with IFRS + deferred status. */
+  readonly postingRules: readonly AccountingTreatmentPostingRule[];
+}
+
+/** Product family → posting-rule registry lifecycleId set. */
+const FAMILY_LIFECYCLE_IDS: Readonly<Record<string, readonly string[]>> = {
+  fx: ["fx-spot-trade", "fx-fil-instance"],
+  "listed-bond": ["bond-trade"],
+  "listed-equity": ["equity-trade"],
+  "otc-ird": ["ird-swap-trade"],
+  repo: ["repo-trade"],
+};
+
+const DEFERRED_RULE_IDS: ReadonlyMap<string, string> = new Map(
+  // A posting rule id is deferred iff a FX_SETTLEMENT_DEFERRED_GAP names it in
+  // its title. The gap titles lead with the rule id(s) they cover.
+  FX_SETTLEMENT_DEFERRED_GAPS.flatMap((g) => {
+    const ids = [
+      "PR-FX-SETTLE-V2",
+      "PR-FX-CLOSE-V2",
+      "PR-FX-SWAP-NEAR-V2",
+      "PR-FX-SWAP-FAR-V2",
+      "PR-FX-NDF-FIX-V2",
+      "PR-FX-FVOCI-RECLASS-V2",
+    ].filter((id) => g.title.includes(id));
+    return ids.map((id) => [id, g.targetTrigger] as const);
+  }),
+);
+
+/** Build the accounting-treatment view for a product. Pure, name-free. */
+export function buildAccountingTreatmentView(product: Product): AccountingTreatmentView {
+  const lifecycleIds = FAMILY_LIFECYCLE_IDS[product.family] ?? [];
+  const rules: AccountingTreatmentPostingRule[] = POSTING_RULE_REGISTRY.filter(
+    (r: PostingRuleEntry) =>
+      lifecycleIds.includes(r.lifecycleId) && r.condition !== "intentional-no-impact",
+  ).map((r) => {
+    const deferredTrigger = DEFERRED_RULE_IDS.get(r.postingRuleId);
+    return {
+      postingRuleId: r.postingRuleId,
+      triggerEventType: r.triggerEventType,
+      lifecycleStage: r.lifecycleStage,
+      condition: r.condition,
+      ifrs: r.conditionDetail ?? "",
+      deferred: deferredTrigger !== undefined,
+      ...(deferredTrigger !== undefined ? { deferredTargetTrigger: deferredTrigger } : {}),
+    };
+  });
+  return {
+    ifrs9Family: product.accountingClassification.ifrs9Family,
+    ifrs13FairValueHierarchy: product.accountingClassification.ifrs13FairValueHierarchy,
+    ias21FxTreatment: product.accountingClassification.ias21FxTreatment,
+    baReturnLineMapping: product.accountingClassification.baReturnLineMapping,
+    postingRules: rules,
+  };
+}
+
 export interface ProductDetailView {
   product: Product;
   dimensions: DimensionCard[];
   journalEntries: LifecycleEventJournalRow[];
+  /** Accounting-treatment surface (WS-ACCT-FX-COMPLETENESS Slice 5). */
+  accountingTreatment: AccountingTreatmentView;
   /**
    * Single product-scoped Policy → Procedure → Function chain. Replaces
    * the per-dimension `chain` blocks on the page: shows only the policies
@@ -821,6 +919,7 @@ export function buildProductDetailView(
     product,
     dimensions,
     journalEntries,
+    accountingTreatment: buildAccountingTreatmentView(product),
     productChain,
     postApprovalFindings,
     asOf: nowIso,

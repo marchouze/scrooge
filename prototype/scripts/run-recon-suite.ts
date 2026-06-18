@@ -569,6 +569,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:odp-collateral-segregation-breach-staleness",
     "recon:odp-repo-recon-dispute-staleness",
     "recon:coa-name-no-currency",
+    // WS-ACCT-FX-COMPLETENESS — accounting-schema canonical-home gate.
+    // ENFORCING (Slice 4): no accounting schema hand-declared outside v2-core;
+    // chart-of-accounts single-source; every treatment-module posting-rule
+    // reference resolves. Authority: D-ACCT-SCHEMA-CANONICAL-HOME.
+    "recon:accounting-schema-home",
     "recon:fx-supported-currency-no-suspense",
     "recon:account-designated-currency",
     "recon:valuation-adjustment-additive",

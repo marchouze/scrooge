@@ -115,6 +115,7 @@
     "recon:compliance-obligation-tracing": "bun run platform/recon/compliance-obligation-tracing.ts",
     "recon:posting-source-id-canonical": "bun run platform/recon/posting-source-id-canonical.ts",
     "recon:coa-name-no-currency": "bun run platform/recon/coa-name-no-currency.ts",
+    "recon:accounting-schema-home": "bun run platform/recon/accounting-schema-home.ts",
     "recon:fx-supported-currency-no-suspense": "bun run platform/recon/fx-supported-currency-no-suspense.ts",
     "recon:account-designated-currency": "bun run platform/recon/account-designated-currency.ts",
     "recon:provision-tick-drift": "bun run platform/recon/provision-tick-drift.ts",

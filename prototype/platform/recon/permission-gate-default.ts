@@ -209,6 +209,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // path: every probe store is created in a tmpdir and rmSync'd in finally.
   // Citation: D-FX-HELD-DIMS-SEAT-SWEEP, T-01, P4-SECURITY-DESIGNED-IN, F-031.
   "platform/markets/products/oprisk-attestation-gates.ts",
+  // FX accounting deferred-gap recorder unit test (WS-ACCT-FX-COMPLETENESS
+  // Slice 3) — builds `new EventStore(":memory:")` throwaway stores to assert
+  // the latest-wins gap-merge + idempotency in isolation (same carve-out
+  // rationale as tests/ and the other platform/accounting/*.test.ts entries).
+  // No production access path. Citation: D-ACCT-FX-IFRS-POSTING-COMPLETENESS,
+  // P4-SECURITY-DESIGNED-IN, F-031.
+  "platform/markets/products/npa-fx-accounting-deferred-gaps.test.ts",
   // ras-register-parity — read-only replay of RiskAppetiteSnapshot events +
   // read-only scan of runtime handler source files; no appends; gate is a
   // no-op on the read path. Citation: D-RAS-STRUCTURED-REGISTER,
