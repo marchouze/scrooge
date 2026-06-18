@@ -86,14 +86,19 @@ function defaultRepoRoot(): string {
 //   - strip a leading section marker `s.` / `s` (so `s.4`, `s4`, `§4`, `4`,
 //     and `(4)` all converge)
 //   - strip surrounding parentheses (a doc numbered `(4)` is section 4)
+//   - strip a TRAILING subsection paren to the top-level section, mirroring the
+//     citation side's `(\d+[A-Za-z]?)(?:\(|$)` capture: `22(1)` → `22`,
+//     `18(b)` → `18`, `1(6)` → `1`. (POPIA/FAIS structured docs number sections
+//     `11(1)`, `1(6)` etc.; citations cite `s.11` / `§22`. Without this the two
+//     sides mint `PROV-POPIA-s11(1)` vs `s11` and the link drops to PARTIAL.)
 //   - lowercase
 //   - strip dots (existing doc-side convention: `2.1.3` → `213`, matching the
 //     graph seed's Step-5 `normSectionRef` over `RegulatoryConceptExtracted`)
 //
-// Deliberately NON-collapsing: a trailing letter suffix is preserved, so
-// `s7` ≠ `s7A`. Only the dot-stripping collapses `5.5` vs `5.5.1` — that is the
-// pre-existing convention on BOTH the citation side (the graph seed strips `s`
-// then dots) and the doc side, so it is not changed here.
+// Deliberately NON-collapsing: a trailing letter suffix on the SECTION number
+// is preserved, so `s7` ≠ `s7A`. Only the dot-stripping collapses `5.5` vs
+// `5.5.1` — that is the pre-existing convention on BOTH the citation side (the
+// graph seed strips `s` then dots) and the doc side, so it is not changed here.
 // ---------------------------------------------------------------------------
 
 /**
@@ -108,13 +113,15 @@ function defaultRepoRoot(): string {
  *   "s4"       → "4"
  *   "13A"      → "13a"   (letter preserved, lowercased)
  *   "(13A)"    → "13a"
+ *   "22(1)"    → "22"    (subsection dropped to top-level section)
+ *   "18(b)"    → "18"
  *   "3.1"      → "31"    (existing dot-stripped convention)
  *
  * Inverse-of-prefix note: callers prepend the literal `s`, so this returns the
  * number WITHOUT the `s` marker.
  */
 export function normSectionRef(raw: string): string {
-  return raw
+  const cleaned = raw
     .trim()
     .toLowerCase()
     // strip a leading section sign and any following whitespace: "§ 4" → "4"
@@ -124,9 +131,16 @@ export function normSectionRef(raw: string): string {
     // strip a leading section marker so "s.4" / "s4" → "4" (but never eat a
     // bare letter-led token — only strip `s` when a digit immediately follows,
     // optionally after a dot, e.g. "s.4" or "s4")
-    .replace(/^s\.?(?=\d)/, "")
-    // existing convention: drop dots ("3.1" → "31")
-    .replace(/\./g, "");
+    .replace(/^s\.?(?=\d)/, "");
+
+  // Drop a trailing subsection paren to the top-level section, mirroring the
+  // citation side. Only when the value is a digit-led section number followed
+  // by a parenthesised subsection — never touch a bare alpha token.
+  const subsectionMatch = cleaned.match(/^(\d+[a-z]?)\(/);
+  const topLevel = subsectionMatch?.[1] ?? cleaned;
+
+  // existing convention: drop dots ("3.1" → "31")
+  return topLevel.replace(/\./g, "");
 }
 
 // ---------------------------------------------------------------------------
