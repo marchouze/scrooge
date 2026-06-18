@@ -29,6 +29,7 @@ import {
 } from "../markets/cdm/fx";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import { baseAmountMinor } from "../markets/cdm/fx-helpers";
+import { materialiseSettledCashForFxLegs } from "../markets/products/materialise-settled-cash-for-fx";
 import { simulateInboundMessages } from "../payments/inbound-simulator";
 import { generateAndEmitMt300 } from "../payments/swift-mt/mt300";
 import type { CounterpartyBehaviorProfile } from "./env-sim/counterparty-profiles";
@@ -343,6 +344,22 @@ export function runPostTradeLifecycle(
         eventId: newEventId(),
       }),
     );
+
+    // LIVE CASH MATERIALISATION (D-CASH-ASSET-CLASS-V1): the accelerated path
+    // settles inline, so materialise the settled cash leg(s) as REAL Cash FIL
+    // instruments-of-record here, at the same point the SettlementConfirmed +
+    // PrincipalPayments are emitted. Product-driven: the adapter emits only if
+    // the governing NPA declares the maturity→cash rule. minor → MAJOR via /100.
+    materialiseSettledCashForFxLegs({
+      tradeId: tradeIdValue,
+      payCurrency,
+      payAmountMajor: Math.abs(payNotionalMinor) / 100,
+      receiveCurrency,
+      receiveAmountMajor: Math.abs(receiveNotionalMinor) / 100,
+      counterpartyId: trade.counterparty.partyId,
+      settledAsOf: settlementDateIso,
+      isForward: String(trade.productTaxonomy ?? "").toLowerCase().includes("forward"),
+    });
   }
 
   // -------------------------------------------------------------------------

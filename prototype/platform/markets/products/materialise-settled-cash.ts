@@ -156,16 +156,42 @@ CREATE INDEX IF NOT EXISTS idx_v2_as_of  ON v2_events(as_of);
   return db;
 }
 
-/** Has a FilInstrumentCreated for this cash instance URN already been emitted? */
-function alreadyCreated(db: Database, instanceUrn: string): boolean {
+const ACTOR = { type: "service" as const, id: "agent:settlement:materialise-settled-cash" };
+
+export interface MaterialisationOpts {
+  /** Override the v2 anchor store path — used by tests. */
+  readonly dbPath?: string;
+}
+
+/** Append a FIL lifecycle event to the anchor store, idempotent on instance+type. */
+function appendLifecycle(
+  db: Database,
+  evType: "FilInstrumentCreated" | "FilInstrumentTerminated",
+  asOf: string,
+  entity: string,
+  payload: Record<string, unknown>,
+): void {
+  db.query(
+    `INSERT OR IGNORE INTO v2_events
+       (event_id, type, as_of, entity, actor_type, actor_id, citations, payload)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(
+    newEventId(),
+    evType,
+    asOf,
+    entity,
+    ACTOR.type,
+    ACTOR.id,
+    JSON.stringify([...FIL_CITATIONS]),
+    JSON.stringify(payload),
+  );
+}
+
+/** Has a lifecycle event of `evType` for this instance URN already been emitted? */
+function hasLifecycle(db: Database, evType: string, instanceUrn: string): boolean {
   const rows = db
-    .query<{ payload: string }, [string]>(
-      "SELECT payload FROM v2_events WHERE type = 'FilInstrumentCreated'",
-    )
-    .all(instanceUrn);
-  // The query has no positional binding placeholder; scan all FilInstrumentCreated
-  // payloads for a matching instance URN (the deterministic URN is the idempotency
-  // key — UNIQUE event_id alone is insufficient since a re-run mints a new id).
+    .query<{ payload: string }, [string]>("SELECT payload FROM v2_events WHERE type = ?")
+    .all(evType);
   for (const r of rows) {
     const p = JSON.parse(r.payload) as { instance?: string };
     if (p.instance === instanceUrn) return true;
@@ -173,11 +199,60 @@ function alreadyCreated(db: Database, instanceUrn: string): boolean {
   return false;
 }
 
-const ACTOR = { type: "service" as const, id: "agent:settlement:materialise-settled-cash" };
-
-export interface MaterialisationOpts {
-  /** Override the v2 anchor store path — used by tests. */
-  readonly dbPath?: string;
+/**
+ * Materialise an FX instrument-of-record (FilInstrumentCreated + optional
+ * FilInstrumentTerminated) into the v2 anchor store. Used by the backfill so the
+ * anchor store the recon gates read carries the SETTLED FX instances whose cash
+ * legs `materialiseSettledCash` produces — making the on-anchor HISTORY proof
+ * non-vacuous. Idempotent on instance URN. Returns { created, terminated } counts.
+ */
+export function materialiseFxInstanceToAnchor(
+  args: {
+    readonly fxInstance: string;
+    readonly fxTypeUrn: string;
+    readonly entity: string;
+    readonly tenant: string;
+    readonly createdAsOf: string;
+    readonly economicTerms: Record<string, unknown>;
+    readonly originatingEvent: { eventType: string; eventId: string };
+    readonly terminal?: { stage: "settled" | "matured" | "cancelled"; asOf: string };
+  },
+  opts: MaterialisationOpts = {},
+): { created: number; terminated: number } {
+  const dbPath = opts.dbPath ?? resolveV2AnchorDb();
+  const db = openV2Anchor(dbPath);
+  let created = 0;
+  let terminated = 0;
+  try {
+    if (!hasLifecycle(db, "FilInstrumentCreated", args.fxInstance)) {
+      appendLifecycle(db, "FilInstrumentCreated", args.createdAsOf, args.entity, {
+        kind: "FilInstrumentCreated",
+        instance: args.fxInstance,
+        type: args.fxTypeUrn,
+        tenant: args.tenant,
+        asOf: args.createdAsOf,
+        originatingEvent: args.originatingEvent,
+        initialStage: "active",
+        economicTerms: args.economicTerms,
+      });
+      created += 1;
+    }
+    if (args.terminal && !hasLifecycle(db, "FilInstrumentTerminated", args.fxInstance)) {
+      appendLifecycle(db, "FilInstrumentTerminated", args.terminal.asOf, args.entity, {
+        kind: "FilInstrumentTerminated",
+        instance: args.fxInstance,
+        type: args.fxTypeUrn,
+        tenant: args.tenant,
+        asOf: args.terminal.asOf,
+        originatingEvent: args.originatingEvent,
+        terminalStage: args.terminal.stage,
+      });
+      terminated += 1;
+    }
+  } finally {
+    db.close();
+  }
+  return { created, terminated };
 }
 
 /**
@@ -214,7 +289,7 @@ export function materialiseSettledCash(
         tenant: fx.tenant,
         instanceId: `${fx.tradeId}-cash-${leg.side}`,
       });
-      if (alreadyCreated(db, cashInstance)) continue;
+      if (hasLifecycle(db, "FilInstrumentCreated", cashInstance)) continue;
 
       // Sign → direction: a RECEIVED balance is a long (asset) cash position; a
       // PAID/funding balance is a short. The Money notional is always positive
@@ -245,20 +320,7 @@ export function materialiseSettledCash(
         },
       };
 
-      db.query(
-        `INSERT OR IGNORE INTO v2_events
-           (event_id, type, as_of, entity, actor_type, actor_id, citations, payload)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      ).run(
-        newEventId(),
-        "FilInstrumentCreated",
-        fx.settledAsOf,
-        fx.entity,
-        ACTOR.type,
-        ACTOR.id,
-        JSON.stringify([...FIL_CITATIONS]),
-        JSON.stringify(payload),
-      );
+      appendLifecycle(db, "FilInstrumentCreated", fx.settledAsOf, fx.entity, payload);
       emitted += 1;
     }
   } finally {

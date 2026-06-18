@@ -112,6 +112,13 @@ jobs:
     timeout-minutes: 15
     env:
       BANK_EVENT_DB: .local/event.db
+      # WS-CASH-ASSET-CLASS / MV-CASH-001: pin the v2 anchor store to a repo-local
+      # path so `ci:migrate` (backfill:fil-instances) materialises the settled FX
+      # → cash instances INTO the same store the cash recon gates read. Without
+      # this, the gates read an absent home-default anchor store and the on-anchor
+      # HISTORY proof is vacuous (the defect Nadia raised). Authority:
+      # D-CASH-ASSET-CLASS-V1; D-FIL-FRAMEWORK-UNIFICATION.
+      BANK_V2_ANCHOR_DB: .local/v2-anchor.db
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -146,6 +153,9 @@ jobs:
     timeout-minutes: 15
     env:
       BANK_EVENT_DB: .local/event.db
+      # WS-CASH-ASSET-CLASS / MV-CASH-001 — see recon-infra note. Pin the anchor
+      # store so the backfill + any anchor-reading gate share one store.
+      BANK_V2_ANCHOR_DB: .local/v2-anchor.db
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4

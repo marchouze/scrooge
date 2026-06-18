@@ -73,6 +73,14 @@ describe("recon:cash-materialisation-integrity", () => {
     expect(r.violations.some((v) => v.severity === "info")).toBe(true);
   });
 
+  test("VACUITY GUARD (MV-CASH-001): empty book + requireNonVacuousAnchor → FAIL (fail-closed)", () => {
+    const r = run({ filEvents: [], requireNonVacuousAnchor: true });
+    expect(r.ok).toBe(false);
+    expect(r.violations.some((v) => v.severity === "fail" && v.subject === "anchor-book")).toBe(
+      true,
+    );
+  });
+
   test("settled FX + materialised cash with back-ref → passes", () => {
     const r = run({ filEvents: [...fxSettled(), cashLeg(FX_INSTANCE)] });
     expect(r.ok).toBe(true);
