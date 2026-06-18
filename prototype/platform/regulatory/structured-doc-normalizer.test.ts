@@ -197,19 +197,22 @@ describe("normalizeStructuredDoc — text-assembly branches", () => {
   });
 });
 
-describe("normalizeStructuredDoc — rrb summary fallback (the production proof)", () => {
-  it("surfaces text for rrb sections that were blank under the old paths", () => {
+describe("normalizeStructuredDoc — rrb is fully verbatim (Slice-5 backfill proof)", () => {
+  it("every rrb provision carries verbatim regulator text; zero summary / heading-only", () => {
+    // Slice-5 (D-REGULATORY-STRUCTURED-FIRST-CANONICAL) replaced the 31 formerly
+    // summary-only sections with verbatim GN R.1029/2012 text. The summary
+    // fallback branch itself is still covered by the synthetic doc above
+    // (textSource/completeness "summary"); here we assert the production rrb doc
+    // no longer relies on it.
     const n = loadNormalizedDocBySlug("rrb");
     expect(n).not.toBeNull();
     if (!n) return;
-    const summarySections = n.chapters
-      .flatMap((c) => c.sections)
-      .filter((s) => s.textSource === "summary");
-    // The on-disk rrb doc carries 31 summary-only sections.
-    expect(summarySections.length).toBeGreaterThan(0);
-    for (const s of summarySections) {
+    const provisions = n.chapters.flatMap((c) => c.sections);
+    expect(provisions.length).toBeGreaterThan(0);
+    for (const s of provisions) {
+      expect(s.completeness).toBe("verbatim");
       expect(s.verbatimText.length).toBeGreaterThan(0);
-      expect(s.completeness).toBe("summary");
+      expect(s.textSource === "own" || s.textSource === "folded").toBe(true);
     }
   });
 });

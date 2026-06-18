@@ -89,7 +89,10 @@ function parseSourceBlocks(md: string): Map<string, SourceBlock> {
         break;
       }
     }
-    const verbatimBody = lines.slice(h.line + 1, end).join("\n").trim();
+    const verbatimBody = lines
+      .slice(h.line + 1, end)
+      .join("\n")
+      .trim();
     // First-wins: a regulation number appears once as a `### N.` heading; if the
     // source ever repeated one, the first occurrence is authoritative.
     if (!blocks.has(h.regNumber)) {
@@ -218,41 +221,41 @@ function main(): void {
   const report: Array<{ reg: string; chars: number; heading: string }> = [];
 
   for (const ch of doc.chapters) {
-    for (const section of ch.sections) {
+    ch.sections = ch.sections.map((section): JsonSection => {
       const reg = bareRegNumber(section.sectionNumber);
       if (!isSummaryOnly(section)) {
         preserved++;
-        continue;
+        return section;
       }
       const block = blocks.get(reg);
       if (!block) {
         skipped.push(`reg${reg} (${section.title ?? ""}) — no source block`);
-        continue;
+        return section;
       }
       if (!titlesAlign(section.title ?? "", block.sourceHeading)) {
         mismatched.push(
           `reg${reg}: json="${section.title ?? ""}" vs source="${block.sourceHeading}"`,
         );
-        continue;
+        return section;
       }
       const verbatim = block.verbatimBody;
       if (verbatim.length === 0) {
         skipped.push(`reg${reg} (${section.title ?? ""}) — empty source body`);
-        continue;
-      }
-      if (!check) {
-        section.text = verbatim;
-        section.verbatim = true;
-        delete section.summary;
+        return section;
       }
       backfilled++;
       report.push({ reg, chars: verbatim.length, heading: block.sourceHeading });
-    }
+      if (check) return section;
+      // Reconstruct without the now-redundant `summary` field (verbatim text is
+      // authoritative). Spread drops `summary` explicitly; no `delete` operator.
+      const { summary: _summary, ...rest } = section;
+      return { ...rest, text: verbatim, verbatim: true };
+    });
   }
 
   if (mismatched.length > 0) {
     console.error("TITLE MISMATCH — aborting (no write):");
-    for (const m of mismatched) console.error("  " + m);
+    for (const m of mismatched) console.error(`  ${m}`);
     process.exit(1);
   }
 

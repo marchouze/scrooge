@@ -8,7 +8,7 @@
   "gazetteNo": "35950",
   "govNoticeNo": "R. 1029",
   "gazetteDate": "2012-12-12",
-  "sourceNote": "Regulations Relating to Banks issued under section 90 of the Banks Act 94 of 1990. Published in Government Gazette No. 35950 of 12 December 2012. Incorporates Basel III capital adequacy requirements as adapted for South Africa by the Prudential Authority.",
+  "sourceNote": "Regulations Relating to Banks issued under section 90 of the Banks Act 94 of 1990. Published in Government Gazette No. 35950 of 12 December 2012. Incorporates Basel III capital adequacy requirements as adapted for South Africa by the Prudential Authority. Verbatim text backfilled from an acts.co.za (Acts Online) transcription, 'Last update: June 2025'; official source GG 35950 / GN R.1029 of 2012. The official Gazette PDF remains the ideal provenance for a future upgrade.",
   "citationPatterns": [
     "RRB",
     "Reg 23",
@@ -1185,5 +1185,5 @@
       ]
     }
   ],
-  "goldenSourceHash": "blake3:79ef3954e9d63c53a758a817700019bd7b2100693da6f338ac5d02d78d502162"
+  "goldenSourceHash": "blake3:236d4a2bbb40dee0e221fee5ea9b13cddabecff7e437f91034fe75e32fc57c53"
 }
