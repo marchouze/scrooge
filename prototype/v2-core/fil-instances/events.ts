@@ -170,15 +170,142 @@ export const filInstrumentAmendedPayloadSchema = z.object({
 
 export type FilInstrumentAmendedPayload = z.infer<typeof filInstrumentAmendedPayloadSchema>;
 
+// ---------------------------------------------------------------------------
+// Derecognition + FVOCI-reclass economic terms — OPTIONAL refinements carried on
+// the terminal event so the FX derecognition (PR-FX-CLOSE-V2) and FVOCI→P&L
+// reclassification (PR-FX-FVOCI-RECLASS-V2) rules can fire at fold time
+// (WS-FIL-FX-SETTLEMENT-EVENTS, D-FIL-FX-SETTLEMENT-EVENTS).
+//
+// Append-only-safe: both blocks are OPTIONAL, so the existing terminal events
+// (which carry neither) continue to parse and fold to the clean zero-amount
+// derecognition memo exactly as before. A terminal event that DOES carry these
+// terms drives the reversal/reclass postings.
+// ---------------------------------------------------------------------------
+
+/**
+ * Derecognition economic terms (IFRS 9 §3.2.3): the accumulated unrealised
+ * revaluation that sat in the FX unrealised-P&L account and must be reversed +
+ * recognised as realised on derecognition. Signed Money: a positive `amount`
+ * is an accumulated gain (credit balance) to reverse; the rule moves it to
+ * realised P&L. The currency is the leg currency the reval accumulated in.
+ */
+export const filFxDerecognitionTermsSchema = z.object({
+  /** Accumulated unrealised reval to reverse + realise. Signed major-unit Money. */
+  accumulatedUnrealised: moneySchema,
+});
+
+export type FilFxDerecognitionTerms = z.infer<typeof filFxDerecognitionTermsSchema>;
+
+/**
+ * FVOCI-reclassification economic terms (IFRS 9 §5.7.10–11): when the instrument
+ * was FVOCI-elected, the accumulated OCI reserve that recycles into P&L on
+ * derecognition. Carried on the terminal event so the fold can fire the recycle.
+ * `electedFvoci` makes the election EXPLICIT on the terminal event (the fold
+ * does not have to re-derive it from a separate election stream at close time);
+ * `accumulatedOci` is the signed reserve balance to recycle.
+ */
+export const filFxFvociReclassTermsSchema = z.object({
+  /** True iff the instrument carried an FVOCI election (IFRS 9 §5.7.5). */
+  electedFvoci: z.literal(true),
+  /** Accumulated FVOCI reserve to recycle into P&L. Signed major-unit Money. */
+  accumulatedOci: moneySchema,
+});
+
+export type FilFxFvociReclassTerms = z.infer<typeof filFxFvociReclassTermsSchema>;
+
 /** Instrument terminated — a terminal transition (W9 §3.3). */
 export const filInstrumentTerminatedPayloadSchema = z.object({
   kind: z.literal("FilInstrumentTerminated"),
   ...instanceBaseShape,
   /** The terminal stage reached (settled / matured / cancelled / terminated). */
   terminalStage: z.enum(["settled", "matured", "cancelled", "terminated"]),
+  /**
+   * Optional derecognition terms (accumulated unrealised reval). When present,
+   * the fold fires PR-FX-CLOSE-V2's reversal; when absent it posts the clean
+   * zero-amount memo (the pre-WS-FIL-FX-SETTLEMENT-EVENTS behaviour — preserved).
+   */
+  derecognitionTerms: filFxDerecognitionTermsSchema.optional(),
+  /**
+   * Optional FVOCI-reclassification terms (election + accumulated OCI). When
+   * present, the fold fires PR-FX-FVOCI-RECLASS-V2's OCI→P&L recycle.
+   */
+  fvociReclassTerms: filFxFvociReclassTermsSchema.optional(),
 });
 
 export type FilInstrumentTerminatedPayload = z.infer<typeof filInstrumentTerminatedPayloadSchema>;
+
+// ---------------------------------------------------------------------------
+// FilFxSettlementConfirmed — the FX settlement event (WS-FIL-FX-SETTLEMENT-
+// EVENTS, D-FIL-FX-SETTLEMENT-EVENTS). Carries the per-leg economic terms the
+// settlement realised-P&L (PR-FX-SETTLE-V2) and swap near/far-leg
+// (PR-FX-SWAP-NEAR-V2 / PR-FX-SWAP-FAR-V2) rules consume: bought/sold currency,
+// the receivable/payable carrying amount at the BOOKED rate, and the actual cash
+// at the SETTLEMENT rate. The realised FX P&L is the booked-vs-settled difference
+// (IAS 21 §23, §28).
+//
+// LEG DISCRIMINATOR (`legRole`): ONE settlement event type with a leg
+// discriminator (`spot` | `swap-near` | `swap-far`) rather than three parallel
+// event types — the economic terms are IDENTICAL per leg (a swap is two physical
+// settlements), so a single carrier with a role tag is the source-don't-duplicate
+// choice (Engineering Charter cmd 4). The fold selects PR-FX-SETTLE-V2 for
+// `spot`, PR-FX-SWAP-NEAR-V2 for `swap-near`, PR-FX-SWAP-FAR-V2 for `swap-far`.
+// ---------------------------------------------------------------------------
+
+export const filFxSettlementLegRoleSchema = z.enum(["spot", "swap-near", "swap-far"]);
+
+export type FilFxSettlementLegRole = z.infer<typeof filFxSettlementLegRoleSchema>;
+
+export const filFxSettlementConfirmedPayloadSchema = z.object({
+  kind: z.literal("FilFxSettlementConfirmed"),
+  ...instanceBaseShape,
+  /** Which leg of the trade this settlement realises (spot / swap near / swap far). */
+  legRole: filFxSettlementLegRoleSchema,
+  /** Bought-currency leg: the receivable carrying amount at the BOOKED rate. */
+  boughtBooked: moneySchema,
+  /** Bought-currency leg: the cash actually received at the SETTLEMENT rate (same ccy). */
+  boughtSettled: moneySchema,
+  /** Sold-currency leg: the payable carrying amount at the BOOKED rate. */
+  soldBooked: moneySchema,
+  /** Sold-currency leg: the cash actually paid at the SETTLEMENT rate (same ccy). */
+  soldSettled: moneySchema,
+});
+
+export type FilFxSettlementConfirmedPayload = z.infer<typeof filFxSettlementConfirmedPayloadSchema>;
+
+// ---------------------------------------------------------------------------
+// FilNdfFixingObserved — the NDF fixing / cash-settlement event (WS-FIL-FX-
+// SETTLEMENT-EVENTS). An NDF is cash-settled — principal NEVER exchanges — so
+// this event carries ONLY the cash-settlement economic terms PR-FX-NDF-FIX-V2
+// consumes: the settlement currency and the net cash difference
+// `notional × (fixing − contracted)` (IFRS 9 §5.7.1 / IAS 21 §28).
+//
+// The fixing and contracted rates + notional are carried for traceability /
+// audit; the net cash difference is carried PRE-COMPUTED (signed Money) because
+// the multiplication `notional × (fixing − contracted)` is a markets-domain
+// determination, not an accounting one — the posting rule consumes the settled
+// cash amount, exactly as the markets desk computes it. No principal legs.
+// ---------------------------------------------------------------------------
+
+export const filNdfFixingObservedPayloadSchema = z.object({
+  kind: z.literal("FilNdfFixingObserved"),
+  ...instanceBaseShape,
+  /** Settlement currency the net cash difference is paid/received in. */
+  settlementCurrency: z.string().length(3),
+  /** Contracted (strike) rate, decimal string (audit / traceability). */
+  contractedRate: z.string().min(1),
+  /** Observed fixing rate, decimal string (audit / traceability). */
+  fixingRate: z.string().min(1),
+  /** Notional the fixing applies to, in the (non-settlement) reference currency. */
+  notional: moneySchema,
+  /**
+   * Net cash difference in the settlement currency = notional × (fixing −
+   * contracted). Positive = gain (cash received); negative = loss (cash paid).
+   * Signed major-unit Money.
+   */
+  netCashDifference: moneySchema,
+});
+
+export type FilNdfFixingObservedPayload = z.infer<typeof filNdfFixingObservedPayloadSchema>;
 
 // ---------------------------------------------------------------------------
 // The discriminated union + the registered event kinds.
@@ -188,6 +315,8 @@ export const filInstanceLifecycleEventSchema = z.discriminatedUnion("kind", [
   filInstrumentCreatedPayloadSchema,
   filInstrumentAmendedPayloadSchema,
   filInstrumentTerminatedPayloadSchema,
+  filFxSettlementConfirmedPayloadSchema,
+  filNdfFixingObservedPayloadSchema,
 ]);
 
 export type FilInstanceLifecycleEvent = z.infer<typeof filInstanceLifecycleEventSchema>;
@@ -196,6 +325,8 @@ export const FIL_INSTANCE_EVENT_KINDS = [
   "FilInstrumentCreated",
   "FilInstrumentAmended",
   "FilInstrumentTerminated",
+  "FilFxSettlementConfirmed",
+  "FilNdfFixingObserved",
 ] as const;
 
 export type FilInstanceEventKind = (typeof FIL_INSTANCE_EVENT_KINDS)[number];
