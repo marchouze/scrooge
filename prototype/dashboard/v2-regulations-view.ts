@@ -15,6 +15,7 @@
 
 import type { EventStore } from "../platform/event-store/store";
 import { seatForObligation } from "../platform/regulatory/domain-ownership-map";
+import type { CompletenessTier } from "../platform/regulatory/structured-doc-loader";
 import { redactAgentNames } from "./agent-title";
 import { getBankObligationsView, getObligationDetail } from "./bank-obligations-view";
 import type { EnrichedObligationRef } from "./regulation-obligation-index";
@@ -127,6 +128,12 @@ export interface V2RegulationSection {
   heading: string;
   text: string;
   verbatim: boolean;
+  /**
+   * Completeness tier of the assembled text from the canonical normalizer
+   * (verbatim | summary | heading-only | enriched). Threaded for the Slice-2
+   * reader badge; harmless if the client ignores it.
+   */
+  completeness: CompletenessTier;
   /** Nested subsection provision text, in document order (flattened). */
   subsections: V2RegulationSubsection[];
   /** Image excerpts to render inline (resolved via /api/regulation-reader/:slug/excerpt/:id). */
@@ -159,22 +166,27 @@ const toSectionObligation = (r: EnrichedObligationRef): V2SectionObligation => (
   ownerSeatTitle: r.ownerSeatTitle,
 });
 
-/** Minimal nested subsection shape (the reader type only declares one level). */
-interface RawSubsection {
-  number?: string;
-  text?: string;
-  subsections?: RawSubsection[];
+/** A reader subsection — carries the canonical-normalizer-assembled text. */
+interface ReaderSubsection {
+  number: string;
+  text: string;
+  subsections?: ReaderSubsection[];
 }
 
 /**
- * Flatten a section's subsection tree into ordered {number,text} provisions —
- * the bulk of a regulation's verbatim wording lives here, not at section level.
+ * Collect a section's subsection provisions into ordered {number,text} rows.
+ * Text is already assembled by the canonical normalizer
+ * (`normalizeStructuredDoc`) upstream — each subsection's `text` is its own
+ * verbatim wording, so this is a pure depth-first gather (no re-assembly). Rows
+ * with no text are dropped (heading-only nodes don't render a body).
  */
-function flattenSubsections(subs: readonly RawSubsection[] | undefined): V2RegulationSubsection[] {
+function collectSubsections(
+  subs: readonly ReaderSubsection[] | undefined,
+): V2RegulationSubsection[] {
   const out: V2RegulationSubsection[] = [];
   for (const ss of subs ?? []) {
     if ((ss.text ?? "").trim()) out.push({ number: ss.number ?? "", text: ss.text ?? "" });
-    if (Array.isArray(ss.subsections)) out.push(...flattenSubsections(ss.subsections));
+    if (Array.isArray(ss.subsections)) out.push(...collectSubsections(ss.subsections));
   }
   return out;
 }
@@ -202,7 +214,8 @@ export function buildV2RegulationDetailView(
         heading: s.heading ?? s.title ?? "",
         text: s.text ?? "",
         verbatim: s.verbatim ?? false,
-        subsections: flattenSubsections(s.subsections as RawSubsection[] | undefined),
+        completeness: s.completeness,
+        subsections: collectSubsections(s.subsections as ReaderSubsection[] | undefined),
         excerpts: (s.excerpts ?? []).map((e) => ({
           id: e.id,
           caption: e.caption ?? "",
