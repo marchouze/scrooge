@@ -150,3 +150,32 @@ describe("buildInstrumentDetailView — graph-backed section lookup", () => {
     expect(allSections.length).toBeGreaterThan(0);
   });
 });
+
+describe("buildInstrumentDetailView — goldenSourceHash provenance (Slice 4)", () => {
+  // The detail view threads the doc-level goldenSourceHash from the canonical
+  // normalizer so the reader can offer a golden-source PDF provenance download
+  // (D-REGULATORY-STRUCTURED-FIRST-CANONICAL) WITHOUT changing the default
+  // structured-tree render. Metadata only — passed through, never re-derived.
+
+  it("TC-HASH-RRB: rrb carries its published BLAKE3 goldenSourceHash", () => {
+    const detail = buildInstrumentDetailView(REPO_ROOT, "rrb");
+    expect(detail).not.toBeNull();
+    if (!detail) return;
+    // rrb's structured JSON stamps a real blake3 golden-source hash.
+    expect(typeof detail.goldenSourceHash).toBe("string");
+    expect(detail.goldenSourceHash).toMatch(/^blake3:[a-f0-9]{64}$/);
+  });
+
+  it("TC-HASH-NONE: a hand-authored structured-first source carries null", () => {
+    // popia / fic-act are hand-authored structured-first sources with no
+    // published golden PDF → null (so the reader renders no download link).
+    const popia = buildInstrumentDetailView(REPO_ROOT, "popia");
+    const fic = buildInstrumentDetailView(REPO_ROOT, "fic-act");
+    // At least one of these hand-authored sources must exist and be null.
+    const present = [popia, fic].filter((d): d is NonNullable<typeof d> => d !== null);
+    expect(present.length).toBeGreaterThan(0);
+    for (const d of present) {
+      expect(d.goldenSourceHash).toBeNull();
+    }
+  });
+});
