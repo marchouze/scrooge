@@ -4,10 +4,511 @@
       "id": "ACC-1000-001",
       "name": "Bank",
       "currency": "ZAR",
-      "category": "asset",
+      "category": "asset-cash",
       "side": "debit"
     },
-
+    {
+      "id": "ACC-1100-001",
+      "name": "Central Bank Reserve Account",
+      "currency": "ZAR",
+      "category": "asset-cash",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1100-002",
+      "name": "Nostro",
+      "currency": "USD",
+      "category": "asset-cash",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1100-003",
+      "name": "Nostro",
+      "currency": "EUR",
+      "category": "asset-cash",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1100-004",
+      "name": "FX Settlement Suspense",
+      "currency": "ZAR",
+      "category": "asset-suspense",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1100-005",
+      "name": "FX Settlement Suspense",
+      "currency": "USD",
+      "category": "asset-suspense",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1200-001",
+      "name": "Nostro",
+      "currency": "ZAR",
+      "category": "asset-cash",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1200-002",
+      "name": "Nostro",
+      "currency": "USD",
+      "category": "asset-cash",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1200-003",
+      "name": "Nostro",
+      "currency": "EUR",
+      "category": "asset-cash",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1200-004",
+      "name": "Nostro",
+      "currency": "GBP",
+      "category": "asset-cash",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1200-005",
+      "name": "Nostro",
+      "currency": "JPY",
+      "category": "asset-cash",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1200-006",
+      "name": "Nostro",
+      "currency": "CHF",
+      "category": "asset-cash",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-1200-007",
+      "name": "Nostro",
+      "currency": "AUD",
+      "category": "asset-cash",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2100-001",
+      "name": "FX Trading Receivable",
+      "currency": "ZAR",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2100-002",
+      "name": "FX Trading Receivable",
+      "currency": "USD",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2100-003",
+      "name": "FX Trading Payable",
+      "currency": "ZAR",
+      "category": "liability-payable",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-004",
+      "name": "FX Trading Payable",
+      "currency": "USD",
+      "category": "liability-payable",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-005",
+      "name": "Unrealised FX P&L — FVTPL",
+      "currency": "ZAR",
+      "category": "income-trading",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-006",
+      "name": "Realised FX P&L",
+      "currency": "ZAR",
+      "category": "income-trading",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-007",
+      "name": "FX Unresolved-Currency Suspense",
+      "category": "asset-suspense",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2100-008",
+      "name": "OCI Reserve — FX (FVOCI election, IFRS 9 §5.7.5)",
+      "currency": "ZAR",
+      "category": "equity",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-009",
+      "name": "FX Sub-Ledger Build-Phase Remediation Suspense",
+      "currency": "ZAR",
+      "category": "asset-suspense",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2100-010",
+      "name": "FX Trading Receivable",
+      "currency": "GBP",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2100-011",
+      "name": "FX Trading Payable",
+      "currency": "GBP",
+      "category": "liability-payable",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-012",
+      "name": "Unrealised FX P&L — FVTPL",
+      "currency": "GBP",
+      "category": "income-trading",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-013",
+      "name": "FX Trading Receivable",
+      "currency": "EUR",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2100-014",
+      "name": "FX Trading Payable",
+      "currency": "EUR",
+      "category": "liability-payable",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-015",
+      "name": "Unrealised FX P&L — FVTPL",
+      "currency": "EUR",
+      "category": "income-trading",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-016",
+      "name": "FX Trading Receivable",
+      "currency": "CHF",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2100-017",
+      "name": "FX Trading Payable",
+      "currency": "CHF",
+      "category": "liability-payable",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-018",
+      "name": "Unrealised FX P&L — FVTPL",
+      "currency": "CHF",
+      "category": "income-trading",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-019",
+      "name": "FX Trading Receivable",
+      "currency": "AUD",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2100-020",
+      "name": "FX Trading Payable",
+      "currency": "AUD",
+      "category": "liability-payable",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-021",
+      "name": "Unrealised FX P&L — FVTPL",
+      "currency": "AUD",
+      "category": "income-trading",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-022",
+      "name": "FX Trading Receivable",
+      "currency": "JPY",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2100-023",
+      "name": "FX Trading Payable",
+      "currency": "JPY",
+      "category": "liability-payable",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-024",
+      "name": "Unrealised FX P&L — FVTPL",
+      "currency": "JPY",
+      "category": "income-trading",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-025",
+      "name": "FX Forward-Points Deferred Income",
+      "currency": "ZAR",
+      "category": "liability-payable",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2100-026",
+      "name": "FX Forward-Points Deferred Expense",
+      "currency": "ZAR",
+      "category": "asset-trading",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2105-001",
+      "name": "FX Sub-Ledger Build-Phase Write-Off",
+      "category": "income-trading",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2200-001",
+      "name": "Customer Payables",
+      "currency": "ZAR",
+      "category": "liability-payable",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2200-002",
+      "name": "Customer Payables",
+      "currency": "USD",
+      "category": "liability-payable",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2300-001",
+      "name": "Settlement-Failed Receivable",
+      "currency": "ZAR",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2300-002",
+      "name": "Settlement-Failed Receivable",
+      "currency": "USD",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2300-005",
+      "name": "Settlement-Failed Receivable",
+      "currency": "EUR",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2300-006",
+      "name": "Settlement-Failed Receivable",
+      "currency": "GBP",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2300-007",
+      "name": "Settlement-Failed Receivable",
+      "currency": "JPY",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2300-008",
+      "name": "Settlement-Failed Receivable",
+      "currency": "CHF",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2300-009",
+      "name": "Settlement-Failed Receivable",
+      "currency": "AUD",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2300-003",
+      "name": "ECL Allowance — Settlement-Failed",
+      "currency": "ZAR",
+      "category": "asset-other",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-2300-004",
+      "name": "Credit Loss Expense — FX Settlement",
+      "currency": "ZAR",
+      "category": "expense-impairment",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2400-001",
+      "name": "Payment Suspense",
+      "currency": "ZAR",
+      "category": "asset-suspense",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-2400-002",
+      "name": "Payment Suspense",
+      "currency": "USD",
+      "category": "asset-suspense",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-3100-001",
+      "name": "Bond Asset — Banking Book (Amortised Cost)",
+      "currency": "ZAR",
+      "category": "asset-investment",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-3100-002",
+      "name": "Bond Asset — Trading Book (FVTPL)",
+      "currency": "ZAR",
+      "category": "asset-trading",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-3100-003",
+      "name": "Accrued Interest Receivable — Bonds",
+      "currency": "ZAR",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-3100-004",
+      "name": "Bond Discount/Premium Unamortised",
+      "currency": "ZAR",
+      "category": "asset-other",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-3100-005",
+      "name": "Unrealised P&L — Bonds (FVTPL)",
+      "currency": "ZAR",
+      "category": "income-trading",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-3100-006",
+      "name": "Realised P&L — Bonds",
+      "currency": "ZAR",
+      "category": "income-trading",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-4101-001",
+      "name": "Interest Income (EIR) — Bonds",
+      "currency": "ZAR",
+      "category": "income-interest",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-3200-001",
+      "name": "Equity Asset — FVTPL",
+      "currency": "ZAR",
+      "category": "asset-trading",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-3200-002",
+      "name": "Equity Asset — FVOCI",
+      "currency": "ZAR",
+      "category": "asset-investment",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-3200-003",
+      "name": "Unrealised P&L — Equities (FVTPL)",
+      "currency": "ZAR",
+      "category": "income-trading",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-3200-004",
+      "name": "OCI Reserve — Equities (FVOCI)",
+      "currency": "ZAR",
+      "category": "equity",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-3200-005",
+      "name": "Dividend Receivable",
+      "currency": "ZAR",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-3200-006",
+      "name": "Dividend Income",
+      "currency": "ZAR",
+      "category": "income-other",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-3200-007",
+      "name": "Withholding Tax Payable — Dividends",
+      "currency": "ZAR",
+      "category": "liability-other",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-3200-008",
+      "name": "Equity Trade Settlement Suspense (Pending Settlement)",
+      "currency": "ZAR",
+      "category": "liability-payable",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-3300-001",
+      "name": "Swap Asset — FVTPL (Positive NPV)",
+      "currency": "ZAR",
+      "category": "asset-derivative",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-3300-002",
+      "name": "Swap Liability — FVTPL (Negative NPV)",
+      "currency": "ZAR",
+      "category": "liability-derivative",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-3300-003",
+      "name": "Unrealised P&L — IRD (FVTPL)",
+      "currency": "ZAR",
+      "category": "income-trading",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-4100-001",
+      "name": "Settlement Receivable",
+      "currency": "ZAR",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-4100-002",
+      "name": "Settlement Receivable",
+      "currency": "USD",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
     {
       "id": "ACC-5000-001",
       "name": "Share Capital",
@@ -22,7 +523,41 @@
       "category": "equity",
       "side": "credit"
     },
-
+    {
+      "id": "ACC-5100-001",
+      "name": "Repo Asset (Secured Lending Receivable)",
+      "currency": "ZAR",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-5100-002",
+      "name": "Repo Liability (Secured Borrowing Payable)",
+      "currency": "ZAR",
+      "category": "liability-payable",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-5100-003",
+      "name": "Repo Collateral Memo (Off-Balance-Sheet)",
+      "currency": "ZAR",
+      "category": "asset-other",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-5100-004",
+      "name": "Repo Accrued Interest",
+      "currency": "ZAR",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-5100-005",
+      "name": "Repo Interest Income / Expense",
+      "currency": "ZAR",
+      "category": "income-interest",
+      "side": "credit"
+    },
     {
       "id": "ACC-5200-001",
       "name": "Subordinated Debt — Tier 2 (≥5yr remaining maturity)",
@@ -37,639 +572,86 @@
       "category": "liability-t2-capital",
       "side": "credit"
     },
-
-    {
-      "id": "ACC-1100-001",
-      "name": "Central Bank Reserve Account",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-1100-002",
-      "name": "Nostro",
-      "currency": "USD",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-1100-003",
-      "name": "Nostro",
-      "currency": "EUR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-1100-004",
-      "name": "FX Settlement Suspense",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-1100-005",
-      "name": "FX Settlement Suspense",
-      "currency": "USD",
-      "category": "asset",
-      "side": "debit"
-    },
-
-    {
-      "id": "ACC-1200-001",
-      "name": "Nostro",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-1200-002",
-      "name": "Nostro",
-      "currency": "USD",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-1200-003",
-      "name": "Nostro",
-      "currency": "EUR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-1200-004",
-      "name": "Nostro",
-      "currency": "GBP",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-1200-005",
-      "name": "Nostro",
-      "currency": "JPY",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-1200-006",
-      "name": "Nostro",
-      "currency": "CHF",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-1200-007",
-      "name": "Nostro",
-      "currency": "AUD",
-      "category": "asset",
-      "side": "debit"
-    },
-
-    {
-      "id": "ACC-2100-001",
-      "name": "FX Trading Receivable",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-2100-002",
-      "name": "FX Trading Receivable",
-      "currency": "USD",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-2100-003",
-      "name": "FX Trading Payable",
-      "currency": "ZAR",
-      "category": "liability",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-2100-004",
-      "name": "FX Trading Payable",
-      "currency": "USD",
-      "category": "liability",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-2100-005",
-      "name": "Unrealised FX P&L — FVTPL",
-      "currency": "ZAR",
-      "category": "income",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-2100-006",
-      "name": "Realised FX P&L",
-      "currency": "ZAR",
-      "category": "income",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-2100-007",
-      "name": "FX Unresolved-Currency Suspense",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-2100-008",
-      "name": "OCI Reserve — FX (FVOCI election, IFRS 9 §5.7.5)",
-      "currency": "ZAR",
-      "category": "equity",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-2100-009",
-      "name": "FX Sub-Ledger Build-Phase Remediation Suspense",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-
-    {
-      "id": "ACC-2100-010",
-      "name": "FX Trading Receivable",
-      "currency": "GBP",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-2100-011",
-      "name": "FX Trading Payable",
-      "currency": "GBP",
-      "category": "liability",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-2100-012",
-      "name": "Unrealised FX P&L — FVTPL",
-      "currency": "GBP",
-      "category": "income",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-2100-013",
-      "name": "FX Trading Receivable",
-      "currency": "EUR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-2100-014",
-      "name": "FX Trading Payable",
-      "currency": "EUR",
-      "category": "liability",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-2100-015",
-      "name": "Unrealised FX P&L — FVTPL",
-      "currency": "EUR",
-      "category": "income",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-2100-016",
-      "name": "FX Trading Receivable",
-      "currency": "CHF",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-2100-017",
-      "name": "FX Trading Payable",
-      "currency": "CHF",
-      "category": "liability",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-2100-018",
-      "name": "Unrealised FX P&L — FVTPL",
-      "currency": "CHF",
-      "category": "income",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-2100-019",
-      "name": "FX Trading Receivable",
-      "currency": "AUD",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-2100-020",
-      "name": "FX Trading Payable",
-      "currency": "AUD",
-      "category": "liability",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-2100-021",
-      "name": "Unrealised FX P&L — FVTPL",
-      "currency": "AUD",
-      "category": "income",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-2100-022",
-      "name": "FX Trading Receivable",
-      "currency": "JPY",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-2100-023",
-      "name": "FX Trading Payable",
-      "currency": "JPY",
-      "category": "liability",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-2100-024",
-      "name": "Unrealised FX P&L — FVTPL",
-      "currency": "JPY",
-      "category": "income",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-2100-025",
-      "name": "FX Forward-Points Deferred Income",
-      "currency": "ZAR",
-      "category": "liability",
-      "side": "credit",
-      "note": "Accrued forward premium (IAS 21 §28) — amortised into P&L over contract tenor; cleared at maturity/settlement. Credit = premium income not yet recognised."
-    },
-    {
-      "id": "ACC-2100-026",
-      "name": "FX Forward-Points Deferred Expense",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit",
-      "note": "Accrued forward discount (IAS 21 §28) — amortised into P&L over contract tenor; cleared at maturity/settlement. Debit = discount cost not yet expensed."
-    },
-    {
-      "id": "ACC-2105-001",
-      "name": "FX Sub-Ledger Build-Phase Write-Off",
-      "category": "income",
-      "side": "debit"
-    },
-
-    {
-      "id": "ACC-2300-001",
-      "name": "Settlement-Failed Receivable",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-2300-002",
-      "name": "Settlement-Failed Receivable",
-      "currency": "USD",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-2300-005",
-      "name": "Settlement-Failed Receivable",
-      "currency": "EUR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-2300-006",
-      "name": "Settlement-Failed Receivable",
-      "currency": "GBP",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-2300-007",
-      "name": "Settlement-Failed Receivable",
-      "currency": "JPY",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-2300-008",
-      "name": "Settlement-Failed Receivable",
-      "currency": "CHF",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-2300-009",
-      "name": "Settlement-Failed Receivable",
-      "currency": "AUD",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-2300-003",
-      "name": "ECL Allowance — Settlement-Failed",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-2300-004",
-      "name": "Credit Loss Expense — FX Settlement",
-      "currency": "ZAR",
-      "category": "expense",
-      "side": "debit"
-    },
-
-    {
-      "id": "ACC-2200-001",
-      "name": "Customer Payables",
-      "currency": "ZAR",
-      "category": "liability",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-2200-002",
-      "name": "Customer Payables",
-      "currency": "USD",
-      "category": "liability",
-      "side": "credit"
-    },
-
-    {
-      "id": "ACC-2400-001",
-      "name": "Payment Suspense",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-2400-002",
-      "name": "Payment Suspense",
-      "currency": "USD",
-      "category": "asset",
-      "side": "debit"
-    },
-
-    {
-      "id": "ACC-4100-001",
-      "name": "Settlement Receivable",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-4100-002",
-      "name": "Settlement Receivable",
-      "currency": "USD",
-      "category": "asset",
-      "side": "debit"
-    },
-
-    {
-      "id": "ACC-3100-001",
-      "name": "Bond Asset — Banking Book (Amortised Cost)",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-3100-002",
-      "name": "Bond Asset — Trading Book (FVTPL)",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-3100-003",
-      "name": "Accrued Interest Receivable — Bonds",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-3100-004",
-      "name": "Bond Discount/Premium Unamortised",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-3100-005",
-      "name": "Unrealised P&L — Bonds (FVTPL)",
-      "currency": "ZAR",
-      "category": "income",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-3100-006",
-      "name": "Realised P&L — Bonds",
-      "currency": "ZAR",
-      "category": "income",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-4101-001",
-      "name": "Interest Income (EIR) — Bonds",
-      "currency": "ZAR",
-      "category": "income",
-      "side": "credit"
-    },
-
-    {
-      "id": "ACC-3200-001",
-      "name": "Equity Asset — FVTPL",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-3200-002",
-      "name": "Equity Asset — FVOCI",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-3200-003",
-      "name": "Unrealised P&L — Equities (FVTPL)",
-      "currency": "ZAR",
-      "category": "income",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-3200-004",
-      "name": "OCI Reserve — Equities (FVOCI)",
-      "currency": "ZAR",
-      "category": "equity",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-3200-005",
-      "name": "Dividend Receivable",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-3200-006",
-      "name": "Dividend Income",
-      "currency": "ZAR",
-      "category": "income",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-3200-007",
-      "name": "Withholding Tax Payable — Dividends",
-      "currency": "ZAR",
-      "category": "liability",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-3200-008",
-      "name": "Equity Trade Settlement Suspense (Pending Settlement)",
-      "currency": "ZAR",
-      "category": "liability",
-      "side": "credit"
-    },
-
-    {
-      "id": "ACC-3300-001",
-      "name": "Swap Asset — FVTPL (Positive NPV)",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-3300-002",
-      "name": "Swap Liability — FVTPL (Negative NPV)",
-      "currency": "ZAR",
-      "category": "liability",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-3300-003",
-      "name": "Unrealised P&L — IRD (FVTPL)",
-      "currency": "ZAR",
-      "category": "income",
-      "side": "credit"
-    },
-
-    {
-      "id": "ACC-5100-001",
-      "name": "Repo Asset (Secured Lending Receivable)",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-5100-002",
-      "name": "Repo Liability (Secured Borrowing Payable)",
-      "currency": "ZAR",
-      "category": "liability",
-      "side": "credit"
-    },
-    {
-      "id": "ACC-5100-003",
-      "name": "Repo Collateral Memo (Off-Balance-Sheet)",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-5100-004",
-      "name": "Repo Accrued Interest",
-      "currency": "ZAR",
-      "category": "asset",
-      "side": "debit"
-    },
-    {
-      "id": "ACC-5100-005",
-      "name": "Repo Interest Income / Expense",
-      "currency": "ZAR",
-      "category": "income",
-      "side": "credit"
-    },
-
     {
       "id": "ACC-6100-001",
       "name": "Deposit Liability — Retail Stable",
       "currency": "ZAR",
-      "category": "liability",
+      "category": "liability-other",
       "side": "credit"
     },
     {
       "id": "ACC-6100-002",
       "name": "Deposit Liability — Retail Less-Stable",
       "currency": "ZAR",
-      "category": "liability",
+      "category": "liability-other",
       "side": "credit"
     },
     {
       "id": "ACC-6100-003",
       "name": "Deposit Liability — Wholesale Operational",
       "currency": "ZAR",
-      "category": "liability",
+      "category": "liability-other",
       "side": "credit"
     },
     {
       "id": "ACC-6100-004",
       "name": "Deposit Liability — Wholesale Non-Operational",
       "currency": "ZAR",
-      "category": "liability",
+      "category": "liability-other",
       "side": "credit"
     },
     {
       "id": "ACC-6100-005",
       "name": "Deposit Accrued Interest Payable",
       "currency": "ZAR",
-      "category": "liability",
+      "category": "liability-other",
       "side": "credit"
     },
     {
       "id": "ACC-6100-006",
       "name": "Deposit Interest Expense",
       "currency": "ZAR",
-      "category": "expense",
+      "category": "expense-interest",
       "side": "debit"
     },
-
     {
       "id": "ACC-7100-001",
       "name": "Due from Banks — Call Placements",
       "currency": "ZAR",
-      "category": "asset",
+      "category": "asset-receivable",
       "side": "debit"
     },
     {
       "id": "ACC-7100-002",
       "name": "Due from Banks — Fixed-Term Placements",
       "currency": "ZAR",
-      "category": "asset",
+      "category": "asset-receivable",
       "side": "debit"
     },
     {
       "id": "ACC-7100-003",
       "name": "IBL Accrued Interest Receivable",
       "currency": "ZAR",
-      "category": "asset",
+      "category": "asset-receivable",
       "side": "debit"
     },
     {
       "id": "ACC-7100-004",
       "name": "IBL Interest Income",
       "currency": "ZAR",
-      "category": "income",
+      "category": "income-interest",
       "side": "credit"
     },
     {
       "id": "ACC-9000-001",
       "name": "Net Open Position Memorandum — Long",
-      "category": "memorandum",
+      "category": "memorandum-regulatory-nop",
       "side": "debit"
     },
     {
       "id": "ACC-9000-002",
       "name": "Net Open Position Memorandum — Short",
-      "category": "memorandum",
+      "category": "memorandum-regulatory-nop",
       "side": "credit"
     }
   ]
