@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Regulation Reader — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    .rd-toolbar { display:flex; gap:var(--space-3); align-items:center; flex-wrap:wrap; margin-bottom:var(--space-4); }
+    .rd-toolbar input { flex:1; min-width:180px; max-width:320px; padding:6px 10px;
+      border:1px solid var(--color-border); border-radius:var(--radius-sm);
+      background:var(--color-surface); color:var(--color-text-primary); font:var(--text-body); }
+    .rd-toggle { display:inline-flex; align-items:center; gap:6px; font:var(--text-caption);
+      color:var(--color-text-secondary); cursor:pointer; user-select:none; }
+    .rd-chapter-h { font:var(--text-h3); color:var(--color-text-secondary); text-transform:uppercase;
+      letter-spacing:0.05em; margin:var(--space-6) 0 var(--space-3); padding-bottom:var(--space-2);
+      border-bottom:1px solid var(--color-border); }
+    .rd-section { padding:var(--space-4); border:1px solid var(--color-border); border-radius:var(--radius-lg);
+      background:var(--color-surface); margin-bottom:var(--space-3); }
+    .rd-section:target, .rd-section.rd-flash { border-color:var(--color-accent); background:var(--color-accent-bg); }
+    .rd-section-hd { display:flex; gap:var(--space-2); align-items:baseline; margin-bottom:var(--space-2); }
+    .rd-section-num { font-weight:700; color:var(--color-accent); }
+    .rd-section-heading { font-weight:600; color:var(--color-text-primary); }
+    .rd-text { color:var(--color-text-primary); line-height:1.65; white-space:pre-wrap; font:var(--text-body); }
+    .rd-obls { margin-top:var(--space-3); padding-top:var(--space-3); border-top:1px dashed var(--color-border); }
+    .rd-obls-lbl { font-size:0.72em; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;
+      color:var(--color-accent); margin-bottom:var(--space-2); }
+    .rd-obl { display:flex; gap:var(--space-2); align-items:center; flex-wrap:wrap; padding:6px 0; }
+    .rd-obl a { color:var(--color-accent); font-weight:600; font-family:ui-monospace,monospace; text-decoration:none; }
+    .rd-obl a:hover { text-decoration:underline; }
+    .rd-obl-title { color:var(--color-text-primary); }
+    .rd-obl-meta { color:var(--color-text-secondary); font-size:0.85em; }
+    .v2-chip { display:inline-flex; align-items:center; padding:1px 8px; border-radius:10px; font-size:0.76em; font-weight:600; }
+    .v2-chip--applies { background:var(--color-success-bg); color:var(--color-success); }
+    .v2-chip--partially-applies { background:var(--color-warning-bg); color:var(--color-warning); }
+    .v2-chip--does-not-apply { background:var(--color-surface-raised); color:var(--color-text-secondary); }
+    .v2-chip--na { background:var(--color-surface-raised); color:var(--color-text-disabled); }
+    .v2-chip--status { background:var(--color-info-bg); color:var(--color-info); }
+    body.rd-hide-obls .rd-obls { display:none; }
+  </style>
+</head>
+<body data-provenance-content="none">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    const slug = new URLSearchParams(location.search).get("slug");
+
+    if (!slug) {
+      renderPageHeader(main, {
+        crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Compliance", href: "/v2/compliance/index.html" }, { label: "Regulations", href: "/v2/compliance/regulations.html" }, { label: "Reader" }],
+        title: "Regulation Reader",
+      });
+      const e = document.createElement("div"); e.className = "v2-empty";
+      e.innerHTML = `<div class="v2-empty-icon">⊙</div><div class="v2-empty-msg">No regulation selected — choose one from the <a href="/v2/compliance/regulations.html">Regulations register</a>.</div>`;
+      main.appendChild(e);
+    } else {
+      const chip = (v) => v ? `<span class="v2-chip v2-chip--${v}">${v2Esc(v)}</span>` : `<span class="v2-chip v2-chip--na">unassessed</span>`;
+      v2WireLoader(async () => {
+        main.innerHTML = "";
+        let d;
+        try { d = await v2Fetch(`/api/v2/regulations/${encodeURIComponent(slug)}`); }
+        catch (e) {
+          renderPageHeader(main, { crumbs: [{ label: "Compliance", href: "/v2/compliance/index.html" }, { label: "Regulations", href: "/v2/compliance/regulations.html" }, { label: slug }], title: "Regulation Reader" });
+          v2RenderError(main, String(e.message || e)); return;
+        }
+        renderPageHeader(main, {
+          crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Compliance", href: "/v2/compliance/index.html" }, { label: "Regulations", href: "/v2/compliance/regulations.html" }, { label: d.shortTitle || d.slug }],
+          title: d.title,
+        });
+        renderTileGroup(main, { tiles: [
+          { label: "Regulator", value: v2Esc(d.regulator || "—") },
+          { label: "Year", value: String(d.year || "—") },
+          { label: "Bank obligations", value: String(d.bankObligations ?? 0), unit: "Identified from this reg", variant: d.bankObligations ? "success" : "" },
+        ]});
+
+        const toolbar = document.createElement("div"); toolbar.className = "rd-toolbar";
+        toolbar.innerHTML = `
+          <input type="search" id="q" placeholder="Search sections…" aria-label="Search sections">
+          <label class="rd-toggle"><input type="checkbox" id="showObls" checked> Show obligation summary</label>`;
+        main.appendChild(toolbar);
+
+        const body = document.createElement("div"); main.appendChild(body);
+        let html = "";
+        for (const ch of d.chapters || []) {
+          const secs = (ch.sections || []).map((s) => {
+            const obls = (s.obligations || []).map((o) => `
+              <div class="rd-obl">
+                <a href="/v2/compliance/obligation.html?id=${encodeURIComponent(o.id)}">${v2Esc(o.id)}</a>
+                <span class="rd-obl-title">${v2Esc(o.title || "")}</span>
+                <span class="v2-chip v2-chip--status">${v2Esc(o.status || "—")}</span>
+                ${chip(o.verdict)}
+                ${o.ownerSeatTitle ? `<span class="rd-obl-meta">${v2Esc(o.ownerSeatTitle)}</span>` : ""}
+              </div>`).join("");
+            const oblBlock = obls ? `<div class="rd-obls"><div class="rd-obls-lbl">Obligations identified from this section</div>${obls}</div>` : "";
+            return `<div class="rd-section">
+              <div class="rd-section-hd"><span class="rd-section-num">${v2Esc(s.number || "")}</span><span class="rd-section-heading">${v2Esc(s.heading || "")}</span></div>
+              ${s.text ? `<div class="rd-text">${v2Esc(s.text)}</div>` : `<div class="rd-obl-meta">No verbatim text extracted for this section.</div>`}
+              ${oblBlock}
+            </div>`;
+          }).join("");
+          html += `<div class="rd-chapter">${ch.heading || ch.number ? `<div class="rd-chapter-h">${v2Esc(ch.heading || ch.number)}</div>` : ""}${secs}</div>`;
+        }
+        body.innerHTML = html || `<div class="v2-empty"><div class="v2-empty-msg">No sections available for this regulation.</div></div>`;
+
+        document.getElementById("showObls").addEventListener("change", (e) => {
+          document.body.classList.toggle("rd-hide-obls", !e.target.checked);
+        });
+        document.getElementById("q").addEventListener("input", (e) => {
+          const q = e.target.value.trim().toLowerCase();
+          for (const sec of body.querySelectorAll(".rd-section"))
+            sec.style.display = !q || sec.textContent.toLowerCase().includes(q) ? "" : "none";
+        });
+      });
+    }
+  </script>
+</body>
+</html>

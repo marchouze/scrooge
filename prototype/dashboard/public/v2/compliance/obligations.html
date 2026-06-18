@@ -7,6 +7,23 @@
   <link rel="stylesheet" href="/v2/_v2-shell.css">
   <link rel="stylesheet" href="/v2/_v2-tile.css">
   <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    .v2-chip { display:inline-flex; align-items:center; padding:1px 8px; border-radius:10px; font-size:0.76em; font-weight:600; }
+    .v2-chip--applies { background:var(--color-success-bg); color:var(--color-success); }
+    .v2-chip--partially-applies { background:var(--color-warning-bg); color:var(--color-warning); }
+    .v2-chip--does-not-apply { background:var(--color-surface-raised); color:var(--color-text-secondary); }
+    .v2-chip--na { background:var(--color-surface-raised); color:var(--color-text-disabled); }
+    .v2-chip--status { background:var(--color-info-bg); color:var(--color-info); }
+    .ob-controls { display:flex; gap:var(--space-3); align-items:center; flex-wrap:wrap; margin-bottom:var(--space-4); }
+    .ob-controls input, .ob-controls select { padding:6px 10px; border:1px solid var(--color-border);
+      border-radius:var(--radius-sm); background:var(--color-surface); color:var(--color-text-primary); font:var(--text-body); }
+    .ob-controls input { flex:1; min-width:180px; max-width:340px; }
+    .ob-controls .v2-count { color:var(--color-text-secondary); font:var(--text-caption); margin-left:auto; }
+    .ob-owner { display:flex; align-items:baseline; gap:var(--space-2); margin:var(--space-6) 0 var(--space-2); }
+    .ob-owner-title { font:var(--text-h3); color:var(--color-text-primary); }
+    .ob-owner-count { font:var(--text-caption); color:var(--color-text-secondary);
+      background:var(--color-surface-raised); padding:1px 8px; border-radius:10px; }
+  </style>
 </head>
 <body data-provenance-content="none">
   <header class="v2-header">
@@ -30,30 +47,83 @@
   <script src="/v2/_v2-shell.js"></script>
   <script src="/provenance-badge.js"></script>
   <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
   <script>
     const main = document.getElementById("v2-main");
     renderPageHeader(main, {
       crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Compliance", href: "/v2/compliance/index.html" }, { label: "Obligations" }],
       title: "Obligation Register",
     });
-    renderTileGroup(main, {
-      tiles: [
-        { label: "Total Obligations", unit: "In register" },
-        { label: "Adopted", unit: "Active obligations" },
-        { label: "Unadopted", unit: "Not yet adopted" },
-        { label: "Superseded", unit: "Retired obligations" },
-      ],
-    });
-    const s = document.createElement("div"); s.className = "v2-section"; main.appendChild(s);
-    const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "Obligations"; s.appendChild(h);
-    renderTable(s, { columns: ["URN", "Title", "Domain", "Regulator", "Section", "Status", "Adopted"] });
-    renderRefs(main, {
-      refs: [
-        { label: "FIC Act 38 of 2001 — FICA obligations", href: "#" },
-        { label: "Banks Act 94 of 1990 — Prudential obligations", href: "#" },
-        { label: "PA Directives — Prudential Authority", href: "#" },
-        { label: "WS-OBLIGATION-CLEANUP", href: "#" },
-      ],
+    const tileHost = document.createElement("div"); main.appendChild(tileHost);
+    const section = document.createElement("div"); section.className = "v2-section"; main.appendChild(section);
+    const sh = document.createElement("h2"); sh.className = "v2-section-title"; sh.textContent = "By owner"; section.appendChild(sh);
+    const controls = document.createElement("div"); controls.className = "ob-controls";
+    controls.innerHTML = `
+      <input type="search" id="q" placeholder="Search obligations…" aria-label="Search obligations">
+      <select id="owner" aria-label="Filter by owner"><option value="">All owners</option></select>
+      <select id="verdict" aria-label="Filter by applicability">
+        <option value="">All applicability</option>
+        <option value="applies">Applies</option>
+        <option value="partially-applies">Partially applies</option>
+        <option value="does-not-apply">Does not apply</option>
+      </select>
+      <span class="v2-count" id="count"></span>`;
+    section.appendChild(controls);
+    const groupsHost = document.createElement("div"); section.appendChild(groupsHost);
+
+    let byOwner = [];
+    const chip = (v) => v ? `<span class="v2-chip v2-chip--${v}">${v2Esc(v)}</span>` : `<span class="v2-chip v2-chip--na">unassessed</span>`;
+
+    function render() {
+      const q = document.getElementById("q").value.trim().toLowerCase();
+      const owner = document.getElementById("owner").value;
+      const verdict = document.getElementById("verdict").value;
+      groupsHost.innerHTML = "";
+      let shown = 0;
+      for (const g of byOwner) {
+        if (owner && g.ownerSeatTitle !== owner) continue;
+        const rows = g.obligations.filter((o) =>
+          (!verdict || (o.verdict || "") === verdict) &&
+          (!q || `${o.id} ${o.title} ${o.regulator} ${o.domain}`.toLowerCase().includes(q)));
+        if (!rows.length) continue;
+        shown += rows.length;
+        const hd = document.createElement("div"); hd.className = "ob-owner";
+        hd.innerHTML = `<span class="ob-owner-title">${v2Esc(g.ownerSeatTitle)}</span><span class="ob-owner-count">${rows.length}</span>`;
+        groupsHost.appendChild(hd);
+        renderTable(groupsHost, {
+          columns: ["Obligation", "Regulator", "Domain", "Status", "Applicability"],
+          rows: rows.map((o) => ({
+            href: `/v2/compliance/obligation.html?id=${encodeURIComponent(o.id)}`,
+            cells: [
+              `<strong>${v2Esc(o.title || o.id)}</strong><div style="color:var(--color-text-secondary);font-size:0.85em;font-family:ui-monospace,monospace">${v2Esc(o.id)}</div>`,
+              v2Esc(o.regulator || "—"),
+              v2Esc(o.domain || "—"),
+              `<span class="v2-chip v2-chip--status">${v2Esc(o.status || "—")}</span>`,
+              chip(o.verdict),
+            ],
+          })),
+        });
+      }
+      document.getElementById("count").textContent = `${shown} obligation(s)`;
+      if (!shown) groupsHost.innerHTML = `<div class="v2-empty"><div class="v2-empty-msg">No obligations match.</div></div>`;
+    }
+
+    v2WireLoader(async () => {
+      let data;
+      try { data = await v2Fetch("/api/v2/obligations"); }
+      catch (e) { v2RenderError(section, String(e.message || e)); return; }
+      byOwner = data.byOwner || [];
+      const ap = data.summary?.byApplicability || {};
+      renderTileGroup(tileHost, { tiles: [
+        { label: "Total Obligations", value: String(data.summary?.total ?? 0), unit: "In register" },
+        { label: "Owner seats", value: String(data.summary?.owners ?? 0), unit: "Accountable seats" },
+        { label: "Applies", value: String(ap.applies ?? 0), unit: "Assessed", variant: "success" },
+        { label: "Unassessed", value: String(ap["(unassessed)"] ?? 0), unit: "No verdict yet", variant: "warning" },
+      ]});
+      const sel = document.getElementById("owner");
+      for (const g of byOwner) { const o = document.createElement("option"); o.value = g.ownerSeatTitle; o.textContent = `${g.ownerSeatTitle} (${g.count})`; sel.appendChild(o); }
+      for (const id of ["q", "owner", "verdict"]) document.getElementById(id).addEventListener("input", render);
+      render();
     });
   </script>
 </body>

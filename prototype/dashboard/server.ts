@@ -315,6 +315,11 @@ import { buildTaxonomiesView } from "./taxonomy-view";
 import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
 import type { DashboardState } from "./types";
 import {
+  buildV2ObligationsView,
+  buildV2RegulationDetailView,
+  buildV2RegulationsView,
+} from "./v2-regulations-view";
+import {
   buildDecisionsView,
   buildNpaRegisterView,
   buildPoliciesView,
@@ -5550,6 +5555,34 @@ const server = Bun.serve({
       const detail = buildProcedureDetailView(REPO_ROOT, filename, nowUtc());
       if (!detail) return jsonResponse({ error: `unknown procedure: ${filename}` }, 404);
       return jsonResponse({ ...detail, pageProvenance: filter });
+    }
+    // Regulations register (Compliance). Reference instruments (Plane A) flagged
+    // with whether the bank has identified (adopted) obligations from each
+    // (Plane B, via the reverse index). Detail = verbatim section text + the
+    // per-section obligation summary. Seats by TITLE only (name-free DTOs).
+    if (req.method === "GET" && url.pathname === "/api/v2/regulations") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildV2RegulationsView(REPO_ROOT, eventStore),
+        pageProvenance: filter,
+      });
+    }
+    if (req.method === "GET" && url.pathname.startsWith("/api/v2/regulations/")) {
+      const slug = decodeURIComponent(url.pathname.slice("/api/v2/regulations/".length));
+      if (!slug) return jsonResponse({ error: "missing slug" }, 400);
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const detail = buildV2RegulationDetailView(REPO_ROOT, slug, eventStore);
+      if (!detail) return jsonResponse({ error: `unknown regulation: ${slug}` }, 404);
+      return jsonResponse({ ...detail, pageProvenance: filter });
+    }
+    // Obligation register (Compliance), grouped BY OWNER seat. Event-sourced
+    // (Plane B); owner surfaced by seat TITLE only.
+    if (req.method === "GET" && url.pathname === "/api/v2/obligations") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildV2ObligationsView(eventStore, REPO_ROOT),
+        pageProvenance: filter,
+      });
     }
     if (req.method === "GET") {
       return serveStatic(url.pathname, req);

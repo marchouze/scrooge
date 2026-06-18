@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Regulations — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    .v2-chip { display:inline-flex; align-items:center; padding:1px 8px; border-radius:10px;
+      font-size:0.78em; font-weight:600; white-space:nowrap; }
+    .v2-chip--yes { background:var(--color-success-bg); color:var(--color-success); }
+    .v2-chip--no { background:var(--color-surface-raised); color:var(--color-text-disabled); }
+    .v2-chip--reviewed { background:var(--color-success-bg); color:var(--color-success); }
+    .v2-chip--stale { background:var(--color-warning-bg); color:var(--color-warning); }
+    .v2-chip--unreviewed { background:var(--color-surface-raised); color:var(--color-text-secondary); }
+    .v2-controls { display:flex; gap:var(--space-3); align-items:center; flex-wrap:wrap; margin-bottom:var(--space-4); }
+    .v2-controls input, .v2-controls select { padding:6px 10px; border:1px solid var(--color-border);
+      border-radius:var(--radius-sm); background:var(--color-surface); color:var(--color-text-primary);
+      font:var(--text-body); }
+    .v2-controls input { flex:1; min-width:180px; max-width:340px; }
+    .v2-controls .v2-count { color:var(--color-text-secondary); font:var(--text-caption); margin-left:auto; }
+  </style>
+</head>
+<body data-provenance-content="none">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Compliance", href: "/v2/compliance/index.html" }, { label: "Regulations" }],
+      title: "Regulations",
+    });
+
+    const tileHost = document.createElement("div"); main.appendChild(tileHost);
+    const section = document.createElement("div"); section.className = "v2-section"; main.appendChild(section);
+    const sh = document.createElement("h2"); sh.className = "v2-section-title"; sh.textContent = "Instruments"; section.appendChild(sh);
+
+    const controls = document.createElement("div"); controls.className = "v2-controls";
+    controls.innerHTML = `
+      <input type="search" id="q" placeholder="Search regulations…" aria-label="Search regulations">
+      <select id="regulator" aria-label="Filter by regulator"><option value="">All regulators</option></select>
+      <select id="obls" aria-label="Filter by obligations">
+        <option value="">All</option>
+        <option value="yes">Has obligations</option>
+        <option value="no">No obligations yet</option>
+      </select>
+      <span class="v2-count" id="count"></span>`;
+    section.appendChild(controls);
+    const tableHost = document.createElement("div"); section.appendChild(tableHost);
+
+    let all = [];
+    const verdictChip = (s) => `<span class="v2-chip v2-chip--${s}">${v2Esc(s)}</span>`;
+    const oblChip = (n) => n > 0
+      ? `<span class="v2-chip v2-chip--yes">${n} identified</span>`
+      : `<span class="v2-chip v2-chip--no">none yet</span>`;
+
+    function render() {
+      const q = document.getElementById("q").value.trim().toLowerCase();
+      const reg = document.getElementById("regulator").value;
+      const ob = document.getElementById("obls").value;
+      const rows = all.filter((i) =>
+        (!reg || i.regulator === reg) &&
+        (!ob || (ob === "yes" ? i.hasObligations : !i.hasObligations)) &&
+        (!q || `${i.title} ${i.shortTitle} ${i.slug}`.toLowerCase().includes(q)));
+      document.getElementById("count").textContent = `${rows.length} of ${all.length}`;
+      tableHost.innerHTML = "";
+      renderTable(tableHost, {
+        columns: ["Instrument", "Regulator", "Year", "Sections", "Source obls", "Bank obligations", "Review"],
+        rows: rows.map((i) => ({
+          href: `/v2/compliance/reader.html?slug=${encodeURIComponent(i.slug)}`,
+          cells: [
+            `<strong>${v2Esc(i.shortTitle || i.title)}</strong><div style="color:var(--color-text-secondary);font-size:0.85em">${v2Esc(i.title)}</div>`,
+            v2Esc(i.regulator || "—"),
+            String(i.year || "—"),
+            String(i.sectionCount ?? 0),
+            String(i.sourceObligations ?? 0),
+            oblChip(i.bankObligations ?? 0),
+            verdictChip(i.reviewStatus || "unreviewed"),
+          ],
+        })),
+      });
+    }
+
+    v2WireLoader(async () => {
+      let data;
+      try { data = await v2Fetch("/api/v2/regulations"); }
+      catch (e) { v2RenderError(section, String(e.message || e)); return; }
+      all = data.instruments || [];
+      renderTileGroup(tileHost, { tiles: [
+        { label: "Regulations", value: String(data.summary?.total ?? all.length), unit: "In register" },
+        { label: "With obligations", value: String(data.summary?.withObligations ?? 0), unit: "Bank has identified", variant: "success" },
+        { label: "Bank obligations", value: String(data.summary?.totalBankObligations ?? 0), unit: "Traced to source" },
+      ]});
+      const regs = [...new Set(all.map((i) => i.regulator).filter(Boolean))].sort();
+      const sel = document.getElementById("regulator");
+      for (const r of regs) { const o = document.createElement("option"); o.value = r; o.textContent = r; sel.appendChild(o); }
+      for (const id of ["q", "regulator", "obls"]) document.getElementById(id).addEventListener("input", render);
+      render();
+    });
+  </script>
+</body>
+</html>

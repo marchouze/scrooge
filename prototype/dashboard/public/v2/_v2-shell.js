@@ -65,6 +65,7 @@ const NAV = [
     href: "/v2/compliance/index.html",
     items: [
       { label: "Overview", href: "/v2/compliance/index.html" },
+      { label: "Regulations", href: "/v2/compliance/regulations.html" },
       { label: "Obligations", href: "/v2/compliance/obligations.html" },
       { label: "Applicability", href: "/v2/compliance/applicability.html" },
       { label: "Regulatory Filings", href: "/v2/compliance/returns.html" },
