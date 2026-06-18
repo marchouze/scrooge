@@ -19,15 +19,19 @@ const report = buildSourceCoverage();
 const rowBySlug = (slug: string) => report.rows.find((r) => r.slug === slug);
 
 describe("build-source-coverage derived fields", () => {
-  it("rrb is hand-authored with the summary/verbatim gap surfaced", () => {
+  it("rrb is hand-authored and fully verbatim after the Slice-5 backfill", () => {
     const rrb = rowBySlug("rrb");
     expect(rrb).toBeDefined();
     if (!rrb) return;
     // rrb carries a goldenSourceHash but NO page-stamped provision — the hash is
     // provenance, not extraction lineage — so it resolves to hand-authored.
     expect(rrb.authoringPath).toBe("hand-authored");
-    expect(rrb.contentCompleteness.summary).toBeGreaterThanOrEqual(31);
-    expect(rrb.contentCompleteness.verbatim).toBeGreaterThanOrEqual(7);
+    // Slice-5 (D-REGULATORY-STRUCTURED-FIRST-CANONICAL) backfilled the 31
+    // formerly summary-only sections with verbatim GN R.1029/2012 text: every
+    // provision is now verbatim, with zero summary / heading-only.
+    expect(rrb.contentCompleteness.summary).toBe(0);
+    expect(rrb.contentCompleteness.headingOnly).toBe(0);
+    expect(rrb.contentCompleteness.verbatim).toBe(rrb.contentCompleteness.total);
     // total equals the sum of all tiers (every provision counted exactly once).
     const c = rrb.contentCompleteness;
     expect(c.verbatim + c.summary + c.headingOnly + c.enriched).toBe(c.total);

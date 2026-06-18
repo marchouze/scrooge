@@ -333,10 +333,11 @@ export interface SummaryFormAllowlistEntry {
  */
 export const SUMMARY_FORM_ALLOWLIST: Record<string, SummaryFormAllowlistEntry> = {
   // --- hand-authored editorial summaries pending verbatim backfill -----------
-  rrb: {
-    knownGap: 31,
-    note: "31 provisions are editorial summaries; verbatim Regulations Relating to Banks text pending Slice-5 backfill",
-  },
+  // rrb removed 2026-06-18: Slice-5 backfill replaced all 31 editorial summaries
+  // with verbatim GN R.1029/2012 text (every provision now classifies
+  // completeness:"verbatim"). The ratchet hardens — the stale-entry self-check
+  // requires this removal once the per-section gap reaches zero.
+  // Authority: D-REGULATORY-STRUCTURED-FIRST-CANONICAL.
   // --- heading-only provisions (structure captured, body text pending) -------
   //
   // NOTE on scope: the original Slice-3 backlog (derived from
