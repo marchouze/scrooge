@@ -23,6 +23,7 @@
 //
 // Author: Mira (Compliance / RegTech engineer, engineering).
 
+import type { Dirent } from "node:fs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -151,6 +152,56 @@ export function normSectionRef(raw: string): string {
 
 const _slugPathCaches = new Map<string, Map<string, string>>();
 
+/**
+ * Collect every `*-structured.json` under ANY `source-docs/` directory nested
+ * within `Regulations/`, recursing so deeper regulator layouts such as
+ * `Regulations/INTL/IASB/source-docs` (IASB-transposed IFRS) are discovered, not
+ * just the single-level `Regulations/<reg>/source-docs` layout. Bounded depth +
+ * skips `_`/`.`-prefixed dirs to stay cheap.
+ *
+ * Mirrors `findStructuredJsonPaths` in scripts/regulatory/build-source-coverage.ts
+ * so the loader and the coverage register agree on the discovered source set.
+ */
+function findStructuredDocFiles(regsDir: string): string[] {
+  const paths: string[] = [];
+
+  const collectFromSourceDocs = (sourceDocsDir: string): void => {
+    if (!existsSync(sourceDocsDir)) return;
+    let files: string[];
+    try {
+      files = readdirSync(sourceDocsDir);
+    } catch {
+      return;
+    }
+    for (const f of files) {
+      if (f.endsWith("-structured.json")) paths.push(resolve(sourceDocsDir, f));
+    }
+  };
+
+  const walk = (dir: string, depth: number): void => {
+    if (depth > 4) return;
+    let entries: Dirent[];
+    try {
+      entries = readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      if (entry.name.startsWith("_") || entry.name.startsWith(".")) continue;
+      const child = resolve(dir, entry.name);
+      if (entry.name === "source-docs") {
+        collectFromSourceDocs(child);
+      } else {
+        walk(child, depth + 1);
+      }
+    }
+  };
+
+  walk(regsDir, 0);
+  return paths;
+}
+
 export function discoverStructuredDocPaths(repoRoot?: string): Map<string, string> {
   const root = repoRoot ?? defaultRepoRoot();
   const cached = _slugPathCaches.get(root);
@@ -158,35 +209,21 @@ export function discoverStructuredDocPaths(repoRoot?: string): Map<string, strin
 
   const map = new Map<string, string>();
   const regsDir = resolve(root, "Regulations");
-  let regulatorDirs: string[] = [];
-  try {
-    regulatorDirs = readdirSync(regsDir, { withFileTypes: true })
-      .filter((d) => d.isDirectory() && !d.name.startsWith("_"))
-      .map((d) => resolve(regsDir, d.name, "source-docs"));
-  } catch {
+  if (!existsSync(regsDir)) {
     _slugPathCaches.set(root, map);
     return map;
   }
 
-  for (const dir of regulatorDirs) {
-    if (!existsSync(dir)) continue;
-    let files: string[];
+  for (const absPath of findStructuredDocFiles(regsDir)) {
+    const file = absPath.split("/").pop() ?? absPath;
+    let slug = file.replace(/-structured\.json$/, "");
     try {
-      files = readdirSync(dir).filter((f) => f.endsWith("-structured.json"));
+      const raw = JSON.parse(readFileSync(absPath, "utf-8")) as { slug?: string };
+      if (raw.slug) slug = raw.slug;
     } catch {
-      continue;
+      // fall back to filename-derived slug
     }
-    for (const file of files) {
-      const absPath = resolve(dir, file);
-      let slug = file.replace(/-structured\.json$/, "");
-      try {
-        const raw = JSON.parse(readFileSync(absPath, "utf-8")) as { slug?: string };
-        if (raw.slug) slug = raw.slug;
-      } catch {
-        // fall back to filename-derived slug
-      }
-      map.set(slug, absPath);
-    }
+    map.set(slug, absPath);
   }
 
   _slugPathCaches.set(root, map);

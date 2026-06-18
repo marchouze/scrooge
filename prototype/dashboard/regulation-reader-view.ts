@@ -26,6 +26,7 @@ import {
   type LoaderDoc,
   type NormalizedProvision,
   type TextSource,
+  discoverStructuredDocPaths,
   loadStructuredDocBySlug,
   normSectionRef,
   normalizeStructuredDoc,
@@ -241,48 +242,15 @@ export interface InstrumentDetailView {
 // SLUG_TO_FILE / ALL_SLUGS so newly-extracted instruments appear automatically.
 // ---------------------------------------------------------------------------
 
-let _slugPathCache: Map<string, string> | null = null;
-
+// Slug → structured-doc-path discovery is owned by the shared loader
+// (`discoverStructuredDocPaths`), which recurses into nested regulator dirs such
+// as `Regulations/INTL/IASB/source-docs` (IFRS). This view used to carry a
+// byte-identical NON-recursive copy that silently dropped the nested IFRS docs
+// from the reg list while the detail view (which loads by slug directly) still
+// resolved them — a divergence. Delegating to the single loader copy keeps the
+// list and detail views in lockstep.
 function discoverSlugPaths(repoRoot: string): Map<string, string> {
-  if (_slugPathCache) return _slugPathCache;
-
-  const map = new Map<string, string>();
-  const regsDir = resolve(repoRoot, "Regulations");
-
-  let regulatorDirs: string[];
-  try {
-    regulatorDirs = readdirSync(regsDir, { withFileTypes: true })
-      .filter((d) => d.isDirectory() && !d.name.startsWith("_"))
-      .map((d) => resolve(regsDir, d.name, "source-docs"));
-  } catch {
-    return map;
-  }
-
-  for (const sourceDocsDir of regulatorDirs) {
-    if (!existsSync(sourceDocsDir)) continue;
-    let files: string[];
-    try {
-      files = readdirSync(sourceDocsDir).filter((f) => f.endsWith("-structured.json"));
-    } catch {
-      continue;
-    }
-    for (const file of files) {
-      const absPath = resolve(sourceDocsDir, file);
-      // Use the internal slug field from the JSON as the map key — it may
-      // differ from the filename (e.g. file=mar-structured.json but slug=bcbs-mar).
-      let slug = file.replace(/-structured\.json$/, "");
-      try {
-        const raw = JSON.parse(readFileSync(absPath, "utf-8")) as { slug?: string };
-        if (raw.slug) slug = raw.slug;
-      } catch {
-        // fallback to filename-derived slug
-      }
-      map.set(slug, absPath);
-    }
-  }
-
-  _slugPathCache = map;
-  return map;
+  return discoverStructuredDocPaths(repoRoot);
 }
 
 // ---------------------------------------------------------------------------
