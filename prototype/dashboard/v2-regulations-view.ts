@@ -15,7 +15,7 @@
 
 import type { EventStore } from "../platform/event-store/store";
 import { seatForObligation } from "../platform/regulatory/domain-ownership-map";
-import type { CompletenessTier } from "../platform/regulatory/structured-doc-loader";
+import type { CompletenessTier, TextSource } from "../platform/regulatory/structured-doc-loader";
 import { redactAgentNames } from "./agent-title";
 import { getBankObligationsView, getObligationDetail } from "./bank-obligations-view";
 import type { EnrichedObligationRef } from "./regulation-obligation-index";
@@ -114,6 +114,10 @@ export interface V2SectionObligation {
 export interface V2RegulationSubsection {
   number: string;
   text: string;
+  /** Completeness tier of this subsection's assembled text (Slice-2 badge). */
+  completeness: CompletenessTier;
+  /** Provenance of this subsection's assembled text. */
+  textSource: TextSource;
 }
 
 /** An image excerpt (image-only source PDFs), streamed via the reader excerpt route. */
@@ -134,6 +138,8 @@ export interface V2RegulationSection {
    * reader badge; harmless if the client ignores it.
    */
   completeness: CompletenessTier;
+  /** Provenance of the assembled section text (own|folded|enriched|summary|heading). */
+  textSource: TextSource;
   /** Nested subsection provision text, in document order (flattened). */
   subsections: V2RegulationSubsection[];
   /** Image excerpts to render inline (resolved via /api/regulation-reader/:slug/excerpt/:id). */
@@ -170,6 +176,8 @@ const toSectionObligation = (r: EnrichedObligationRef): V2SectionObligation => (
 interface ReaderSubsection {
   number: string;
   text: string;
+  completeness: CompletenessTier;
+  textSource: TextSource;
   subsections?: ReaderSubsection[];
 }
 
@@ -185,7 +193,13 @@ function collectSubsections(
 ): V2RegulationSubsection[] {
   const out: V2RegulationSubsection[] = [];
   for (const ss of subs ?? []) {
-    if ((ss.text ?? "").trim()) out.push({ number: ss.number ?? "", text: ss.text ?? "" });
+    if ((ss.text ?? "").trim())
+      out.push({
+        number: ss.number ?? "",
+        text: ss.text ?? "",
+        completeness: ss.completeness,
+        textSource: ss.textSource,
+      });
     if (Array.isArray(ss.subsections)) out.push(...collectSubsections(ss.subsections));
   }
   return out;
@@ -215,6 +229,7 @@ export function buildV2RegulationDetailView(
         text: s.text ?? "",
         verbatim: s.verbatim ?? false,
         completeness: s.completeness,
+        textSource: s.textSource,
         subsections: collectSubsections(s.subsections as ReaderSubsection[] | undefined),
         excerpts: (s.excerpts ?? []).map((e) => ({
           id: e.id,

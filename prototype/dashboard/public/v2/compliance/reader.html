@@ -53,6 +53,9 @@
     .v2-chip--does-not-apply { background:var(--color-surface-raised); color:var(--color-text-secondary); }
     .v2-chip--na { background:var(--color-surface-raised); color:var(--color-text-disabled); }
     .v2-chip--status { background:var(--color-info-bg); color:var(--color-info); }
+    .rd-completeness-badge { display:inline-flex; align-items:center; margin-bottom:var(--space-2);
+      padding:1px 8px; border-radius:10px; font-size:0.72em; font-weight:600; letter-spacing:0.02em;
+      background:var(--color-warning-bg); color:var(--color-warning); }
     body.rd-hide-obls .rd-section.rd-has-obls { display:block; border-left:1px solid var(--color-border); }
     body.rd-hide-obls .rd-aside { display:none; }
     @media (max-width:1000px){ .rd-section.rd-has-obls { display:block; }
@@ -141,8 +144,14 @@
             const excHtml = (s.excerpts || []).map((e) =>
               `<figure class="rd-excerpt"><img loading="lazy" alt="${v2Esc(e.caption || ("Excerpt " + e.id))}" src="/api/regulation-reader/${encodeURIComponent(d.slug)}/excerpt/${encodeURIComponent(e.id)}">${e.caption ? `<figcaption>${v2Esc(e.caption)}${e.pages ? ` (p.${v2Esc(e.pages)})` : ""}</figcaption>` : ""}</figure>`).join("");
             const hasBody = (s.text && s.text.trim()) || subsHtml || excHtml;
+            // Slice-2 completeness badge: a "summary" section renders its editorial
+            // précis WITH a neutral label flagging that full verbatim is still pending;
+            // verbatim/enriched render clean; heading-only keeps the empty-state line.
+            const badge = s.completeness === "summary"
+              ? `<div class="rd-completeness-badge">summary — full verbatim pending</div>`
+              : "";
             const textHtml = hasBody
-              ? `${s.text ? `<div class="rd-text">${v2Esc(s.text)}</div>` : ""}${subsHtml}${excHtml}`
+              ? `${badge}${s.text ? `<div class="rd-text">${v2Esc(s.text)}</div>` : ""}${subsHtml}${excHtml}`
               : `<div class="rd-obl-meta">No verbatim text extracted for this section.</div>`;
             const hd = `<div class="rd-section-hd"><span class="rd-section-num">${v2Esc(s.number || "")}</span><span class="rd-section-heading">${v2Esc(s.heading || "")}</span></div>`;
             if (!tiles) {
