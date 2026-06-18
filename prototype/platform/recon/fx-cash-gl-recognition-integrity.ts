@@ -161,6 +161,14 @@ function nostroSideFor(direction: FilInstanceRow["economicTerms"]["direction"]):
 export interface RunOpts {
   /** Override the FIL instance event source — used by tests. */
   filEvents?: FilInstanceLifecycleEvent[];
+  /**
+   * When TRUE (the production / on-anchor CLI path), an anchor book with NO
+   * settled FX under a cash-materialising NPA FAILS the gate (fail-closed vacuity
+   * guard — MV-CASH-001): there is no GL cash recognition to reconcile, so a pass
+   * asserts nothing. When FALSE (unit tests), an empty book is a flat-bench info
+   * note. Defaults to FALSE; the CLI entrypoint passes TRUE.
+   */
+  requireNonVacuousAnchor?: boolean;
 }
 
 export function run(opts: RunOpts = {}): ReconResult {
@@ -257,9 +265,10 @@ export function run(opts: RunOpts = {}): ReconResult {
   if (settledFxUnderRule === 0) {
     violations.push({
       subject: "anchor-book",
-      message:
-        "no settled FX under a cash-materialising NPA in the v2 anchor store — no GL cash recognition to reconcile to a Cash instrument-of-record (flat-bench info, not a failure).",
-      severity: "info",
+      message: opts.requireNonVacuousAnchor
+        ? `VACUOUS on-anchor proof: NO settled FX under a cash-materialising NPA in the v2 anchor store (${resolveV2AnchorDb()}) — there is no GL cash recognition to reconcile to a Cash instrument-of-record, so the gate asserted nothing. Fail-closed (MV-CASH-001): materialise at least one settled FX → cash instance into the anchor store.`
+        : "no settled FX under a cash-materialising NPA in the v2 anchor store — no GL cash recognition to reconcile to a Cash instrument-of-record (flat-bench info, not a failure).",
+      severity: opts.requireNonVacuousAnchor ? "fail" : "info",
     });
   }
 
@@ -281,7 +290,9 @@ function addDecimalStrings(a: string, b: string): string {
 }
 
 if (import.meta.main) {
-  const r = run();
+  // CLI / CI path: read the real anchor store and REQUIRE a non-vacuous
+  // population (fail-closed on an empty anchor book — MV-CASH-001).
+  const r = run({ requireNonVacuousAnchor: true });
   for (const v of r.violations) {
     process.stderr.write(`[${v.severity}] ${v.subject}: ${v.message}\n`);
   }

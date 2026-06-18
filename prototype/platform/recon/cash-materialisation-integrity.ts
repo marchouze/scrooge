@@ -99,6 +99,13 @@ function readFilInstanceEvents(dbPath = resolveV2AnchorDb()): FilInstanceLifecyc
 export interface RunOpts {
   /** Override the FIL instance event source — used by tests. */
   filEvents?: FilInstanceLifecycleEvent[];
+  /**
+   * When TRUE (the production / on-anchor CLI path), an anchor book with NO cash
+   * instances AND no settled FX under a cash-materialising NPA FAILS the gate
+   * (fail-closed vacuity guard — MV-CASH-001). When FALSE (unit tests probing a
+   * specific fixture), an empty book is a flat-bench info note. Defaults to FALSE.
+   */
+  requireNonVacuousAnchor?: boolean;
 }
 
 export function run(opts: RunOpts = {}): ReconResult {
@@ -157,9 +164,10 @@ export function run(opts: RunOpts = {}): ReconResult {
   if (cashInstances === 0 && settledFxUnderRule === 0) {
     violations.push({
       subject: "anchor-book",
-      message:
-        "no cash instances and no settled FX under a cash-materialising NPA in the v2 anchor store — nothing to assert (flat-bench info, not a failure).",
-      severity: "info",
+      message: opts.requireNonVacuousAnchor
+        ? `VACUOUS on-anchor proof: NO cash instances and NO settled FX under a cash-materialising NPA in the v2 anchor store (${resolveV2AnchorDb()}) — the gate asserted nothing about the live/anchor cash path. Fail-closed (MV-CASH-001): materialise at least one settled FX → cash instance into the anchor store.`
+        : "no cash instances and no settled FX under a cash-materialising NPA in the v2 anchor store — nothing to assert (flat-bench info, not a failure).",
+      severity: opts.requireNonVacuousAnchor ? "fail" : "info",
     });
   }
 
@@ -170,7 +178,9 @@ export function run(opts: RunOpts = {}): ReconResult {
 }
 
 if (import.meta.main) {
-  const r = run();
+  // CLI / CI path: read the real anchor store and REQUIRE a non-vacuous
+  // population (fail-closed on an empty anchor book — MV-CASH-001).
+  const r = run({ requireNonVacuousAnchor: true });
   for (const v of r.violations) {
     process.stderr.write(`[${v.severity}] ${v.subject}: ${v.message}\n`);
   }

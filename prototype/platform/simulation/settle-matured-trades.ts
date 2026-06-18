@@ -15,6 +15,7 @@ import { newEventId } from "../core/types";
 import type { EventStore } from "../event-store/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import { makePrincipalPayment, makeSettlementConfirmed } from "../markets/cdm/fx";
+import { materialiseSettledCashForFxLegs } from "../markets/products/materialise-settled-cash-for-fx";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -207,6 +208,28 @@ export function settleMaturedTrades(store: EventStore, todayIso: string): number
         eventId: newEventId(),
       }),
     );
+
+    // LIVE CASH MATERIALISATION (D-CASH-ASSET-CLASS-V1): at the same settlement
+    // point the runtime posts the nostro legs, materialise the settled cash
+    // leg(s) as REAL Cash FIL instruments-of-record in the v2 anchor store. The
+    // taxonomy resolves spot vs forward; the counterparty + currencies come from
+    // the originating trade. minor → MAJOR via /100. Product-driven: the
+    // adapter emits only if the governing NPA declares the maturity→cash rule.
+    const counterpartyId = trade?.counterparty?.partyId;
+    if (counterpartyId) {
+      materialiseSettledCashForFxLegs({
+        tradeId,
+        payCurrency: data.payCcy,
+        payAmountMajor: Math.abs(data.payMinor) / 100,
+        receiveCurrency: data.rcvCcy,
+        receiveAmountMajor: Math.abs(data.rcvMinor) / 100,
+        counterpartyId,
+        settledAsOf: settlementDate,
+        isForward: String(trade?.productTaxonomy ?? "")
+          .toLowerCase()
+          .includes("forward"),
+      });
+    }
 
     count++;
   }
