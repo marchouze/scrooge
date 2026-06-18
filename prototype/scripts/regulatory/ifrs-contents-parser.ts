@@ -119,6 +119,16 @@ function contentsBodyLines(pdfText: string): { body: string[]; appendixBlock: st
     if (/^(\.\.\.)?continued(\.\.\.)?$/i.test(t)) return true;
     if (/^from paragraph$/i.test(t)) return true;
     if (/^[A-Z]\d{2,}$/.test(t)) return true; // bare page id like "A377"
+    // Standard-title preamble lines that sit between CONTENTS and the first
+    // real entry: "INTERNATIONAL FINANCIAL REPORTING STANDARD 7" (its trailing
+    // digit is the STANDARD number, not a paragraph ref) and the standard's
+    // subtitle ("FINANCIAL INSTRUMENTS: DISCLOSURES", "FAIR VALUE MEASUREMENT",
+    // "FINANCIAL INSTRUMENTS"). Also the "CHAPTERS" sub-header in IFRS 9. These
+    // are not contents entries and must not be parsed as titles.
+    if (/^INTERNATIONAL FINANCIAL REPORTING STANDARD\b/i.test(t)) return true;
+    if (/^CHAPTERS?$/i.test(t)) return true;
+    if (/^FINANCIAL INSTRUMENTS\b/i.test(t)) return true;
+    if (/^FAIR VALUE MEASUREMENT$/i.test(t)) return true;
     return false;
   };
 
