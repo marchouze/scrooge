@@ -77,7 +77,10 @@ function writeStructuredFixture(slug: string, goldenSourceHash?: string): void {
       },
     ],
   };
-  writeFileSync(join(fixtureSourceDocsDir, `${slug}-structured.json`), JSON.stringify(doc, null, 2));
+  writeFileSync(
+    join(fixtureSourceDocsDir, `${slug}-structured.json`),
+    JSON.stringify(doc, null, 2),
+  );
 }
 
 async function findFreePort(): Promise<number> {
@@ -152,7 +155,8 @@ afterAll(async () => {
       /* ignore */
     }
   }
-  if (existsSync(fixtureRegulatorDir)) rmSync(fixtureRegulatorDir, { recursive: true, force: true });
+  if (existsSync(fixtureRegulatorDir))
+    rmSync(fixtureRegulatorDir, { recursive: true, force: true });
   if (tmpDir && existsSync(tmpDir)) rmSync(tmpDir, { recursive: true, force: true });
 });
 
