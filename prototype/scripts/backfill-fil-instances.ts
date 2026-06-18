@@ -80,6 +80,12 @@ import { anchorFunctionalCurrency } from "../platform/identity/functional-curren
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../platform/market-data/store";
 import { MIN_RETURN_OBSERVATIONS } from "../platform/market-risk/var-engine";
+import {
+  type SettledCashLeg,
+  materialiseFxInstanceToAnchor,
+  materialiseSettledCash,
+  resolveV2AnchorDb,
+} from "../platform/markets/products/materialise-settled-cash";
 import { resolveMaturityMaterialisation } from "../platform/markets/products/maturity-materialisation";
 import { divD, roundDecimal, toDecimal } from "../v2-core/fil-core/decimal";
 import { type Money, moneyFromDecimal } from "../v2-core/fil-core/primitives";
@@ -484,16 +490,59 @@ function emitCashLegsForSettled(
   return emitted;
 }
 
+// Mirror a settled FX descriptor (instance-of-record + materialised cash legs)
+// into the v2 ANCHOR store (`BANK_V2_ANCHOR_DB`) — the store the three cash recon
+// gates read (fx-settlement-continuity / cash-materialisation-integrity /
+// fx-cash-gl-recognition-integrity). The main-store emission above feeds the
+// Phase-2/3 V2 readers; this anchor mirror makes the on-anchor HISTORY proof
+// NON-VACUOUS (MV-CASH-001 part 1) — using the same live materialisation module
+// the production settlement handlers call, so the two paths are one truth.
+function mirrorDescriptorToAnchor(d: FilDescriptor, fxInstance: string): number {
+  materialiseFxInstanceToAnchor({
+    fxInstance,
+    fxTypeUrn: d.typeUrn,
+    entity: ENTITY,
+    tenant: TENANT,
+    createdAsOf: d.createdAsOf,
+    economicTerms: d.economicTerms as unknown as Record<string, unknown>,
+    originatingEvent: { eventType: d.originatingEventType, eventId: d.originatingEventId },
+    ...(d.terminal ? { terminal: d.terminal } : {}),
+  });
+
+  if (!d.terminal || d.terminal.stage !== "settled") return 0;
+  if (!d.cashLegs || d.cashLegs.length === 0) return 0;
+
+  const anchorLegs: SettledCashLeg[] = d.cashLegs.map((l) => ({
+    currency: l.currency,
+    signedMajor: l.signedMajor,
+    side: l.side,
+  }));
+  return materialiseSettledCash({
+    tradeId: d.tradeId,
+    fxInstance,
+    fxTypeUrn: d.typeUrn,
+    settledAsOf: d.terminal.asOf,
+    entity: ENTITY,
+    tenant: TENANT,
+    reporting: REPORTING,
+    counterpartyId: d.economicTerms.counterpartyId,
+    nettingSetId: d.economicTerms.nettingSetId,
+    cashLegs: anchorLegs,
+  });
+}
+
 function emitFilInstances(descriptors: readonly FilDescriptor[]): {
   created: number;
   terminated: number;
   cashMaterialised: number;
+  anchorCashMaterialised: number;
 } {
   const haveCreated = existingFilInstances("FilInstrumentCreated");
   const haveTerminated = existingFilInstances("FilInstrumentTerminated");
   let created = 0;
   let terminated = 0;
   let cashMaterialised = 0;
+  let anchorCashMaterialised = 0;
 
   for (const d of descriptors) {
     const instance = formatInstanceUrn({ tenant: TENANT, instanceId: d.tradeId });
@@ -543,10 +592,16 @@ function emitFilInstances(descriptors: readonly FilDescriptor[]): {
       terminated += 1;
     }
 
-    // Slice 2 — materialise the settled cash leg(s), product-driven.
+    // Slice 2 — materialise the settled cash leg(s) into the MAIN store,
+    // product-driven (the Phase-2/3 V2 readers).
     cashMaterialised += emitCashLegsForSettled(d, instance, haveCreated);
+
+    // MV-CASH-001 — mirror the settled FX instance-of-record + its cash legs
+    // into the v2 ANCHOR store (the store the three cash recon gates read), so
+    // the on-anchor HISTORY proof exercises a non-zero materialised population.
+    anchorCashMaterialised += mirrorDescriptorToAnchor(d, instance);
   }
-  return { created, terminated, cashMaterialised };
+  return { created, terminated, cashMaterialised, anchorCashMaterialised };
 }
 
 // ---------------------------------------------------------------------------
@@ -627,6 +682,9 @@ console.log(
 const fil = emitFilInstances(descriptors);
 console.log(
   `FIL instances   : ${fil.created} created, ${fil.terminated} terminated, ${fil.cashMaterialised} cash leg(s) materialised (D-CASH-ASSET-CLASS-V1)`,
+);
+console.log(
+  `anchor store    : ${fil.anchorCashMaterialised} cash leg(s) mirrored into BANK_V2_ANCHOR_DB (${resolveV2AnchorDb()}) — on-anchor HISTORY proof non-vacuous (MV-CASH-001)`,
 );
 
 const md = seedMarketData(descriptors);

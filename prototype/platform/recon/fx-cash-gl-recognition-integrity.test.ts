@@ -99,6 +99,14 @@ describe("recon:fx-cash-gl-recognition-integrity", () => {
     expect(r.violations.some((v) => v.severity === "info")).toBe(true);
   });
 
+  test("VACUITY GUARD (MV-CASH-001): empty book + requireNonVacuousAnchor → FAIL (fail-closed)", () => {
+    const r = run({ filEvents: [], requireNonVacuousAnchor: true });
+    expect(r.ok).toBe(false);
+    expect(r.violations.some((v) => v.severity === "fail" && v.subject === "anchor-book")).toBe(
+      true,
+    );
+  });
+
   test("anchor fixture: USD +100k / ZAR −1,852k → both legs recognised, passes", () => {
     const r = run({ filEvents: [...fxSettled(), ...fixtureCashLegs()] });
     expect(r.ok).toBe(true);

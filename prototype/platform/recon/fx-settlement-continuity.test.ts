@@ -81,6 +81,17 @@ describe("recon:fx-settlement-continuity", () => {
     expect(r.violations.every((v) => v.severity !== "fail")).toBe(true);
   });
 
+  test("VACUITY GUARD (MV-CASH-001): empty population + requireNonVacuousHistory → FAIL (fail-closed)", () => {
+    // The CLI / on-anchor path requires a non-zero compared population. An empty
+    // anchor book must FAIL the gate (not pass with an info note) — this is the
+    // crux of Nadia's HIGH finding: a degenerate proof that asserts nothing.
+    const r = run({ filEvents: [], requireNonVacuousHistory: true });
+    expect(r.ok).toBe(false);
+    expect(r.violations.some((v) => v.severity === "fail" && v.subject === "anchor-book")).toBe(
+      true,
+    );
+  });
+
   test("a settled FX instance with NO materialised cash leg fails (instrument-of-record continuity broken)", () => {
     const fxInstance = "fil:inst:LE-ZA-HOZ-BANK:fx-2";
     const created: FilInstanceLifecycleEvent = {
