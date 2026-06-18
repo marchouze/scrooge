@@ -201,7 +201,10 @@ import {
   getLeafDescendants,
   resolveLeafAdoptionState,
 } from "../platform/regulatory/graph/provision-tree";
-import { loadStructuredDocBySlug } from "../platform/regulatory/structured-doc-loader";
+import {
+  loadNormalizedDocBySlug,
+  loadStructuredDocBySlug,
+} from "../platform/regulatory/structured-doc-loader";
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 import { buildDefaultHub } from "../platform/simulation/hub/register-defaults";
 import { settleMaturedTrades } from "../platform/simulation/settle-matured-trades";
@@ -4102,6 +4105,64 @@ const server = Bun.serve({
           status: 200,
           headers: {
             "Content-Type": "image/png",
+            "Cache-Control": "public, max-age=31536000, immutable",
+          },
+        });
+      }
+    }
+
+    // GET /api/regulation-reader/:slug/source-pdf
+    //
+    // Streams the regulator's published golden-source PDF as a downloadable
+    // PROVENANCE artifact. The structured tree remains the default/canonical
+    // render (D-REGULATORY-STRUCTURED-FIRST-CANONICAL); this is an additional
+    // provenance affordance, NOT a replacement view.
+    //
+    // The `goldenSourceHash` is resolved from the slug's structured JSON (same
+    // store-resolution mechanism the excerpt route uses) — it is NEVER taken
+    // from the URL, so there is no arbitrary store enumeration.
+    //
+    // Fail closed: 404 when the slug is unknown, the source carries no
+    // goldenSourceHash (hand-authored structured-first sources), or the blob
+    // does not resolve. Never 500.
+    // ---------------------------------------------------------------------------
+    {
+      const sourcePdfMatch = url.pathname.match(
+        /^\/api\/regulation-reader\/([a-z0-9-]+)\/source-pdf$/,
+      );
+      if (sourcePdfMatch?.[1] && req.method === "GET") {
+        const slugPdf = sourcePdfMatch[1];
+
+        // Resolve the structured doc's doc-level goldenSourceHash (metadata
+        // only — the canonical normalizer already loads it; no re-derivation).
+        const normDoc = loadNormalizedDocBySlug(slugPdf, REPO_ROOT);
+        if (!normDoc) {
+          return new Response("Instrument not found", { status: 404 });
+        }
+        const sourceHash = normDoc.goldenSourceHash;
+        if (!sourceHash) {
+          return new Response("No golden-source PDF for this instrument", { status: 404 });
+        }
+
+        let pdfBytes: Uint8Array;
+        try {
+          pdfBytes = defaultDocumentStore.get(
+            sourceHash as import("../platform/document-store").DocumentHash,
+          );
+        } catch (e) {
+          const msg = (e as Error).message ?? String(e);
+          if (msg.includes("not found") || msg.includes("DocumentStoreMiss")) {
+            return new Response("Source PDF blob not found", { status: 404 });
+          }
+          logger.warn(`source-pdf blob lookup error for ${sourceHash}: ${msg}`);
+          return new Response("Source PDF blob not found", { status: 404 });
+        }
+
+        return new Response(pdfBytes, {
+          status: 200,
+          headers: {
+            "Content-Type": "application/pdf",
+            "Content-Disposition": `attachment; filename="${slugPdf}.pdf"`,
             "Cache-Control": "public, max-age=31536000, immutable",
           },
         });
