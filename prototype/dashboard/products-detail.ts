@@ -22,7 +22,7 @@ import {
 } from "../platform/accounting/posting-rule-registry";
 import type { EventStore } from "../platform/event-store/store";
 import type { Product } from "../platform/markets/products";
-import { FX_SETTLEMENT_DEFERRED_GAPS } from "../v2-core/posting-rules/fx-settlement";
+import { activeFxSettlementDeferredGaps } from "../v2-core/posting-rules/fx-settlement";
 
 import { normaliseDimensionKey } from "../platform/markets/products/dimension-key-alias";
 import {
@@ -631,9 +631,11 @@ const FAMILY_LIFECYCLE_IDS: Readonly<Record<string, readonly string[]>> = {
 };
 
 const DEFERRED_RULE_IDS: ReadonlyMap<string, string> = new Map(
-  // A posting rule id is deferred iff a FX_SETTLEMENT_DEFERRED_GAP names it in
-  // its title. The gap titles lead with the rule id(s) they cover.
-  FX_SETTLEMENT_DEFERRED_GAPS.flatMap((g) => {
+  // A posting rule id is deferred iff a STILL-OPEN FX settlement gap names it in
+  // its title. The gap titles lead with the rule id(s) they cover. After
+  // WS-FIL-FX-SETTLEMENT-EVENTS resolved all five, this map is empty → every FX
+  // posting rule renders `active` on the NPA page.
+  activeFxSettlementDeferredGaps().flatMap((g) => {
     const ids = [
       "PR-FX-SETTLE-V2",
       "PR-FX-CLOSE-V2",
