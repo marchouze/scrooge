@@ -171,19 +171,24 @@ function appendLifecycle(
   entity: string,
   payload: Record<string, unknown>,
 ): void {
-  db.query(
+  // Write path — `Database.run` (a statement execute), NOT `.query` (a SELECT
+  // builder): this is an INSERT into the v2 ANCHOR store's `v2_events` table, not
+  // a MarketDataStore valuation read, so the market-data provenance filter does
+  // not apply here.
+  db.run(
     `INSERT OR IGNORE INTO v2_events
        (event_id, type, as_of, entity, actor_type, actor_id, citations, payload)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(
-    newEventId(),
-    evType,
-    asOf,
-    entity,
-    ACTOR.type,
-    ACTOR.id,
-    JSON.stringify([...FIL_CITATIONS]),
-    JSON.stringify(payload),
+    [
+      newEventId(),
+      evType,
+      asOf,
+      entity,
+      ACTOR.type,
+      ACTOR.id,
+      JSON.stringify([...FIL_CITATIONS]),
+      JSON.stringify(payload),
+    ],
   );
 }
 
