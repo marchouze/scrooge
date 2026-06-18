@@ -9,13 +9,17 @@
 // Scope approved:
 //   (1) `"cash"` joins the closed FIL asset-class set (taxonomy.ts) alongside
 //       ir/fx/equity/credit/commodity/funding/hybrid. A Cash FIL type
-//       (`fil:type:cash:balance:fcy@1.0`) is minted — atomic, with a minimal
-//       lifecycle (`held → {drawn-down | swept | closed}`). It implements
+//       (`fil:type:cash:balance:vanilla@1.0`) is minted — atomic, with a minimal
+//       lifecycle (`held → {drawn-down | swept | closed}`). The slug is
+//       currency-agnostic (no `fcy`/currency marker — currency is an
+//       instance-level term, parallel to `fx:swap:vanilla`). It implements
 //       Valuable (and the standing-NOP RiskMeasurable contribution), reusing
-//       the existing FCY-cash Valuable arithmetic.
-//   (2) The orphan FCY_CASH_MODEL — whose scope pointed at the never-minted
+//       the existing cash Valuable arithmetic.
+//   (2) The orphan cash Valuable model — whose scope pointed at the never-minted
 //       `fil:type:fx:cash:*` — is re-pointed onto the new `fil:type:cash:*`
-//       scope. `modelId` stays `fcy-cash` to preserve registrations.
+//       scope, and its `modelId` is renamed `fcy-cash` → `cash` (currency-
+//       agnostic; replay-safe — no filed model-declaration event pins the old
+//       id).
 //   (3) On FX spot `SettlementConfirmed`, the settlement path materialises the
 //       settled cash leg(s) as a real Cash FIL instance (`FilInstrumentCreated`)
 //       in addition to terminating the spot — driven by a product-level rule on
@@ -54,7 +58,7 @@ const r = recordDecision(
       "Cash as a first-class FIL asset class; FX maturity materialises a Cash asset (NPA-linked)",
     category: "engineering",
     recommendation:
-      "Add `cash` to the closed FIL asset-class set and mint a Cash FIL type (fil:type:cash:balance:fcy@1.0) — atomic, lifecycle held → {drawn-down | swept | closed}, implementing Valuable and the standing-NOP RiskMeasurable. Re-point the orphan FCY_CASH_MODEL (scope was the never-minted fil:type:fx:cash:*) onto the new fil:type:cash:* scope, keeping modelId `fcy-cash`. On FX spot SettlementConfirmed, materialise the settled cash leg(s) as real Cash FIL instances (FilInstrumentCreated) in addition to terminating the spot — the trigger declared by a product-level rule on the FX OTC NPA (prd:bank:fx:otc-vanilla) and read by the settlement path, so the kernel stays asset-class-agnostic and fx→cash is a product fact, not a kernel dependency. Re-base recon:fx-settlement-continuity on the real Cash FIL instance (instrument-of-record) and add a fail-closed recon gate: every cash instance carries an originating-instrument back-ref, and every settled FX trade whose NPA declares cash materialisation has matching Cash instance(s). Cash terms use decimal-native MAJOR-unit Money (never minorUnits).",
+      "Add `cash` to the closed FIL asset-class set and mint a Cash FIL type (fil:type:cash:balance:vanilla@1.0 — currency-agnostic slug, currency is an instance-level term) — atomic, lifecycle held → {drawn-down | swept | closed}, implementing Valuable and the standing-NOP RiskMeasurable. Re-point the orphan cash Valuable model (scope was the never-minted fil:type:fx:cash:*) onto the new fil:type:cash:* scope, and rename its modelId `fcy-cash` → `cash` (currency-agnostic; replay-safe). On FX spot SettlementConfirmed, materialise the settled cash leg(s) as real Cash FIL instances (FilInstrumentCreated) in addition to terminating the spot — the trigger declared by a product-level rule on the FX OTC NPA (prd:bank:fx:otc-vanilla) and read by the settlement path, so the kernel stays asset-class-agnostic and fx→cash is a product fact, not a kernel dependency. Re-base recon:fx-settlement-continuity on the real Cash FIL instance (instrument-of-record) and add a fail-closed recon gate: every cash instance carries an originating-instrument back-ref, and every settled FX trade whose NPA declares cash materialisation has matching Cash instance(s). Cash terms use decimal-native MAJOR-unit Money (never minorUnits).",
     rationale:
       "Today a settled FX spot only transitions active→settled (FilInstrumentTerminated) — no successor instrument is created. The resulting cash holding exists only as a transient projection-time FcyCashPosition plus GL/nostro postings: no FIL URN, no lifecycle, no citable single-graph node. That under-serves Principle 1 (a real cash holding not event-sourced as an instrument of record) and Principle 2 (nothing to trace to). The existing FCY_CASH_MODEL already declares a Valuable scoped at fil:type:fx:cash:* — a model waiting for a type that was never minted. Marc directed that cash be its own first-class asset class, decoupled from fx, with the maturity→cash coupling expressed at the product/NPA level rather than hardwired between asset classes, so other products (deposits, settlement of any asset class) can materialise cash the same way without a kernel change.",
     sourceDocHashes: [],

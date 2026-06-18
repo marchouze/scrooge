@@ -46,8 +46,8 @@ import {
   type Instant,
   type MarketDataSlice,
   type Money,
-  fcyCashFromSettledReceivable,
-  fcyCashValuable,
+  cashFromSettledReceivable,
+  cashValuable,
   foldFilInstances,
   fxValuable,
 } from "../../v2-core";
@@ -168,8 +168,8 @@ export function run(opts: RunOpts = {}): ReconResult {
     };
     const marks = singleRate(s.ccy, s.rate, asOf);
     const valuePre = fxValuable(pos).value(marks, asOf as Instant).value;
-    const valuePost = fcyCashValuable(
-      fcyCashFromSettledReceivable({
+    const valuePost = cashValuable(
+      cashFromSettledReceivable({
         currency: s.ccy,
         signedNotional: s.notional,
         reporting: REPORTING,
@@ -221,8 +221,8 @@ export function run(opts: RunOpts = {}): ReconResult {
       reporting: REPORTING,
     }).value(marks, row.lastAsOf as Instant).value;
 
-    const valuePost = fcyCashValuable(
-      fcyCashFromSettledReceivable({
+    const valuePost = cashValuable(
+      cashFromSettledReceivable({
         currency: terms.currency,
         signedNotional,
         reporting: REPORTING,

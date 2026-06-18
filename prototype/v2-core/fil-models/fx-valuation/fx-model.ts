@@ -20,7 +20,7 @@
 // instance is `active` (pre-settlement) or `settled` (post-settlement). On the
 // settlement date, at the settlement-date closing rate, value_pre == value_post
 // — structurally, not by a reconciliation. The FCY-cash model
-// (`fcy-cash-model.ts`) is the post-settlement member that recognises the
+// (`cash-model.ts`) is the post-settlement member that recognises the
 // derecognised receivable at its settlement-date carrying amount, so book P&L is
 // continuous across the boundary.
 //

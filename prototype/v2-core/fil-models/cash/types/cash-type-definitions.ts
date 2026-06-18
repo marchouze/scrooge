@@ -3,8 +3,11 @@
 // Formal FilTypeDefinition registration for the Cash FIL type
 // (D-CASH-ASSET-CLASS-V1).
 //
-// `fil:type:cash:balance:fcy@1.0` — a single-currency monetary cash balance,
-// ATOMIC (no legs). It implements:
+// `fil:type:cash:balance:vanilla@1.0` — a monetary cash balance, ATOMIC (no
+// legs). The asset class is CURRENCY-AGNOSTIC: it holds the reporting/domestic
+// currency (ZAR) exactly as it holds USD/EUR, so currency is an INSTANCE-level
+// economic term and never part of the type identity (no `fcy`/currency marker in
+// the slug — parallels `fx:swap:vanilla`). It implements:
 //   - Lifecycled  — the cash-balance lifecycle (held → drawn-down|swept|closed).
 //   - Valuable    — value = balance × closing rate (IAS-21 §23 monetary item);
 //                   the SAME lifecycle-free arithmetic as the FX position, which
@@ -34,7 +37,7 @@ import { CASH_BALANCE_LIFECYCLE } from "./cash-lifecycles.ts";
 // Cash balance — atomic, single currency.
 // ---------------------------------------------------------------------------
 export const CASH_BALANCE_TYPE: FilTypeDefinition = {
-  urn: "fil:type:cash:balance:fcy@1.0" as FilTypeUrn,
+  urn: "fil:type:cash:balance:vanilla@1.0" as FilTypeUrn,
   assetClass: "cash",
   familyPath: "balance",
   composition: ATOMIC_COMPOSITION,

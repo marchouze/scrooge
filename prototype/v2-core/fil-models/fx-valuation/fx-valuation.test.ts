@@ -17,12 +17,12 @@ import type { Instant } from "../../fil-core/primitives";
 import type { FilInstanceUrn } from "../../fil-core/urn";
 import type { MarketDataSlice } from "../../fil-facets/facets";
 import {
-  FCY_CASH_MODEL_DECLARATION,
+  CASH_MODEL_DECLARATION,
   FX_MODEL_DECLARATION,
   FX_PNL_METRIC_ID,
   FX_TRADING_SLICE_ID,
-  fcyCashFromSettledReceivable,
-  fcyCashValuable,
+  cashFromSettledReceivable,
+  cashValuable,
   fxPnlMetric,
   fxResolvesForScope,
   fxScopePatternsValid,
@@ -114,15 +114,15 @@ describe("FX Valuable FIL-Model", () => {
 
 describe("FCY-cash monetary Valuable FIL-Model", () => {
   test("declares Valuable + Accountable; recognised at settlement-date carrying amount", () => {
-    expect(FCY_CASH_MODEL_DECLARATION.implementsFacets).toContain("Valuable");
-    const pos = fcyCashFromSettledReceivable({
+    expect(CASH_MODEL_DECLARATION.implementsFacets).toContain("Valuable");
+    const pos = cashFromSettledReceivable({
       currency: "USD",
       signedNotional: "1000.00",
       reporting: "ZAR",
     });
     // The FCY balance is the receivable's OWN notional (not a pre-converted cost).
     expect(Number(pos.balance)).toBe(1000);
-    const rec = fcyCashValuable(pos).value(marks({ "USD/ZAR": 18.5 }), ASOF);
+    const rec = cashValuable(pos).value(marks({ "USD/ZAR": 18.5 }), ASOF);
     expect(Number(rec.value.amount)).toBe(18500);
   });
 });
@@ -143,12 +143,12 @@ describe("settlement-continuity invariant (THE A2 proof)", () => {
 
     // On settlement the receivable is derecognised → FCY cash at the settlement-
     // date carrying amount (the same notional).
-    const cash = fcyCashFromSettledReceivable({
+    const cash = cashFromSettledReceivable({
       currency: "USD",
       signedNotional: notional,
       reporting: "ZAR",
     });
-    const valuePost = fcyCashValuable(cash).value(marks({ "USD/ZAR": settlementRate }), ASOF).value;
+    const valuePost = cashValuable(cash).value(marks({ "USD/ZAR": settlementRate }), ASOF).value;
 
     expect(valuePost.currency).toBe(valuePre.currency);
     expect(Number(valuePost.amount)).toBe(Number(valuePre.amount));
@@ -166,8 +166,8 @@ describe("settlement-continuity invariant (THE A2 proof)", () => {
         isForward: false,
         reporting: "ZAR",
       }).value(marks({ "USD/ZAR": rate }), ASOF).value;
-      const post = fcyCashValuable(
-        fcyCashFromSettledReceivable({
+      const post = cashValuable(
+        cashFromSettledReceivable({
           currency: "USD",
           signedNotional: notional,
           reporting: "ZAR",
@@ -218,8 +218,8 @@ describe("fx-pnl additive AttributionMetric + book:fx-trading slice", () => {
       mkMember(
         "fil:inst:tenant-za:c1",
         "settled",
-        fcyCashValuable(
-          fcyCashFromSettledReceivable({
+        cashValuable(
+          cashFromSettledReceivable({
             currency: "EUR",
             signedNotional: "500.00",
             reporting: "ZAR",

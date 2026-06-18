@@ -1,6 +1,11 @@
-// v2-core/fil-models/fx-valuation/fcy-cash-model.ts
+// v2-core/fil-models/fx-valuation/cash-model.ts
 //
-// FCY CASH as a monetary `Valuable` FIL instrument — V2 A2.
+// CASH as a monetary `Valuable` FIL instrument — V2 A2.
+// (Renamed from `fcy-cash-model.ts`; model id `fcy-cash` → `cash` under
+// D-CASH-ASSET-CLASS-V1 — the cash asset class is currency-agnostic, so the
+// legacy `fcy-` foreign-currency prefix is dropped. The arithmetic is unchanged:
+// a foreign-currency balance retranslates at the closing rate; a domestic
+// balance values at rate 1.)
 //
 // When an FX trade settles, the receivable (an FX position) is DERECOGNISED and
 // a foreign-currency CASH balance is RECOGNISED in its place. That FCY cash is
@@ -60,51 +65,61 @@ import { requireReporting } from "./reporting-currency-resolver";
 // Model identity + version + scope.
 // ---------------------------------------------------------------------------
 
-export const FCY_CASH_MODEL_ID = "fcy-cash" as const;
-export const FCY_CASH_MODEL_VERSION = { major: 1, minor: 0 } as const;
+// MODEL-ID RENAME RATIONALE (D-CASH-ASSET-CLASS-V1): the model id was `fcy-cash`
+// (legacy foreign-currency naming). The cash asset class is CURRENCY-AGNOSTIC —
+// it values a ZAR balance exactly as a USD/EUR one (rate 1 when currency ===
+// reporting), so the `fcy-` prefix mis-describes the model. Renamed to the
+// currency-neutral `cash`. This is replay-safe: the model declaration is
+// code-resident (re-derived at boot through the model registry), and NO filed
+// `FilModelImplementationDeclared` event pins `modelId:"fcy-cash"` (verified
+// against the canonical store — the only filed model declaration is `sa-ccr`).
+// The methodology hash is FNV-1a over (id + version); the id change re-anchors
+// the hash, which correctly re-opens validation (Nadia, D-MODEL-BINDING-
+// CONTRACT-V1 §3) — flagged downstream in the PR body.
+export const CASH_MODEL_ID = "cash" as const;
+export const CASH_MODEL_VERSION = { major: 1, minor: 0 } as const;
 
 /**
  * The cash taxonomy scope. Re-pointed from the never-minted `fil:type:fx:cash:*`
  * onto the first-class `cash` asset class `fil:type:cash:*`
- * (D-CASH-ASSET-CLASS-V1) — cash is SEPARATE from `fx`. The `modelId` stays
- * `fcy-cash` to preserve existing model registrations; the valuation arithmetic
+ * (D-CASH-ASSET-CLASS-V1) — cash is SEPARATE from `fx`. The valuation arithmetic
  * (`balance × closing rate`, IAS-21 §23) is unchanged.
  */
-export const FCY_CASH_MODEL_SCOPE = ["fil:type:cash:balance"] as FilScopePattern[];
+export const CASH_MODEL_SCOPE = ["fil:type:cash:balance"] as FilScopePattern[];
 
 /** The event-of-record the FCY-cash Valuable mirrors (the FCY balance reval). */
-export const FCY_CASH_MODEL_EMITS = ["FcyCashBalanceRevalued"] as FilEventRef[];
+export const CASH_MODEL_EMITS = ["FcyCashBalanceRevalued"] as FilEventRef[];
 
 /** IAS-21 / IFRS-9 provisions the FCY-cash model implements (IMPLEMENTED_BY). */
-export const FCY_CASH_MODEL_CITES = [
+export const CASH_MODEL_CITES = [
   "urn:reg:iasb:ias-21:§23",
   "urn:reg:iasb:ifrs-9:§3.2.3",
   "Policies/fx-trading-policy-v1.md#fcy-cash",
 ] as CitationRef[];
 
-export const FCY_CASH_MODEL_METHODOLOGY_HASH = computeFxMethodologyHash(
-  FCY_CASH_MODEL_ID,
-  FCY_CASH_MODEL_VERSION,
+export const CASH_MODEL_METHODOLOGY_HASH = computeFxMethodologyHash(
+  CASH_MODEL_ID,
+  CASH_MODEL_VERSION,
 ) as MethodologyHash;
 
 // ---------------------------------------------------------------------------
 // The model declaration.
 // ---------------------------------------------------------------------------
 
-export const FCY_CASH_MODEL_DECLARATION: FilModelImplementationDeclared = {
+export const CASH_MODEL_DECLARATION: FilModelImplementationDeclared = {
   kind: "FilModelImplementationDeclared",
-  modelId: FCY_CASH_MODEL_ID,
+  modelId: CASH_MODEL_ID,
   implementsFacets: ["Valuable", "Accountable", "RiskMeasurable"],
-  scope: FCY_CASH_MODEL_SCOPE,
-  version: FCY_CASH_MODEL_VERSION,
+  scope: CASH_MODEL_SCOPE,
+  version: CASH_MODEL_VERSION,
   requires: {
     facets: ["Lifecycled"],
     referenceData: ["fx-rate-table"],
     postureDimensions: ["reporting.currency"],
   },
-  emits: FCY_CASH_MODEL_EMITS,
-  cites: FCY_CASH_MODEL_CITES,
-  methodologyHash: FCY_CASH_MODEL_METHODOLOGY_HASH,
+  emits: CASH_MODEL_EMITS,
+  cites: CASH_MODEL_CITES,
+  methodologyHash: CASH_MODEL_METHODOLOGY_HASH,
   validationStatus: "submitted",
 };
 
@@ -112,7 +127,7 @@ export const FCY_CASH_MODEL_DECLARATION: FilModelImplementationDeclared = {
 // The FCY-cash position — recognised at the SETTLEMENT-DATE carrying amount.
 // ---------------------------------------------------------------------------
 
-export interface FcyCashPosition {
+export interface CashPosition {
   /**
    * Cash balance currency, ISO-4217 alpha-3. This is a CURRENCY-AGNOSTIC cash
    * FIL `{ currency, balance }` (MC-4, WS-MULTI-BASE-CURRENCY): there is no
@@ -154,16 +169,16 @@ export interface FcyCashPosition {
  * the value at settlement is `notional × that rate`, identical to the
  * receivable's pre-settlement value.
  */
-export function fcyCashFromSettledReceivable(args: {
+export function cashFromSettledReceivable(args: {
   currency: string;
   signedNotional: string;
   /** Holding entity's functional currency (required; resolved via the resolver). */
   reporting: string;
-}): FcyCashPosition {
+}): CashPosition {
   return {
     currency: args.currency,
     balance: args.signedNotional,
-    reporting: requireReporting(args.reporting, "fcyCashFromSettledReceivable"),
+    reporting: requireReporting(args.reporting, "cashFromSettledReceivable"),
   };
 }
 
@@ -171,8 +186,8 @@ export function fcyCashFromSettledReceivable(args: {
 // The Valuable facet IMPLEMENTATION — same lifecycle-free arithmetic.
 // ---------------------------------------------------------------------------
 
-export function fcyCashValuable(position: FcyCashPosition): Valuable {
-  const reporting = requireReporting(position.reporting, "fcyCashValuable");
+export function cashValuable(position: CashPosition): Valuable {
+  const reporting = requireReporting(position.reporting, "cashValuable");
   return {
     valuationMethod(): "mark-to-market" {
       return "mark-to-market";
@@ -210,7 +225,7 @@ export function fcyCashValuable(position: FcyCashPosition): Valuable {
 // instrument is level-1).
 // ---------------------------------------------------------------------------
 
-export const FCY_CASH_POSTING_KEYS: ReadonlyArray<{
+export const CASH_POSTING_KEYS: ReadonlyArray<{
   lifecycleEvent: FilEventRef;
   ruleKey: CitationRef;
 }> = [
@@ -226,14 +241,14 @@ export const FCY_CASH_POSTING_KEYS: ReadonlyArray<{
   },
 ];
 
-export function fcyCashAccountable(): Accountable {
+export function cashAccountable(): Accountable {
   return {
     ifrs9Category(designation: BookDesignation): "amortised-cost" | "fvtpl" | "fvoci" {
       void designation;
       return "amortised-cost";
     },
     postingKeys() {
-      return FCY_CASH_POSTING_KEYS;
+      return CASH_POSTING_KEYS;
     },
     fairValueHierarchy(): "level-1" | "level-2" | "level-3" {
       return "level-1";
@@ -252,8 +267,8 @@ export function fcyCashAccountable(): Accountable {
 // settlement-continuity invariant carried into the risk factor).
 // ---------------------------------------------------------------------------
 
-export function fcyCashRiskMeasurable(position: FcyCashPosition): RiskMeasurable {
-  const reporting = requireReporting(position.reporting, "fcyCashRiskMeasurable");
+export function cashRiskMeasurable(position: CashPosition): RiskMeasurable {
+  const reporting = requireReporting(position.reporting, "cashRiskMeasurable");
   return {
     riskFactors(): readonly RiskFactorRef[] {
       if (position.currency === reporting) return [];

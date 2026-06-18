@@ -3,9 +3,9 @@
 // Barrel export for the Cash FIL asset class (D-CASH-ASSET-CLASS-V1).
 // Cash is a first-class FIL asset class, SEPARATE from `fx`. The Valuable /
 // Accountable / RiskMeasurable implementations for cash continue to live in
-// `fx-valuation/fcy-cash-model.ts` (the FCY-cash Valuable arithmetic is shared
-// with the FX position — that shared arithmetic IS the settlement-continuity
-// guarantee), re-pointed onto the `fil:type:cash:*` scope.
+// `fx-valuation/cash-model.ts` (the cash Valuable arithmetic is shared with the
+// FX position — that shared arithmetic IS the settlement-continuity guarantee),
+// re-pointed onto the `fil:type:cash:*` scope.
 //
 // Author: Atlas (Core banking platform architect, engineering).
 

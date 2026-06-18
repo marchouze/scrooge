@@ -9,7 +9,7 @@
 //        - RealisedPnlRecognised events → FCY cash instruments still held
 //          (net by instrumentId, running balance after close-outs)
 //        - FxTradeExecuted events + settlement events → settled-cash balances
-//   2. Compute current gross book value via fcyCashValuable (fcy-cash-model.ts):
+//   2. Compute current gross book value via cashValuable (cash-model.ts):
 //        grossValueZar = Σ (balance × closingRate) for each FCY instrument
 //   3. Load prior FxBookValuationSnapshotted (look-back query).
 //      If none, isFirstRun = true → priorGrossZar = 0.

@@ -60,9 +60,9 @@ import {
 import type { MarketDataSlice } from "../../v2-core/fil-facets/facets";
 import {
   type FxPnlResult,
-  fcyCashFromSettledReceivable,
-  fcyCashRiskMeasurable,
-  fcyCashValuable,
+  cashFromSettledReceivable,
+  cashRiskMeasurable,
+  cashValuable,
   fxPnlMetric,
 } from "../../v2-core/fil-models/fx-valuation";
 import {
@@ -132,7 +132,7 @@ function buildVarMembers(
     // exposureZar is already in ZAR; we carry it as the FCY notional valued at
     // rate 1 to keep the member's Valuable in ZAR).
     const exposureMinor = BigInt(Math.round(e.exposureZar * 100));
-    const position = fcyCashFromSettledReceivable({
+    const position = cashFromSettledReceivable({
       currency: REPORTING,
       signedNotional: minorBigintToMajorString(exposureMinor),
       reporting: REPORTING,
@@ -151,11 +151,11 @@ function buildVarMembers(
       stage: "settled",
       tenantId: ANCHOR_TENANT,
       facets: {
-        Valuable: fcyCashValuable(position),
+        Valuable: cashValuable(position),
         // The RiskMeasurable reports the REAL factor (C/ZAR), so the VaR metric
         // keys the exposure to the right currency's return window.
-        RiskMeasurable: fcyCashRiskMeasurable(
-          fcyCashFromSettledReceivable({
+        RiskMeasurable: cashRiskMeasurable(
+          cashFromSettledReceivable({
             currency: ccy,
             signedNotional: minorBigintToMajorString(exposureMinor),
             reporting: REPORTING,
