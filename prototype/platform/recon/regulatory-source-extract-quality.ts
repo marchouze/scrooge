@@ -351,13 +351,13 @@ export const SUMMARY_FORM_ALLOWLIST: Record<string, SummaryFormAllowlistEntry> =
   // tracked by the coverage report; bringing the CoopBanks corpus under this
   // gate is a separate, scoped change. The remaining 8 in-scope sources are
   // seeded below with counts verified against `_source-coverage.json`.
-  "banks-gn3-2011": { knownGap: 3, note: "3 heading-only provisions; body text pending backfill" },
-  "banks-d11-2025": { knownGap: 2, note: "2 heading-only provisions; body text pending backfill" },
-  "banks-gn3-2010": { knownGap: 2, note: "2 heading-only provisions; body text pending backfill" },
-  "banks-gn5-2013": { knownGap: 2, note: "2 heading-only provisions; body text pending backfill" },
-  "banks-gn12-2022": { knownGap: 1, note: "1 heading-only provision; body text pending backfill" },
-  "banks-gn7-2016": { knownGap: 1, note: "1 heading-only provision; body text pending backfill" },
-  "banks-gn9-2008": { knownGap: 1, note: "1 heading-only provision; body text pending backfill" },
+  // The 7 banks-* guidance notes seeded here 2026-06-18 were removed the same
+  // day: the heading-only provisions were PDF→structured extraction artifacts
+  // (empty numbered sub-nodes, NOT missing source), pruned by
+  // scripts/regulatory/cleanup-guidance-note-stubs.ts after an obligation-safety
+  // check. Each source's per-section gap is now zero, so leaving the entry would
+  // trip the stale-entry self-check. The ratchet hardens.
+  // Authority: D-REGULATORY-STRUCTURED-FIRST-CANONICAL.
 };
 
 // ---------------------------------------------------------------------------

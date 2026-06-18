@@ -38,10 +38,10 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  ensureProvisionIds,
   type LoaderDoc,
   type LoaderSection,
   type LoaderSubsection,
+  ensureProvisionIds,
 } from "../../platform/regulatory/structured-doc-loader";
 
 // ---------------------------------------------------------------------------
@@ -202,8 +202,7 @@ export function cleanupDoc(doc: LoaderDoc, keepIds: ReadonlySet<string>): Cleanu
     if (prunedSet.has(id)) continue;
     if (!idsAfter.has(id)) {
       throw new Error(
-        `cleanup-guidance-note-stubs: id-stability violation — surviving provision "${id}" ` +
-          `changed id after pruning. Aborting rather than risk breaking an adoption.`,
+        `cleanup-guidance-note-stubs: id-stability violation — surviving provision "${id}" changed id after pruning. Aborting rather than risk breaking an adoption.`,
       );
     }
   }
@@ -211,8 +210,7 @@ export function cleanupDoc(doc: LoaderDoc, keepIds: ReadonlySet<string>): Cleanu
   for (const id of idsAfter) {
     if (!idsBefore.has(id)) {
       throw new Error(
-        `cleanup-guidance-note-stubs: id-stability violation — new provision id "${id}" ` +
-          `appeared after pruning. Aborting.`,
+        `cleanup-guidance-note-stubs: id-stability violation — new provision id "${id}" appeared after pruning. Aborting.`,
       );
     }
   }
@@ -253,13 +251,34 @@ function collectIds(doc: LoaderDoc, into: Set<string>): void {
 /** The 8 in-scope guidance-note slugs and their on-disk paths (relative to repo root). */
 export const TARGET_DOCS: ReadonlyArray<{ slug: string; relPath: string }> = [
   { slug: "gn2-2019", relPath: "Regulations/CoopBanks/source-docs/gn2-2019-structured.json" },
-  { slug: "banks-gn3-2011", relPath: "Regulations/Banks/source-docs/banks-gn3-2011-structured.json" },
-  { slug: "banks-d11-2025", relPath: "Regulations/Banks/source-docs/banks-d11-2025-structured.json" },
-  { slug: "banks-gn3-2010", relPath: "Regulations/Banks/source-docs/banks-gn3-2010-structured.json" },
-  { slug: "banks-gn5-2013", relPath: "Regulations/Banks/source-docs/banks-gn5-2013-structured.json" },
-  { slug: "banks-gn7-2016", relPath: "Regulations/Banks/source-docs/banks-gn7-2016-structured.json" },
-  { slug: "banks-gn9-2008", relPath: "Regulations/Banks/source-docs/banks-gn9-2008-structured.json" },
-  { slug: "banks-gn12-2022", relPath: "Regulations/Banks/source-docs/banks-gn12-2022-structured.json" },
+  {
+    slug: "banks-gn3-2011",
+    relPath: "Regulations/Banks/source-docs/banks-gn3-2011-structured.json",
+  },
+  {
+    slug: "banks-d11-2025",
+    relPath: "Regulations/Banks/source-docs/banks-d11-2025-structured.json",
+  },
+  {
+    slug: "banks-gn3-2010",
+    relPath: "Regulations/Banks/source-docs/banks-gn3-2010-structured.json",
+  },
+  {
+    slug: "banks-gn5-2013",
+    relPath: "Regulations/Banks/source-docs/banks-gn5-2013-structured.json",
+  },
+  {
+    slug: "banks-gn7-2016",
+    relPath: "Regulations/Banks/source-docs/banks-gn7-2016-structured.json",
+  },
+  {
+    slug: "banks-gn9-2008",
+    relPath: "Regulations/Banks/source-docs/banks-gn9-2008-structured.json",
+  },
+  {
+    slug: "banks-gn12-2022",
+    relPath: "Regulations/Banks/source-docs/banks-gn12-2022-structured.json",
+  },
 ];
 
 function repoRoot(): string {
@@ -279,7 +298,7 @@ function repoRoot(): string {
  */
 async function buildObligationReferencedIds(): Promise<Map<string, Set<string>>> {
   const { EventStore } = await import("../../platform/event-store/store");
-  const { buildRegulationObligationIndex, provisionKey } = await import(
+  const { buildRegulationObligationIndex } = await import(
     "../../dashboard/regulation-obligation-index"
   );
   const homeDb = resolve(process.env.HOME ?? "", ".local", "share", "bank", "event.db");
@@ -289,19 +308,19 @@ async function buildObligationReferencedIds(): Promise<Map<string, Set<string>>>
   const bySlug = new Map<string, Set<string>>();
   for (const { slug } of TARGET_DOCS) bySlug.set(slug, new Set<string>());
 
+  // `byProvision` keys are `provisionKey(slug, provId)` = `${slug}::${provId}`.
+  // Split on the first separator so the provId half (which itself never contains
+  // the separator) is recovered intact.
+  const KEY_SEP = "::";
   for (const key of idx.byProvision.keys()) {
-    const sep = key.indexOf("::");
+    const sep = key.indexOf(KEY_SEP);
     if (sep < 0) continue;
     const slug = key.slice(0, sep);
-    const provId = key.slice(sep + provisionKeySepLen());
+    const provId = key.slice(sep + KEY_SEP.length);
     const set = bySlug.get(slug);
     if (set) set.add(provId);
   }
   return bySlug;
-}
-
-function provisionKeySepLen(): number {
-  return "::".length;
 }
 
 async function main(): Promise<void> {
@@ -334,7 +353,9 @@ async function main(): Promise<void> {
       );
     }
     for (const c of result.collapsedHeadings) {
-      console.log(`  collapsed heading [${c.id}]: ${JSON.stringify(c.before)} → ${JSON.stringify(c.after)}`);
+      console.log(
+        `  collapsed heading [${c.id}]: ${JSON.stringify(c.before)} → ${JSON.stringify(c.after)}`,
+      );
     }
   }
 
