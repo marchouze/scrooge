@@ -55,7 +55,7 @@ const PIPELINE = "accounting-schema-home";
  * `true` = enforcing (any violation exits non-zero). Slice 4 flips this to
  * `true` once slices 1–3 are clean. Hardens only — never relax back to `false`.
  */
-const ENFORCING = false;
+const ENFORCING = true;
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ACCT_DIR = resolve(HERE, "../accounting");
