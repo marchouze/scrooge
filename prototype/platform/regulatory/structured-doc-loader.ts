@@ -43,6 +43,8 @@ export interface LoaderSection {
   heading?: string;
   title?: string;
   text?: string;
+  /** Editorial précis used when no verbatim text was extracted (see schema). */
+  summary?: string;
   verbatim?: boolean;
   subsections?: LoaderSubsection[];
   [k: string]: unknown;
@@ -307,4 +309,247 @@ export function loadStructuredDocBySlug(slug: string, repoRoot?: string): Loader
   enrichBcbsDoc(doc, repoRoot);
   ensureProvisionIds(doc);
   return doc;
+}
+
+// ---------------------------------------------------------------------------
+// Normalized provision tree — the single canonical text-assembly path
+//
+// Why this exists: the same structured-doc provision tree was assembled into
+// display text TWO incompatible ways — the reader view's local `collectText`
+// closure (section.text + ALL nested subsection text, folded recursively) and
+// the V2 view's `flattenSubsections` (leaf subsection `.text` only, dropping
+// top-level `section.text`). On-disk `summary` fields were read by neither, so
+// 31 rrb sections rendered blank. This normalizer collapses both onto ONE
+// contract, mirroring the `normSectionRef` precedent (PR #1429) of folding
+// divergent copies onto a shared helper.
+//
+// It runs as a 4th pipeline step AFTER load → enrichBcbsDoc → ensureProvisionIds.
+// It only ADDS verbatimText / textSource / completeness; it NEVER re-keys an id
+// or number — those are the tickability contract (`ensureProvisionIds` output)
+// and feed the tick/adoption flow + reverse index. The id-stability guard in
+// the test asserts this byte-for-byte.
+//
+// Authority: D-REGULATORY-STRUCTURED-FIRST-CANONICAL (CEO-approved this
+// session), citing D-REGULATORY-LIBRARY-V1 + D-REGULATORY-VERBATIM-RENDERING-V1.
+// ---------------------------------------------------------------------------
+
+/** Where a provision's `verbatimText` was sourced from. */
+export type TextSource = "own" | "folded" | "enriched" | "summary" | "heading";
+
+/** How complete a provision's rendered text is (drives the Slice-2 badge). */
+export type CompletenessTier = "verbatim" | "summary" | "heading-only" | "enriched";
+
+/** An image/table/diagram excerpt, passed through verbatim from the doc. */
+export interface NormalizedExcerpt {
+  id: string;
+  kind: string;
+  hash?: string;
+  pages?: string;
+  caption?: string;
+}
+
+export interface NormalizedProvision {
+  /** Stable id from `ensureProvisionIds` — preserved byte-for-byte. */
+  id: string;
+  /** Section/subsection number, preserved verbatim from the doc. */
+  number: string;
+  /** Heading / title, preserved verbatim from the doc. */
+  heading: string;
+  /** The assembled display text under the single text-assembly rule. */
+  verbatimText: string;
+  /** Provenance of `verbatimText`. */
+  textSource: TextSource;
+  /** Completeness tier, rolled up over the subtree. */
+  completeness: CompletenessTier;
+  /** True when text was folded from MORE THAN ONE subsection. */
+  isComposite: boolean;
+  /** PDF page range, when stamped. */
+  pages?: string;
+  excerpts: NormalizedExcerpt[];
+  subsections: NormalizedProvision[];
+}
+
+export interface NormalizedDoc {
+  slug: string;
+  title: string;
+  shortTitle?: string;
+  regulator?: string;
+  year?: number;
+  priority?: number;
+  citationPatterns?: string[];
+  goldenSourceHash: string | null;
+  chapters: Array<{
+    id: string;
+    number: string;
+    heading: string;
+    sections: NormalizedProvision[];
+  }>;
+}
+
+/** A node carrying optional text + subsections — section OR subsection. */
+interface AssemblyNode {
+  id?: string;
+  number?: string;
+  heading?: string;
+  title?: string;
+  text?: string;
+  summary?: string;
+  pages?: string;
+  excerpts?: Array<{
+    id?: string;
+    kind?: string;
+    hash?: string;
+    pages?: string;
+    caption?: string;
+  }>;
+  subsections?: AssemblyNode[];
+  [k: string]: unknown;
+}
+
+/**
+ * Fold a node's own text PLUS its subsection tree into one verbatim string, in
+ * document order. This is the EXACT logic previously living as the reader
+ * view's local `collectText` closure — lifted here so V1 and V2 share one copy.
+ * (Subsection text is prefixed with its number, mirroring the original.)
+ */
+function foldNodeText(node: AssemblyNode): string {
+  const parts: string[] = [];
+  const body = (node.text ?? "").trim();
+  if (body) parts.push(body);
+  for (const ss of node.subsections ?? []) {
+    const sub = foldNodeText(ss);
+    if (sub) parts.push(ss.number ? `${ss.number}  ${sub}` : sub);
+  }
+  return parts.join("\n\n");
+}
+
+/** Does this node, or anything in its subtree, carry non-empty `text`? */
+function subtreeHasText(node: AssemblyNode): boolean {
+  if ((node.text ?? "").trim()) return true;
+  return (node.subsections ?? []).some(subtreeHasText);
+}
+
+function normExcerpts(node: AssemblyNode): NormalizedExcerpt[] {
+  return (node.excerpts ?? [])
+    .filter((e): e is { id: string; kind?: string } & typeof e => typeof e.id === "string")
+    .map((e) => ({
+      id: e.id,
+      kind: e.kind ?? "full-page",
+      ...(e.hash !== undefined ? { hash: e.hash } : {}),
+      ...(e.pages !== undefined ? { pages: e.pages } : {}),
+      ...(e.caption !== undefined ? { caption: e.caption } : {}),
+    }));
+}
+
+/** Roll the strongest non-empty completeness of any descendant up to a tier. */
+function rollUpCompleteness(
+  own: CompletenessTier,
+  children: NormalizedProvision[],
+): CompletenessTier {
+  if (own !== "heading-only") return own;
+  // own is heading-only: stay heading-only only if the WHOLE subtree is empty.
+  const ranked: CompletenessTier[] = ["enriched", "verbatim", "summary"];
+  for (const tier of ranked) {
+    if (children.some((c) => c.completeness === tier)) return tier;
+  }
+  return "heading-only";
+}
+
+/**
+ * Assemble one provision (section or subsection) under the single text rule:
+ *   (1) own `text` non-empty  → verbatimText = text; source own|enriched
+ *   (2) empty text + subsection text → fold; source "folded"
+ *   (3) empty + no subtext + summary present → summary; source "summary"
+ *   (4) nothing → "" ; source "heading"
+ * Subsections recurse with the same rule; completeness rolls up.
+ */
+function assembleProvision(node: AssemblyNode, slug: string): NormalizedProvision {
+  const subsections = (node.subsections ?? []).map((ss) => assembleProvision(ss, slug));
+
+  const ownText = (node.text ?? "").trim();
+  const subCount = node.subsections?.length ?? 0;
+  const foldedSubtreeHasText = (node.subsections ?? []).some(subtreeHasText);
+
+  let verbatimText: string;
+  let textSource: TextSource;
+  let completeness: CompletenessTier;
+  let isComposite = false;
+
+  if (ownText) {
+    // Branch 1 — own text. BCBS docs were enriched by enrichBcbsDoc (which set
+    // section.text), so here that is tagged "enriched"; everything else "own".
+    verbatimText = node.text ?? "";
+    textSource = slug.startsWith("bcbs-") ? "enriched" : "own";
+    completeness = textSource === "enriched" ? "enriched" : "verbatim";
+  } else if (foldedSubtreeHasText) {
+    // Branch 2 — fold from subsections, EXACT same logic as the old V1
+    // collectText (now `foldNodeText`).
+    verbatimText = foldNodeText(node);
+    textSource = "folded";
+    completeness = "verbatim";
+    isComposite = subCount > 1;
+  } else if ((node.summary ?? "").trim()) {
+    // Branch 3 — editorial summary fallback.
+    verbatimText = node.summary ?? "";
+    textSource = "summary";
+    completeness = "summary";
+  } else {
+    // Branch 4 — heading-only.
+    verbatimText = "";
+    textSource = "heading";
+    completeness = "heading-only";
+  }
+
+  completeness = rollUpCompleteness(completeness, subsections);
+
+  return {
+    id: node.id ?? "",
+    number: (node.number ?? node.sectionNumber ?? "").toString(),
+    heading: (node.heading ?? node.title ?? "").toString(),
+    verbatimText,
+    textSource,
+    completeness,
+    isComposite,
+    ...(node.pages !== undefined ? { pages: node.pages } : {}),
+    excerpts: normExcerpts(node),
+    subsections,
+  };
+}
+
+/**
+ * Normalize an already-loaded (enriched + id-assigned) doc into the canonical
+ * tree. Pure: never mutates the input doc, never re-keys ids/numbers.
+ */
+export function normalizeStructuredDoc(doc: LoaderDoc): NormalizedDoc {
+  const meta = doc as LoaderDoc & {
+    shortTitle?: string;
+    regulator?: string;
+    year?: number;
+    priority?: number;
+    citationPatterns?: string[];
+    goldenSourceHash?: string;
+  };
+  return {
+    slug: doc.slug,
+    title: doc.title ?? "",
+    ...(meta.shortTitle !== undefined ? { shortTitle: meta.shortTitle } : {}),
+    ...(meta.regulator !== undefined ? { regulator: meta.regulator } : {}),
+    ...(meta.year !== undefined ? { year: meta.year } : {}),
+    ...(meta.priority !== undefined ? { priority: meta.priority } : {}),
+    ...(meta.citationPatterns !== undefined ? { citationPatterns: meta.citationPatterns } : {}),
+    goldenSourceHash: meta.goldenSourceHash ?? null,
+    chapters: doc.chapters.map((chapter) => ({
+      id: chapter.id ?? "",
+      number: (chapter.number ?? "").toString(),
+      heading: (chapter.heading ?? chapter.title ?? "").toString(),
+      sections: chapter.sections.map((section) => assembleProvision(section, doc.slug)),
+    })),
+  };
+}
+
+/** Load, enrich, id-normalise, then text-normalise the doc for a slug. */
+export function loadNormalizedDocBySlug(slug: string, repoRoot?: string): NormalizedDoc | null {
+  const doc = loadStructuredDocBySlug(slug, repoRoot);
+  if (!doc) return null;
+  return normalizeStructuredDoc(doc);
 }
