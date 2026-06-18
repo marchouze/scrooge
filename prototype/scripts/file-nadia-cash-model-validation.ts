@@ -33,8 +33,16 @@
 // brief: brief:nadia:independent-validation-of-the-cash-valuable-mode:2026-06-18
 // Author: Nadia (Independent-validation engineer, second line).
 
-import "../platform/event-store/resolve-event-db-boot";
-
+// NB: NEITHER boot shim is imported (it previously imported
+// `resolve-event-db-boot`). This script is now wired into `ci:migrate`, so — like
+// every CI-chained emission script that files a document blob (`npa:*`,
+// `record-d-*`) — it must keep its `RecordFiled` event AND its blob in the SAME
+// per-worktree store (composition `excludeHomeDefault` posture). The boot shim
+// would push the blob to the shared HOME document store while
+// `recon:rms-document-blob-integrity` reads the per-worktree one → a dangling-
+// record fail on a clean CI machine. For a standalone shared-store run, set
+// BANK_EVENT_DB *and* BANK_DOCUMENT_STORE explicitly (they take precedence and
+// keep the pair together). Authority: D-CROSS-WORKTREE-EVENT-STORE-SYNC.
 import { eventStore } from "../platform/composition";
 import { BANK_ZA_001 } from "../platform/core/types";
 import {
