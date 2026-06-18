@@ -14,9 +14,16 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import type { EventStore } from "../platform/event-store/store";
-import { getBankObligationsView } from "./bank-obligations-view";
+import { seatForObligation } from "../platform/regulatory/domain-ownership-map";
+import { redactAgentNames } from "./agent-title";
+import { getBankObligationsView, getObligationDetail } from "./bank-obligations-view";
 import type { EnrichedObligationRef } from "./regulation-obligation-index";
-import { buildInstrumentDetailView, buildInstrumentsListView } from "./regulation-reader-view";
+import { seatTitle } from "./regulation-obligation-index";
+import {
+  buildInstrumentDetailView,
+  buildInstrumentsListView,
+  sourceLinksForObligation,
+} from "./regulation-reader-view";
 
 /**
  * A display-safe obligation label for V2 surfaces. Many `ORG-*` rows carry
@@ -188,6 +195,77 @@ export interface V2ObligationsView {
     total: number;
     owners: number;
     byApplicability: Record<string, number>;
+  };
+}
+
+/** Strip editorial annotation blocks ([...] / {...}) and redact any agent name. */
+function cleanRequirementProse(raw: string): string {
+  return redactAgentNames(
+    (raw ?? "")
+      .replace(/\[[^\]]*\]/g, "")
+      .replace(/\{[^}]*\}/g, "")
+      .replace(/\s+/g, " ")
+      .trim(),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Obligation detail
+// ---------------------------------------------------------------------------
+
+export interface V2ObligationSourceLink {
+  slug: string;
+  provisionIds: string[];
+}
+
+export interface V2ObligationDetail {
+  id: string;
+  title: string;
+  status: string;
+  adopted: boolean;
+  regulator: string;
+  domain: string;
+  ownerSeatTitle: string | null;
+  requirement: string;
+  applicability: { verdict: string; rationale: string } | null;
+  /** Verbatim regulatory source text resolved for this obligation (clean). */
+  sourceText: string;
+  sourceLinks: V2ObligationSourceLink[];
+  history: Array<{ at: string; kind: string; status: string }>;
+}
+
+export function buildV2ObligationDetailView(
+  store: EventStore,
+  repoRoot: string,
+  id: string,
+): V2ObligationDetail | null {
+  const d = getObligationDetail(store, repoRoot, id);
+  if (!d) return null;
+
+  const citation = d.projection?.citation ?? d.seed?.citation ?? "";
+  const requirementRaw = d.seed?.requirement ?? d.projection?.requirement ?? "";
+  const seat = seatForObligation({ id, citation, requirement: requirementRaw });
+
+  const sourceText = d.headingGroups
+    .flatMap((g) => g.paragraphs.map((p) => `${p.paragraph ? `${p.paragraph}  ` : ""}${p.text}`))
+    .join("\n\n")
+    .trim();
+
+  return {
+    id: d.id,
+    title: cleanObligationTitle(d.title, d.id),
+    status: d.projection?.status ?? (d.adopted ? "adopted" : "not-adopted"),
+    adopted: d.adopted,
+    regulator: d.regulator,
+    domain: d.domainDescription,
+    ownerSeatTitle: seatTitle(seat),
+    requirement: cleanRequirementProse(requirementRaw),
+    applicability: d.applicability
+      ? { verdict: d.applicability.verdict, rationale: redactAgentNames(d.applicability.rationale) }
+      : null,
+    sourceText: sourceText || (d.verbatimText ? redactAgentNames(d.verbatimText) : ""),
+    sourceLinks: sourceLinksForObligation(repoRoot, store, id),
+    history: d.history.map((h) => ({ at: h.at, kind: h.kind, status: h.status ?? "" })),
   };
 }
 

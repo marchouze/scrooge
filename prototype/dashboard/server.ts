@@ -315,6 +315,7 @@ import { buildTaxonomiesView } from "./taxonomy-view";
 import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
 import type { DashboardState } from "./types";
 import {
+  buildV2ObligationDetailView,
   buildV2ObligationsView,
   buildV2RegulationDetailView,
   buildV2RegulationsView,
@@ -5583,6 +5584,14 @@ const server = Bun.serve({
         ...buildV2ObligationsView(eventStore, REPO_ROOT),
         pageProvenance: filter,
       });
+    }
+    if (req.method === "GET" && url.pathname.startsWith("/api/v2/obligations/")) {
+      const id = decodeURIComponent(url.pathname.slice("/api/v2/obligations/".length));
+      if (!id) return jsonResponse({ error: "missing obligation id" }, 400);
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const detail = buildV2ObligationDetailView(eventStore, REPO_ROOT, id);
+      if (!detail) return jsonResponse({ error: `unknown obligation: ${id}` }, 404);
+      return jsonResponse({ ...detail, pageProvenance: filter });
     }
     if (req.method === "GET") {
       return serveStatic(url.pathname, req);

@@ -90,3 +90,21 @@ function ownerSeatTitleOne(raw: string): string {
 export function seatTitles(identifiers: readonly string[]): string[] {
   return [...new Set(identifiers.map(seatTitle))].sort((a, b) => a.localeCompare(b));
 }
+
+/**
+ * Replace any roster agent personal name embedded in free text with its seat
+ * Title — so authored prose (obligation requirements, rationales) surfaced on a
+ * V2 page never exposes a persona name (the standing rule above). Whole-word
+ * matches only; unknown tokens are untouched. Longest names first so a name that
+ * is a prefix of another does not partially match.
+ */
+export function redactAgentNames(text: string): string {
+  if (!text) return text;
+  const map = loadNameToTitle();
+  let out = text;
+  for (const name of [...map.keys()].sort((a, b) => b.length - a.length)) {
+    const esc = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    out = out.replace(new RegExp(`\\b${esc}\\b`, "g"), map.get(name) ?? name);
+  }
+  return out;
+}

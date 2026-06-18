@@ -7,6 +7,19 @@
   <link rel="stylesheet" href="/v2/_v2-shell.css">
   <link rel="stylesheet" href="/v2/_v2-tile.css">
   <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    .v2-chip { display:inline-flex; align-items:center; padding:1px 8px; border-radius:10px; font-size:0.78em; font-weight:600; }
+    .v2-chip--applies { background:var(--color-success-bg); color:var(--color-success); }
+    .v2-chip--partially-applies { background:var(--color-warning-bg); color:var(--color-warning); }
+    .v2-chip--does-not-apply { background:var(--color-surface-raised); color:var(--color-text-secondary); }
+    .v2-chip--na { background:var(--color-surface-raised); color:var(--color-text-disabled); }
+    .od-prose { color:var(--color-text-primary); line-height:1.65; white-space:pre-wrap; font:var(--text-body); }
+    .od-source-btn { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; margin-bottom:var(--space-3);
+      border:1px solid var(--color-accent); border-radius:var(--radius-sm); background:var(--color-accent-bg);
+      color:var(--color-accent); font:var(--text-caption); font-weight:600; text-decoration:none; }
+    .od-source-btn:hover { filter:brightness(0.97); }
+    .od-hist { font:var(--text-caption); color:var(--color-text-secondary); padding:3px 0; border-bottom:1px solid var(--color-border); }
+  </style>
 </head>
 <body data-provenance-content="none">
   <header class="v2-header">
@@ -30,44 +43,71 @@
   <script src="/v2/_v2-shell.js"></script>
   <script src="/provenance-badge.js"></script>
   <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
   <script>
     const main = document.getElementById("v2-main");
-    const params = new URLSearchParams(location.search);
-    const id = params.get("id");
-
-    renderPageHeader(main, {
-      crumbs: [
-        { label: "Executive", href: "/v2/index.html" },
-        { label: "Compliance", href: "/v2/compliance/index.html" },
-        { label: "Obligations", href: "/v2/compliance/obligations.html" },
-        { label: id ? id : "Detail" },
-      ],
-      title: id ? `Obligation: ${id}` : "Obligation Detail",
-    });
+    const id = new URLSearchParams(location.search).get("id");
+    const verdictChip = (v) => v ? `<span class="v2-chip v2-chip--${v}">${v2Esc(v)}</span>` : `<span class="v2-chip v2-chip--na">unassessed</span>`;
 
     if (!id) {
-      const empty = document.createElement("div");
-      empty.className = "v2-empty";
-      empty.innerHTML = `<div class="v2-empty-icon">⊙</div><div class="v2-empty-msg">No obligation selected — choose from <a href="/v2/compliance/obligations.html">Obligation Register</a>.</div>`;
-      main.appendChild(empty);
-    } else {
-      renderTileGroup(main, {
-        tiles: [
-          { label: "Status", unit: "adopted / unadopted / superseded" },
-          { label: "Domain", unit: "Regulatory domain" },
-          { label: "Regulator", unit: "Issuing body" },
-          { label: "Applicability", unit: "Assessed verdict" },
-        ],
+      renderPageHeader(main, {
+        crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Compliance", href: "/v2/compliance/index.html" }, { label: "Obligations", href: "/v2/compliance/obligations.html" }, { label: "Detail" }],
+        title: "Obligation Detail",
       });
-      const s = document.createElement("div"); s.className = "v2-section"; main.appendChild(s);
-      const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "Obligation Text"; s.appendChild(h);
-      renderTable(s, { columns: ["Field", "Value"] });
-      const s2 = document.createElement("div"); s2.className = "v2-section"; main.appendChild(s2);
-      const h2 = document.createElement("h2"); h2.className = "v2-section-title"; h2.textContent = "Citation Chain"; s2.appendChild(h2);
-      renderTable(s2, { columns: ["Regulation", "Section", "URN", "Link"] });
-      const s3 = document.createElement("div"); s3.className = "v2-section"; main.appendChild(s3);
-      const h3 = document.createElement("h2"); h3.className = "v2-section-title"; h3.textContent = "Applicability Assessments"; s3.appendChild(h3);
-      renderTable(s3, { columns: ["Assessment ID", "Subject", "Verdict", "Concluded By", "Date"] });
+      const e = document.createElement("div"); e.className = "v2-empty";
+      e.innerHTML = `<div class="v2-empty-icon">⊙</div><div class="v2-empty-msg">No obligation selected — choose from the <a href="/v2/compliance/obligations.html">Obligation Register</a>.</div>`;
+      main.appendChild(e);
+    } else {
+      v2WireLoader(async () => {
+        main.innerHTML = "";
+        let d;
+        try { d = await v2Fetch(`/api/v2/obligations/${encodeURIComponent(id)}`); }
+        catch (err) {
+          renderPageHeader(main, { crumbs: [{ label: "Compliance", href: "/v2/compliance/index.html" }, { label: "Obligations", href: "/v2/compliance/obligations.html" }, { label: id }], title: id });
+          v2RenderError(main, String(err.message || err)); return;
+        }
+        renderPageHeader(main, {
+          crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Compliance", href: "/v2/compliance/index.html" }, { label: "Obligations", href: "/v2/compliance/obligations.html" }, { label: d.id }],
+          title: d.title && d.title !== d.id ? d.title : d.id,
+        });
+        renderTileGroup(main, { tiles: [
+          { label: "Status", value: v2Esc(d.status || "—") },
+          { label: "Owner", value: v2Esc(d.ownerSeatTitle || "Unassigned") },
+          { label: "Regulator", value: v2Esc(d.regulator || "—") },
+          { label: "Applicability", value: v2Esc(d.applicability?.verdict || "unassessed"),
+            variant: d.applicability?.verdict === "applies" ? "success" : d.applicability?.verdict === "does-not-apply" ? "" : "warning" },
+        ]});
+
+        // Source-regulation links (backward jump into the reader).
+        if ((d.sourceLinks || []).length) {
+          const linkBox = document.createElement("div"); linkBox.style.marginBottom = "var(--space-4)";
+          linkBox.innerHTML = (d.sourceLinks).map((l) =>
+            `<a class="od-source-btn" href="/v2/compliance/reader.html?slug=${encodeURIComponent(l.slug)}">View in source regulation — ${v2Esc(l.slug)} →</a>`).join(" ");
+          main.appendChild(linkBox);
+        }
+
+        const mkSection = (title, inner) => {
+          const s = document.createElement("div"); s.className = "v2-section";
+          const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = title; s.appendChild(h);
+          const body = document.createElement("div"); body.innerHTML = inner; s.appendChild(body);
+          main.appendChild(s); return s;
+        };
+
+        mkSection("Requirement", d.requirement ? `<div class="od-prose">${v2Esc(d.requirement)}</div>` : `<div class="od-prose" style="color:var(--color-text-secondary)">No requirement text recorded.</div>`);
+
+        if (d.applicability?.rationale)
+          mkSection("Applicability rationale", `<div style="margin-bottom:var(--space-2)">${verdictChip(d.applicability.verdict)}</div><div class="od-prose">${v2Esc(d.applicability.rationale)}</div>`);
+
+        mkSection("Domain", `<div class="od-prose">${v2Esc(d.domain || "—")}</div>`);
+
+        mkSection("Regulatory source text", d.sourceText
+          ? `<div class="od-prose">${v2Esc(d.sourceText)}</div>`
+          : `<div class="od-prose" style="color:var(--color-text-secondary)">No verbatim source text resolved for this obligation.</div>`);
+
+        if ((d.history || []).length)
+          mkSection("Lifecycle history", d.history.map((h) =>
+            `<div class="od-hist">${v2Esc((h.at || "").slice(0, 10))} · ${v2Esc(h.kind)}${h.status ? ` → ${v2Esc(h.status)}` : ""}</div>`).join(""));
+      });
     }
   </script>
 </body>
