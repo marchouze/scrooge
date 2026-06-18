@@ -10,12 +10,12 @@
 import { describe, expect, it } from "bun:test";
 
 import { buildProvisionTree, getLeafDescendants } from "./graph/provision-tree";
+import { normaliseSectionRef } from "./obligation-linker";
 import {
   ensureProvisionIds,
   loadStructuredDocBySlug,
   normSectionRef,
 } from "./structured-doc-loader";
-import { normaliseSectionRef } from "./obligation-linker";
 
 describe("loadStructuredDocBySlug", () => {
   it("resolves bcbs-mar (file mar-structured.json) by internal slug field", () => {
