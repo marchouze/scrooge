@@ -1,15 +1,26 @@
 // platform/markets/products/npa-fx-accounting-deferred-gaps.test.ts
 //
-// Unit tests for the FX accounting deferred-gap recorder (WS-ACCT-FX-
-// COMPLETENESS Slice 3). Proves: (a) no-op on a clean store, (b) merges the
-// 5 FX-posting-completeness gaps onto an existing accounting attestation
-// (latest-wins, verdict carried forward), (c) idempotent.
+// Unit tests for the FX accounting deferred-gap recorder + the append-only
+// closure (WS-ACCT-FX-COMPLETENESS Slice 3; WS-FIL-FX-SETTLEMENT-EVENTS Slice 4).
+//
+// After WS-FIL-FX-SETTLEMENT-EVENTS the five FX-posting-completeness gaps are
+// RESOLVED (the FIL settlement event family fires every rule at fold time), so:
+//   - the recorder records only the ACTIVE (still-open) subset — now empty;
+//   - `runFxAccountingGapClosure` re-emits the attestation with the resolved
+//     gaps removed (latest-wins, append-only — the original events stay).
 //
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
 import { describe, expect, test } from "bun:test";
 
-import { makeProductDimensionAttested } from "../../event-store/event-types/product";
+import {
+  FX_SETTLEMENT_DEFERRED_GAPS,
+  activeFxSettlementDeferredGaps,
+} from "../../../v2-core/posting-rules/fx-settlement";
+import {
+  type ProductDeferredGap,
+  makeProductDimensionAttested,
+} from "../../event-store/event-types/product";
 import { buildPhaseFixtureTag } from "../../event-store/provenance";
 import { EventStore } from "../../event-store/store";
 import {
@@ -17,9 +28,21 @@ import {
   FX_ACCT_PRODUCT_ID,
   fxAccountingDeferredGaps,
   recordFxAccountingDeferredGaps,
+  resolvedFxAccountingGapIds,
+  runFxAccountingGapClosure,
 } from "./npa-fx-accounting-deferred-gaps";
 
-function seedAccountingAttestation(store: EventStore): void {
+/** Seed an accounting attestation, optionally carrying the five deferred gaps. */
+function seedAccountingAttestation(store: EventStore, withGaps: boolean): void {
+  const deferredGaps: ProductDeferredGap[] | undefined = withGaps
+    ? FX_SETTLEMENT_DEFERRED_GAPS.map((g) => ({
+        gapId: g.gapId,
+        title: g.title,
+        owner: g.owner,
+        targetTrigger: g.targetTrigger,
+        citations: [...g.citations],
+      }))
+    : undefined;
   store.append({
     ...makeProductDimensionAttested({
       asOf: "2026-06-17T00:00:00.000Z",
@@ -31,6 +54,7 @@ function seedAccountingAttestation(store: EventStore): void {
         dimension: FX_ACCT_DIMENSION,
         result: "design-attested",
         citationChain: ["D-FX-NPA-RESTART", "IFRS-9-§4.1.4"],
+        ...(deferredGaps ? { deferredGaps } : {}),
       },
     }),
     provenance: buildPhaseFixtureTag({
@@ -59,7 +83,7 @@ function latestAcctGaps(store: EventStore): string[] {
   return gaps;
 }
 
-describe("recordFxAccountingDeferredGaps", () => {
+describe("recordFxAccountingDeferredGaps — records only ACTIVE gaps", () => {
   test("no-op on a clean store (no accounting attestation to carry forward)", () => {
     const store = new EventStore(":memory:");
     const res = recordFxAccountingDeferredGaps(store);
@@ -67,32 +91,59 @@ describe("recordFxAccountingDeferredGaps", () => {
     expect(res.skipped).toBe(true);
   });
 
-  test("merges the 5 FX posting-completeness gaps onto the latest accounting attestation", () => {
+  test("records nothing now — all five gaps resolved (active subset empty)", () => {
+    expect(activeFxSettlementDeferredGaps().length).toBe(0);
+    expect(fxAccountingDeferredGaps().length).toBe(0);
     const store = new EventStore(":memory:");
-    seedAccountingAttestation(store);
+    seedAccountingAttestation(store, /* withGaps */ false);
     const res = recordFxAccountingDeferredGaps(store);
-    expect(res.recorded).toBe(true);
-    const gapIds = latestAcctGaps(store);
-    for (const g of fxAccountingDeferredGaps()) {
-      expect(gapIds).toContain(g.gapId);
-    }
-    expect(gapIds.length).toBe(5);
+    // No active gaps to add → skip.
+    expect(res.recorded).toBe(false);
+    expect(res.skipped).toBe(true);
+    expect(latestAcctGaps(store).length).toBe(0);
   });
+});
 
-  test("idempotent — re-running does not duplicate gaps", () => {
+describe("runFxAccountingGapClosure — append-only resolution of the five gaps", () => {
+  test("removes the five resolved gaps from the latest attestation (latest-wins)", () => {
     const store = new EventStore(":memory:");
-    seedAccountingAttestation(store);
-    recordFxAccountingDeferredGaps(store);
-    const second = recordFxAccountingDeferredGaps(store);
-    expect(second.recorded).toBe(false);
-    expect(second.skipped).toBe(true);
+    seedAccountingAttestation(store, /* withGaps */ true);
     expect(latestAcctGaps(store).length).toBe(5);
+
+    const res = runFxAccountingGapClosure(store);
+    expect(res.closed).toBe(true);
+    expect(res.gapsBefore).toBe(5);
+    expect(res.gapsAfter).toBe(0);
+    expect(latestAcctGaps(store).length).toBe(0);
+    // Append-only: the original gap-carrying attestation event is STILL in the
+    // log (two ProductDimensionAttested events for the FX accounting dimension).
+    const all = [...store.replay({ type: "ProductDimensionAttested" })].filter((ev) => {
+      const p = ev.payload as { productId?: string; dimension?: string };
+      return p.productId === FX_ACCT_PRODUCT_ID && p.dimension === FX_ACCT_DIMENSION;
+    });
+    expect(all.length).toBe(2);
   });
 
-  test("carries the prior verdict forward unchanged (gaps are non-blocking)", () => {
+  test("the five resolved gap ids are exactly the FX settlement gaps", () => {
+    expect([...resolvedFxAccountingGapIds()].sort()).toEqual(
+      FX_SETTLEMENT_DEFERRED_GAPS.map((g) => g.gapId).sort(),
+    );
+  });
+
+  test("idempotent — re-running after closure is a skip (resolved gaps already gone)", () => {
     const store = new EventStore(":memory:");
-    seedAccountingAttestation(store);
-    recordFxAccountingDeferredGaps(store);
+    seedAccountingAttestation(store, /* withGaps */ true);
+    runFxAccountingGapClosure(store);
+    const second = runFxAccountingGapClosure(store);
+    expect(second.closed).toBe(false);
+    expect(second.skipped).toBe(true);
+    expect(latestAcctGaps(store).length).toBe(0);
+  });
+
+  test("carries the prior verdict forward unchanged (resolution is non-blocking)", () => {
+    const store = new EventStore(":memory:");
+    seedAccountingAttestation(store, /* withGaps */ true);
+    runFxAccountingGapClosure(store);
     let latestResult = "";
     let latestAsOf = "";
     for (const ev of store.replay({ type: "ProductDimensionAttested" })) {
@@ -104,5 +155,12 @@ describe("recordFxAccountingDeferredGaps", () => {
       }
     }
     expect(latestResult).toBe("design-attested");
+  });
+
+  test("fail-closed: refuses with no accounting attestation of record", () => {
+    const store = new EventStore(":memory:");
+    const res = runFxAccountingGapClosure(store);
+    expect(res.closed).toBe(false);
+    expect(res.blockedReason).toBeDefined();
   });
 });

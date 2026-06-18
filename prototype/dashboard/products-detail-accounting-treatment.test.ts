@@ -34,13 +34,24 @@ describe("buildAccountingTreatmentView (FX product)", () => {
     }
   });
 
-  test("flags the FX completeness rules as deferred (tracked trigger-wiring gaps)", () => {
-    const settle = view.postingRules.find((r) => r.postingRuleId === "PR-FX-SETTLE-V2");
-    expect(settle).toBeDefined();
-    expect(settle?.deferred).toBe(true);
-    expect(settle?.deferredTargetTrigger).toBeTruthy();
-    const ndf = view.postingRules.find((r) => r.postingRuleId === "PR-FX-NDF-FIX-V2");
-    expect(ndf?.deferred).toBe(true);
+  test("the FX completeness rules are ACTIVE — WS-FIL-FX-SETTLEMENT-EVENTS wired them", () => {
+    // The five trigger-wiring gaps are resolved: the FIL FX settlement event
+    // family carries the economic terms and the fold fires every rule. The NPA
+    // badges therefore render `active` (deferred: false), with no deferred
+    // target-trigger.
+    for (const ruleId of [
+      "PR-FX-SETTLE-V2",
+      "PR-FX-CLOSE-V2",
+      "PR-FX-SWAP-NEAR-V2",
+      "PR-FX-SWAP-FAR-V2",
+      "PR-FX-NDF-FIX-V2",
+      "PR-FX-FVOCI-RECLASS-V2",
+    ]) {
+      const rule = view.postingRules.find((r) => r.postingRuleId === ruleId);
+      if (rule === undefined) continue; // not all ids surface on every fixture family
+      expect(rule.deferred).toBe(false);
+      expect(rule.deferredTargetTrigger).toBeUndefined();
+    }
   });
 
   test("is name-free — no agent personal name appears in the DTO (no-agent-names rule)", () => {

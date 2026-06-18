@@ -8,9 +8,16 @@
 // the live event-type registry (F-032: new event types MUST register in
 // `platform/event-store/registry/`).
 //
-//   FilInstrumentCreated     — first lifecycle event for a FIL instance
-//   FilInstrumentAmended     — in-life economic change
-//   FilInstrumentTerminated  — terminal transition (settled/matured/cancelled)
+//   FilInstrumentCreated      — first lifecycle event for a FIL instance
+//   FilInstrumentAmended      — in-life economic change
+//   FilInstrumentTerminated   — terminal transition (settled/matured/cancelled)
+//   FilFxSettlementConfirmed  — FX settlement (spot / swap near / swap far leg)
+//   FilNdfFixingObserved      — NDF fixing / cash-settlement (no principal)
+//
+// The latter two (WS-FIL-FX-SETTLEMENT-EVENTS, D-FIL-FX-SETTLEMENT-EVENTS) carry
+// the per-leg economic terms the FX completeness posting rules consume so the FX
+// trial-balance fold can fire them automatically (they previously could not —
+// the gap was tracked as five ProductDeferredGaps).
 //
 // These are REAL anchor-book records (category `governance`/production — see
 // `provenance-category.ts`), NOT simulated. They are emitted ONLY into the v2
@@ -27,9 +34,11 @@
 // Author: Atlas (Substrate Architect, engineering).
 
 import {
+  filFxSettlementConfirmedPayloadSchema,
   filInstrumentAmendedPayloadSchema,
   filInstrumentCreatedPayloadSchema,
   filInstrumentTerminatedPayloadSchema,
+  filNdfFixingObservedPayloadSchema,
 } from "../../../v2-core/fil-instances/events";
 import { newEventId } from "../../core/types";
 import { type Actor, type Event, eventSchema } from "../types";
@@ -38,6 +47,8 @@ import { type Actor, type Event, eventSchema } from "../types";
 export const filInstrumentCreatedPayload = filInstrumentCreatedPayloadSchema;
 export const filInstrumentAmendedPayload = filInstrumentAmendedPayloadSchema;
 export const filInstrumentTerminatedPayload = filInstrumentTerminatedPayloadSchema;
+export const filFxSettlementConfirmedPayload = filFxSettlementConfirmedPayloadSchema;
+export const filNdfFixingObservedPayload = filNdfFixingObservedPayloadSchema;
 
 export type FilInstrumentCreatedEventPayload = ReturnType<
   typeof filInstrumentCreatedPayloadSchema.parse
@@ -47,6 +58,12 @@ export type FilInstrumentAmendedEventPayload = ReturnType<
 >;
 export type FilInstrumentTerminatedEventPayload = ReturnType<
   typeof filInstrumentTerminatedPayloadSchema.parse
+>;
+export type FilFxSettlementConfirmedEventPayload = ReturnType<
+  typeof filFxSettlementConfirmedPayloadSchema.parse
+>;
+export type FilNdfFixingObservedEventPayload = ReturnType<
+  typeof filNdfFixingObservedPayloadSchema.parse
 >;
 
 export function makeFilInstrumentCreated(args: {
@@ -106,9 +123,49 @@ export function makeFilInstrumentTerminated(args: {
   });
 }
 
+export function makeFilFxSettlementConfirmed(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: FilFxSettlementConfirmedEventPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "FilFxSettlementConfirmed",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: filFxSettlementConfirmedPayloadSchema.parse(args.payload),
+  });
+}
+
+export function makeFilNdfFixingObserved(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: FilNdfFixingObservedEventPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "FilNdfFixingObserved",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: filNdfFixingObservedPayloadSchema.parse(args.payload),
+  });
+}
+
 export const FIL_INSTANCE_TYPED_EVENT_TYPES = [
   "FilInstrumentCreated",
   "FilInstrumentAmended",
   "FilInstrumentTerminated",
+  "FilFxSettlementConfirmed",
+  "FilNdfFixingObserved",
 ] as const;
 export type FilInstanceEventType = (typeof FIL_INSTANCE_TYPED_EVENT_TYPES)[number];

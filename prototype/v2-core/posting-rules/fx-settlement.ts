@@ -445,12 +445,20 @@ export function postFxFvociReclassLegs(input: FxFvociReclassInput): FxPostingLeg
 }
 
 // ---------------------------------------------------------------------------
-// Tracked deferred gaps — the TRIGGER-WIRING for the rules above is deferred
-// because the FIL terminal/settlement events do not yet carry the economic terms
-// these rules need. The posting LOGIC is implemented + proven; only the
-// automatic fold-time invocation is deferred. Recorded as ProductDeferredGaps on
-// the FX product accounting dimension (see scripts/record-d-acct-fx-posting-
-// completeness.ts). Engineering Charter cmd 5: no silent deferral.
+// Tracked deferred gaps — the TRIGGER-WIRING for the rules above was deferred
+// because the FIL terminal/settlement events did not carry the economic terms
+// these rules need. WS-FIL-FX-SETTLEMENT-EVENTS (D-FIL-FX-SETTLEMENT-EVENTS)
+// CLOSED that gap: the FIL FX settlement event family now carries those terms
+// and the FX trial-balance fold fires every rule (proof in fx-fold.test.ts).
+//
+// Each gap below is retained as the HISTORICAL record of what was deferred (the
+// inventory is append-only — we never delete a tracked gap) and is now marked
+// `resolvedBy` with the event family that satisfies its `targetTrigger`. The
+// store-side closure (npa-fx-accounting-deferred-gaps.ts) re-emits the FX
+// accounting attestation with the resolved gaps removed (latest-wins), and the
+// NPA-page badge + the recorder both read `activeFxSettlementDeferredGaps()`
+// (the still-open subset) so resolved rules render `active`.
+// Engineering Charter cmd 5: no silent deferral; cmd 3: no green by concealment.
 // ---------------------------------------------------------------------------
 
 export interface FxDeferredPostingGap {
@@ -459,7 +467,18 @@ export interface FxDeferredPostingGap {
   readonly owner: string;
   readonly targetTrigger: string;
   readonly citations: readonly string[];
+  /**
+   * When the gap's trigger-wiring has landed, the authority + event family that
+   * resolved it. `undefined` ⇒ still an open deferral. Resolution is recorded
+   * in-code (the historical inventory is append-only) AND in the store (the
+   * attestation re-emit drops the resolved gap latest-wins).
+   */
+  readonly resolvedBy?: string;
 }
+
+/** The WS-FIL-FX-SETTLEMENT-EVENTS resolution marker shared by all five gaps. */
+const FX_SETTLEMENT_RESOLUTION =
+  "D-FIL-FX-SETTLEMENT-EVENTS — FIL FX settlement/terminal/NDF event family carries the economic terms; the FX trial-balance fold fires the rule (fx-fold.test.ts)";
 
 export const FX_SETTLEMENT_DEFERRED_GAPS: readonly FxDeferredPostingGap[] = [
   {
@@ -469,6 +488,7 @@ export const FX_SETTLEMENT_DEFERRED_GAPS: readonly FxDeferredPostingGap[] = [
     owner: "Bea (Accounting & financial reporting engineer, engineering)",
     targetTrigger: "FIL terminal event carries settlement + booked economic terms",
     citations: ["IAS-21-§23", "IAS-21-§28", "D-ACCT-FX-IFRS-POSTING-COMPLETENESS"],
+    resolvedBy: `${FX_SETTLEMENT_RESOLUTION} — FilFxSettlementConfirmed{legRole:"spot"}`,
   },
   {
     gapId: "fx-derecognition-realised-reversal-trigger",
@@ -477,6 +497,7 @@ export const FX_SETTLEMENT_DEFERRED_GAPS: readonly FxDeferredPostingGap[] = [
     owner: "Bea (Accounting & financial reporting engineer, engineering)",
     targetTrigger: "FIL terminal event carries accumulated unrealised reval",
     citations: ["IFRS-9-§3.2.3", "D-ACCT-FX-IFRS-POSTING-COMPLETENESS"],
+    resolvedBy: `${FX_SETTLEMENT_RESOLUTION} — FilInstrumentTerminated.derecognitionTerms`,
   },
   {
     gapId: "fx-swap-near-far-leg-trigger",
@@ -485,6 +506,7 @@ export const FX_SETTLEMENT_DEFERRED_GAPS: readonly FxDeferredPostingGap[] = [
     owner: "Bea (Accounting & financial reporting engineer, engineering)",
     targetTrigger: "FIL swap near-leg / far-leg settlement events",
     citations: ["IAS-21-§23", "D-ACCT-FX-IFRS-POSTING-COMPLETENESS"],
+    resolvedBy: `${FX_SETTLEMENT_RESOLUTION} — FilFxSettlementConfirmed{legRole:"swap-near"|"swap-far"}`,
   },
   {
     gapId: "fx-ndf-fixing-trigger",
@@ -493,6 +515,7 @@ export const FX_SETTLEMENT_DEFERRED_GAPS: readonly FxDeferredPostingGap[] = [
     owner: "Bea (Accounting & financial reporting engineer, engineering)",
     targetTrigger: "FIL NDF fixing / cash-settlement event",
     citations: ["IFRS-9-§5.7.1", "IAS-21-§28", "D-ACCT-FX-IFRS-POSTING-COMPLETENESS"],
+    resolvedBy: `${FX_SETTLEMENT_RESOLUTION} — FilNdfFixingObserved`,
   },
   {
     gapId: "fx-fvoci-reclass-trigger",
@@ -501,5 +524,16 @@ export const FX_SETTLEMENT_DEFERRED_GAPS: readonly FxDeferredPostingGap[] = [
     owner: "Bea (Accounting & financial reporting engineer, engineering)",
     targetTrigger: "FIL terminal event carries FVOCI election + accumulated OCI",
     citations: ["IFRS-9-§5.7.10", "IFRS-9-§5.7.11", "D-ACCT-FX-IFRS-POSTING-COMPLETENESS"],
+    resolvedBy: `${FX_SETTLEMENT_RESOLUTION} — FilInstrumentTerminated.fvociReclassTerms`,
   },
 ];
+
+/**
+ * The FX settlement deferred gaps that are STILL OPEN (not yet resolved). The
+ * NPA-page badge renders a rule `active` iff no open gap names it; the store-side
+ * recorder records only open gaps onto the FX accounting attestation. After
+ * WS-FIL-FX-SETTLEMENT-EVENTS this is empty — every rule fires at fold time.
+ */
+export function activeFxSettlementDeferredGaps(): readonly FxDeferredPostingGap[] {
+  return FX_SETTLEMENT_DEFERRED_GAPS.filter((g) => g.resolvedBy === undefined);
+}

@@ -246,18 +246,20 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "fx-fil-derecognition",
     condition: "always",
     conditionDetail:
-      "IFRS 9 §3.2.3 — FX derecognition on settlement/cancellation (FIL fold). Settlement realised-P&L, swap-leg, NDF-fixing and FVOCI→P&L reclassification refinements are tracked deferred gaps (FilInstrumentTerminated carries no economic terms) — see D-ACCT-FX-IFRS-POSTING-COMPLETENESS ProductDeferredGaps.",
+      "IFRS 9 §3.2.3 — FX derecognition on settlement/cancellation (FIL fold). The reworked reversal fires at fold time when FilInstrumentTerminated.derecognitionTerms is present (accumulated unrealised → realised); a bare terminal posts the zero-amount memo. Settlement realised-P&L, swap-leg, NDF-fixing and FVOCI→P&L reclassification refinements are now WIRED via the FIL FX settlement event family (D-FIL-FX-SETTLEMENT-EVENTS) — the former ProductDeferredGaps are resolved.",
   },
 
-  // ── FX completeness rules (WS-ACCT-FX-COMPLETENESS Slice 3) ──────────────
+  // ── FX completeness rules (WS-ACCT-FX-COMPLETENESS Slice 3; WIRED by
+  //    WS-FIL-FX-SETTLEMENT-EVENTS) ───────────────────────────────────────────
   // Each rule's POSTING LOGIC is implemented + balanced + unit-tested in
-  // v2-core/posting-rules/fx-settlement.ts. The TRIGGER-WIRING is a tracked
-  // ProductDeferredGap: the FIL fold's terminal/settlement events do not yet
-  // carry the economic terms (settlement rate, accumulated reval/OCI, NDF fixing)
-  // these rules need, so they cannot fire automatically today. lifecycleId
-  // "fx-fil-instance" is NOT a TRADE_LIFECYCLE_REGISTRY lifecycle, so these rows
-  // impose no gl-ledger-coverage mandate. Authority: D-ACCT-FX-IFRS-POSTING-
-  // COMPLETENESS.
+  // v2-core/posting-rules/fx-settlement.ts, and the TRIGGER-WIRING now FIRES at
+  // fold time: the FIL FX settlement event family (FilFxSettlementConfirmed /
+  // FilNdfFixingObserved / the enriched FilInstrumentTerminated) carries the
+  // economic terms these rules need (D-FIL-FX-SETTLEMENT-EVENTS). The five
+  // ProductDeferredGaps are resolved append-only. lifecycleId "fx-fil-instance"
+  // is NOT a TRADE_LIFECYCLE_REGISTRY lifecycle, so these rows impose no
+  // gl-ledger-coverage mandate. Authority: D-ACCT-FX-IFRS-POSTING-COMPLETENESS;
+  // D-FIL-FX-SETTLEMENT-EVENTS.
   {
     triggerEventType: "FilFxSettlementConfirmed",
     triggerDomain: "trade",
@@ -267,7 +269,7 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "fx-fil-settlement-realised-pnl",
     condition: "non-zero-pnl",
     conditionDetail:
-      "IAS 21 §23, §28 — settlement-date cash recognition + realised FX P&L (spot / physical forward). Logic in fx-settlement.postFxSettlementLegs; trigger-wiring deferred (FIL settlement event not yet present) — ProductDeferredGap fx-settlement-realised-pnl-trigger.",
+      'IAS 21 §23, §28 — settlement-date cash recognition + realised FX P&L (spot / physical forward). Fires at fold time on FilFxSettlementConfirmed{legRole:"spot"} via fx-settlement.postFxSettlementLegs (resolved gap fx-settlement-realised-pnl-trigger).',
   },
   {
     triggerEventType: "FilFxSettlementConfirmed",
@@ -278,7 +280,7 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "fx-fil-swap-near-leg",
     condition: "non-zero-pnl",
     conditionDetail:
-      "IAS 21 §23 — FX swap near-leg settlement. Logic in fx-settlement.postFxSwapNearLegLegs; trigger-wiring deferred (no per-leg swap settlement event) — ProductDeferredGap fx-swap-near-far-leg-trigger.",
+      'IAS 21 §23 — FX swap near-leg settlement. Fires at fold time on FilFxSettlementConfirmed{legRole:"swap-near"} via fx-settlement.postFxSwapNearLegLegs (resolved gap fx-swap-near-far-leg-trigger).',
   },
   {
     triggerEventType: "FilFxSettlementConfirmed",
@@ -289,7 +291,7 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "fx-fil-swap-far-leg",
     condition: "non-zero-pnl",
     conditionDetail:
-      "IAS 21 §23 — FX swap far-leg settlement; closes composite. Logic in fx-settlement.postFxSwapFarLegLegs; trigger-wiring deferred — ProductDeferredGap fx-swap-near-far-leg-trigger.",
+      'IAS 21 §23 — FX swap far-leg settlement; closes composite. Fires at fold time on FilFxSettlementConfirmed{legRole:"swap-far"} via fx-settlement.postFxSwapFarLegLegs (resolved gap fx-swap-near-far-leg-trigger).',
   },
   {
     triggerEventType: "FilNdfFixingObserved",
@@ -300,7 +302,7 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "fx-fil-ndf-fixing",
     condition: "non-zero-pnl",
     conditionDetail:
-      "IFRS 9 §5.7.1 / IAS 21 §28 — NDF fixing cash-settled realised P&L (no principal legs). Logic in fx-settlement.postFxNdfFixingLegs; trigger-wiring deferred (NO NdfFixing event exists in the FIL lifecycle) — ProductDeferredGap fx-ndf-fixing-trigger.",
+      "IFRS 9 §5.7.1 / IAS 21 §28 — NDF fixing cash-settled realised P&L (no principal legs). Fires at fold time on FilNdfFixingObserved via fx-settlement.postFxNdfFixingLegs (resolved gap fx-ndf-fixing-trigger).",
   },
   {
     triggerEventType: "FilInstrumentTerminated",
@@ -311,7 +313,7 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "fx-fil-fvoci-reclass",
     condition: "non-zero-pnl",
     conditionDetail:
-      "IFRS 9 §5.7.10–11 — FVOCI → P&L reclassification on derecognition. Logic in fx-settlement.postFxFvociReclassLegs; trigger-wiring deferred (terminal event carries neither the FVOCI election nor the accumulated OCI) — ProductDeferredGap fx-fvoci-reclass-trigger.",
+      "IFRS 9 §5.7.10–11 — FVOCI → P&L reclassification on derecognition. Fires at fold time on FilInstrumentTerminated.fvociReclassTerms via fx-settlement.postFxFvociReclassLegs (resolved gap fx-fvoci-reclass-trigger).",
   },
 
   // ══════════════════════════════════════════════════════════════════════════

@@ -23,9 +23,11 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { v2ProductRegisteredSchema } from "../../../v2-core/banking/events";
 import type { FilInstanceLifecycleEvent } from "../../../v2-core/fil-instances/events";
 import {
+  filFxSettlementConfirmedPayloadSchema,
   filInstrumentAmendedPayloadSchema,
   filInstrumentCreatedPayloadSchema,
   filInstrumentTerminatedPayloadSchema,
+  filNdfFixingObservedPayloadSchema,
 } from "../../../v2-core/fil-instances/events";
 import {
   FX_TREATMENT_MODULES,
@@ -35,9 +37,11 @@ import { filInstanceTreatmentElectedSchema } from "../../../v2-core/reporting-tr
 import { amountToMinorUnits } from "../../core/decimal-money";
 import { legAmountMoney } from "../../core/money-codec";
 import {
+  makeFilFxSettlementConfirmed,
   makeFilInstrumentAmended,
   makeFilInstrumentCreated,
   makeFilInstrumentTerminated,
+  makeFilNdfFixingObserved,
 } from "../../event-store/event-types/fil-instances";
 import type { GlPostingEmittedPayload } from "../../event-store/event-types/fx-accounting";
 import { makeFilInstanceTreatmentElected } from "../../event-store/event-types/instance-election";
@@ -545,5 +549,234 @@ describe("FX3 — per-instance elections override the product-default treatment"
         cites: ["IFRS-9-§6.5.2"],
       }),
     ).toThrow();
+  });
+});
+
+// ===========================================================================
+// WS-FIL-FX-SETTLEMENT-EVENTS — the five completeness rules fire at fold time on
+// the new settlement / terminal / NDF-fixing events, and each fold balances to
+// zero per currency (D-FIL-FX-SETTLEMENT-EVENTS, D-ACCT-FX-IFRS-POSTING-
+// COMPLETENESS). These are FOLD-LEVEL proofs (not the unit tests in
+// fx-settlement.test.ts) — they exercise the real event → fold → legs path.
+// ===========================================================================
+
+const ORIG = { eventType: "Ws-v2-s1-fixture-book", eventId: "s1:settle" };
+
+/** Sum debit − credit per currency over the folded legs (minor units). */
+function perCurrencyBalance(
+  legs: readonly {
+    amount: { amount: string; currency: string };
+    creditDebit: "debit" | "credit";
+  }[],
+): Map<string, bigint> {
+  const bal = new Map<string, bigint>();
+  for (const l of legs) {
+    const minor = amountToMinorUnits(
+      legAmountMoney({ amount: l.amount, currency: l.amount.currency }),
+    );
+    const cur = l.amount.currency;
+    bal.set(cur, (bal.get(cur) ?? 0n) + (l.creditDebit === "debit" ? minor : -minor));
+  }
+  return bal;
+}
+
+function expectBalancedPerCurrency(
+  legs: readonly {
+    amount: { amount: string; currency: string };
+    creditDebit: "debit" | "credit";
+  }[],
+): void {
+  for (const [cur, net] of perCurrencyBalance(legs)) {
+    expect(`${cur}=${net}`).toBe(`${cur}=0`);
+  }
+}
+
+function settlementConfirmed(
+  id: string,
+  legRole: "spot" | "swap-near" | "swap-far",
+  asOf: string,
+  terms: { boughtBooked: string; boughtSettled: string; soldBooked: string; soldSettled: string },
+): Event {
+  const base = makeFilFxSettlementConfirmed({
+    asOf,
+    entity: ENTITY,
+    actor: ACTOR,
+    citations: CITES,
+    payload: filFxSettlementConfirmedPayloadSchema.parse({
+      kind: "FilFxSettlementConfirmed",
+      instance: instanceUrn(id),
+      type: FX_TYPE_URN,
+      tenant: TENANT,
+      asOf,
+      originatingEvent: ORIG,
+      legRole,
+      boughtBooked: { currency: "USD", amount: terms.boughtBooked },
+      boughtSettled: { currency: "USD", amount: terms.boughtSettled },
+      soldBooked: { currency: "ZAR", amount: terms.soldBooked },
+      soldSettled: { currency: "ZAR", amount: terms.soldSettled },
+    }),
+  });
+  return { ...base, provenance: PROD_TAG };
+}
+
+function ndfFixing(id: string, asOf: string, netCashDifference: string): Event {
+  const base = makeFilNdfFixingObserved({
+    asOf,
+    entity: ENTITY,
+    actor: ACTOR,
+    citations: CITES,
+    payload: filNdfFixingObservedPayloadSchema.parse({
+      kind: "FilNdfFixingObserved",
+      instance: instanceUrn(id),
+      type: FX_TYPE_URN,
+      tenant: TENANT,
+      asOf,
+      originatingEvent: ORIG,
+      settlementCurrency: "USD",
+      contractedRate: "18.50",
+      fixingRate: "19.00",
+      notional: { currency: "USD", amount: "1000000" },
+      netCashDifference: { currency: "USD", amount: netCashDifference },
+    }),
+  });
+  return { ...base, provenance: PROD_TAG };
+}
+
+function terminatedWith(
+  id: string,
+  asOf: string,
+  terms: {
+    derecognition?: { currency: string; amount: string };
+    fvoci?: { currency: string; amount: string };
+  },
+): Event {
+  const base = makeFilInstrumentTerminated({
+    asOf,
+    entity: ENTITY,
+    actor: ACTOR,
+    citations: CITES,
+    payload: filInstrumentTerminatedPayloadSchema.parse({
+      kind: "FilInstrumentTerminated",
+      instance: instanceUrn(id),
+      type: FX_TYPE_URN,
+      tenant: TENANT,
+      asOf,
+      originatingEvent: ORIG,
+      terminalStage: "settled",
+      ...(terms.derecognition
+        ? { derecognitionTerms: { accumulatedUnrealised: terms.derecognition } }
+        : {}),
+      ...(terms.fvoci
+        ? { fvociReclassTerms: { electedFvoci: true as const, accumulatedOci: terms.fvoci } }
+        : {}),
+    }),
+  });
+  return { ...base, provenance: PROD_TAG };
+}
+
+describe("WS-FIL-FX-SETTLEMENT-EVENTS — the five rules fire at fold time + balance", () => {
+  test("PR-FX-SETTLE-V2: spot settlement realised P&L fires + balances per currency", () => {
+    const store = new EventStore(":memory:");
+    seedTreatmentModules(store);
+    // Bought USD: booked 1,000,000 / settled 1,010,000 (gain 10k USD).
+    // Sold  ZAR: booked 18,500,000 / settled 18,400,000 (gain 100k ZAR).
+    store.append(
+      settlementConfirmed("FX-S1", "spot", "2026-06-10T10:00:00.000Z", {
+        boughtBooked: "1000000",
+        boughtSettled: "1010000",
+        soldBooked: "18500000",
+        soldSettled: "18400000",
+      }),
+    );
+    const fold = foldFxContributionLegs(args(store));
+    const legs = fold.legs.filter((l) => l.postingRuleId === "PR-FX-SETTLE-V2");
+    expect(legs.length).toBeGreaterThan(0);
+    expect(fold.skipped.length).toBe(0);
+    expectBalancedPerCurrency(legs);
+  });
+
+  test("PR-FX-SWAP-NEAR-V2 + PR-FX-SWAP-FAR-V2: both swap legs fire + balance", () => {
+    const store = new EventStore(":memory:");
+    seedTreatmentModules(store);
+    store.append(
+      settlementConfirmed("FX-SW", "swap-near", "2026-06-10T10:00:00.000Z", {
+        boughtBooked: "500000",
+        boughtSettled: "505000",
+        soldBooked: "9250000",
+        soldSettled: "9240000",
+      }),
+    );
+    store.append(
+      settlementConfirmed("FX-SW", "swap-far", "2026-06-20T10:00:00.000Z", {
+        boughtBooked: "500000",
+        boughtSettled: "498000",
+        soldBooked: "9300000",
+        soldSettled: "9310000",
+      }),
+    );
+    const fold = foldFxContributionLegs(args(store));
+    const near = fold.legs.filter((l) => l.postingRuleId === "PR-FX-SWAP-NEAR-V2");
+    const far = fold.legs.filter((l) => l.postingRuleId === "PR-FX-SWAP-FAR-V2");
+    expect(near.length).toBeGreaterThan(0);
+    expect(far.length).toBeGreaterThan(0);
+    expect(fold.skipped.length).toBe(0);
+    expectBalancedPerCurrency([...near, ...far]);
+  });
+
+  test("PR-FX-NDF-FIX-V2: NDF cash-settled fixing fires, balances, no principal legs", () => {
+    const store = new EventStore(":memory:");
+    seedTreatmentModules(store);
+    store.append(ndfFixing("FX-NDF", "2026-06-10T10:00:00.000Z", "500000"));
+    const fold = foldFxContributionLegs(args(store));
+    const legs = fold.legs.filter((l) => l.postingRuleId === "PR-FX-NDF-FIX-V2");
+    // Exactly two legs (cash + realised P&L), no receivable/payable principal.
+    expect(legs.length).toBe(2);
+    expect(fold.skipped.length).toBe(0);
+    expectBalancedPerCurrency(legs);
+    // No principal receivable/payable accounts — cash-only.
+    expect(legs.some((l) => l.accountCode === "ACC-2100-001")).toBe(false);
+  });
+
+  test("PR-FX-CLOSE-V2 (reworked): derecognition reversal fires on enriched terminal + balances", () => {
+    const store = new EventStore(":memory:");
+    seedTreatmentModules(store);
+    store.append(
+      terminatedWith("FX-DR", "2026-06-10T10:00:00.000Z", {
+        derecognition: { currency: "ZAR", amount: "250000" },
+      }),
+    );
+    const fold = foldFxContributionLegs(args(store));
+    const legs = fold.legs.filter((l) => l.postingRuleId === "PR-FX-CLOSE-V2");
+    // Two legs (reverse unrealised + recognise realised), non-zero amounts.
+    expect(legs.length).toBe(2);
+    expect(legs.every((l) => l.amount.amount !== "0")).toBe(true);
+    expect(fold.skipped.length).toBe(0);
+    expectBalancedPerCurrency(legs);
+  });
+
+  test("PR-FX-FVOCI-RECLASS-V2: FVOCI→P&L recycle fires on enriched terminal + balances", () => {
+    const store = new EventStore(":memory:");
+    seedTreatmentModules(store);
+    store.append(
+      terminatedWith("FX-OCI-CLOSE", "2026-06-10T10:00:00.000Z", {
+        fvoci: { currency: "ZAR", amount: "180000" },
+      }),
+    );
+    const fold = foldFxContributionLegs(args(store));
+    const legs = fold.legs.filter((l) => l.postingRuleId === "PR-FX-FVOCI-RECLASS-V2");
+    expect(legs.length).toBe(2);
+    expect(legs.some((l) => l.accountCode === FX_FVOCI_OCI_RESERVE_ACCOUNT)).toBe(true);
+    expect(fold.skipped.length).toBe(0);
+    expectBalancedPerCurrency(legs);
+  });
+
+  test("a bare terminal event (no enriched terms) still folds to the zero-amount memo (byte-preserved)", () => {
+    const store = new EventStore(":memory:");
+    seedTreatmentModules(store);
+    store.append(terminatedWith("FX-BARE", "2026-06-10T10:00:00.000Z", {}));
+    const fold = foldFxContributionLegs(args(store));
+    const legs = fold.legs.filter((l) => l.postingRuleId === "PR-FX-CLOSE-V2");
+    expect(legs.length).toBe(2);
+    expect(legs.every((l) => l.amount.amount === "0")).toBe(true);
   });
 });

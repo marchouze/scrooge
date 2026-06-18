@@ -21,9 +21,11 @@
 
 import type { z } from "zod";
 import {
+  filFxSettlementConfirmedPayload,
   filInstrumentAmendedPayload,
   filInstrumentCreatedPayload,
   filInstrumentTerminatedPayload,
+  filNdfFixingObservedPayload,
 } from "../event-types/fil-instances";
 import { RETENTION_GOVERNANCE_7Y } from "./types";
 import type { EventTypeMetadata } from "./types";
@@ -37,6 +39,16 @@ const CITATIONS = [
 ] as const;
 
 const SUBSCRIBERS = ["Atlas", "Rohan", "Bea", "Vera", "Scrooge"] as const;
+
+// The settlement / NDF-fixing events additionally carry the FX-posting-rule
+// authority — they exist to fire the FX completeness posting rules at fold time.
+const SETTLEMENT_CITATIONS = [
+  "D-FIL-FX-SETTLEMENT-EVENTS",
+  "D-ACCT-FX-IFRS-POSTING-COMPLETENESS",
+  "D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD",
+  "P1-EVENTS-AS-TRUTH",
+  "P2-SINGLE-GRAPH-DISCIPLINE",
+] as const;
 
 export const FIL_INSTANCES_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
   {
@@ -73,6 +85,30 @@ export const FIL_INSTANCES_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     payloadSchema: filInstrumentTerminatedPayload as unknown as z.ZodType<Record<string, unknown>>,
     citationsHint: CITATIONS,
     source: "v2-core/fil-instances/events.ts — FilInstrumentTerminated",
+    v2Status: "v2-parallel",
+  },
+  {
+    type: "FilFxSettlementConfirmed",
+    class: "governance",
+    issuer: "Atlas",
+    subscribers: [...SUBSCRIBERS],
+    replay: "append-only-audit",
+    retention: RETENTION_GOVERNANCE_7Y,
+    payloadSchema: filFxSettlementConfirmedPayload as unknown as z.ZodType<Record<string, unknown>>,
+    citationsHint: SETTLEMENT_CITATIONS,
+    source: "v2-core/fil-instances/events.ts — FilFxSettlementConfirmed",
+    v2Status: "v2-parallel",
+  },
+  {
+    type: "FilNdfFixingObserved",
+    class: "governance",
+    issuer: "Atlas",
+    subscribers: [...SUBSCRIBERS],
+    replay: "append-only-audit",
+    retention: RETENTION_GOVERNANCE_7Y,
+    payloadSchema: filNdfFixingObservedPayload as unknown as z.ZodType<Record<string, unknown>>,
+    citationsHint: SETTLEMENT_CITATIONS,
+    source: "v2-core/fil-instances/events.ts — FilNdfFixingObserved",
     v2Status: "v2-parallel",
   },
 ];

@@ -13,6 +13,7 @@ import { describe, expect, test } from "bun:test";
 import type { FxPostingLeg } from "./fx";
 import {
   FX_SETTLEMENT_DEFERRED_GAPS,
+  activeFxSettlementDeferredGaps,
   postFxDerecognitionLegs,
   postFxFvociReclassLegs,
   postFxNdfFixingLegs,
@@ -185,7 +186,9 @@ describe("PR-FX-FVOCI-RECLASS-V2 — FVOCI → P&L reclassification (IFRS 9 §5.
 });
 
 describe("FX_SETTLEMENT_DEFERRED_GAPS — tracked, well-formed deferrals", () => {
-  test("every deferred gap is well-formed (no hollow deferral)", () => {
+  test("every historical deferred gap is well-formed (no hollow deferral)", () => {
+    // The inventory is append-only — all five remain as the historical record of
+    // what was deferred, even after WS-FIL-FX-SETTLEMENT-EVENTS resolved them.
     expect(FX_SETTLEMENT_DEFERRED_GAPS.length).toBe(5);
     for (const g of FX_SETTLEMENT_DEFERRED_GAPS) {
       expect(g.gapId.length).toBeGreaterThan(0);
@@ -194,5 +197,15 @@ describe("FX_SETTLEMENT_DEFERRED_GAPS — tracked, well-formed deferrals", () =>
       expect(g.targetTrigger.length).toBeGreaterThan(0);
       expect(g.citations.length).toBeGreaterThan(0);
     }
+  });
+
+  test("WS-FIL-FX-SETTLEMENT-EVENTS resolved all five — no OPEN deferred gap remains", () => {
+    // Every gap carries a resolvedBy marker; the active (still-open) subset is
+    // empty → the NPA-page badge renders every FX posting rule `active`.
+    for (const g of FX_SETTLEMENT_DEFERRED_GAPS) {
+      expect(g.resolvedBy).toBeDefined();
+      expect(g.resolvedBy).toContain("D-FIL-FX-SETTLEMENT-EVENTS");
+    }
+    expect(activeFxSettlementDeferredGaps().length).toBe(0);
   });
 });

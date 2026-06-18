@@ -246,6 +246,11 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   FilInstrumentCreated: "governance",
   FilInstrumentAmended: "governance",
   FilInstrumentTerminated: "governance",
+  // WS-FIL-FX-SETTLEMENT-EVENTS — FX settlement / NDF-fixing lifecycle events
+  // carrying the economic terms the FX completeness posting rules fold over.
+  // Authority: D-FIL-FX-SETTLEMENT-EVENTS; D-ACCT-FX-IFRS-POSTING-COMPLETENESS.
+  FilFxSettlementConfirmed: "governance",
+  FilNdfFixingObserved: "governance",
   // WS-V2-BBAAS A1 — FIL attribution kernel. An organisational-dimension
   // assignment (a book/desk/strategy/portfolio re-tag) and a named-slice
   // definition are real governance configuration records (a book/desk/portfolio
