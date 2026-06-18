@@ -381,6 +381,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // path. T-01 carve-out.
   // Citation: D-REGULATORY-ARCHITECTURE-TWO-PLANE, P4-SECURITY-DESIGNED-IN.
   "dashboard/regulation-obligation-index.test.ts",
+  // V2 regulation-detail view-level test (reg-viewer markdown tables + outline)
+  // — co-located per-module test convention. Raw EventStore(":memory:") is a
+  // build-phase fixture for the read-side detail DTO (asserts verbatim blocks
+  // surface markdown tables), not a production access path. T-01 carve-out.
+  // Citation: D-REGULATORY-STRUCTURED-FIRST-CANONICAL, P4-SECURITY-DESIGNED-IN.
+  "dashboard/v2-regulations-view.test.ts",
   // Obligation-review-status authored-summary coverage unit test — co-located
   // per-module test convention. Raw EventStore is a build-phase test fixture
   // for the per-domain coverage fold, not a production access path. T-01
