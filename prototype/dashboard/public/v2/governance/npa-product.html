@@ -99,6 +99,35 @@
           })),
         });
 
+        // Accounting treatment (WS-ACCT-FX-COMPLETENESS Slice 5).
+        const at = d.accountingTreatment;
+        if (at) {
+          const asec = document.createElement("div"); asec.className = "v2-section"; bodyHost.appendChild(asec);
+          const ah = document.createElement("h2"); ah.className = "v2-section-title"; ah.textContent = "Accounting treatment"; asec.appendChild(ah);
+          const cls = document.createElement("p");
+          cls.innerHTML =
+            `<strong>IFRS 9:</strong> ${v2Esc(at.ifrs9Family)} &nbsp;·&nbsp; ` +
+            `<strong>IFRS 13:</strong> ${v2Esc(at.ifrs13FairValueHierarchy)} &nbsp;·&nbsp; ` +
+            `<strong>IAS 21:</strong> ${v2Esc(at.ias21FxTreatment)} &nbsp;·&nbsp; ` +
+            `<strong>BA-return lines:</strong> ${v2Esc((at.baReturnLineMapping || []).join(", ") || "—")}`;
+          asec.appendChild(cls);
+          renderTable(asec, {
+            columns: ["Posting rule", "Trigger event", "Stage", "IFRS citation", "Status"],
+            emptyMsg: "No posting rules mapped for this asset class.",
+            rows: (at.postingRules || []).map((r) => ({
+              cells: [
+                `<strong>${v2Esc(r.postingRuleId)}</strong>`,
+                v2Esc(r.triggerEventType),
+                v2Esc(r.lifecycleStage),
+                v2Esc(r.ifrs),
+                r.deferred
+                  ? `<span class="v2-badge v2-badge-warning">deferred: ${v2Esc(r.deferredTargetTrigger || "tracked gap")}</span>`
+                  : '<span class="v2-badge v2-badge-success">active</span>',
+              ],
+            })),
+          });
+        }
+
         // Post-approval findings.
         const fsec = document.createElement("div"); fsec.className = "v2-section"; bodyHost.appendChild(fsec);
         const fh = document.createElement("h2"); fh.className = "v2-section-title"; fh.textContent = "Post-approval findings"; fsec.appendChild(fh);
