@@ -157,6 +157,24 @@ export const SUBSTRATE_GAP_REGISTER: readonly SubstrateGapRecord[] = [
     status: "planned",
     mitigation: "none",
   },
+  {
+    id: "re-npa-mmd-deposit",
+    title: "Re-run clean NPA cycle — prd:bank:treasury:mmd-deposit",
+    description:
+      "prd:bank:treasury:mmd-deposit (Money Market Deposit, M6) was approved 2026-05-28 under the superseded 14-dimension gate policy and withdrawn via ProductWithheld under D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION. Must be re-run through a clean 15-dimension NPA cycle before re-approval. Trigger: substrate ready → clean NPA cycle. Authority: D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION; D-NPA-GATE-POLICY-REDESIGN.",
+    severity: "high",
+    status: "planned",
+    mitigation: "none",
+  },
+  {
+    id: "re-npa-funding-line",
+    title: "Re-run clean NPA cycle — prd:bank:treasury:funding-line",
+    description:
+      "prd:bank:treasury:funding-line (Committed Funding Line, M7) was approved 2026-05-28 under the superseded 14-dimension gate policy and withdrawn via ProductWithheld under D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION. Must be re-run through a clean 15-dimension NPA cycle before re-approval. Trigger: substrate ready → clean NPA cycle. Authority: D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION; D-NPA-GATE-POLICY-REDESIGN.",
+    severity: "high",
+    status: "planned",
+    mitigation: "none",
+  },
 ];
 
 /** Look up a gap record by id. */
