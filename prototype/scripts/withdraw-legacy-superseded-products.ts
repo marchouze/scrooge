@@ -130,6 +130,30 @@ const REPO_DIMS: ReadonlyArray<readonly [string, DimResult]> = [
   ["tax", DSGN],
 ];
 
+/**
+ * The 14 legacy dimensions for M6 mmd-deposit + M7 funding-line (treasury
+ * deposits/funding lines, entered the gate under "repo" family for runner
+ * compatibility). All design-attested except liquidity-risk + accounting,
+ * which were implementation-attested. Extracted verbatim from the home store
+ * on 2026-06-18. Distinct from REPO_DIMS (M5 term repo).
+ */
+const TREASURY_DEPOSIT_DIMS: ReadonlyArray<readonly [string, DimResult]> = [
+  ["market-risk", DSGN],
+  ["credit-risk", DSGN],
+  ["liquidity-risk", IMPL],
+  ["operational-risk", DSGN],
+  ["operational-readiness", DSGN],
+  ["accounting", IMPL],
+  ["capital", DSGN],
+  ["conduct", DSGN],
+  ["aml", DSGN],
+  ["model-risk", DSGN],
+  ["legal", DSGN],
+  ["infosec", DSGN],
+  ["privacy", DSGN],
+  ["tax", DSGN],
+];
+
 const LEGACY_PRODUCTS: ReadonlyArray<LegacyProductDef> = [
   {
     productId: "prd:bank:equity:jse-equity-cash",
@@ -165,6 +189,20 @@ const LEGACY_PRODUCTS: ReadonlyArray<LegacyProductDef> = [
     approvedAsOf: "2026-05-28T00:00:00.000Z",
     version: "1.0.0",
     dimensions: REPO_DIMS,
+  },
+  {
+    productId: "prd:bank:treasury:mmd-deposit",
+    family: "repo",
+    approvedAsOf: "2026-05-28T00:00:00.000Z",
+    version: "1.0.0",
+    dimensions: TREASURY_DEPOSIT_DIMS,
+  },
+  {
+    productId: "prd:bank:treasury:funding-line",
+    family: "repo",
+    approvedAsOf: "2026-05-28T00:00:00.000Z",
+    version: "1.0.0",
+    dimensions: TREASURY_DEPOSIT_DIMS,
   },
 ];
 
