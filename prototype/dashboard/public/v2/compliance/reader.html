@@ -29,6 +29,16 @@
     .rd-section-heading { font-weight:600; color:var(--color-text-primary); }
     .rd-text { color:var(--color-text-primary); line-height:1.65; white-space:pre-wrap; font:var(--text-body); margin:0 0 var(--space-2); }
     .rd-text:last-child { margin-bottom:0; }
+    /* Markdown subregulation headings parsed out of the verbatim blob
+       (`#### Subregulation (7)`). Emphasised, smaller than the section heading,
+       with clear vertical rhythm — NOT raw hashes. Levels 1–6 step the size. */
+    .rd-subheading { font-weight:700; color:var(--color-text-primary); line-height:1.35;
+      margin:var(--space-3) 0 var(--space-2); letter-spacing:0.01em; }
+    .rd-subheading:first-child { margin-top:0; }
+    .rd-subheading--l1, .rd-subheading--l2 { font-size:1.05em; color:var(--color-text-primary); }
+    .rd-subheading--l3, .rd-subheading--l4 { font-size:0.95em; color:var(--color-text-secondary);
+      text-transform:uppercase; letter-spacing:0.04em; }
+    .rd-subheading--l5, .rd-subheading--l6 { font-size:0.88em; color:var(--color-text-secondary); font-weight:600; }
     .rd-table-wrap { overflow-x:auto; margin:var(--space-3) 0; }
     .rd-table { border-collapse:collapse; width:100%; font:var(--text-caption); }
     .rd-table th, .rd-table td { border:1px solid var(--color-border); padding:4px 8px;
@@ -150,6 +160,13 @@
             const thead = `<thead><tr>${(b.headers || []).map((h) => `<th>${v2Esc(h)}</th>`).join("")}</tr></thead>`;
             const tbody = `<tbody>${(b.rows || []).map((r) => `<tr>${(r || []).map((c) => `<td>${v2Esc(c)}</td>`).join("")}</tr>`).join("")}</tbody>`;
             return `<div class="rd-table-wrap"><table class="rd-table">${thead}${tbody}</table></div>`;
+          }
+          if (b.kind === "heading") {
+            // Markdown ATX heading (e.g. `#### Subregulation (7)`) → a styled
+            // nested subheading, NOT raw hashes. Clamp level to 1–6 and render
+            // it below the section heading depth. Text is escaped (XSS-safe).
+            const lvl = Math.min(6, Math.max(1, Number(b.level) || 4));
+            return `<div class="rd-subheading rd-subheading--l${lvl}">${v2Esc(b.text || "")}</div>`;
           }
           return `<p class="rd-text">${v2Esc(b.text || "")}</p>`;
         }).join("");

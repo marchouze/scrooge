@@ -34,7 +34,42 @@ export interface VerbatimParagraphBlock {
   text: string;
 }
 
-export type VerbatimBlock = VerbatimTableBlock | VerbatimParagraphBlock;
+/** A markdown ATX heading line (`#### Subregulation (7)`). The RRB backfill
+ *  embeds heading lines inside the verbatim blob; without this block they would
+ *  render literally as raw `####` text. `level` is the count of leading hashes
+ *  (1–6); `text` is the heading content with the leading `#`s and any optional
+ *  trailing `#`s stripped, kept verbatim otherwise. */
+export interface VerbatimHeadingBlock {
+  kind: "heading";
+  level: number;
+  text: string;
+}
+
+export type VerbatimBlock =
+  | VerbatimTableBlock
+  | VerbatimParagraphBlock
+  | VerbatimHeadingBlock;
+
+/** Matches a markdown ATX heading line: 1–6 leading hashes, at least one
+ *  space, then the heading text (which must be non-empty after trimming any
+ *  optional trailing closing `#`s). A `#` that is NOT followed by a space
+ *  (e.g. `#1`) or appears mid-line is deliberately NOT matched — those stay
+ *  prose. Capture 1 = the hashes (level), capture 2 = the raw text. */
+const ATX_HEADING_RE = /^(#{1,6})\s+(.+?)\s*#*\s*$/;
+
+/** If `line` is a markdown ATX heading, return its level + cleaned text;
+ *  otherwise null. The text has leading hashes and trailing closing hashes
+ *  stripped but is otherwise verbatim. A heading whose content is empty after
+ *  stripping (e.g. `####` or `#### ###`) is treated as NOT a heading so no
+ *  content is fabricated or lost. */
+function parseHeadingLine(line: string): { level: number; text: string } | null {
+  const m = ATX_HEADING_RE.exec(line);
+  if (!m) return null;
+  const hashes = m[1] ?? "";
+  const text = (m[2] ?? "").trim();
+  if (!text) return null;
+  return { level: hashes.length, text };
+}
 
 /** Split a markdown table row into trimmed cells, dropping the optional
  *  leading/trailing pipes. `| a | b |` and `a | b` both → ["a","b"]. */
@@ -106,6 +141,19 @@ export function parseVerbatimBlocks(text: string): VerbatimBlock[] {
   let i = 0;
   while (i < lines.length) {
     const line = lines[i] ?? "";
+
+    // A markdown ATX heading line (`#### Subregulation (7)`) terminates the
+    // current paragraph and becomes its own heading block. Checked BEFORE table
+    // detection: a heading never contains a pipe-table separator, and detecting
+    // it first keeps `#### x | y` (a heading that happens to contain a pipe)
+    // from being mistaken for a table header row.
+    const heading = parseHeadingLine(line);
+    if (heading) {
+      flushParagraphs();
+      blocks.push({ kind: "heading", level: heading.level, text: heading.text });
+      i += 1;
+      continue;
+    }
 
     // A table candidate needs: this line has a pipe AND is not itself a
     // separator, AND the NEXT line is a matching separator row.
