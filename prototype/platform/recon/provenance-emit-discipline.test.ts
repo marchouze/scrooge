@@ -170,4 +170,69 @@ describe("stripComments", () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
+
+  // NON-BLINDABILITY proof (FU4, task_3b24b7dd, D-FX-OTC-CLOSURE-BACKLOG).
+  //
+  // The prior regression test above positions the phantom `/*…*/` span ENTIRELY
+  // BEFORE the construction call, so even the buggy naive-regex lexer leaves the
+  // call intact — the test passes whether or not the lexer is fixed. That made
+  // it vacuous for the exact defect class the brief names: a phantom block
+  // comment that swallows real code SITTING BETWEEN the phantom open and close.
+  //
+  // This case encodes the genuine fail-OPEN scenario: an opening `/*` byte
+  // sequence inside a path STRING, the `buildPhaseFixtureTag(` construction call
+  // on the NEXT line, then a closing `*/` byte sequence inside a LATER string.
+  // The naive lexer's block-comment regex matches `/*` … `*/` across all three
+  // lines and deletes the construction call in between, blinding the scanner.
+  // The correct string-aware lexer treats both `/*` and `*/` as ordinary bytes
+  // inside the string literals, so the call survives and the scanner catches it.
+  //
+  // Revert the lexer to the naive regex and THIS test fails (the hit disappears);
+  // that is the non-vacuity the Engineering Charter command 3 requires.
+  it("is non-blindable: a `/*`/`*/` pair across string literals must NOT swallow the call between them", () => {
+    const source = [
+      'const route = "/api/v2/markets/fx/*"; // path string contains a /* sequence',
+      'export const e = { provenance: buildPhaseFixtureTag({ sourceLineage: "x" }) };',
+      'const closer = "trailing */ inside another string";',
+    ].join("\n");
+
+    // Direct lexer assertions: every brief-named byte pattern is handled.
+    const stripped = stripComments(source);
+    // `/*` inside a string AND the call between the phantom open/close survive.
+    expect(stripped).toContain("buildPhaseFixtureTag(");
+    // The path string is preserved verbatim (its `/*` is not a comment opener).
+    expect(stripped).toContain('"/api/v2/markets/fx/*"');
+    // The `*/` inside the trailing string is preserved (not a comment closer).
+    expect(stripped).toContain("trailing */ inside another string");
+    // The `// path string contains a /* sequence` line comment is still stripped,
+    // and its `/*` did not open a block comment either.
+    expect(stripped).not.toContain("path string contains a");
+
+    // End-to-end: the scanner CATCHES the construction site over this source.
+    // Under the buggy lexer the call is deleted and this expectation fails.
+    const root = makeSyntheticTree();
+    try {
+      writeFileSync(join(root, "platform", "swallow-between.ts"), `${source}\n`);
+      const hits = scanExplicitProvenance(root);
+      expect(hits.map((h) => h.file)).toEqual(["platform/swallow-between.ts"]);
+      expect(hits[0]?.patterns).toContain("buildPhaseFixtureTag(...)");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("strips a normal multi-line block comment while keeping surrounding code", () => {
+    const source = [
+      "const a = 1;",
+      "/* a normal block comment",
+      "   spanning multiple lines, mentioning buildPhaseFixtureTag( harmlessly */",
+      "const b = 2;",
+    ].join("\n");
+    const stripped = stripComments(source);
+    expect(stripped).toContain("const a = 1;");
+    expect(stripped).toContain("const b = 2;");
+    // The block comment content (including the bait call) is gone.
+    expect(stripped).not.toContain("buildPhaseFixtureTag(");
+    expect(stripped).not.toContain("normal block comment");
+  });
 });
