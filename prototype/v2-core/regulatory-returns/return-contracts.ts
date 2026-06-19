@@ -46,8 +46,22 @@ export interface ReturnContractRegistryEntry {
   readonly form: ReturnForm;
   /** Absolute path to the generated, checked-in contract JSON. */
   readonly contractJsonPath: string;
-  /** The XSD file name inside the schema zip (the cell-universe oracle). */
-  readonly xsdName: string;
+  /**
+   * The XSD file name inside the schema zip (the cell-universe oracle the recon
+   * completeness check re-extracts). `null` for an xlsx-ONLY form whose SARB
+   * schema package carries NO XSD (BA 501 — Special-purpose institutions
+   * schemes): for such a form the completeness oracle is the workbook Elements
+   * sheet (`xlsxName`), independently re-parsed by the recon. Never silently
+   * skipped — the recon asserts completeness against the xlsx cell universe.
+   */
+  readonly xsdName: string | null;
+  /**
+   * The xlsx file name inside the schema zip (the contract generator's cell
+   * source). Required ONLY for an xlsx-only form (where it doubles as the recon
+   * completeness oracle); optional otherwise (the generator finds the single
+   * xlsx by suffix).
+   */
+  readonly xlsxName?: string;
   /** Repo-relative path to the schema zip the contract was sourced from. */
   readonly schemaZipRelPath: string;
 }
@@ -229,6 +243,42 @@ export const RETURN_CONTRACT_REGISTRY: readonly ReturnContractRegistryEntry[] = 
     contractJsonPath: jsonPath("ba420-contract.json"),
     xsdName: "BA420_v15012026.xsd",
     schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA420.zip",
+  },
+  // Phase C batch 7 — the SECURITISATION + GOVERNANCE/LIMITS family (BA 500 /
+  // BA 501 / BA 125 / BA 130). BA 500 / BA 501 (securitisation) carry real
+  // securitisation product-attribute requirements (role / approach / asset class /
+  // tranche-seniority / rating / risk-retention) the NPA gate binds on (attached
+  // to the FUTURE `prd:bank:securitisation:scheme`, never the live FX product).
+  // BA 125 (shareholders) + BA 130 (investment restrictions) are entity-/portfolio-
+  // level governance/limits returns carrying ZERO product-attribute requirements.
+  // The whole family is licence-day-data (no real securitisation / third-party
+  // shareholders / investment book pre-licence-day). ★BA 501 is xlsx-ONLY (no XSD
+  // in the SARB schema package) — its completeness oracle is the workbook Elements
+  // sheet (xsdName: null + xlsxName), re-parsed independently by the recon.
+  {
+    form: "BA500",
+    contractJsonPath: jsonPath("ba500-contract.json"),
+    xsdName: "BA500.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA500.zip",
+  },
+  {
+    form: "BA501",
+    contractJsonPath: jsonPath("ba501-contract.json"),
+    xsdName: null, // xlsx-only — no XSD in the SARB schema package.
+    xlsxName: "SARB-Return - BA501_v20022026.xlsx",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA501.zip",
+  },
+  {
+    form: "BA125",
+    contractJsonPath: jsonPath("ba125-contract.json"),
+    xsdName: "BA125.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA125.zip",
+  },
+  {
+    form: "BA130",
+    contractJsonPath: jsonPath("ba130-contract.json"),
+    xsdName: "BA130.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA130.zip",
   },
 ];
 
