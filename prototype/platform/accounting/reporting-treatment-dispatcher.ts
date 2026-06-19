@@ -241,7 +241,12 @@ export function resolveInstanceTreatment(
   // Path 1 — PREFERRED: the instance carries its own booking-time product binding
   // (S0d). Bind directly; the originating trade event need not even be reachable.
   if (typeof instance.productId === "string" && instance.productId.length > 0) {
-    return resolveBoundProduct(instance.productId, eventStore, treatmentRegistry, "instance-bound");
+    return resolveBoundProduct(
+      instance.productId,
+      eventStore,
+      treatmentRegistry,
+      "instance-binding",
+    );
   }
 
   // Path 2 — LEGACY: read productId off the originating trade event.
@@ -299,7 +304,7 @@ function resolveBoundProduct(
     return {
       resolved: false,
       reason: "product-not-registered",
-      detail: `${source}-bound product ${productId} has no V2ProductRegistered event`,
+      detail: `product ${productId} bound via ${source} has no V2ProductRegistered event`,
     };
   }
 

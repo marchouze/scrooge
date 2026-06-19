@@ -347,6 +347,116 @@ describe("FX trial balance — pure fold over FIL events == engine GlPostingEmit
   });
 });
 
+// ===========================================================================
+// S0d — BOOKING-TIME PRODUCT BINDING ON THE FIL INSTANCE.
+//
+// The booking path stamps `economicTerms.productId` on the FIL instance (the S0d
+// binding). The fold must resolve treatment DIRECTLY from that instance binding
+// (path 1) — without reaching back to a productId on the originating trade event
+// — and the result must stay byte-equivalent to the engine golden (the binding
+// only selects the same FX posting rules the fallback selected; it does not move
+// any number).
+// ===========================================================================
+
+const S0D_PRODUCT_ID = "v2:prd:bank:fx:otc-vanilla";
+
+/** Register the FX OTC product whose treatment menu the S0d binding resolves to. */
+function seedFxProduct(store: EventStore): void {
+  store.append({
+    ...makeV2ProductRegistered({
+      asOf: "2026-01-01T00:00:00.000Z",
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITES,
+      payload: v2ProductRegisteredSchema.parse({
+        kind: "V2ProductRegistered",
+        productId: S0D_PRODUCT_ID,
+        name: "FX OTC Vanilla",
+        ifrs9Family: "fx-spot",
+        filTypeScopes: ["fil:type:fx:*"],
+        reportingTreatmentModuleIds: [...FX_TREATMENT_MODULE_IDS],
+        currencies: ["ZAR", "USD"],
+        legalEntityIds: [ENTITY],
+        jurisdictions: ["ZA"],
+        franchiseScope: "treasury-own-book",
+        citations: CITES,
+      }),
+    }),
+    provenance: PROD_TAG,
+  });
+}
+
+/** A production FX FIL created event carrying the S0d booking-time productId. */
+function fxCreatedBound(id: string, direction: "long" | "short", notional: string, asOf: string): Event {
+  const base = makeFilInstrumentCreated({
+    asOf,
+    entity: ENTITY,
+    actor: ACTOR,
+    citations: CITES,
+    payload: filInstrumentCreatedPayloadSchema.parse({
+      kind: "FilInstrumentCreated",
+      instance: instanceUrn(id),
+      type: FX_TYPE_URN,
+      tenant: TENANT,
+      asOf,
+      // Originating event carries NO productId — the binding is on the instance.
+      originatingEvent: { eventType: "Ws-v2-s1-fixture-book", eventId: `s1:${id}` },
+      initialStage: "active",
+      economicTerms: {
+        assetClass: "fx",
+        notional: { currency: "ZAR", amount: notional },
+        direction,
+        counterpartyId: "urn:party:legal-entity:standard-bank-za",
+        nettingSetId: "NS-test-ZAR",
+        currency: "ZAR",
+        settlementDate: asOf.slice(0, 10),
+        hedgingSetTag: "USD/ZAR",
+        productId: S0D_PRODUCT_ID, // ← the S0d booking-time binding.
+      },
+    }),
+  });
+  return { ...base, provenance: PROD_TAG };
+}
+
+describe("S0d — fold resolves treatment from the instance's bound productId", () => {
+  test("a bound FX instance folds via the product path and is byte-equivalent to the engine golden", () => {
+    const store = new EventStore(":memory:");
+    seedTreatmentModules(store);
+    seedFxProduct(store);
+    store.append(fxCreatedBound("FX-B1", "long", "9260000", "2026-06-01T10:00:00.000Z"));
+    store.append(fxCreatedBound("FX-B2", "short", "6045000", "2026-06-02T10:00:00.000Z"));
+
+    // The fold admits both bound instances (no fail-closed skip) and resolves the
+    // treatment via the product binding (detail names the bound product).
+    const fold = foldFxContributionLegs(args(store));
+    expect(fold.skipped).toHaveLength(0);
+    expect(fold.legs.length).toBeGreaterThan(0);
+
+    // Byte-equivalent to the engine golden over the SAME FIL events.
+    const golden = goldenFxTrialBalanceFromEngine(store);
+    const tb = computeTrialBalanceV2Uncached(args(store));
+    const folded = new Map<string, number>();
+    for (const r of tb.rows) folded.set(`${r.leafAccountId}|${r.currency}`, r.amountMinor);
+    expect([...folded.keys()].sort()).toEqual([...golden.keys()].sort());
+    for (const [k, v] of golden) expect(folded.get(k)).toBe(v);
+    expect(folded.size).toBeGreaterThan(0);
+  });
+
+  test("a bound instance whose product is NOT registered fails closed (no silent default)", () => {
+    const store = new EventStore(":memory:");
+    seedTreatmentModules(store);
+    // No seedFxProduct → the instance binding names an unregistered product.
+    store.append(fxCreatedBound("FX-UNREG", "long", "1000000", "2026-06-01T10:00:00.000Z"));
+
+    const fold = foldFxContributionLegs(args(store));
+    // Fail-closed: the bound product is unknown, so no legs and a typed skip.
+    expect(fold.legs).toHaveLength(0);
+    expect(fold.skipped.length).toBeGreaterThan(0);
+    expect(fold.skipped[0]?.reason).toBe("treatment-unresolved");
+    expect(fold.skipped[0]?.detail).toContain("product-not-registered");
+  });
+});
+
 describe("FX fold — in-test provenance cohort + reversibility", () => {
   test("simulated cohort (productId path) leaves the production TB unchanged, and reclassify removes it", () => {
     const store = new EventStore(":memory:");
