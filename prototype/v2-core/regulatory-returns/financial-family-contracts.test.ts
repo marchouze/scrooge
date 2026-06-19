@@ -19,14 +19,16 @@ import {
 
 // Expected cell counts = the typed BA-code leaf-cell set of each form's XSD
 // (independently verified from the schema zip; see gen-return-contract.py).
-const EXPECTED: ReadonlyArray<{
+interface ExpectedForm {
   form: ReturnForm;
   name: string;
   obligation: string;
   cells: number;
   // whether the whole form is licence-day-data (no group / no foreign ops yet).
   licenceDay: boolean;
-}> = [
+}
+
+const EXPECTED: ExpectedForm[] = [
   {
     form: "BA110",
     name: "Off-Balance-Sheet Activities",
