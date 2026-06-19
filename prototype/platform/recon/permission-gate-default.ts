@@ -253,6 +253,14 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // recon roots above. Citation: D-FX-OTC-CLOSURE-BACKLOG,
   // D-TRUSTED-FIGURES-PROGRAM-V1, P4-SECURITY-DESIGNED-IN.
   "platform/recon/fx-model-validation-of-record.ts",
+  // fx-data-feed-lineage — FX C8 data-quality lineage audit. Opens the live
+  // event store for READ-ONLY replay of FilFxSettlementConfirmed (settlement-
+  // confirmation lineage) and reads the MarketDataStore's market_data_ticks
+  // raw rows (rate-feed lineage). No appends; the gate is a no-op on the read
+  // path. The raw construction here is the recon's own read root, analogous to
+  // the other read-only recon roots above. Citation: D-FX-OTC-CLOSURE-BACKLOG,
+  // D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/fx-data-feed-lineage.ts",
   // PartitionedEventStore — substrate class that opens cold archive SQLite
   // databases for read-only replay; no appends; gate is a no-op on replay.
   // Citation: D-EVENT-STORE-SCALING-PHASE-5, P4-SECURITY-DESIGNED-IN.
