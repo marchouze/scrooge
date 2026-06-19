@@ -150,8 +150,19 @@ const PENDING_REMEDIATION = new Set<string>([
   "Regulations/SARB-PA/ba-returns/ba-210.md", // titled BA 210=counterparty-credit-risk; canonical BA 210 = Credit Concentration Risk / Large Exposures
   "Regulations/SARB-PA/ba-returns/ba-300.md", // titled BA 300=operational-risk; canonical BA 300 = Liquidity Risk (op-risk is BA 400)
   "Regulations/SARB-PA/ba-returns/ba-310.md", // titled BA 310=market-risk; canonical BA 310 = Minimum Liquid Reserve / Liquid Assets (market risk is BA 320)
-  "Regulations/SARB-PA/ba-returns/ba-320.md", // titled BA 320=alternative market-risk; canonical BA 320 = Market Risk (the "alternative" scope is fabricated framing) + carries BA 310 cross-refs
-  "Regulations/SARB-PA/ba-returns/ba-325.md", // titled BA 325=FRTB market-risk; canonical BA 325 = Selected Risk Exposure Arising from Trading and Treasury Activities
+  // ba-320.md / ba-325.md — IDENTITY RECONCILED (D-BA-RETURN-DATA-CONTRACT Phase C batch 4,
+  // Bea): both files now consistently state the canonical identity — BA 320 = Market Risk (the
+  // "alternative market-risk" framing is withdrawn); BA 325 = Selected Risk Exposure Arising
+  // from Trading and Treasury Activities (the "FRTB market-risk" framing is withdrawn). They
+  // REMAIN allowlisted because the reconciled prose now carries FACTUALLY-CORRECT cross-
+  // references that the keyword gate cannot distinguish from a fabrication: ba-320.md notes
+  // "BA 310 = HQLA, NOT market risk" (trips marketrisk-is-ba320: BA310+market-risk) and
+  // "market-risk capital → BA 700" (trips capital-is-ba700); ba-325.md notes "BA 325 carries a
+  // daily LCR summary line" and "the LCR return is BA 300" (trip lcr-not-ba325 / lcr-is-ba300).
+  // These are correct statements of the canonical schedule, not fabrications — so the files are
+  // kept tracked (warn) rather than failing on accurate cross-references.
+  "Regulations/SARB-PA/ba-returns/ba-320.md", // RECONCILED to BA 320 = Market Risk; residual warns are correct BA310=HQLA / BA700-capital cross-refs
+  "Regulations/SARB-PA/ba-returns/ba-325.md", // RECONCILED to BA 325 = Selected Risk Exposure; residual warns are correct LCR=BA300 / market-risk=BA320 cross-refs
   "Regulations/SARB-PA/ba-returns/ba-400.md", // titled BA 400=leverage-ratio; canonical BA 400 = Operational Risk (leverage is BA 700)
   "Regulations/SARB-PA/ba-returns/ba-600.md", // titled BA 600=balance-sheet; canonical BA 600 = Consolidated Return (balance sheet is BA 100)
   "Regulations/SARB-PA/ba-returns/ba-610.md", // titled BA 610=income-statement; canonical BA 610 = Foreign Operations (income statement is BA 120)

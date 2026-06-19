@@ -126,6 +126,50 @@ export const RETURN_CONTRACT_REGISTRY: readonly ReturnContractRegistryEntry[] = 
     xsdName: "BA310.xsd",
     schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA310.zip",
   },
+  // Phase C batch 4 — the market family (BA 320 / BA 325 / BA 330 / BA 340 /
+  // BA 350). BA 320 (Market Risk) has LIVE substrate (the ba-320-market-risk.ts
+  // standardised-position-risk fold + FX / IR / bond event adapters + VaR
+  // engine), so its FX-risk-class aggregate cells are `sourced` while the rest of
+  // BA 320 — and every BA 325 (trading & treasury selected risk) / BA 330 (IRRBB)
+  // / BA 340 (equity risk in the banking book) / BA 350 (derivatives instruments)
+  // cell — is `licence-day-data` (the folds exist; no real trading-book /
+  // treasury / banking-book / derivative positions pre-licence-day). The market
+  // product-static attributes (trading-book designation, risk class, derivative
+  // type, equity holding class, rate type) attach to FUTURE, unapproved market
+  // product ids, so the live FX product is never wrongly blocked. NB: BA 325 is
+  // built on its CANONICAL "Selected Risk Exposure Arising from Trading and
+  // Treasury Activities" identity — NOT FRTB (the FRTB-SA charge feeds BA 320; the
+  // standalone FRTB workbook is the separate schemas/FRTB.zip).
+  {
+    form: "BA320",
+    contractJsonPath: jsonPath("ba320-contract.json"),
+    xsdName: "BA320.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA320.zip",
+  },
+  {
+    form: "BA325",
+    contractJsonPath: jsonPath("ba325-contract.json"),
+    xsdName: "BA325.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA325.zip",
+  },
+  {
+    form: "BA330",
+    contractJsonPath: jsonPath("ba330-contract.json"),
+    xsdName: "BA330.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA330.zip",
+  },
+  {
+    form: "BA340",
+    contractJsonPath: jsonPath("ba340-contract.json"),
+    xsdName: "BA340.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA340.zip",
+  },
+  {
+    form: "BA350",
+    contractJsonPath: jsonPath("ba350-contract.json"),
+    xsdName: "BA350.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA350.zip",
+  },
 ];
 
 const cache = new Map<ReturnForm, ReturnContract>();

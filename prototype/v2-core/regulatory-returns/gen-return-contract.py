@@ -386,6 +386,219 @@ FORMS = {
             "correctly gated. No silent fabrication."
         ),
     ),
+    # -----------------------------------------------------------------------
+    # Phase C batch 4 — the MARKET FAMILY (BA 320 / BA 325 / BA 330 / BA 340 /
+    # BA 350). These carry product-attribute requirements a TRADING / banking-book
+    # product must capture — trading-book designation, risk class (GIRR / FX / EQ /
+    # CSR / COMM), derivative type, banking-vs-trading book, equity holding class,
+    # repricing/rate-type — but MODESTLY: market risk is largely per-trade /
+    # position-derived, so the product-static attributes are few and the
+    # `required:true` set is small (the brief). The genuine product-static edges
+    # attach to FUTURE, unapproved market product ids (NOT the live FX product),
+    # so the NPA gate never wrongly blocks `prd:bank:fx:otc-vanilla`.
+    #
+    # SUBSTRATE: BA 320 (Market Risk) has LIVE substrate — the
+    # `ba-320-market-risk.ts` standardised-position-risk fold + the FX / IR / bond
+    # event adapters + the VaR engine. So a BA 320 aggregate market-risk / RWA cell
+    # whose value folds from the live engine is `sourced` (the source exists;
+    # values are an honest 0/real-FX until positions land). BA 325 / 330 / 340 / 350
+    # have no live trading-book / treasury / IRRBB / equity-banking-book /
+    # derivatives positions book pre-licence-day, so their cells are
+    # `licence-day-data` (the folds exist as substrate). A cell carrying a required
+    # PRODUCT-ID attribute on an unapproved future product is forced licence-day
+    # (the `market_cell_status` coupling, mirroring the liquidity family).
+    # -----------------------------------------------------------------------
+    "BA320": dict(
+        name="Market Risk",
+        obligation="ORG-PR-RETURNS-012",
+        clause=(
+            "SARB PA Directive D5/2025 §2.1.13 (form BA 320 — Market Risk, Annexure 12A) read "
+            "with the Regulations relating to Banks reg 28 (market risk / position risk: "
+            "interest-rate, equity, foreign-exchange incl. gold, commodity; specific + general "
+            "risk; the internal-models VaR approach subject to PA approval) and Basel "
+            "MAR (the standardised position-risk / FRTB-SA market-risk framework); Banks Act 94 "
+            "of 1990 s.6(6)(a). [Post-#1451 corrected row (D-BA-RETURN-NUMBERING-EXCEL-CANONICAL): "
+            "per the canonical SARB Excel form schedule (cell A1 = 'Market Risk'), form BA 320 is "
+            "THE Market Risk return — the prior 'alternative market-risk return' framing is the "
+            "documented fabrication the correction supersedes. The FRTB-SA charge feeds BA 320; "
+            "the standalone FRTB workbook is the separate schemas/FRTB.zip.]"
+        ),
+        fold="ba320-market-risk-fold",
+        # BA 320 cells fold from the ba-320-market-risk.ts standardised-position-risk
+        # engine over the FX / IR / bond / equity exposure adapters + the VaR engine.
+        # No single GL category holds the market-risk charge — it is folded by the
+        # named market-risk projection, not a CoA balance — so gl_categories is empty
+        # and the fold is the authoritative source. The FX risk class has LIVE
+        # substrate (the FX adapter reads real FX positions); the per-cell sourced-vs-
+        # licence-day split is made in build_cell via market_cell_status().
+        gl_categories=[],
+        entity_scope="bank",
+        # NOT a blanket licence-day form: the live market-risk fold + FX adapter +
+        # VaR engine exist. The per-cell decision is made in market_cell_status();
+        # this flag is the DEFAULT for a cell that does not match a live-substrate
+        # predicate.
+        licence_day=True,
+        market_family=True,
+        status_note=(
+            "Market-risk figures fold from the ba-320-market-risk.ts standardised-position-risk "
+            "engine (BCBS MAR / Reg 28 — IR specific + general, equity, FX incl. gold, commodity) "
+            "over the FX / IR / bond / equity event adapters plus the VaR engine "
+            "(platform/market-risk/var-engine.ts). The market-risk fold, the FX adapter and the "
+            "VaR engine exist as substrate; the trading-book exposures that fill most cells "
+            "require a real trading book, which the bank-in-formation does not run at scale pre-"
+            "licence-day, so those values are licence-day data. The FX risk-class aggregate cells "
+            "have live FX substrate (sourced). The product-attribute dataRequirements — trading-"
+            "book designation, risk class, position side — bind now so a future trading product "
+            "is correctly gated. No silent fabrication."
+        ),
+    ),
+    "BA325": dict(
+        name="Selected Risk Exposure Arising from Trading and Treasury Activities",
+        obligation="ORG-PR-RETURNS-013",
+        clause=(
+            "SARB PA Directive D5/2025 §2.1.14 (form BA 325 — Selected Risk Exposure Arising "
+            "from Trading and Treasury Activities, Annexure 13A/13B) read with the Regulations "
+            "relating to Banks reg 28 (market / position risk) and reg 29 (daily selected-risk "
+            "exposure: trading & treasury) and Basel MAR (market risk); Banks Act 94 of 1990 "
+            "s.6(6)(a). [Post-#1451 corrected row (D-BA-RETURN-NUMBERING-EXCEL-CANONICAL): per "
+            "the canonical SARB Excel form schedule (cell A1 = 'Selected Risk Exposure Arising "
+            "from Trading and Treasury Activities'), form BA 325 is the trading/treasury "
+            "selected-risk-exposure return — it carries a market-risk-requirement summary, a "
+            "counterparty-risk memorandum and a liquidity summary (incl. an LCR line), but it is "
+            "NOT the FRTB return and NOT the LCR return. Market risk proper is BA 320; the LCR "
+            "return is BA 300. The 'BA 325 = FRTB' label is the documented fabrication the "
+            "correction supersedes.]"
+        ),
+        fold="ba325-selected-risk-exposure-fold",
+        # BA 325 selected-risk-exposure cells fold from the trading/treasury
+        # selected-risk fold over the market-risk-requirement summary + the
+        # counterparty-risk memorandum + the SARB-repo / liquidity summary. No GL
+        # category holds these; the fold is the authoritative source.
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,  # no real trading/treasury selected-risk positions pre-licence-day
+        market_family=True,
+        status_note=(
+            "Selected-risk-exposure figures (market-risk-requirement summary, counterparty-risk "
+            "memorandum — OTC / SFT / credit-derivative, SARB-repo liquidity summary, VaR / sVaR / "
+            "IRC, daily LCR summary line) fold from the trading/treasury selected-risk fold over "
+            "the market-risk fold + the counterparty-risk + liquidity substrate. The folds exist "
+            "as substrate; the trading & treasury selected-risk positions that fill the cells "
+            "require a real trading book, which the bank-in-formation does not run pre-licence-"
+            "day, so those values are licence-day data. The product-attribute dataRequirements — "
+            "trading-book designation, risk class, counterparty-exposure type — bind now so a "
+            "future trading product is correctly gated. No silent fabrication."
+        ),
+    ),
+    "BA330": dict(
+        name="Interest Rate Risk: Banking Book (IRRBB)",
+        obligation="ORG-PR-RETURNS-014",
+        clause=(
+            "SARB PA Directive D5/2025 §2.1.15 (form BA 330 — Interest Rate Risk: Banking Book "
+            "(IRRBB), Annexure 14A) read with SARB PA Directive 2 of 2023 (the IRRBB repricing-"
+            "gap return, issued in terms of regulation 30 of the Regulations relating to Banks) "
+            "and Basel IRRBB (the SRP 31 / IRRBB standard — EVE and NII under the prescribed "
+            "interest-rate shock scenarios); Banks Act 94 of 1990 s.6(6)(a). [Post-#1451 "
+            "corrected row: per the canonical SARB Excel form schedule (cell A1 = 'INTEREST RATE "
+            "RISK: BANKING BOOK'), form BA 330 is the IRRBB repricing-gap return (Reg 30 / "
+            "D2/2023); the prior 'large exposures' annotation is the documented fabrication the "
+            "correction supersedes — large exposures is BA 210.]"
+        ),
+        fold="ba330-irrbb-fold",
+        # IRRBB cells fold from the IRRBB repricing-gap fold over the banking-book
+        # interest-rate-sensitive positions decomposed into repricing maturity bands
+        # + the EVE / NII shock computation. No GL category holds the repricing
+        # ladder or the shocked EVE/NII; the fold is the authoritative source.
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,  # no real banking-book interest-rate positions pre-licence-day
+        market_family=True,
+        status_note=(
+            "IRRBB figures (the repricing-gap ladder by maturity band, the net static / "
+            "cumulative gap, and the EVE / NII impact under the prescribed parallel-up / "
+            "parallel-down / steepener / flattener / short-rate shock scenarios) fold from the "
+            "ba330-irrbb-fold over the banking-book interest-rate-sensitive positions. The fold "
+            "exists as substrate; the banking-book positions that fill the repricing ladder "
+            "require a real banking book, which the bank-in-formation does not run pre-licence-"
+            "day, so those values are licence-day data. The product-attribute dataRequirements — "
+            "banking-book designation, repricing profile, rate type (fixed / variable / "
+            "benchmark / discretionary) — bind now so a future banking-book product is correctly "
+            "gated. No silent fabrication."
+        ),
+    ),
+    "BA340": dict(
+        name="Equity Risk in the Banking Book",
+        obligation="ORG-PR-RETURNS-015",
+        clause=(
+            "SARB PA Directive D5/2025 §2.1.16 (form BA 340 — Equity Risk in the Banking Book, "
+            "Annexure 15A/15B) read with the Regulations relating to Banks reg 31 (equity risk "
+            "in the banking book — the simple-risk-weight method, the internal-models approach, "
+            "and the holding-class breakdown) and Basel CRE (the banking-book equity framework); "
+            "Banks Act 94 of 1990 s.6(6)(a). [Post-#1451 corrected row: per the canonical SARB "
+            "Excel form schedule (cell A1 = 'Equity Risk in the Banking Book'), form BA 340 is "
+            "the banking-book equity-risk return; the prior 'IRRBB' annotation is the documented "
+            "fabrication the correction supersedes — IRRBB is BA 330.]"
+        ),
+        fold="ba340-equity-risk-banking-book-fold",
+        # Banking-book equity-risk cells fold from the equity-risk fold over the
+        # banking-book equity holdings (listed / unlisted / speculative) + the
+        # simple-risk-weight / IMA capital computation. No GL category holds the
+        # risk-weighted equity exposure; the fold is the authoritative source.
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,  # no real banking-book equity holdings pre-licence-day
+        market_family=True,
+        status_note=(
+            "Banking-book equity-risk figures (the equity exposure value, risk-weighted "
+            "exposure and capital requirement by holding class — listed / unlisted / speculative "
+            "— under the simple-risk-weight method and the internal-models approach) fold from "
+            "the ba340-equity-risk-banking-book-fold over the banking-book equity holdings. The "
+            "fold exists as substrate; the banking-book equity holdings that fill the cells "
+            "require real equity investments held in the banking book, which the bank-in-"
+            "formation does not hold pre-licence-day, so those values are licence-day data. The "
+            "product-attribute dataRequirements — banking-book designation, equity holding class, "
+            "equity risk-weight method — bind now so a future banking-book equity product is "
+            "correctly gated. No silent fabrication."
+        ),
+    ),
+    "BA350": dict(
+        name="Derivatives Instruments",
+        obligation="ORG-PR-RETURNS-016",
+        clause=(
+            "SARB PA Directive D5/2025 §2.1.17 (form BA 350 — Derivatives Instruments, "
+            "Annexure 16A/16B) read with the Regulations relating to Banks reg 28 (market risk: "
+            "derivative positions in the trading and banking book) and reg 23(15)–(19) "
+            "(counterparty credit risk on derivatives) and Basel MAR / CRE (derivative notional "
+            "+ fair-value reporting); Banks Act 94 of 1990 s.6(6)(a). [Post-#1451 corrected row: "
+            "per the canonical SARB Excel form schedule (cell A1 = 'DERIVATIVES INSTRUMENTS'), "
+            "form BA 350 is the derivatives-instruments return (gross notional + fair value by "
+            "instrument type, exchange-traded vs OTC, trading vs banking book); the prior "
+            "'credit concentration risk' annotation is the documented fabrication the correction "
+            "supersedes — credit concentration / large exposures is BA 210.]"
+        ),
+        fold="ba350-derivatives-instruments-fold",
+        # Derivative-instrument cells fold from the derivatives-instruments fold over
+        # the derivative book (futures / options / swaps / forwards / FRAs) by
+        # underlying asset class, exchange-traded vs OTC, trading vs banking book,
+        # gross notional + fair value. No GL category holds the per-instrument-type
+        # notional / MtM grid; the fold is the authoritative source.
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,  # no real derivative book pre-licence-day
+        market_family=True,
+        status_note=(
+            "Derivative-instrument figures (gross notional amounts and fair value of outstanding "
+            "contracts by instrument type — futures / call+put options written/purchased / swaps "
+            "/ forwards+FRAs — by underlying asset class, exchange-traded vs OTC, trading vs "
+            "banking book, and maturity band) fold from the ba350-derivatives-instruments-fold "
+            "over the derivative book. The fold exists as substrate; the derivative positions "
+            "that fill the notional / fair-value grid require a real derivative book, which the "
+            "bank-in-formation does not run at scale pre-licence-day, so those values are "
+            "licence-day data. The product-attribute dataRequirements — derivative type, "
+            "trading-vs-banking book designation, underlying asset class — bind now so a future "
+            "derivative product is correctly gated. No silent fabrication."
+        ),
+    ),
 }
 
 # ---------------------------------------------------------------------------
@@ -1037,6 +1250,329 @@ def liquidity_cell_status(form: str, col_label: str, row_label: str, prod_attrs)
     return "licence-day-data"
 
 
+# ===========================================================================
+# MARKET PRODUCT-ATTRIBUTE MAPPER — the substantive new output of Phase C
+# batch 4 (the market family: BA 320 / BA 325 / BA 330 / BA 340 / BA 350).
+# ===========================================================================
+#
+# Market risk is largely PER-TRADE / POSITION-DERIVED — the SBM sensitivities,
+# the VaR, the repricing gap, the notional grid are computed from individual
+# trade positions, not from a handful of product-static attributes. So the
+# product-static attribute set a market product must carry is MODEST (the brief)
+# and `required:true` is RARE — only the cell that REPORTS a product-static
+# dimension (the trading-book-vs-banking-book column, the risk-class row, the
+# derivative-type row, the equity-holding-class row) is populate-or-die on it.
+# A monetary aggregate merely SLICED by such a dimension carries it
+# `required:false` (it still folds; the dimension is one of several drivers).
+#
+# THE FUTURE MARKET PRODUCTS (honest, not yet approved)
+# -----------------------------------------------------
+# The live approved trading products are FX (`prd:bank:fx:otc-vanilla`) etc., but
+# market-risk reporting is keyed off TRADE positions, not product-static menu
+# picks, so attaching a `required:true` product-id attribute to the LIVE FX
+# product would wrongly gate it (the NPA gate would demand FX capture a market-
+# return attribute it does not own at the product level). Instead — exactly like
+# the credit and liquidity families — the market product-static attributes attach
+# to FUTURE, dedicated, UNAPPROVED market product ids:
+#   - `prd:bank:trading:market-risk-position` — the trading-book market-risk
+#     position product (BA 320 / BA 325 / BA 350 trading-book risk-class +
+#     derivative-type + position-side).
+#   - `prd:bank:banking-book:irrbb-position` — the banking-book interest-rate
+#     position product (BA 330 repricing profile + rate type).
+#   - `prd:bank:banking-book:equity-holding` — the banking-book equity holding
+#     product (BA 340 equity holding class + risk-weight method).
+# Because none is an approved ProductApproved, a cell carrying a `required:true`
+# PRODUCT-ID attribute on these refs is `licence-day-data` (the recon validates
+# `prd:` refs against the approved set only for `status:"sourced"` cells) — also
+# honest: there are no real trading-book / banking-book positions pre-licence-day.
+# The live FX product feeds NONE of these, so it is NOT wrongly blocked.
+
+MARKET_TRADING_PRODUCT_ID = "prd:bank:trading:market-risk-position"
+MARKET_IRRBB_PRODUCT_ID = "prd:bank:banking-book:irrbb-position"
+MARKET_EQUITY_BB_PRODUCT_ID = "prd:bank:banking-book:equity-holding"
+
+# Market product-static attributes, each with the Basel/Reg clause that makes a
+# trading/banking-book product carry it. Keyed by short attr name.
+MARKET_ATTRS = {
+    "tradingBookDesignation": (
+        "whether the position is held in the TRADING book or the BANKING book — the "
+        "boundary that selects the BA 320 / BA 325 / BA 350 Trading vs Banking column and "
+        "determines which market-risk capital regime applies. (Basel MAR (trading-book "
+        "boundary); SARB Regulations relating to Banks reg 28(3); reg 28 trading-book / "
+        "banking-book boundary.)"
+    ),
+    "riskClass": (
+        "the market-risk class of the position — general interest-rate (GIRR), foreign "
+        "exchange (FX, incl. gold), equity (EQ), credit-spread (CSR) or commodity (COMM) — "
+        "which selects the BA 320 risk-class row/sub-form and the prescribed risk weights "
+        "and correlations. (Basel MAR market-risk-class taxonomy; SARB reg 28(3)(a)–(d).)"
+    ),
+    "positionSide": (
+        "whether the position is long or short, required to net positions within a risk "
+        "class / maturity band for the position-risk charge and the notional/MtM long/short "
+        "split. (Basel MAR; SARB reg 28(3).)"
+    ),
+    "counterpartyExposureType": (
+        "the counterparty-exposure type for the BA 325 counterparty-risk memorandum — OTC "
+        "derivative, securities-financing transaction (SFT) or credit-derivative instrument "
+        "— which selects the memorandum line. (SARB reg 28 / reg 23(15)–(19) counterparty "
+        "credit risk; Basel CRE counterparty credit risk.)"
+    ),
+    "bankingBookDesignation": (
+        "whether the interest-rate position is held in the BANKING book — the boundary that "
+        "scopes the position INTO the IRRBB repricing-gap return (BA 330 reports the banking "
+        "book only; the trading book is on BA 320). (Basel IRRBB (SRP 31); SARB reg 30 / "
+        "D2/2023.)"
+    ),
+    "repricingProfile": (
+        "the repricing / residual-maturity profile of the banking-book interest-rate "
+        "position, which places it in the correct BA 330 repricing maturity band (overnight, "
+        "1m, 3m, 6m, 12m, 3y, 5y, 10y, >10y, non-rate-sensitive). (Basel IRRBB (SRP 31); "
+        "SARB reg 30 / D2/2023 repricing-gap framework.)"
+    ),
+    "rateType": (
+        "the interest-rate-type of the banking-book position — variable / fixed / benchmark "
+        "/ discretionary — a BA 330 rate-type row dimension that drives the repricing "
+        "treatment. (Basel IRRBB (SRP 31); SARB reg 30 / D2/2023.)"
+    ),
+    "equityHoldingClass": (
+        "the banking-book equity holding class — listed / unlisted / speculative-unlisted / "
+        "other equity holding — which selects the BA 340 holding-class row and the "
+        "applicable simple risk weight. (Basel CRE (banking-book equity); SARB reg 31 "
+        "equity risk in the banking book.)"
+    ),
+    "equityRiskWeightMethod": (
+        "the BA 340 capital method for the banking-book equity holding — the simple "
+        "risk-weight method or the internal-models approach — which selects the BA 340 "
+        "method sub-form. (Basel CRE; SARB reg 31.)"
+    ),
+    "derivativeType": (
+        "the derivative instrument type — future, call/put option (written/purchased), swap, "
+        "forward / FRA — the defining row dimension of the BA 350 derivatives-instruments "
+        "return. (Basel MAR / CRE derivative reporting; SARB reg 28 derivative positions.)"
+    ),
+    "underlyingAssetClass": (
+        "the underlying asset class of the derivative — interest-rate, foreign-exchange, "
+        "equity, commodity, credit — which selects the BA 350 underlying-asset column group. "
+        "(Basel MAR / CRE; SARB reg 28.)"
+    ),
+}
+
+# Which product id each market attribute belongs to.
+MARKET_ATTR_PRODUCT = {
+    "tradingBookDesignation": MARKET_TRADING_PRODUCT_ID,
+    "riskClass": MARKET_TRADING_PRODUCT_ID,
+    "positionSide": MARKET_TRADING_PRODUCT_ID,
+    "counterpartyExposureType": MARKET_TRADING_PRODUCT_ID,
+    "bankingBookDesignation": MARKET_IRRBB_PRODUCT_ID,
+    "repricingProfile": MARKET_IRRBB_PRODUCT_ID,
+    "rateType": MARKET_IRRBB_PRODUCT_ID,
+    "equityHoldingClass": MARKET_EQUITY_BB_PRODUCT_ID,
+    "equityRiskWeightMethod": MARKET_EQUITY_BB_PRODUCT_ID,
+    "derivativeType": MARKET_TRADING_PRODUCT_ID,
+    "underlyingAssetClass": MARKET_TRADING_PRODUCT_ID,
+}
+
+
+def market_product_attributes(form: str, col_label: str, row_label: str, xsd_type: str):
+    """Return the list of ((product_id, attr, required)) product-attribute edges a
+    market cell genuinely owes, keyed off the cell's regulatory MEANING (its
+    row/column label + leaf type). Precise + honest — see the mapper header.
+    Returns [] for cells with no genuine market-product-static dependency (the
+    bulk of market cells, which are per-trade / position-derived aggregates with
+    no product-static menu pick; form-meta; hash-totals; pure subtotals)."""
+    text = f"{col_label or ''} {row_label or ''}".lower()
+    col_lc = (col_label or "").lower()
+    row_lc = (row_label or "").lower()
+    out: list[tuple[str, str, bool]] = []
+
+    def add(attr: str, required: bool) -> None:
+        pid = MARKET_ATTR_PRODUCT[attr]
+        if (pid, attr) not in {(p, a) for p, a, _ in out}:
+            out.append((pid, attr, required))
+
+    # Hash-total / control cells carry no product attribute (avoid bulk-marking).
+    if "hashtotal" in text or "hash total" in text:
+        return out
+
+    # ---- Trading-vs-banking book boundary (BA 320 / BA 325 / BA 350 columns) ----
+    # A column that NAMES the trading or banking book defines that boundary. The
+    # cell cannot be PLACED in the right book column without the position's book
+    # designation, but the aggregate still folds → required:false on the sliced
+    # money cell; the boundary is a driver, not a populate-or-die input for the
+    # value. We mark required:true ONLY where the column/row is the book boundary
+    # cell itself (a position cannot exist without a book) on BA 320/BA 350.
+    mentions_trading = "trading" in col_lc or "trading book" in row_lc
+    mentions_banking = "banking" in col_lc or "banking book" in row_lc
+    if form in ("BA320", "BA325", "BA350") and (mentions_trading or mentions_banking):
+        add("tradingBookDesignation", False)
+
+    # ---- BA 320 / BA 325 risk-class rows (IR / equity / FX+gold / commodity) ----
+    if form in ("BA320", "BA325"):
+        is_fx_risk_class = "foreign exchange" in text or "foreign-exchange" in text
+        names_non_fx_risk_class = any(
+            k in text
+            for k in (
+                "interest rate risk",
+                "interest-rate risk",
+                "equity position risk",
+                "equity risk",
+                "commodities risk",
+                "commodity risk",
+            )
+        )
+        # NON-FX risk-class rows DEFINE the class dimension on a book with no live
+        # substrate (no IR / equity / commodity trading book at scale pre-licence-
+        # day) → the class is a populate-or-die product-static attribute the future
+        # trading product must carry → required:true (forces licence-day).
+        if names_non_fx_risk_class:
+            add("riskClass", True)
+        # FX risk class is DERIVED per-trade by the LIVE market-risk fold (the FX
+        # adapter reads real FX positions and classifies them) — not a product-
+        # static menu pick — so the FX-risk-class aggregate cell does NOT carry a
+        # required:true product attribute (which would wrongly force licence-day and
+        # imply a future product must designate it). The risk class is still a
+        # MARKET dimension a future trading product would carry → required:false,
+        # so the cell stays sourced (live FX substrate) per market_cell_status.
+        elif is_fx_risk_class:
+            add("riskClass", False)
+        # Long/short position columns (the position-side split).
+        if "long" in col_lc or "short" in col_lc or "position" in col_lc:
+            add("positionSide", False)
+
+    # ---- BA 325 counterparty-risk memorandum (OTC / SFT / credit-derivative) ----
+    if form == "BA325" and any(
+        k in text for k in ("otc", "sft", "credit-derivative", "credit derivative", "counterparty")
+    ):
+        add("counterpartyExposureType", False)
+
+    # ---- BA 330 IRRBB — banking-book interest-rate, repricing, rate-type ----
+    # NB (no bulk-marking, the brief): the banking-book designation is implied by
+    # the FORM'S SCOPE (BA 330 reports the banking book only) — it is NOT a per-
+    # cell product driver, so we do NOT attach it to every cell. We attach the
+    # repricing/rate-type attributes only to the cells whose row/column genuinely
+    # DEFINES those dimensions.
+    if form == "BA330":
+        # The rate-type rows (variable / fixed / benchmark / discretionary) DEFINE
+        # the rate-type dimension → required:true (a banking-book IR position cannot
+        # be placed in the right rate-type row without its rate type). These rows
+        # additionally key off the repricing profile (the band columns) →
+        # required:false on those cells.
+        if any(
+            k in row_lc
+            for k in ("variable rate", "fixed rate", "benchmark rate", "discretionary rate")
+        ):
+            add("rateType", True)
+            # The repricing maturity-band columns slice the rate-type rows.
+            if any(
+                k in col_lc
+                for k in (
+                    "overnight",
+                    "days to",
+                    "more than",
+                    "month",
+                    "year",
+                    "non-rate sensitive",
+                    "non rate sensitive",
+                )
+            ):
+                add("repricingProfile", False)
+
+    # ---- BA 340 banking-book equity holding class + risk-weight method ----
+    # NB: banking-book designation is the form's scope (not a per-cell driver) — we
+    # do not bulk-attach it. The holding-class / method rows that DEFINE those
+    # dimensions carry the attribute.
+    if form == "BA340":
+        if any(
+            k in row_lc
+            for k in (
+                "equities - listed",
+                "equities - unlisted",
+                "listed and unlisted",
+                "speculative",
+                "other equity holdings",
+                "equity holdings",
+            )
+        ):
+            # The holding-class row DEFINES the class → required:true.
+            add("equityHoldingClass", True)
+        if "simple risk weight" in row_lc or "internal models approach" in row_lc:
+            # The method row selects the method sub-form → required:true.
+            add("equityRiskWeightMethod", True)
+
+    # ---- BA 350 derivative type + underlying asset class ----
+    if form == "BA350":
+        if any(
+            k in row_lc
+            for k in (
+                "futures contract",
+                "call option",
+                "put option",
+                "swap",
+                "forward",
+                "fra",
+            )
+        ):
+            # The derivative-type row DEFINES the instrument type → required:true.
+            add("derivativeType", True)
+            # The underlying-asset-class column group slices the derivative-type
+            # rows (interest-rate / fx / equity / commodity / credit contracts).
+            if any(
+                k in col_lc
+                for k in (
+                    "interest-rate contract",
+                    "interest rate contract",
+                    "exchange rate contract",
+                    "foreign exchange",
+                    "equity contract",
+                    "commodity contract",
+                    "credit contract",
+                )
+            ):
+                add("underlyingAssetClass", False)
+
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Per-cell market status (honest sourced-vs-licence-day split).
+#   - BA 320 has LIVE substrate (the ba-320-market-risk.ts fold + FX adapter +
+#     VaR engine). A BA 320 AGGREGATE market-risk / RWA / capital cell whose
+#     value folds from the live engine and carries NO required PRODUCT-ID
+#     attribute is `sourced` (the source genuinely exists; values fold honestly
+#     from live FX positions / to 0 until other positions land). Specifically the
+#     FX-risk-class cells have live FX substrate.
+#   - All other BA 320 cells (and every BA 325 / 330 / 340 / 350 cell) need real
+#     trading-book / treasury / banking-book / derivative positions that the bank-
+#     in-formation does not book pre-licence-day → `licence-day-data`.
+#   - A cell carrying a required PRODUCT-ID attribute on an unapproved future
+#     product MUST be licence-day-data (the recon rejects a sourced cell whose
+#     required prd: ref is not an approved product) — this function enforces that
+#     coupling so the generator cannot emit a contradiction.
+# ---------------------------------------------------------------------------
+def market_cell_status(form: str, col_label: str, row_label: str, prod_attrs):
+    text = f"{col_label or ''} {row_label or ''}".lower()
+    has_required_product_ref = any(required for _pid, _attr, required in prod_attrs)
+    if has_required_product_ref:
+        return "licence-day-data"
+    # Hash-total / control cells are form-integrity controls fed by the fold, not
+    # by live FX positions — they do not claim FX substrate (a hashtotal whose
+    # label merely contains "FXGold" must not be mis-marked sourced).
+    if "hashtotal" in text or "hash total" in text:
+        return "licence-day-data"
+    # BA 320 live-substrate predicate: the FX risk class is the live trading book
+    # today (the FX adapter reads real FX positions into the market-risk fold), so
+    # a BA 320 FX-and-gold aggregate money cell whose row/column explicitly names
+    # the foreign-exchange risk class — and that does NOT carry a required future-
+    # product attribute (those are forced licence-day above) — is sourced. Other
+    # BA 320 cells need a real trading book at scale → licence-day.
+    if form == "BA320" and (
+        "foreign exchange" in text or "foreign-exchange" in text
+    ):
+        return "sourced"
+    return "licence-day-data"
+
+
 # ---------------------------------------------------------------------------
 # xlsx Elements-sheet extraction — IDENTICAL column layout across all BA forms
 # (verified BA100/BA110/BA120/BA600/BA610). Reused from gen-ba100-contract.py.
@@ -1139,6 +1675,37 @@ def currency_dimension_for(form: str, col_label: str, row_label: str, form_cfg) 
                 "currency analysis",
                 "denominated in",
                 "denominated",
+            )
+        ):
+            return "by-currency"
+        return "functional"
+    # Market family (BA 320 / 325 / 330 / 340 / 350): the market-risk returns are
+    # intrinsically MULTI-CURRENCY by risk class — the FX risk class reports per-
+    # currency, and BA 325's selected-risk summary carries explicit per-currency
+    # columns (USD / Euro / GBP / CHF / JPY / Other). A cell whose row/column names
+    # a currency axis (a named currency, a foreign-currency / per-currency / RSA-vs-
+    # foreign-operations axis) is reported by-currency; the default form-level
+    # market cell is functional (ZAR reporting currency by config, NEVER a literal).
+    # P5: NO hard-coded currency — the dimension carries the axis, not "ZAR".
+    if form in ("BA320", "BA325", "BA330", "BA340", "BA350"):
+        if any(
+            k in text
+            for k in (
+                "foreign currency",
+                "foreign-currency",
+                "by currency",
+                "per currency",
+                "currency analysis",
+                "denominated",
+                "positions held in foreign operations",
+                "position in rsa",
+                # BA 325 explicit per-currency selected-risk columns.
+                "usd",
+                "euro",
+                " gbp",
+                "gbp ",
+                "chf",
+                "jpy",
             )
         ):
             return "by-currency"
@@ -1357,6 +1924,31 @@ def build_cell(form: str, form_cfg, e):
                 }
             )
 
+    # --- MARKET product-attribute requirements (Phase C batch 4) ---
+    # A market cell that genuinely keys off a trading/banking-book product-static
+    # attribute carries a `product-attribute` requirement `ref: <productId>#<attr>`
+    # naming WHICH future market product (trading-book / IRRBB / equity-banking-
+    # book) owes it. `required:true` ONLY where the cell cannot populate without it
+    # (the row that DEFINES the risk-class / rate-type / holding-class / derivative-
+    # type dimension); else `required:false` on the sliced aggregate. The bulk of
+    # market cells carry NONE (per-trade / position-derived). See
+    # market_product_attributes().
+    mkt_prod_attrs = []
+    if form_cfg.get("market_family"):
+        mkt_prod_attrs = market_product_attributes(form, collabel, rowlabel, xsd_type)
+        for product_id, attr, required in mkt_prod_attrs:
+            data_reqs.append(
+                {
+                    "sourceKind": "product-attribute",
+                    "ref": f"{product_id}#{attr}",
+                    "description": (
+                        f"A market-risk-relevant product feeding {label} must carry its "
+                        f"{attr}: {MARKET_ATTRS[attr]}"
+                    ),
+                    "required": required,
+                }
+            )
+
     # --- currency dimension (P5) ---
     currency_dim = None
     if value_type == "money":
@@ -1377,6 +1969,16 @@ def build_cell(form: str, form_cfg, e):
         # on an unapproved future product is forced licence-day (the recon rejects
         # a sourced cell whose required prd: ref is not approved).
         status = liquidity_cell_status(form, collabel, rowlabel, liq_prod_attrs)
+        status_reason = form_cfg["status_note"] if status != "sourced" else None
+    elif form_cfg.get("market_family"):
+        # Per-cell sourced-vs-licence-day split: BA 320 FX-risk-class aggregate
+        # cells have live substrate (the FX adapter + market-risk fold + VaR engine)
+        # → sourced; all other market cells need real trading-book / treasury /
+        # banking-book / derivative positions (licence-day). A cell carrying a
+        # required PRODUCT-ID attr on an unapproved future market product is forced
+        # licence-day (the recon rejects a sourced cell whose required prd: ref is
+        # not approved).
+        status = market_cell_status(form, collabel, rowlabel, mkt_prod_attrs)
         status_reason = form_cfg["status_note"] if status != "sourced" else None
     elif form_cfg["licence_day"]:
         status = "licence-day-data"
@@ -1502,9 +2104,12 @@ if __name__ == "__main__":
     elif len(sys.argv) == 2 and sys.argv[1] == "--liquidity":
         for f in ("BA300", "BA310"):
             generate(f)
+    elif len(sys.argv) == 2 and sys.argv[1] == "--market":
+        for f in ("BA320", "BA325", "BA330", "BA340", "BA350"):
+            generate(f)
     else:
         raise SystemExit(
             "usage: gen-return-contract.py "
-            "<BA110|BA120|BA200|BA210|BA220|BA300|BA310|BA600|BA610|"
-            "--all|--credit|--liquidity>"
+            "<BA110|BA120|BA200|BA210|BA220|BA300|BA310|BA320|BA325|BA330|BA340|BA350|"
+            "BA600|BA610|--all|--credit|--liquidity|--market>"
         )
