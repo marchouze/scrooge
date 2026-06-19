@@ -549,6 +549,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:product-approval-attestation-integrity",
     "recon:model-risk-gap-inventory",
     "recon:calc-model-binding",
+    "recon:fx-model-validation-of-record",
     "recon:seed-manifest-parity",
     "recon:financial-constants-coverage",
     "recon:basel-constants-coverage",
