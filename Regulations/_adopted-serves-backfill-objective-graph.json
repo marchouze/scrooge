@@ -5083,6 +5083,565 @@
       "metadata": {
         "derivationRule": "pa-directive"
       }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-067-SS",
+      "fromId": "OBL-ORG-PR-067",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg1",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-068-SS",
+      "fromId": "OBL-ORG-PR-068",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg2",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-069-SS",
+      "fromId": "OBL-ORG-PR-069",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg3",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-070-SS",
+      "fromId": "OBL-ORG-PR-070",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg3",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-071-SS",
+      "fromId": "OBL-ORG-PR-071",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg4",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-072-SS",
+      "fromId": "OBL-ORG-PR-072",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg4",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-073-SS",
+      "fromId": "OBL-ORG-PR-073",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg5",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-074-SS",
+      "fromId": "OBL-ORG-PR-074",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg7",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-075-SS",
+      "fromId": "OBL-ORG-PR-075",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg18",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-076-SS",
+      "fromId": "OBL-ORG-PR-076",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg23",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-077-SS",
+      "fromId": "OBL-ORG-PR-077",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg24",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-078-SS",
+      "fromId": "OBL-ORG-PR-078",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg24",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-079-SS",
+      "fromId": "OBL-ORG-PR-079",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg24",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-080-SS",
+      "fromId": "OBL-ORG-PR-080",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg26",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-081-SS",
+      "fromId": "OBL-ORG-PR-081",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg26",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-082-SS",
+      "fromId": "OBL-ORG-PR-082",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg26",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-083-SS",
+      "fromId": "OBL-ORG-PR-083",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg27",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-084-SS",
+      "fromId": "OBL-ORG-PR-084",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg27",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-085-SS",
+      "fromId": "OBL-ORG-PR-085",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg28",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-086-SS",
+      "fromId": "OBL-ORG-PR-086",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg29",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-087-SS",
+      "fromId": "OBL-ORG-PR-087",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg29",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-088-SS",
+      "fromId": "OBL-ORG-PR-088",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg30",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-089-SS",
+      "fromId": "OBL-ORG-PR-089",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg32",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-090-SS",
+      "fromId": "OBL-ORG-PR-090",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg32",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-091-SS",
+      "fromId": "OBL-ORG-PR-091",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg33",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-094-SS",
+      "fromId": "OBL-ORG-PR-094",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg38",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-095-SS",
+      "fromId": "OBL-ORG-PR-095",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg38",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-096-SS",
+      "fromId": "OBL-ORG-PR-096",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg38",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-097-SS",
+      "fromId": "OBL-ORG-PR-097",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg38",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-098-SS",
+      "fromId": "OBL-ORG-PR-098",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg38",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-099-SS",
+      "fromId": "OBL-ORG-PR-099",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg39",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-100-SS",
+      "fromId": "OBL-ORG-PR-100",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg39",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-101-SS",
+      "fromId": "OBL-ORG-PR-101",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg39",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-102-SS",
+      "fromId": "OBL-ORG-PR-102",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg40",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-103-SS",
+      "fromId": "OBL-ORG-PR-103",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg41",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-104-SS",
+      "fromId": "OBL-ORG-PR-104",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg43",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-105-SS",
+      "fromId": "OBL-ORG-PR-105",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg43",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-106-SS",
+      "fromId": "OBL-ORG-PR-106",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg44",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-107-SS",
+      "fromId": "OBL-ORG-PR-107",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg46",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-108-SS",
+      "fromId": "OBL-ORG-PR-108",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg48",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-109-SS",
+      "fromId": "OBL-ORG-PR-109",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg49",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-110-SS",
+      "fromId": "OBL-ORG-PR-110",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg49",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
+    },
+    {
+      "id": "OBJ-SERVES-BF-ORG-PR-111-SS",
+      "fromId": "OBL-ORG-PR-111",
+      "toId": "OBJ-SARB-PA-SAFETY-SOUNDNESS",
+      "edgeType": "SERVES",
+      "extractionMethod": "rule-based",
+      "confidenceScore": 0.85,
+      "extractedAt": "2026-06-10T00:00:00Z",
+      "sourceProvision": "urn:reg:za:rrb:reg55",
+      "metadata": {
+        "derivationRule": "pa-banks-act"
+      }
     }
   ],
   "residuals": [

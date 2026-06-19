@@ -55,7 +55,9 @@ const toAdd = reviewed
   .filter((r) => !DROP_IDS.has(r.id))
   .map((r) => ({ ...r, status: r.status === "PROPOSED" ? "IN_FORCE" : r.status }));
 
-console.log(`reviewed: ${reviewed.length} rows; dropping ${DROP_IDS.size} (reg35/reg36); merging ${toAdd.length}`);
+console.log(
+  `reviewed: ${reviewed.length} rows; dropping ${DROP_IDS.size} (reg35/reg36); merging ${toAdd.length}`,
+);
 
 // Idempotency / collision guard.
 const seedIds = new Set(seed.map((r) => r.id));
@@ -112,7 +114,10 @@ const HEADER =
 const DIVIDER = `|${"---|".repeat(17)}`;
 
 function cell(v: unknown): string {
-  return String(v ?? "").replace(/\|/g, "\\|").replace(/\r?\n/g, " ").trim();
+  return String(v ?? "")
+    .replace(/\|/g, "\\|")
+    .replace(/\r?\n/g, " ")
+    .trim();
 }
 function mdRow(r: Row): string {
   return `| ${COLS.map((c) => cell(r[c])).join(" | ")} |`;
@@ -145,6 +150,8 @@ for (const [section, rows] of bySection) {
 block.push("");
 
 const registerMd = readFileSync(REGISTER, "utf8").replace(/\s*$/, "\n");
-writeFileSync(REGISTER, registerMd + block.join("\n") + "\n");
-console.log(`register: appended ${toAdd.length} rows across ${bySection.size} section(s) to ${REGISTER}`);
+writeFileSync(REGISTER, `${registerMd}${block.join("\n")}\n`);
+console.log(
+  `register: appended ${toAdd.length} rows across ${bySection.size} section(s) to ${REGISTER}`,
+);
 console.log("Done.");
