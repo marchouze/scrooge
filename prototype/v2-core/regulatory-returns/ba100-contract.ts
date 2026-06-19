@@ -14,7 +14,7 @@
 //
 // Authority: D-BA-RETURN-DATA-CONTRACT (CEO-approved 2026-06-19), Phase B.
 // Author: Bea (Accounting and financial reporting engineer, engineering —
-//   reports to Camille (Chief Financial Officer, finance)).
+//   reports to Camille (Chief Financial Officer)).
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";

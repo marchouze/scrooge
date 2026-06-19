@@ -39,7 +39,7 @@
 //   delegation), Phase B. Citations: Engineering-Charter.md (#3, #5, #7);
 //   ORG-PR-RETURNS-002; D5/2025 §2.1.3.
 // Author: Bea (Accounting and financial reporting engineer, engineering —
-//   reports to Camille (Chief Financial Officer, finance)).
+//   reports to Camille (Chief Financial Officer)).
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";

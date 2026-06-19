@@ -5,7 +5,7 @@ procedureId: PROC-FIN-BA-100
 title: BA 100 (Balance Sheet) return — creation, validation, attestation and submission
 author: Bea (Accounting & financial reporting engineer, engineering)
 date: 2026-06-19
-owner: Camille (Chief Financial Officer, finance) · Bea (Accounting & financial reporting engineer, engineering)
+owner: Camille (Chief Financial Officer) · Bea (Accounting & financial reporting engineer, engineering)
 status: POPULATED
 delta-on: PROC-FIN-BA-01 (Procedures/by-policy/ba-return-generation.md)
 policy-cited: Policies/regulatory-reporting-policy-v1.md
@@ -18,7 +18,7 @@ system-capability: prototype/v2-core/regulatory-returns/cell-contract.ts · prot
 
 **Procedure ID:** PROC-FIN-BA-100
 **Delta on:** [`PROC-FIN-BA-01` — BA Return Generation](ba-return-generation.md) (the generic flow). **This procedure does NOT restate** the generic preparer→four-eyes→attest→`BAReturnFiled`→restatement flow; it specifies only what is BA-100-specific. Read PROC-FIN-BA-01 §§3–9 first.
-**Owner:** Camille (Chief Financial Officer, finance) · Bea (Accounting & financial reporting engineer, engineering — reports to Camille)
+**Owner:** Camille (Chief Financial Officer) · Bea (Accounting & financial reporting engineer, engineering — reports to Camille)
 **Cadence:** Monthly (per PROC-FIN-BA-01 §4; triggered by `MonthEndCloseCompleted { period }`).
 **Status:** POPULATED · **Authority:** `D-BA-RETURN-DATA-CONTRACT` (CEO-approved 2026-06-19, Phase B).
 

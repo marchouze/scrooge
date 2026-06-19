@@ -46,7 +46,7 @@
 //   Directive D5/2025 §2.1.3; Regulations relating to Banks; the canonical
 //   register `Regulations/SARB-PA/ba-returns/_canonical-register.md`.
 // Author: Bea (Accounting and financial reporting engineer, engineering —
-//   reports to Camille (Chief Financial Officer, finance)).
+//   reports to Camille (Chief Financial Officer)).
 
 import { z } from "zod";
 
