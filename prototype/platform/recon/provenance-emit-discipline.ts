@@ -158,9 +158,97 @@ export const EXPLICIT_PROVENANCE_ALLOWLIST: Readonly<Record<string, string>> = {
 // Detection
 // ---------------------------------------------------------------------------
 
-/** Strip // line comments and /* *\/ block comments (good-enough lexer). */
+/**
+ * Strip `//` line comments and `/* *\/` block comments with a proper
+ * single-pass lexer that tracks string-literal and comment state.
+ *
+ * A naive regex pass (block-comment regex over the whole source first) treats
+ * any `/*` byte sequence — even inside a string literal or inside a `//` line
+ * comment, e.g. a URL path like `/api/v2/markets/fx/*` — as opening a block
+ * comment, then closes it at the next `*\/`, silently deleting the real code in
+ * between. That false-deleted a `buildPhaseFixtureTag(` construction site and
+ * produced a phantom "stale allowlist entry" failure. Tracking state means
+ * `/*` is only an opener when we are in plain code, not inside a string or an
+ * existing comment.
+ *
+ * Comment bytes are dropped (newlines inside line comments are preserved, as
+ * the original regex pass did) so downstream regex scanning is unaffected;
+ * string literals are kept verbatim so a tag call written inside a template
+ * string is still detectable.
+ */
 export function stripComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+  let out = "";
+  let i = 0;
+  const n = source.length;
+  // State: which string-quote we are inside (or null), and whether we are in a
+  // line/block comment.
+  let quote: '"' | "'" | "`" | null = null;
+  let inLineComment = false;
+  let inBlockComment = false;
+
+  while (i < n) {
+    const ch = source[i];
+    const next = i + 1 < n ? source[i + 1] : "";
+
+    if (inLineComment) {
+      // Drop comment bytes; keep the terminating newline.
+      if (ch === "\n") {
+        inLineComment = false;
+        out += ch;
+      }
+      i += 1;
+      continue;
+    }
+
+    if (inBlockComment) {
+      if (ch === "*" && next === "/") {
+        inBlockComment = false;
+        i += 2;
+      } else {
+        i += 1;
+      }
+      continue;
+    }
+
+    if (quote !== null) {
+      out += ch;
+      if (ch === "\\") {
+        // Escape: copy the escaped char verbatim (handles \" \' \` \\ etc.).
+        if (i + 1 < n) {
+          out += source[i + 1];
+          i += 2;
+        } else {
+          i += 1;
+        }
+        continue;
+      }
+      if (ch === quote) quote = null;
+      i += 1;
+      continue;
+    }
+
+    // Plain code.
+    if (ch === "/" && next === "/") {
+      inLineComment = true;
+      i += 2;
+      continue;
+    }
+    if (ch === "/" && next === "*") {
+      inBlockComment = true;
+      i += 2;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === "`") {
+      quote = ch;
+      out += ch;
+      i += 1;
+      continue;
+    }
+    out += ch;
+    i += 1;
+  }
+
+  return out;
 }
 
 interface PatternSpec {
