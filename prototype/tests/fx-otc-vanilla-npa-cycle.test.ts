@@ -6,16 +6,23 @@
 //     attestations, due-diligence-completed, terminal gate event);
 //   - every attestation payload parses the write-time ProductDimensionAttested
 //     schema (deferred-gap well-formedness gate);
-//   - the gate RULE is RUN, not pre-decided: with the honest Amendment-A split
-//     (4 implementation-attested — each citing a green, non-vacuous completeness
-//     recon — + 11 design-attested-with-tracked-gap dimensions) it yields an
+//   - the gate RULE is RUN, not pre-decided: with the honest FU2 split
+//     (6 implementation-attested — each citing a green, non-vacuous completeness
+//     recon — + 9 design-attested-with-tracked-gap dimensions) it yields an
 //     INTERNAL-TEST ProductApproved (NOT a production approval);
 //   - every design-attested dimension carries ≥1 well-formed deferred gap;
+//   - model-risk + data-quality are FU2-promoted to implementation-attested
+//     (PR #1453 recon:fx-model-validation-of-record + PR #1458
+//     recon:fx-data-feed-lineage), each citing its green recon, model-risk
+//     keeping its forward gap + data-quality keeping the settlement-lineage gap;
+//   - the FU2 stale-open sweep dropped the closed gaps fx-sa-ccr-daily-cadence
+//     (#1258) and fx-model-validation-of-record-not-in-gated-store (#1453);
 //   - accounting/capital/tax cite a resolving treatment-module@version head;
 //   - idempotent (a second run emits nothing).
 //
-// Authority: D-FX-NPA-RESTART (CEO-approved 2026-06-17); D-NEW-PRODUCT-APPROVAL-
-//   POLICY-V2; D-NPA-GATE-POLICY-REDESIGN.
+// Authority: D-FX-OTC-CLOSURE-BACKLOG (CEO-approved 2026-06-19); D-FX-NPA-RESTART
+//   (CEO-approved 2026-06-17); D-NEW-PRODUCT-APPROVAL-POLICY-V2;
+//   D-NPA-GATE-POLICY-REDESIGN.
 // Author: Saskia (Head of Global Markets, governance).
 
 import { describe, expect, it } from "bun:test";
@@ -74,11 +81,43 @@ describe("clean FX OTC vanilla NPA cycle", () => {
     expect(FX_NPA_DIMENSIONS.some((d) => d.result === "failed")).toBe(false);
   });
 
-  it("preserves the honest 4 impl-attested / 11 design-attested split (no result flipped by the inventory reconciliation)", () => {
+  it("holds the honest FU2 6 impl-attested / 9 design-attested split (model-risk + data-quality promoted on green recons)", () => {
     const impl = FX_NPA_DIMENSIONS.filter((d) => d.result === "implementation-attested");
     const design = FX_NPA_DIMENSIONS.filter((d) => d.result === "design-attested");
-    expect(impl.length).toBe(4);
-    expect(design.length).toBe(11);
+    expect(impl.length).toBe(6);
+    expect(design.length).toBe(9);
+  });
+
+  it("FU2: model-risk + data-quality are implementation-attested, each citing its green completeness recon", () => {
+    const modelRisk = FX_NPA_DIMENSIONS.find((d) => d.dimension === "model-risk");
+    expect(modelRisk?.result).toBe("implementation-attested");
+    expect(modelRisk?.citationChain).toContain("recon:fx-model-validation-of-record");
+
+    const dataQuality = FX_NPA_DIMENSIONS.find((d) => d.dimension === "data-quality");
+    expect(dataQuality?.result).toBe("implementation-attested");
+    expect(dataQuality?.citationChain).toContain("recon:fx-data-feed-lineage");
+  });
+
+  it("FU2: model-risk keeps its forward revalidation gap and data-quality keeps the settlement-lineage residual (impl-attested may carry a forward/licence-day gap)", () => {
+    const modelRisk = FX_NPA_DIMENSIONS.find((d) => d.dimension === "model-risk");
+    const mrGaps = modelRisk?.deferredGaps.map((g) => g.gapId) ?? [];
+    expect(mrGaps).toContain("fx-forward-model-revalidation-live-curve");
+
+    const dataQuality = FX_NPA_DIMENSIONS.find((d) => d.dimension === "data-quality");
+    const dqGaps = dataQuality?.deferredGaps.map((g) => g.gapId) ?? [];
+    expect(dqGaps).toContain("fx-settlement-confirmation-lineage");
+  });
+
+  it("FU2 stale-open sweep: the closed gaps are dropped (fx-sa-ccr-daily-cadence #1258, fx-model-validation-of-record-not-in-gated-store #1453)", () => {
+    const allGapIds = FX_NPA_DIMENSIONS.flatMap((d) => d.deferredGaps.map((g) => g.gapId));
+    expect(allGapIds).not.toContain("fx-sa-ccr-daily-cadence");
+    expect(allGapIds).not.toContain("fx-model-validation-of-record-not-in-gated-store");
+    // credit-risk retains its remaining gap so it stays design-attested-with-a-gap.
+    const creditRisk = FX_NPA_DIMENSIONS.find((d) => d.dimension === "credit-risk");
+    expect(creditRisk?.result).toBe("design-attested");
+    expect(creditRisk?.deferredGaps.map((g) => g.gapId)).toContain(
+      "fx-counterparty-basel-class-values",
+    );
   });
 
   it("D-FX-OTC-CLOSURE-BACKLOG inventory reconciliation: the 7 previously-untracked gaps are now well-formed and on the correct dimension", () => {
@@ -122,9 +161,9 @@ describe("clean FX OTC vanilla NPA cycle", () => {
     }
   });
 
-  it("the full reconciled inventory is 38 well-formed deferred gaps", () => {
+  it("the full reconciled inventory is 36 well-formed deferred gaps (38 − 2 closed gaps dropped in FU2)", () => {
     const total = FX_NPA_DIMENSIONS.reduce((n, d) => n + d.deferredGaps.length, 0);
-    expect(total).toBe(38);
+    expect(total).toBe(36);
   });
 
   it("every cycle event cites D-FX-OTC-CLOSURE-BACKLOG (the authorising decision is cited, not recorded, by the cycle)", () => {
@@ -163,7 +202,7 @@ describe("clean FX OTC vanilla NPA cycle", () => {
     const designAttestedCount = FX_NPA_DIMENSIONS.filter(
       (d) => d.result === "design-attested",
     ).length;
-    expect(designAttestedCount).toBe(11);
+    expect(designAttestedCount).toBe(9);
     expect(result.openConditions.length).toBe(designAttestedCount);
 
     // Exactly one ProductApproved, and it is INTERNAL-TEST scope (not production).
