@@ -103,14 +103,17 @@ function productAttrRefs(form: ReturnForm): string[] {
   return refs;
 }
 
-describe("statistical + supplementary registry membership (29-return registry)", () => {
+describe("statistical + supplementary registry membership (30-return registry — BA 900 final)", () => {
   it("registers BA 920 / BA 930 / BA 94x / CVA / FRTB", () => {
     const all = allReturnContracts().map((c) => c.returnForm);
     for (const f of STATSUPP_FORMS) expect(all).toContain(f);
   });
 
-  it("the registry now spans exactly 29 authored returns", () => {
-    expect(allReturnContracts().length).toBe(29);
+  it("the registry now spans exactly 30 authored returns (BA 900 = the FINAL return)", () => {
+    // Phase C batch 9 added BA 900 (economic statistics) — the LAST return,
+    // completing the full SARB BA-return suite. This count is a ratchet: it
+    // hardens only (it never shrinks). See ba-900-economic-statistics-contract.test.ts.
+    expect(allReturnContracts().length).toBe(30);
   });
 });
 

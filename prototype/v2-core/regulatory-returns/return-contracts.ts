@@ -329,6 +329,30 @@ export const RETURN_CONTRACT_REGISTRY: readonly ReturnContractRegistryEntry[] = 
     xsdName: "FRTB_v20251031.xsd",
     schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/FRTB.zip",
   },
+  // Phase C batch 9 — the FINAL return, completing the full SARB BA-return suite:
+  // BA 900 ECONOMIC STATISTICS (the SARB statistical Balance Sheet of Deposit-
+  // Taking Institutions per institutional and maturity breakdown). The LARGEST
+  // workbook in the suite (XSD 6.2 MB, xlsx 2.9 MB; 10,752 typed leaf cells) and a
+  // MULTI-SUB-FORM return (BA900_1..7, plus trailing _8 / _9 control sub-forms in
+  // the Elements list). Every XSD leaf code is DISTINCT (no code is reused across
+  // sub-forms), so the generator's multi-sub-form dedup is a no-op and the recon's
+  // XSD oracle yields the same 10,752-leaf universe the xlsx Elements sheet does
+  // (they agree by construction). The sub-form identity is folded into each cell's
+  // label / regulatoryDefinition (the framework cellRef has no sub-form axis —
+  // mirroring the BA 94x handling). BA 900 is an AGGREGATE / entity-level sectoral
+  // balance-sheet statistical return reported by institutional sector + maturity,
+  // so it carries ZERO product-attribute requirements (like BA 930 / BA 94x); no
+  // product — and in particular not the live FX product — is gated on a BA 900
+  // cell. The whole form is licence-day-data (no real statistical balance sheet
+  // pre-licence-day). Obligation: ORG-PR-RETURNS-024 (the post-#1451-corrected
+  // BA 900 = Economic statistics row; §2.1.25 / Annexure 24A/24B) — already
+  // adopted, so NO new obligation is authored.
+  {
+    form: "BA900",
+    contractJsonPath: jsonPath("ba900-contract.json"),
+    xsdName: "BA900.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA900.zip",
+  },
 ];
 
 const cache = new Map<ReturnForm, ReturnContract>();
