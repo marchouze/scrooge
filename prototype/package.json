@@ -104,6 +104,7 @@
     "recon:npa-coverage": "bun run platform/recon/npa-coverage.ts",
     "recon:npa-deferred-gap-tracking": "bun run platform/recon/npa-deferred-gap-tracking.ts",
     "recon:npa-post-approval-finding-review": "bun run platform/recon/npa-post-approval-finding-review.ts",
+    "recon:npa-return-data-obligation-integrity": "bun run platform/recon/npa-return-data-obligation-integrity.ts",
     "recon:dsar-sla": "bun run platform/recon/dsar-sla.ts",
     "recon:counterparty-basel-classification-coverage": "bun run platform/recon/counterparty-basel-classification-coverage.ts",
     "recon:calc-no-silent-zero": "bun run platform/recon/calc-no-silent-zero.ts",
