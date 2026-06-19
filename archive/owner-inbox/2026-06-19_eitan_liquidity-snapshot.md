@@ -1,7 +1,7 @@
 ---
 agent: Eitan
 trigger: liquidity-snapshot
-asOf: 2026-06-19T06:53:56.038Z
+asOf: 2026-06-19T07:13:37.396Z
 decision-required: false
 ---
 
@@ -92,7 +92,7 @@ _Build-only context: no live treasury position; no real SAMOS account; no live H
 
 ## Eitan's narrative
 
-_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CcCBKhK5PCp7fYxVHRNQT"})._
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CcCCqvL7LR5SnvxG6BkTu"})._
 
 ## Provenance
 
