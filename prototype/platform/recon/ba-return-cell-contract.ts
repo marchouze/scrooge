@@ -95,6 +95,16 @@ const KNOWN_PROJECTIONS = new Set([
   "ba330-irrbb-fold",
   "ba340-equity-risk-banking-book-fold",
   "ba350-derivatives-instruments-fold",
+  // Phase C batch 5 — capital-family report folds (one per form). BA 700's fold
+  // is the live ba-700-capital.ts capital projection (generateBa100Capital —
+  // CET1/AT1/T2 tiers, RWA decomposition, ratios) + the ba-700-leverage-ratio.ts
+  // leverage projection; the regulatory minimum-required ratios + buffer add-ons
+  // + the specified minimum leverage ratio are computed from BCBS / Reg-38
+  // constants (sourced), so the fold is a known projection. BA 701 folds from the
+  // regulatory-vs-economic-capital reconciliation projection (wholly licence-day
+  // — the ICAAP economic-capital model output does not exist pre-licence-day).
+  "ba700-capital-adequacy-fold",
+  "ba701-regulatory-vs-economic-capital-fold",
 ]);
 const KNOWN_REFERENCE_DATA_PREFIXES = ["legal-entity-tree", "party-register", "return-form-meta"];
 
