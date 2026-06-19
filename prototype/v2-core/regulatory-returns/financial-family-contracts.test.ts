@@ -60,9 +60,15 @@ const EXPECTED: ExpectedForm[] = [
 ];
 
 describe("return-contract registry", () => {
-  it("registers BA 100 plus the four financial-family forms", () => {
+  it("registers BA 100 + the financial-family forms (and is extended by later batches)", () => {
     const forms = RETURN_CONTRACT_REGISTRY.map((e) => e.form);
-    expect(forms).toEqual(["BA100", "BA110", "BA120", "BA600", "BA610"]);
+    // BA 100 (pilot) + the financial family (Phase C batch 1) must all be present
+    // and in this order at the head of the registry; later batches (e.g. the
+    // credit family BA 200/210/220, Phase C batch 2) append after them.
+    expect(forms.slice(0, 5)).toEqual(["BA100", "BA110", "BA120", "BA600", "BA610"]);
+    for (const f of ["BA100", "BA110", "BA120", "BA600", "BA610"] as const) {
+      expect(forms).toContain(f);
+    }
   });
 
   it("allReturnContracts() loads + validates every registered form", () => {
