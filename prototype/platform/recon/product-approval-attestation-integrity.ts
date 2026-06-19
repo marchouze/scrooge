@@ -58,7 +58,13 @@ const REQUIRED_ATTESTATIONS = 15; // 14 original + data-quality (D-NPA-POST-APPR
 // with at least one deferredGaps entry is allowed (approved-with-conditions).
 const NPA_GATE_POLICY_REDESIGN = "D-NPA-GATE-POLICY-REDESIGN";
 
-interface MinimalEvent {
+/**
+ * The minimal shape of an event the supersession resolver needs. Exported so
+ * the return-data NPA gate (`recon:npa-return-data-obligation-integrity`) keys
+ * off the IDENTICAL currently-effective-product resolution as this gate, rather
+ * than re-deriving it (D-BA-RETURN-DATA-CONTRACT).
+ */
+export interface MinimalEvent {
   readonly event_id: string;
   readonly type: string;
   readonly as_of: string;
@@ -109,8 +115,12 @@ function safeString(v: unknown): string | null {
  * effective approval to judge.
  *
  * Authority: D-LEGACY-PRODUCT-APPROVAL-SUPERSESSION (CEO-approved 2026-06-18).
+ *
+ * Exported (D-BA-RETURN-DATA-CONTRACT): the return-data NPA gate REUSES this
+ * exact resolver so it enforces only on currently-effective products, never on
+ * dead (withdrawn/retired/superseded) approvals.
  */
-function resolveEffectiveApprovals(
+export function resolveEffectiveApprovals(
   approvedEvents: MinimalEvent[],
   supersessionEvents: MinimalEvent[],
 ): {

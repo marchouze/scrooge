@@ -573,6 +573,14 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // ProductPostApprovalFinding must have a ProductDimensionRetrospectiveReview
     // within SLA. BLOCKING. No licence-day deferral.
     "recon:npa-post-approval-finding-review",
+    // D-BA-RETURN-DATA-CONTRACT (CEO-approved 2026-06-19): binds the L3 return-
+    // cell data contract into the NPA gate. Every CURRENTLY-EFFECTIVE product
+    // (resolveEffectiveApprovals — not dead approvals) must capture, or track as
+    // a deferred gap on its accounting dimension, every PRODUCT-SPECIFIC required
+    // product-attribute the inverse index says it owes. BLOCKING. Scope today is
+    // small (BA 100 only, mostly GL-/projection-derived) and auto-tightens as
+    // Phase C lands each return's product-attribute requirements.
+    "recon:npa-return-data-obligation-integrity",
     "recon:dsar-sla",
     "recon:counterparty-basel-classification-coverage",
     "recon:calc-no-silent-zero",
