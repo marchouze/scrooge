@@ -140,15 +140,17 @@ function readFxRateTicks(dbPath: string): RateTickRow[] {
 
 interface RunInputs {
   rateTicks: RateTickRow[];
-  settlementEvents: Array<{ eventId: string; payload: Record<string, unknown>; provenance: unknown }>;
+  settlementEvents: Array<{
+    eventId: string;
+    payload: Record<string, unknown>;
+    provenance: unknown;
+  }>;
 }
 
 function readInputs(opts: RunOpts): RunInputs {
   const repoRoot = findRepoRoot(import.meta.dir);
   const eventDbPath =
-    opts.eventDbPath ??
-    process.env.BANK_EVENT_DB ??
-    resolve(repoRoot, "prototype/.local/event.db");
+    opts.eventDbPath ?? process.env.BANK_EVENT_DB ?? resolve(repoRoot, "prototype/.local/event.db");
   const marketDataDbPath =
     opts.marketDataDbPath ??
     process.env.BANK_MARKET_DATA_DB ??
@@ -251,11 +253,13 @@ export function run(opts: RunOpts = {}): ReconResult {
     }
 
     const tag = ev.provenance as Record<string, unknown> | undefined | null;
-    const sourceLineage = tag && typeof tag.sourceLineage === "string" ? tag.sourceLineage.trim() : "";
+    const sourceLineage =
+      tag && typeof tag.sourceLineage === "string" ? tag.sourceLineage.trim() : "";
     if (sourceLineage.length === 0) {
       violations.push({
         subject: `settlement:${ev.eventId}`,
-        message: `FilFxSettlementConfirmed event carries an empty envelope provenance.sourceLineage — the originating-system axis is unverifiable. Every event must trace to its originating system (D-DATA-PROVENANCE-SUBSTRATE).`,
+        message:
+          "FilFxSettlementConfirmed event carries an empty envelope provenance.sourceLineage — the originating-system axis is unverifiable. Every event must trace to its originating system (D-DATA-PROVENANCE-SUBSTRATE).",
         severity: "fail",
       });
     }
