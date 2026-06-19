@@ -87,6 +87,18 @@ export const V2_RETENTION_CONSERVATIVE_DEFAULT: V2RetentionMetadata = {
   citationRef: "ORG-CS3-009",
 };
 
+/**
+ * JSE-trade record retention — 7-year floor per the JSE Integrated Risk
+ * Controls record-retention obligation (ORG-JSE-IRC-01); full tier-down. The
+ * V2 mirror of the v1 `RETENTION_JSE_TRADE_7Y`, for V2-native trading /
+ * pre-trade gateway records that carry the same 7-year market-record floor.
+ */
+export const V2_RETENTION_JSE_TRADE_7Y: V2RetentionMetadata = {
+  minimumYears: 7,
+  archivalTier: "hot-cool-archive",
+  citationRef: "ORG-JSE-IRC-01",
+};
+
 // ---------------------------------------------------------------------------
 // Event-type metadata
 // ---------------------------------------------------------------------------

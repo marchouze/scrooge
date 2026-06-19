@@ -196,10 +196,12 @@ import {
   zaroniaRatePublishedPayloadSchema,
   zaroniaTermRatePublishedPayloadSchema,
 } from "../reference-data/events";
+import { v2FxOrderRejectedAtGatewayPayloadSchema } from "../fx-gateway/events";
 import {
   type V2EventTypeMetadata,
   type V2TeeCodec,
   type V2TeeDeclaration,
+  V2_RETENTION_JSE_TRADE_7Y,
   V2_RETENTION_RUNTIME_1Y,
   VERBATIM_CODEC,
 } from "./types";
@@ -1303,6 +1305,36 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
   //   D-V2-CORE-MONEY-DECIMAL-NATIVE.
   // ---------------------------------------------------------------------------
   ...MONEY_TAIL_SPECS.map((s) => moneyTail(s.type, s.cls, s.schema, s.codec)),
+
+  // ---------------------------------------------------------------------------
+  // FX FU3 — V2-NATIVE pre-trade gateway-rejection (WS-FX-OTC-CLOSURE).
+  //
+  // A V2/FIL-world representation of a pre-trade gate OUTCOME. The legacy FX
+  // "rejections" panel reads the V1 `OrderRejectedAtGateway` family; a rejected
+  // order never materialises a FIL instance, so the FIL register has no source
+  // for it. This V2-native type is the shape the gateway emits into the V2
+  // control-plane store directly (the gateway's own V2 cutover target). It is
+  // v2-parallel — the V1 gateway aggregator stays the authoritative emitter
+  // today; this is the parallel V2 representation the V2 FX surface reads. NOT
+  // tee-mirrored: it is v2-native, not a mirror of a V1 type (its V1 cousin has
+  // a different shape). On the clean build store there are ZERO such events →
+  // the panel shows an honest empty state. The V1→V2 emitter cutover is the
+  // tracked substrate gap (FU3 PR body). 7-year JSE-trade record retention.
+  //
+  // Authority: D-FX-OTC-CLOSURE-BACKLOG (CEO scope-extension 2026-06-19);
+  //   D-BANK-WIDE-V2-MIGRATION.
+  // ---------------------------------------------------------------------------
+  {
+    type: "V2FxOrderRejectedAtGateway",
+    class: "markets",
+    payloadSchema: asPayloadSchema(v2FxOrderRejectedAtGatewayPayloadSchema),
+    schemaVersion: 1,
+    retention: V2_RETENTION_JSE_TRADE_7Y,
+    migrationStatus: "v2-parallel",
+    source:
+      "brief:scrooge:atlas:fu3-dashboard-retire:2026-06-19 — WS-FX-OTC-CLOSURE FU3 " +
+      "V2-native pre-trade gateway-rejection (D-FX-OTC-CLOSURE-BACKLOG)",
+  },
 ];
 
 // ---------------------------------------------------------------------------
