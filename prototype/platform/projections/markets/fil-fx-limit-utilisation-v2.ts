@@ -109,8 +109,8 @@ const ANCHOR_ENTITY = "LE-ZA-HOZ-BANK";
 
 /**
  * Latest-wins fold of the published RAS schedule, returning the B3 row (if any).
- * The RAS schedule is the canonical limit framework Helena publishes
- * (`RasLimitSchedulePublished`); a later schedule supersedes an earlier one
+ * The RAS schedule is the canonical limit framework the Chief Risk Officer seat
+ * publishes (`RasLimitSchedulePublished`); a later schedule supersedes an earlier one
  * (D-MARKETS-SCHEMA-FOUNDATION Slice 5). We take the B3 row from the most recent
  * schedule by event order (the store replays oldest-first).
  */

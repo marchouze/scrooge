@@ -41,7 +41,15 @@ import { anchorFunctionalCurrency } from "../platform/identity/functional-curren
 import type { MarketDataStore } from "../platform/market-data/store";
 import { computeDailyPnLV2 } from "../platform/product-control/daily-pnl-v2";
 import { computeBA320V2 } from "../platform/projections/ba320-fx-v2";
+import {
+  type FilFxHeadroomB3Row,
+  buildFilFxHeadroomView,
+} from "../platform/projections/markets/fil-fx-limit-utilisation-v2";
 import { getMarketRiskMeasure } from "../platform/projections/markets/market-risk-measure";
+import {
+  type V2FxRejectionRow,
+  readV2FxRejections,
+} from "../platform/projections/markets/v2-fx-gateway-rejections";
 import { type FilInstanceRow, foldFilInstances, liveInstances } from "../v2-core/fil-instances";
 import { seatTitle } from "./agent-title";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
@@ -481,61 +489,104 @@ function buildNpa(store: Pick<EventStore, "replay">, nowIso: string): V2FxNpaVie
 }
 
 // ---------------------------------------------------------------------------
-// 7. Gateway rejections — V1-ONLY (no V2 gateway event family yet).
+// 7. Gateway rejections — V2-fed from the V2-NATIVE gateway-rejection family
+//    in the V2 control-plane store (FU3).
 // ---------------------------------------------------------------------------
 
 export interface V2FxRejectionsView extends PanelMeta {
-  rows: never[];
-  legacyRoute: string;
+  rows: V2FxRejectionRow[];
+  count: number;
+  /**
+   * The tracked substrate gap: no V2 gateway-rejection EMITTER ships yet (the
+   * V1 gateway aggregator still emits `OrderRejectedAtGateway`). Surfaced so the
+   * honest empty state is self-explaining, never silent.
+   */
+  substrateGap: string | null;
 }
 
-function buildRejections(): V2FxRejectionsView {
-  // The pre-trade gateway pipeline (8 checks → OrderApprovedAtGateway /
-  // OrderRejectedAtGateway) is a V1-only event family. There is NO V2-FIL
-  // equivalent: FIL instances are MATERIALISED post-execution, so a rejected
-  // order never produces a FIL instance and cannot be reconstructed from the FIL
-  // register. The V2 surface does NOT read the V1 events here — it states the gap
-  // honestly. The legacy route remains authoritative until a V2 gateway event
-  // family is built (out of scope for B5; Phase C).
-  return {
-    dataState: "v1-only",
-    reason:
-      "Gateway rejections (OrderRejectedAtGateway) are a V1 pre-trade event family " +
-      "with no V2 equivalent: FIL instances materialise post-execution, so a rejected " +
-      "order produces no FIL instance. Source remains GET /api/markets/fx/rejections " +
-      "until a V2 gateway event family is built (Phase C). Authority: D-FX-OTC-CLOSURE-BACKLOG.",
-    rows: [],
-    legacyRoute: "GET /api/markets/fx/rejections",
-  };
+/**
+ * The V2 rejections panel reads the V2-NATIVE `V2FxOrderRejectedAtGateway`
+ * family from the V2 control-plane store (the V2/FIL world) — NOT the V1 store.
+ * A pre-trade rejected order never materialises a FIL instance, so the FIL
+ * register has no source for it; this V2-native gateway family is the V2-world
+ * representation a gate outcome takes. On the clean build-phase store there are
+ * zero such events (no V2 emitter ships yet — the V1→V2 emitter cutover is the
+ * tracked substrate gap), so the panel shows an honest `empty` state. It NEVER
+ * falls back to reading V1.
+ */
+function buildRejections(readV2Rejections: () => V2FxRejectionRow[]): V2FxRejectionsView {
+  const rows = readV2Rejections();
+  const substrateGap =
+    "No V2 gateway-rejection EMITTER ships yet: the V1 pre-trade gateway aggregator " +
+    "still emits `OrderRejectedAtGateway` into the V1 store; the V2-native " +
+    "`V2FxOrderRejectedAtGateway` family (read here) is registered and parallel, but " +
+    "the V1→V2 emitter cutover is a tracked substrate gap. Authority: D-FX-OTC-CLOSURE-BACKLOG.";
+  return rows.length > 0
+    ? { dataState: "live", reason: null, rows, count: rows.length, substrateGap }
+    : {
+        dataState: "empty",
+        reason:
+          "No V2 gateway-rejection events on the V2 control-plane store. On the " +
+          "build-phase clean store this is expected (no V2 emitter ships yet — see " +
+          "substrateGap). This is an honest absent state, NOT a silent zero, and the " +
+          "panel does NOT fall back to the V1 store.",
+        rows: [],
+        count: 0,
+        substrateGap,
+      };
 }
 
 // ---------------------------------------------------------------------------
-// 8. Headroom — V1-ONLY (RAS limit-utilisation folds V1 FxTradeExecuted).
+// 8. Headroom — V2-fed: FIL-sourced RAS B3 (FX) limit-utilisation (FU3).
 // ---------------------------------------------------------------------------
 
 export interface V2FxHeadroomView extends PanelMeta {
-  rows: never[];
-  legacyRoute: string;
+  /** The single B3 FX limit-utilisation line, derived from FIL FX positions. */
+  b3: FilFxHeadroomB3Row;
+  /** BA-320 V2 coverage carried through (no-data | partial | complete). */
+  coverageStatus: "no-data" | "partial" | "complete";
+  /** Advisory gap markers from the FIL projection (tracked, not hidden). */
+  gaps: string[];
+  /**
+   * SCOPE NOTE: only the B3 (FX net-open-position) cluster is taken V2 here —
+   * that is the cluster the FX book drives. The other RAS clusters (B1
+   * pre-settlement credit, B2 settlement-window, B4 IRRBB, B5) fold non-FX /
+   * settlement-lifecycle events and stay on the V1 limit-utilisation projection
+   * (consumed by the legacy desk pages). Stated so the panel never implies it is
+   * the whole RAS headroom view.
+   */
+  scopeNote: string;
 }
 
-function buildHeadroom(): V2FxHeadroomView {
-  // The RAS limit-utilisation projection (B-cluster headroom) folds the V1
-  // FxTradeExecuted near-leg into the B3 market-risk bucket. There is no
-  // FIL-instance-sourced limit-utilisation projection yet — the FX B3 exposure
-  // leg is still V1. The V2 risk panel above DOES surface the FX net-open-position
-  // and capital charge from BA-320 V2 (the FIL-sourced exposure), but the
-  // RAS-cluster utilisation framing (B1–B5 vs published RAS schedule) is V1-only.
+/**
+ * The V2 headroom panel derives the B3 FX net-open-position utilisation from the
+ * SAME FIL FX instances the V2 risk panel (BA-320 V2) consumes — never from V1
+ * `FxTradeExecuted`. The B3 LIMIT is the canonical RAS schedule row Helena
+ * publishes. Honest states: `empty` (no FIL FX instruments — labelled zero),
+ * `no-limit` (FIL positions but no B3 RAS row — exposure shown, utilisation
+ * null), or `live`.
+ */
+function buildHeadroom(
+  store: EventStore,
+  marketDataStore: MarketDataStore,
+  nowIso: string,
+): V2FxHeadroomView {
+  const view = buildFilFxHeadroomView(store, marketDataStore, nowIso);
+  // Map the projection's own data state onto the shared PanelMeta state. "no-limit"
+  // is a present-but-incomplete state → surface as "empty" at the panel level
+  // (no utilisation to render) while carrying the precise reason through.
+  const dataState: PanelDataState = view.dataState === "live" ? "live" : "empty";
   return {
-    dataState: "v1-only",
-    reason:
-      "RAS headroom (limit-utilisation B1–B5) folds the V1 FxTradeExecuted near-leg " +
-      "for the B3 market-risk bucket; no FIL-sourced limit-utilisation projection " +
-      "exists yet. The FX net-open-position + capital charge ARE V2 (see the risk " +
-      "panel, BA-320 V2). Source remains GET /api/markets/fx/headroom until a " +
-      "FIL-sourced RAS utilisation projection is built (Phase C). " +
-      "Authority: D-FX-OTC-CLOSURE-BACKLOG.",
-    rows: [],
-    legacyRoute: "GET /api/markets/fx/headroom",
+    dataState,
+    reason: view.reason,
+    b3: view.b3,
+    coverageStatus: view.coverageStatus,
+    gaps: [...view.gaps],
+    scopeNote:
+      "Only the B3 (FX net-open-position) RAS cluster is V2-fed (FIL-sourced) here — " +
+      "it is the cluster the FX book drives. B1/B2/B4/B5 fold non-FX or " +
+      "settlement-lifecycle events and remain on the V1 limit-utilisation projection " +
+      "(legacy desk pages). Authority: D-FX-OTC-CLOSURE-BACKLOG.",
   };
 }
 
@@ -570,6 +621,18 @@ export interface V2FxSurfaceView {
 }
 
 /**
+ * Optional injection seam for the surface builder.
+ *
+ * `readV2Rejections` — reader for the V2 gateway-rejection feed. Defaults to
+ *   `readV2FxRejections` (the production V2 control-plane store reader). Tests
+ *   inject a reader pointed at a tmpdir control-plane store (or returning a
+ *   fixture) so the surface build never touches the home store.
+ */
+export interface V2FxSurfaceDeps {
+  readonly readV2Rejections?: () => V2FxRejectionRow[];
+}
+
+/**
  * Build the whole FX V2 surface in one pass. The dashboard exposes both this
  * aggregate (`GET /api/v2/markets/fx`) and each panel as its own route
  * (`GET /api/v2/markets/fx/<panel>`).
@@ -578,14 +641,18 @@ export function buildV2FxSurfaceView(
   store: EventStore,
   marketDataStore: MarketDataStore,
   nowIso: string,
+  deps: V2FxSurfaceDeps = {},
 ): V2FxSurfaceView {
   const summary = buildV2FxSummaryView(store, marketDataStore, nowIso);
   const risk = buildRisk(store, marketDataStore, nowIso);
   const blotter = buildBlotter(store);
   const counterparties = buildCounterparties(store, nowIso);
   const npa = buildNpa(store, nowIso);
-  const rejections = buildRejections();
-  const headroom = buildHeadroom();
+  // The V2 rejections feed reads the V2 control-plane store (default path). The
+  // reader is injected so tests can point at a tmpdir control-plane store and so
+  // the build never silently touches the home store.
+  const rejections = buildRejections(deps.readV2Rejections ?? (() => readV2FxRejections()));
+  const headroom = buildHeadroom(store, marketDataStore, nowIso);
 
   const panels: V2FxPanelStatus[] = [
     panelStatus("summary", "/api/v2/markets/fx/summary", summary),
@@ -634,3 +701,6 @@ export {
   buildRejections as buildV2FxRejectionsView,
   buildHeadroom as buildV2FxHeadroomView,
 };
+
+export type { V2FxRejectionRow } from "../platform/projections/markets/v2-fx-gateway-rejections";
+export type { FilFxHeadroomB3Row } from "../platform/projections/markets/fil-fx-limit-utilisation-v2";

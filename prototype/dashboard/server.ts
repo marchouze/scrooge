@@ -319,6 +319,7 @@ import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
 import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
 import type { DashboardState } from "./types";
+import { readV2FxRejections } from "../platform/projections/markets/v2-fx-gateway-rejections";
 import {
   buildV2FxBlotterView,
   buildV2FxCounterpartiesView,
@@ -5732,16 +5733,26 @@ const server = Bun.serve({
       return jsonResponse({ ...buildV2FxNpaView(eventStore, nowUtc()), pageProvenance: filter });
     }
     if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/rejections") {
-      // V1-only panel (no V2 gateway event family). The route returns the honest
-      // v1-only state + the legacy route to consult — it does NOT serve V1 data.
+      // V2-fed (FU3): reads the V2-NATIVE V2FxOrderRejectedAtGateway family from
+      // the V2 control-plane store — NOT the V1 store. Honest empty on the clean
+      // build store (no V2 emitter ships yet — see substrateGap). Authority:
+      // D-FX-OTC-CLOSURE-BACKLOG; D-BANK-WIDE-V2-MIGRATION.
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
-      return jsonResponse({ ...buildV2FxRejectionsView(), pageProvenance: filter });
+      return jsonResponse({
+        ...buildV2FxRejectionsView(() => readV2FxRejections()),
+        pageProvenance: filter,
+      });
     }
     if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/headroom") {
-      // V1-only panel (RAS limit-utilisation folds V1 FxTradeExecuted). Honest
-      // v1-only state + legacy route; the FX NOP + capital charge ARE V2 (see /risk).
+      // V2-fed (FU3): FIL-sourced RAS B3 (FX) limit-utilisation — the B3 exposure
+      // is derived from the SAME FIL FX instances BA-320 V2 consumes, against the
+      // canonical RAS schedule limit. Honest empty/no-limit states. Scope: B3 only
+      // (the FX cluster); other clusters stay V1. Authority: D-FX-OTC-CLOSURE-BACKLOG.
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
-      return jsonResponse({ ...buildV2FxHeadroomView(), pageProvenance: filter });
+      return jsonResponse({
+        ...buildV2FxHeadroomView(eventStore, marketDataStore, nowUtc()),
+        pageProvenance: filter,
+      });
     }
     // Regulations register (Compliance). Reference instruments (Plane A) flagged
     // with whether the bank has identified (adopted) obligations from each
