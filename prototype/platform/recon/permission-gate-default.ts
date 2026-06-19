@@ -239,6 +239,14 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // is the recon's own read/seed root, analogous to the other recon roots
   // above. Citation: D-TRUSTED-FIGURES-PROGRAM-V1, P4-SECURITY-DESIGNED-IN.
   "platform/recon/calc-model-binding.ts",
+  // fx-model-validation-of-record — opens the live store for READ-ONLY replay
+  // of ModelValidationApproved to assert the FX model-validation-of-record
+  // (model:fx-forward-irp-v1 + model:market-risk-var-hs-v1) is present on the
+  // gated store. No appends; gate is a no-op on the read path. The raw
+  // construction here is the recon's own read root, analogous to the other
+  // recon roots above. Citation: D-FX-OTC-CLOSURE-BACKLOG,
+  // D-TRUSTED-FIGURES-PROGRAM-V1, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/fx-model-validation-of-record.ts",
   // PartitionedEventStore — substrate class that opens cold archive SQLite
   // databases for read-only replay; no appends; gate is a no-op on replay.
   // Citation: D-EVENT-STORE-SCALING-PHASE-5, P4-SECURITY-DESIGNED-IN.

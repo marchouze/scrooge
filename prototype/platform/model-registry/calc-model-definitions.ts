@@ -45,14 +45,34 @@ import { LocalModelRegistry } from "./index";
 const ENTITY = "LE-ZA-HOZ-BANK";
 const SEED_AS_OF = "2026-05-29T00:00:00.000Z";
 
-const ROHAN_ACTOR: Actor = { type: "service", id: "agent:rohan:calc-model-seed" };
-const NADIA_ACTOR: Actor = { type: "service", id: "agent:nadia:calc-model-validation" };
+export const CALC_MODEL_ROHAN_ACTOR: Actor = {
+  type: "service",
+  id: "agent:rohan:calc-model-seed",
+};
+export const CALC_MODEL_NADIA_ACTOR: Actor = {
+  type: "service",
+  id: "agent:nadia:calc-model-validation",
+};
+const ROHAN_ACTOR: Actor = CALC_MODEL_ROHAN_ACTOR;
+const NADIA_ACTOR: Actor = CALC_MODEL_NADIA_ACTOR;
 
 const CITATIONS = [
   "D-TRUSTED-FIGURES-PROGRAM-V1",
   "D-MODEL-REGISTRY-SCOPE-CLOSURE-V1",
   "BANKS-ACT-94-1990",
 ];
+
+/**
+ * Authoring context for the regulatory-metric calc-model seed — the exact
+ * entity, business-time instant, and decision citations the canonical home-
+ * store events carry. Re-exported so scoped seeders (e.g.
+ * `seedFxModelValidations`) reproduce the canonical events byte-faithfully.
+ */
+export const CALC_MODEL_SEED_CONTEXT = {
+  entity: ENTITY,
+  asOf: SEED_AS_OF,
+  citations: CITATIONS,
+} as const;
 
 export function methodologyHash(description: string): string {
   return createHash("sha256").update(description).digest("hex");

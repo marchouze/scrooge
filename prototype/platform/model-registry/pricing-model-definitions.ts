@@ -52,25 +52,37 @@ const CITATIONS = [
   "D-PRODUCT-CONSTRUCTION-SLICES-4-8",
 ];
 
+/**
+ * Authoring context for the pricing-model seeds — the exact entity, business-
+ * time instant, and decision citations the canonical home-store events carry.
+ * Re-exported so scoped seeders (e.g. `seedFxModelValidations`) reproduce the
+ * canonical events byte-faithfully without re-declaring the constants.
+ */
+export const PRICING_MODEL_SEED_CONTEXT = {
+  entity: ENTITY,
+  asOf: SEED_AS_OF,
+  citations: CITATIONS,
+} as const;
+
 // ---------------------------------------------------------------------------
 // seedModelRegistry
 // ---------------------------------------------------------------------------
 // (moved from seeds/models/model-registry-seed.ts)
 
-const ROHAN_REGISTRY_ACTOR: Actor = {
+export const ROHAN_REGISTRY_ACTOR: Actor = {
   type: "service",
   id: "agent:rohan:model-registry-seed",
 };
-const NADIA_REGISTRY_ACTOR: Actor = {
+export const NADIA_REGISTRY_ACTOR: Actor = {
   type: "service",
   id: "agent:nadia:model-tier-classification",
 };
 
-function methodologyHash(description: string): string {
+export function methodologyHash(description: string): string {
   return createHash("sha256").update(description).digest("hex");
 }
 
-interface ModelDef {
+export interface ModelDef {
   readonly modelId: string;
   readonly version: string;
   readonly rohanTier: 1 | 2 | 3;
@@ -80,7 +92,7 @@ interface ModelDef {
   readonly tierRationale: string;
 }
 
-const REGISTRY_MODELS: ReadonlyArray<ModelDef> = [
+export const REGISTRY_MODELS: ReadonlyArray<ModelDef> = [
   {
     modelId: "model:sagb-dcf-v1",
     version: "1.0.0",
@@ -219,7 +231,10 @@ export function seedModelRegistry(store: EventStore): ModelRegistrySeedResult {
 // ---------------------------------------------------------------------------
 // (moved from seeds/models/model-validation-seed.ts)
 
-const NADIA_VALIDATION_ACTOR = { type: "service" as const, id: "agent:nadia:model-validation" };
+export const NADIA_VALIDATION_ACTOR = {
+  type: "service" as const,
+  id: "agent:nadia:model-validation",
+};
 
 const TIER2_METHODOLOGY = {
   methodologyId: "validation-methodology:tier-2:v0.1",
@@ -309,7 +324,7 @@ export function seedValidationMethodologies(store: EventStore): MethodologySeedR
 // ---------------------------------------------------------------------------
 // (moved from seeds/models/model-validation-seed.ts)
 
-interface ModelSeedDef {
+export interface ModelSeedDef {
   modelId: string;
   version: string;
   tier: 2 | 3;
@@ -317,7 +332,7 @@ interface ModelSeedDef {
   description: string;
 }
 
-const VALIDATION_MODELS: ModelSeedDef[] = [
+export const VALIDATION_MODELS: ModelSeedDef[] = [
   {
     modelId: "model:sagb-dcf-v1",
     version: "v1.0",
