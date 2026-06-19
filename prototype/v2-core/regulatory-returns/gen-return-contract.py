@@ -743,6 +743,101 @@ FORMS = {
         ),
     ),
     # -----------------------------------------------------------------------
+    # Phase C batch 9 (the FINAL return) — BA 900 ECONOMIC STATISTICS (the
+    # SARB statistical Balance Sheet of Deposit-Taking Institutions). The
+    # largest workbook in the suite (XSD 6.2 MB, xlsx 2.9 MB) and a MULTI-SUB-
+    # FORM return: the BA900_1 .. BA900_7 sub-forms (plus two trailing _8 / _9
+    # control sub-forms in the Elements list) decompose the bank's statistical
+    # balance sheet by institutional sector and maturity (the SARB / national-
+    # accounts sectoring used for the monetary-and-financial-statistics series).
+    #
+    # AGGREGATE / ENTITY-LEVEL → ~0 PRODUCT-ATTRIBUTE REQUIREMENTS. BA 900 is a
+    # statistical balance-sheet aggregate reported by institutional-sector and
+    # maturity dimension (Total economy / domestic sectors / DTIs / other
+    # financial corporations / general government / non-financial corporations /
+    # households / non-resident, etc.). The reported value is a portfolio /
+    # entity-level aggregate sliced by SECTOR and MATURITY — not a product-static
+    # menu attribute a product definition must carry. So — exactly like BA 930
+    # (weighted-average rates) and BA 94x (locational statistics) — BA 900 sets
+    # `product_attr_product_id=None` and yields ZERO product-attribute
+    # requirements. We do NOT manufacture any (no bulk-marking); the sector /
+    # maturity disaggregation is a REPORTING dimension of the fold, captured by
+    # the GL / deposit / loan ledgers' counterparty-sector + maturity reference
+    # data, not a per-product static menu pick. The NPA gate sees no BA 900
+    # product-attribute edge, so no product — and in particular the live FX
+    # product `prd:bank:fx:otc-vanilla` — is wrongly blocked by a BA 900 cell.
+    #
+    # MULTI-SUB-FORM IDENTITY. The framework cellRef has no sub-form axis (one
+    # canonical form key `BA900`), so the sub-form (BA900_1 .. _9) is folded into
+    # each cell's label + regulatoryDefinition — exactly the BA 94x handling.
+    # Every XSD leaf code is DISTINCT here (no code is reused across sub-forms),
+    # so the generate() deduplication is a no-op; the recon's independent XSD
+    # oracle yields the same 10,752-leaf universe the xlsx Elements sheet does
+    # (they agree by construction). The giant identical formDescription boiler-
+    # plate ("BA 900 - BALANCE SHEET OF DEPOSIT TAKING INSTITUTIONS ...") is
+    # SUPPRESSED from the per-cell context (it is the form name, not a per-cell
+    # discriminator); only the sub-form key is folded in (see
+    # statistical_supplementary_subform_context).
+    #
+    # SUBSTRATE + STATUS. The bank-in-formation has no real statistical balance
+    # sheet pre-licence-day (no real deposits, loans, securities, sectored
+    # counterparties), so EVERY BA 900 cell is `licence-day-data` (the form is a
+    # blanket licence-day form). The ba900-economic-statistics-fold exists as
+    # substrate (it folds the GL / position ledgers by counterparty-sector and
+    # maturity into the SARB statistical sectoring); its values are an honest
+    # licence-day gap, never fabricated.
+    # -----------------------------------------------------------------------
+    "BA900": dict(
+        name="Economic statistics — DI returns",
+        obligation="ORG-PR-RETURNS-024",
+        clause=(
+            "SARB Prudential Authority Directive D5/2025 §2.1.25 (form BA 900 — Economic statistics: "
+            "the deposit-taking-institution (DI) statistical Balance Sheet of Deposit-Taking "
+            "Institutions per institutional and maturity breakdown, based on statistical principles, "
+            "Annexure 24A/24B) read with the Regulations relating to Banks and the South African "
+            "Reserve Bank Act 90 of 1989 (the SARB's monetary-and-financial-statistics mandate — the "
+            "DI sectoral balance-sheet returns feeding the national monetary aggregates); Banks Act "
+            "94 of 1990 s.6(6)(a). [Post-#1451 corrected row (D-BA-RETURN-DATA-CONTRACT Phase C "
+            "batch 9): per the canonical SARB Excel form schedule (the BA900_1..7 sub-forms' "
+            "formDescription = 'BA 900 - BALANCE SHEET OF DEPOSIT TAKING INSTITUTIONS PER "
+            "INSTITUTIONAL AND MATURITY BREAKDOWN, BASED ON STATISTICAL PRINCIPLES'), form BA 900 is "
+            "the economic-statistics DI sectoral balance-sheet return; it is reported by "
+            "institutional sector and maturity for the SARB monetary-and-financial-statistics "
+            "series.]"
+        ),
+        fold="ba900-economic-statistics-fold",
+        # BA 900 cells fold from the economic-statistics fold over the GL / deposit /
+        # loan / securities ledgers disaggregated by INSTITUTIONAL SECTOR (the SARB /
+        # national-accounts sectoring: domestic sectors — DTIs, other financial
+        # corporations, general government, non-financial corporations, households,
+        # NPISH — plus the non-resident sector) and MATURITY band. No single GL
+        # category holds the sectored / maturity disaggregation; the fold is the
+        # authoritative source (like the other statistical forms).
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,  # no real statistical balance sheet pre-licence-day
+        statistical_family=True,
+        # AGGREGATE / entity-level sectoral balance-sheet statistics → no product-
+        # attribute product id (~0 attrs). The sector / maturity slice is a fold
+        # REPORTING dimension, not a product-static menu attribute.
+        product_attr_product_id=None,
+        status_note=(
+            "Economic-statistics figures (the DI statistical balance sheet — total gross assets, "
+            "currency and deposits, loans and advances, securities, and the liability side — "
+            "disaggregated by institutional sector (total economy / total domestic sectors / "
+            "deposit-taking institutions / other financial corporations / general government / "
+            "non-financial corporations / households / non-resident) and by maturity band, based on "
+            "statistical sectoring principles) fold from the ba900-economic-statistics-fold over the "
+            "GL / deposit / loan / securities ledgers. The fold exists as substrate; the statistics "
+            "that fill the cells require a real sectored balance sheet (real deposits, loans, "
+            "securities and counterparty-sector reference data), which the bank-in-formation does "
+            "not run pre-licence-day, so those values are licence-day data. The reported value is an "
+            "AGGREGATE sectoral / maturity statistic (a fold reporting dimension), NOT a product-"
+            "static menu attribute — BA 900 carries no product-attribute requirement. No silent "
+            "fabrication."
+        ),
+    ),
+    # -----------------------------------------------------------------------
     # Phase C batch 6 — the OPERATIONAL FAMILY (BA 400 / BA 410 / BA 420). The
     # operational-risk capital return + its two loss companions.
     #
@@ -2916,12 +3011,25 @@ def frtb_product_attributes(col_label: str, row_label: str, xsd_type: str):
 
 
 def statistical_supplementary_subform_context(form: str, e) -> str:
-    """The sub-form context string for a BA 94x / CVA / FRTB cell — folded into
-    the cell label / regulatoryDefinition so the multi-sub-form identity is kept
-    (the framework cellRef has no sub-form axis, like BA 900 _1.._7). Returns the
-    `formName` + a trimmed `formDescription` (deduplicated)."""
+    """The sub-form context string for a BA 94x / CVA / FRTB / BA 900 cell — folded
+    into the cell label / regulatoryDefinition so the multi-sub-form identity is
+    kept (the framework cellRef has no sub-form axis, like BA 900 _1.._7). Returns
+    the `formName` + a trimmed `formDescription` (deduplicated).
+
+    BA 900 (Phase C batch 9): the BA900_1..9 sub-forms ALL carry the SAME giant
+    formDescription boilerplate ("BA 900 - BALANCE SHEET OF DEPOSIT TAKING
+    INSTITUTIONS PER INSTITUTIONAL AND MATURITY BREAKDOWN, BASED ON STATISTICAL
+    PRINCIPLES"). That is the form name, not a per-cell discriminator — folding it
+    into 10,752 cell labels would bloat every entry with the identical string. So
+    for BA 900 the context is the SUB-FORM KEY alone (BA900_1 .. _9), which is the
+    genuine per-cell discriminating axis; the full form description lives once in
+    the form's clause / status note, not repeated per cell."""
     fn = (e.get("formName") or "").strip()
     fd = (e.get("formDescription") or "").strip()
+    if form == "BA900":
+        # The sub-form key is the only per-cell discriminator; suppress the
+        # repeated form-name boilerplate.
+        return fn
     if fn and fd and fd.lower() != fn.lower():
         return f"{fn} — {fd}"
     return fn or fd
@@ -3718,10 +3826,17 @@ if __name__ == "__main__":
         # carry MR-prefix leaf codes and are built on their own identities.
         for f in ("BA920", "BA930", "BA94x", "CVA", "FRTB"):
             generate(f)
+    elif len(sys.argv) == 2 and sys.argv[1] == "--econstats":
+        # Phase C batch 9 (the FINAL return) — BA 900 economic statistics (the
+        # SARB statistical DI balance sheet; multi-sub-form BA900_1..7, the
+        # largest workbook in the suite). Single form; this alias completes the
+        # full SARB BA-return suite.
+        generate("BA900")
     else:
         raise SystemExit(
             "usage: gen-return-contract.py "
             "<BA110|BA120|BA125|BA130|BA200|BA210|BA220|BA300|BA310|BA320|BA325|BA330|BA340|"
-            "BA350|BA400|BA410|BA420|BA500|BA501|BA600|BA610|BA700|BA701|BA920|BA930|BA94x|CVA|FRTB|"
-            "--all|--credit|--liquidity|--market|--capital|--operational|--secgov|--statsupp>"
+            "BA350|BA400|BA410|BA420|BA500|BA501|BA600|BA610|BA700|BA701|BA900|BA920|BA930|BA94x|CVA|"
+            "FRTB|--all|--credit|--liquidity|--market|--capital|--operational|--secgov|--statsupp|"
+            "--econstats>"
         )
