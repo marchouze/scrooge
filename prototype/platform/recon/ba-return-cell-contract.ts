@@ -1,19 +1,25 @@
 // platform/recon/ba-return-cell-contract.ts
 //
-// recon:ba-return-cell-contract — the "every cell fully defined" guarantee.
+// recon:ba-return-cell-contract — the "every cell fully defined" guarantee,
+// REGISTRY-DRIVEN across all authored SARB BA-return forms.
 //
-// Asserts, for BA 100 (the pilot return), that the cell-data-requirement
-// contract (`v2-core/regulatory-returns/ba100-contract.json`, validated by the
+// Asserts, for EVERY form in the return-contract registry
+// (`v2-core/regulatory-returns/return-contracts.ts` — BA 100 + the financial
+// family BA 110 / BA 120 / BA 600 / BA 610, growing as more returns are
+// authored), that the form's cell-data-requirement contract (validated by the
 // Zod schema in `cell-contract.ts`) is COMPLETE and SOUND against the real
 // substrate. This is the machine check that makes Marc's goal — "the data
-// requirements for every cell, fully" — non-regressable.
+// requirements for every cell, fully" — non-regressable, and a framework
+// ratchet: adding a form to the registry auto-extends coverage; it can only
+// harden.
 //
-// FOUR ASSERTIONS (per brief WS-BA-RETURN-DATA-CONTRACT)
-// ------------------------------------------------------
-//   (1) COMPLETENESS — every BA100.xsd Monetary1000 leaf cell has exactly one
-//       contract entry, and no contract entry references a cell that is not in
-//       the XSD. The XSD cell set is parsed INDEPENDENTLY here (not from the
-//       generated contract) so the contract cannot "self-certify".
+// FOUR ASSERTIONS (per form, per brief WS-BA-RETURN-DATA-CONTRACT)
+// ----------------------------------------------------------------
+//   (1) COMPLETENESS — every typed BA-code leaf cell in the form's XSD has
+//       exactly one contract entry, and no contract entry references a cell not
+//       in the XSD. The XSD cell set is parsed INDEPENDENTLY here (from the
+//       schema zip), not from the generated contract, so the contract cannot
+//       "self-certify".
 //   (2) CITATIONS RESOLVE (P2) — every cell carries ≥1 citation whose
 //       obligationId is a real adopted obligation (exists in the obligations
 //       seed).
@@ -21,12 +27,11 @@
 //       dataRequirements point at substrate that actually exists: a GL category
 //       present in the chart of accounts, a known projection, an approved
 //       product (ProductApproved event), or a known reference-data set.
-//   (4) NON-SOURCED CELLS ARE TRACKED — every cell with status !=
-//       sourced carries an honest `statusReason` (no silent gap; Charter
-//       cmd 5). counsel-gated-TBC additionally carries a counsel-TBC
-//       dataRequirement (enforced by the schema; re-asserted here).
+//   (4) NON-SOURCED CELLS ARE TRACKED — every cell with status != sourced
+//       carries an honest `statusReason` (no silent gap; Charter cmd 5).
+//       counsel-gated-TBC additionally carries a counsel-TBC dataRequirement.
 //
-// ENFORCING from landing: the contract is generated complete, so there is no
+// ENFORCING from landing: contracts are generated complete, so there is no
 // advisory-soak phase — a regression (a new XSD cell with no entry, a dangling
 // citation, a sourced cell pointing at a non-existent GL account) fails CI.
 //
@@ -36,8 +41,8 @@
 // resolve upward (citations) and downward (data sources).
 //
 // Authority: D-BA-RETURN-DATA-CONTRACT (CEO-approved 2026-06-19, session-
-//   delegation), Phase B. Citations: Engineering-Charter.md (#3, #5, #7);
-//   ORG-PR-RETURNS-002; D5/2025 §2.1.3.
+//   delegation): Phase B (framework + BA 100); Phase C batch 1 (BA 110/120/
+//   600/610). Citations: Engineering-Charter.md (#3, #5, #7).
 // Author: Bea (Accounting and financial reporting engineer, engineering —
 //   reports to Camille (Chief Financial Officer)).
 
@@ -46,8 +51,12 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { COA_ACCOUNTS } from "../../v2-core/accounting/chart-of-accounts";
-import { ba100Contract } from "../../v2-core/regulatory-returns/ba100-contract";
-import type { ReturnContract } from "../../v2-core/regulatory-returns/cell-contract";
+import type { ReturnContract, ReturnForm } from "../../v2-core/regulatory-returns/cell-contract";
+import {
+  RETURN_CONTRACT_REGISTRY,
+  type ReturnContractRegistryEntry,
+  loadReturnContract,
+} from "../../v2-core/regulatory-returns/return-contracts";
 import { EventStore } from "../event-store/store";
 import { logger } from "../observability/logger";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
@@ -56,52 +65,100 @@ const PIPELINE = "ba-return-cell-contract";
 const MODE: "advisory" | "enforcing" = "enforcing";
 
 const HERE = fileURLToPath(new URL(".", import.meta.url));
-const SCHEMA_ZIP = resolve(HERE, "../../../Regulations/SARB-PA/ba-returns/schemas/BA100.zip");
-const OBLIGATIONS_SEED = resolve(HERE, "../../../Regulations/_obligations.seed.json");
+const REPO_ROOT = resolve(HERE, "../../..");
+const OBLIGATIONS_SEED = resolve(REPO_ROOT, "Regulations/_obligations.seed.json");
 
-// Known non-product source families the contract may reference.
-const KNOWN_PROJECTIONS = new Set(["gl-trial-balance", "ba100-balance-sheet-fold"]);
-const KNOWN_REFERENCE_DATA_PREFIXES = ["legal-entity-tree", "party-register"];
+// Known non-product source families the contracts may reference. The per-form
+// report folds are the named report-generation projections (one per form,
+// consistent with BA 100's `ba100-balance-sheet-fold`).
+const KNOWN_PROJECTIONS = new Set([
+  "gl-trial-balance",
+  "ba100-balance-sheet-fold",
+  "ba110-obs-fold",
+  "ba120-income-statement-fold",
+  "ba600-consolidation-fold",
+  "ba610-foreign-operations-fold",
+]);
+const KNOWN_REFERENCE_DATA_PREFIXES = ["legal-entity-tree", "party-register", "return-form-meta"];
 
 // ---------------------------------------------------------------------------
 // (1) Independent XSD cell-set extraction — the authoritative cell universe.
 // ---------------------------------------------------------------------------
 
 /**
- * Parse the BA100.xsd inside BA100.zip and return the set of Monetary1000 leaf
- * cell codes (BAxxxxxxxx). The XSD is extracted via the system `unzip -p`
- * (no JS zip dependency) and scanned with a scoped regex over the leaf
- * `<xs:element name="BA........"> … <xs:extension base="Monetary1000">` shape.
+ * Parse the form's XSD inside its schema zip and return the set of TYPED
+ * BA-code leaf cell codes (BAxxxxxxxx). A leaf cell is an `<xs:element
+ * name="BA........">` whose complexType extends ONE of the SARB leaf base types
+ * (Monetary1000, Percentage*, Numeric, Integer, Text, IDType, Currency, and the
+ * enum types). The XSD is extracted via the system `unzip -p` (no JS zip
+ * dependency) and scanned with a scoped regex.
+ *
  * This is INDEPENDENT of the contract generator (which reads the xlsx Elements
  * sheet) so the two cannot agree by construction — completeness is a genuine
  * cross-check, not a self-certification.
+ *
+ * NB: the 8-digit BA-code DATA cells are matched; the 3-digit form-root list
+ * elements (Tablelist/Rowlist/Collist) are NOT BA\d{8} and are excluded.
  */
-export function xsdCellCodes(): Set<string> {
-  const proc = Bun.spawnSync(["unzip", "-p", SCHEMA_ZIP, "BA100.xsd"]);
+export function xsdCellCodes(entry: ReturnContractRegistryEntry): Set<string> {
+  const zipPath = resolve(REPO_ROOT, entry.schemaZipRelPath);
+  const proc = Bun.spawnSync(["unzip", "-p", zipPath, entry.xsdName]);
   if (proc.exitCode !== 0) {
     const stderr = new TextDecoder().decode(proc.stderr);
-    throw new Error(`unzip of ${SCHEMA_ZIP} (BA100.xsd) failed (exit ${proc.exitCode}): ${stderr}`);
+    throw new Error(
+      `unzip of ${zipPath} (${entry.xsdName}) failed (exit ${proc.exitCode}): ${stderr}`,
+    );
   }
   const xsd = new TextDecoder().decode(proc.stdout);
-  // Every leaf monetary cell is an <xs:element name="BA00000000"> whose
-  // complexType extends Monetary1000. Match the element name immediately
-  // preceding an extension base="Monetary1000" (tolerating an optional
-  // annotation block between them).
+  // Every leaf cell is an <xs:element name="BA00000000"> whose complexType
+  // extends one of the SARB leaf base types. Match the element name immediately
+  // preceding an <xs:extension base="..."> (tolerating an optional annotation
+  // block between them). The base-type capture is asserted against the known
+  // leaf-type set so a NEW base type fails loudly rather than being silently
+  // skipped (Charter cmd 5 — no silent deferral).
   const codes = new Set<string>();
   const re =
-    /<xs:element\b[^>]*\bname="(BA\d{8})"[^>]*>\s*(?:<xs:annotation>.*?<\/xs:annotation>)?\s*<xs:complexType>\s*<xs:complexContent[^>]*>\s*<xs:extension base="Monetary1000">/gs;
+    /<xs:element\b[^>]*\bname="(BA\d{8})"[^>]*>\s*(?:<xs:annotation>.*?<\/xs:annotation>)?\s*<xs:complexType>\s*<xs:complexContent[^>]*>\s*<xs:extension base="([^"]+)">/gs;
   let m: RegExpExecArray | null = re.exec(xsd);
   while (m !== null) {
     const code = m[1];
-    if (code !== undefined) codes.add(code);
+    const base = m[2];
+    if (code !== undefined && base !== undefined && isLeafBaseType(base)) {
+      codes.add(code);
+    }
     m = re.exec(xsd);
   }
   if (codes.size === 0) {
     throw new Error(
-      "extracted 0 Monetary1000 leaf cells from BA100.xsd — extraction regex or schema shape changed",
+      `extracted 0 typed leaf cells from ${entry.xsdName} — extraction regex or schema shape changed`,
     );
   }
   return codes;
+}
+
+/**
+ * The SARB leaf base types a data cell may carry (mirrors the generator's
+ * `value_type_for`). Percentage* and the enum/text/numeric types are matched by
+ * prefix / membership. A base type NOT in this set is a structural change that
+ * must be handled explicitly — surfaced as a hard error by the caller.
+ */
+const KNOWN_LEAF_BASE_TYPES = new Set([
+  "Monetary1000",
+  "Numeric",
+  "Integer",
+  "Text",
+  "IDType",
+  "Currency",
+  "EnumCountry",
+  "ExposureType",
+  "CP_YesNo",
+  "RegulatoryApproach",
+  "SourceOfCapital",
+]);
+
+function isLeafBaseType(base: string): boolean {
+  if (base.startsWith("Percentage")) return true;
+  return KNOWN_LEAF_BASE_TYPES.has(base);
 }
 
 // ---------------------------------------------------------------------------
@@ -142,7 +199,7 @@ function approvedProductIds(): Set<string> {
 const coaCategories = (): Set<string> => new Set(COA_ACCOUNTS.map((a) => a.category));
 
 // ---------------------------------------------------------------------------
-// Assertions.
+// Assertions (per form). `form` namespaces every violation subject.
 // ---------------------------------------------------------------------------
 
 export function assertCompleteness(
@@ -150,13 +207,14 @@ export function assertCompleteness(
   xsdCodes: Set<string>,
   violations: ReconViolation[],
 ): number {
+  const form = contract.returnForm;
   const contractCodes = new Set(contract.cells.map((c) => c.cellRef.xsdElement));
   // (a) no orphan contract cell (in contract, not in XSD).
   for (const code of contractCodes) {
     if (!xsdCodes.has(code)) {
       violations.push({
-        subject: `BA100.${code}`,
-        message: `contract entry references cell ${code} which is NOT a Monetary1000 leaf in BA100.xsd`,
+        subject: `${form}.${code}`,
+        message: `contract entry references cell ${code} which is NOT a typed leaf in ${form}.xsd`,
         severity: "fail",
       });
     }
@@ -165,8 +223,8 @@ export function assertCompleteness(
   for (const code of xsdCodes) {
     if (!contractCodes.has(code)) {
       violations.push({
-        subject: `BA100.${code}`,
-        message: `BA100.xsd cell ${code} has NO contract entry (incomplete coverage)`,
+        subject: `${form}.${code}`,
+        message: `${form}.xsd cell ${code} has NO contract entry (incomplete coverage)`,
         severity: "fail",
       });
     }
@@ -174,7 +232,7 @@ export function assertCompleteness(
   // (c) no duplicate cell entries.
   if (contractCodes.size !== contract.cells.length) {
     violations.push({
-      subject: "BA100",
+      subject: form,
       message: `contract has ${contract.cells.length} entries but ${contractCodes.size} distinct cells (duplicates present)`,
       severity: "fail",
     });
@@ -187,12 +245,13 @@ export function assertCitationsResolve(
   obIds: Set<string>,
   violations: ReconViolation[],
 ): number {
+  const form = contract.returnForm;
   let asserted = 0;
   for (const cell of contract.cells) {
     asserted++;
     if (cell.citations.length === 0) {
       violations.push({
-        subject: `BA100.${cell.cellRef.xsdElement}`,
+        subject: `${form}.${cell.cellRef.xsdElement}`,
         message: "cell has no citations (P2 orphan)",
         severity: "fail",
       });
@@ -201,7 +260,7 @@ export function assertCitationsResolve(
     for (const cit of cell.citations) {
       if (!obIds.has(cit.obligationId)) {
         violations.push({
-          subject: `BA100.${cell.cellRef.xsdElement}`,
+          subject: `${form}.${cell.cellRef.xsdElement}`,
           message: `citation obligationId '${cit.obligationId}' does not resolve to an adopted obligation`,
           severity: "fail",
         });
@@ -217,13 +276,14 @@ export function assertSourcedCellsReal(
   approved: Set<string>,
   violations: ReconViolation[],
 ): number {
+  const form = contract.returnForm;
   let asserted = 0;
   for (const cell of contract.cells) {
     if (cell.status !== "sourced") continue;
     for (const d of cell.dataRequirements) {
       if (!d.required) continue;
       asserted++;
-      const where = `BA100.${cell.cellRef.xsdElement}`;
+      const where = `${form}.${cell.cellRef.xsdElement}`;
       switch (d.sourceKind) {
         case "gl-account": {
           // ref is either an ACC-id or `category:<cat>`.
@@ -306,11 +366,12 @@ export function assertNonSourcedTracked(
   contract: ReturnContract,
   violations: ReconViolation[],
 ): number {
+  const form = contract.returnForm;
   let asserted = 0;
   for (const cell of contract.cells) {
     if (cell.status === "sourced") continue;
     asserted++;
-    const where = `BA100.${cell.cellRef.xsdElement}`;
+    const where = `${form}.${cell.cellRef.xsdElement}`;
     if (cell.statusReason === undefined || cell.statusReason.trim() === "") {
       violations.push({
         subject: where,
@@ -333,22 +394,43 @@ export function assertNonSourcedTracked(
 }
 
 // ---------------------------------------------------------------------------
-// Entry point.
+// Per-form runner + registry-driven entry point.
 // ---------------------------------------------------------------------------
+
+interface FormContext {
+  obIds: Set<string>;
+  cats: Set<string>;
+  approved: Set<string>;
+}
+
+/** Run all four assertions for one registered form. */
+export function assertForm(
+  entry: ReturnContractRegistryEntry,
+  ctx: FormContext,
+  violations: ReconViolation[],
+): number {
+  const contract = loadReturnContract(entry.form); // throws on schema violation (fail-closed)
+  const xsdCodes = xsdCellCodes(entry);
+  let asserted = 0;
+  asserted += assertCompleteness(contract, xsdCodes, violations);
+  asserted += assertCitationsResolve(contract, ctx.obIds, violations);
+  asserted += assertSourcedCellsReal(contract, ctx.cats, ctx.approved, violations);
+  asserted += assertNonSourcedTracked(contract, violations);
+  return asserted;
+}
 
 export async function run(): Promise<ReconResult> {
   const result = emptyResult(PIPELINE);
-  const contract = ba100Contract(); // throws on schema violation (fail-closed)
-  const xsdCodes = xsdCellCodes();
-  const obIds = obligationIds();
-  const cats = coaCategories();
-  const approved = approvedProductIds();
+  const ctx: FormContext = {
+    obIds: obligationIds(),
+    cats: coaCategories(),
+    approved: approvedProductIds(),
+  };
 
   let asserted = 0;
-  asserted += assertCompleteness(contract, xsdCodes, result.violations);
-  asserted += assertCitationsResolve(contract, obIds, result.violations);
-  asserted += assertSourcedCellsReal(contract, cats, approved, result.violations);
-  asserted += assertNonSourcedTracked(contract, result.violations);
+  for (const entry of RETURN_CONTRACT_REGISTRY) {
+    asserted += assertForm(entry, ctx, result.violations);
+  }
 
   result.asserted = asserted;
   result.ok = !result.violations.some((v) => v.severity === "fail");
@@ -360,16 +442,18 @@ if (isMain) {
   const result = await run();
   const fails = result.violations.filter((v) => v.severity === "fail");
   const warns = result.violations.filter((v) => v.severity === "warn");
+  const forms: ReturnForm[] = RETURN_CONTRACT_REGISTRY.map((e) => e.form);
   if (result.violations.length > 0) {
     logger.error(
       {
         pipeline: PIPELINE,
         mode: MODE,
+        forms,
         asserted: result.asserted,
         fails: fails.length,
         warns: warns.length,
       },
-      `${PIPELINE} (${MODE}): ${result.asserted} asserted, ${fails.length} fail / ${warns.length} warn`,
+      `${PIPELINE} (${MODE}): ${forms.length} returns, ${result.asserted} asserted, ${fails.length} fail / ${warns.length} warn`,
     );
     for (const v of result.violations.slice(0, 50)) {
       logger.error({ subject: v.subject, severity: v.severity }, v.message);
@@ -377,8 +461,8 @@ if (isMain) {
     if (!result.ok) process.exit(1);
   } else {
     logger.info(
-      { pipeline: PIPELINE, mode: MODE, asserted: result.asserted },
-      `${PIPELINE} (${MODE}): ${result.asserted} asserted, no violations`,
+      { pipeline: PIPELINE, mode: MODE, forms, asserted: result.asserted },
+      `${PIPELINE} (${MODE}): ${forms.length} returns (${forms.join(", ")}), ${result.asserted} asserted, no violations`,
     );
   }
 }

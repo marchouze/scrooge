@@ -17,6 +17,10 @@ import type {
   ReturnCellContract,
   ReturnContract,
 } from "../../v2-core/regulatory-returns/cell-contract";
+import {
+  RETURN_CONTRACT_REGISTRY,
+  type ReturnContractRegistryEntry,
+} from "../../v2-core/regulatory-returns/return-contracts";
 import type { ReconViolation } from "./types";
 
 /** The first real BA 100 cell — a fully-typed `ReturnCellContract` base. */
@@ -24,6 +28,13 @@ function firstCell(contract: ReturnContract): ReturnCellContract {
   const c = contract.cells[0];
   if (c === undefined) throw new Error("BA 100 contract is empty");
   return c;
+}
+
+/** The BA 100 registry entry — the cell-universe oracle for these tests. */
+function ba100Entry(): ReturnContractRegistryEntry {
+  const e = RETURN_CONTRACT_REGISTRY.find((x) => x.form === "BA100");
+  if (e === undefined) throw new Error("BA100 not in the return-contract registry");
+  return e;
 }
 import {
   assertCitationsResolve,
@@ -33,14 +44,14 @@ import {
   xsdCellCodes,
 } from "./ba-return-cell-contract";
 
-test("xsdCellCodes extracts the 843 Monetary1000 leaf cells", () => {
-  const codes = xsdCellCodes();
+test("xsdCellCodes extracts the 843 BA 100 leaf cells", () => {
+  const codes = xsdCellCodes(ba100Entry());
   expect(codes.size).toBe(843);
 });
 
 test("the real BA 100 contract is exactly the XSD cell set (completeness)", () => {
   const v: ReconViolation[] = [];
-  assertCompleteness(ba100Contract(), xsdCellCodes(), v);
+  assertCompleteness(ba100Contract(), xsdCellCodes(ba100Entry()), v);
   expect(v).toEqual([]);
 });
 
@@ -48,7 +59,7 @@ test("an incomplete contract (missing XSD cell) FAILS completeness", () => {
   const contract = ba100Contract();
   const trimmed: ReturnContract = { ...contract, cells: contract.cells.slice(0, -1) };
   const v: ReconViolation[] = [];
-  assertCompleteness(trimmed, xsdCellCodes(), v);
+  assertCompleteness(trimmed, xsdCellCodes(ba100Entry()), v);
   expect(v.some((x) => x.severity === "fail" && /NO contract entry/.test(x.message))).toBe(true);
 });
 
@@ -60,10 +71,8 @@ test("an orphan contract cell (not in XSD) FAILS completeness", () => {
   };
   const padded: ReturnContract = { ...contract, cells: [...contract.cells, ghost] };
   const v: ReconViolation[] = [];
-  assertCompleteness(padded, xsdCellCodes(), v);
-  expect(v.some((x) => x.severity === "fail" && /NOT a Monetary1000 leaf/.test(x.message))).toBe(
-    true,
-  );
+  assertCompleteness(padded, xsdCellCodes(ba100Entry()), v);
+  expect(v.some((x) => x.severity === "fail" && /NOT a typed leaf/.test(x.message))).toBe(true);
 });
 
 test("a dangling citation FAILS the citation assertion", () => {
