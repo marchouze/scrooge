@@ -139,4 +139,35 @@ describe("stripComments", () => {
   it("removes line and block comments but keeps code", () => {
     expect(stripComments("a; // productionTag(\nb; /* simulatedTag( */ c;")).toBe("a; \nb;  c;");
   });
+
+  // Regression: a naive lexer ran the block-comment regex over the whole source
+  // first, so a `/*`-forming byte sequence inside a `//` comment OR inside a
+  // string literal opened a phantom block comment that the next `*/` closed —
+  // silently deleting the real code (e.g. a `buildPhaseFixtureTag(` call) in
+  // between. This false-deleted a construction site and produced a phantom
+  // "stale allowlist entry" failure (worked around in PR #1445, root-caused
+  // here). The proper state-tracking lexer must NOT treat `/*` inside strings
+  // or line comments as a block-comment opener.
+  it("does not let `/*` inside a line comment or string swallow real code", () => {
+    const source = [
+      "// route is /api/v2/markets/fx/* — unbalanced, no closing star-slash here",
+      'const path = "/api/v2/markets/fx/* and a */ closer inside a string";',
+      'export const e = { provenance: buildPhaseFixtureTag({ sourceLineage: "x" }) };',
+    ].join("\n");
+    const stripped = stripComments(source);
+    // The real construction call survives both the line comment and the string.
+    expect(stripped).toContain("buildPhaseFixtureTag(");
+    // The line comment itself is gone.
+    expect(stripped).not.toContain("unbalanced");
+    // The scanner still detects the construction site over such a source.
+    const root = makeSyntheticTree();
+    try {
+      writeFileSync(join(root, "platform", "tricky-comments.ts"), `${source}\n`);
+      const hits = scanExplicitProvenance(root);
+      expect(hits.map((h) => h.file)).toEqual(["platform/tricky-comments.ts"]);
+      expect(hits[0]?.patterns).toContain("buildPhaseFixtureTag(...)");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });
