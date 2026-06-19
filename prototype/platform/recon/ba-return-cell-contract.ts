@@ -114,6 +114,15 @@ const KNOWN_PROJECTIONS = new Set([
   "ba400-operational-risk-fold",
   "ba410-quarterly-losses-fold",
   "ba420-rolling-losses-fold",
+  // Phase C batch 7 — securitisation + governance/limits report folds (one per
+  // form). The whole family is licence-day-data (no real securitisation / third-
+  // party shareholders / investment book pre-licence-day), so no cell is `sourced`
+  // and these folds are not exercised by the sourced-cell check today; they are
+  // listed so the family auto-passes the moment any cell becomes sourced.
+  "ba500-securitisation-schemes-fold",
+  "ba501-special-purpose-institutions-fold",
+  "ba125-shareholders-fold",
+  "ba130-investment-restrictions-fold",
 ]);
 const KNOWN_REFERENCE_DATA_PREFIXES = ["legal-entity-tree", "party-register", "return-form-meta"];
 
@@ -137,6 +146,11 @@ const KNOWN_REFERENCE_DATA_PREFIXES = ["legal-entity-tree", "party-register", "r
  * elements (Tablelist/Rowlist/Collist) are NOT BA\d{8} and are excluded.
  */
 export function xsdCellCodes(entry: ReturnContractRegistryEntry): Set<string> {
+  if (entry.xsdName === null) {
+    throw new Error(
+      `xsdCellCodes called for xlsx-only form ${entry.form} (no XSD); use cellCodeOracle`,
+    );
+  }
   const zipPath = resolve(REPO_ROOT, entry.schemaZipRelPath);
   const proc = Bun.spawnSync(["unzip", "-p", zipPath, entry.xsdName]);
   if (proc.exitCode !== 0) {
@@ -170,6 +184,162 @@ export function xsdCellCodes(entry: ReturnContractRegistryEntry): Set<string> {
     );
   }
   return codes;
+}
+
+/**
+ * Run `unzip -p <zip> <member>` and return the raw bytes (throws on failure).
+ * The schema zip's members are extracted with the same tool the XSD path uses.
+ */
+function unzipMember(zipPath: string, member: string): Uint8Array {
+  const proc = Bun.spawnSync(["unzip", "-p", zipPath, member]);
+  if (proc.exitCode !== 0) {
+    const stderr = new TextDecoder().decode(proc.stderr);
+    throw new Error(`unzip of ${zipPath} (${member}) failed (exit ${proc.exitCode}): ${stderr}`);
+  }
+  return proc.stdout;
+}
+
+/**
+ * COMPLETENESS ORACLE FOR AN xlsx-ONLY FORM (BA 501 — no XSD in the SARB schema
+ * package). Independently re-parses the workbook Elements sheet to return the
+ * set of BA-code (BAxxxxxxxx) data-cell codes — the cell universe the contract
+ * must cover exactly. This is the honest xlsx-based completeness basis the brief
+ * mandates for BA 501: cells are NOT fabricated; the contract is asserted
+ * complete against the workbook's own Element list.
+ *
+ * The parse is INDEPENDENT of the Python generator (different language, its own
+ * SpreadsheetML walk) so the two cannot agree by construction — completeness is
+ * a genuine cross-check, exactly as the XSD oracle is for XSD-backed forms. The
+ * xlsx (a nested zip inside the schema zip) is extracted with the system `unzip`
+ * (the same tool the XSD path uses); no JS zip dependency is added.
+ *
+ * The Elements-sheet column layout (Name in column C / 3) is the SARB-standard
+ * workbook shape shared across every BA form; a BA-code in the Name column is a
+ * data cell. The 3-digit Tablelist/Rowlist/Collist form-root list elements are
+ * not BA\d{8} and are excluded.
+ */
+export function xlsxCellCodes(entry: ReturnContractRegistryEntry): Set<string> {
+  if (entry.xlsxName === undefined) {
+    throw new Error(`xlsxCellCodes for ${entry.form}: registry entry has no xlsxName`);
+  }
+  const zipPath = resolve(REPO_ROOT, entry.schemaZipRelPath);
+  // Extract the xlsx (itself a zip) to a temp file so its internal parts can be
+  // read with a second `unzip` pass — the schema zip → xlsx → xl/* nesting.
+  const xlsxBytes = unzipMember(zipPath, entry.xlsxName);
+  const tmp = resolve(REPO_ROOT, `.local/recon-ba501-${process.pid}-${Date.now()}.xlsx`);
+  let codes: Set<string>;
+  try {
+    Bun.write(tmp, xlsxBytes);
+    const decoder = new TextDecoder();
+    const sharedStringsXml = decoder.decode(unzipMember(tmp, "xl/sharedStrings.xml"));
+    const workbookXml = decoder.decode(unzipMember(tmp, "xl/workbook.xml"));
+    const relsXml = decoder.decode(unzipMember(tmp, "xl/_rels/workbook.xml.rels"));
+
+    // shared strings: <si>…<t>…</t>…</si> — concatenate all <t> runs per <si>.
+    const sharedStrings: string[] = [];
+    const siRe = /<si\b[^>]*>([\s\S]*?)<\/si>/g;
+    let siM: RegExpExecArray | null = siRe.exec(sharedStringsXml);
+    while (siM !== null) {
+      const inner = siM[1] ?? "";
+      let text = "";
+      const tRe = /<t\b[^>]*>([\s\S]*?)<\/t>/g;
+      let tM: RegExpExecArray | null = tRe.exec(inner);
+      while (tM !== null) {
+        text += tM[1] ?? "";
+        tM = tRe.exec(inner);
+      }
+      sharedStrings.push(text);
+      siM = siRe.exec(sharedStringsXml);
+    }
+
+    // rels: rId → worksheet target.
+    const relTarget = new Map<string, string>();
+    const relRe =
+      /Id="(rId\d+)"[^>]*Type="[^"]*worksheet"[^>]*Target="(worksheets\/sheet\d+\.xml)"/g;
+    let relM: RegExpExecArray | null = relRe.exec(relsXml);
+    while (relM !== null) {
+      if (relM[1] !== undefined && relM[2] !== undefined) relTarget.set(relM[1], relM[2]);
+      relM = relRe.exec(relsXml);
+    }
+
+    // workbook: find the rId of the sheet named "Elements".
+    const sheetRe = /<sheet\b[^>]*\bname="([^"]+)"[^>]*\br:id="(rId\d+)"/g;
+    let elementsRid: string | undefined;
+    let shM: RegExpExecArray | null = sheetRe.exec(workbookXml);
+    while (shM !== null) {
+      if (shM[1] === "Elements") {
+        elementsRid = shM[2];
+        break;
+      }
+      shM = sheetRe.exec(workbookXml);
+    }
+    if (elementsRid === undefined) {
+      throw new Error(`${entry.form}: no 'Elements' sheet in ${entry.xlsxName}`);
+    }
+    const elementsTarget = relTarget.get(elementsRid);
+    if (elementsTarget === undefined) {
+      throw new Error(`${entry.form}: Elements sheet rId ${elementsRid} has no worksheet target`);
+    }
+    const sheetXml = decoder.decode(unzipMember(tmp, `xl/${elementsTarget}`));
+
+    // The Name column is column C (3rd). Scan every <c r="C{row}" …> cell and
+    // resolve its value (shared-string index when t="s", inline-string for t="inlineStr",
+    // else the literal). A BA-code value is a data-cell code.
+    codes = new Set<string>();
+    const cellRe = /<c\b[^>]*\br="C(\d+)"[^>]*?(?:\/>|>([\s\S]*?)<\/c>)/g;
+    let cM: RegExpExecArray | null = cellRe.exec(sheetXml);
+    while (cM !== null) {
+      const whole = cM[0];
+      const body = cM[2] ?? "";
+      const isShared = /\bt="s"/.test(whole);
+      const isInline = /\bt="inlineStr"/.test(whole);
+      let value: string | undefined;
+      if (isInline) {
+        let text = "";
+        const tRe = /<t\b[^>]*>([\s\S]*?)<\/t>/g;
+        let tM: RegExpExecArray | null = tRe.exec(body);
+        while (tM !== null) {
+          text += tM[1] ?? "";
+          tM = tRe.exec(body);
+        }
+        value = text;
+      } else {
+        const vM = /<v\b[^>]*>([\s\S]*?)<\/v>/.exec(body);
+        const raw = vM?.[1];
+        if (raw !== undefined) {
+          if (isShared) {
+            const idx = Number.parseInt(raw, 10);
+            value = Number.isNaN(idx) ? undefined : sharedStrings[idx];
+          } else {
+            value = raw;
+          }
+        }
+      }
+      if (value !== undefined && /^BA\d{8}$/.test(value)) codes.add(value);
+      cM = cellRe.exec(sheetXml);
+    }
+  } finally {
+    try {
+      Bun.spawnSync(["rm", "-f", tmp]);
+    } catch {
+      // best-effort temp cleanup; never mask the real error.
+    }
+  }
+  if (codes.size === 0) {
+    throw new Error(
+      `extracted 0 BA-code leaf cells from ${entry.xlsxName} Elements sheet — extraction or workbook shape changed`,
+    );
+  }
+  return codes;
+}
+
+/**
+ * The completeness oracle for a form: the XSD leaf-cell set when an XSD is
+ * present, else the xlsx Elements-sheet cell set (BA 501 — xlsx-only). Either
+ * way the cell universe is re-derived INDEPENDENTLY of the generated contract.
+ */
+export function cellCodeOracle(entry: ReturnContractRegistryEntry): Set<string> {
+  return entry.xsdName === null ? xlsxCellCodes(entry) : xsdCellCodes(entry);
 }
 
 /**
@@ -225,6 +395,17 @@ const KNOWN_LEAF_BASE_TYPES = new Set([
   // name filter excludes, so they need no entry here.
   "YesNo",
   "RiskEventType",
+  // Phase C batch 7 — securitisation + governance/limits family leaf types.
+  // BA 125 (shareholders) carries the domestic-vs-foreign shareholder enum; its
+  // XSD name is the spreadsheetML-escaped "Foreign/Domestic". (BA 500's XSD uses
+  // only Monetary1000 / Text / Integer — all already known; BA 130's XSD uses
+  // Monetary1000 / Text / Numeric / Integer / IDType — all already known. BA 501
+  // has NO XSD: its completeness oracle is the xlsx Elements sheet, handled by
+  // `xlsxCellCodes` below, so its bespoke enum/date leaf types — Programme /
+  // IFRS 9 / SchemeTriggers / Class / Rated / RatingScore / InstrumentProfile /
+  // InterestRateBenchmark / CP_Date — are NOT XSD leaf types and are not listed
+  // here.)
+  "Foreign_x002F_Domestic",
 ]);
 
 function isLeafBaseType(base: string): boolean {
@@ -275,27 +456,28 @@ const coaCategories = (): Set<string> => new Set(COA_ACCOUNTS.map((a) => a.categ
 
 export function assertCompleteness(
   contract: ReturnContract,
-  xsdCodes: Set<string>,
+  oracleCodes: Set<string>,
   violations: ReconViolation[],
+  oracleName = "xsd",
 ): number {
   const form = contract.returnForm;
   const contractCodes = new Set(contract.cells.map((c) => c.cellRef.xsdElement));
-  // (a) no orphan contract cell (in contract, not in XSD).
+  // (a) no orphan contract cell (in contract, not in the cell oracle).
   for (const code of contractCodes) {
-    if (!xsdCodes.has(code)) {
+    if (!oracleCodes.has(code)) {
       violations.push({
         subject: `${form}.${code}`,
-        message: `contract entry references cell ${code} which is NOT a typed leaf in ${form}.xsd`,
+        message: `contract entry references cell ${code} which is NOT a typed leaf in ${form} ${oracleName}`,
         severity: "fail",
       });
     }
   }
-  // (b) no missing XSD cell (in XSD, not in contract) — completeness.
-  for (const code of xsdCodes) {
+  // (b) no missing oracle cell (in oracle, not in contract) — completeness.
+  for (const code of oracleCodes) {
     if (!contractCodes.has(code)) {
       violations.push({
         subject: `${form}.${code}`,
-        message: `${form}.xsd cell ${code} has NO contract entry (incomplete coverage)`,
+        message: `${form} ${oracleName} cell ${code} has NO contract entry (incomplete coverage)`,
         severity: "fail",
       });
     }
@@ -308,7 +490,7 @@ export function assertCompleteness(
       severity: "fail",
     });
   }
-  return xsdCodes.size + contractCodes.size;
+  return oracleCodes.size + contractCodes.size;
 }
 
 export function assertCitationsResolve(
@@ -481,9 +663,10 @@ export function assertForm(
   violations: ReconViolation[],
 ): number {
   const contract = loadReturnContract(entry.form); // throws on schema violation (fail-closed)
-  const xsdCodes = xsdCellCodes(entry);
+  const oracleCodes = cellCodeOracle(entry);
+  const oracleName = entry.xsdName === null ? "xlsx (Elements sheet — no XSD)" : "xsd";
   let asserted = 0;
-  asserted += assertCompleteness(contract, xsdCodes, violations);
+  asserted += assertCompleteness(contract, oracleCodes, violations, oracleName);
   asserted += assertCitationsResolve(contract, ctx.obIds, violations);
   asserted += assertSourcedCellsReal(contract, ctx.cats, ctx.approved, violations);
   asserted += assertNonSourcedTracked(contract, violations);

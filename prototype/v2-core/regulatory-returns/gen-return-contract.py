@@ -926,6 +926,197 @@ FORMS = {
             "fabrication."
         ),
     ),
+    # -----------------------------------------------------------------------
+    # Phase C batch 7 — the SECURITISATION + GOVERNANCE/LIMITS family
+    # (BA 500 / BA 501 / BA 125 / BA 130).
+    #
+    # BA 500 (Securitisation Schemes) + BA 501 (Special-purpose institutions
+    # schemes) carry genuine PRODUCT-ATTRIBUTE requirements a SECURITISATION
+    # product must capture — the securitisation ROLE (originator / sponsor /
+    # investor / repackager), the regulatory APPROACH (SEC-IRBA / SEC-ERBA /
+    # SEC-SA), the underlying ASSET CLASS, the TRANCHE/SENIORITY class, the credit
+    # RATING (scale + score), the INSTRUMENT PROFILE (fixed / floating) + benchmark,
+    # the RISK-RETENTION / credit-enhancement, and the SCHEME TRIGGERS. These attach
+    # to the FUTURE, unapproved securitisation product `prd:bank:securitisation:scheme`
+    # (NOT the live FX product), so the NPA gate never wrongly blocks
+    # `prd:bank:fx:otc-vanilla`. The bank runs no securitisation pre-licence-day, so
+    # every BA 500 / BA 501 cell is `licence-day-data` (honest: no schemes to report)
+    # while the product-attribute dataRequirements bind NOW (the build-now value).
+    #
+    # BA 125 (Return regarding shareholders) + BA 130 (Restriction on investments,
+    # loans and advances) are ENTITY-/PORTFOLIO-LEVEL governance/limits returns:
+    # shareholders are the bank's OWN ownership structure (a party-register fold,
+    # NOT a product attribute); investment restrictions are bank-wide prudential
+    # limits on the bank's OWN investment/loan book (an exposure-aggregate fold).
+    # Neither keys off a product-static menu attribute, so they carry ZERO product-
+    # attribute requirements (no manufacture, no bulk-marking — per the brief's
+    # ~0 expectation). Both are licence-day-data (no real third-party shareholders /
+    # investment book pre-licence-day).
+    # -----------------------------------------------------------------------
+    "BA500": dict(
+        name="Securitisation Schemes",
+        obligation="ORG-PR-RETURNS-019",
+        clause=(
+            "SARB Prudential Authority Directive D5/2025 §2.1.20 (form BA 500 — Securitisation "
+            "Schemes, Annexure 19A/19B) read with the Regulations relating to Banks reg 23(6)(h) "
+            "(securitisation and resecuritisation exposures — the securitisation framework, "
+            "SEC-IRBA / SEC-ERBA / SEC-SA hierarchy, risk-retention and significant-risk-transfer "
+            "requirements) and the Securitisation Notice (Government Notice on securitisation "
+            "schemes under Banks Act 94 of 1990 s.1(1) 'the business of a bank'); Basel CRE40–CRE45 "
+            "(the securitisation framework); Banks Act 94 of 1990 s.6(6)(a). [Post-#1451 corrected "
+            "row: BA 500 = Securitisation Schemes per the canonical SARB Excel form schedule; the "
+            "prior 'remuneration return' annotation is the documented fabrication the correction "
+            "supersedes — see ORG-PR-RETURNS-019.]"
+        ),
+        fold="ba500-securitisation-schemes-fold",
+        # Securitisation exposures fold from the securitisation-schemes fold over the
+        # securitisation-exposure register (by role / approach / asset class / tranche)
+        # + the securitisation-RWA projection. No live GL category exists pre-licence-
+        # day (the bank runs no securitisation scheme), so the fold is the
+        # authoritative source.
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,  # no real securitisation schemes pre-licence-day
+        securitisation_family=True,
+        status_note=(
+            "Securitisation-scheme figures (exposure, risk-weighted exposure, supervisory "
+            "deductions and credit impairments by securitisation role — originator / sponsor / "
+            "investor / repackager — regulatory approach SEC-IRBA / SEC-ERBA / SEC-SA, and "
+            "underlying asset class) fold from the ba500-securitisation-schemes-fold over the "
+            "securitisation-exposure register + the securitisation-RWA projection. The fold exists "
+            "as substrate; the securitisation exposures that fill the cells require the bank to run "
+            "or invest in a securitisation scheme, which the bank-in-formation does not pre-licence-"
+            "day, so those values are licence-day data. The product-attribute dataRequirements — "
+            "securitisation role, approach, asset class, tranche/seniority, risk-retention — bind "
+            "now so a future securitisation product is correctly gated. No silent fabrication."
+        ),
+    ),
+    "BA501": dict(
+        name="Special-purpose institutions schemes",
+        obligation="ORG-PR-RETURNS-029",
+        clause=(
+            "SARB Prudential Authority Directive D5/2025 §2.1.20 (form BA 500 — Securitisation "
+            "Schemes) read with the Regulations relating to Banks reg 23(6)(h) (securitisation and "
+            "resecuritisation) and the Securitisation Notice; Basel CRE40–CRE45 (the securitisation "
+            "framework); Banks Act 94 of 1990 s.6(6)(a). [Provenance / honesty (Principle 2): form "
+            "BA 501 (Special-purpose institutions schemes) is NOT enumerated as a separate Annexure "
+            "in the D5/2025 §2.1 return schedule — that schedule lists BA 500 (Annexure 19A) then "
+            "jumps to BA 600 (Annexure 20A). BA 501 is the SPECIAL-PURPOSE-INSTITUTION (SPV) "
+            "companion form of the BA 500 Securitisation Schemes return: per-scheme detail on the "
+            "special-purpose institution (the securitisation programme, its triggers, the tranche "
+            "instruments — class / rating / instrument profile / benchmark — the underlying-asset "
+            "pool, guarantees / credit enhancement, liquidity facilities and hedges). It is "
+            "mandated under the same securitisation framework (Reg 23(6)(h) + the Securitisation "
+            "Notice + the SARB securitisation directives D4/2017 (securitisation vehicles) and "
+            "D10/2022 (STC criteria)) as the SPV-level disaggregation of BA 500. The obligation row "
+            "ORG-PR-RETURNS-029 is authored for this form (no D5/2025 §-number is fabricated; the "
+            "citation is the BA 500 §2.1.20 securitisation routing + the securitisation framework). "
+            "The BA 501 schema package is xlsx-only (no XSD in the SARB Umoja set); the contract is "
+            "machine-generated from the workbook Elements sheet (the same cell oracle the recon "
+            "completeness check re-extracts for this form).]"
+        ),
+        fold="ba501-special-purpose-institutions-fold",
+        # BA 501 SPV-detail cells fold from the special-purpose-institutions fold over
+        # the per-scheme SPV register (programme / triggers / tranches / underlying
+        # pool / guarantees / liquidity / hedges). No live GL category exists pre-
+        # licence-day; the fold is the authoritative source.
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,  # no real special-purpose-institution schemes pre-licence-day
+        securitisation_family=True,
+        # BA 501 has no XSD — the recon completeness oracle re-extracts the cell
+        # universe from the xlsx Elements sheet for this form (see the registry's
+        # `xsdName: null` + the recon's xlsx fallback).
+        xlsx_only=True,
+        status_note=(
+            "Special-purpose-institution (securitisation SPV) figures (per-scheme programme type, "
+            "accounting policy, scheme triggers, tranche instruments by class / credit rating / "
+            "instrument profile / interest-rate benchmark / issue + maturity dates, the underlying-"
+            "asset pool by asset class with collateral and impairment staging, originator "
+            "guarantees / credit enhancement, liquidity facilities and hedges) fold from the "
+            "ba501-special-purpose-institutions-fold over the per-scheme SPV register. The fold "
+            "exists as substrate; the SPV-scheme detail that fills the cells requires the bank to "
+            "sponsor or invest in a securitisation special-purpose institution, which the bank-in-"
+            "formation does not pre-licence-day, so those values are licence-day data. The product-"
+            "attribute dataRequirements — securitisation role, tranche/seniority class, credit "
+            "rating, instrument profile, scheme triggers, risk-retention — bind now so a future "
+            "securitisation product is correctly gated. No silent fabrication."
+        ),
+    ),
+    "BA125": dict(
+        name="Return regarding shareholders",
+        obligation="ORG-PR-RETURNS-005",
+        clause=(
+            "SARB Prudential Authority Directive D5/2025 §2.1.6 (form BA 125 — Return regarding "
+            "shareholders, Annexure 5A/5B) read with the Banks Act 94 of 1990 s.37 (shareholding "
+            "requirements — domestic and foreign shareholders; limits and Registrar approval), "
+            "s.38 (acquisition of shareholding exceeding the prescribed threshold — prior PA "
+            "approval), s.39 (furnishing of information by shareholders) and s.67 (disclosure of "
+            "certain shareholders), read with the Regulations relating to Banks (shareholder / "
+            "ownership analysis — ordinary, cumulative-preference and non-cumulative-preference "
+            "share classes; domestic vs foreign); Banks Act s.6(6)(a). [Post-#1451 corrected row: "
+            "BA 125 = Return regarding shareholders per the canonical SARB Excel form schedule; "
+            "the prior 'additional liquidity monitoring / intraday liquidity' annotation is the "
+            "documented fabrication the correction supersedes — see ORG-PR-RETURNS-005.]"
+        ),
+        fold="ba125-shareholders-fold",
+        # Shareholder figures fold from the shareholders fold over the party register
+        # (the bank's OWN ownership structure — shareholder identity, share class,
+        # domestic/foreign, holding %). No GL category holds the ownership register;
+        # the fold is the authoritative source. Shareholders are an ENTITY-level
+        # attribute of the bank, NOT a product attribute (no product feeds BA 125).
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,  # no real third-party shareholders pre-licence-day
+        status_note=(
+            "Shareholder figures (the bank's ownership structure by shareholder identity, share "
+            "class — ordinary / cumulative-preference / non-cumulative-preference — domestic vs "
+            "foreign holding, number of shares and holding percentage) fold from the "
+            "ba125-shareholders-fold over the party register. The fold and the party register "
+            "exist as substrate; the bank-in-formation has no real third-party shareholders pre-"
+            "licence-day (the founding-capital ownership is registered at licence-day), so those "
+            "values are licence-day data. Shareholders are the bank's OWN entity-level ownership, "
+            "NOT a product attribute — BA 125 carries no product-attribute requirement. No silent "
+            "fabrication."
+        ),
+    ),
+    "BA130": dict(
+        name="Restriction on investments, loans and advances",
+        obligation="ORG-PR-RETURNS-006",
+        clause=(
+            "SARB Prudential Authority Directive D5/2025 §2.1.7 (form BA 130 — Restriction on "
+            "investments, loans and advances, Annexure 6A) read with the Regulations relating to "
+            "Banks reg 24 (investments, loans and advances — the prudential restriction on the "
+            "bank's holdings of, and exposures to, associates / subsidiaries / connected persons "
+            "not at arm's length) and the Banks Act 94 of 1990 s.77 (restriction on investments by "
+            "a bank) and s.78 (undesirable practices); Banks Act s.6(6)(a). [Post-#1451 corrected "
+            "row: BA 130 = Restriction on investments, loans and advances per the canonical SARB "
+            "Excel form schedule; the prior 'liquidity stress-testing' annotation is the documented "
+            "fabrication the correction supersedes — see ORG-PR-RETURNS-006.]"
+        ),
+        fold="ba130-investment-restrictions-fold",
+        # Investment-restriction figures fold from the investment-restrictions fold
+        # over the bank's OWN investment / loan / advance book aggregated against the
+        # prudential limits (by associate / connected-person / arm's-length status).
+        # No single GL category holds the computed limit-vs-actual; the fold is the
+        # authoritative source. This is a PORTFOLIO-level prudential limit on the
+        # bank's own book, NOT a product attribute.
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,  # no real investment / loan book pre-licence-day
+        status_note=(
+            "Investment-restriction figures (the bank's investments, loans and advances to "
+            "associates, subsidiaries and connected persons — incl. those not at arm's length — "
+            "measured against the prudential restriction limits of Reg 24 / Banks Act s.77) fold "
+            "from the ba130-investment-restrictions-fold over the bank's own investment / loan / "
+            "advance book. The fold exists as substrate; the investment / loan positions that fill "
+            "the cells require a real investment and lending book, which the bank-in-formation does "
+            "not hold pre-licence-day, so those values are licence-day data. Investment "
+            "restrictions are PORTFOLIO-level prudential limits on the bank's own book, NOT a "
+            "product attribute — BA 130 carries no product-attribute requirement. No silent "
+            "fabrication."
+        ),
+    ),
 }
 
 # ---------------------------------------------------------------------------
@@ -955,6 +1146,32 @@ CREDIT_ENUM_TYPES = (
 #     `_x0020_`-escaped XSD names map to the same human strings.
 LIQUIDITY_LCR_RATIO_TYPE = "Liquidity coverage ratio (LCR)"
 LIQUIDITY_SPECIFY_TEXT_TYPE = "Specify concentration of deposit funding"
+
+# Securitisation / governance family enum leaf types (BA 501 / BA 125). These are
+# SARB code-list types (Data-Types sheet `Base Data Type = enumeration`) whose
+# value is a constrained category. They map to the framework `enum` valueType.
+#   BA 501 (Special-purpose institutions schemes — securitisation SPV detail):
+#     Programme / IFRS 9 / SchemeTriggers / Class / Rated / RatingScore /
+#     InstrumentProfile / InterestRateBenchmark — the scheme/instrument/credit-
+#     rating classification axes of a securitisation scheme.
+#   BA 125 (Return regarding shareholders):
+#     Foreign/Domestic — the domestic-vs-foreign shareholder split axis.
+SECGOV_ENUM_TYPES = (
+    "Programme",
+    "IFRS 9",
+    "SchemeTriggers",
+    "Class",
+    "Rated",
+    "RatingScore",
+    "InstrumentProfile",
+    "InterestRateBenchmark",
+    "Foreign/Domestic",
+)
+
+# BA 501 carries a bespoke date leaf type beyond the common `Date`:
+#   "CP_Date" — a common-property full-date (dd/mm/yyyy) cell (completion date,
+#   scheme dates). The Data-Types sheet records `Base Data Type = date`.
+SECGOV_DATE_TYPE = "CP_Date"
 
 # SARB `Number (n,2)` complexTypes (BA 210 / BA 220) are decimal cells. BA 220's
 # `Number (14,2)` carries an explicit "Currency data type" XSD documentation
@@ -992,28 +1209,33 @@ def value_type_for(xsd_type: str) -> str:
         return "ratio"
     if t == "Integer":
         return "count"
-    if t == "Date":
+    if t in ("Date", SECGOV_DATE_TYPE):
         return "date"
     if t in ("Text", "IDType", "Currency"):
         return "text"
-    if t in (
-        "EnumCountry",
-        "ExposureType",
-        "CP_YesNo",
-        "RegulatoryApproach",
-        "SourceOfCapital",
-        # Operational family (BA 400 / BA 410): the SARB code-list types whose
-        # value is a constrained category.
-        #   - "YesNo" — a Yes/No response cell (BA 400 ILM-usage flag, BA 410
-        #     "previously reported" / "status: ended" flags).
-        #   - "RiskEventType" — the BA 410 operational-loss risk-event-type code
-        #     (the Basel-II/Reg-33 loss-event-type taxonomy: internal fraud,
-        #     external fraud, employment practices, clients/products/business
-        #     practices, damage to physical assets, business disruption/system
-        #     failures, execution/delivery/process management).
-        "YesNo",
-        "RiskEventType",
-    ) or t in CREDIT_ENUM_TYPES:
+    if (
+        t
+        in (
+            "EnumCountry",
+            "ExposureType",
+            "CP_YesNo",
+            "RegulatoryApproach",
+            "SourceOfCapital",
+            # Operational family (BA 400 / BA 410): the SARB code-list types whose
+            # value is a constrained category.
+            #   - "YesNo" — a Yes/No response cell (BA 400 ILM-usage flag, BA 410
+            #     "previously reported" / "status: ended" flags).
+            #   - "RiskEventType" — the BA 410 operational-loss risk-event-type code
+            #     (the Basel-II/Reg-33 loss-event-type taxonomy: internal fraud,
+            #     external fraud, employment practices, clients/products/business
+            #     practices, damage to physical assets, business disruption/system
+            #     failures, execution/delivery/process management).
+            "YesNo",
+            "RiskEventType",
+        )
+        or t in CREDIT_ENUM_TYPES
+        or t in SECGOV_ENUM_TYPES
+    ):
         return "enum"
     # Any unmapped leaf type is surfaced loudly rather than silently coerced
     # (Engineering Charter cmd 5 — no silent deferral).
@@ -2032,6 +2254,164 @@ def operational_cell_status(form: str, col_label: str, row_label: str) -> str:
     return "licence-day-data"
 
 
+# ===========================================================================
+# SECURITISATION PRODUCT-ATTRIBUTE MAPPER — Phase C batch 7 (BA 500 / BA 501).
+# ===========================================================================
+#
+# BA 500 / BA 501 genuinely require attributes a SECURITISATION product must
+# carry. A `product-attribute` dataRequirement whose ref is `<productId>#<attr>`
+# is the product→cell edge the L3 inverse index walks and the NPA gate binds on:
+# a future securitisation product cannot reach approval unless it captures (or
+# tracks-as-deferred) the `required:true` attributes its cells owe.
+#
+# THE FUTURE SECURITISATION PRODUCT (honest, not yet approved): no securitisation
+# product exists (the live products are FX / bond / equity / IRD / treasury —
+# none feeds a securitisation cell, so the live FX product is NOT wrongly
+# blocked). The requirements attach to the canonical future product id
+# `prd:bank:securitisation:scheme`. Because that product is not an approved
+# ProductApproved, every BA 500 / BA 501 cell is `licence-day-data` (which is
+# also honest — no real securitisation schemes pre-licence-day).
+#
+# PRECISION + HONESTY (the brief): `required:true` ONLY where a cell REPORTS the
+# attribute as its own dimension (the tranche-class cell, the rating cell, the
+# instrument-profile cell, the benchmark cell). The monetary AGGREGATE cells of
+# BA 500 (exposure / RWA by role × asset-class) are merely SLICED by securitisation
+# role / approach / asset class → `required:false` (the aggregate still folds,
+# possibly to an honest 0; the attribute is one of several drivers, not a
+# populate-or-die input). No bulk-marking.
+SECURITISATION_PRODUCT_ID = "prd:bank:securitisation:scheme"
+
+SECURITISATION_ATTRS = {
+    "securitisationRole": (
+        "the bank's role in the securitisation scheme — originator (traditional / "
+        "synthetic / deemed / repackager / remote), sponsor, or a secondary role "
+        "(investor / purchaser / underwriter / credit enhancer / liquidity provider / "
+        "servicing agent). Determines which BA 500 role row the exposure reports in. "
+        "(SARB Regulations relating to Banks reg 23(6)(h); Basel CRE40.)"
+    ),
+    "securitisationApproach": (
+        "the regulatory capital approach for the securitisation exposure — SEC-IRBA, "
+        "SEC-ERBA / IAA, or SEC-SA (the securitisation hierarchy). Selects the BA 500 "
+        "approach row and the risk-weight basis. (SARB reg 23(6)(h); Basel CRE41–CRE44.)"
+    ),
+    "underlyingAssetClass": (
+        "the asset class of the underlying securitised pool — corporate / SME "
+        "receivables, retail mortgages / revolving / instalment-sale-and-leasing / "
+        "other, commercial property, bonds / loans. Splits the BA 500 / BA 501 asset-"
+        "class columns. (SARB reg 23(6)(h); Basel CRE40–CRE45.)"
+    ),
+    "trancheClass": (
+        "the tranche / seniority class of the securitisation position (senior / "
+        "mezzanine / first-loss; the instrument class). Drives the BA 501 tranche "
+        "instrument detail and the securitisation risk weight by seniority. (SARB reg "
+        "23(6)(h); Basel CRE41–CRE44 tranche-seniority risk weights.)"
+    ),
+    "riskRetention": (
+        "the risk-retention / credit-enhancement the originator holds (the retained "
+        "interest, gain-on-sale, interest-only strips, originator guarantee), required "
+        "for significant-risk-transfer assessment and the BA 500 deduction / retained-"
+        "exposure lines. (SARB reg 23(6)(h) significant risk transfer; Basel CRE40.)"
+    ),
+    "creditRating": (
+        "the external / internal credit rating of the tranche instrument — the rated "
+        "flag, the rating agency, and the international- and national-scale rating "
+        "score — which selects the SEC-ERBA risk weight and the BA 501 rating cells. "
+        "(SARB reg 23(6)(h); Basel CRE42 ERBA.)"
+    ),
+    "instrumentProfile": (
+        "the tranche instrument's interest profile — fixed vs floating — and its "
+        "interest-rate benchmark, reported on the BA 501 instrument-detail lines. "
+        "(SARB reg 23(6)(h); the securitisation note terms.)"
+    ),
+    "schemeTrigger": (
+        "the securitisation scheme's triggers (early-amortisation / performance "
+        "triggers — type, condition, trigger level vs current level, breached flag), "
+        "reported on the BA 501 scheme-triggers sub-form. (SARB reg 23(6)(h)(xi) "
+        "early-amortisation; Basel CRE40 scheme structural features.)"
+    ),
+}
+
+
+def _sec_clause_for(attr: str) -> str:
+    """The Basel/Reg clause text for a securitisation attribute (its `clause`)."""
+    desc = SECURITISATION_ATTRS[attr]
+    start = desc.rfind("(")
+    return desc[start:].strip("() ") if start != -1 else desc
+
+
+def securitisation_product_attributes(
+    form: str, col_label: str, row_label: str, xsd_type: str
+):
+    """Return the (attr, required) securitisation-product-attribute edges this
+    BA 500 / BA 501 cell genuinely owes, keyed off the cell's regulatory MEANING
+    (its row/column dimension + leaf type). Precise + honest — `required:true`
+    only where the cell REPORTS the attribute; `required:false` on a monetary
+    aggregate merely sliced by it. Returns [] for cells with no genuine
+    securitisation-product-attribute dependency (form-meta / hash-totals)."""
+    text = f"{col_label or ''} {row_label or ''}".lower()
+    out: list[tuple[str, bool]] = []
+
+    def add(attr: str, required: bool) -> None:
+        if attr not in {a for a, _ in out}:
+            out.append((attr, required))
+
+    # Hash-total / control cells are form-integrity controls, not a securitisation
+    # datum — no product attribute (avoid bulk-marking).
+    if "hashtotal" in text or "hash total" in text:
+        return out
+
+    # ---- ENUM / identity leaf cells that REPORT the attribute → required:true ----
+    if xsd_type in ("Class",) or "class" == text.strip() or "tranche" in text:
+        add("trancheClass", True)
+    if xsd_type in ("Rated", "RatingScore") or "rating" in text or "rated by" in text:
+        add("creditRating", True)
+    if xsd_type == "InstrumentProfile" or "instrument profile" in text:
+        add("instrumentProfile", True)
+    if xsd_type == "InterestRateBenchmark" or "interest rate benchmark" in text:
+        add("instrumentProfile", True)
+    if xsd_type == "SchemeTriggers" or "scheme trigger" in text or "type of trigger" in text:
+        add("schemeTrigger", True)
+    if xsd_type == "Programme" or "type of programme" in text:
+        # The programme-type cell reports the scheme structure → the role axis.
+        add("securitisationRole", True)
+
+    # ---- ROW / COLUMN dimension cells: the cell is SLICED by the attribute ----
+    # (monetary aggregates) → required:false (the aggregate folds regardless).
+    role_terms = (
+        "as originator",
+        "deemed originator",
+        "repackager",
+        "sponsor",
+        "remote originator",
+        "investor",
+        "purchaser",
+        "underwriter",
+        "credit enhancer",
+        "liquidity provider",
+        "servicing agent",
+        "primary role",
+        "secondary role",
+    )
+    if any(t in text for t in role_terms):
+        add("securitisationRole", False)
+    approach_terms = ("sec-irba", "sec-erba", "sec-sa", "internal ratings", "external ratings",
+                      "standardised approach", "internal assessment approach", "iaa")
+    if any(t in text for t in approach_terms):
+        add("securitisationApproach", False)
+    asset_terms = ("corporate receivables", "sme receivables", "sme  receivables",
+                   "mortgages", "revolving products", "instalment sales", "commercial property",
+                   "bonds/loans", "corporate loans", "sme loans", "bonds")
+    if any(t in text for t in asset_terms):
+        add("underlyingAssetClass", False)
+    retention_terms = ("gain on sale", "interest-only strip", "interest only strip",
+                       "retained exposure", "credit enhancer", "guarantee provided by the originator",
+                       "supervisory deduction")
+    if any(t in text for t in retention_terms):
+        add("riskRetention", False)
+
+    return out
+
+
 # ---------------------------------------------------------------------------
 # xlsx Elements-sheet extraction — IDENTICAL column layout across all BA forms
 # (verified BA100/BA110/BA120/BA600/BA610). Reused from gen-ba100-contract.py.
@@ -2195,7 +2575,11 @@ def currency_dimension_for(form: str, col_label: str, row_label: str, form_cfg) 
     # forms). A cell whose row/column explicitly names a currency axis is by-
     # currency; the default is functional (ZAR reporting currency by config,
     # NEVER a literal — P5: the dimension carries the axis, not "ZAR").
-    if form in ("BA400", "BA410", "BA420"):
+    # Securitisation + governance/limits family (BA 500 / BA 501 / BA 125 / BA 130)
+    # follows the SAME functional-by-default rule: securitisation exposures,
+    # shareholder amounts and investment-restriction amounts are aggregated, not
+    # split by currency on these forms (a named currency axis → by-currency).
+    if form in ("BA400", "BA410", "BA420", "BA500", "BA501", "BA125", "BA130"):
         if any(
             k in text
             for k in (
@@ -2448,6 +2832,30 @@ def build_cell(form: str, form_cfg, e):
                 }
             )
 
+    # --- SECURITISATION product-attribute requirements (Phase C batch 7) ---
+    # A BA 500 / BA 501 cell that genuinely keys off a securitisation product-static
+    # attribute carries a `product-attribute` requirement
+    # `ref: <SECURITISATION_PRODUCT_ID>#<attr>`. `required:true` ONLY where the cell
+    # REPORTS the attribute (tranche class / rating / instrument profile / scheme
+    # trigger); else `required:false` on the sliced monetary aggregate. The future
+    # securitisation product is unapproved, so every such cell is licence-day-data.
+    # See securitisation_product_attributes().
+    if form_cfg.get("securitisation_family"):
+        for attr, required in securitisation_product_attributes(
+            form, collabel, rowlabel, xsd_type
+        ):
+            data_reqs.append(
+                {
+                    "sourceKind": "product-attribute",
+                    "ref": f"{SECURITISATION_PRODUCT_ID}#{attr}",
+                    "description": (
+                        f"A securitisation product feeding {label} must carry its "
+                        f"{attr}: {SECURITISATION_ATTRS[attr]}"
+                    ),
+                    "required": required,
+                }
+            )
+
     # --- currency dimension (P5) ---
     currency_dim = None
     if value_type == "money":
@@ -2554,19 +2962,32 @@ def generate(form: str):
     cells = [build_cell(form, form_cfg, e) for e in els]
 
     # Provenance: name the xlsx that was actually inside the zip (version-suffixed
-    # for BA 600 / BA 610).
+    # for BA 600 / BA 610 / BA 501). BA 501 is xlsx-ONLY (no XSD in the SARB Umoja
+    # set) — the cell oracle is the workbook Elements sheet for that form, and the
+    # recon completeness check re-extracts the cell universe from the same xlsx
+    # (see the registry `xsdName: null` + the recon xlsx fallback). For every other
+    # form the XSD is present and named as the independent oracle.
     z = zipfile.ZipFile(schema_zip)
     xlsx_name = next(n for n in z.namelist() if n.endswith(".xlsx"))
-    xsd_name = next(n for n in z.namelist() if n.endswith(".xsd"))
+    xsd_name = next((n for n in z.namelist() if n.endswith(".xsd")), None)
+
+    if xsd_name is not None:
+        schema_source = (
+            f"Regulations/SARB-PA/ba-returns/schemas/{form}.zip → {xsd_name} + "
+            f"{xlsx_name} (Elements sheet)"
+        )
+    else:
+        schema_source = (
+            f"Regulations/SARB-PA/ba-returns/schemas/{form}.zip → {xlsx_name} "
+            f"(Elements sheet — xlsx-only, no XSD in the SARB schema package; the "
+            f"workbook Elements sheet is the authoritative cell oracle for this form)"
+        )
 
     contract = {
         "returnForm": form,
         "formName": form_cfg["name"],
         "obligationId": form_cfg["obligation"],
-        "schemaSource": (
-            f"Regulations/SARB-PA/ba-returns/schemas/{form}.zip → {xsd_name} + "
-            f"{xlsx_name} (Elements sheet)"
-        ),
+        "schemaSource": schema_source,
         "cells": cells,
     }
 
@@ -2632,10 +3053,15 @@ if __name__ == "__main__":
     elif len(sys.argv) == 2 and sys.argv[1] == "--operational":
         for f in ("BA400", "BA410", "BA420"):
             generate(f)
+    elif len(sys.argv) == 2 and sys.argv[1] == "--secgov":
+        # Phase C batch 7 — securitisation (BA 500 / BA 501) + governance/limits
+        # (BA 125 / BA 130). BA 501 is xlsx-only (no XSD).
+        for f in ("BA500", "BA501", "BA125", "BA130"):
+            generate(f)
     else:
         raise SystemExit(
             "usage: gen-return-contract.py "
-            "<BA110|BA120|BA200|BA210|BA220|BA300|BA310|BA320|BA325|BA330|BA340|BA350|"
-            "BA400|BA410|BA420|BA600|BA610|BA700|BA701|"
-            "--all|--credit|--liquidity|--market|--capital|--operational>"
+            "<BA110|BA120|BA125|BA130|BA200|BA210|BA220|BA300|BA310|BA320|BA325|BA330|BA340|"
+            "BA350|BA400|BA410|BA420|BA500|BA501|BA600|BA610|BA700|BA701|"
+            "--all|--credit|--liquidity|--market|--capital|--operational|--secgov>"
         )
