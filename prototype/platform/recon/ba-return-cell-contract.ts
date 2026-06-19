@@ -105,6 +105,15 @@ const KNOWN_PROJECTIONS = new Set([
   // — the ICAAP economic-capital model output does not exist pre-licence-day).
   "ba700-capital-adequacy-fold",
   "ba701-regulatory-vs-economic-capital-fold",
+  // Phase C batch 6 — operational-family report folds (one per form). BA 400's
+  // fold is the live ba-400-op-risk.ts op-risk projection (generateBa300OpRisk —
+  // BIA / TSA gross-income → op-capital, op-RWA = 12.5 × op-capital); the
+  // regulatory α / β / 12.5× constants are sourced. BA 410 / BA 420 fold from
+  // their named operational-loss projections over the OperationalLossEvent stream
+  // (wholly licence-day — no operational-loss history pre-licence-day).
+  "ba400-operational-risk-fold",
+  "ba410-quarterly-losses-fold",
+  "ba420-rolling-losses-fold",
 ]);
 const KNOWN_REFERENCE_DATA_PREFIXES = ["legal-entity-tree", "party-register", "return-form-meta"];
 
@@ -201,6 +210,21 @@ const KNOWN_LEAF_BASE_TYPES = new Set([
   //   "Specify concentration of deposit funding" → a free-text "specify…" cell
   "Liquidity_x0020_coverage_x0020_ratio_x0020__x0028_LCR_x0029_",
   "Specify_x0020_concentration_x0020_of_x0020_deposit_x0020_funding",
+  // Phase C batch 6 — operational-family bespoke leaf types (BA 400 / BA 410).
+  //   "YesNo"          → a Yes/No response cell (an enum) — BA 400 ILM-usage flag,
+  //                      BA 410 "previously reported" / "status: ended" flags.
+  //   "RiskEventType"  → the BA 410 operational-loss risk-event-type code (an
+  //                      enum) — the Basel-II / Reg-33 / OPE25 loss-event-type
+  //                      taxonomy (internal fraud, external fraud, employment
+  //                      practices, clients/products/business practices, damage to
+  //                      physical assets, business disruption / system failures,
+  //                      execution / delivery / process management).
+  // NB: the "Percentage 19,9" (BA 400) leaf type is matched by the `Percentage`
+  // prefix in isLeafBaseType(); the "CP_Date" / "CP_Integer (14)" meta types sit
+  // on non-BA-code form-meta elements (ReportingEndDate etc.) which the BA\d{8}
+  // name filter excludes, so they need no entry here.
+  "YesNo",
+  "RiskEventType",
 ]);
 
 function isLeafBaseType(base: string): boolean {

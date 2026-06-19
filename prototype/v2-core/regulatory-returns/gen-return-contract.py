@@ -742,6 +742,190 @@ FORMS = {
             "No silent fabrication."
         ),
     ),
+    # -----------------------------------------------------------------------
+    # Phase C batch 6 — the OPERATIONAL FAMILY (BA 400 / BA 410 / BA 420). The
+    # operational-risk capital return + its two loss companions.
+    #
+    # OPERATIONAL RISK IS ENTITY-LEVEL — NOT product-attribute-driven. The
+    # BIA / TSA capital is computed from the bank's ANNUAL GROSS INCOME (an
+    # income-statement aggregate, per business line for TSA) — an entity-level
+    # figure, not a product-static menu attribute. The BA 410 / BA 420 loss
+    # returns capture INDIVIDUAL OPERATIONAL-LOSS EVENTS, attributed to a Basel
+    # business line and a risk-event type at loss-capture time by the org unit —
+    # again entity-level, not a product's static menu pick. So — like the capital
+    # family, and per the brief ("expect MINIMAL … mark required only where
+    # genuinely product-determined; no manufacture") — the operational family
+    # carries ZERO product-attribute requirements (there is deliberately no
+    # `operational_product_attributes()`; no bulk-marking, no fabrication). The
+    # NPA gate sees no operational product-attribute edge, so no product — and in
+    # particular the live FX product `prd:bank:fx:otc-vanilla` — is wrongly
+    # blocked by an operational cell.
+    #
+    # SUBSTRATE + STATUS (licence-day-heavy — the known GAP-BA700-OPERATIONAL-RWA).
+    #   BA 400: the op-risk projection (platform/reporting/ba-400-op-risk.ts:
+    #     generateBa300OpRisk — BIA α=15% / TSA β-weighted gross income, op-RWA =
+    #     12.5 × op-capital) exists as substrate. The REGULATORY-CONSTANT cells —
+    #     the BIA α factor, the per-business-line β factors, the 12.5× RWA
+    #     multiplier, the loss-component / ILM floor coefficients — are computed
+    #     from BCBS D196 / Reg 33 constants and are `sourced` (the source genuinely
+    #     exists; the value is the regulatory constant, not a fabricated figure).
+    #     Every gross-income amount, the computed op-capital, the op-RWA and the
+    #     ILM are `licence-day-data`: no audited 3-year gross-income history and no
+    #     loss history exist pre-licence-day (GAP-BA700-OPERATIONAL-RWA). The
+    #     per-cell split is made in operational_cell_status().
+    #   BA 410 / BA 420: wholly `licence-day-data` — every cell reports an actual
+    #     operational-LOSS amount / count / date / risk-event-type, and the bank-
+    #     in-formation has booked no operational losses pre-licence-day. The
+    #     OperationalLossEvent stream + the loss-event register exist as substrate;
+    #     the values are licence-day data (no loss history to aggregate yet).
+    # -----------------------------------------------------------------------
+    "BA400": dict(
+        name="Operational Risk",
+        obligation="ORG-PR-RETURNS-017",
+        clause=(
+            "SARB PA Directive D5/2025 §2.1.18 (form BA 400 — Operational Risk, Annexure 17A/17B) "
+            "read with the Regulations relating to Banks reg 33 (operational risk — the basic-"
+            "indicator approach (BIA) and the standardised approach (TSA) on annual gross income; "
+            "and, on the SARB transition, the BCBS standardised approach (SMA / new SA) business-"
+            "indicator + internal-loss-multiplier framework) and BCBS D196 §645–§654 (op-risk "
+            "measurement) / BCBS OPE (the revised operational-risk standard); Banks Act 94 of "
+            "1990 s.6(6)(a). [Post-#1451 corrected row (D-BA-RETURN-NUMBERING-EXCEL-CANONICAL): "
+            "per the canonical SARB Excel form schedule (cell A1 = 'Operational Risk'), form "
+            "BA 400 is THE operational-risk return (the op-risk capital charge feeds the BA 700 "
+            "RWA denominator). The verbatim 'BA 400 = leverage ratio return' annotation in the "
+            "obligation record (ORG-PR-RETURNS-017) is the documented fabrication the correction "
+            "supersedes — leverage ratio is reported within BA 700 (Capital Adequacy and Leverage "
+            "and TLAC) per Reg 38A.]"
+        ),
+        fold="ba400-operational-risk-fold",
+        # BA 400 cells fold from the ba-400-op-risk.ts op-risk projection
+        # (generateBa300OpRisk — BIA / TSA gross-income → op-capital, op-RWA =
+        # 12.5 × op-capital) over the annual gross-income inputs (an income-
+        # statement aggregate). No single GL category holds the op-risk charge —
+        # it is folded by the named op-risk projection from gross income, not a CoA
+        # balance — so gl_categories is empty and the fold is the authoritative
+        # source. The α / β / 12.5× regulatory constants are sourced; the gross-
+        # income / capital / RWA / ILM cells need real audited gross income +
+        # loss history (licence-day). The per-cell split is made in
+        # operational_cell_status().
+        gl_categories=[],
+        entity_scope="bank",
+        # NOT a blanket licence-day form: the BIA α / business-line β / 12.5× RWA
+        # multiplier / ILM-floor cells are computed from BCBS D196 / Reg 33
+        # constants. The per-cell decision is made in operational_cell_status();
+        # this flag is the DEFAULT for a cell that does not match the regulatory-
+        # constant predicate.
+        licence_day=True,
+        operational_family=True,
+        status_note=(
+            "Operational-risk figures fold from the ba-400-op-risk.ts op-risk projection "
+            "(generateBa300OpRisk — the basic-indicator approach α=15% × average positive annual "
+            "gross income, the standardised approach 1/3 × Σ max(0, Σ β_i × gross_income_i) per "
+            "Basel business line, and op-RWA = 12.5 × op-capital) over the annual gross-income "
+            "inputs. The op-risk projection exists as substrate; the achieved op-capital / op-RWA "
+            "and the per-year, per-business-line gross-income cells require REAL audited gross "
+            "income over (steady-state) three financial years and the operational-loss history "
+            "that the internal-loss-multiplier needs, which the bank-in-formation does not have "
+            "pre-licence-day (the known GAP-BA700-OPERATIONAL-RWA), so those values are licence-"
+            "day data. The BIA α factor, the per-business-line β factors and the 12.5× RWA "
+            "multiplier ARE BCBS D196 / BCBS OPE / Reg 33 regulatory constants — but they are "
+            "applied as COEFFICIENTS inside the ba-400-op-risk.ts fold (BIA_ALPHA, "
+            "BUSINESS_LINE_BETA, the ×12.5 in generateBa300OpRisk), not reported as BA 400 form "
+            "cells, so no reported cell populates from a constant alone (every reported cell needs "
+            "real gross income / loss history); the constants' sourced-ness lives in the engine's "
+            "unit tests, not in a form cell. Operational risk is gross-income- and loss-event-"
+            "derived (entity-level), so the return carries NO product-attribute requirement (no "
+            "product-static menu pick gates an operational cell). Op-risk methodology is the CRO "
+            "(Helena) / COO (Devon) domain. No silent fabrication."
+        ),
+    ),
+    "BA410": dict(
+        name="Operational Risk: Quarterly Losses",
+        obligation="ORG-PR-RETURNS-018",
+        clause=(
+            "SARB PA Directive D5/2025 §2.1.19 (form BA 410 — Operational Risk: Quarterly Losses, "
+            "Annexure 18A/18B) read with the Regulations relating to Banks reg 33 (operational "
+            "risk — the operational-loss-data collection that underpins the loss component / "
+            "internal-loss multiplier) and BCBS OPE25 (the loss-data standards: the risk-event-"
+            "type taxonomy, the gross-loss / recovery / net-loss measurement, the date-of-"
+            "occurrence / discovery / accounting); Banks Act 94 of 1990 s.6(6)(a). [Post-#1451 "
+            "corrected row (D-BA-RETURN-DATA-CONTRACT Phase A): per the canonical SARB Excel form "
+            "schedule (cell A1 = 'Operational Risk: Quarterly Losses'), form BA 410 is the "
+            "quarterly operational-loss return (the loss companion to the BA 400 operational-risk "
+            "return; see also BA 420 12-Months Rolling Losses). The verbatim 'BA 410 = Pillar 3 "
+            "disclosure return' annotation in the obligation record is the documented fabrication "
+            "the correction supersedes.]"
+        ),
+        fold="ba410-quarterly-losses-fold",
+        # BA 410 cells fold from the quarterly-operational-loss fold over the
+        # OperationalLossEvent stream / the loss-event register (gross loss,
+        # recoveries, net loss, by Basel business line + risk-event type, with the
+        # occurrence / discovery / accounting dates). No GL category holds the
+        # per-event loss grid; the fold is the authoritative source.
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,  # no operational-loss history pre-licence-day
+        operational_family=True,
+        status_note=(
+            "Quarterly operational-loss figures (individual operational-loss events — gross loss, "
+            "recoveries, net loss — attributed to a Basel business line and a risk-event type "
+            "(internal fraud, external fraud, employment practices, clients/products/business "
+            "practices, damage to physical assets, business disruption / system failures, "
+            "execution / delivery / process management), with the date of occurrence / discovery "
+            "/ accounting) fold from the ba410-quarterly-losses-fold over the OperationalLossEvent "
+            "stream and the loss-event register. The OperationalLossEvent stream and the loss-"
+            "event register exist as substrate; every cell reports an actual operational-loss "
+            "amount / count / date / risk-event-type, and the bank-in-formation has booked no "
+            "operational losses pre-licence-day, so those values are licence-day data (no loss "
+            "history to aggregate yet — the known GAP-BA700-OPERATIONAL-RWA). Operational losses "
+            "are captured per-event at the entity (business-line) level, so the return carries NO "
+            "product-attribute requirement. Op-risk methodology is the CRO (Helena) / COO (Devon) "
+            "domain. No silent fabrication."
+        ),
+    ),
+    "BA420": dict(
+        name="12-Months Rolling Losses",
+        obligation="ORG-PR-RETURNS-018B",
+        clause=(
+            "SARB PA Directive D5/2025 §2.1.19 (form BA 420 — 12-Months Rolling Losses, the "
+            "rolling-window companion to BA 410, Annexure 18A/18B) read with the Regulations "
+            "relating to Banks reg 33 (operational risk — the rolling 12-month operational-loss "
+            "aggregation feeding the loss component / internal-loss multiplier) and BCBS OPE25 "
+            "(the loss-data standards); Banks Act 94 of 1990 s.6(6)(a). [Post-#1451 row "
+            "(D-BA-RETURN-DATA-CONTRACT Phase C batch 6): per the canonical SARB Excel form "
+            "schedule (cell A1 = '12-Months Rolling Losses'), form BA 420 is the 12-month rolling "
+            "operational-loss return — the same per-event loss data as BA 410, aggregated over a "
+            "trailing 12-month window. BA 420 had no dedicated obligation row pre-batch-6 "
+            "(ORG-PR-RETURNS-019 is BA 500 — Securitisation Schemes); ORG-PR-RETURNS-018B is "
+            "authored this batch as the BA 420 sibling under the same D5/2025 §2.1.19 operational-"
+            "loss-reporting provision, explicitly cross-referenced by ORG-PR-RETURNS-018's "
+            "correction note.]"
+        ),
+        fold="ba420-rolling-losses-fold",
+        # BA 420 cells fold from the 12-month-rolling-operational-loss fold over
+        # the OperationalLossEvent stream / the loss-event register, aggregated
+        # over a trailing 12-month window (gross / recovery / net loss by business
+        # line + risk-event type). No GL category holds the rolling-loss grid; the
+        # fold is the authoritative source.
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,  # no operational-loss history pre-licence-day
+        operational_family=True,
+        status_note=(
+            "12-month rolling operational-loss figures (the same individual operational-loss "
+            "events as BA 410 — gross loss, recoveries, net loss by Basel business line and risk-"
+            "event type — aggregated over a trailing 12-month window) fold from the "
+            "ba420-rolling-losses-fold over the OperationalLossEvent stream and the loss-event "
+            "register. The OperationalLossEvent stream and the loss-event register exist as "
+            "substrate; every cell reports an actual rolling operational-loss amount / count, and "
+            "the bank-in-formation has booked no operational losses pre-licence-day, so those "
+            "values are licence-day data (no rolling-window loss history to aggregate yet — the "
+            "known GAP-BA700-OPERATIONAL-RWA). Operational losses are captured per-event at the "
+            "entity (business-line) level, so the return carries NO product-attribute "
+            "requirement. Op-risk methodology is the CRO (Helena) / COO (Devon) domain. No silent "
+            "fabrication."
+        ),
+    ),
 }
 
 # ---------------------------------------------------------------------------
@@ -818,6 +1002,17 @@ def value_type_for(xsd_type: str) -> str:
         "CP_YesNo",
         "RegulatoryApproach",
         "SourceOfCapital",
+        # Operational family (BA 400 / BA 410): the SARB code-list types whose
+        # value is a constrained category.
+        #   - "YesNo" — a Yes/No response cell (BA 400 ILM-usage flag, BA 410
+        #     "previously reported" / "status: ended" flags).
+        #   - "RiskEventType" — the BA 410 operational-loss risk-event-type code
+        #     (the Basel-II/Reg-33 loss-event-type taxonomy: internal fraud,
+        #     external fraud, employment practices, clients/products/business
+        #     practices, damage to physical assets, business disruption/system
+        #     failures, execution/delivery/process management).
+        "YesNo",
+        "RiskEventType",
     ) or t in CREDIT_ENUM_TYPES:
         return "enum"
     # Any unmapped leaf type is surfaced loudly rather than silently coerced
@@ -1793,6 +1988,50 @@ def capital_cell_status(form: str, col_label: str, row_label: str) -> str:
     return "licence-day-data"
 
 
+# ===========================================================================
+# OPERATIONAL FAMILY — Phase C batch 6 (BA 400 / BA 410 / BA 420).
+# ===========================================================================
+#
+# NO PRODUCT-ATTRIBUTE MAPPER. Operational risk is entity-level: the BIA / TSA
+# capital is computed from annual gross income (an income-statement aggregate),
+# and the BA 410 / BA 420 loss returns capture individual operational-loss
+# events attributed to a Basel business line + risk-event type at capture time
+# by the org unit — not a product-static menu pick. So — per the brief — the
+# operational family carries ZERO product-attribute requirements; there is
+# deliberately no `operational_product_attributes()` (no fabrication, no bulk-
+# marking). The NPA gate sees no operational product-attribute edge, so no
+# product (incl. the live FX product) is wrongly blocked by an operational cell.
+#
+# ---------------------------------------------------------------------------
+# Per-cell operational status (honest sourced-vs-licence-day split).
+#
+# HONEST FINDING (no false-positive "sourced" cells): the operational family is
+# WHOLLY licence-day-data. The BIA α factor, the per-business-line β factors and
+# the 12.5× RWA multiplier ARE regulatory constants (BCBS D196 / BCBS OPE /
+# Reg 33) — but they are COEFFICIENTS applied INSIDE the ba-400-op-risk.ts fold
+# (BIA_ALPHA, BUSINESS_LINE_BETA, the ×12.5 in generateBa300OpRisk), NOT cells
+# the BA 400 form reports as their own value. Every REPORTED BA 400 cell is a
+# gross-income amount, a computed op-capital / op-RWA, an ILM capital add-on
+# (`% of gross income` — computed from real gross income), a loss-event count or
+# a control hashtotal — each of which needs REAL audited gross income (3
+# financial years in steady state) and / or operational-loss history that the
+# bank-in-formation does not have pre-licence-day (the known
+# GAP-BA700-OPERATIONAL-RWA). BA 410 / BA 420 likewise report actual operational-
+# loss amounts / counts / dates / risk-event-types with no loss history pre-
+# licence-day. So every operational cell is `licence-day-data` — marking any
+# `sourced` would be a fabrication (claiming the form can populate from a
+# constant when in fact the reported value needs real data). The regulatory
+# coefficients' sourced-ness lives in the engine's unit tests + the fold, not in
+# a form cell. The operational family carries no product-attribute refs, so there
+# is no unapproved-product-ref coupling to enforce here.
+# ---------------------------------------------------------------------------
+def operational_cell_status(form: str, col_label: str, row_label: str) -> str:
+    # Every reported operational cell needs real gross income / loss history —
+    # none populates from a regulatory constant alone (those constants are
+    # applied inside the fold, not reported as cells). Wholly licence-day-data.
+    return "licence-day-data"
+
+
 # ---------------------------------------------------------------------------
 # xlsx Elements-sheet extraction — IDENTICAL column layout across all BA forms
 # (verified BA100/BA110/BA120/BA600/BA610). Reused from gen-ba100-contract.py.
@@ -1937,6 +2176,26 @@ def currency_dimension_for(form: str, col_label: str, row_label: str, form_cfg) 
     # a currency axis is by-currency; the default is functional (ZAR reporting
     # currency by config, NEVER a literal — P5: the dimension carries the axis).
     if form in ("BA700", "BA701"):
+        if any(
+            k in text
+            for k in (
+                "foreign currency",
+                "foreign-currency",
+                "by currency",
+                "per currency",
+                "currency analysis",
+                "denominated",
+            )
+        ):
+            return "by-currency"
+        return "functional"
+    # Operational family (BA 400 / BA 410 / BA 420): operational-risk capital,
+    # gross income and operational losses are reported in the bank's FUNCTIONAL
+    # currency at the form level (op-risk is not split by currency on these
+    # forms). A cell whose row/column explicitly names a currency axis is by-
+    # currency; the default is functional (ZAR reporting currency by config,
+    # NEVER a literal — P5: the dimension carries the axis, not "ZAR").
+    if form in ("BA400", "BA410", "BA420"):
         if any(
             k in text
             for k in (
@@ -2229,6 +2488,17 @@ def build_cell(form: str, form_cfg, e):
         # (licence-day). The capital family carries NO product-attribute refs.
         status = capital_cell_status(form, collabel, rowlabel)
         status_reason = form_cfg["status_note"] if status != "sourced" else None
+    elif form_cfg.get("operational_family"):
+        # Per-cell sourced-vs-licence-day split: the BA 400 regulatory-CONSTANT
+        # cells (BIA α / business-line β / 12.5× RWA multiplier / ILM-floor
+        # coefficients) are computed from BCBS D196 / Reg 33 constants (sourced —
+        # no real gross income / loss history needed); every gross-income /
+        # capital / RWA / ILM cell and every BA 410 / BA 420 loss cell needs real
+        # audited gross income + loss history the bank does not have pre-licence-
+        # day (licence-day). The operational family carries NO product-attribute
+        # refs.
+        status = operational_cell_status(form, collabel, rowlabel)
+        status_reason = form_cfg["status_note"] if status != "sourced" else None
     elif form_cfg["licence_day"]:
         status = "licence-day-data"
         status_reason = form_cfg["status_note"]
@@ -2359,9 +2629,13 @@ if __name__ == "__main__":
     elif len(sys.argv) == 2 and sys.argv[1] == "--capital":
         for f in ("BA700", "BA701"):
             generate(f)
+    elif len(sys.argv) == 2 and sys.argv[1] == "--operational":
+        for f in ("BA400", "BA410", "BA420"):
+            generate(f)
     else:
         raise SystemExit(
             "usage: gen-return-contract.py "
             "<BA110|BA120|BA200|BA210|BA220|BA300|BA310|BA320|BA325|BA330|BA340|BA350|"
-            "BA600|BA610|BA700|BA701|--all|--credit|--liquidity|--market|--capital>"
+            "BA400|BA410|BA420|BA600|BA610|BA700|BA701|"
+            "--all|--credit|--liquidity|--market|--capital|--operational>"
         )

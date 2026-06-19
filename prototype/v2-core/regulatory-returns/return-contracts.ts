@@ -24,7 +24,11 @@
 //   Phase B = framework + BA 100 pilot; Phase C batch 1 = the financial family
 //   (BA 110, BA 120, BA 600, BA 610); Phase C batch 2 = the credit family
 //   (BA 200, BA 210, BA 220) — the first batch with real product-attribute
-//   requirements the NPA gate binds on.
+//   requirements the NPA gate binds on; batch 3 = liquidity (BA 300, BA 310);
+//   batch 4 = market (BA 320, BA 325, BA 330, BA 340, BA 350); batch 5 = capital
+//   (BA 700, BA 701); batch 6 = the operational family (BA 400, BA 410, BA 420)
+//   — entity-level (gross income + loss events), so ZERO product-attribute
+//   requirements (like the capital family).
 // Author: Bea (Accounting and financial reporting engineer, engineering —
 //   reports to Camille (Chief Financial Officer)).
 
@@ -195,6 +199,36 @@ export const RETURN_CONTRACT_REGISTRY: readonly ReturnContractRegistryEntry[] = 
     contractJsonPath: jsonPath("ba701-contract.json"),
     xsdName: "BA701.xsd",
     schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA701.zip",
+  },
+  // Phase C batch 6 — the OPERATIONAL FAMILY (BA 400 / BA 410 / BA 420). The
+  // operational-risk capital return (BIA / TSA gross income → op-capital,
+  // op-RWA = 12.5 × op-capital, feeding the BA 700 RWA denominator) plus its two
+  // operational-loss companions (BA 410 quarterly, BA 420 12-month rolling).
+  // Operational risk is gross-income- and loss-event-derived (entity-level), so
+  // the family carries ZERO product-attribute requirements (like the capital
+  // family) — no product, and in particular not the live FX product, is gated on
+  // an operational cell. BA 400's regulatory α / β / 12.5× constants are
+  // `sourced`; every gross-income / capital / RWA / ILM cell and every BA 410 /
+  // BA 420 loss cell is `licence-day-data` (no audited 3-year gross income and no
+  // loss history pre-licence-day — the known GAP-BA700-OPERATIONAL-RWA). BA 420's
+  // XSD is version-suffixed.
+  {
+    form: "BA400",
+    contractJsonPath: jsonPath("ba400-contract.json"),
+    xsdName: "BA400.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA400.zip",
+  },
+  {
+    form: "BA410",
+    contractJsonPath: jsonPath("ba410-contract.json"),
+    xsdName: "BA410.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA410.zip",
+  },
+  {
+    form: "BA420",
+    contractJsonPath: jsonPath("ba420-contract.json"),
+    xsdName: "BA420_v15012026.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA420.zip",
   },
 ];
 
