@@ -404,10 +404,7 @@ function runConstructionConditions(): ConstructionConditionResult {
   if (eadUnits !== expectedEadUnits) {
     violations.push({
       subject: "construction:ead-equals-alpha-times-rc-plus-pfe",
-      message:
-        `SA-CCR EAD composition identity violated (BCBS d317 §10: EAD = round_halfup(1.4 × (RC + PFE))). ` +
-        `computeSaCcr returned EAD=${eadUnits} minor; expected round_halfup(1.4 × (${rcUnits} + ${pfeUnits})) = ${expectedEadUnits} minor. ` +
-        `This is a port-fidelity / arithmetic regression in the production FIL SA-CCR model.`,
+      message: `SA-CCR EAD composition identity violated (BCBS d317 §10: EAD = round_halfup(1.4 × (RC + PFE))). computeSaCcr returned EAD=${eadUnits} minor; expected round_halfup(1.4 × (${rcUnits} + ${pfeUnits})) = ${expectedEadUnits} minor. This is a port-fidelity / arithmetic regression in the production FIL SA-CCR model.`,
       severity: "fail",
     });
   }
@@ -612,7 +609,12 @@ if (import.meta.main) {
   // ENFORCING on the construction conditions (C1–C3): a fail exits 1. Warn-only
   // violations are the DATA-DEPENDENT recorded-history oracle diagnostics, which
   // stay advisory (vacuous on the clean store / awaiting licence-day book data).
-  const label = r.ok && r.violations.length === 0 ? "OK (enforcing)" : r.ok ? "OK (enforcing; data-dependent legs advisory)" : "FAIL";
+  const label =
+    r.ok && r.violations.length === 0
+      ? "OK (enforcing)"
+      : r.ok
+        ? "OK (enforcing; data-dependent legs advisory)"
+        : "FAIL";
   process.stdout.write(
     `\nrecon:${PIPELINE} ${label} — ${r.asOf}; ${r.violations.length} violation(s)\n`,
   );

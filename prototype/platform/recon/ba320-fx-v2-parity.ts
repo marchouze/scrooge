@@ -43,8 +43,8 @@
 
 import { spotObservableId } from "../../v2-core/fil-models/fx-valuation/methodology";
 import { fxPositionCalculator } from "../accounting/fx-calculators";
-import { mulD, roundDecimal, toDecimal, toMinorUnits } from "../core/decimal-engine";
 import { eventStore } from "../composition";
+import { mulD, roundDecimal, toDecimal, toMinorUnits } from "../core/decimal-engine";
 import { EVENT_TYPE_REGISTRY } from "../event-store/registry/index";
 import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import { resolveMarketDataDbPath } from "../market-data/resolve-market-data-db";
