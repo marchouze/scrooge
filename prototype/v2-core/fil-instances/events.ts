@@ -44,6 +44,7 @@ import {
 } from "../fil-core/lifecycle";
 import { instantSchema, moneySchema } from "../fil-core/primitives";
 import { filInstanceUrnSchema, filTypeUrnSchema } from "../fil-core/urn";
+import { bopCategoryTagSchema } from "../finsurv/bop-category";
 
 // ---------------------------------------------------------------------------
 // FIL economic-terms asset class — the FIL-native partition a RiskMeasurable /
@@ -283,6 +284,19 @@ export const filFxSettlementConfirmedPayloadSchema = z.object({
   soldBooked: moneySchema,
   /** Sold-currency leg: the cash actually paid at the SETTLEMENT rate (same ccy). */
   soldSettled: moneySchema,
+  /**
+   * OPTIONAL BoP-category tag (FinSurv per-transaction reporting scaffold,
+   * D-FX-OTC-CLOSURE-BACKLOG Phase C10). When a cross-border FX settlement is
+   * tagged with its FinSurv economic class (ORG-FX-FIN-01..14) at settlement
+   * time, the tag is carried here so the read-side FinSurv projection can fold
+   * it WITHOUT reaching back into the trade. Append-only-safe: OPTIONAL, so
+   * existing settlement events (which carry no tag) parse unchanged, and the FX
+   * accounting fold — which reads only the booked/settled legs — is unaffected
+   * (BoP is a regulatory-reporting axis, NOT an accounting one). The precise
+   * BOPCUS code on the tag is licence-day-deferred (`null` in the build phase).
+   * See `v2-core/finsurv/bop-category.ts` + PROC-FINSURV-BOP-01.
+   */
+  bopCategory: bopCategoryTagSchema.optional(),
 });
 
 export type FilFxSettlementConfirmedPayload = z.infer<typeof filFxSettlementConfirmedPayloadSchema>;
@@ -318,6 +332,16 @@ export const filNdfFixingObservedPayloadSchema = z.object({
    * Signed major-unit Money.
    */
   netCashDifference: moneySchema,
+  /**
+   * OPTIONAL BoP-category tag (FinSurv per-transaction reporting scaffold,
+   * D-FX-OTC-CLOSURE-BACKLOG Phase C10). An NDF cash-settlement is a
+   * capital-account financial-derivative flow (ORG-FX-FIN-08); when tagged, the
+   * class is carried here. Append-only-safe (OPTIONAL); the accounting fold reads
+   * only `netCashDifference`, so it is unaffected. Precise BOPCUS code is
+   * licence-day-deferred (`null` in the build phase). See
+   * `v2-core/finsurv/bop-category.ts` + PROC-FINSURV-BOP-01.
+   */
+  bopCategory: bopCategoryTagSchema.optional(),
 });
 
 export type FilNdfFixingObservedPayload = z.infer<typeof filNdfFixingObservedPayloadSchema>;
