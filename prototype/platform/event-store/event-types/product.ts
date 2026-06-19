@@ -8,6 +8,7 @@
 
 import { z } from "zod";
 
+import { returnDataCaptureSchema } from "../../../v2-core/regulatory-returns/return-data-capture";
 import { newEventId } from "../../core/types";
 import { type Actor, type Event, eventSchema } from "../types";
 
@@ -661,6 +662,74 @@ export function makeProductDimensionRetrospectiveReview(args: {
   });
 }
 
+// ---------------------------------------------------------------------------
+// 17. ProductReturnDataCaptureDeclared
+//
+// The D (declaration) path of the capture model (D-BA-RETURN-DATA-CONTRACT
+// "close the loop"). The C path derives a product's captured return-data
+// attributes from its composition (`filTypeScopes` × resolved treatments). This
+// event supplies the BOUNDED REMAINDER — attributes composition structurally
+// cannot reach (instance-/CoA-sourced, e.g. `hqlaLevel`). It carries the FULL
+// declared set, latest-wins-replace (NOT delta-union) in the projection, with a
+// deterministic event_id tie-break on equal `as_of`.
+//
+// NO reference to `productScopeForEventSchema` — the persisted FX scope is left
+// untouched (replay-safety: the capture model is a sibling concern, never a
+// narrowing of historical FX events).
+//
+// `recon:product-return-capture-coherence` enforces that each declared capture
+// is genuinely NOT C-derivable (no two-sources-of-truth), its attributeKey
+// resolves to a real authored-return requirement, and its citations resolve.
+//
+// Authority: D-BA-RETURN-DATA-CONTRACT (CEO-approved 2026-06-19, session-
+//   delegation).
+// Author: Atlas (Core banking platform architect, engineering).
+// ---------------------------------------------------------------------------
+
+export const productReturnDataCaptureDeclaredPayloadSchema = z.object({
+  productId: z.string().min(1),
+  /**
+   * The FULL declared capture set (latest-wins REPLACE in the projection, not a
+   * delta). Each entry is a bounded out-of-composition declaration. May be empty
+   * (a product declaring it has NO out-of-composition captures — an explicit,
+   * audited "nothing to declare").
+   */
+  captures: z.array(returnDataCaptureSchema),
+  /**
+   * Tracked deferred return-data gaps (REUSE the canonical `ProductDeferredGap`
+   * shape verbatim). An attribute that is neither C-derivable nor declared may be
+   * tracked here rather than blocking — the gate surfaces it as an open
+   * condition. Optional; absent = none.
+   */
+  deferredCaptureGaps: z.array(productDeferredGapSchema).optional(),
+  /** Name + position of the declaring agent (identity discipline). */
+  declaredByName: z.string().min(1),
+  declaredByPosition: z.string().min(1),
+});
+
+export type ProductReturnDataCaptureDeclaredPayload = z.infer<
+  typeof productReturnDataCaptureDeclaredPayloadSchema
+>;
+
+export function makeProductReturnDataCaptureDeclared(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: ProductReturnDataCaptureDeclaredPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "ProductReturnDataCaptureDeclared",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: productReturnDataCaptureDeclaredPayloadSchema.parse(args.payload),
+  });
+}
+
 export const PRODUCT_TYPED_EVENT_TYPES = [
   "ProductProposalRegistered",
   "ProductConceptualised",
@@ -678,5 +747,6 @@ export const PRODUCT_TYPED_EVENT_TYPES = [
   "ProductDimensionNarrativeRecorded",
   "ProductPostApprovalFinding",
   "ProductDimensionRetrospectiveReview",
+  "ProductReturnDataCaptureDeclared",
 ] as const;
 export type ProductEventType = (typeof PRODUCT_TYPED_EVENT_TYPES)[number];

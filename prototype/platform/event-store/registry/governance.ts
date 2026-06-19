@@ -64,6 +64,7 @@ import {
   productPostImplementationReviewCompletedPayloadSchema,
   productProposalRegisteredPayloadSchema,
   productRetiredPayloadSchema,
+  productReturnDataCaptureDeclaredPayloadSchema,
   productReviewCompletedPayloadSchema,
   productVersionPublishedPayloadSchema,
   productWithheldPayloadSchema,
@@ -1096,6 +1097,25 @@ export const PRODUCT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "NPA Policy v1.0 §5 (dimension owners); Products page narrative slot per the per-dimension agent-authored position requirement.",
+    v2Status: "v2-replaced",
+  },
+  {
+    // Bounded return-data capture declaration (D path of the capture model,
+    // D-BA-RETURN-DATA-CONTRACT "close the loop"). Supplies the return-data
+    // attributes a product's COMPOSITION cannot reach (instance-/CoA-sourced,
+    // e.g. hqlaLevel). Full declared set, latest-wins replace, event_id tie-break.
+    // recon:product-return-capture-coherence enforces each declaration is
+    // genuinely NOT composition-derivable + grounded in an authored return.
+    type: "ProductReturnDataCaptureDeclared",
+    class: "governance",
+    payloadSchema: productReturnDataCaptureDeclaredPayloadSchema,
+    issuer: "any-agent",
+    subscribers: ["Saskia", "Owen", "Camille", "Bea", "Vera", "dashboard"],
+    replay: "append-only-audit",
+    citationsHint: ["D-BA-RETURN-DATA-CONTRACT", "D-NEW-PRODUCT-APPROVAL-POLICY"],
+    retention: RETENTION_GOVERNANCE_7Y,
+    source:
+      "D-BA-RETURN-DATA-CONTRACT (CEO-approved 2026-06-19, session-delegation) — capture-model D (declaration) path.",
     v2Status: "v2-replaced",
   },
 ];
