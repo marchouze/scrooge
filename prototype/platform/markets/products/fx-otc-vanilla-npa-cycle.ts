@@ -52,7 +52,38 @@
 // and on the real-counterparty / external-counsel triggers. The `approvedBy`
 // tag and the `conditions[]` carry that boundary explicitly.
 //
+// INVENTORY RECONCILIATION (2026-06-19, D-FX-OTC-CLOSURE-BACKLOG): the FX
+// gap-analysis closure plan (record:documents:scrooge:fx-otc-vanilla-gap-
+// analysis-closure-plan:2026-06-19) found that seven build-phase backlog items
+// were NOT registered as `ProductDeferredGap` records — "the gap-tracking itself
+// has a gap", so the inventory understated the backlog. This cycle adds them as
+// well-formed tracked gaps WITHOUT changing any per-dimension result, because the
+// honest per-dimension call on each is that the underlying capability is built/
+// green (or, for NDF, out of v1.0 scope) and only a V2-migration cutover or a
+// scoped sub-item is deferred — exactly the schema-sanctioned "impl-attested for
+// the built substrate, sub-item explicitly tracked" pattern:
+//   - market-risk (impl-attested, +2): fx-daily-pnl-v2-authoritative-cutover (A2),
+//     fx-var-v2-authoritative-cutover (A3) — V1→V2 cutovers; the revaluation/VaR
+//     capability is built+green, only the authoritative flip is deferred.
+//   - operational-readiness (impl-attested, +1): fx-dashboard-v2-surface — a
+//     presentation-layer (`/api/v2/markets/fx/<view>`) migration, not a readiness gap.
+//   - capital (design-attested, +1): fx-ba320-v2-parity-enforcing — flip the
+//     advisory BA-320 V2 parity gate to enforcing.
+//   - accounting (impl-attested, was 0 gaps → +2): fx-s0d-product-binding (fold
+//     resolves via the FAIL-CLOSED type-scope fallback today — postings are not
+//     wrong, only the productId-binding path is deferred) and
+//     fx-ndf-cash-leg-posting (NDF is out of v1.0 scope; a v1.1 posting follow-on).
+//   - conduct (design-attested, +1): fx-finsurv-reporting-procedure — author the
+//     SARB FinSurv reporting procedure + BoP-category tagging (ORG-FX-FIN orphan).
+// No result changed: 4 implementation-attested + 11 design-attested-with-gaps
+// stands; the gate is RE-RUN over the fuller inventory and still yields the
+// INTERNAL-TEST approval. The cycle CITES D-FX-OTC-CLOSURE-BACKLOG (the Decision
+// is recorded canonically by Scrooge in the shared store — this cycle does NOT
+// record it; recording a Decision in the seed path trips recon:decision-symmetry).
+//
 // Authority:
+//   - D-FX-OTC-CLOSURE-BACKLOG (CEO-approved 2026-06-19) — approve the FX closure
+//     backlog; Phase A = make the NPA gap inventory honest (this cycle).
 //   - D-FX-NPA-RESTART (CEO-approved 2026-06-17) — restart the FX NPA from
 //     scratch; flag every build shortfall as a tracked gap; comply with all
 //     policies and procedures.
@@ -116,6 +147,7 @@ const PROPOSED_BY = "agent:saskia:head-global-markets";
 
 /** Base authority chain on every event in this cycle (Principle 2). */
 const BASE_CHAIN = [
+  "D-FX-OTC-CLOSURE-BACKLOG",
   "D-FX-NPA-RESTART",
   "D-NEW-PRODUCT-APPROVAL-POLICY-V2",
   "D-NPA-GATE-POLICY-REDESIGN",
@@ -206,6 +238,46 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
         citations: [
           "D-FX-FORWARDS-TRADING-FVTPL",
           "platform/markets/eod/fx-forward-revaluation.ts",
+        ],
+      },
+      // V2-migration-completeness gap A2 (closure-plan §5 Bucket 1a). The
+      // revaluation / position-level P&L capability IS built and green-reconned
+      // (VaR-freshness above), so the impl-attestation stands; what is deferred is
+      // the V1→V2 AUTHORITATIVE cutover — V1 `FxPositionRevalued` is still the
+      // authoritative daily-P&L source while V2 `FxBookValuationSnapshotted` runs
+      // in parallel, and `recon:fx-v2-parity` pins the A2 incommensurability. This
+      // is a migration gap, not a capability absence, hence a tracked deferral on
+      // a built+green dimension rather than a downgrade.
+      {
+        gapId: "fx-daily-pnl-v2-authoritative-cutover",
+        title:
+          "FX daily P&L is still V1-authoritative: `platform/product-control/daily-pnl.ts` reads V1 `FxPositionRevalued`; `daily-pnl-v2.ts` / `FxBookValuationSnapshotted` runs in parallel only. Make the V2 path the authoritative position-level P&L and resolve the V1↔V2 incommensurability that `recon:fx-v2-parity` (A2 leg) pins.",
+        owner:
+          "Bea (Financial Accountant, finance) / Rohan (Market risk quantitative engineer, engineering)",
+        targetTrigger:
+          "V2 daily-P&L wired authoritative from FIL/V2 projections; `recon:fx-v2-parity` A2 leg reconciles V1↔V2 (enforcing flip may legitimately wait for licence-day P&L cohort data per D-BANK-WIDE-V2-MIGRATION)",
+        citations: [
+          "D-BANK-WIDE-V2-MIGRATION",
+          "recon:fx-v2-parity",
+          "platform/product-control/daily-pnl-v2.ts",
+        ],
+      },
+      // V2-migration-completeness gap A3 (closure-plan §5 Bucket 1a). VaR is built
+      // and green (V1 `MarketRiskMeasureComputed` authoritative); V2
+      // `MarketRiskVarComputed` is emitted advisory-only. Deferred sub-item: make
+      // V2 VaR the production path and flip `recon:var-v2-parity` ADVISORY→
+      // ENFORCING. Depends on the A2 valuation feed.
+      {
+        gapId: "fx-var-v2-authoritative-cutover",
+        title:
+          "VaR is still V1-authoritative: V1 `MarketRiskMeasureComputed` is authoritative while V2 `MarketRiskVarComputed` is advisory-only. Emit V2 VaR on the production path and flip `recon:var-v2-parity` ADVISORY→ENFORCING (depends on the A2 V2 valuation feed).",
+        owner: "Rohan (Market risk quantitative engineer, engineering)",
+        targetTrigger:
+          "V2 `MarketRiskVarComputed` emitted on the production path off the A2 V2 valuation feed; `recon:var-v2-parity` flipped ADVISORY→ENFORCING (enforcing flip may wait for licence-day VaR cohort data)",
+        citations: [
+          "D-BANK-WIDE-V2-MIGRATION",
+          "recon:var-v2-parity",
+          "v2-core/fil-models/market-risk-var",
         ],
       },
     ],
@@ -367,6 +439,22 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
           "v1.1 when NDF is added to product scope (fixing-rate feed + NDF settlement event type + net-payment handler)",
         citations: ["D-FX-OTC-NPA-SCOPE-EXPANSION"],
       },
+      // V2-migration-completeness gap (closure-plan §5 Bucket 1a — FX dashboard
+      // V2). Operational-readiness is impl-attested on the settlement-continuity
+      // structural invariant (green recon above); the operator surfaces work today
+      // on the legacy `/api/markets/fx/<view>` reads. Deferred sub-item: build the
+      // name-free `/api/v2/markets/fx/<view>` surface (per the V2 UI policy — seats
+      // by Title only) reading FIL/V2 projections, and retire the V1 reads. A
+      // presentation-layer migration gap, not a readiness-capability absence.
+      {
+        gapId: "fx-dashboard-v2-surface",
+        title:
+          "All `dashboard/markets-fx` views (risk/trade/gateway/npa/summary/counterparties/headroom) are served on legacy `/api/markets/fx/<view>` reading V1 events; there is no `/api/v2/markets/fx/<view>` surface. Build the V2 FX dashboard surface with name-free DTOs reading FIL/V2 projections and retire the legacy V1 reads once parity holds.",
+        owner: "Atlas (Core banking platform architect, engineering)",
+        targetTrigger:
+          "`/api/v2/markets/fx/<view>` name-free DTO surface built off FIL/V2 projections (D-BANK-WIDE-V2-MIGRATION); legacy `/api/markets/fx/<view>` reads retired at parity",
+        citations: ["D-BANK-WIDE-V2-MIGRATION", "dashboard/v2-regulations-view.ts"],
+      },
     ],
   },
   // -- Dimension 6: accounting (Bea / Camille) — impl-attested, treatment-module.
@@ -388,7 +476,43 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       // and complete across the supported-currency scope.
       "recon:fx-supported-currency-no-suspense",
     ],
-    deferredGaps: [],
+    // Accounting REMAINS implementation-attested: the modular product-composed
+    // posting fold is built, exercised, and green (no-suspense recon above) over
+    // the v1.0 supported scope. The two deferred sub-items below were previously
+    // UNTRACKED (closure-plan §5 "the gap-tracking itself has a gap") and are now
+    // recorded honestly — neither undermines the impl-attestation:
+    //   - S0d is a booking-time PRODUCT-BINDING enhancement; today the fold
+    //     resolves correctly via the FAIL-CLOSED type-scope fallback (path 2 in
+    //     fx-fold.ts requires exactly-one match, else `treatment-unresolved`),
+    //     so postings are not silently wrong — only the productId-on-trade binding
+    //     path is deferred.
+    //   - NDF cash-leg posting is a v1.1 follow-on; NDF is OUT of scope at v1.0,
+    //     so its absence cannot make the v1.0 attestation dishonest.
+    deferredGaps: [
+      {
+        gapId: "fx-s0d-product-binding",
+        title:
+          "Booking-time product binding (S0d) is deferred: FX trades do not yet carry a `productId` at booking, so the modular posting fold resolves via the fail-closed type-scope fallback (path 2, fx-fold.ts) rather than the productId→Product→treatment path. Set `productId` on the FIL trade at booking (NPA-gated) and retire the build-phase fold fallback so path 1 always wins.",
+        owner:
+          "Bea (Financial Accountant, finance) / Atlas (Core banking platform architect, engineering)",
+        targetTrigger:
+          "S0d lands — `productId` set on FIL trade at booking + NPA-gate; build-phase type-scope fold fallback retired",
+        citations: [
+          "D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD",
+          "platform/accounting/posting-rules-v2/fx-fold.ts",
+        ],
+      },
+      {
+        gapId: "fx-ndf-cash-leg-posting",
+        title:
+          "NDF net-cash settlement posting rule and the EOD-terminal treatment of `FilNdfFixingObserved` (NDF fixing observed → terminal, net-cash leg posted) are not built; NDF is out of scope at v1.0 and this posting follow-on lands with the v1.1 NDF scope addition (pairs with the op-readiness `fx-ndf-runbooks` gap).",
+        owner:
+          "Bea (Financial Accountant, finance) / Anya (Data & analytics engineer, engineering)",
+        targetTrigger:
+          "v1.1 NDF scope addition — NDF net-cash posting rule + EOD-runner treats `FilNdfFixingObserved` as terminal",
+        citations: ["D-FX-OTC-NPA-SCOPE-EXPANSION", "D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD"],
+      },
+    ],
   },
   // -- Dimension 7: capital / prudential (Camille / Helena) — DESIGN-ATTESTED (honest).
   // Amendment A (§3a.1) re-check: the BA 320 capital-charge completeness recon
@@ -425,6 +549,21 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
           "Camille (Chief Financial Officer, governance) with Bea (Financial Accountant, finance)",
         targetTrigger: "revenue-start gross-income data enables the BIA/SA op-RWA computation",
         citations: ["D-RWA-ENGINE-W2-SLICE-3"],
+      },
+      // V2-migration-completeness gap (closure-plan §5 Bucket 1a — BA-320 FX
+      // parity). The Phase-3e V2 BA-320 FX market-risk-charge projection is
+      // canonical, but `recon:ba320-fx-v2-parity` is ADVISORY (rate-conversion
+      // precision gaps, null V1 charge). Close the precision gaps and flip the gate
+      // ADVISORY→ENFORCING so the V2 BA-320 charge is reconciled, not just parallel.
+      {
+        gapId: "fx-ba320-v2-parity-enforcing",
+        title:
+          "BA-320 FX market-risk charge: the V2 projection (`platform/projections/ba320-fx-v2.ts`) is canonical but `recon:ba320-fx-v2-parity` is ADVISORY with rate-conversion precision gaps and a null V1 charge. Close the precision gaps and flip the parity gate ADVISORY→ENFORCING.",
+        owner:
+          "Rohan (Market risk quantitative engineer, engineering) / Camille (Chief Financial Officer, governance)",
+        targetTrigger:
+          "BA-320 rate-conversion precision gaps closed; `recon:ba320-fx-v2-parity` flipped ADVISORY→ENFORCING (D-BANK-WIDE-V2-MIGRATION)",
+        citations: ["D-BANK-WIDE-V2-MIGRATION", "recon:ba320-fx-v2-parity"],
       },
     ],
   },
@@ -467,6 +606,22 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
         owner: "Zara (Chief Compliance Officer, governance)",
         targetTrigger: "licence-day FIC registration + real-counterparty onboarding",
         citations: ["ORG-FC-02", "ORG-FC-08"],
+      },
+      // Build-phase-closeable engineering gap (closure-plan §4.3 / §5 Bucket 1b —
+      // FinSurv procedure). The SARB Exchange-Control / FinSurv reporting
+      // obligation set (ORG-FX-FIN-01..14) is an orphan: the reporting procedure
+      // is not yet authored and BoP-category tagging at settlement is not wired.
+      // This is a regulatory-reporting (conduct) build-phase shortfall, distinct
+      // from the licence-day-gated reporting substrate above.
+      {
+        gapId: "fx-finsurv-reporting-procedure",
+        title:
+          "FinSurv / SARB Exchange-Control reporting (ORG-FX-FIN-01..14) is an orphan obligation set: `Procedures/by-policy/finsurv-reporting.md` is not yet authored and balance-of-payments (BoP) category tagging at settlement is not built. Author the procedure and wire BoP-category tagging at settlement (the build-phase-closeable portion; ORG-FX-FIN-10..14 net-payment legs remain v1.1-deferred).",
+        owner:
+          "Mira (Compliance / RegTech engineer, engineering) / Anya (Data & analytics engineer, engineering)",
+        targetTrigger:
+          "`Procedures/by-policy/finsurv-reporting.md` authored + BoP-category tagging wired at settlement (closes the build-phase portion of the ORG-FX-FIN orphan set)",
+        citations: ["ORG-FX-FIN-01", "Procedures/by-policy/finsurv-reporting.md"],
       },
     ],
   },

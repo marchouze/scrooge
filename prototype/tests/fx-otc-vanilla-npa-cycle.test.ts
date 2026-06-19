@@ -74,6 +74,72 @@ describe("clean FX OTC vanilla NPA cycle", () => {
     expect(FX_NPA_DIMENSIONS.some((d) => d.result === "failed")).toBe(false);
   });
 
+  it("preserves the honest 4 impl-attested / 11 design-attested split (no result flipped by the inventory reconciliation)", () => {
+    const impl = FX_NPA_DIMENSIONS.filter((d) => d.result === "implementation-attested");
+    const design = FX_NPA_DIMENSIONS.filter((d) => d.result === "design-attested");
+    expect(impl.length).toBe(4);
+    expect(design.length).toBe(11);
+  });
+
+  it("D-FX-OTC-CLOSURE-BACKLOG inventory reconciliation: the 7 previously-untracked gaps are now well-formed and on the correct dimension", () => {
+    // gapId is unique per (productId, dimension); these seven were untracked in
+    // the gap-analysis closure plan (record:documents:scrooge:fx-otc-vanilla-gap-
+    // analysis-closure-plan:2026-06-19) and are now registered.
+    const expected: ReadonlyArray<readonly [string, string]> = [
+      ["market-risk", "fx-daily-pnl-v2-authoritative-cutover"], // A2
+      ["market-risk", "fx-var-v2-authoritative-cutover"], // A3
+      ["operational-readiness", "fx-dashboard-v2-surface"], // FX dashboard V2
+      ["capital", "fx-ba320-v2-parity-enforcing"], // BA-320 parity
+      ["accounting", "fx-s0d-product-binding"], // S0d product-binding
+      ["accounting", "fx-ndf-cash-leg-posting"], // NDF cash-leg posting
+      ["conduct", "fx-finsurv-reporting-procedure"], // FinSurv procedure
+    ];
+    for (const [dimension, gapId] of expected) {
+      const dim = FX_NPA_DIMENSIONS.find((d) => d.dimension === dimension);
+      expect(dim).toBeDefined();
+      const gap = dim?.deferredGaps.find((g) => g.gapId === gapId);
+      expect(gap, `${dimension} must carry gap ${gapId}`).toBeDefined();
+      // Well-formed: every mandatory field non-empty, ≥1 citation.
+      expect(gap?.title.length ?? 0).toBeGreaterThan(0);
+      expect(gap?.owner.length ?? 0).toBeGreaterThan(0);
+      expect(gap?.targetTrigger.length ?? 0).toBeGreaterThan(0);
+      expect(gap?.citations.length ?? 0).toBeGreaterThan(0);
+    }
+  });
+
+  it("accounting is impl-attested yet carries the two newly-tracked sub-item gaps (built substrate + explicitly-tracked deferrals)", () => {
+    const accounting = FX_NPA_DIMENSIONS.find((d) => d.dimension === "accounting");
+    expect(accounting?.result).toBe("implementation-attested");
+    const ids = accounting?.deferredGaps.map((g) => g.gapId) ?? [];
+    expect(ids).toContain("fx-s0d-product-binding");
+    expect(ids).toContain("fx-ndf-cash-leg-posting");
+  });
+
+  it("gapId is unique within each dimension (recon:npa-deferred-gap-tracking key)", () => {
+    for (const d of FX_NPA_DIMENSIONS) {
+      const ids = d.deferredGaps.map((g) => g.gapId);
+      expect(new Set(ids).size, `${d.dimension} has duplicate gapId`).toBe(ids.length);
+    }
+  });
+
+  it("the full reconciled inventory is 38 well-formed deferred gaps", () => {
+    const total = FX_NPA_DIMENSIONS.reduce((n, d) => n + d.deferredGaps.length, 0);
+    expect(total).toBe(38);
+  });
+
+  it("every cycle event cites D-FX-OTC-CLOSURE-BACKLOG (the authorising decision is cited, not recorded, by the cycle)", () => {
+    const store = freshStore();
+    runFxOtcVanillaNpaCycle(store);
+    for (const ev of store.replay()) {
+      expect(
+        ev.citations.includes("D-FX-OTC-CLOSURE-BACKLOG"),
+        `${ev.type} must cite D-FX-OTC-CLOSURE-BACKLOG`,
+      ).toBe(true);
+    }
+    // The cycle must NOT record the Decision itself (recon:decision-symmetry).
+    expect(Array.from(store.replay({ type: "Decision" })).length).toBe(0);
+  });
+
   it("accounting/capital/tax cite a resolving treatment-module@version head", () => {
     const moduleBacked = ["accounting", "capital", "tax"];
     for (const dim of moduleBacked) {
