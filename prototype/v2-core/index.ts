@@ -131,6 +131,15 @@ export * from "./banking/events";
  * Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1. */
 export * from "./fil-instances";
 
+// --- FinSurv BoP-category tagging scaffold ---------------------------------
+
+/** @tier K — SARB FinSurv BoP-category tagging scaffold (build-phase): the
+ * data shape an FX settlement / NDF-fixing event carries to record its FinSurv
+ * economic class (ORG-FX-FIN-01..14) + the pure derivation hook. The live
+ * per-transaction submission binds at licence-day (tracked, not built here).
+ * Authority: D-FX-OTC-CLOSURE-BACKLOG (Phase C10); D-FX-AD-STATUS. */
+export * from "./finsurv/bop-category";
+
 // --- FIL attribution (A1 kernel) -------------------------------------------
 
 /** @tier R — dimensional metric-attribution kernel: AttributionDimensions +
