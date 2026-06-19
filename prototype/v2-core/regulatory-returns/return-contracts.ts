@@ -170,6 +170,32 @@ export const RETURN_CONTRACT_REGISTRY: readonly ReturnContractRegistryEntry[] = 
     xsdName: "BA350.xsd",
     schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA350.zip",
   },
+  // Phase C batch 5 — the CAPITAL FAMILY (BA 700 / BA 701). The apex prudential
+  // returns. BA 700 (Capital Adequacy and Leverage and TLAC) has LIVE substrate
+  // for the regulatory minimum-required ratios + buffer add-ons + the specified
+  // minimum leverage ratio (computed from BCBS / Reg-38 constants in
+  // platform/reporting/ba-700-capital.ts + ba-700-leverage-ratio.ts) → those
+  // cells are `sourced`; every achieved-capital / RWA / ratio / excess-shortfall
+  // / TLAC cell needs REAL capital (the R300m is a licence-day target, not a
+  // present balance) → `licence-day-data`. BA 701 (Regulatory vs Economic
+  // Capital) is wholly `licence-day-data` (the ICAAP economic-capital model
+  // output + real positions do not exist pre-licence-day). Capital is GL-/RWA-
+  // derived (numerator = capital-classified GL; denominator = the credit BA 200 +
+  // market BA 320 + operational BA 400 RWA), so the capital family carries ZERO
+  // product-attribute requirements — no product is gated on a capital cell, and
+  // the live FX product is never wrongly blocked.
+  {
+    form: "BA700",
+    contractJsonPath: jsonPath("ba700-contract.json"),
+    xsdName: "BA700.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA700.zip",
+  },
+  {
+    form: "BA701",
+    contractJsonPath: jsonPath("ba701-contract.json"),
+    xsdName: "BA701.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA701.zip",
+  },
 ];
 
 const cache = new Map<ReturnForm, ReturnContract>();
