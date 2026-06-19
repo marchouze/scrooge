@@ -1,7 +1,7 @@
 ---
 agent: Atlas
 trigger: substrate-state
-asOf: 2026-06-19T00:00:56.292Z
+asOf: 2026-06-19T01:00:16.040Z
 decision-required: false
 ---
 
@@ -9,42 +9,42 @@ decision-required: false
 
 Autonomous run of Atlas's weekly substrate-state snapshot per `Team/Atlas.md` operating spec § 6 (Cadence) and § 11 (Outputs). Run by the agent runtime; no human-in-the-loop.
 
-**Headline:** 126932 events across 177 types; 31/31 personas have operating specs; 144 runtime handlers registered; 833 files in /Owner Inbox/; 14 substrate gaps tracked.
+**Headline:** 127319 events across 177 types; 31/31 personas have operating specs; 144 runtime handlers registered; 834 files in /Owner Inbox/; 14 substrate gaps tracked.
 
 ## Event store
 
-Path: `/Users/marc/.local/share/bank/event.db` · Total events: 126932
+Path: `/Users/marc/.local/share/bank/event.db` · Total events: 127319
 
 | Event type | Count | Earliest | Latest |
 |---|---|---|---|
-| `SubstrateAgentRunStarted` | 20429 | 2026-05-26 | 2026-06-19 |
-| `SubstrateAgentRunCompleted` | 20256 | 2026-05-26 | 2026-06-18 |
-| `BusDispatched` | 19015 | 2026-05-25 | 2026-06-18 |
-| `LegacyFanoutShadowed` | 15423 | 2026-05-26 | 2026-06-18 |
+| `SubstrateAgentRunStarted` | 20493 | 2026-05-26 | 2026-06-19 |
+| `SubstrateAgentRunCompleted` | 20320 | 2026-05-26 | 2026-06-19 |
+| `BusDispatched` | 19079 | 2026-05-25 | 2026-06-19 |
+| `LegacyFanoutShadowed` | 15486 | 2026-05-26 | 2026-06-19 |
 | `ProvenanceReclassified` | 11479 | 2026-05-27 | 2026-06-12 |
-| `DashboardProjectionRefreshed` | 4281 | 2026-05-26 | 2026-06-18 |
-| `WorkstreamRegistered` | 4108 | 2026-05-07 | 2026-06-18 |
-| `RecordFiled` | 2909 | 2026-05-05 | 2026-06-18 |
+| `DashboardProjectionRefreshed` | 4297 | 2026-05-26 | 2026-06-19 |
+| `WorkstreamRegistered` | 4123 | 2026-05-07 | 2026-06-19 |
+| `RecordFiled` | 2941 | 2026-05-05 | 2026-06-19 |
 | `Decision` | 2871 | 2026-04-30 | 2026-06-18 |
 | `CalculationPerformed` | 2793 | 2026-06-01 | 2026-06-18 |
 | `ObligationAdopted` | 2520 | 2026-06-04 | 2026-06-15 |
-| `SubstrateAlert` | 2135 | 2025-01-01 | 2026-06-18 |
-| `ScheduledTrigger` | 1359 | 2026-05-26 | 2026-06-19 |
+| `SubstrateAlert` | 2136 | 2025-01-01 | 2026-06-19 |
+| `ScheduledTrigger` | 1360 | 2026-05-26 | 2026-06-19 |
 | `RiskRaised` | 1225 | 2026-05-07 | 2026-06-02 |
-| `AgentGoalEvaluated` | 1119 | 2026-05-26 | 2026-06-19 |
+| `AgentGoalEvaluated` | 1120 | 2026-05-26 | 2026-06-19 |
 | `ReconResult` | 999 | 2026-05-07 | 2026-06-18 |
-| `AgentRunCompleted` | 829 | 2026-05-10 | 2026-06-18 |
-| `AgentRunStarted` | 808 | 2026-05-10 | 2026-06-19 |
+| `AgentRunCompleted` | 830 | 2026-05-10 | 2026-06-19 |
+| `AgentRunStarted` | 809 | 2026-05-10 | 2026-06-19 |
 | `ApplicabilityAssessmentRequested` | 732 | 2026-06-13 | 2026-06-15 |
 | `ApplicabilityAssessmentPerformed` | 732 | 2026-06-13 | 2026-06-15 |
 | `ApplicabilityAssessmentConcluded` | 732 | 2026-06-13 | 2026-06-15 |
-| `AgentPerformanceEvaluated` | 682 | 2026-05-28 | 2026-06-18 |
-| `AgentFeedbackIssued` | 682 | 2026-05-28 | 2026-06-18 |
-| `AgentGoalSelected` | 631 | 2026-05-26 | 2026-06-19 |
+| `AgentPerformanceEvaluated` | 713 | 2026-05-28 | 2026-06-19 |
+| `AgentFeedbackIssued` | 713 | 2026-05-28 | 2026-06-19 |
+| `AgentGoalSelected` | 632 | 2026-05-26 | 2026-06-19 |
 | `AgentBriefIssued` | 599 | 2026-05-10 | 2026-06-18 |
 | `MarketsProjectionRefreshed` | 555 | 2026-05-09 | 2026-05-09 |
 | `IdentityKeyRotated` | 547 | 2026-05-27 | 2026-06-14 |
-| `SubstrateStateSnapshot` | 497 | 2026-05-07 | 2026-06-18 |
+| `SubstrateStateSnapshot` | 498 | 2026-05-07 | 2026-06-19 |
 | `AgentGoalDeferred` | 488 | 2026-05-26 | 2026-06-18 |
 | `ObligationReviewCompleted` | 454 | 2026-06-09 | 2026-06-10 |
 | `PermissionPolicyPublished` | 411 | 2026-05-26 | 2026-06-14 |
@@ -371,7 +371,7 @@ Tracked engineering items that block agents from running fully autonomously. Eac
 
 ## Atlas's narrative
 
-_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CcBds3sUZseAgqNfTy49A"})._
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CcBiPXdP3Hsms5mMqCwvJ"})._
 
 ## Provenance
 
