@@ -189,6 +189,14 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // replay. Citation: D-NPA-POST-APPROVAL-FINDING-REVIEW (CEO-approved 2026-06-15),
   // PROC-NPA-GATE-01 Step 14, P4-SECURITY-DESIGNED-IN.
   "platform/recon/npa-post-approval-finding-review.ts",
+  // NPA return-data obligation-integrity recon (D-BA-RETURN-DATA-CONTRACT) —
+  // read-only replay of the product lifecycle (ProductApproved / ProductWithheld /
+  // ProductRetired / ProductDimensionAttested) to resolve currently-effective
+  // products and assert each captures (or tracks as a deferred gap) the product-
+  // specific return-cell data it owes per the L3 inverse index. Gate is a no-op
+  // on replay. Citation: D-BA-RETURN-DATA-CONTRACT (CEO-approved 2026-06-19),
+  // D-NPA-GATE-POLICY-REDESIGN, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/npa-return-data-obligation-integrity.ts",
   // DSAR SLA recon (D-FX-HELD-DIMS-SEAT-SWEEP) — read-only replay of the
   // DSARReceived / DSARExtended / DSARClosed lifecycle to inventory open
   // data-subject access requests against the POPIA s.23 / PAIA s.25 30-day
