@@ -3,9 +3,26 @@
 form's XSD/xlsx in `Regulations/SARB-PA/ba-returns/schemas/<FORM>.zip`.
 
 This is the GENERALISED generator for the financial-family returns (BA 110,
-BA 120, BA 600, BA 610) AND the credit-family returns (BA 200, BA 210, BA 220) —
-the parametrised sibling of `gen-ba100-contract.py` (which keeps the rich BA-100
-balance-sheet line→GL→product mapping).
+BA 120, BA 600, BA 610), the credit-family returns (BA 200, BA 210, BA 220) AND
+the liquidity-family returns (BA 300, BA 310) — the parametrised sibling of
+`gen-ba100-contract.py` (which keeps the rich BA-100 balance-sheet
+line→GL→product mapping).
+
+LIQUIDITY FAMILY (Phase C batch 3): the LCR / NSFR / minimum-reserve returns
+carry product-attribute requirements on TWO axes — the DEPOSIT / funding axis
+(funding-stability, counterparty category, operational relationship, maturity /
+callability → LCR run-off + NSFR ASF) and the HQLA-ELIGIBLE-ASSET axis (HQLA
+level / eligibility / haircut / repo-eligibility → LCR numerator + BA 310 liquid-
+asset stock). Unlike the credit family, the liquidity NUMERATOR has LIVE
+substrate (the HQLA classifier + SecurityMaster + the BA-300 LCR fold), so the
+HQLA / LCR-numerator cells are `sourced` while the deposit-funding / NSFR /
+reserve cells (which need real funding positions) are `licence-day-data`. The
+`liquidity_product_attributes()` mapper attaches each edge to the right future
+product (`prd:bank:deposit:transactional` or
+`prd:bank:treasury:hqla-eligible-asset`); `liquidity_cell_status()` makes the
+per-cell sourced-vs-licence-day decision (a cell carrying a required attribute on
+an unapproved future product is forced licence-day so the NPA gate stays
+coherent). The live FX product feeds none of these, so it is not wrongly blocked.
 
 FINANCIAL FAMILY (Phase C batch 1): the cell→source mapping is form-LEVEL (a
 named report fold over the GL trial balance + the form's projection), NOT a
@@ -280,6 +297,95 @@ FORMS = {
             "type — bind now. No silent fabrication."
         ),
     ),
+    # -----------------------------------------------------------------------
+    # Phase C batch 3 — the LIQUIDITY FAMILY (BA 300 / BA 310). Like the credit
+    # family these carry real product-attribute requirements a product must
+    # capture — but on the LIABILITY (deposit funding-stability / category /
+    # maturity) and HQLA (asset level / eligibility / haircut) axes that drive
+    # the LCR and NSFR. UNLIKE the credit family, the liquidity numerator has
+    # LIVE substrate (the HQLA classifier + SecurityMaster + the BA-300 LCR fold
+    # over cash-flow events), so the HQLA/LCR cells are `sourced` where the
+    # source genuinely exists; the NSFR / term-funding lines that need real
+    # funding positions are `licence-day-data`. The split is computed per-cell in
+    # build_cell (the form config carries the DEFAULT + the live-substrate flag).
+    # -----------------------------------------------------------------------
+    "BA300": dict(
+        name="Liquidity Risk (includes the Liquidity Coverage Ratio (LCR) and the Net Stable Funding Ratio (NSFR) series)",
+        obligation="ORG-PR-RETURNS-010",
+        clause=(
+            "SARB PA Directive D5/2025 §2.1.11 (form BA 300, Annexure 10A/10B) read with the "
+            "Regulations relating to Banks reg 26 (liquidity risk / minimum liquid assets and "
+            "the liquidity coverage ratio) and the Basel III LCR (BCBS D295) and NSFR (BCBS D335) "
+            "standards; Banks Act 94 of 1990 s.6(6)(a). [Post-#1451 corrected row "
+            "(D-BA-RETURN-NUMBERING-EXCEL-CANONICAL): per the canonical SARB Excel form schedule, "
+            "form BA 300 is the LIQUIDITY RISK return (incl. the LCR and the NSFR series); the "
+            "verbatim §2.1.11 'operational risk' annotation in the obligation record is the "
+            "documented fabrication the correction supersedes — operational risk is BA 400.]"
+        ),
+        fold="ba300-liquidity-risk-fold",
+        # Liquidity cells fold from the BA-300 LCR / NSFR projections over the
+        # cash-flow events + the HQLA stock fold (over SecurityMaster). There is
+        # no single GL category that holds the LCR/NSFR figures — they are folded
+        # by the named liquidity projection, not a CoA balance — so gl_categories
+        # is empty and the fold is the authoritative source (like the credit
+        # family). The HQLA numerator + LCR ratio have live substrate; the NSFR /
+        # term-funding lines need real funding positions (licence-day).
+        gl_categories=[],
+        entity_scope="bank",
+        # NOT a blanket licence-day form: the HQLA / LCR-numerator cells have live
+        # substrate. The per-cell sourced-vs-licence-day decision is made in
+        # build_cell via liquidity_cell_status(); this flag is the DEFAULT for a
+        # cell that does not match a live-substrate predicate.
+        licence_day=True,
+        liquidity_family=True,
+        status_note=(
+            "Liquidity-risk figures fold from the BA-300 LCR / NSFR projections over the "
+            "cash-flow events plus the HQLA stock fold over SecurityMaster. The HQLA "
+            "classifier (platform/collateral/hqla-classifier.ts), the HQLA stock fold "
+            "(platform/reporting/hqla-stock.ts) and the BA-300 LCR fold "
+            "(platform/reporting/ba-300-lcr.ts) exist as substrate; the deposit-funding / "
+            "NSFR cells require real deposit and funding positions which the bank-in-"
+            "formation does not book pre-licence-day, so those values are licence-day data. "
+            "The product-attribute dataRequirements — deposit funding-stability / category / "
+            "maturity, HQLA asset level / eligibility / haircut — bind now so a future "
+            "deposit / HQLA-eligible product is correctly gated. No silent fabrication."
+        ),
+    ),
+    "BA310": dict(
+        name="Minimum Liquid Reserve Balance and Liquid Assets (HQLA)",
+        obligation="ORG-PR-RETURNS-011",
+        clause=(
+            "SARB PA Directive D5/2025 §2.1.12 (form BA 310, Annexure 11A/11B) read with the "
+            "Regulations relating to Banks reg 26 (liquidity risk) and reg 27 (minimum reserve "
+            "balance / minimum liquid assets) and the South African Reserve Bank Act 90 of 1989 "
+            "cash-reserve requirement; Banks Act 94 of 1990 s.6(6)(a). [Post-#1451 corrected row "
+            "(D-BA-RETURN-NUMBERING-EXCEL-CANONICAL): per the canonical SARB Excel form schedule, "
+            "form BA 310 is the MINIMUM LIQUID RESERVE BALANCE AND LIQUID ASSETS (HQLA) return; "
+            "the verbatim §2.1.12 'market risk' annotation in the obligation record is the "
+            "documented fabrication the correction supersedes — market risk is BA 320.]"
+        ),
+        fold="ba310-min-reserve-liquid-assets-fold",
+        # BA 310 reserve / liquid-asset balances fold from the BA-310 minimum-
+        # reserve fold over the level-1 HQLA stock (gold, treasury bills, central-
+        # bank reserves, securities) + the reserve-balance computation off the
+        # liabilities base (which ties to BA 100 line R0790). No single GL category
+        # holds the computed reserve; the fold is the authoritative source.
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,
+        liquidity_family=True,
+        status_note=(
+            "Minimum-reserve / liquid-asset figures fold from the BA-310 reserve fold over the "
+            "level-1 HQLA stock (gold, treasury bills, central-bank reserves, eligible "
+            "securities) plus the reserve-balance computation off the liabilities base (ties to "
+            "BA 100 R0790). The HQLA classifier and SecurityMaster exist as substrate; the "
+            "reserve balance requires the real liabilities base and held liquid-asset positions, "
+            "which the bank-in-formation does not book pre-licence-day, so those values are "
+            "licence-day data. The product-attribute dataRequirements — HQLA asset level / "
+            "eligibility / repo-eligibility — bind now so a future HQLA-eligible product is "
+            "correctly gated. No silent fabrication."
+        ),
+    ),
 }
 
 # ---------------------------------------------------------------------------
@@ -299,6 +405,16 @@ CREDIT_ENUM_TYPES = (
     "IndustryType",
     "PD_bucket",
 )
+
+# BA 300 (liquidity) carries two bespoke leaf base types beyond the common set:
+#   - "Liquidity coverage ratio (LCR)" — the LCR ratio cell (HQLA / 30-day NCO).
+#     It is a RATIO (a percentage expressed as a number), not money.
+#   - "Specify concentration of deposit funding" — a free-text "specify…" cell on
+#     the deposit-concentration sub-form (the counterparty/funding name), i.e.
+#     text. The xlsx surfaces these names verbatim from the SARB Excel form; the
+#     `_x0020_`-escaped XSD names map to the same human strings.
+LIQUIDITY_LCR_RATIO_TYPE = "Liquidity coverage ratio (LCR)"
+LIQUIDITY_SPECIFY_TEXT_TYPE = "Specify concentration of deposit funding"
 
 # SARB `Number (n,2)` complexTypes (BA 210 / BA 220) are decimal cells. BA 220's
 # `Number (14,2)` carries an explicit "Currency data type" XSD documentation
@@ -323,6 +439,13 @@ def value_type_for(xsd_type: str) -> str:
         return "money"
     if t.startswith("Percentage"):
         return "ratio"
+    if t == LIQUIDITY_LCR_RATIO_TYPE:
+        # The BA 300 LCR cell is a ratio (HQLA / 30-day net cash outflows),
+        # reported as a percentage value — a ratio cell, not money.
+        return "ratio"
+    if t == LIQUIDITY_SPECIFY_TEXT_TYPE:
+        # The "specify…" deposit-concentration cell is free text.
+        return "text"
     if t == "Numeric":
         # SARB `Numeric` carries non-scaled numeric values (factors, counts,
         # ratios-as-decimal). Treated as a ratio/number cell (no currency).
@@ -649,6 +772,271 @@ def credit_product_attributes(
     return out
 
 
+# ===========================================================================
+# LIQUIDITY PRODUCT-ATTRIBUTE MAPPER — the substantive new output of Phase C
+# batch 3 (the liquidity family: BA 300 / BA 310).
+# ===========================================================================
+#
+# A liquidity-return cell genuinely requires attributes that the bank's PRODUCTS
+# must carry — but split across two product axes, not one:
+#
+#   (A) DEPOSIT / FUNDING products (the LCR-outflow + NSFR-ASF side). The LCR
+#       outflow rate and the NSFR available-stable-funding factor for a liability
+#       are DRIVEN by its funding-stability ("stable" vs "less stable"), its
+#       counterparty CATEGORY (retail / small-business vs wholesale non-financial
+#       vs financial-institution), whether it is held for an OPERATIONAL purpose,
+#       and its MATURITY / callability (≤30-day vs >30-day; the maturity bands).
+#       These are attributes a DEPOSIT product must capture.
+#   (B) HQLA-ELIGIBLE ASSET products (the LCR numerator + BA 310 liquid-asset
+#       side). Whether a security counts toward HQLA, and at what LEVEL (1 / 2A /
+#       2B) and HAIRCUT, is driven by the asset's HQLA eligibility — an attribute
+#       an HQLA-eligible asset product (bond / treasury-bill) must carry. The HQLA
+#       classifier (platform/collateral/hqla-classifier.ts) computes
+#       level + haircut from a SecurityDescriptor, so the asset product must carry
+#       the descriptor fields the classifier reads.
+#
+# THE TWO FUTURE PRODUCTS (honest, not yet approved)
+# --------------------------------------------------
+# No deposit product is approved yet (the live products are FX / bond / equity /
+# IRD / treasury). The deposit-side attributes attach to the canonical future
+# deposit product id `prd:bank:deposit:transactional`; the HQLA-asset-side
+# attributes attach to `prd:bank:treasury:hqla-eligible-asset` (the future
+# HQLA-eligible-security product). Because neither is an approved ProductApproved,
+# any cell carrying a `required:true` PRODUCT-ID attribute on these refs is
+# `licence-day-data` (the recon validates `prd:` refs against the approved set
+# only for `status:"sourced"` cells) — also honest: there are no real deposit or
+# HQLA-asset positions pre-licence-day. The live FX product
+# `prd:bank:fx:otc-vanilla` feeds NONE of these, so it is NOT wrongly blocked.
+#
+# PRECISION + HONESTY (no bulk-marking)
+# -------------------------------------
+# An attribute attaches to a cell ONLY where the cell's regulatory MEANING (its
+# row/column label) genuinely keys off it, and `required:true` ONLY where the
+# cell literally cannot be placed without it — i.e. the cell whose ROW DEFINES a
+# stability/category/level dimension (the "Stable deposits" outflow row, the
+# "Total level 2A HQLA" row, the deposit-concentration counterparty cell). A
+# monetary aggregate merely SLICED by an attribute carries it `required:false`
+# (it still folds, possibly to honest 0). Each attribute is grounded in the LCR
+# (BCBS D295) / NSFR (BCBS D335) / SARB reg 26 / reg 27 rule that makes a product
+# carry it. The form-meta / hash-total / pure-arithmetic cells carry none.
+
+LIQUIDITY_DEPOSIT_PRODUCT_ID = "prd:bank:deposit:transactional"
+LIQUIDITY_HQLA_PRODUCT_ID = "prd:bank:treasury:hqla-eligible-asset"
+
+# Deposit / funding product attributes (LCR-outflow + NSFR-ASF axis).
+LIQUIDITY_DEPOSIT_ATTRS = {
+    "fundingStability": (
+        "whether the deposit is a 'stable' or 'less stable' deposit, which selects the "
+        "LCR run-off rate (stable retail 3–5%, less-stable retail 10%+) and the NSFR "
+        "available-stable-funding factor. The defining attribute of the LCR retail / "
+        "small-business deposit rows. (Basel LCR BCBS D295 §54–§84; NSFR BCBS D335 §22–"
+        "§24; SARB Regulations relating to Banks reg 26.)"
+    ),
+    "depositCounterpartyCategory": (
+        "the LCR/NSFR counterparty category of the funding provider — retail / small "
+        "business vs wholesale non-financial corporate vs financial institution vs "
+        "sovereign/PSE — which selects the outflow / ASF weighting band. (Basel LCR "
+        "BCBS D295 §90–§111; NSFR BCBS D335 §22–§40; SARB reg 26.)"
+    ),
+    "operationalRelationship": (
+        "whether the deposit is held for an OPERATIONAL purpose (clearing / custody / "
+        "cash-management) with a qualifying operational relationship, which attracts the "
+        "reduced 25% operational-deposit run-off rather than the non-operational rate. "
+        "(Basel LCR BCBS D295 §93–§104; SARB reg 26.)"
+    ),
+    "maturityCallability": (
+        "the residual maturity / notice period / callability of the deposit or funding — "
+        "whether it falls within the 30-day LCR horizon and which NSFR maturity bucket "
+        "(<6m / 6m–1y / ≥1y) it occupies. Drives both the LCR outflow inclusion and the "
+        "NSFR ASF factor. (Basel LCR BCBS D295 §54; NSFR BCBS D335 §17–§24; SARB reg 26.)"
+    ),
+}
+
+# HQLA-eligible asset product attributes (LCR-numerator + BA 310 liquid-asset axis).
+LIQUIDITY_HQLA_ATTRS = {
+    "hqlaLevel": (
+        "the HQLA level of the asset — Level 1, Level 2A or Level 2B — which determines "
+        "its inclusion in the LCR numerator and the BA 310 liquid-asset stock, and the "
+        "Level-2 caps (40% / 15%). Computed by the HQLA classifier "
+        "(platform/collateral/hqla-classifier.ts) from the asset descriptor. (Basel LCR "
+        "BCBS D295 §24–§54; SARB reg 26 / reg 27.)"
+    ),
+    "hqlaEligibility": (
+        "whether the asset meets the HQLA operational + eligibility criteria (unencumbered, "
+        "central-bank-eligible, marketable in a deep liquid market) to count as a high-"
+        "quality liquid asset at all. (Basel LCR BCBS D295 §28–§47; SARB reg 26 / reg 27.)"
+    ),
+    "hqlaHaircut": (
+        "the regulatory haircut applied to the asset's market value in the HQLA stock "
+        "(0% Level 1, 15% Level 2A, 25–50% Level 2B). Computed by the HQLA classifier from "
+        "the asset's level. (Basel LCR BCBS D295 §49–§54; SARB reg 26 / reg 27.)"
+    ),
+    "repoEligibility": (
+        "whether the level-1 liquid asset is eligible for / held under a resale or "
+        "repurchase agreement, a BA 310 reserve-balance dimension (level-1 HQLA acquired "
+        "under resale vs sold under repo). (SARB Regulations relating to Banks reg 27; "
+        "SARB Act 90 of 1989 cash-reserve requirement.)"
+    ),
+}
+
+
+def liquidity_product_attributes(form: str, col_label: str, row_label: str, xsd_type: str):
+    """Return the list of ((product_id, attr, required)) product-attribute edges a
+    liquidity cell genuinely owes, keyed off the cell's regulatory MEANING (its
+    row/column label + leaf type). Precise + honest — see the mapper header.
+    Returns [] for cells with no genuine liquidity-product-attribute dependency
+    (hash-totals, pure subtotals, form-meta, ratio/control cells).
+
+    Each edge names WHICH future product (deposit vs HQLA-asset) carries the
+    attribute, so the inverse index / NPA gate binds the right product."""
+    text = f"{col_label or ''} {row_label or ''}".lower()
+    out: list[tuple[str, str, bool]] = []
+
+    def add(product_id: str, attr: str, required: bool) -> None:
+        if (product_id, attr) not in {(p, a) for p, a, _ in out}:
+            out.append((product_id, attr, required))
+
+    # Hash-total / control cells carry no product attribute (avoid bulk-marking).
+    if "hashtotal" in text or "hash total" in text:
+        return out
+
+    dep = LIQUIDITY_DEPOSIT_PRODUCT_ID
+    hqla = LIQUIDITY_HQLA_PRODUCT_ID
+
+    # ---- HQLA asset level / eligibility / haircut (LCR numerator + BA 310) ----
+    # A row that NAMES an HQLA level defines that level → required:true (the cell
+    # cannot place an asset in the right level without the asset's level attr).
+    # A row that names a level only to EXCLUDE it ("other than level…", "non-level
+    # one") is defined by the ABSENCE of the level, so it keys off eligibility,
+    # not a specific level → handled by the eligibility branch (required:false).
+    names_a_level = (
+        "level 1" in text
+        or "level one" in text
+        or "level 2a" in text
+        or "level 2b" in text
+        or "level two" in text
+    )
+    excludes_level = (
+        "other than level" in text
+        or "other than eligible" in text
+        or "other than qualifying level" in text
+        or "non-level" in text
+        or "non level" in text
+        or "other than qualifying level one" in text
+    )
+    names_level = names_a_level and not excludes_level
+    mentions_hqla = "high-quality liquid asset" in text or "hqla" in text or "liquid asset" in text
+    if names_level:
+        add(hqla, "hqlaLevel", True)
+        add(hqla, "hqlaEligibility", False)
+        add(hqla, "hqlaHaircut", False)
+    elif mentions_hqla or "securities eligible" in text:
+        # A liquid-asset row that does not pin a specific level still keys off
+        # HQLA eligibility (whether the asset counts at all) → required:false on
+        # the aggregate; level/haircut are drivers.
+        add(hqla, "hqlaEligibility", True)
+        add(hqla, "hqlaLevel", False)
+        add(hqla, "hqlaHaircut", False)
+    # BA 310 repo / resale level-1 liquid-asset rows.
+    if form == "BA310" and (
+        "resale agreement" in text or "repurchase agreement" in text or "repo" in text
+    ):
+        add(hqla, "repoEligibility", False)
+        add(hqla, "hqlaEligibility", False)
+
+    # ---- Deposit funding-stability / category / operational / maturity --------
+    is_stable = "stable" in text  # matches "stable" and "less stable"
+    is_deposit_funding = any(
+        k in text
+        for k in (
+            "deposit",
+            "funding",
+            "wholesale",
+            "retail",
+            "small business",
+            "demand",
+            "term deposit",
+        )
+    )
+    if is_stable and is_deposit_funding:
+        # A "Stable"/"Less stable" deposit row DEFINES the stability dimension →
+        # required:true (the run-off / ASF factor cannot be set without it).
+        add(dep, "fundingStability", True)
+        add(dep, "depositCounterpartyCategory", False)
+    elif is_deposit_funding:
+        # A deposit/funding row sliced by counterparty/category but not by
+        # stability → the category drives the band, required:false on aggregate.
+        add(dep, "depositCounterpartyCategory", False)
+        add(dep, "fundingStability", False)
+    # Operational-relationship rows (reduced operational-deposit run-off).
+    if "operational" in text and is_deposit_funding:
+        # A row that DEFINES the operational-deposit treatment keys off it →
+        # required:true (operational vs non-operational selects a different rate).
+        add(dep, "operationalRelationship", "operational deposits" in text or "operational purposes" in text)
+        add(dep, "depositCounterpartyCategory", False)
+    # Maturity / callability — the maturity-band columns + residual-maturity rows.
+    mentions_maturity = (
+        "residual maturity" in text
+        or "notice period" in text
+        or "more than" in text  # the "More than X to Y" maturity-band columns
+        or "within 30" in text
+        or "less than" in text
+        or "indeterminate maturity" in text
+        or "non contractual" in text
+    )
+    if mentions_maturity and is_deposit_funding:
+        add(dep, "maturityCallability", False)
+
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Per-cell liquidity status (honest sourced-vs-licence-day split).
+#   - HQLA / LCR-numerator cells (level-1/2A/2B stock, liquid assets, the LCR
+#     ratio) have LIVE substrate: the HQLA classifier + SecurityMaster + the
+#     BA-300 LCR fold. They are `sourced` (the source genuinely exists; values
+#     are an honest 0 until positions land — sourced is "source exists", not
+#     "data present").
+#   - Deposit-funding / NSFR / reserve-balance cells need real funding positions
+#     that the bank-in-formation does not book pre-licence-day → `licence-day-
+#     data`. The HQLA classifier still exists, but the deposit base does not.
+# Returns (status, uses_unapproved_product_ref). A cell that carries a
+# `required:true` PRODUCT-ID attribute on an unapproved product MUST be licence-
+# day-data (the recon rejects a sourced cell whose required prd: ref is not an
+# approved product) — this function enforces that coupling so the generator
+# cannot emit a contradiction.
+# ---------------------------------------------------------------------------
+def liquidity_cell_status(form: str, col_label: str, row_label: str, prod_attrs):
+    text = f"{col_label or ''} {row_label or ''}".lower()
+    has_required_product_ref = any(
+        required for _pid, _attr, required in prod_attrs
+    )
+    # Live-substrate predicate: HQLA stock / liquid-asset / LCR cells.
+    hqla_sourced = (
+        "high-quality liquid asset" in text
+        or "hqla" in text
+        or "liquid asset" in text
+        or "level 1" in text
+        or "level one" in text
+        or "level 2a" in text
+        or "level 2b" in text
+        or "liquidity coverage ratio" in text
+        or "treasury bill" in text
+        or "gold coin" in text
+        or "central bank reserve" in text
+        or "reserve bank notes" in text
+    )
+    # If the cell carries a required PRODUCT-ID attribute on an unapproved future
+    # product, it MUST be licence-day-data — even if it is an HQLA cell — because
+    # the gate requires the product to be approved for a sourced cell. The
+    # deposit / HQLA-asset products are not approved pre-licence-day.
+    if has_required_product_ref:
+        return "licence-day-data"
+    if hqla_sourced:
+        return "sourced"
+    return "licence-day-data"
+
+
 # ---------------------------------------------------------------------------
 # xlsx Elements-sheet extraction — IDENTICAL column layout across all BA forms
 # (verified BA100/BA110/BA120/BA600/BA610). Reused from gen-ba100-contract.py.
@@ -733,6 +1121,28 @@ def _extract_elements(schema_zip: str):
 # ---------------------------------------------------------------------------
 def currency_dimension_for(form: str, col_label: str, row_label: str, form_cfg) -> str:
     text = f"{col_label or ''} {row_label or ''}".lower()
+    # Liquidity returns (BA 300 / BA 310): the LCR and the minimum-reserve / liquid-
+    # asset stock are reported in the functional currency at the form level, but the
+    # LCR is ALSO required by SIGNIFICANT CURRENCY (a currency in which the bank's
+    # aggregate liabilities are ≥ 5% of total). A cell whose row/column names a
+    # currency / foreign-currency / ZAR-denomination axis is by-currency; the
+    # default form-level liquidity cell is functional (ZAR by config, never literal).
+    if form in ("BA300", "BA310"):
+        if any(
+            k in text
+            for k in (
+                "foreign currency",
+                "foreign-currency",
+                "significant currency",
+                "by currency",
+                "per currency",
+                "currency analysis",
+                "denominated in",
+                "denominated",
+            )
+        ):
+            return "by-currency"
+        return "functional"
     if form == "BA610":
         if any(k in text for k in ("foreign currency", "foreign-currency", "per currency",
                                    "by currency", "currency analysis", "denominated")):
@@ -919,6 +1329,34 @@ def build_cell(form: str, form_cfg, e):
                 }
             )
 
+    # --- LIQUIDITY product-attribute requirements (Phase C batch 3) ---
+    # A liquidity cell that genuinely keys off a deposit-funding or HQLA-asset
+    # attribute carries a `product-attribute` requirement `ref: <productId>#<attr>`
+    # naming WHICH future product (deposit vs HQLA-asset) owes it. `required:true`
+    # ONLY where the cell cannot populate without it (the row that DEFINES the
+    # stability / level dimension); else `required:false` on the sliced aggregate.
+    # See liquidity_product_attributes().
+    liq_prod_attrs = []
+    if form_cfg.get("liquidity_family"):
+        liq_prod_attrs = liquidity_product_attributes(form, collabel, rowlabel, xsd_type)
+        for product_id, attr, required in liq_prod_attrs:
+            catalogue = (
+                LIQUIDITY_DEPOSIT_ATTRS
+                if product_id == LIQUIDITY_DEPOSIT_PRODUCT_ID
+                else LIQUIDITY_HQLA_ATTRS
+            )
+            data_reqs.append(
+                {
+                    "sourceKind": "product-attribute",
+                    "ref": f"{product_id}#{attr}",
+                    "description": (
+                        f"A liquidity-relevant product feeding {label} must carry its "
+                        f"{attr}: {catalogue[attr]}"
+                    ),
+                    "required": required,
+                }
+            )
+
     # --- currency dimension (P5) ---
     currency_dim = None
     if value_type == "money":
@@ -932,7 +1370,15 @@ def build_cell(form: str, form_cfg, e):
     }
 
     # --- status (honest gaps) ---
-    if form_cfg["licence_day"]:
+    if form_cfg.get("liquidity_family"):
+        # Per-cell sourced-vs-licence-day split: HQLA / LCR-numerator cells have
+        # live substrate (sourced); deposit-funding / NSFR / reserve cells need
+        # real positions (licence-day). A cell carrying a required PRODUCT-ID attr
+        # on an unapproved future product is forced licence-day (the recon rejects
+        # a sourced cell whose required prd: ref is not approved).
+        status = liquidity_cell_status(form, collabel, rowlabel, liq_prod_attrs)
+        status_reason = form_cfg["status_note"] if status != "sourced" else None
+    elif form_cfg["licence_day"]:
         status = "licence-day-data"
         status_reason = form_cfg["status_note"]
     else:
@@ -1053,8 +1499,12 @@ if __name__ == "__main__":
     elif len(sys.argv) == 2 and sys.argv[1] == "--credit":
         for f in ("BA200", "BA210", "BA220"):
             generate(f)
+    elif len(sys.argv) == 2 and sys.argv[1] == "--liquidity":
+        for f in ("BA300", "BA310"):
+            generate(f)
     else:
         raise SystemExit(
             "usage: gen-return-contract.py "
-            "<BA110|BA120|BA200|BA210|BA220|BA600|BA610|--all|--credit>"
+            "<BA110|BA120|BA200|BA210|BA220|BA300|BA310|BA600|BA610|"
+            "--all|--credit|--liquidity>"
         )
