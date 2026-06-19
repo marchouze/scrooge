@@ -85,6 +85,16 @@ const KNOWN_PROJECTIONS = new Set([
   // Phase C batch 3 — liquidity-family report folds (one per form).
   "ba300-liquidity-risk-fold",
   "ba310-min-reserve-liquid-assets-fold",
+  // Phase C batch 4 — market-family report folds (one per form). BA 320's fold is
+  // the live ba-320-market-risk.ts standardised-position-risk engine (the FX /
+  // IR / bond adapters + VaR engine); the others fold from their named market
+  // projections (no live trading-book / treasury / banking-book / derivative
+  // positions pre-licence-day).
+  "ba320-market-risk-fold",
+  "ba325-selected-risk-exposure-fold",
+  "ba330-irrbb-fold",
+  "ba340-equity-risk-banking-book-fold",
+  "ba350-derivatives-instruments-fold",
 ]);
 const KNOWN_REFERENCE_DATA_PREFIXES = ["legal-entity-tree", "party-register", "return-form-meta"];
 
