@@ -129,9 +129,7 @@ describe("canonical identities (FRTB on its OWN identity, NOT BA 320 / BA 325)",
     expect(frtb.returnForm).not.toBe(ba320.returnForm);
     expect(frtb.returnForm).not.toBe(ba325.returnForm);
     // FRTB's fold is the standalone FRTB market-risk fold, NOT BA 320's fold.
-    const frtbFolds = new Set(
-      frtb.cells.flatMap((c) => c.dataRequirements.map((d) => d.ref)),
-    );
+    const frtbFolds = new Set(frtb.cells.flatMap((c) => c.dataRequirements.map((d) => d.ref)));
     expect(frtbFolds.has("frtb-market-risk-fold")).toBe(true);
     expect(frtbFolds.has("ba320-market-risk-fold")).toBe(false);
   });
