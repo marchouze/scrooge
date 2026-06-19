@@ -482,9 +482,7 @@
     if (payload.dataState !== "live") {
       // Honest empty / no-limit state — exposure may be present but utilisation
       // cannot be computed; surface the V2 reason rather than fabricate a number.
-      renderHeadroomEmpty(
-        payload.reason || "No live FX net-open-position headroom on this store.",
-      );
+      renderHeadroomEmpty(payload.reason || "No live FX net-open-position headroom on this store.");
       return;
     }
 

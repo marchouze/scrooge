@@ -33,7 +33,6 @@ import { join } from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 
-import { buildV2FxHeadroomView } from "../dashboard/v2-markets-fx-view";
 import {
   SYNTHETIC_HALF_SPREAD,
   SYNTHETIC_USDZAR_MID,
@@ -41,13 +40,14 @@ import {
   loadSeedRate,
   quoteRfq,
 } from "../dashboard/markets-fx-trade";
+import { buildV2FxHeadroomView } from "../dashboard/v2-markets-fx-view";
 import {
   makeCounterpartyEligibilityScreened,
   makeRasLimitSchedulePublished,
 } from "../platform/event-store/event-types";
 import { EventStore } from "../platform/event-store/store";
-import { MarketDataStore } from "../platform/market-data/store";
 import type { Actor } from "../platform/event-store/types";
+import { MarketDataStore } from "../platform/market-data/store";
 
 // ---------------------------------------------------------------------------
 // Test fixtures

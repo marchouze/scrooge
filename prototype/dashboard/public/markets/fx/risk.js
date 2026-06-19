@@ -79,8 +79,7 @@
     if (!tbody) return;
     const b3 = data?.b3;
     if (!b3 || data.dataState !== "live") {
-      const reason =
-        data?.reason ?? "No FX net-open-position headroom data available.";
+      const reason = data?.reason ?? "No FX net-open-position headroom data available.";
       tbody.innerHTML = `<tr><td colspan="7" class="fx-cp-empty">${escapeHtml(reason)}</td></tr>`;
       return;
     }

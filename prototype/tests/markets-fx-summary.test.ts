@@ -117,8 +117,7 @@ describe("buildV2FxSummaryView — return shape", () => {
     expect(typeof view.counterpartyCount).toBe("number");
     // openPositionChargeMinor is number | null — never undefined.
     expect(
-      view.openPositionChargeMinor === null ||
-        typeof view.openPositionChargeMinor === "number",
+      view.openPositionChargeMinor === null || typeof view.openPositionChargeMinor === "number",
     ).toBe(true);
     expect(typeof view.asOf).toBe("string");
     expect(view.asOf.length).toBeGreaterThan(0);
