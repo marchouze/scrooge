@@ -372,9 +372,13 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:ras-b6-cyber-severity-coverage",
     "recon:ras-register-parity",
     "recon:var-nop-exposure-parity",
-    // D-V1-REMOVAL-PHASE2-GAP-A3 — V2 VaR parity gate (advisory).
-    // Compares V1 MarketRiskMeasureComputed figures vs V2 MarketRiskVarComputed
-    // figures within 1 ZAR minor-unit tolerance. Advisory until CEO-approved flip.
+    // WS-FX-OTC-CLOSURE A3 — V2 VaR parity gate (honest enforcing/awaiting-data
+    // split; D-FX-OTC-CLOSURE-BACKLOG). Construction/wiring legs (registry
+    // coherence, V1-not-prematurely-replaced sentinel, V2-kernel-live probe) are
+    // ENFORCING and bind on the clean store. The byte-parity leg (V1
+    // MarketRiskMeasureComputed ↔ V2 MarketRiskVarComputed within 1 ZAR
+    // minor-unit) ENFORCES the instant both events exist, and vacuous-skips
+    // (info, never forced green) when the clean store is data-empty.
     "recon:var-v2-parity",
     "recon:fx-gateway-threshold-enforcement",
     "recon:permission-gate-default",
