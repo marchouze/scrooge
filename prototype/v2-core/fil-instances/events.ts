@@ -37,7 +37,6 @@
 // Author: Atlas (Substrate Architect, engineering).
 
 import { z } from "zod";
-import { bopCategoryTagSchema } from "../finsurv/bop-category";
 import {
   type FilLifecycleStage,
   filEventRefSchema,
@@ -45,6 +44,7 @@ import {
 } from "../fil-core/lifecycle";
 import { instantSchema, moneySchema } from "../fil-core/primitives";
 import { filInstanceUrnSchema, filTypeUrnSchema } from "../fil-core/urn";
+import { bopCategoryTagSchema } from "../finsurv/bop-category";
 
 // ---------------------------------------------------------------------------
 // FIL economic-terms asset class — the FIL-native partition a RiskMeasurable /

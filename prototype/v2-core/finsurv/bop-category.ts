@@ -18,8 +18,8 @@
 // the code). This module therefore tags the ECONOMIC CLASS (which we can source
 // from the Currency & Exchanges Manual today) and leaves `bopcusCode`
 // deliberately unset (`null`) until counsel ratifies the code map. The
-// licence-day gap is tracked as a typed SubstrateAlert, not a TODO — see
-// PROC-FINSURV-BOP-01 §Gaps and scripts/file-mira-finsurv-bop-scaffold.ts.
+// licence-day gap is tracked as a typed SubstrateAlert, not a silent deferral —
+// see PROC-FINSURV-BOP-01 §Gaps and scripts/file-mira-finsurv-bop-scaffold.ts.
 //
 // PACKAGE BOUNDARY: this file is inside `v2-core/` — NO imports from `platform/`,
 // `runtime/`, `domains/` (enforced by `recon:v2-no-v1-import`). The v1-side
@@ -231,7 +231,10 @@ export interface DeriveBopCategoryTagInput {
  * The reason a flow cannot be tagged (fail-closed; the read-path surfaces this,
  * never swallows it — Engineering Charter cmd 5).
  */
-export type BopTaggingSkipReason = { readonly kind: "wave2-not-active"; readonly bopClass: BopCategoryClass };
+export type BopTaggingSkipReason = {
+  readonly kind: "wave2-not-active";
+  readonly bopClass: BopCategoryClass;
+};
 
 export type DeriveBopCategoryTagResult =
   | { readonly tagged: true; readonly tag: BopCategoryTag }

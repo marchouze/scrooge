@@ -26,14 +26,11 @@
 // Author: Mira (Compliance / RegTech engineer, engineering).
 //   Governance owner: Zara (Chief Compliance Officer, governance).
 
-import {
-  type BopCategoryClass,
-  type BopCategoryTag,
-} from "../../../v2-core/finsurv/bop-category";
 import type {
   FilFxSettlementConfirmedPayload,
   FilNdfFixingObservedPayload,
 } from "../../../v2-core/fil-instances/events";
+import type { BopCategoryClass, BopCategoryTag } from "../../../v2-core/finsurv/bop-category";
 import type { EventStore } from "../../event-store/store";
 import type { Event } from "../../event-store/types";
 
@@ -106,13 +103,13 @@ export function foldFinsurvBopReporting(events: readonly Event[]): FinsurvBopRep
     const tag = p.bopCategory;
 
     if (tag === undefined) {
-      // No tag at all → cannot know whether it is cross-border. Treat as an
-      // untagged candidate ONLY when the settlement is genuinely cross-border is
-      // unknown; we record nothing here because absence-of-tag on a possibly
-      // resident-to-resident flow is not a gap. The coverage gap is specifically
-      // a cross-border flow WITHOUT a tag, which by construction we cannot detect
-      // without the tag — so untagged flows are surfaced by the upstream tagging
-      // hook at booking, not re-derived here. (Documented limitation, not a TODO.)
+      // No tag at all → cross-border status is unknown (the tag is what carries
+      // it). An absence-of-tag on a possibly resident-to-resident flow is NOT a
+      // gap, so nothing is recorded here. The genuine coverage gap — a
+      // cross-border flow WITHOUT a tag — cannot be detected at this read-path
+      // without the tag; it is asserted upstream by the booking-time tagging
+      // hook (PROC-FINSURV-BOP-01 step 5), not re-derived here. Documented
+      // limitation, not a silent deferral.
       continue;
     }
 

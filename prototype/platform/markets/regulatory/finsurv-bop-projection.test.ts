@@ -10,16 +10,16 @@
 import { describe, expect, it } from "bun:test";
 
 import {
+  filFxSettlementConfirmedPayloadSchema,
+  filNdfFixingObservedPayloadSchema,
+} from "../../../v2-core/fil-instances/events";
+import {
   ACTIVE_BOP_CLASSES,
   BOP_CLASS_OBLIGATION,
   bopCategoryClassSchema,
   bopCategoryTagSchema,
   deriveBopCategoryTag,
 } from "../../../v2-core/finsurv/bop-category";
-import {
-  filFxSettlementConfirmedPayloadSchema,
-  filNdfFixingObservedPayloadSchema,
-} from "../../../v2-core/fil-instances/events";
 import {
   makeFilFxSettlementConfirmed,
   makeFilNdfFixingObserved,
@@ -46,7 +46,10 @@ function instanceUrn(id: string): string {
 describe("BOP_CLASS_OBLIGATION", () => {
   it("maps all 14 ORG-FX-FIN obligations one-to-one", () => {
     const obligationIds = Object.values(BOP_CLASS_OBLIGATION).map((o) => o.obligationId);
-    const expected = Array.from({ length: 14 }, (_, i) => `ORG-FX-FIN-${String(i + 1).padStart(2, "0")}`);
+    const expected = Array.from(
+      { length: 14 },
+      (_, i) => `ORG-FX-FIN-${String(i + 1).padStart(2, "0")}`,
+    );
     expect([...obligationIds].sort()).toEqual([...expected].sort());
   });
 
@@ -180,7 +183,7 @@ function settlement(id: string, asOf: string, tagCrossBorder: boolean | null): E
           bopClass: "capital-account-financial-derivatives",
           crossBorder: tagCrossBorder,
         });
-  const tag = tagResult && tagResult.tagged ? tagResult.tag : undefined;
+  const tag = tagResult?.tagged ? tagResult.tag : undefined;
   return makeFilFxSettlementConfirmed({
     asOf,
     entity: ENTITY,
