@@ -49,12 +49,12 @@ import { resolve } from "node:path";
 
 import { EventStore } from "@platform/event-store/store";
 import type { V2ProductRegistered } from "../../v2-core/banking/events";
-import type { ReturnContract } from "../../v2-core/regulatory-returns/cell-contract";
 import {
   CAPTURE_CAPABILITY_MAP,
   type ResolvedCompositionView,
   deriveCapturedAttributes,
 } from "../../v2-core/regulatory-returns/capture-capability-map";
+import type { ReturnContract } from "../../v2-core/regulatory-returns/cell-contract";
 import { returnDataObligationsForProduct } from "../../v2-core/regulatory-returns/inverse-index";
 import { parseProductAttributeRef } from "../../v2-core/regulatory-returns/return-attribute";
 import { allReturnContracts } from "../../v2-core/regulatory-returns/return-contracts";

@@ -11,10 +11,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import {
-  CAPTURE_CAPABILITY_MAP,
-  deriveCapturedAttributes,
-} from "./capture-capability-map";
+import { CAPTURE_CAPABILITY_MAP, deriveCapturedAttributes } from "./capture-capability-map";
 
 function derived(filTypeScopes: string[], regulatoryApproach: string | undefined): string[] {
   return [

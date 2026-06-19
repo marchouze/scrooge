@@ -51,7 +51,11 @@ function cap(attributeKey: string): ReturnDataCapture {
 
 describe("ProductReturnDataCaptureDeclared fold — whole-set replace", () => {
   it("the LATEST declaration (by as_of) REPLACES the whole set (not a delta-union)", () => {
-    const e1 = declare({ asOf: "2026-06-19T00:00:00.000Z", eventId: "ev-1", captures: [cap("hqlaLevel")] });
+    const e1 = declare({
+      asOf: "2026-06-19T00:00:00.000Z",
+      eventId: "ev-1",
+      captures: [cap("hqlaLevel")],
+    });
     const e2 = declare({
       asOf: "2026-06-20T00:00:00.000Z",
       eventId: "ev-2",
@@ -64,7 +68,11 @@ describe("ProductReturnDataCaptureDeclared fold — whole-set replace", () => {
   });
 
   it("an EMPTY latest declaration clears the set (explicit nothing-to-declare)", () => {
-    const e1 = declare({ asOf: "2026-06-19T00:00:00.000Z", eventId: "ev-1", captures: [cap("hqlaLevel")] });
+    const e1 = declare({
+      asOf: "2026-06-19T00:00:00.000Z",
+      eventId: "ev-1",
+      captures: [cap("hqlaLevel")],
+    });
     const e2 = declare({ asOf: "2026-06-20T00:00:00.000Z", eventId: "ev-2", captures: [] });
     const row = buildProductRegisterView([e1, e2]).get(PRODUCT_ID);
     expect([...(row?.declaredReturnDataCaptures.keys() ?? [])]).toEqual([]);

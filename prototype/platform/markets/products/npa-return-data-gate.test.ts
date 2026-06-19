@@ -20,10 +20,7 @@ import type {
   AttestationRecord,
   ProductRegisterRow,
 } from "../../projections/products/product-register";
-import {
-  type ProductCompositionInput,
-  checkReturnDataObligations,
-} from "./npa-return-data-gate";
+import { type ProductCompositionInput, checkReturnDataObligations } from "./npa-return-data-gate";
 
 const PRODUCT_ID = "prd:bank:credit:loan";
 

@@ -289,9 +289,7 @@ export function deriveCapturedAttributes(composition: ProductComposition): Deriv
     .map(([attribute, rows]) => ({ attribute, rowIds: [...rows].sort() }))
     .sort((a, b) => a.attribute.localeCompare(b.attribute));
 
-  const unmatchedComposition = [...seenAxisValues]
-    .filter((v) => !matchedAxisValues.has(v))
-    .sort();
+  const unmatchedComposition = [...seenAxisValues].filter((v) => !matchedAxisValues.has(v)).sort();
 
   return {
     attributes,

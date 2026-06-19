@@ -57,11 +57,11 @@
 //   D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD (CEO 2026-06-17).
 // Author: Atlas (Core banking platform architect, engineering).
 
-import type { ReturnContract } from "../../../v2-core/regulatory-returns/cell-contract";
 import {
   type ResolvedCompositionView,
   deriveCapturedAttributes,
 } from "../../../v2-core/regulatory-returns/capture-capability-map";
+import type { ValueType } from "../../../v2-core/regulatory-returns/cell-contract";
 import type { ProductReturnObligations } from "../../../v2-core/regulatory-returns/inverse-index";
 import { parseProductAttributeRef } from "../../../v2-core/regulatory-returns/return-attribute";
 import type { CaptureValueShape } from "../../../v2-core/regulatory-returns/return-data-capture";
@@ -136,7 +136,7 @@ export interface ReturnDataGateResult {
 // ---------------------------------------------------------------------------
 
 /** Map an L2 `valueType` onto the declaration's `valueShape` vocabulary. */
-function valueShapeForCellType(valueType: ReturnContract["cells"][number]["valueType"]): CaptureValueShape | undefined {
+function valueShapeForCellType(valueType: ValueType): CaptureValueShape | undefined {
   switch (valueType) {
     case "money":
       return "money";
@@ -283,7 +283,8 @@ export function checkReturnDataObligations(
     const decl = declared.get(attribute);
     if (decl !== undefined) {
       const expected = shapeByAttr.get(attribute);
-      const shapeOk = expected === undefined || expected.size === 0 || expected.has(decl.valueShape);
+      const shapeOk =
+        expected === undefined || expected.size === 0 || expected.has(decl.valueShape);
       if (shapeOk) {
         checks.push({
           attribute,

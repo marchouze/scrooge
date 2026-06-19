@@ -197,6 +197,14 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // on replay. Citation: D-BA-RETURN-DATA-CONTRACT (CEO-approved 2026-06-19),
   // D-NPA-GATE-POLICY-REDESIGN, P4-SECURITY-DESIGNED-IN.
   "platform/recon/npa-return-data-obligation-integrity.ts",
+  // Capture-model coherence recon (D-BA-RETURN-DATA-CONTRACT "close the loop") —
+  // read-only replay of ProductApproved / V2ProductRegistered / ReportingTreatment-
+  // Declared / ProductReturnDataCaptureDeclared to assert the C engine
+  // (CAPTURE_CAPABILITY_MAP) and the D declarations stay grounded + non-redundant,
+  // and the gate-ready invariant holds across both streams. Gate is a no-op on
+  // replay. Citation: D-BA-RETURN-DATA-CONTRACT (CEO-approved 2026-06-19),
+  // D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/product-return-capture-coherence.ts",
   // DSAR SLA recon (D-FX-HELD-DIMS-SEAT-SWEEP) — read-only replay of the
   // DSARReceived / DSARExtended / DSARClosed lifecycle to inventory open
   // data-subject access requests against the POPIA s.23 / PAIA s.25 30-day

@@ -8,12 +8,14 @@
 
 import { describe, expect, it } from "bun:test";
 
+import { v2ProductRegisteredSchema } from "../../v2-core/banking/events";
 import type { ReturnContract } from "../../v2-core/regulatory-returns/cell-contract";
-import { makeReportingTreatmentDeclared } from "../event-store/event-types/reporting-treatments";
+import { reportingTreatmentDeclaredSchema } from "../../v2-core/reporting-treatments/declaration";
 import {
   makeProductApproved,
   makeProductReturnDataCaptureDeclared,
 } from "../event-store/event-types/product";
+import { makeReportingTreatmentDeclared } from "../event-store/event-types/reporting-treatments";
 import { makeV2ProductRegistered } from "../event-store/event-types/v2-banking";
 import type { Actor, Event } from "../event-store/types";
 import { runOnEvents } from "./product-return-capture-coherence";
@@ -117,7 +119,7 @@ function v2Register(): Event {
     entity: "LE-BANK-SA",
     actor: ACTOR,
     citations: ["D-BA-RETURN-DATA-CONTRACT"],
-    payload: {
+    payload: v2ProductRegisteredSchema.parse({
       kind: "V2ProductRegistered",
       productId: V2_ID,
       name: "Vanilla credit loan",
@@ -130,7 +132,7 @@ function v2Register(): Event {
       jurisdictions: ["ZA"],
       franchiseScope: "institutional",
       citations: ["D-BA-RETURN-DATA-CONTRACT"],
-    },
+    }),
   });
 }
 
@@ -140,20 +142,25 @@ function treatmentDeclared(): Event {
     entity: "LE-BANK-SA",
     actor: ACTOR,
     citations: ["D-BA-RETURN-DATA-CONTRACT"],
-    payload: {
+    payload: reportingTreatmentDeclaredSchema.parse({
       kind: "ReportingTreatmentDeclared",
       treatmentId: "prudential:credit-standardised",
       category: "prudential-treatment",
       scope: ["fil:type:credit:*"],
       version: { major: 1, minor: 0 },
-      prudential: { bankingTradingBook: "banking-book", regulatoryApproach: "standardised-credit-risk" },
+      prudential: {
+        bankingTradingBook: "banking-book",
+        regulatoryApproach: "standardised-credit-risk",
+      },
       applicablePostingRuleIds: [],
       cites: ["D-BA-RETURN-DATA-CONTRACT"],
-    },
+    }),
   });
 }
 
-function declareCapture(captures: Parameters<typeof makeProductReturnDataCaptureDeclared>[0]["payload"]["captures"]): Event {
+function declareCapture(
+  captures: Parameters<typeof makeProductReturnDataCaptureDeclared>[0]["payload"]["captures"],
+): Event {
   return makeProductReturnDataCaptureDeclared({
     asOf: "2026-06-19T01:00:00.000Z",
     entity: "LE-BANK-SA",
@@ -185,7 +192,8 @@ describe("recon:product-return-capture-coherence", () => {
           valueShape: "enum",
           source: "gl-account",
           ref: "chart-of-accounts#hqlaLevel",
-          outOfCompositionJustification: "CoA classification of the held asset; not type-determined",
+          outOfCompositionJustification:
+            "CoA classification of the held asset; not type-determined",
           citations: ["D-BA-RETURN-DATA-CONTRACT"],
         },
       ]),
