@@ -300,6 +300,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // asserts the pure FX fold reproduces it byte-for-byte and the cohort is
   // excluded/reclassified. Not a production access path. T-01 carve-out. F-031.
   "platform/accounting/posting-rules-v2/fx-fold.test.ts",
+  // D-FIL-BOOK-COMPOSITE-VALUATION — V2 daily-P&L per-currency-breakdown
+  // regression proof. Same build-phase fixture pattern: raw EventStore(":memory:")
+  // seeds production FIL FX instruments + a MarketDataStore(":memory:") of
+  // production quotes, then asserts computeDailyPnLV2 buckets byCurrency on the
+  // foreign leg and reconciles those sums to the headline total. Not a production
+  // access path. T-01 carve-out. F-031.
+  "platform/product-control/daily-pnl-v2.test.ts",
   // WS-V2-AUTHORITATIVE S6 — dashboard-shaped V2 ALM-position-snapshot projection
   // unit test. Same build-phase fixture pattern as the V2 GL tests above: raw
   // EventStore(":memory:") seeds V1 / V2 money-market lifecycle events and asserts
