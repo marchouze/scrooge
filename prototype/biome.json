@@ -27,7 +27,12 @@
       "v2-core/regulatory-returns/ba600-contract.json",
       "v2-core/regulatory-returns/ba610-contract.json",
       "v2-core/regulatory-returns/ba700-contract.json",
-      "v2-core/regulatory-returns/ba701-contract.json"
+      "v2-core/regulatory-returns/ba701-contract.json",
+      "v2-core/regulatory-returns/ba920-contract.json",
+      "v2-core/regulatory-returns/ba930-contract.json",
+      "v2-core/regulatory-returns/ba94x-contract.json",
+      "v2-core/regulatory-returns/cva-contract.json",
+      "v2-core/regulatory-returns/frtb-contract.json"
     ]
   },
   "organizeImports": { "enabled": true },

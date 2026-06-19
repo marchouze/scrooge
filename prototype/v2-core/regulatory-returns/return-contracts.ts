@@ -280,6 +280,55 @@ export const RETURN_CONTRACT_REGISTRY: readonly ReturnContractRegistryEntry[] = 
     xsdName: "BA130.xsd",
     schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA130.zip",
   },
+  // Phase C batch 8 — STATISTICAL (BA 920 / BA 930 / BA 94x) + SUPPLEMENTARY
+  // (CVA / FRTB) returns. BA 920 (instalment-sale / leasing analysis) carries real
+  // product-attribute requirements (finance type / financed asset class) a future
+  // instalment-sale / leasing product must capture; BA 930 (weighted-average rates)
+  // and BA 94x (locational banking statistics, BA 941–944, multi-sub-form) are
+  // AGGREGATE / entity-level statistical returns carrying ~0 product-attribute
+  // requirements. CVA / FRTB are the SUPPLEMENTARY market-risk returns — their XSD
+  // leaf cells carry the `MR########` element code (the recon's xsdCellCodes
+  // accepts both BA / MR prefixes). FRTB is the STANDALONE Fundamental Review of
+  // the Trading Book return on its OWN identity (NOT BA 320 Market Risk, NOT BA 325
+  // Selected Risk Exposure). CVA / FRTB lack a D5/2025 BA-numbered obligation row,
+  // so a replay-safe obligation is authored for each (ORG-PR-RETURNS-030 /
+  // ORG-PR-RETURNS-031). The whole batch is licence-day-data (no real instalment-
+  // sale / leasing book, loan-deposit rates, cross-border claims, derivative
+  // counterparty book or trading book pre-licence-day). ★BA 94x is multi-sub-form:
+  // the workbook references the SAME XSD leaf element from multiple BA 941–944 sub-
+  // forms (the shared country-code dimension), but the XSD defines each leaf ONCE,
+  // so the contract carries each leaf ONCE (the generator deduplicates by XSD
+  // element; the recon's XSD oracle yields each leaf once — they agree).
+  {
+    form: "BA920",
+    contractJsonPath: jsonPath("ba920-contract.json"),
+    xsdName: "BA920.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA920.zip",
+  },
+  {
+    form: "BA930",
+    contractJsonPath: jsonPath("ba930-contract.json"),
+    xsdName: "BA930.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA930.zip",
+  },
+  {
+    form: "BA94x",
+    contractJsonPath: jsonPath("ba94x-contract.json"),
+    xsdName: "BA94x_v20251031.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA94x.zip",
+  },
+  {
+    form: "CVA",
+    contractJsonPath: jsonPath("cva-contract.json"),
+    xsdName: "CVA_v06112025.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/CVA.zip",
+  },
+  {
+    form: "FRTB",
+    contractJsonPath: jsonPath("frtb-contract.json"),
+    xsdName: "FRTB_v20251031.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/FRTB.zip",
+  },
 ];
 
 const cache = new Map<ReturnForm, ReturnContract>();
