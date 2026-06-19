@@ -1,32 +1,30 @@
 // dashboard/public/markets/fx/desk.js — FX desk Slices 1 + 2 + 3 + 4.
 //
-// Slice 1 — reads `/api/markets/fx/counterparties` and renders the
-//   eligibility-passing counterparty list (read-only). Re-uses
-//   `_refresh-controls.js` for periodic refresh + the shell header
-//   refresh button.
+// READ PATH — V2 (FU5 migration; D-FX-OTC-CLOSURE-BACKLOG,
+//   D-BANK-WIDE-V2-MIGRATION). The three READ panels now consume the
+//   name-free `/api/v2/markets/fx/*` surface instead of the legacy
+//   `/api/markets/fx/*` GET routes:
+//     - counterparties → GET /api/v2/markets/fx/counterparties
+//     - headroom       → GET /api/v2/markets/fx/headroom (B3 FX cluster, FIL-sourced)
+//     - NPA badges     → GET /api/v2/markets/fx/npa
+//   Each V2 panel carries an explicit `dataState` ("live" | "empty" | "v1-only")
+//   + `reason`; the page renders honest empty / absent states (never a silent
+//   zero) and surfaces seats by Title only (the V2 DTOs are name-free).
 //
-// Slice 2 — wires the RFQ form: populates the counterparty select from
-//   the live picker, calls POST /api/markets/fx/quote on input changes
-//   to render the seed-data-driven bid/offer/mid (Slice 3 pricer), and
-//   on submit calls POST /api/markets/fx/trade which appends
-//   RfqRequested + QuoteResponded + FxTradeExecuted events to the local
-//   event store with the simulated provenance tag for the
-//   first-dry-run-2026-Q1 scenario. The confirmation panel renders the
-//   emitted tradeId + eventId + provenance.
+// WRITE PATH — V1 (unchanged; NOT in scope of the V2 read migration). The RFQ
+//   form still POSTs to the V1 action routes — there is no V2 trade-execution
+//   endpoint (the V2 surface is read-only; FIL is materialised FROM V1 trades):
+//     - POST /api/markets/fx/quote → seed-data-driven bid/offer/mid
+//     - POST /api/markets/fx/trade → appends RfqRequested + QuoteResponded +
+//       FxTradeExecuted with the simulated provenance tag; confirmation panel
+//       renders tradeId + eventId + provenance.
+//     - POST /api/markets/fx/order → 7-check pre-trade gateway (Slice 4).
 //
-// Slice 3 — `loadHeadroom()` fetches GET /api/markets/fx/headroom and
-//   renders the five RAS B-cluster rows with RAG status in the
-//   #headroom table. Called on page load and on Refresh alongside
-//   `loadCounterparties()`.
+// Counterparty SELECT (trade-form picker) is populated from the V2
+//   counterparties read; trade submission remains the V1 POST path above.
 //
-// Slice 4 — wires the "Route to gateway" button: collects the same form
-//   values as the trade button, POSTs to /api/markets/fx/order, and
-//   renders the gateway result panel with status (APPROVED / REJECTED)
-//   and a 7-row check table. Does not interfere with trade confirmation.
-//
-// Author: Kai (Trading systems engineer, engineering — reports to Saskia,
-//         Head of Global Markets) · Saskia (Head of Global Markets,
-//         governance) · Anya (Data / analytics engineer, engineering).
+// Seat ownership is surfaced by Title only (name-free policy;
+//   feedback_no_agent_names_in_ui).
 
 (() => {
   function $(sel) {
@@ -59,7 +57,8 @@
 
   async function fetchCounterparties() {
     try {
-      const res = await fetch("/api/markets/fx/counterparties", {
+      // V2 read (FU5): name-free counterparty view — eligibility ∩ live FX FIL.
+      const res = await fetch("/api/v2/markets/fx/counterparties", {
         headers: { Accept: "application/json" },
       });
       if (!res.ok) throw new Error(`status ${res.status}`);
@@ -76,45 +75,53 @@
     tbody.innerHTML = `<tr><td colspan="5" class="fx-cp-empty">${escapeHtml(message)}</td></tr>`;
   }
 
+  // V2 counterparties DTO is name-free: rows of
+  //   { counterpartyId, eligibility, liveFxInstruments, asOf }
+  // plus a panel-level { dataState, reason }. No display NAME, screening id, or
+  // evidence refs cross the V2 boundary (feedback_no_agent_names_in_ui), so the
+  // table maps the existing 5 columns onto the V2 fields honestly rather than
+  // re-introducing names client-side.
+  function v2Rows(payload) {
+    return payload && Array.isArray(payload.rows) ? payload.rows : null;
+  }
+
+  function eligibilityClass(eligibility) {
+    return eligibility === "institutional-eligible" ? "fx-cp-outcome-pass" : "fx-cp-outcome-other";
+  }
+
   function renderCounterparties(payload) {
     const summaryCount = $("[data-fx-cp-count]");
     const tbody = $("[data-fx-cp-tbody]");
     if (!tbody) return;
 
-    if (!payload || !Array.isArray(payload.counterparties)) {
+    const list = v2Rows(payload);
+    if (!list) {
       if (summaryCount) summaryCount.textContent = "?";
       renderEmpty("Counterparty endpoint unavailable.");
       return;
     }
 
-    const list = payload.counterparties;
     if (summaryCount) summaryCount.textContent = String(list.length);
 
     if (list.length === 0) {
-      // Empty corpus is the expected state until Slice 2 seeds the
-      // synthetic counterparty corpus (pack §9 gap #6).
+      // Honest empty state surfaced by the V2 panel — never a silent zero.
       renderEmpty(
-        "No eligibility-passing counterparties in the event store. " +
-          "Seed CounterpartyEligibilityScreened events to populate (Slice 2 substrate gap §9 #6).",
+        payload.reason ||
+          "No screened counterparties and no live FX FIL counterparties on this store.",
       );
       return;
     }
 
     tbody.innerHTML = list
       .map((c) => {
-        const evidenceList = (c.evidenceRefs || [])
-          .slice(0, 3)
-          .map((e) => `<li>${escapeHtml(e)}</li>`)
-          .join("");
-        const displayName = c.name || c.counterpartyId;
+        const cpId = c.counterpartyId || "—";
         return [
           "<tr>",
-          `<td><strong>${escapeHtml(displayName)}</strong>`,
-          `<span class="fx-cp-id">${escapeHtml(c.counterpartyId.slice(0, 16))}</span></td>`,
-          `<td>${escapeHtml(c.screeningId || "—")}</td>`,
-          `<td><span class="fx-cp-outcome-pass">${escapeHtml(c.outcome || "—")}</span></td>`,
+          `<td><span class="fx-cp-id">${escapeHtml(cpId)}</span></td>`,
+          `<td>${escapeHtml(String(c.liveFxInstruments ?? 0))} live FX</td>`,
+          `<td><span class="${eligibilityClass(c.eligibility)}">${escapeHtml(c.eligibility || "—")}</span></td>`,
           `<td>${escapeHtml(fmtAsOf(c.asOf))}</td>`,
-          `<td><ul class="fx-cp-evidence">${evidenceList || "<li>—</li>"}</ul></td>`,
+          "<td>—</td>",
           "</tr>",
         ].join("");
       })
@@ -132,7 +139,7 @@
     }
     if (window.bankShell?.audit) {
       window.bankShell.audit.log("fx-desk.tiles.rendered", {
-        counterparties: payload?.counterparties?.length ?? 0,
+        counterparties: v2Rows(payload)?.length ?? 0,
       });
     }
   }
@@ -157,11 +164,12 @@
   function populateCounterpartySelect(payload) {
     const sel = $("[data-fx-rfq-counterparty]");
     if (!sel) return;
-    const list = payload?.counterparties ?? [];
+    const list = v2Rows(payload) ?? [];
     const previous = sel.value;
     const opts = list
       .map((c) => {
-        const label = c.name || c.counterpartyId;
+        // Name-free: the V2 DTO carries the counterparty party-id only.
+        const label = c.counterpartyId;
         return `<option value="${escapeHtml(c.counterpartyId)}">${escapeHtml(label)}</option>`;
       })
       .join("");
@@ -449,40 +457,57 @@
     tbody.innerHTML = `<tr><td colspan="6" class="fx-cp-empty">${escapeHtml(message)}</td></tr>`;
   }
 
+  // Minor-unit (functional ccy) → major-unit number for display. The V2 headroom
+  // DTO carries figures in MINOR units; the table renders major units.
+  function minorToMajor(minor) {
+    return typeof minor === "number" && Number.isFinite(minor) ? minor / 100 : null;
+  }
+
+  // V2 headroom DTO is a SINGLE B3 (FX net-open-position) row + panel meta:
+  //   { b3: { cluster:"B3", limitName, currentExposureFunctionalMinor,
+  //           limitValueFunctionalMinor, utilisationPct, ragStatus, currency },
+  //     coverageStatus, dataState, reason, scopeNote, gaps }
+  // Only the B3 FX cluster is V2-fed (FIL-sourced); the other RAS clusters stay
+  // on the V1 limit-utilisation projection (scopeNote). Render the one B3 line
+  // honestly; surface dataState reasons rather than a silent zero.
   function renderHeadroom(payload) {
     const tbody = $("[data-fx-headroom-tbody]");
     if (!tbody) return;
 
-    if (!payload || !Array.isArray(payload.rows) || payload.rows.length === 0) {
+    const b3 = payload?.b3;
+    if (!b3) {
       renderHeadroomEmpty("Headroom data unavailable.");
       return;
     }
+    if (payload.dataState !== "live") {
+      // Honest empty / no-limit state — exposure may be present but utilisation
+      // cannot be computed; surface the V2 reason rather than fabricate a number.
+      renderHeadroomEmpty(
+        payload.reason || "No live FX net-open-position headroom on this store.",
+      );
+      return;
+    }
 
-    tbody.innerHTML = payload.rows
-      .map((row) => {
-        const ragClass = `fx-rag-${row.ragStatus ?? "green"}`;
-        const ragLabel = (row.ragStatus ?? "green").toUpperCase();
-        const utilisationLabel =
-          typeof row.utilisationPct === "number"
-            ? `${(row.utilisationPct * 100).toFixed(1)}%`
-            : "—";
-        return [
-          "<tr>",
-          `<td><strong>${escapeHtml(row.cluster ?? "—")}</strong></td>`,
-          `<td>${escapeHtml(row.limitName ?? "—")}</td>`,
-          `<td>${escapeHtml(fmtExposure(row.currentExposure, row.currency))}</td>`,
-          `<td>${escapeHtml(fmtExposure(row.limitValue, row.currency))}</td>`,
-          `<td>${escapeHtml(utilisationLabel)}</td>`,
-          `<td><span class="${ragClass}">${ragLabel}</span></td>`,
-          "</tr>",
-        ].join("");
-      })
-      .join("");
+    const ragClass = `fx-rag-${b3.ragStatus ?? "green"}`;
+    const ragLabel = (b3.ragStatus ?? "green").toUpperCase();
+    const utilisationLabel =
+      typeof b3.utilisationPct === "number" ? `${(b3.utilisationPct * 100).toFixed(1)}%` : "—";
+    tbody.innerHTML = [
+      "<tr>",
+      `<td><strong>${escapeHtml(b3.cluster ?? "B3")}</strong></td>`,
+      `<td>${escapeHtml(b3.limitName ?? "—")}</td>`,
+      `<td>${escapeHtml(fmtExposure(minorToMajor(b3.currentExposureFunctionalMinor), b3.currency))}</td>`,
+      `<td>${escapeHtml(fmtExposure(minorToMajor(b3.limitValueFunctionalMinor), b3.currency))}</td>`,
+      `<td>${escapeHtml(utilisationLabel)}</td>`,
+      `<td><span class="${ragClass}">${ragLabel}</span></td>`,
+      "</tr>",
+    ].join("");
   }
 
   async function loadHeadroom() {
     try {
-      const res = await fetch("/api/markets/fx/headroom", {
+      // V2 read (FU5): FIL-sourced RAS B3 (FX) limit-utilisation.
+      const res = await fetch("/api/v2/markets/fx/headroom", {
         headers: { Accept: "application/json" },
       });
       if (!res.ok) throw new Error(`status ${res.status}`);
@@ -500,7 +525,10 @@
 
   async function loadNpaAttestations() {
     try {
-      const res = await fetch("/api/markets/fx/products/attestation", {
+      // V2 read (FU5): product NPA lifecycle on the umbrella OTC-vanilla FX
+      // product. DTO: { productId, attestations:[{productCode,status,…}],
+      // dataState, reason }.
+      const res = await fetch("/api/v2/markets/fx/npa", {
         headers: { Accept: "application/json" },
       });
       if (!res.ok) throw new Error(`status ${res.status}`);
