@@ -1,12 +1,15 @@
 // tests/v2-markets-fx-view.test.ts
 //
 // V2 FX dashboard surface (`/api/v2/markets/fx/*`) view-module tests
-// (WS-FX-OTC-CLOSURE B5). Covers the two contracts the brief makes load-bearing:
+// (WS-FX-OTC-CLOSURE B5; FU3). Covers the two contracts the brief makes
+// load-bearing:
 //
 //   1. HONESTY (Engineering Charter cmd 3): on a data-empty store every panel
-//      reports an explicit, honest dataState ("empty" | "v1-only") with a reason
-//      — never a silent zero. The two panels with no V2 source (gateway
-//      rejections; RAS headroom) are "v1-only" and name their legacy route.
+//      reports an explicit, honest dataState ("empty" | "live") with a reason
+//      — never a silent zero. FU3 took the last two panels V2-fed: gateway
+//      rejections now read the V2-native V2FxOrderRejectedAtGateway family from
+//      the V2 control-plane store (honest "empty" on the clean store, never a
+//      V1 fall-back); RAS B3 headroom now derives from FIL FX positions.
 //   2. NAME-FREE (standing policy; feedback_no_agent_names_in_ui): the desk-owner
 //      seat is rendered by TITLE only ("Head of Global Markets"), never the
 //      persona's personal name, and no roster name leaks into the surface JSON.
@@ -65,9 +68,15 @@ function rosterNames(): string[] {
   return [...names];
 }
 
+// An empty rejections reader — keeps the build off the home control-plane store
+// (the production default) so the test stays isolated and deterministic.
+const EMPTY_REJECTIONS = () => [];
+
 describe("V2 FX surface — honesty contract on a data-empty store", () => {
-  it("reports honest empty / v1-only panels with reasons — never a silent zero", () => {
-    const view = buildV2FxSurfaceView(freshStore(), freshMarketData(), T_NOW);
+  it("reports honest empty panels with reasons — never a silent zero", () => {
+    const view = buildV2FxSurfaceView(freshStore(), freshMarketData(), T_NOW, {
+      readV2Rejections: EMPTY_REJECTIONS,
+    });
 
     // Risk (BA-320 V2): no FIL FX instruments → empty with a reason, no charge.
     expect(view.risk.dataState).toBe("empty");
@@ -89,26 +98,43 @@ describe("V2 FX surface — honesty contract on a data-empty store", () => {
     expect(view.npa.dataState).toBe("empty");
     expect(view.npa.reason).toBeTruthy();
 
-    // The two structurally-V1-only panels: explicit v1-only + legacy route named.
-    expect(view.rejections.dataState).toBe("v1-only");
-    expect(view.rejections.legacyRoute).toBe("GET /api/markets/fx/rejections");
-    expect(view.rejections.reason).toContain("V1");
-    expect(view.headroom.dataState).toBe("v1-only");
-    expect(view.headroom.legacyRoute).toBe("GET /api/markets/fx/headroom");
+    // FU3: rejections now V2-fed (V2 control-plane store). No V2 events on the
+    // clean store → honest "empty" with a reason + the tracked substrate gap;
+    // NOT "v1-only", and it does NOT fall back to the V1 store.
+    expect(view.rejections.dataState).toBe("empty");
+    expect(view.rejections.count).toBe(0);
+    expect(view.rejections.rows).toEqual([]);
+    expect(view.rejections.reason).toBeTruthy();
+    expect(view.rejections.substrateGap).toContain("V2 gateway-rejection");
+
+    // FU3: headroom now V2-fed (FIL-sourced B3). No FIL FX instruments → honest
+    // "empty"; the B3 exposure is a labelled zero, and the scope note is present.
+    expect(view.headroom.dataState).toBe("empty");
     expect(view.headroom.reason).toBeTruthy();
+    expect(view.headroom.b3.cluster).toBe("B3");
+    expect(view.headroom.b3.openInstanceCount).toBe(0);
+    expect(view.headroom.coverageStatus).toBe("no-data");
+    expect(view.headroom.scopeNote).toContain("B3");
   });
 
-  it("emits a per-panel manifest tagging V2-complete vs V1-only", () => {
-    const view = buildV2FxSurfaceView(freshStore(), freshMarketData(), T_NOW);
+  it("emits a per-panel manifest tagging every panel V2-sourced", () => {
+    const view = buildV2FxSurfaceView(freshStore(), freshMarketData(), T_NOW, {
+      readV2Rejections: EMPTY_REJECTIONS,
+    });
     const byPanel = new Map(view.panels.map((p) => [p.panel, p]));
 
-    // Five V2-sourced panels.
-    for (const p of ["summary", "risk", "blotter", "counterparties", "npa"]) {
+    // FU3: all seven panels are now V2-sourced (no v1-only remains).
+    for (const p of [
+      "summary",
+      "risk",
+      "blotter",
+      "counterparties",
+      "npa",
+      "rejections",
+      "headroom",
+    ]) {
       expect(byPanel.get(p)?.source).toBe("v2");
     }
-    // Two V1-only panels — honestly tagged.
-    expect(byPanel.get("rejections")?.source).toBe("v1-only");
-    expect(byPanel.get("headroom")?.source).toBe("v1-only");
 
     // Every panel carries a route + a dataState.
     for (const p of view.panels) {
@@ -120,14 +146,18 @@ describe("V2 FX surface — honesty contract on a data-empty store", () => {
 
 describe("V2 FX surface — name-free (Title-only) contract", () => {
   it("renders the desk owner by seat Title, not the persona personal name", () => {
-    const view = buildV2FxSurfaceView(freshStore(), freshMarketData(), T_NOW);
+    const view = buildV2FxSurfaceView(freshStore(), freshMarketData(), T_NOW, {
+      readV2Rejections: EMPTY_REJECTIONS,
+    });
     expect(view.deskOwnerSeatTitle).toBe("Head of Global Markets");
     // The persona name behind the seat must NOT appear.
     expect(view.deskOwnerSeatTitle).not.toContain("Saskia");
   });
 
   it("leaks no roster persona personal name into the surface JSON", () => {
-    const view = buildV2FxSurfaceView(freshStore(), freshMarketData(), T_NOW);
+    const view = buildV2FxSurfaceView(freshStore(), freshMarketData(), T_NOW, {
+      readV2Rejections: EMPTY_REJECTIONS,
+    });
     const json = JSON.stringify(view);
     for (const name of rosterNames()) {
       // Whole-word match — avoid false positives on substrings of unrelated ids.

@@ -277,6 +277,9 @@ export { V2_BANKING_EVENT_TYPES_REGISTRY } from "./v2-banking";
 // TenantRegistered, TenantSurfaceGranted, TenantUpgradeLedgerEntry, TenantMeterEvent.
 // Authority: D-V2-TENANCY-ARCHITECTURE (Option C); D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
 export { V2_CONTROL_PLANE_EVENT_TYPES } from "./v2-control-plane";
+// WS-FX-OTC-CLOSURE FU3 — V2-native FX pre-trade gateway-rejection.
+// V2FxOrderRejectedAtGateway. Authority: D-FX-OTC-CLOSURE-BACKLOG.
+export { V2_FX_GATEWAY_EVENT_TYPES } from "./v2-fx-gateway";
 // WS-V2-BBAAS S12 — cross-tenant CSI gate (competition-law keystone).
 // CsiCategoryRegistered, CsiCategoryRetired, CrossTenantLearningScreened,
 // CrossTenantLearningBlocked.
@@ -386,6 +389,7 @@ import type { EventTypeMetadata, EventTypeStatus } from "./types";
 import { V2_BANKING_EVENT_TYPES_REGISTRY } from "./v2-banking";
 import { V2_CONTROL_PLANE_EVENT_TYPES } from "./v2-control-plane";
 import { V2_EVAL_EVENT_TYPES_REGISTRY } from "./v2-eval";
+import { V2_FX_GATEWAY_EVENT_TYPES } from "./v2-fx-gateway";
 import { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
 import { VALUATION_ADJUSTMENT_EVENT_TYPES_REGISTRY } from "./valuation-adjustment";
 
@@ -646,6 +650,11 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // TenantRegistered, TenantSurfaceGranted, TenantUpgradeLedgerEntry, TenantMeterEvent.
   // Authority: D-V2-TENANCY-ARCHITECTURE (Option C); D-V2-BBAAS-BLUEPRINT-SYNTHESIS.
   ...V2_CONTROL_PLANE_EVENT_TYPES,
+  // WS-FX-OTC-CLOSURE FU3 — V2-native FX pre-trade gateway-rejection.
+  // V2FxOrderRejectedAtGateway — the V2/FIL-world representation of a pre-trade
+  // gate outcome the V2 FX rejections panel reads (the V1 cousin has no FIL
+  // instance). Authority: D-FX-OTC-CLOSURE-BACKLOG; D-BANK-WIDE-V2-MIGRATION.
+  ...V2_FX_GATEWAY_EVENT_TYPES,
   // WS-V2-BBAAS S12 — cross-tenant CSI gate (competition-law keystone).
   // CsiCategoryRegistered, CsiCategoryRetired, CrossTenantLearningScreened,
   // CrossTenantLearningBlocked. The CSI blocklist + every cross-tenant crossing
