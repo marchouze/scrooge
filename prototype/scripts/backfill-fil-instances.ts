@@ -80,13 +80,13 @@ import { anchorFunctionalCurrency } from "../platform/identity/functional-curren
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../platform/market-data/store";
 import { MIN_RETURN_OBSERVATIONS } from "../platform/market-risk/var-engine";
+import { resolveBookingProductId } from "../platform/markets/products/booking-product-binding";
 import {
   type SettledCashLeg,
   materialiseFxInstanceToAnchor,
   materialiseSettledCash,
   resolveV2AnchorDb,
 } from "../platform/markets/products/materialise-settled-cash";
-import { resolveBookingProductId } from "../platform/markets/products/booking-product-binding";
 import { resolveMaturityMaterialisation } from "../platform/markets/products/maturity-materialisation";
 import { divD, roundDecimal, toDecimal } from "../v2-core/fil-core/decimal";
 import { type Money, moneyFromDecimal } from "../v2-core/fil-core/primitives";

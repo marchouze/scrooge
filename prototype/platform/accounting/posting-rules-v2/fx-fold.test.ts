@@ -387,7 +387,12 @@ function seedFxProduct(store: EventStore): void {
 }
 
 /** A production FX FIL created event carrying the S0d booking-time productId. */
-function fxCreatedBound(id: string, direction: "long" | "short", notional: string, asOf: string): Event {
+function fxCreatedBound(
+  id: string,
+  direction: "long" | "short",
+  notional: string,
+  asOf: string,
+): Event {
   const base = makeFilInstrumentCreated({
     asOf,
     entity: ENTITY,
