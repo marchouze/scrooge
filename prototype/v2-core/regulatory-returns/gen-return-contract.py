@@ -599,6 +599,149 @@ FORMS = {
             "derivative product is correctly gated. No silent fabrication."
         ),
     ),
+    # -----------------------------------------------------------------------
+    # Phase C batch 5 — the CAPITAL FAMILY (BA 700 / BA 701). The APEX prudential
+    # returns: BA 700 (Capital Adequacy and Leverage and TLAC) is the primary
+    # capital-adequacy return — the CET1/T1/Total capital ratios, the leverage
+    # ratio, the TLAC requirement; BA 701 (Regulatory vs Economic Capital) is the
+    # reconciliation of regulatory capital to internal economic capital by risk
+    # type (the ICAAP economic-capital demand vs the Pillar-1 regulatory charge).
+    #
+    # CAPITAL IS GL-/RWA-DERIVED — NOT product-attribute-driven. The capital
+    # NUMERATOR is the bank's OWN capital-classified GL (CET1 / AT1 / T2 share
+    # capital, reserves, retained earnings, regulatory deductions). The RWA
+    # DENOMINATOR aggregates the OTHER returns' RWA (credit BA 200 + market BA 320
+    # + operational BA 400 + CCR + CVA + equity). Neither side keys off a product-
+    # static menu attribute: a capital cell does not gate a trading/credit/deposit
+    # product the way a credit/liquidity/market cell does. So — per the brief —
+    # the capital family carries ZERO product-attribute requirements (no
+    # `capital_product_attributes`). We do NOT manufacture any (no bulk-marking).
+    #
+    # SUBSTRATE + STATUS (licence-day-heavy). The BA 700 capital projection
+    # (platform/reporting/ba-700-capital.ts: generateBa100Capital — CET1/AT1/T2
+    # tiers, RWA decomposition, ratios) and the leverage-ratio projection
+    # (platform/reporting/ba-700-leverage-ratio.ts) exist as substrate, and the
+    # RWA inputs thread the RwaComputed projection. BUT there is NO real capital
+    # pre-licence-day — the R300m is a licence-day TARGET, not a present balance —
+    # so the achieved capital amounts, the RWA amounts, the achieved ratios, the
+    # excess/shortfall and BA 701's economic-capital figures are all
+    # `licence-day-data`. The cells that the projection genuinely computes TODAY
+    # WITHOUT real capital — the regulatory MINIMUM-REQUIRED ratios and buffer
+    # add-ons (computeRequiredMinimums + BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS:
+    # base CET1 4.5% / T1 6% / Total 8% + conservation 2.5% + CCyB / D-SIB /
+    # Pillar-2A) and the specified minimum leverage ratio
+    # (BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM = 3%) — are `sourced` (the source
+    # genuinely exists; values fold from BCBS/Reg-38 constants, not from capital
+    # data). The per-cell split is made in capital_cell_status().
+    # -----------------------------------------------------------------------
+    "BA700": dict(
+        name="Capital Adequacy and Leverage and TLAC",
+        obligation="ORG-PR-RETURNS-022",
+        clause=(
+            "SARB PA Directive D5/2025 §2.1.23 (form BA 700, Annexure 22A/22B) read with the "
+            "Regulations relating to Banks reg 38 (capital adequacy and leverage — qualifying "
+            "capital CET1/AT1/T2, regulatory deductions, minimum ratios) and reg 38 (leverage) "
+            "and the Banks Act 94 of 1990 s.70(2)/(2A)/(2B) (minimum capital and reserve funds "
+            "on the aggregate-risk-weighted-exposure basis); Basel III CAP (definition of "
+            "capital), the BCBS leverage-ratio framework (LEV §147-§165) and the TLAC term-sheet; "
+            "Banks Act 94 of 1990 s.6(6)(a). [Post-#1451 corrected row "
+            "(D-BA-RETURN-NUMBERING-EXCEL-CANONICAL): per the canonical SARB Excel form schedule "
+            "(cell A1 = 'CAPITAL ADEQUACY AND LEVERAGE AND TLAC'), form BA 700 is THE primary "
+            "capital-adequacy return — CET1/T1/Total capital ratios, the leverage ratio and TLAC. "
+            "The prior 'BA 700 = prudent-valuation / additional-leverage disclosure' label in the "
+            "obligation record (ORG-PR-RETURNS-022) and the prior 'capital adequacy = BA 100' "
+            "scheme are the documented fabrications the correction supersedes — BA 100 is the "
+            "Balance Sheet. PVA is a sub-line of this return (ORG-PR-PVA-012 line item 203), not "
+            "its primary purpose.]"
+        ),
+        fold="ba700-capital-adequacy-fold",
+        # BA 700 cells fold from the ba-700-capital.ts capital projection
+        # (generateBa100Capital) over the period-close trial balance + the capital-
+        # classification map + the RWA decomposition (RwaComputed) + the leverage-
+        # ratio projection. No single GL CATEGORY holds the computed ratio/leverage/
+        # TLAC cells — they are folded by the named capital projection — so
+        # gl_categories is empty and the fold is the authoritative source (the
+        # capital-classified GL accounts feed the fold's numerator). The minimum-
+        # required-ratio / buffer cells are computed from regulatory constants
+        # (sourced); the achieved-capital / RWA / ratio cells need real capital
+        # (licence-day). The per-cell split is made in capital_cell_status().
+        gl_categories=[],
+        entity_scope="bank",
+        # NOT a blanket licence-day form: the minimum-required-ratio / buffer / the
+        # specified-minimum-leverage cells are computed from BCBS/Reg-38 constants.
+        # The per-cell decision is made in capital_cell_status(); this flag is the
+        # DEFAULT for a cell that does not match the regulatory-constant predicate.
+        licence_day=True,
+        capital_family=True,
+        status_note=(
+            "Capital-adequacy figures (qualifying CET1 / Tier 1 / Total capital and reserve "
+            "funds, the RWA decomposition, the achieved CET1 / Tier 1 / Total capital-adequacy "
+            "ratios, the leverage ratio, the excess/shortfall and the TLAC position) fold from "
+            "the ba-700-capital.ts capital projection (generateBa100Capital — CET1/AT1/T2 tiers, "
+            "deductions, RWA decomposition, ratios) and the ba-700-leverage-ratio.ts leverage "
+            "projection over the period-close trial balance, the capital-classification map and "
+            "the RWA decomposition (the RwaComputed projection — credit BA 200 + market BA 320 + "
+            "operational BA 400 + CCR + CVA + equity). The capital + leverage projections exist "
+            "as substrate; the achieved capital / RWA / ratio cells require REAL capital, which "
+            "the bank-in-formation does not hold pre-licence-day (the R300m is a licence-day "
+            "target, not a present balance), so those values are licence-day data. The regulatory "
+            "MINIMUM-REQUIRED ratios and buffer add-ons (base CET1 4.5% / Tier 1 6% / Total 8% + "
+            "conservation 2.5% + countercyclical / D-SIB / Pillar-2A) and the specified minimum "
+            "leverage ratio (3%) are computed from BCBS / Reg-38 constants and are sourced. "
+            "Capital is GL-/RWA-derived, so the return carries NO product-attribute requirement "
+            "(no product-static menu pick gates a capital cell). No silent fabrication."
+        ),
+    ),
+    "BA701": dict(
+        name="Regulatory vs Economic Capital",
+        obligation="ORG-PA-033",
+        clause=(
+            "SARB PA Directive D4/2025 (Completion of regulatory return: form BA 701) read with "
+            "the Regulations relating to Banks reg 39 (the internal capital adequacy assessment "
+            "process — ICAAP) and reg 38 (regulatory capital); Basel SRP (the supervisory review "
+            "process — Pillar 2 / ICAAP economic capital) and CAP; Banks Act 94 of 1990 "
+            "s.6(6)(a). [Post-#1451 corrected row (D-BA-RETURN-NUMBERING-EXCEL-CANONICAL): per "
+            "the canonical SARB Excel form schedule (cell A1 = 'BA701 - REGULATORY vs ECONOMIC "
+            "CAPITAL'), form BA 701 is the REGULATORY-vs-ECONOMIC-CAPITAL reconciliation return — "
+            "it reconciles the Pillar-1 regulatory capital charge per risk type to the bank's "
+            "internal economic-capital demand (gross / diversification / net, at the bank's "
+            "stated confidence interval), with a 3-year forecast. The verbatim 'recovery planning "
+            "and resolution' requirement annotation in the obligation record (ORG-PA-033) is the "
+            "documented mislabel the correction supersedes — the Excel form A1 header and the "
+            "form's row/column structure (economic-capital demand vs regulatory capital by risk "
+            "type) are authoritative. The obligation ID is cited; only the interpretation is "
+            "corrected.]"
+        ),
+        fold="ba701-regulatory-vs-economic-capital-fold",
+        # BA 701 cells fold from the regulatory-vs-economic-capital reconciliation
+        # fold over the BA 700 regulatory-capital projection (the @8% regulatory
+        # charge per risk type) + the economic-capital model (ICAAP economic-capital
+        # demand, gross/diversification/net at the stated confidence interval). The
+        # regulatory-capital side reuses the ba-700-capital RWA decomposition; the
+        # economic-capital side needs the ICAAP economic-capital engine (CRO/Helena
+        # methodology) and real positions. No single GL category holds these; the
+        # fold is the authoritative source.
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,  # no real capital / economic-capital model output pre-licence-day
+        capital_family=True,
+        status_note=(
+            "Regulatory-vs-economic-capital figures (the Pillar-1 regulatory capital charge per "
+            "risk type @8% RWA — credit / CCR / CVA / market / operational / equity / other — "
+            "reconciled to the internal economic-capital demand (gross, intra-/inter-risk "
+            "diversification, net) at the bank's stated confidence interval, with the 3-year "
+            "forecast) fold from the ba701-regulatory-vs-economic-capital-fold over the BA 700 "
+            "regulatory-capital projection plus the ICAAP economic-capital model. The regulatory-"
+            "capital side reuses the ba-700-capital RWA decomposition (substrate exists); the "
+            "economic-capital side requires the ICAAP economic-capital engine output and REAL "
+            "positions, which the bank-in-formation does not have pre-licence-day (no real "
+            "capital — the R300m is a licence-day target). The confidence-interval and "
+            "operational-risk coefficient inputs are ICAAP-methodology reference inputs (CRO / "
+            "Helena domain). All economic-capital and reconciliation values are licence-day data. "
+            "Capital is GL-/RWA-derived, so the return carries NO product-attribute requirement. "
+            "No silent fabrication."
+        ),
+    ),
 }
 
 # ---------------------------------------------------------------------------
@@ -1573,6 +1716,83 @@ def market_cell_status(form: str, col_label: str, row_label: str, prod_attrs):
     return "licence-day-data"
 
 
+# ===========================================================================
+# CAPITAL FAMILY — Phase C batch 5 (BA 700 / BA 701).
+# ===========================================================================
+#
+# NO PRODUCT-ATTRIBUTE MAPPER. Capital is GL-/RWA-derived: the numerator is the
+# bank's own capital-classified GL, the denominator aggregates the other returns'
+# RWA. A capital cell does not gate a product the way a credit/liquidity/market
+# cell does — there is no product-static menu attribute it keys off. So — per the
+# brief — the capital family carries ZERO product-attribute requirements; there
+# is deliberately no `capital_product_attributes()` (no fabrication, no bulk-
+# marking). The NPA gate sees no capital product-attribute edge, so no product is
+# wrongly blocked by a capital cell.
+#
+# ---------------------------------------------------------------------------
+# Per-cell capital status (honest sourced-vs-licence-day split).
+#   - The regulatory MINIMUM-REQUIRED ratios and buffer add-ons are computed from
+#     BCBS / Reg-38 CONSTANTS (computeRequiredMinimums +
+#     BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS in platform/reporting/ba-700-
+#     capital.ts: base CET1 4.5% / Tier 1 6% / Total 8% + conservation 2.5% +
+#     countercyclical / D-SIB / Pillar-2A) and the specified minimum leverage
+#     ratio (BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM = 3% in ba-700-leverage-
+#     ratio.ts). These genuinely compute TODAY without real capital → `sourced`
+#     (the source exists; the value is the regulatory constant, not a fabricated
+#     capital figure).
+#   - Every ACHIEVED capital amount, RWA amount, achieved ratio, excess/shortfall,
+#     TLAC position and BA 701 economic-capital figure needs REAL capital / real
+#     positions that the bank-in-formation does not hold pre-licence-day (the
+#     R300m is a licence-day target) → `licence-day-data`.
+# Returns the status string. The capital family carries no product-attribute
+# refs, so there is no unapproved-product-ref coupling to enforce here.
+# ---------------------------------------------------------------------------
+def capital_cell_status(form: str, col_label: str, row_label: str) -> str:
+    text = f"{col_label or ''} {row_label or ''}".lower()
+    # BA 701's whole economic-capital reconciliation needs the ICAAP economic-
+    # capital model output + real positions — none of it computes from a constant.
+    if form == "BA701":
+        return "licence-day-data"
+    # The MINIMUM-REQUIRED ratio / buffer-add-on / specified-minimum-leverage cells
+    # are computed from BCBS / Reg-38 regulatory constants (no real capital
+    # needed) → sourced. We match on the row/column labels that NAME a required
+    # minimum or a specified buffer/floor, NOT an achieved value.
+    names_required_minimum = (
+        "minimum required ratio" in text
+        or "total minimum required ratio" in text
+        or "minimum required" in text
+        and "ratio" in text
+    )
+    names_buffer_addon = (
+        ("add-on" in text or "add on" in text)
+        and (
+            "conservation buffer" in text
+            or "countercyclical" in text
+            or "counter cyclical" in text
+            or "counter-cyclical" in text
+            or "systemic risk add-on" in text
+            or "systemically important" in text
+            or "pillar 2a" in text
+            or "pillar 2 a" in text
+        )
+    )
+    names_base_minimum = "base minimum" in text or "south african base minima" in text
+    names_specified_leverage_minimum = (
+        "specified minimum leverage ratio" in text
+        or ("minimum leverage ratio" in text and "specified" in text)
+    )
+    names_specified_buffer = "specified buffer requirement" in text
+    if (
+        names_required_minimum
+        or names_buffer_addon
+        or names_base_minimum
+        or names_specified_leverage_minimum
+        or names_specified_buffer
+    ):
+        return "sourced"
+    return "licence-day-data"
+
+
 # ---------------------------------------------------------------------------
 # xlsx Elements-sheet extraction — IDENTICAL column layout across all BA forms
 # (verified BA100/BA110/BA120/BA600/BA610). Reused from gen-ba100-contract.py.
@@ -1706,6 +1926,26 @@ def currency_dimension_for(form: str, col_label: str, row_label: str, form_cfg) 
                 "gbp ",
                 "chf",
                 "jpy",
+            )
+        ):
+            return "by-currency"
+        return "functional"
+    # Capital family (BA 700 / BA 701): the capital-adequacy, leverage, TLAC and
+    # the regulatory-vs-economic-capital reconciliation are reported in the bank's
+    # FUNCTIONAL currency at the form level (capital and RWA are aggregated, not
+    # split by currency on these forms). A cell whose row/column explicitly names
+    # a currency axis is by-currency; the default is functional (ZAR reporting
+    # currency by config, NEVER a literal — P5: the dimension carries the axis).
+    if form in ("BA700", "BA701"):
+        if any(
+            k in text
+            for k in (
+                "foreign currency",
+                "foreign-currency",
+                "by currency",
+                "per currency",
+                "currency analysis",
+                "denominated",
             )
         ):
             return "by-currency"
@@ -1980,6 +2220,15 @@ def build_cell(form: str, form_cfg, e):
         # not approved).
         status = market_cell_status(form, collabel, rowlabel, mkt_prod_attrs)
         status_reason = form_cfg["status_note"] if status != "sourced" else None
+    elif form_cfg.get("capital_family"):
+        # Per-cell sourced-vs-licence-day split: the regulatory MINIMUM-REQUIRED
+        # ratios / buffer add-ons / specified-minimum-leverage cells are computed
+        # from BCBS / Reg-38 constants (sourced — no real capital needed); every
+        # achieved-capital / RWA / ratio / excess-shortfall / TLAC / economic-
+        # capital cell needs real capital the bank does not hold pre-licence-day
+        # (licence-day). The capital family carries NO product-attribute refs.
+        status = capital_cell_status(form, collabel, rowlabel)
+        status_reason = form_cfg["status_note"] if status != "sourced" else None
     elif form_cfg["licence_day"]:
         status = "licence-day-data"
         status_reason = form_cfg["status_note"]
@@ -2107,9 +2356,12 @@ if __name__ == "__main__":
     elif len(sys.argv) == 2 and sys.argv[1] == "--market":
         for f in ("BA320", "BA325", "BA330", "BA340", "BA350"):
             generate(f)
+    elif len(sys.argv) == 2 and sys.argv[1] == "--capital":
+        for f in ("BA700", "BA701"):
+            generate(f)
     else:
         raise SystemExit(
             "usage: gen-return-contract.py "
             "<BA110|BA120|BA200|BA210|BA220|BA300|BA310|BA320|BA325|BA330|BA340|BA350|"
-            "BA600|BA610|--all|--credit|--liquidity|--market>"
+            "BA600|BA610|BA700|BA701|--all|--credit|--liquidity|--market|--capital>"
         )
