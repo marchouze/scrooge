@@ -320,6 +320,17 @@ import { buildTaxonomiesView } from "./taxonomy-view";
 import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
 import type { DashboardState } from "./types";
 import {
+  buildV2FxBlotterView,
+  buildV2FxCounterpartiesView,
+  buildV2FxHeadroomView,
+  buildV2FxNpaView,
+  buildV2FxRejectionsView,
+  buildV2FxRiskView,
+  buildV2FxSummaryView,
+  buildV2FxSurfaceView,
+  buildV2FxVarView,
+} from "./v2-markets-fx-view";
+import {
   buildV2ObligationDetailView,
   buildV2ObligationsView,
   buildV2RegulationDetailView,
@@ -5670,6 +5681,67 @@ const server = Bun.serve({
       const detail = buildProcedureDetailView(REPO_ROOT, filename, nowUtc());
       if (!detail) return jsonResponse({ error: `unknown procedure: ${filename}` }, 404);
       return jsonResponse({ ...detail, pageProvenance: filter });
+    }
+    // FX desk V2 surface (WS-FX-OTC-CLOSURE B5). The V2-authoritative re-build of
+    // the legacy /api/markets/fx/* surfaces (which read V1 trading events). Reads
+    // FIL instances + BA-320 V2 + daily-P&L V2 + V2 VaR. Name-free DTOs (Title
+    // only); each panel carries an honest dataState (live | empty | v1-only) +
+    // reason — never a silent zero (Engineering Charter cmd 3). Two panels stay
+    // V1-only with a stated reason (gateway rejections; RAS headroom) — the V2
+    // surface does NOT read V1 for those; the legacy route remains authoritative.
+    // Authority: D-FX-OTC-CLOSURE-BACKLOG (CEO-approved 2026-06-19);
+    //            D-BANK-WIDE-V2-MIGRATION; feedback_no_agent_names_in_ui.
+    if (req.method === "GET" && url.pathname === "/api/v2/markets/fx") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildV2FxSurfaceView(eventStore, marketDataStore, nowUtc()),
+        pageProvenance: filter,
+      });
+    }
+    if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/summary") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildV2FxSummaryView(eventStore, marketDataStore, nowUtc()),
+        pageProvenance: filter,
+      });
+    }
+    if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/risk") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildV2FxRiskView(eventStore, marketDataStore, nowUtc()),
+        pageProvenance: filter,
+      });
+    }
+    if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/var") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({ ...buildV2FxVarView(eventStore), pageProvenance: filter });
+    }
+    if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/blotter") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({ ...buildV2FxBlotterView(eventStore), pageProvenance: filter });
+    }
+    if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/counterparties") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildV2FxCounterpartiesView(eventStore, nowUtc()),
+        pageProvenance: filter,
+      });
+    }
+    if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/npa") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({ ...buildV2FxNpaView(eventStore, nowUtc()), pageProvenance: filter });
+    }
+    if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/rejections") {
+      // V1-only panel (no V2 gateway event family). The route returns the honest
+      // v1-only state + the legacy route to consult — it does NOT serve V1 data.
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({ ...buildV2FxRejectionsView(), pageProvenance: filter });
+    }
+    if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/headroom") {
+      // V1-only panel (RAS limit-utilisation folds V1 FxTradeExecuted). Honest
+      // v1-only state + legacy route; the FX NOP + capital charge ARE V2 (see /risk).
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({ ...buildV2FxHeadroomView(), pageProvenance: filter });
     }
     // Regulations register (Compliance). Reference instruments (Plane A) flagged
     // with whether the bank has identified (adopted) obligations from each
