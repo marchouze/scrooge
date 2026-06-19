@@ -254,12 +254,11 @@ import {
   buildKycClientsView,
 } from "./kyc-clients-view";
 import { registerMarketDataRoutes } from "./market-data-view";
-import { buildCounterpartiesView } from "./markets-fx-counterparties";
+// buildCounterpartiesView retained: backs the V2 counterparties view + trade path.
 import { type GatewayOrderResult, routeOrderToGateway } from "./markets-fx-gateway";
-import { buildHeadroomView } from "./markets-fx-headroom";
-import { buildNpaView } from "./markets-fx-npa";
+// markets-fx-headroom / markets-fx-summary read modules retired (FU5; D-FX-OTC-CLOSURE-BACKLOG).
+// buildNpaView no longer called here (V2 route uses buildV2FxNpaView); module retained for the V2 view.
 import { buildRiskView } from "./markets-fx-risk";
-import { buildFxSummaryView } from "./markets-fx-summary";
 import {
   type RfqInput,
   type TradeEmitResult,
@@ -4294,33 +4293,11 @@ const server = Bun.serve({
       });
     }
     // ---------- end Slice 5 ----------
-    if (url.pathname === "/api/markets/fx/counterparties" && req.method === "GET") {
-      // FX desk Slice 1 picker source. Folds the counterparty
-      // institutional-eligibility events and returns the pass-and-not-breached
-      // set, enriched with display names from KYC clients and fx-sim register.
-      // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10).
-      const view = buildCounterpartiesView(eventStore);
-
-      // Build name lookup: counterpartyId → display name
-      const nameMap = new Map<string, string>();
-      // (a) KYC clients
-      // KYC-accepted clients (non-simulated) — canonical source
-      const kycView = buildKycClientsView(eventStore);
-      for (const c of kycView.clients) {
-        nameMap.set(c.clientId, c.entityName);
-      }
-
-      const enriched = view.counterparties.map((c) => ({
-        ...c,
-        name: nameMap.get(c.counterpartyId) ?? c.counterpartyId,
-      }));
-
-      return jsonResponse({
-        ...view,
-        counterparties: enriched,
-        pageProvenance: eventDerivedPageProvenance(),
-      });
-    }
+    // RETIRED (FU5; D-FX-OTC-CLOSURE-BACKLOG): legacy GET /api/markets/fx/counterparties.
+    // The FX desk page now reads the name-free GET /api/v2/markets/fx/counterparties
+    // surface. `buildCounterpartiesView` (markets-fx-counterparties.ts) is RETAINED:
+    // it backs the V2 counterparties view + the trade (write) path + the eligibility
+    // seed script. Only this V1 read route is removed.
     // Counterparty picker for manual trade booking — the full counterparty set
     // from the party register (the master store, Principle 2), each carrying
     // its LEI + BIC. Drives the trade-book.html counterparty dropdowns.
@@ -4359,22 +4336,11 @@ const server = Bun.serve({
       // Authority: D-FX-SALES-TRADING-FRONTEND-SLICE-2.
       return handleFxTrade(req);
     }
-    if (url.pathname === "/api/markets/fx/headroom" && req.method === "GET") {
-      // FX desk Slice 3 — headroom panel source. Replays the event store,
-      // rebuilds the LimitUtilisationProjection, and returns the five
-      // B-cluster rows with RAG status for the #headroom section of the
-      // FX desk page. Zero-state (no RAS schedule emitted): all rows
-      // green with zero exposure.
-      // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10);
-      //            D-MARKETS-SCHEMA-FOUNDATION Slice 5.
-      return jsonResponse(
-        buildHeadroomView(
-          eventStore,
-          marketDataStore,
-          buildLimitUtilisationDeps(eventStore, nowUtc()),
-        ),
-      );
-    }
+    // RETIRED (FU5; D-FX-OTC-CLOSURE-BACKLOG): legacy GET /api/markets/fx/headroom.
+    // Both FX desk pages (desk.js + risk.js) now read the FIL-sourced B3 FX cluster
+    // from GET /api/v2/markets/fx/headroom. The V1 `buildHeadroomView` read module
+    // (dashboard/markets-fx-headroom.ts) had no other caller and is removed with
+    // this route.
     if (url.pathname === "/api/risk/market-risk-measure" && req.method === "GET") {
       // CRO-owned market-risk measure (RAS B3 review R8 / D-B3-5). Folds the
       // latest MarketRiskMeasureComputed event → VaR / SVaR / ES vs Helena's
@@ -4438,15 +4404,10 @@ const server = Bun.serve({
       }
       return jsonResponse(selectRegulatoryReturn(which, eventStore, marketDataStore));
     }
-    if (url.pathname === "/api/markets/fx/products/attestation" && req.method === "GET") {
-      // FX desk Slice 7 — NPA attestation badge source. Replays the event
-      // store, folds the latest ProductApproved / ProductWithheld event per
-      // FX product code, and returns a 4-row attestation view. Products with
-      // no NPA event → status: "pending" (expected build-phase state per
-      // project_product_lifecycle_npa_vs_engineering.md).
-      // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10) Slice 7.
-      return jsonResponse(buildNpaView(eventStore));
-    }
+    // RETIRED (FU5; D-FX-OTC-CLOSURE-BACKLOG): legacy GET /api/markets/fx/products/attestation.
+    // The FX desk NPA badge strip now reads GET /api/v2/markets/fx/npa.
+    // `buildNpaView` (markets-fx-npa.ts) is RETAINED: the V2 NPA view delegates to
+    // it. Only this V1 read route is removed.
     if (url.pathname === "/api/risk-register" && req.method === "GET") {
       // Risk register — RiskRaised findings paired with their closure state
       // (RiskResolved/RiskAccepted/RiskMitigated) by riskId. The canonical
@@ -4455,36 +4416,25 @@ const server = Bun.serve({
       return jsonResponse(buildRiskRegisterView(eventStore));
     }
     if (url.pathname === "/api/markets/fx/risk" && req.method === "GET") {
-      // FX desk Slice 5 — risk-officer view: rejection feed + correspondent
-      // routing status. Replays the event store, folds CorrespondentRouting,
-      // collects OrderRejectedAtGateway events (newest-first, ≤50).
+      // RESIDUAL — V1 (FU5; D-FX-OTC-CLOSURE-BACKLOG): RETAINED for the
+      // correspondent-routing status panel only. There is no V2
+      // correspondent-routing source on the /api/v2/markets/fx/* surface (the V2
+      // risk view is net-open-position / capital-charge only), so risk.js still
+      // reads correspondentStatus from here. The rejection-feed sub-slice this
+      // route also carried has migrated to GET /api/v2/markets/fx/rejections.
+      // `buildRiskView` (markets-fx-risk.ts) is retained for this residual.
       // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10).
       return jsonResponse(buildRiskView(eventStore));
     }
-    if (url.pathname === "/api/markets/fx/rejections" && req.method === "GET") {
-      // FX desk Slice 5 — rejection feed sub-slice. Convenience endpoint that
-      // returns only the rejections array + asOf from the full risk view.
-      // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10).
-      const view = buildRiskView(eventStore);
-      return jsonResponse({ rejections: view.rejections, asOf: view.asOf });
-    }
-    if (url.pathname === "/api/markets/fx/correspondent-routing" && req.method === "GET") {
-      // FX desk Slice 5 — correspondent-routing status endpoint (FX-scoped alias
-      // for /api/correspondent-routing; used by risk.js on the risk page).
-      // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10);
-      //            D-FX-CORRESPONDENT-PAIR-NAMING (CEO-approved 2026-05-09).
-      const view = buildRiskView(eventStore);
-      return jsonResponse({ correspondentStatus: view.correspondentStatus, asOf: view.asOf });
-    }
-    if (url.pathname === "/api/markets/fx/summary" && req.method === "GET") {
-      // FX desk Slice 6 — CEO oversight tile source. Single-pass replay
-      // counting RfqRequested, FxTradeExecuted, OrderApprovedAtGateway,
-      // OrderRejectedAtGateway events; top-3 counterparties by trade count;
-      // B3 (Market Risk) utilisation RAG status from the limit-utilisation
-      // projection. Powers the live metrics on the FX desk tile in home.html.
-      // Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10).
-      return jsonResponse(buildFxSummaryView(eventStore, marketDataStore));
-    }
+    // RETIRED (FU5; D-FX-OTC-CLOSURE-BACKLOG): legacy GET /api/markets/fx/rejections.
+    // The FX risk page now reads the V2-native feed at GET /api/v2/markets/fx/rejections.
+    // RETIRED (FU5; D-FX-OTC-CLOSURE-BACKLOG): legacy GET /api/markets/fx/correspondent-routing.
+    // It had no caller (risk.js reads correspondentStatus from /api/markets/fx/risk;
+    // the canonical non-FX-scoped table remains at GET /api/correspondent-routing).
+    // RETIRED (FU5; D-FX-OTC-CLOSURE-BACKLOG): legacy GET /api/markets/fx/summary.
+    // It had no frontend caller; the FX summary now derives from the V2 surface
+    // (GET /api/v2/markets/fx/summary). The V1 `buildFxSummaryView` read module
+    // (dashboard/markets-fx-summary.ts) had no other caller and is removed.
     if (url.pathname === "/api/markets/fx/order" && req.method === "POST") {
       // FX desk Slice 4 — order acceptance + gateway pipeline. Routes
       // the RFQ through the 7-check pre-trade gateway (identity, sanctions,
