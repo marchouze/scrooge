@@ -61,9 +61,9 @@ import type {
 } from "../v2-core/banking/events";
 import { moneyWireFromMajorString } from "../v2-core/core/money-wire";
 import {
+  FX_OTC_VANILLA_PRODUCT,
   FX_TREATMENT_MODULES,
-  FX_TREATMENT_MODULE_IDS,
-} from "../v2-core/reporting-treatments/fx-modules";
+} from "../v2-core/reporting-treatments/fx-fold-standing-data";
 
 // ---------------------------------------------------------------------------
 // Resolve the v2 anchor store path — NEVER the v1 store
@@ -201,28 +201,10 @@ const PRODUCTS: V2ProductRegistered[] = [
       "D-MARKETS-SCHEMA-FOUNDATION",
     ],
   },
-  {
-    kind: "V2ProductRegistered",
-    productId: "v2:prd:bank:fx:otc-vanilla",
-    name: "FX OTC Vanilla (spot + forward)",
-    ifrs9Family: "fx-spot",
-    filTypeScopes: ["fil:type:fx:spot:*", "fil:type:fx:forward:*"],
-    v1ProductId: "prd:bank:fx:otc-vanilla",
-    currencies: ["ZAR", "USD", "EUR", "GBP", "JPY", "CHF", "AUD"],
-    legalEntityIds: ["LE-ZA-HOZ-BANK"],
-    jurisdictions: ["ZA"],
-    franchiseScope: "institutional",
-    // Modular-composed-fold treatment menu pick (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD):
-    // one module per treatment dimension, all scoped fil:type:fx:*. The id set is
-    // the single-source constant from v2-core/reporting-treatments/fx-modules.ts.
-    reportingTreatmentModuleIds: [...FX_TREATMENT_MODULE_IDS],
-    citations: [
-      "D-V2-BBAAS-BLUEPRINT-SYNTHESIS",
-      "D-FX-OTC-NPA-SCOPE-EXPANSION",
-      "D-MARKETS-SCHEMA-FOUNDATION",
-      "D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD",
-    ],
-  },
+  // FX OTC Vanilla — single-sourced from the FX-fold standing-data module so the
+  // anchor seed and the FIL-booking-store co-location seed render byte-identical
+  // product declarations (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD; D-FX-OTC-CLOSURE-BACKLOG).
+  FX_OTC_VANILLA_PRODUCT,
   {
     kind: "V2ProductRegistered",
     productId: "v2:prd:bank:otc-ird:vanilla-irs-zar",
