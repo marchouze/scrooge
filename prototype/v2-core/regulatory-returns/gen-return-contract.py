@@ -1117,6 +1117,246 @@ FORMS = {
             "fabrication."
         ),
     ),
+    # -----------------------------------------------------------------------
+    # Phase C batch 8 — STATISTICAL (BA 920 / BA 930 / BA 94x) + SUPPLEMENTARY
+    # (CVA / FRTB) returns.
+    #
+    # BA 920 (Analysis of instalment-sale credit, leasing finance and selected
+    # assets) is an economic-statistics return that DISAGGREGATES the bank's
+    # instalment-sale / leasing / suspensive-sale book by finance type and asset
+    # class — so it DOES carry genuine product-attribute requirements (the
+    # instalment-sale-vs-lease finance type, the financed asset class) a future
+    # instalment-sale / leasing product must capture. BA 930 (Weighted-average
+    # interest rates on loans and deposits) and the BA 94x Locational Banking
+    # Statistics series (BA 941–944) are AGGREGATE / ENTITY-level statistical
+    # returns: a weighted-average rate over the whole book, and total financial
+    # claims / liabilities by instrument / currency / country — neither keys off a
+    # product-STATIC menu attribute, so they carry ~0 product-attribute
+    # requirements (no bulk-marking, no fabrication). All three are licence-day-
+    # heavy: there is no real instalment-sale / leasing book, no real loan / deposit
+    # rates and no real cross-border claims pre-licence-day.
+    #
+    # CVA (Credit Valuation Adjustment) + FRTB (Fundamental Review of the Trading
+    # Book) are the SUPPLEMENTARY market-risk returns. Their XSD leaf cells carry
+    # the `MR########` element code (the market-risk element namespace), not
+    # `BA########` — the generator + recon accept both prefixes. They carry
+    # genuine product-attribute requirements (CVA: counterparty / derivative
+    # attributes; FRTB: trading-book risk-class attributes) that a future
+    # derivative / trading-book product must capture — attached to FUTURE,
+    # UNAPPROVED product ids so the live FX product is NEVER wrongly blocked. Both
+    # are wholly licence-day-data (no real derivative / trading book pre-licence-
+    # day). FRTB is built on its OWN canonical identity (the standalone FRTB
+    # return) — NOT BA 320 (Market Risk) and NOT BA 325 (Selected Risk Exposure).
+    # CVA / FRTB lack a D5/2025 BA-numbered obligation row, so a replay-safe
+    # obligation is authored for each (ORG-PR-RETURNS-030 / ORG-PR-RETURNS-031)
+    # in the obligations seed + markdown register (the BA 420 / BA 501 pattern;
+    # honest provenance, no fabricated §-numbers).
+    # -----------------------------------------------------------------------
+    "BA920": dict(
+        name="Analysis of instalment-sale credit, leasing finance and selected assets",
+        obligation="ORG-PR-RETURNS-025",
+        clause=(
+            "SARB Prudential Authority Directive D5/2025 §2.1.26 (form BA 920 — Analysis of "
+            "instalment-sale credit, leasing finance and selected assets, Annexure 25A/25B) read "
+            "with the Regulations relating to Banks and the National Credit Act 34 of 2005 "
+            "(instalment-sale / leasing / suspensive-sale finance) for the SARB economic-statistics "
+            "series; Banks Act 94 of 1990 s.6(6)(a). [Post-#1451 corrected row "
+            "(D-BA-RETURN-DATA-CONTRACT Phase A): per the canonical SARB Excel form schedule (cell "
+            "A1 = 'Analysis of instalment-sale credit, leasing finance and selected assets'), form "
+            "BA 920 is the instalment-sale / leasing-finance analysis return; the prior 'concentration "
+            "risk' annotation is the documented fabrication the correction supersedes.]"
+        ),
+        fold="ba920-instalment-sale-leasing-fold",
+        # BA 920 cells fold from the instalment-sale / leasing-finance analysis fold
+        # over the instalment-sale + leasing + suspensive-sale sub-ledger (by finance
+        # type + financed asset class). No live GL category holds the disaggregation
+        # pre-licence-day; the fold is the authoritative source.
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,  # no real instalment-sale / leasing book pre-licence-day
+        statistical_family=True,
+        product_attr_product_id="prd:bank:credit:instalment-sale-lease",
+        status_note=(
+            "Instalment-sale / leasing-finance figures (the bank's instalment-sale credit, leasing "
+            "finance and suspensive-sale book disaggregated by finance type and financed asset "
+            "class — motor vehicles, plant & machinery, office equipment, other movable / immovable "
+            "assets) fold from the ba920-instalment-sale-leasing-fold over the instalment-sale / "
+            "leasing sub-ledger. The fold exists as substrate; the instalment-sale / leasing "
+            "exposures that fill the cells require a real instalment-sale / leasing book, which the "
+            "bank-in-formation does not run pre-licence-day, so those values are licence-day data. "
+            "The product-attribute dataRequirements — instalment-sale-vs-lease finance type, "
+            "financed asset class — bind now so a future instalment-sale / leasing product is "
+            "correctly gated. No silent fabrication."
+        ),
+    ),
+    "BA930": dict(
+        name="Weighted-average interest rates on loans and deposits",
+        obligation="ORG-PR-RETURNS-026",
+        clause=(
+            "SARB Prudential Authority Directive D5/2025 §2.1.27 (form BA 930 — Weighted-average "
+            "interest rates on loans and deposits, Annexure 26A/26B) read with the Regulations "
+            "relating to Banks for the SARB economic-statistics series (the monetary-policy "
+            "weighted-average lending and deposit rate statistics); Banks Act 94 of 1990 "
+            "s.6(6)(a). [Post-#1451 corrected row (D-BA-RETURN-DATA-CONTRACT Phase A): per the "
+            "canonical SARB Excel form schedule (cell A1 = 'Weighted-average interest rates on "
+            "loans and deposits'), form BA 930 is the weighted-average interest-rate statistical "
+            "return; the prior 'foreign claims / geographic distribution' annotation is the "
+            "documented fabrication the correction supersedes.]"
+        ),
+        fold="ba930-weighted-average-rates-fold",
+        # BA 930 cells fold from the weighted-average-rates fold over the loan +
+        # deposit book (balance-weighted nominal / effective rates by product
+        # category + maturity band). The reported value is a portfolio-level
+        # weighted average — an AGGREGATE statistic, NOT a product-static attribute —
+        # so BA 930 carries NO product-attribute requirement. No GL category holds
+        # the weighted-average rate; the fold is the authoritative source.
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,  # no real loan / deposit rate book pre-licence-day
+        statistical_family=True,
+        # AGGREGATE / entity-level → no product-attribute product id (~0 attrs).
+        product_attr_product_id=None,
+        status_note=(
+            "Weighted-average interest-rate figures (balance-weighted nominal and effective rates "
+            "on loans and on deposits, by product category and maturity band, for the SARB "
+            "monetary-policy statistics) fold from the ba930-weighted-average-rates-fold over the "
+            "loan + deposit book. The fold exists as substrate; the rate statistics that fill the "
+            "cells require a real loan / deposit book with real contractual rates, which the bank-"
+            "in-formation does not run pre-licence-day, so those values are licence-day data. The "
+            "reported value is a PORTFOLIO-level weighted average (an aggregate statistic), NOT a "
+            "product-static menu attribute — BA 930 carries no product-attribute requirement. No "
+            "silent fabrication."
+        ),
+    ),
+    "BA94x": dict(
+        name="Locational Banking Statistics (BA 941–944 series)",
+        obligation="ORG-PR-RETURNS-027",
+        clause=(
+            "SARB Prudential Authority Directive D5/2025 §2.1.28 (form BA 940 — materialised as the "
+            "BA 941–944 workbook set, Annexure 27A/27B) read with the Regulations relating to Banks "
+            "for the SARB / BIS Locational Banking Statistics (total financial claims and liabilities "
+            "by instrument, currency and country of counterparty); Banks Act 94 of 1990 s.6(6)(a). "
+            "[Post-#1451 corrected row (D-BA-RETURN-DATA-CONTRACT Phase A): per the canonical SARB "
+            "Excel form schedule (cell A1), the BA 94x series is the Locational Banking Statistics "
+            "series (BA 941–944, each with sub-forms _1.._8); no standalone BA 940 workbook exists — "
+            "the §2.1.28 'form BA 940' instruction materialises as the BA 941–944 set. The prior "
+            "'asset quality' annotation is the documented fabrication the correction supersedes.]"
+        ),
+        fold="ba94x-locational-banking-statistics-fold",
+        # BA 94x cells fold from the locational-banking-statistics fold over the
+        # cross-border claims / liabilities sub-ledger (by instrument, currency and
+        # COUNTRY of counterparty — the locational axis). The reported value is an
+        # AGGREGATE statistic (total claims / liabilities), NOT a product-static
+        # attribute — so BA 94x carries NO product-attribute requirement. No GL
+        # category holds the locational disaggregation; the fold is the source.
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,  # no real cross-border claims / liabilities pre-licence-day
+        statistical_family=True,
+        # AGGREGATE / entity-level locational statistics → no product-attribute id.
+        product_attr_product_id=None,
+        status_note=(
+            "Locational-banking-statistics figures (total financial claims and liabilities by "
+            "instrument, currency and country of counterparty — the BA 941–944 series, each with "
+            "sub-forms _1.._8 covering claims / liabilities, by-currency and by-counterparty-sector "
+            "breakdowns) fold from the ba94x-locational-banking-statistics-fold over the cross-"
+            "border claims / liabilities sub-ledger. The fold exists as substrate; the locational "
+            "statistics that fill the cells require real cross-border claims and liabilities, which "
+            "the bank-in-formation does not book pre-licence-day, so those values are licence-day "
+            "data. The reported value is an AGGREGATE locational statistic, NOT a product-static "
+            "menu attribute — BA 94x carries no product-attribute requirement. No silent "
+            "fabrication."
+        ),
+    ),
+    "CVA": dict(
+        name="Credit Valuation Adjustment",
+        obligation="ORG-PR-RETURNS-030",
+        clause=(
+            "SARB / Basel Committee MAR50 (the credit-valuation-adjustment (CVA) risk capital "
+            "framework — BA-CVA basic / reduced and SA-CVA approaches) read with the Regulations "
+            "relating to Banks reg 28 (market risk) and reg 23(15)–(19) (counterparty credit risk) "
+            "and the Basel III post-crisis-reforms CVA standard (SARB PA Directive D12/2025 "
+            "implementation roadmap); Banks Act 94 of 1990 s.6(6)(a). [Provenance / honesty "
+            "(Principle 2): CVA is a SUPPLEMENTARY market-risk return — it is NOT enumerated as a "
+            "D5/2025 BA-numbered Annexure (the D5/2025 §2.1 schedule has no CVA line). It is the "
+            "standalone CVA-capital return of the Basel III post-crisis-reforms package (MAR50), "
+            "submitted alongside the FRTB market-risk return. The obligation row "
+            "ORG-PR-RETURNS-030 is authored for this form (no D5/2025 §-number is fabricated; the "
+            "citation is the Basel MAR50 CVA framework + the SARB Reg-28 / D12/2025 transposition). "
+            "The XSD leaf cells carry the `MR########` market-risk element code.]"
+        ),
+        fold="cva-capital-fold",
+        # CVA cells fold from the CVA-capital fold over the derivative / SFT
+        # counterparty book (CVA capital by approach — BA-CVA / SA-CVA — and by
+        # hedging set / counterparty credit-quality bucket). No live GL category
+        # holds the CVA charge; the fold is the authoritative source.
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,  # no real derivative counterparty book pre-licence-day
+        cva_frtb_family="cva",
+        product_attr_product_id="prd:bank:derivative:otc",
+        status_note=(
+            "Credit-valuation-adjustment (CVA) capital figures (the CVA capital requirement by "
+            "approach — BA-CVA basic / reduced, SA-CVA — over the derivative / securities-financing "
+            "counterparty book, by hedging set and counterparty credit-quality bucket) fold from "
+            "the cva-capital-fold over the counterparty book. The fold exists as substrate; the "
+            "derivative / SFT counterparty exposures that fill the cells require a real derivative "
+            "counterparty book, which the bank-in-formation does not run pre-licence-day, so those "
+            "values are licence-day data. The product-attribute dataRequirements — derivative type, "
+            "counterparty identity / credit-quality bucket, CVA-hedge eligibility — bind now so a "
+            "future OTC-derivative product is correctly gated. No silent fabrication."
+        ),
+    ),
+    "FRTB": dict(
+        name="Fundamental Review of the Trading Book",
+        obligation="ORG-PR-RETURNS-031",
+        clause=(
+            "SARB / Basel Committee MAR (the Fundamental Review of the Trading Book — the revised "
+            "market-risk framework: MAR20–MAR23 trading-book boundary, MAR21–MAR23 the standardised "
+            "approach (sensitivities-based method, default-risk charge, residual-risk add-on), "
+            "MAR30–MAR33 the internal-models approach (expected shortfall, NMRF, P&L-attribution / "
+            "backtesting)) read with the Regulations relating to Banks reg 28 (market risk) and the "
+            "SARB PA revised-market-risk-framework implementation (Prudential Communication 18 of "
+            "2024 + Directive D12/2025 Basel III post-crisis-reforms roadmap); Banks Act 94 of 1990 "
+            "s.6(6)(a). [Provenance / honesty (Principle 2): FRTB is the STANDALONE Fundamental "
+            "Review of the Trading Book return — its OWN identity, NOT BA 320 (Market Risk) and NOT "
+            "BA 325 (Selected Risk Exposure Arising from Trading and Treasury Activities). It is a "
+            "SUPPLEMENTARY market-risk return of the Basel III post-crisis-reforms package, not a "
+            "D5/2025 BA-numbered Annexure (the D5/2025 §2.1 schedule has no FRTB line). The "
+            "obligation row ORG-PR-RETURNS-031 is authored for this form (no D5/2025 §-number is "
+            "fabricated; the citation is the Basel MAR FRTB framework + the SARB Reg-28 / PC 18/2024 "
+            "/ D12/2025 transposition). The XSD leaf cells carry the `MR########` market-risk "
+            "element code.]"
+        ),
+        fold="frtb-market-risk-fold",
+        # FRTB cells fold from the FRTB market-risk fold over the trading book — the
+        # standardised approach (sensitivities-based method risk-class buckets:
+        # GIRR / CSR / equity / commodity / FX; default-risk charge; residual-risk
+        # add-on) and the internal-models approach (expected shortfall, NMRF, the
+        # P&L-attribution / backtesting traffic-light). No live GL category holds
+        # the FRTB charge; the fold is the authoritative source.
+        gl_categories=[],
+        entity_scope="bank",
+        licence_day=True,  # no real trading book pre-licence-day
+        cva_frtb_family="frtb",
+        product_attr_product_id="prd:bank:trading:frtb-instrument",
+        status_note=(
+            "Fundamental-Review-of-the-Trading-Book (FRTB) figures (the market-risk capital "
+            "requirement under the standardised approach — sensitivities-based method by risk class "
+            "(GIRR / CSR non-securitisation / CSR securitisation / equity / commodity / FX), the "
+            "default-risk charge and the residual-risk add-on — and under the internal-models "
+            "approach — expected shortfall, non-modellable risk factors, and the P&L-attribution / "
+            "backtesting traffic-light, by trading desk) fold from the frtb-market-risk-fold over "
+            "the trading book. The fold exists as substrate; the trading-book positions that fill "
+            "the cells require a real trading book, which the bank-in-formation does not run pre-"
+            "licence-day, so those values are licence-day data. The product-attribute "
+            "dataRequirements — trading-book designation, FRTB risk class, market-risk "
+            "capitalisation approach — bind now so a future trading-book product is correctly "
+            "gated. No silent fabrication. FRTB is the STANDALONE Fundamental Review of the Trading "
+            "Book return on its own identity (NOT BA 320 Market Risk, NOT BA 325 Selected Risk "
+            "Exposure)."
+        ),
+    ),
 }
 
 # ---------------------------------------------------------------------------
@@ -1173,6 +1413,50 @@ SECGOV_ENUM_TYPES = (
 #   scheme dates). The Data-Types sheet records `Base Data Type = date`.
 SECGOV_DATE_TYPE = "CP_Date"
 
+# -----------------------------------------------------------------------------
+# Phase C batch 8 — statistical (BA 94x) + supplementary (CVA / FRTB) leaf types.
+# -----------------------------------------------------------------------------
+# BA 94x (Locational Banking Statistics) carries one bespoke enum leaf type:
+#   "Country_BA94" — the ISO country code of the counterparty / claim location.
+#     Locational banking statistics report claims & liabilities by COUNTRY of
+#     the counterparty (the locational axis), so a country-code cell is an enum
+#     (a constrained code-list), not free text.
+STATISTICAL_ENUM_TYPES = ("Country_BA94",)
+
+# CVA + FRTB (the supplementary market-risk returns) carry bespoke enum leaf
+# types — each a SARB code-list (Data-Types sheet `Base Data Type = enumeration`)
+# whose value is a constrained category:
+#   CVA:
+#     "CVAApproach"            — the CVA capital approach (BA-CVA basic vs reduced,
+#                                 SA-CVA, or the 100%-CCR-multiplier alternative;
+#                                 Basel MAR50). Selects the CVA capital sub-form.
+#   FRTB:
+#     "AllocationStructure"    — the trading-desk / book allocation structure axis.
+#     "RiskScope"              — the FRTB risk-scope axis (trading book vs
+#                                 banking-book FX/commodity in scope of market risk).
+#     "MRCapitalisationApproach" — the market-risk capitalisation approach
+#                                 (SA — Sensitivities-based / DRC / RRAO — vs IMA).
+#     "TrafficLightStatus"     — the IMA P&L-attribution / backtesting traffic-light
+#                                 zone (green / amber / red — MAR32 PLA test).
+#     "CP_RiskRating"          — the counterparty / issuer credit-quality rating
+#                                 bucket (the CSR / DRC rating axis).
+CVA_FRTB_ENUM_TYPES = (
+    "CVAApproach",
+    "AllocationStructure",
+    "RiskScope",
+    "MRCapitalisationApproach",
+    "TrafficLightStatus",
+    "CP_RiskRating",
+)
+
+# FRTB carries two bespoke leaf types that map to existing framework value types:
+#   "SpecifyDate"          — a "specify date" cell (a date) — e.g. the desk's
+#                             trading-book inclusion date. → date.
+#   "ReportingBaseCurrency" — the reporting base-currency code cell (a currency
+#                             identifier) → text (a currency code, like `Currency`).
+CVA_FRTB_DATE_TYPES = ("SpecifyDate",)
+CVA_FRTB_TEXT_TYPES = ("ReportingBaseCurrency",)
+
 # SARB `Number (n,2)` complexTypes (BA 210 / BA 220) are decimal cells. BA 220's
 # `Number (14,2)` carries an explicit "Currency data type" XSD documentation
 # string and reports rand-and-cents monetary amounts (historic cost, market
@@ -1209,9 +1493,9 @@ def value_type_for(xsd_type: str) -> str:
         return "ratio"
     if t == "Integer":
         return "count"
-    if t in ("Date", SECGOV_DATE_TYPE):
+    if t in ("Date", SECGOV_DATE_TYPE) or t in CVA_FRTB_DATE_TYPES:
         return "date"
-    if t in ("Text", "IDType", "Currency"):
+    if t in ("Text", "IDType", "Currency") or t in CVA_FRTB_TEXT_TYPES:
         return "text"
     if (
         t
@@ -1235,6 +1519,8 @@ def value_type_for(xsd_type: str) -> str:
         )
         or t in CREDIT_ENUM_TYPES
         or t in SECGOV_ENUM_TYPES
+        or t in STATISTICAL_ENUM_TYPES
+        or t in CVA_FRTB_ENUM_TYPES
     ):
         return "enum"
     # Any unmapped leaf type is surfaced loudly rather than silently coerced
@@ -2412,6 +2698,235 @@ def securitisation_product_attributes(
     return out
 
 
+# ===========================================================================
+# STATISTICAL + SUPPLEMENTARY FAMILIES — Phase C batch 8 (BA 920 / BA 930 /
+# BA 94x + CVA / FRTB).
+# ===========================================================================
+#
+# THE FUTURE PRODUCTS (honest, not yet approved). Each carries its requirements
+# on a FUTURE, UNAPPROVED product id so the live FX product
+# (`prd:bank:fx:otc-vanilla`) is NEVER matched (the inverse index matches on
+# EXACT product-id equality). Because these products are not approved, every cell
+# carrying a required prd: ref MUST be licence-day-data (the recon validates prd:
+# refs against the approved set only for `sourced` cells) — also honest: there is
+# no real instalment-sale / derivative / trading book pre-licence-day.
+#   BA 920  → prd:bank:credit:instalment-sale-lease   (instalment-sale / leasing)
+#   BA 930  → none  (weighted-average rates = AGGREGATE statistic, ~0 attrs)
+#   BA 94x  → none  (locational statistics = AGGREGATE statistic, ~0 attrs)
+#   CVA     → prd:bank:derivative:otc                  (derivative counterparty)
+#   FRTB    → prd:bank:trading:frtb-instrument         (trading-book instrument)
+#
+# PRECISION + HONESTY: an attribute attaches to a cell ONLY where the cell's
+# regulatory MEANING genuinely keys off it, `required:true` ONLY where the cell
+# REPORTS the attribute as its own dimension; monetary aggregates merely SLICED by
+# it carry it `required:false`. No bulk-marking, no fabrication. The aggregate /
+# entity-level statistical returns (BA 930, BA 94x) carry NONE (a portfolio
+# weighted-average rate / a country-level total is not a product-static menu
+# pick).
+
+# BA 920 instalment-sale / leasing product attributes.
+BA920_PRODUCT_ID = "prd:bank:credit:instalment-sale-lease"
+BA920_ATTRS = {
+    "financeType": (
+        "the finance type of the credit agreement — instalment-sale credit, "
+        "financial lease, or suspensive sale. Determines which BA 920 finance-type "
+        "block (instalment-sale credit / financial leases / non-financial assets) "
+        "the exposure reports in. (SARB economic-statistics BA 920; National Credit "
+        "Act 34 of 2005 instalment-agreement / lease definitions.)"
+    ),
+    "financedAssetClass": (
+        "the class of the financed asset — vehicles, air transport, sea and water "
+        "transport, agricultural machinery, general / industrial / commercial "
+        "equipment, ICT, or other goods. Determines which BA 920 asset-class row the "
+        "exposure reports in. (SARB economic-statistics BA 920 asset-class schedule.)"
+    ),
+}
+
+
+def ba920_product_attributes(col_label: str, row_label: str, xsd_type: str):
+    """BA 920 product attributes (instalment-sale / leasing). Returns
+    (attr, required) tuples. Precise + honest — only where the cell genuinely
+    keys off the attribute."""
+    out = []
+    seen = set()
+    text = f"{row_label or ''} {col_label or ''}".lower()
+
+    def add(attr: str, required: bool) -> None:
+        key = (attr, required)
+        if key in seen:
+            return
+        seen.add(key)
+        out.append((attr, required))
+
+    # The finance-type blocks DEFINE the finance type. A row naming the finance
+    # type reports that dimension → the finance-type axis. The monetary cells under
+    # it are SLICED by it (required:false — the aggregate folds regardless).
+    if any(
+        t in text
+        for t in (
+            "instalment sale credit",
+            "instalment-sale credit",
+            "financial leases",
+            "suspensive sale",
+            "non-financial assets",
+            "non financial assets",
+        )
+    ):
+        add("financeType", False)
+    # The asset-class rows slice each finance-type block by financed asset class.
+    if any(
+        t in text
+        for t in (
+            "vehicles",
+            "air transport",
+            "sea and water",
+            "agricultural",
+            "general appliances",
+            "industrial m",
+            "commercial e",
+            "ict and",
+            "other goods",
+        )
+    ):
+        add("financedAssetClass", False)
+    return out
+
+
+# CVA (Credit Valuation Adjustment) product attributes — derivative counterparty.
+CVA_PRODUCT_ID = "prd:bank:derivative:otc"
+CVA_ATTRS = {
+    "derivativeType": (
+        "the derivative / SFT instrument type that creates the counterparty CVA "
+        "exposure (interest-rate / FX / equity / commodity / credit derivative; "
+        "securities-financing transaction). Determines the CVA risk class the "
+        "exposure reports in. (Basel MAR50 CVA risk framework; SARB reg 23(15)–(19).)"
+    ),
+    "cvaApproach": (
+        "the CVA capital approach applicable to the exposure — BA-CVA (basic / "
+        "reduced) or SA-CVA. Selects the CVA capital sub-form. (Basel MAR50.)"
+    ),
+    "counterpartyCreditQuality": (
+        "the counterparty / issuer credit-quality bucket (the CVA risk-weight axis "
+        "by counterparty credit spread / rating). (Basel MAR50 BA-CVA / SA-CVA risk "
+        "weights by counterparty credit quality.)"
+    ),
+}
+
+
+def cva_product_attributes(col_label: str, row_label: str, xsd_type: str):
+    """CVA product attributes. Returns (attr, required) tuples."""
+    out = []
+    seen = set()
+    text = f"{row_label or ''} {col_label or ''}".lower()
+
+    def add(attr: str, required: bool) -> None:
+        key = (attr, required)
+        if key in seen:
+            return
+        seen.add(key)
+        out.append((attr, required))
+
+    # The CVA-approach cell REPORTS the approach → required:true.
+    if xsd_type == "CVAApproach" or "which cva approach" in text:
+        add("cvaApproach", True)
+    # The risk-class rows (interest rates / FX / equity / commodity / credit spread)
+    # are the derivative-type axis → the CVA-charge aggregate is sliced by it.
+    if any(
+        t in text
+        for t in (
+            "interest rates",
+            "foreign exchange",
+            "reference credit spread",
+            "counterparty credit spread",
+            "equity",
+            "commodity",
+        )
+    ):
+        add("derivativeType", False)
+    return out
+
+
+# FRTB (Fundamental Review of the Trading Book) product attributes — trading book.
+FRTB_PRODUCT_ID = "prd:bank:trading:frtb-instrument"
+FRTB_ATTRS = {
+    "tradingBookDesignation": (
+        "whether the instrument is designated to the trading book (in scope of the "
+        "FRTB market-risk framework) vs the banking book. Determines whether the "
+        "instrument reports on FRTB at all. (Basel MAR20–MAR23 trading-book boundary; "
+        "SARB reg 28.)"
+    ),
+    "frtbRiskClass": (
+        "the FRTB standardised-approach risk class of the instrument — GIRR "
+        "(general interest-rate risk), CSR (credit-spread risk, securitisation / "
+        "non-securitisation), equity, commodity, or FX. Determines which "
+        "sensitivities-based-method risk-class bucket the exposure reports in. "
+        "(Basel MAR21 sensitivities-based method risk classes.)"
+    ),
+    "marketRiskApproach": (
+        "the market-risk capitalisation approach applicable to the desk — the "
+        "standardised approach (sensitivities-based method / default-risk charge / "
+        "residual-risk add-on) or the internal-models approach (subject to PA "
+        "approval). Selects the FRTB SA vs IMA sub-form. (Basel MAR21 / MAR30.)"
+    ),
+}
+
+
+def frtb_product_attributes(col_label: str, row_label: str, xsd_type: str):
+    """FRTB product attributes. Returns (attr, required) tuples."""
+    out = []
+    seen = set()
+    text = f"{row_label or ''} {col_label or ''}".lower()
+
+    def add(attr: str, required: bool) -> None:
+        key = (attr, required)
+        if key in seen:
+            return
+        seen.add(key)
+        out.append((attr, required))
+
+    # The trading-desk metadata cells (FRTB_FM) REPORT the trading-book scope /
+    # allocation / capitalisation approach → required:true on the cell that
+    # DEFINES the dimension.
+    if xsd_type == "RiskScope" or "risk scope" in text:
+        add("tradingBookDesignation", True)
+    if xsd_type == "AllocationStructure" or "allocation structure" in text:
+        add("tradingBookDesignation", True)
+    if xsd_type == "MRCapitalisationApproach" or "internal model approva" in text:
+        add("marketRiskApproach", True)
+    # The risk-class rows (GIRR / CSR / equity / commodity / FX) slice the SA
+    # sensitivities-based-method charge → the charge aggregate is sliced by it.
+    if any(
+        t in text
+        for t in (
+            "interest rate risk",
+            "girr",
+            "credit spread",
+            "csr",
+            "equity risk",
+            "equity position",
+            "equity specific",
+            "equity general",
+            "commodity risk",
+            "commodity position",
+            "foreign exchange risk",
+        )
+    ):
+        add("frtbRiskClass", False)
+    return out
+
+
+def statistical_supplementary_subform_context(form: str, e) -> str:
+    """The sub-form context string for a BA 94x / CVA / FRTB cell — folded into
+    the cell label / regulatoryDefinition so the multi-sub-form identity is kept
+    (the framework cellRef has no sub-form axis, like BA 900 _1.._7). Returns the
+    `formName` + a trimmed `formDescription` (deduplicated)."""
+    fn = (e.get("formName") or "").strip()
+    fd = (e.get("formDescription") or "").strip()
+    if fn and fd and fd.lower() != fn.lower():
+        return f"{fn} — {fd}"
+    return fn or fd
+
+
 # ---------------------------------------------------------------------------
 # xlsx Elements-sheet extraction — IDENTICAL column layout across all BA forms
 # (verified BA100/BA110/BA120/BA600/BA610). Reused from gen-ba100-contract.py.
@@ -2480,7 +2995,13 @@ def _extract_elements(schema_zip: str):
             continue
         cells = rows[rn]
         rec = {k: cells.get(cn) for cn, k in COL.items()}
-        if rec.get("name") and re.match(r"^BA\d{8}$", rec["name"]):
+        # A data-cell name is an 8-digit code. The BA-numbered forms carry a
+        # `BA########` code; the SUPPLEMENTARY market-risk returns (CVA / FRTB)
+        # carry an `MR########` code (market-risk element namespace). Both are
+        # leaf data cells — accept either prefix (Phase C batch 8). The recon's
+        # independent XSD oracle accepts the SAME two prefixes, so the cell
+        # universe stays in agreement.
+        if rec.get("name") and re.match(r"^(BA|MR)\d{8}$", rec["name"]):
             out.append(rec)
     return out
 
@@ -2593,6 +3114,32 @@ def currency_dimension_for(form: str, col_label: str, row_label: str, form_cfg) 
         ):
             return "by-currency"
         return "functional"
+    # Statistical + supplementary family (BA 920 / BA 930 / BA 94x + CVA / FRTB —
+    # Phase C batch 8). BA 94x Locational Banking Statistics is intrinsically
+    # MULTI-CURRENCY — it reports claims / liabilities BY currency (Rand, foreign,
+    # US-dollar etc.) and by counterparty country; a cell whose row/column names a
+    # currency axis is by-currency. FRTB's FX risk class reports by-currency. The
+    # default form-level cell is functional (ZAR reporting currency by config,
+    # NEVER a literal — P5: the dimension carries the axis, not "ZAR").
+    if form in ("BA920", "BA930", "BA94x", "CVA", "FRTB"):
+        if any(
+            k in text
+            for k in (
+                "foreign currency",
+                "foreign-currency",
+                "by currency",
+                "per currency",
+                "currency analysis",
+                "denominated",
+                "all currencies",  # BA 94x "All currencies, ..." columns name the currency axis
+                "rand",
+                "us dollar",
+                "us-dollar",
+                "foreign exchange",  # FRTB FX risk class is reported per-currency
+            )
+        ):
+            return "by-currency"
+        return "functional"
     if form == "BA610":
         if any(k in text for k in ("foreign currency", "foreign-currency", "per currency",
                                    "by currency", "currency analysis", "denominated")):
@@ -2609,7 +3156,7 @@ def currency_dimension_for(form: str, col_label: str, row_label: str, form_cfg) 
     return "functional"
 
 
-def build_cell(form: str, form_cfg, e):
+def build_cell(form: str, form_cfg, e, shared_codes=frozenset()):
     code = e["name"]
     row = e.get("rowNumber")
     col = e.get("columnNumber")
@@ -2633,6 +3180,31 @@ def build_cell(form: str, form_cfg, e):
     calc = e.get("calculatedValue")
     calcdef = e.get("calculationDefinition")
 
+    # MULTI-SUB-FORM IDENTITY (BA 94x / CVA / FRTB — Phase C batch 8). These forms
+    # have many sub-forms (BA 941–944 each _1.._8; FRTB FM / SSA* / SA* / IMA*),
+    # and a cell's row/column labels are often empty or shared across sub-forms —
+    # the only distinguishing identity beyond the unique xsdElement code is the
+    # SUB-FORM. The framework cellRef has no sub-form axis (like BA 900 _1.._7), so
+    # the sub-form is folded into the cell's label + regulatoryDefinition so the
+    # meaning is never lost. (BA 920 / BA 930 are single-sub-form; the helper
+    # returns the bare form name there, which is suppressed below.)
+    subform_ctx = ""
+    if form_cfg.get("statistical_family") or form_cfg.get("cva_frtb_family"):
+        if code in shared_codes:
+            # A code REUSED across multiple sub-forms is the SAME XSD leaf element
+            # shared across the series (e.g. the BA 94x country-code dimension is
+            # one XSD element referenced by every BA 941–944 sub-form). The
+            # framework keys on the XSD element, so the contract carries it ONCE
+            # (deduplicated in generate()); its context names the shared series,
+            # not a single sub-form, so the meaning is honest.
+            subform_ctx = "shared across the BA 941–944 series"
+        else:
+            ctx = statistical_supplementary_subform_context(form, e)
+            # Suppress when the sub-form context is just the bare form key (single-
+            # sub-form forms) so BA 920 / BA 930 labels stay clean.
+            if ctx and ctx.upper() not in (form.upper(), form_cfg["name"].upper()):
+                subform_ctx = ctx
+
     if not regdef:
         regdef = (
             f"{rowlabel} — {collabel} column.".strip(" —")
@@ -2642,10 +3214,14 @@ def build_cell(form: str, form_cfg, e):
             " (No XSD documentation string; meaning per the form line-item structure "
             "and the column dimension.)"
         )
+    if subform_ctx:
+        regdef = f"[{subform_ctx}] {regdef}"
 
     value_type = value_type_for(xsd_type)
     unit = unit_for(value_type, xsd_type)
     label = f"{rowlabel} / {collabel}".strip(" /") or code
+    if subform_ctx:
+        label = f"{subform_ctx} — {label}".strip(" —") or code
 
     # --- derivation ---
     if calc and calcdef:
@@ -2856,6 +3432,64 @@ def build_cell(form: str, form_cfg, e):
                 }
             )
 
+    # --- STATISTICAL product-attribute requirements (Phase C batch 8: BA 920) ---
+    # BA 920 (instalment-sale / leasing) cells key off the finance-type / financed-
+    # asset-class axes a future instalment-sale / leasing product must capture. The
+    # AGGREGATE statistical returns (BA 930 weighted-average rates, BA 94x
+    # locational statistics) carry NONE — their config sets
+    # product_attr_product_id=None and the family yields no attrs. The future
+    # instalment-sale / leasing product is unapproved → every such cell is licence-
+    # day-data (the form is a blanket licence-day form). See ba920_product_attributes.
+    if form_cfg.get("statistical_family") and form_cfg.get("product_attr_product_id"):
+        pid = form_cfg["product_attr_product_id"]
+        for attr, required in ba920_product_attributes(collabel, rowlabel, xsd_type):
+            data_reqs.append(
+                {
+                    "sourceKind": "product-attribute",
+                    "ref": f"{pid}#{attr}",
+                    "description": (
+                        f"An instalment-sale / leasing product feeding {label} must carry its "
+                        f"{attr}: {BA920_ATTRS[attr]}"
+                    ),
+                    "required": required,
+                }
+            )
+
+    # --- SUPPLEMENTARY product-attribute requirements (Phase C batch 8: CVA / FRTB) ---
+    # CVA cells key off the derivative-type / CVA-approach / counterparty-credit-
+    # quality axes a future OTC-derivative product must capture; FRTB cells key off
+    # the trading-book-designation / FRTB-risk-class / market-risk-approach axes a
+    # future trading-book product must capture. Both future products are unapproved
+    # (the live FX product is NOT matched — exact product-id equality), so every
+    # such cell is licence-day-data. `required:true` ONLY where the cell REPORTS the
+    # attribute as its own dimension; monetary aggregates SLICED by it → required:false.
+    if form_cfg.get("cva_frtb_family") == "cva":
+        for attr, required in cva_product_attributes(collabel, rowlabel, xsd_type):
+            data_reqs.append(
+                {
+                    "sourceKind": "product-attribute",
+                    "ref": f"{CVA_PRODUCT_ID}#{attr}",
+                    "description": (
+                        f"A derivative product feeding {label} must carry its "
+                        f"{attr}: {CVA_ATTRS[attr]}"
+                    ),
+                    "required": required,
+                }
+            )
+    elif form_cfg.get("cva_frtb_family") == "frtb":
+        for attr, required in frtb_product_attributes(collabel, rowlabel, xsd_type):
+            data_reqs.append(
+                {
+                    "sourceKind": "product-attribute",
+                    "ref": f"{FRTB_PRODUCT_ID}#{attr}",
+                    "description": (
+                        f"A trading-book product feeding {label} must carry its "
+                        f"{attr}: {FRTB_ATTRS[attr]}"
+                    ),
+                    "required": required,
+                }
+            )
+
     # --- currency dimension (P5) ---
     currency_dim = None
     if value_type == "money":
@@ -2959,7 +3593,27 @@ def generate(form: str):
             f"FATAL: extracted 0 BA-code leaf cells from {form} — STUB or schema-shape change "
             f"(do not fabricate)."
         )
-    cells = [build_cell(form, form_cfg, e) for e in els]
+    # MULTI-SUB-FORM DEDUPLICATION (BA 94x — Phase C batch 8). A multi-sub-form
+    # statistical workbook can reference the SAME XSD leaf element from MULTIPLE
+    # sub-forms (e.g. the BA 94x country-code dimension `BA12061221` is one XSD
+    # element shared across every BA 941–944 sub-form). The framework keys a cell
+    # by its XSD element (the independent XSD oracle the recon re-extracts yields
+    # each element ONCE), so the contract carries each leaf ONCE. We dedupe by
+    # `name` keeping the FIRST Elements-sheet occurrence; the shared-code set marks
+    # such codes so their label/regdef names the shared series, not a single sub-
+    # form (build_cell handles that). This is NOT hand-omission: every distinct XSD
+    # leaf still has exactly one entry; the recon completeness check (one contract
+    # entry per XSD leaf code) asserts it. The single-sub-form forms (BA 920 /
+    # BA 930) and CVA / FRTB have no reuse, so dedup is a no-op there.
+    code_counts = Counter(e["name"] for e in els)
+    shared_codes = frozenset(c for c, n in code_counts.items() if n > 1)
+    cells = []
+    seen_codes = set()
+    for e in els:
+        if e["name"] in seen_codes:
+            continue
+        seen_codes.add(e["name"])
+        cells.append(build_cell(form, form_cfg, e, shared_codes))
 
     # Provenance: name the xlsx that was actually inside the zip (version-suffixed
     # for BA 600 / BA 610 / BA 501). BA 501 is xlsx-ONLY (no XSD in the SARB Umoja
@@ -3058,10 +3712,16 @@ if __name__ == "__main__":
         # (BA 125 / BA 130). BA 501 is xlsx-only (no XSD).
         for f in ("BA500", "BA501", "BA125", "BA130"):
             generate(f)
+    elif len(sys.argv) == 2 and sys.argv[1] == "--statsupp":
+        # Phase C batch 8 — statistical (BA 920 / BA 930 / BA 94x) + supplementary
+        # (CVA / FRTB). BA 94x is multi-sub-form (BA 941–944 _1.._8); CVA / FRTB
+        # carry MR-prefix leaf codes and are built on their own identities.
+        for f in ("BA920", "BA930", "BA94x", "CVA", "FRTB"):
+            generate(f)
     else:
         raise SystemExit(
             "usage: gen-return-contract.py "
             "<BA110|BA120|BA125|BA130|BA200|BA210|BA220|BA300|BA310|BA320|BA325|BA330|BA340|"
-            "BA350|BA400|BA410|BA420|BA500|BA501|BA600|BA610|BA700|BA701|"
-            "--all|--credit|--liquidity|--market|--capital|--operational|--secgov>"
+            "BA350|BA400|BA410|BA420|BA500|BA501|BA600|BA610|BA700|BA701|BA920|BA930|BA94x|CVA|FRTB|"
+            "--all|--credit|--liquidity|--market|--capital|--operational|--secgov|--statsupp>"
         )

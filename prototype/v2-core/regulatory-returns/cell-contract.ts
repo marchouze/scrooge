@@ -86,8 +86,21 @@ export const ReturnFormSchema = z.enum([
   "BA700", // Capital Adequacy and Leverage and TLAC
   "BA701", // Regulatory vs Economic Capital
   "BA900", // Economic statistics — DI returns
-  "BA920", // Analysis of instalment-sale credit, leasing finance
+  "BA920", // Analysis of instalment-sale credit, leasing finance and selected assets
   "BA930", // Weighted-average interest rates on loans and deposits
+  // Phase C batch 8 — statistical (BA 94x) + supplementary (CVA / FRTB) returns.
+  // BA 94x is the multi-sub-form Locational Banking Statistics series (BA 941–944,
+  // each with eight sub-forms _1.._8). It is registered under ONE canonical form
+  // key `BA94x`; the sub-form identity is preserved in each cell's label /
+  // regulatoryDefinition (the framework cellRef has no sub-form axis, mirroring
+  // the BA 900 _1.._7 single-key handling). CVA / FRTB are the SUPPLEMENTARY
+  // market-risk returns whose XSD leaf cells carry the `MR########` element code
+  // (not `BA########`) — the generator + recon accept both prefixes. FRTB is the
+  // standalone Fundamental Review of the Trading Book return on its OWN identity
+  // (NOT BA 320 Market Risk, NOT BA 325 Selected Risk Exposure).
+  "BA94x", // Locational Banking Statistics (economic statistics — BA 941–944 series)
+  "CVA", // Credit Valuation Adjustment (supplementary market-risk return)
+  "FRTB", // Fundamental Review of the Trading Book (full — supplementary market-risk return)
 ]);
 export type ReturnForm = z.infer<typeof ReturnFormSchema>;
 

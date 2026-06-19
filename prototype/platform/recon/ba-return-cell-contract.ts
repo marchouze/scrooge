@@ -123,6 +123,18 @@ const KNOWN_PROJECTIONS = new Set([
   "ba501-special-purpose-institutions-fold",
   "ba125-shareholders-fold",
   "ba130-investment-restrictions-fold",
+  // Phase C batch 8 — statistical + supplementary report folds (one per form). The
+  // whole batch is licence-day-data (no real instalment-sale / leasing book, loan-
+  // deposit rates, cross-border claims, derivative counterparty book or trading
+  // book pre-licence-day), so no cell is `sourced` and these folds are not
+  // exercised by the sourced-cell check today; they are listed so the family
+  // auto-passes the moment any cell becomes sourced. FRTB's fold is the standalone
+  // FRTB market-risk fold on its own identity (NOT the BA 320 ba320-market-risk-fold).
+  "ba920-instalment-sale-leasing-fold",
+  "ba930-weighted-average-rates-fold",
+  "ba94x-locational-banking-statistics-fold",
+  "cva-capital-fold",
+  "frtb-market-risk-fold",
 ]);
 const KNOWN_REFERENCE_DATA_PREFIXES = ["legal-entity-tree", "party-register", "return-form-meta"];
 
@@ -131,19 +143,29 @@ const KNOWN_REFERENCE_DATA_PREFIXES = ["legal-entity-tree", "party-register", "r
 // ---------------------------------------------------------------------------
 
 /**
- * Parse the form's XSD inside its schema zip and return the set of TYPED
- * BA-code leaf cell codes (BAxxxxxxxx). A leaf cell is an `<xs:element
- * name="BA........">` whose complexType extends ONE of the SARB leaf base types
- * (Monetary1000, Percentage*, Numeric, Integer, Text, IDType, Currency, and the
- * enum types). The XSD is extracted via the system `unzip -p` (no JS zip
- * dependency) and scanned with a scoped regex.
+ * Parse the form's XSD inside its schema zip and return the set of TYPED leaf
+ * cell codes. A leaf cell is an `<xs:element name="<code>">` whose complexType
+ * extends ONE of the SARB leaf base types (Monetary1000, Percentage*, Numeric,
+ * Integer, Text, IDType, Currency, and the enum types). The data-cell `<code>`
+ * is an 8-digit code with one of two prefixes:
+ *   - `BA########` — the BA-numbered forms (the SARB BA-return schedule).
+ *   - `MR########` — the SUPPLEMENTARY market-risk returns (CVA / FRTB), whose
+ *     leaf cells live in the market-risk element namespace (Phase C batch 8).
+ * The XSD is extracted via the system `unzip -p` (no JS zip dependency) and
+ * scanned with a scoped regex.
  *
  * This is INDEPENDENT of the contract generator (which reads the xlsx Elements
  * sheet) so the two cannot agree by construction — completeness is a genuine
  * cross-check, not a self-certification.
  *
- * NB: the 8-digit BA-code DATA cells are matched; the 3-digit form-root list
- * elements (Tablelist/Rowlist/Collist) are NOT BA\d{8} and are excluded.
+ * NB: the 8-digit data cells are matched; the 3-digit form-root list elements
+ * (Tablelist/Rowlist/Collist) are NOT (BA|MR)\d{8} and are excluded.
+ *
+ * NB (BA 94x): the BA 94x XSD is not valid UTF-8 (a few bytes in element
+ * DESCRIPTIONS are Latin-1). `TextDecoder` (non-fatal by default) substitutes
+ * U+FFFD for those bytes; element NAMES and base types are ASCII, so the cell
+ * universe extracts intact — the substitution touches only description prose the
+ * regex does not capture.
  */
 export function xsdCellCodes(entry: ReturnContractRegistryEntry): Set<string> {
   if (entry.xsdName === null) {
@@ -160,7 +182,7 @@ export function xsdCellCodes(entry: ReturnContractRegistryEntry): Set<string> {
     );
   }
   const xsd = new TextDecoder().decode(proc.stdout);
-  // Every leaf cell is an <xs:element name="BA00000000"> whose complexType
+  // Every leaf cell is an <xs:element name="(BA|MR)00000000"> whose complexType
   // extends one of the SARB leaf base types. Match the element name immediately
   // preceding an <xs:extension base="..."> (tolerating an optional annotation
   // block between them). The base-type capture is asserted against the known
@@ -168,7 +190,7 @@ export function xsdCellCodes(entry: ReturnContractRegistryEntry): Set<string> {
   // skipped (Charter cmd 5 — no silent deferral).
   const codes = new Set<string>();
   const re =
-    /<xs:element\b[^>]*\bname="(BA\d{8})"[^>]*>\s*(?:<xs:annotation>.*?<\/xs:annotation>)?\s*<xs:complexType>\s*<xs:complexContent[^>]*>\s*<xs:extension base="([^"]+)">/gs;
+    /<xs:element\b[^>]*\bname="((?:BA|MR)\d{8})"[^>]*>\s*(?:<xs:annotation>.*?<\/xs:annotation>)?\s*<xs:complexType>\s*<xs:complexContent[^>]*>\s*<xs:extension base="([^"]+)">/gs;
   let m: RegExpExecArray | null = re.exec(xsd);
   while (m !== null) {
     const code = m[1];
@@ -395,6 +417,32 @@ const KNOWN_LEAF_BASE_TYPES = new Set([
   // name filter excludes, so they need no entry here.
   "YesNo",
   "RiskEventType",
+  // Phase C batch 8 — statistical (BA 94x) + supplementary (CVA / FRTB) leaf types.
+  //   BA 94x (Locational Banking Statistics):
+  //     "Country_BA94"            — the ISO country code of the counterparty / claim
+  //                                 location (the locational axis) — an enum.
+  //   CVA (Credit Valuation Adjustment):
+  //     "CVAApproach"             — the CVA capital approach (BA-CVA / SA-CVA) — enum.
+  //   FRTB (Fundamental Review of the Trading Book):
+  //     "AllocationStructure"     — the trading-desk allocation structure axis — enum.
+  //     "RiskScope"               — the FRTB risk-scope axis — enum.
+  //     "MRCapitalisationApproach"— the market-risk capitalisation approach (SA/IMA) — enum.
+  //     "TrafficLightStatus"      — the IMA P&L-attribution / backtesting traffic-light — enum.
+  //     "CP_RiskRating"           — the counterparty / issuer credit-quality rating bucket — enum.
+  //     "SpecifyDate"             — a "specify date" cell (a date).
+  //     "ReportingBaseCurrency"   — the reporting base-currency code cell (a currency id).
+  //   (FRTB's "Percentage 19,9" leaf type is matched by the `Percentage` prefix in
+  //    isLeafBaseType(); its `Currency` / `Date` / `Text` / `Integer` / `Numeric` /
+  //    `YesNo` leaf types are already known above.)
+  "Country_BA94",
+  "CVAApproach",
+  "AllocationStructure",
+  "RiskScope",
+  "MRCapitalisationApproach",
+  "TrafficLightStatus",
+  "CP_RiskRating",
+  "SpecifyDate",
+  "ReportingBaseCurrency",
   // Phase C batch 7 — securitisation + governance/limits family leaf types.
   // BA 125 (shareholders) carries the domestic-vs-foreign shareholder enum; its
   // XSD name is the spreadsheetML-escaped "Foreign/Domestic". (BA 500's XSD uses
