@@ -561,8 +561,9 @@ export interface V2FxHeadroomView extends PanelMeta {
 /**
  * The V2 headroom panel derives the B3 FX net-open-position utilisation from the
  * SAME FIL FX instances the V2 risk panel (BA-320 V2) consumes — never from V1
- * `FxTradeExecuted`. The B3 LIMIT is the canonical RAS schedule row Helena
- * publishes. Honest states: `empty` (no FIL FX instruments — labelled zero),
+ * `FxTradeExecuted`. The B3 LIMIT is the canonical RAS schedule row the Chief
+ * Risk Officer seat publishes. Honest states: `empty` (no FIL FX instruments —
+ * labelled zero),
  * `no-limit` (FIL positions but no B3 RAS row — exposure shown, utilisation
  * null), or `live`.
  */
