@@ -226,10 +226,7 @@ export function xlsxCellCodes(entry: ReturnContractRegistryEntry): Set<string> {
   // Extract the xlsx (itself a zip) to a temp file so its internal parts can be
   // read with a second `unzip` pass — the schema zip → xlsx → xl/* nesting.
   const xlsxBytes = unzipMember(zipPath, entry.xlsxName);
-  const tmp = resolve(
-    REPO_ROOT,
-    `.local/recon-ba501-${process.pid}-${Date.now()}.xlsx`,
-  );
+  const tmp = resolve(REPO_ROOT, `.local/recon-ba501-${process.pid}-${Date.now()}.xlsx`);
   let codes: Set<string>;
   try {
     Bun.write(tmp, xlsxBytes);
