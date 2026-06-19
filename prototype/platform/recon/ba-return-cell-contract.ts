@@ -82,6 +82,9 @@ const KNOWN_PROJECTIONS = new Set([
   "ba200-credit-risk-fold",
   "ba210-large-exposures-fold",
   "ba220-assets-bought-in-fold",
+  // Phase C batch 3 — liquidity-family report folds (one per form).
+  "ba300-liquidity-risk-fold",
+  "ba310-min-reserve-liquid-assets-fold",
 ]);
 const KNOWN_REFERENCE_DATA_PREFIXES = ["legal-entity-tree", "party-register", "return-form-meta"];
 
@@ -172,6 +175,12 @@ const KNOWN_LEAF_BASE_TYPES = new Set([
   "AssetClass",
   "IndustryType",
   "PD_bucket",
+  // Phase C batch 3 — liquidity-family bespoke leaf types (BA 300). The XSD
+  // carries the spreadsheetML-escaped names; both are decoded above to:
+  //   "Liquidity coverage ratio (LCR)"      → the LCR ratio cell (a ratio)
+  //   "Specify concentration of deposit funding" → a free-text "specify…" cell
+  "Liquidity_x0020_coverage_x0020_ratio_x0020__x0028_LCR_x0029_",
+  "Specify_x0020_concentration_x0020_of_x0020_deposit_x0020_funding",
 ]);
 
 function isLeafBaseType(base: string): boolean {

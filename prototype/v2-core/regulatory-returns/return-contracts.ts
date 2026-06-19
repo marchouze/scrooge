@@ -107,6 +107,25 @@ export const RETURN_CONTRACT_REGISTRY: readonly ReturnContractRegistryEntry[] = 
     xsdName: "BA220_v20022026.xsd",
     schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA220.zip",
   },
+  // Phase C batch 3 — the liquidity family (BA 300 / BA 310). The first batch to
+  // carry product-attribute requirements on the LIABILITY (deposit funding-
+  // stability / category / maturity) and HQLA-asset (level / eligibility /
+  // haircut) axes, AND the first with LIVE numerator substrate (the HQLA
+  // classifier + SecurityMaster + the BA-300 LCR fold) — so HQLA / LCR-numerator
+  // cells are `sourced` while deposit-funding / NSFR / reserve cells are
+  // `licence-day-data`. BA 300's XSD is version-suffixed.
+  {
+    form: "BA300",
+    contractJsonPath: jsonPath("ba300-contract.json"),
+    xsdName: "BA300_v20260323.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA300.zip",
+  },
+  {
+    form: "BA310",
+    contractJsonPath: jsonPath("ba310-contract.json"),
+    xsdName: "BA310.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA310.zip",
+  },
 ];
 
 const cache = new Map<ReturnForm, ReturnContract>();
