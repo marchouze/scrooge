@@ -16,14 +16,19 @@
 //   - not captured and not tracked                                  → FAIL
 //
 // HONEST SCOPE (Engineering Charter cmd 3 + 5 — no green by concealment, no
-// silent deferral): only BA 100's contract is live, and a balance-sheet return
-// is mostly GL-/projection-derived. The set of PRODUCT-SPECIFIC required
-// product-attributes today is legitimately ZERO (every product owes one BARE
-// trade-level designation `tradingBookDesignation` — product-agnostic, out of
-// this gate's scope per the npa-return-data-gate boundary — plus an OPTIONAL
-// `<productId>#balanceSheetClassification`). The gate therefore passes the one
-// currently-effective product cleanly and SAYS SO in its output. The MECHANISM
-// is the deliverable; it auto-tightens the instant Phase C marks any
+// silent deferral): the binding spans EVERY authored return contract via the
+// registry (`allReturnContracts()` — BA 100 + the financial family BA 110 /
+// BA 120 / BA 600 / BA 610). The financial family is mostly GL-/projection-/
+// reference-data-derived, so it adds NO product-specific required product-
+// attribute (Phase C batch 1 deliberately does not manufacture product-
+// attribute requirements to make this gate bite — the brief). The set of
+// PRODUCT-SPECIFIC required product-attributes today therefore remains
+// legitimately ZERO (BA 100 owns one BARE trade-level designation
+// `tradingBookDesignation` — product-agnostic, out of this gate's scope per the
+// npa-return-data-gate boundary — plus an OPTIONAL
+// `<productId>#balanceSheetClassification`). The gate passes the currently-
+// effective product(s) cleanly and SAYS SO in its output. The MECHANISM is the
+// deliverable; it auto-tightens the instant any authored form marks a
 // `<productId>#attr` requirement `required: true`. The gate logs, per product,
 // how many product-specific required attributes it found so the "small today"
 // scope is transparent, never hidden.
@@ -42,9 +47,9 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { EventStore } from "@platform/event-store/store";
-import { ba100Contract } from "../../v2-core/regulatory-returns/ba100-contract";
 import type { ReturnContract } from "../../v2-core/regulatory-returns/cell-contract";
 import { returnDataObligationsForProduct } from "../../v2-core/regulatory-returns/inverse-index";
+import { allReturnContracts } from "../../v2-core/regulatory-returns/return-contracts";
 import { PRODUCT_TYPED_EVENT_TYPES } from "../event-store/event-types/product";
 import type { Event } from "../event-store/types";
 import { checkReturnDataObligations } from "../markets/products/npa-return-data-gate";
@@ -71,7 +76,7 @@ export interface RunOpts {
    * When provided, `dbPath` is ignored.
    */
   events?: Iterable<Event>;
-  /** Override the loaded return contracts for unit tests (defaults to [BA100]). */
+  /** Override the loaded return contracts for unit tests (defaults to all authored returns). */
   contracts?: readonly ReturnContract[];
 }
 
@@ -177,7 +182,7 @@ export function runOnEvents(events: Event[], contracts: readonly ReturnContract[
 }
 
 export function run(opts: RunOpts = {}): ReconResult {
-  const contracts: readonly ReturnContract[] = opts.contracts ?? [ba100Contract()];
+  const contracts: readonly ReturnContract[] = opts.contracts ?? allReturnContracts();
 
   if (opts.events !== undefined) {
     return runOnEvents([...opts.events], contracts);

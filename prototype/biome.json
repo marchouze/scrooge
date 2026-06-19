@@ -1,7 +1,15 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.0/schema.json",
   "files": {
-    "ignore": [".local/**", "node_modules/**", "v2-core/regulatory-returns/ba100-contract.json"]
+    "ignore": [
+      ".local/**",
+      "node_modules/**",
+      "v2-core/regulatory-returns/ba100-contract.json",
+      "v2-core/regulatory-returns/ba110-contract.json",
+      "v2-core/regulatory-returns/ba120-contract.json",
+      "v2-core/regulatory-returns/ba600-contract.json",
+      "v2-core/regulatory-returns/ba610-contract.json"
+    ]
   },
   "organizeImports": { "enabled": true },
   "linter": {
