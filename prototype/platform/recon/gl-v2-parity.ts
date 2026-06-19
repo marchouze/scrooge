@@ -156,10 +156,27 @@ export function run(): ReconResult {
       result.asserted += 1;
       if (!v1Map.has(key)) {
         v2OnlyAccounts += 1;
+        // FX-fold accounts (ACC-2100-*) are a SPECIAL CASE. Under
+        // D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD the V2 FX contribution is a PURE
+        // FOLD over the primary FIL FX events (gl-projection-v2 → fx-fold), NOT
+        // stored GlPostingEmitted. Once the FX product + treatment modules are
+        // co-located into the FIL booking store (FU1, D-FX-OTC-CLOSURE-BACKLOG)
+        // the fold resolves and produces real FX legs — legitimately AHEAD of V1
+        // whenever the store carries FIL FX instances but no parallel V1
+        // SubLedgerPostingEmitted FX chain (the build-phase / CI-store norm). A
+        // V2-only FX-fold account is therefore the EXPECTED state, mirroring the
+        // V1-only advisory below — NOT a "V2 posts where it shouldn't" regression.
+        // Its byte-equivalence is independently proven by the dedicated gate
+        // `recon:gl-v2-fold-equivalence-fx` (golden lifted-rule == fold, byte-for-
+        // byte). So FX-fold V2-only accounts are advisory `warn`; every OTHER
+        // (non-fold) V2-only account stays `fail` — a genuine engine regression.
+        const isFxFoldAccount = key.startsWith("ACC-2100-");
         violations.push({
           subject: `gl-v2-parity:v2-only:${key}`,
-          message: `V2 posted to account/currency "${key}" but V1 has no posting there. V2 should not post to accounts outside V1's coverage at Phase 3A scope. Inspect gl-posting-engine-v2.ts to verify account code resolution. Authority: D-V1-REMOVAL-PHASE-3A.`,
-          severity: "fail",
+          message: isFxFoldAccount
+            ? `V2 FX-fold account/currency "${key}" has no V1 SubLedger posting. EXPECTED under D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD: the V2 FX contribution is a pure fold over FIL FX events and runs ahead of V1 when the store has no parallel V1 FX SubLedger chain (build-phase / CI-store norm). Byte-equivalence is proven by recon:gl-v2-fold-equivalence-fx. Advisory, not a regression. Authority: D-V1-REMOVAL-PHASE-3A; D-FX-OTC-CLOSURE-BACKLOG.`
+            : `V2 posted to account/currency "${key}" but V1 has no posting there. V2 should not post to accounts outside V1's coverage at Phase 3A scope. Inspect gl-posting-engine-v2.ts to verify account code resolution. Authority: D-V1-REMOVAL-PHASE-3A.`,
+          severity: isFxFoldAccount ? "warn" : "fail",
         });
       } else {
         const v1Minor = v1Map.get(key) ?? 0;

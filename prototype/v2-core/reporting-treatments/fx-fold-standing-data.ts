@@ -30,8 +30,19 @@
 //   Principle 2.
 // Author: Bea (Financial Accountant, finance).
 
-import type { V2ProductRegistered } from "../banking/events";
-import { FX_TREATMENT_MODULE_IDS, FX_TREATMENT_MODULES } from "./fx-modules";
+import type { z } from "zod";
+import type { v2ProductRegisteredSchema } from "../banking/events";
+import { FX_TREATMENT_MODULES, FX_TREATMENT_MODULE_IDS } from "./fx-modules";
+
+/**
+ * The DECLARATION INPUT shape — `z.input` of the product schema, i.e. the
+ * plain-string form BEFORE the schema's brand transforms (`filTypeScopes` is
+ * `string[]` here, branded to `FilScopePattern[]` only on parse). Authoring the
+ * canonical product at the input type keeps it a plain literal; the seeds
+ * re-parse it fail-closed (via `makeV2ProductRegistered`), producing the branded
+ * values. Mirrors `FxTreatmentModuleInput` in `./fx-modules`.
+ */
+export type FxProductInput = z.input<typeof v2ProductRegisteredSchema>;
 
 /**
  * The FX OTC Vanilla product registration — the single product the FX modular
@@ -43,7 +54,7 @@ import { FX_TREATMENT_MODULE_IDS, FX_TREATMENT_MODULES } from "./fx-modules";
  * together. The product literal MUST match the FX entry in the v2-anchor seed's
  * `PRODUCTS` array byte-for-byte (the anchor seed imports THIS constant).
  */
-export const FX_OTC_VANILLA_PRODUCT: V2ProductRegistered = {
+export const FX_OTC_VANILLA_PRODUCT: FxProductInput = {
   kind: "V2ProductRegistered",
   productId: "v2:prd:bank:fx:otc-vanilla",
   name: "FX OTC Vanilla (spot + forward)",

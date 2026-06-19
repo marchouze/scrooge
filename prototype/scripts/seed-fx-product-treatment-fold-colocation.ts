@@ -42,11 +42,11 @@
 //   Charter (fail-closed; honesty; source-don't-hardcode). Principle 1; Principle 2.
 // Author: Bea (Financial Accountant, finance).
 
+import { eventStore } from "../platform/composition";
 import { makeReportingTreatmentDeclared } from "../platform/event-store/event-types/reporting-treatments";
 import { makeV2ProductRegistered } from "../platform/event-store/event-types/v2-banking";
 import { productionTag } from "../platform/event-store/provenance";
 import type { Actor, Event } from "../platform/event-store/types";
-import { eventStore } from "../platform/composition";
 import {
   FX_OTC_VANILLA_PRODUCT,
   FX_TREATMENT_MODULES,
