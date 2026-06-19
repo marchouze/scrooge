@@ -135,11 +135,23 @@ export function resolveProductTreatments(
 // ---------------------------------------------------------------------------
 
 /**
- * The minimal slice of a FIL instance this resolver reads — its originating v1
- * event reference (Principle 1 lineage). Structurally compatible with
- * `FilInstanceRow.originatingEvent` (`v2-core/fil-instances/projection.ts`).
+ * The minimal slice of a FIL instance this resolver reads.
+ *
+ * - `productId` (PREFERRED, S0d): the booking-time product binding stamped on the
+ *   FIL instance's economic terms (`FilEconomicTerms.productId`). When present the
+ *   resolver binds DIRECTLY to this product — the instance carries its own
+ *   determination, no reach-back required. This is the D-ACCT-MODULAR-PRODUCT-
+ *   COMPOSED-FOLD steady-state path.
+ * - `originatingEvent` (LEGACY fallback): the originating v1 trade event reference
+ *   (Principle 1 lineage). When no `productId` is bound on the instance, the
+ *   resolver reads `productId` off the originating trade event's payload — the
+ *   pre-S0d optional-read path, retained for un-migrated instances and the
+ *   trade-event-carried-productId contract. Structurally compatible with
+ *   `FilInstanceRow.originatingEvent` (`v2-core/fil-instances/projection.ts`).
  */
 export interface InstanceTreatmentInput {
+  /** Booking-time product binding off the FIL instance (S0d) — preferred. */
+  readonly productId?: string;
   readonly originatingEvent: {
     readonly eventType: string;
     readonly eventId: string;
@@ -202,23 +214,37 @@ export interface InstanceTreatmentUnresolved {
 export type InstanceTreatmentResolution = InstanceTreatmentResolved | InstanceTreatmentUnresolved;
 
 /**
- * Resolve a FIL instance's reporting treatment via:
- *   instance.originatingEvent → originating trade event → trade.productId →
- *   product → resolveProductTreatments.
+ * Resolve a FIL instance's reporting treatment.
  *
- * The trade `productId` field does NOT exist on trade events yet — adding it
- * (and the booking-time NPA gate) is a DEFERRED slice (S0d). This resolver only
- * implements the OPTIONAL-READ path: it reads `productId` off the originating
- * trade event's payload IF present; if absent (the build-phase norm today) it
- * returns `{ resolved: false, reason: "no-product-binding" }` — never a silent
- * default. The originating event being missing, or the bound product not being
- * registered, are likewise explicit fail-closed reasons.
+ * Two binding paths, preferred order:
+ *
+ *   1. PREFERRED — booking-time instance binding (S0d): if the instance carries a
+ *      `productId` (stamped on `FilEconomicTerms.productId` at booking, NPA-gated),
+ *      bind directly to that product. No originating-event reach-back is needed —
+ *      the instance carries its own determination.
+ *
+ *   2. LEGACY fallback — originating-trade read: when the instance has no bound
+ *      `productId` (un-migrated / pre-S0d), read `productId` off the originating
+ *      trade event's payload IF present.
+ *
+ * In BOTH paths, an absent product binding returns
+ * `{ resolved: false, reason: "no-product-binding" }` — never a silent default
+ * (Engineering Charter cmd 2). The originating event being missing (only reached
+ * in the legacy path), or the bound product not being registered, are likewise
+ * explicit fail-closed reasons.
  */
 export function resolveInstanceTreatment(
   instance: InstanceTreatmentInput,
   eventStore: TreatmentEventLookup,
   treatmentRegistry: ReportingTreatmentRegister,
 ): InstanceTreatmentResolution {
+  // Path 1 — PREFERRED: the instance carries its own booking-time product binding
+  // (S0d). Bind directly; the originating trade event need not even be reachable.
+  if (typeof instance.productId === "string" && instance.productId.length > 0) {
+    return resolveBoundProduct(instance.productId, eventStore, treatmentRegistry, "instance-bound");
+  }
+
+  // Path 2 — LEGACY: read productId off the originating trade event.
   const { eventType, eventId } = instance.originatingEvent;
 
   // Locate the originating trade event by id within its type stream.
@@ -237,26 +263,46 @@ export function resolveInstanceTreatment(
     };
   }
 
-  // The DEFERRED `productId` field (S0d). Read it off the trade payload IF
-  // present; fail-closed if absent — no default product, no default treatment.
+  // The trade-carried `productId` (legacy optional-read path). Read it off the
+  // trade payload IF present; fail-closed if absent — no default product, no
+  // default treatment.
   const productIdRaw = originating.payload.productId;
   if (typeof productIdRaw !== "string" || productIdRaw.length === 0) {
     return {
       resolved: false,
       reason: "no-product-binding",
-      detail: `originating event ${eventType}#${eventId} carries no productId (S0d deferred — booking-time product binding not yet wired)`,
+      detail: `instance has no booking-time productId and originating event ${eventType}#${eventId} carries no productId either`,
     };
   }
 
-  const product = findProductById(productIdRaw, eventStore);
+  return resolveBoundProduct(
+    productIdRaw,
+    eventStore,
+    treatmentRegistry,
+    `trade ${eventType}#${eventId}`,
+  );
+}
+
+/**
+ * Resolve a bound `productId` to its composed treatment, fail-closed if the
+ * product is not registered. Shared by both binding paths above. `source` names
+ * where the binding came from (for the fail-closed detail string).
+ */
+function resolveBoundProduct(
+  productId: string,
+  eventStore: TreatmentEventLookup,
+  treatmentRegistry: ReportingTreatmentRegister,
+  source: string,
+): InstanceTreatmentResolution {
+  const product = findProductById(productId, eventStore);
   if (product === undefined) {
     return {
       resolved: false,
       reason: "product-not-registered",
-      detail: `trade-bound product ${productIdRaw} has no V2ProductRegistered event`,
+      detail: `${source}-bound product ${productId} has no V2ProductRegistered event`,
     };
   }
 
   const composed = resolveProductTreatments(product, treatmentRegistry);
-  return { resolved: true, productId: productIdRaw, ...composed };
+  return { resolved: true, productId, ...composed };
 }
