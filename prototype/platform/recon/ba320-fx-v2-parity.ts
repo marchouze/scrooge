@@ -1,36 +1,50 @@
 // platform/recon/ba320-fx-v2-parity.ts
 //
-// recon:ba320-fx-v2-parity — ADVISORY parity gate for the Phase 3e V2 BA-320 FX engine.
+// recon:ba320-fx-v2-parity — V2 BA-320 FX parity gate.
 //
-// STATUS: PHASE 3E — ADVISORY (ok: true even with warn-severity violations).
+// STATUS: ENFORCING on the legs provable on the clean store; DATA-DEPENDENT legs
+// stay honest (advisory until a populated FX book + production rates exist).
+// Flipped advisory→enforcing per D-FX-OTC-CLOSURE-BACKLOG (Phase B4) +
+// D-BANK-WIDE-V2-MIGRATION.
 //
 // This gate compares the V1 BA-320 FX section (derived from FxTradeExecuted +
 // TradeMatured via fxPositionCalculator) against the V2 BA-320 FX section
 // (derived from FilInstrumentCreated + FilInstrumentTerminated via computeBA320V2).
 //
-// ## Expected outcome at Phase 3e
+// ## ENFORCING legs (clean-store-provable construction conditions → FAIL)
 //
-// - Clean CI store: no FIL FX instruments seeded → V2 produces no-data. Advisory gap.
-// - Home store: FIL FX instances may exist from the FX valuation FIL-model builds.
-//   The V1 and V2 paths should produce comparable open positions for common instruments.
-//   Rate conversion gaps (GAP-3E-005) are advisory.
+//   (1) Parity-harness structural self-test (vacuous empty == empty) passes.
+//   (2) FilInstrumentCreated + FilInstrumentTerminated are REGISTERED and tagged
+//       `v2-parallel` — the V2 BA-320 FX derivation reads exactly these two event
+//       types, so any missing/divergent registration is a hard defect (FAIL for
+//       ANY non-`v2-parallel` status, not just `v2-replaced`).
+//   (3) Neither the V1 nor the V2 projection throws.
+//   (5b) Charge parity — when BOTH the V1 and V2 Reg 28(5) open-position charges
+//       are non-null (a populated book with production rates), they must be EQUAL.
+//       Both sides now read ONE shared rate snapshot AND ONE shared decimal-engine
+//       HALF_UP rounding rule (the precision gap is root-caused, not tolerance-
+//       loosened), so a mismatch is a GENUINE fold divergence → FAIL. On the clean
+//       store both are null ⇒ this leg is DORMANT (honest; no manufactured green).
 //
-// ## Why advisory
+// ## DATA-DEPENDENT legs (kept honest — advisory / vacuous on the clean store)
 //
-// The V1 and V2 paths are structurally different at Phase 3e:
-//   - V1: FxTradeExecuted + TradeMatured → raw trade events.
-//   - V2: FilInstrumentCreated + FilInstrumentTerminated → FIL lifecycle events.
-// Currency-by-currency position comparison is meaningful only where BOTH sources
-// have data for the same instruments. Rate-conversion gaps prevent the open-position
-// charge comparison. The gate warns without blocking.
+//   - Phase-coverage gap marker (5), per-currency position comparison (6): these
+//     are meaningful only where BOTH sources carry data for the same instruments.
+//     On the build-phase clean store there is no FX book, so they emit `warn`
+//     coverage notes and do NOT block — awaiting licence-day book data. A rate
+//     missing for a populated pair is FAIL-CLOSED (charge stays null), surfaced
+//     as `warn`, never fabricated.
 //
-// Authority: D-V1-REMOVAL-PHASE-3E (CEO-approved 2026-06-15).
+// Authority: D-FX-OTC-CLOSURE-BACKLOG (CEO-approved 2026-06-19); D-BANK-WIDE-V2-
+//   MIGRATION; D-V1-REMOVAL-PHASE-3E (CEO-approved 2026-06-15); WS-V2-AUTHORITATIVE S8.
 // Citations: Reg 28(5); BCBS D352 §718(xiii); P1-EVENTS-AS-TRUTH.
-// Author: Atlas (Substrate Architect, engineering).
+// Author: Atlas (Substrate Architect, engineering); Rohan (Market risk
+//   quantitative engineer, engineering — Phase B4 enforcing flip).
 
 import { spotObservableId } from "../../v2-core/fil-models/fx-valuation/methodology";
 import { fxPositionCalculator } from "../accounting/fx-calculators";
 import { eventStore } from "../composition";
+import { mulD, roundDecimal, toDecimal, toMinorUnits } from "../core/decimal-engine";
 import { EVENT_TYPE_REGISTRY } from "../event-store/registry/index";
 import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import { resolveMarketDataDbPath } from "../market-data/resolve-market-data-db";
@@ -126,8 +140,8 @@ export function run(opts: RunOpts = {}): ReconResult {
   } else if (filCreatedEntry.v2Status !== "v2-parallel") {
     violations.push({
       subject: "ba320-fx-v2-parity:unexpected-status:FilInstrumentCreated",
-      message: `"FilInstrumentCreated" is tagged "${filCreatedEntry.v2Status}" — expected "v2-parallel". Authority: D-FIL-FRAMEWORK-UNIFICATION.`,
-      severity: filCreatedEntry.v2Status === "v2-replaced" ? "fail" : "warn",
+      message: `"FilInstrumentCreated" is tagged "${filCreatedEntry.v2Status}" — expected "v2-parallel". This is a construction condition fully provable on the clean store; any deviation breaks the V2 BA-320 FX derivation. Authority: D-FIL-FRAMEWORK-UNIFICATION; D-FX-OTC-CLOSURE-BACKLOG.`,
+      severity: "fail",
     });
   }
 
@@ -143,8 +157,8 @@ export function run(opts: RunOpts = {}): ReconResult {
   } else if (filTerminatedEntry.v2Status !== "v2-parallel") {
     violations.push({
       subject: "ba320-fx-v2-parity:unexpected-status:FilInstrumentTerminated",
-      message: `"FilInstrumentTerminated" is tagged "${filTerminatedEntry.v2Status}" — expected "v2-parallel". Authority: D-FIL-FRAMEWORK-UNIFICATION.`,
-      severity: filTerminatedEntry.v2Status === "v2-replaced" ? "fail" : "warn",
+      message: `"FilInstrumentTerminated" is tagged "${filTerminatedEntry.v2Status}" — expected "v2-parallel". This is a construction condition fully provable on the clean store; any deviation breaks the V2 BA-320 FX derivation. Authority: D-FIL-FRAMEWORK-UNIFICATION; D-FX-OTC-CLOSURE-BACKLOG.`,
+      severity: "fail",
     });
   }
 
@@ -227,7 +241,23 @@ export function run(opts: RunOpts = {}): ReconResult {
     }
     if (ba310Rows.length > 0) {
       // Reg 28(5) / BCBS §718(xiii): 8% × max(Σ|long|, Σ|short|).
-      v1OpenPositionChargeMinor = Math.round(0.08 * Math.max(v1SumLong, v1SumShort));
+      //
+      // PRECISION GAP ROOT-CAUSE (Charter cmd 1 — fix the cause, don't loosen a
+      // tolerance): compute this with the SAME decimal-engine HALF_UP arithmetic
+      // the V2 projection (`ba320-fx-v2.ts` step 5) uses — NOT float
+      // `Math.round(0.08 * x)`. float64 `0.08 * x` for a large minor-unit `x`
+      // can round to a different last digit than `roundDecimal(x × 0.08)`, which
+      // would have produced a SPURIOUS ±1-minor charge mismatch the moment both
+      // sides carry data — masking real defects or fabricating false ones. Both
+      // paths now feed one identical rate snapshot AND one identical rounding
+      // rule, so a populated-book charge mismatch is a GENUINE fold divergence.
+      const greaterMinor = Math.max(v1SumLong, v1SumShort);
+      const chargeD = roundDecimal(
+        mulD(toDecimal(String(greaterMinor)), toDecimal("0.08")),
+        0,
+        "HALF_UP",
+      );
+      v1OpenPositionChargeMinor = Number(toMinorUnits(chargeD, 0));
     }
     result.asserted += 1;
   } catch (err) {
@@ -284,16 +314,23 @@ export function run(opts: RunOpts = {}): ReconResult {
     severity: "warn",
   });
 
-  // (5b) Charge parity (advisory) — V1 vs V2 Reg 28(5) open-position charge on
-  // the SAME rate source. PASS when either side sparse (no charge to compare);
-  // byte-clean equality required when BOTH are populated; mismatch → WARN.
+  // (5b) Charge parity (ENFORCING when both sides populated) — V1 vs V2 Reg 28(5)
+  // open-position charge. Both paths now read the SAME MarketDataStore fx-quote
+  // ticks (one shared rate snapshot) AND the SAME decimal-engine HALF_UP rounding
+  // (precision-gap root-caused above), so the only remaining cause of a mismatch
+  // is a GENUINE fold divergence (settled-trade retention, pair canonicalisation,
+  // or a currency present in one population only). This leg is DATA-DEPENDENT:
+  // it fires ONLY when BOTH charges are non-null (a populated book with
+  // production rates). On the clean build-phase store both are null, so it stays
+  // DORMANT — honest, not a manufactured green. When it does fire, a mismatch is
+  // a real defect → FAIL. Authority: D-FX-OTC-CLOSURE-BACKLOG; D-V1-REMOVAL-PHASE-3E.
   result.asserted += 1;
   if (v1OpenPositionChargeMinor !== null && v2OpenPositionChargeMinor !== null) {
     if (v1OpenPositionChargeMinor !== v2OpenPositionChargeMinor) {
       violations.push({
         subject: "ba320-fx-v2-parity:charge-mismatch",
-        message: `V1↔V2 Reg 28(5) open-position charge mismatch on the shared rate source: V1=${v1OpenPositionChargeMinor} functional-ccy minor, V2=${v2OpenPositionChargeMinor} functional-ccy minor. Both paths read the same MarketDataStore fx-quote ticks; a residual gap means the V1 fxPositionCalculator fold and the V2 FIL-instance fold disagree on the net position (e.g. settled-trade retention, pair canonicalisation, or a currency present in one population only). Advisory at Phase 3e. Authority: D-V1-REMOVAL-PHASE-3E.`,
-        severity: "warn",
+        message: `V1↔V2 Reg 28(5) open-position charge mismatch on the shared rate source + shared HALF_UP rounding: V1=${v1OpenPositionChargeMinor} functional-ccy minor, V2=${v2OpenPositionChargeMinor} functional-ccy minor. Both paths read the same MarketDataStore fx-quote ticks AND the same decimal-engine rounding, so a residual gap is a GENUINE fold divergence (e.g. settled-trade retention, pair canonicalisation, or a currency present in one population only) — NOT a precision artefact. ENFORCING. Authority: D-FX-OTC-CLOSURE-BACKLOG; D-V1-REMOVAL-PHASE-3E.`,
+        severity: "fail",
       });
     }
   }
@@ -342,14 +379,16 @@ export function run(opts: RunOpts = {}): ReconResult {
     }
   }
 
-  // ADVISORY gate: ok = true even when there are warn violations.
+  // ENFORCING on the construction conditions + populated-book charge parity:
+  // ok = false (exit 1) on ANY fail-severity violation. DATA-DEPENDENT coverage /
+  // per-currency legs stay warn (advisory) — vacuous on the clean store.
   result.violations = violations;
   result.ok = violations.every((v) => v.severity !== "fail");
 
   const failCount = violations.filter((v) => v.severity === "fail").length;
   const warnCount = violations.filter((v) => v.severity === "warn").length;
   const summary =
-    `ba320-fx-v2-parity [ADVISORY — Phase 3e]: ${failCount} fail violations, ${warnCount} warn violations. ` +
+    `ba320-fx-v2-parity [ENFORCING; data-dependent legs advisory]: ${failCount} fail violations, ${warnCount} warn violations. ` +
     `V1: ${v1CurrencyCount} ccys, ${v1OpenTradeCount} open trades. ` +
     `V2: ${v2CurrencyCount} ccys, ${v2OpenInstanceCount} open FIL instances (coverage: ${v2CoverageStatus}). ` +
     `Charge (Reg 28(5)): V1=${v1OpenPositionChargeMinor ?? "null"} vs V2=${v2OpenPositionChargeMinor ?? "null"} functional-minor (${sharedRates.size} rate pair(s)). ` +
@@ -366,7 +405,9 @@ if (import.meta.main) {
   for (const v of r.violations) {
     process.stderr.write(`[${v.severity}] ${v.subject}: ${v.message}\n`);
   }
-  const label = r.ok ? "OK (advisory — warn violations expected at Phase 3e)" : "FAIL";
+  const label = r.ok
+    ? "OK (enforcing; data-dependent legs advisory — vacuous on the clean store)"
+    : "FAIL";
   process.stdout.write(`\nrecon:${PIPELINE} ${label}\n${r.asOf}\n`);
   console.log(
     JSON.stringify({
