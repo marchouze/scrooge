@@ -98,55 +98,47 @@ export type CaptureCapabilityRow = z.infer<typeof captureCapabilityRowSchema>;
 // flips a past approval = loud test failure, see capture-capability-map.test.ts).
 // ---------------------------------------------------------------------------
 
+// Every attribute a row claims MUST be a `product-attribute` requirement that
+// some authored L2 return contract actually expresses (else the row is a
+// fabricated mapping — `recon:product-return-capture-coherence` clause (c)
+// catches it). And it must be GENUINELY product-type/treatment-determined for
+// EVERY instance (else it over-reaches — cmd 4). The intersection is small and
+// honest today: the prudential approach a product is measured under, and the
+// regulatory exposure class the standardised approach slots it into. Per-
+// instance / per-obligor attributes (counterpartyIdentity, pdEstimate,
+// lgdEstimate, industry, …) are NOT type-determined — they reach "captured" only
+// via a declaration (D), else defer, else are missing. That ceiling is the point.
 const RAW_CAPTURE_CAPABILITY_MAP: readonly CaptureCapabilityRow[] = [
-  // --- FX (fil-scope axis) ----------------------------------------------------
-  // An FX product's TYPE determines the instrument economics every FX trade
-  // carries: the notional, the currency pair, and the settlement date are
-  // intrinsic to a `fil:type:fx:*` instrument. (Conservative: we claim only the
-  // three the FX returns universally need; not e.g. forward points, which are
-  // forward/swap-variant-specific — that is a per-variant claim, deferred.)
+  // --- Regulatory approach (treatment axis, any credit/counterparty approach) -
+  // A product's `regulatoryApproach` return attribute IS the prudential approach
+  // it is measured under — the treatment pick literally determines it. So a
+  // product whose resolved prudential approach is the standardised credit-risk
+  // approach captures `regulatoryApproach` by construction, for every instance.
   {
-    id: "fx-instrument-economics",
-    axis: "fil-scope",
-    match: "fil:type:fx:*",
-    attributes: ["fxNotional", "currencyPair", "settlementDate"],
-    cites: ["D-BA-RETURN-DATA-CONTRACT", "fil:type:fx"],
-    rationale:
-      "Every FX instrument (fil:type:fx:*) carries a notional, a currency pair, and a settlement date as intrinsic type economics — the product type determines them for all instances.",
-  },
-
-  // --- Counterparty credit (SA-CCR) (treatment axis) --------------------------
-  // A product measured under SA-CCR for counterparty EAD is, by that very
-  // approach, one whose instances carry a counterparty identity and a
-  // replacement-cost / PFE / EAD decomposition — the SA-CCR method is DEFINED
-  // over those quantities. So a product whose resolved prudential approach is
-  // sa-ccr captures counterpartyId / ead / pfe by construction.
-  {
-    id: "sa-ccr-counterparty-ead",
-    axis: "treatment-prudential-approach",
-    match: "sa-ccr",
-    attributes: ["counterpartyIdentity", "ead", "pfe"],
-    cites: ["D-BA-RETURN-DATA-CONTRACT", "BCBS-SA-CCR"],
-    rationale:
-      "SA-CCR is defined over a counterparty's replacement cost and potential future exposure; a product measured under sa-ccr necessarily carries counterparty identity and the EAD/PFE decomposition for every instance.",
-  },
-
-  // --- Standardised credit risk (treatment axis) ------------------------------
-  // A product measured under the standardised credit-risk approach is, by that
-  // approach, slotted into a regulatory exposure class and carries the risk
-  // parameters the approach reads. We claim ONLY the attributes the standardised
-  // approach determines at the PRODUCT-TYPE level: the regulatory exposure
-  // class. PD/LGD are obligor/instance-level estimates (an IRB-flavoured input),
-  // NOT determined by the standardised product type — claiming them here would
-  // over-reach (cmd 4); they remain a declaration/gap concern per product.
-  {
-    id: "standardised-credit-exposure-class",
+    id: "standardised-credit-regulatory-approach",
     axis: "treatment-prudential-approach",
     match: "standardised-credit-risk",
-    attributes: ["exposureClass"],
+    attributes: ["regulatoryApproach", "exposureClass"],
     cites: ["D-BA-RETURN-DATA-CONTRACT", "BCBS-CRE-STANDARDISED"],
     rationale:
-      "The standardised credit-risk approach slots an exposure into a regulatory exposure class determined by the product type; that class is captured for every instance of such a product. PD/LGD are obligor/instance estimates, not product-type-determined, so are NOT claimed here.",
+      "The standardised credit-risk treatment determines, for every instance: (1) the product's regulatory approach (it IS that approach), and (2) the regulatory exposure class the approach slots the product type into. PD/LGD/counterpartyIdentity are obligor/instance values, NOT product-type-determined, so are deliberately NOT claimed here.",
+  },
+
+  // --- SA-CCR (treatment axis) — counterparty-EAD approach --------------------
+  // A product measured under SA-CCR is, by that very approach, measured under a
+  // named regulatory approach; `regulatoryApproach` is type-determined. The
+  // counterparty IDENTITY and EAD/PFE VALUES are per-instance (which
+  // counterparty, what exposure) — NOT product-type-determined — so are NOT
+  // claimed here (they are a declaration/gap concern), even though SA-CCR is
+  // defined over them. We claim only what the type determines for ALL instances.
+  {
+    id: "sa-ccr-regulatory-approach",
+    axis: "treatment-prudential-approach",
+    match: "sa-ccr",
+    attributes: ["regulatoryApproach"],
+    cites: ["D-BA-RETURN-DATA-CONTRACT", "BCBS-SA-CCR"],
+    rationale:
+      "A product measured under sa-ccr is measured under a named regulatory approach — `regulatoryApproach` is determined by the treatment for every instance. The counterparty identity and EAD/PFE values are per-instance, not product-type-determined, so are NOT claimed here.",
   },
 ];
 

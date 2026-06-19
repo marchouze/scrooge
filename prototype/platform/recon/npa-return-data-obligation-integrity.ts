@@ -47,12 +47,22 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { EventStore } from "@platform/event-store/store";
+import type { V2ProductRegistered } from "../../v2-core/banking/events";
 import type { ReturnContract } from "../../v2-core/regulatory-returns/cell-contract";
 import { returnDataObligationsForProduct } from "../../v2-core/regulatory-returns/inverse-index";
 import { allReturnContracts } from "../../v2-core/regulatory-returns/return-contracts";
+import {
+  EMPTY_REPORTING_TREATMENT_REGISTER,
+  type ReportingTreatmentRegister,
+  foldReportingTreatmentRegister,
+} from "../../v2-core/reporting-treatments/registry";
+import { resolveProductTreatments } from "../accounting/reporting-treatment-dispatcher";
 import { PRODUCT_TYPED_EVENT_TYPES } from "../event-store/event-types/product";
 import type { Event } from "../event-store/types";
-import { checkReturnDataObligations } from "../markets/products/npa-return-data-gate";
+import {
+  type ProductCompositionInput,
+  checkReturnDataObligations,
+} from "../markets/products/npa-return-data-gate";
 import { buildProductRegisterView } from "../projections/products/product-register";
 import { resolveEffectiveApprovals } from "./product-approval-attestation-integrity";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
@@ -89,9 +99,68 @@ export interface RunOpts {
  * the currently-effective approvals from the same list. `Event` is structurally
  * a superset of the resolver's `MinimalEvent`, so no remap/cast is needed.
  */
+/**
+ * Build the composition-join input for a v1 effective product id, fail-closed.
+ *
+ * The C path needs the product's `filTypeScopes` × resolved reporting
+ * treatments. Those live on `V2ProductRegistered` (joined to the v1 product by
+ * `v1ProductId`, or directly by `productId`). The treatments resolve against the
+ * folded reporting-treatment register.
+ *
+ * If no V2 registration is found for the product, OR its treatment picks do not
+ * fully resolve, the composition is conveyed as UNRESOLVED (empty filTypeScopes
+ * + unresolvedModuleIds carrying a sentinel), so the gate's C path derives
+ * NOTHING (Charter cmd 2/5) — the product can still pass via a valid declaration
+ * or a tracked gap, but never by an unearned derivation.
+ */
+function compositionForEffectiveProduct(
+  effectiveProductId: string,
+  v2ByV1Id: ReadonlyMap<string, V2ProductRegistered>,
+  v2ById: ReadonlyMap<string, V2ProductRegistered>,
+  treatmentRegister: ReportingTreatmentRegister,
+): ProductCompositionInput {
+  const v2 = v2ByV1Id.get(effectiveProductId) ?? v2ById.get(effectiveProductId);
+  if (v2 === undefined) {
+    // No V2 registration → composition unknown → fail-closed (derive nothing).
+    return {
+      filTypeScopes: [],
+      resolved: { regulatoryApproach: undefined, unresolvedModuleIds: ["<no-v2-registration>"] },
+    };
+  }
+  const resolved = resolveProductTreatments(v2, treatmentRegister);
+  return {
+    filTypeScopes: v2.filTypeScopes,
+    resolved: {
+      regulatoryApproach: resolved.prudential?.regulatoryApproach,
+      unresolvedModuleIds: resolved.unresolvedModuleIds,
+    },
+  };
+}
+
 export function runOnEvents(events: Event[], contracts: readonly ReturnContract[]): ReconResult {
   const result: ReconResult = emptyResult(PIPELINE);
   const violations: ReconViolation[] = [];
+
+  // Composition join surfaces: V2 product registrations (by v1ProductId AND by
+  // productId) and the reporting-treatment register folded from declarations.
+  const v2ByV1Id = new Map<string, V2ProductRegistered>();
+  const v2ById = new Map<string, V2ProductRegistered>();
+  const treatmentPayloads: unknown[] = [];
+  for (const ev of events) {
+    if (ev.type === "V2ProductRegistered") {
+      const v2 = ev.payload as unknown as V2ProductRegistered;
+      v2ById.set(v2.productId, v2);
+      if (typeof v2.v1ProductId === "string" && v2.v1ProductId.length > 0) {
+        v2ByV1Id.set(v2.v1ProductId, v2);
+      }
+    } else if (ev.type === "ReportingTreatmentDeclared") {
+      treatmentPayloads.push(ev.payload);
+    }
+  }
+  const treatmentRegister: ReportingTreatmentRegister =
+    treatmentPayloads.length > 0
+      ? foldReportingTreatmentRegister(treatmentPayloads)
+      : EMPTY_REPORTING_TREATMENT_REGISTER;
 
   // Partition the lifecycle events the resolver needs. `Event` is a structural
   // superset of the resolver's `MinimalEvent`, so these slices pass straight in.
@@ -142,7 +211,13 @@ export function runOnEvents(events: Event[], contracts: readonly ReturnContract[
     }
 
     const obligations = returnDataObligationsForProduct(productId, contracts);
-    const check = checkReturnDataObligations(row, obligations);
+    const composition = compositionForEffectiveProduct(
+      productId,
+      v2ByV1Id,
+      v2ById,
+      treatmentRegister,
+    );
+    const check = checkReturnDataObligations(row, obligations, composition);
 
     if (!check.ready) {
       violations.push({
