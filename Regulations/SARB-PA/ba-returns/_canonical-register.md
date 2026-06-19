@@ -93,9 +93,17 @@ correct form is given.
 - **`BA 325` is "Selected Risk Exposure Arising from Trading and Treasury Activities"** —
   it carries trading/treasury risk *and* an LCR summary section, but it is **not** the
   FRTB market-risk return and **not** the LCR return. Market risk proper is **BA 320**.
-- The reporting code (`ba-110-lcr.ts`, `ba-120-nsfr.ts`) and the obligations register
-  (`ORG-PR-RETURNS-*`) are numbered against the **fabricated** scheme and require a
-  replay-safe re-number to the canonical forms above — tracked under
-  `D-BA-RETURN-NUMBERING-EXCEL-CANONICAL`.
+- **Obligations register (`ORG-PR-RETURNS-*`) — REMEDIATED** under `D-BA-RETURN-DATA-CONTRACT`
+  Phase A (2026-06-19): the fabricated form-name annotations were corrected to the canonical
+  A1 names above in `Regulations/_obligations.seed.json` (+ its render), replay-safely
+  (re-fold of the seed into `ObligationAdopted` corrections; no event history mutated). See
+  the `_obligations-register.md` v1.53 changelog.
+- The **reporting code** (`ba-110-lcr.ts`, `ba-120-nsfr.ts`, etc.) is still numbered against
+  the **fabricated** scheme and requires a **replay-safe re-number** to the canonical forms
+  above. This is a **separate track owned by Bea (Accounting & financial reporting engineer)
+  / Atlas (Core banking platform architect)**, tracked under
+  `D-BA-RETURN-NUMBERING-EXCEL-CANONICAL` and carried forward under
+  `D-BA-RETURN-DATA-CONTRACT`. It does not block the reference/obligations layer (cell
+  contracts source from the XSDs, not the code).
 - The definitive XSD + Excel form set lives in `schemas/` (28 BA returns + CVA + FRTB +
   ReturnTracker), per `schemas/README.md`.
