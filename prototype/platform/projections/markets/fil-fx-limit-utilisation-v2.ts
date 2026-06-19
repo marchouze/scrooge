@@ -48,7 +48,10 @@
 // Engineering Charter: D-ENGINEERING-INTEGRITY-CHARTER.
 // Author: Atlas (Core banking platform architect, engineering).
 
-import type { RasLimitRow, RasLimitSchedulePublishedPayload } from "../../event-store/event-types/trading";
+import type {
+  RasLimitRow,
+  RasLimitSchedulePublishedPayload,
+} from "../../event-store/event-types/trading";
 import type { EventStore } from "../../event-store/store";
 import type { MarketDataStore } from "../../market-data/store";
 import { computeBA320V2 } from "../ba320-fx-v2";

@@ -388,8 +388,8 @@ import { SLA_APPROVAL_EVENT_TYPES_REGISTRY } from "./sla-approval";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
 import { V2_BANKING_EVENT_TYPES_REGISTRY } from "./v2-banking";
 import { V2_CONTROL_PLANE_EVENT_TYPES } from "./v2-control-plane";
-import { V2_FX_GATEWAY_EVENT_TYPES } from "./v2-fx-gateway";
 import { V2_EVAL_EVENT_TYPES_REGISTRY } from "./v2-eval";
+import { V2_FX_GATEWAY_EVENT_TYPES } from "./v2-fx-gateway";
 import { VALUATION_EVENT_TYPES_REGISTRY } from "./valuation";
 import { VALUATION_ADJUSTMENT_EVENT_TYPES_REGISTRY } from "./valuation-adjustment";
 

@@ -27,8 +27,8 @@ import {
   openControlPlaneStore,
 } from "../../../v2-core/control-plane/store";
 import {
-  V2_FX_ORDER_REJECTED_AT_GATEWAY_TYPE,
   type V2FxRejectionRow,
+  V2_FX_ORDER_REJECTED_AT_GATEWAY_TYPE,
   foldV2FxRejections,
 } from "../../../v2-core/fx-gateway/fold";
 
@@ -44,9 +44,7 @@ export type { V2FxRejectionRow } from "../../../v2-core/fx-gateway/fold";
 export function readV2FxRejections(dbPath?: string): V2FxRejectionRow[] {
   const store = openControlPlaneStore(dbPath ?? defaultControlPlanePath());
   try {
-    const events: CpEvent[] = [
-      ...store.replay({ type: V2_FX_ORDER_REJECTED_AT_GATEWAY_TYPE }),
-    ];
+    const events: CpEvent[] = [...store.replay({ type: V2_FX_ORDER_REJECTED_AT_GATEWAY_TYPE })];
     return foldV2FxRejections(events);
   } finally {
     store.close();

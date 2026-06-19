@@ -123,7 +123,12 @@ describe("FIL-sourced B3 FX headroom — honesty contract", () => {
   test("no-limit: FIL positions but no B3 RAS row → exposure shown, utilisation null", () => {
     const store = new EventStore(":memory:");
     const mds = new MarketDataStore(":memory:");
-    appendFxInstrument(store, { id: "FX-USD-1", foreign: "USD", direction: "long", notionalZar: "1000000.00" });
+    appendFxInstrument(store, {
+      id: "FX-USD-1",
+      foreign: "USD",
+      direction: "long",
+      notionalZar: "1000000.00",
+    });
     quote(mds, "USD", 18.5);
     // No RAS schedule published.
     const view = buildFilFxHeadroomView(store, mds, NOW);
@@ -144,8 +149,18 @@ describe("FIL-sourced B3 FX headroom — honesty contract", () => {
     const mds = new MarketDataStore(":memory:");
     // Net long 1,000,000 ZAR − short 200,000 ZAR (different currencies don't net
     // across the NOP; max-side aggregation) → exposure = max(long, short).
-    appendFxInstrument(store, { id: "FX-USD-1", foreign: "USD", direction: "long", notionalZar: "1000000.00" });
-    appendFxInstrument(store, { id: "FX-EUR-1", foreign: "EUR", direction: "short", notionalZar: "200000.00" });
+    appendFxInstrument(store, {
+      id: "FX-USD-1",
+      foreign: "USD",
+      direction: "long",
+      notionalZar: "1000000.00",
+    });
+    appendFxInstrument(store, {
+      id: "FX-EUR-1",
+      foreign: "EUR",
+      direction: "short",
+      notionalZar: "200000.00",
+    });
     quote(mds, "USD", 18.5);
     quote(mds, "EUR", 20.1);
     // Limit 2,000,000 ZAR → utilisation = 1,000,000 / 2,000,000 = 0.5 (green).
@@ -166,7 +181,12 @@ describe("FIL-sourced B3 FX headroom — honesty contract", () => {
   test("name-free: a persona name in the RAS limitName never leaks to the V2 DTO", () => {
     const store = new EventStore(":memory:");
     const mds = new MarketDataStore(":memory:");
-    appendFxInstrument(store, { id: "FX-USD-1", foreign: "USD", direction: "long", notionalZar: "1000000.00" });
+    appendFxInstrument(store, {
+      id: "FX-USD-1",
+      foreign: "USD",
+      direction: "long",
+      notionalZar: "1000000.00",
+    });
     quote(mds, "USD", 18.5);
     // Mirror the seeded home-store row that literally carries a persona name in
     // its free-text limitName (the cause of the FU3 name-leak catch).
@@ -204,7 +224,12 @@ describe("FIL-sourced B3 FX headroom — honesty contract", () => {
   test("live: utilisation breach → red RAG", () => {
     const store = new EventStore(":memory:");
     const mds = new MarketDataStore(":memory:");
-    appendFxInstrument(store, { id: "FX-USD-1", foreign: "USD", direction: "long", notionalZar: "950000.00" });
+    appendFxInstrument(store, {
+      id: "FX-USD-1",
+      foreign: "USD",
+      direction: "long",
+      notionalZar: "950000.00",
+    });
     quote(mds, "USD", 18.5);
     publishB3Limit(store, 1_000_000); // 950,000 / 1,000,000 = 0.95 ≥ 0.9 → red
 

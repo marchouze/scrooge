@@ -124,7 +124,15 @@ describe("V2 FX surface — honesty contract on a data-empty store", () => {
     const byPanel = new Map(view.panels.map((p) => [p.panel, p]));
 
     // FU3: all seven panels are now V2-sourced (no v1-only remains).
-    for (const p of ["summary", "risk", "blotter", "counterparties", "npa", "rejections", "headroom"]) {
+    for (const p of [
+      "summary",
+      "risk",
+      "blotter",
+      "counterparties",
+      "npa",
+      "rejections",
+      "headroom",
+    ]) {
       expect(byPanel.get(p)?.source).toBe("v2");
     }
 

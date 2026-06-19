@@ -104,6 +104,7 @@ import {
   filInstrumentCreatedPayloadSchema,
   filInstrumentTerminatedPayloadSchema,
 } from "../fil-instances/events";
+import { v2FxOrderRejectedAtGatewayPayloadSchema } from "../fx-gateway/events";
 import {
   amlRiskAssessmentCompletedPayloadSchema,
   auditIssueTrackerReviewedPayloadSchema,
@@ -196,7 +197,6 @@ import {
   zaroniaRatePublishedPayloadSchema,
   zaroniaTermRatePublishedPayloadSchema,
 } from "../reference-data/events";
-import { v2FxOrderRejectedAtGatewayPayloadSchema } from "../fx-gateway/events";
 import {
   type V2EventTypeMetadata,
   type V2TeeCodec,

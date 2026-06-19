@@ -10,11 +10,7 @@
 
 import { describe, expect, test } from "bun:test";
 
-import {
-  type V2FxGatewayEventLike,
-  MAX_V2_REJECTIONS,
-  foldV2FxRejections,
-} from "./fold";
+import { MAX_V2_REJECTIONS, type V2FxGatewayEventLike, foldV2FxRejections } from "./fold";
 
 function ev(
   id: string,

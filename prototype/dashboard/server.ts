@@ -196,6 +196,7 @@ import {
   currentBankModePolicy,
   syncBankModeToLifecyclePhase,
 } from "../platform/projections/bank-mode";
+import { readV2FxRejections } from "../platform/projections/markets/v2-fx-gateway-rejections";
 import {
   type RegStructuredDocMinimal,
   buildProvisionTree,
@@ -319,7 +320,6 @@ import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
 import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
 import type { DashboardState } from "./types";
-import { readV2FxRejections } from "../platform/projections/markets/v2-fx-gateway-rejections";
 import {
   buildV2FxBlotterView,
   buildV2FxCounterpartiesView,
