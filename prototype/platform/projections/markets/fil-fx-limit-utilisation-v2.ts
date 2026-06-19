@@ -64,7 +64,15 @@ export type FilFxHeadroomDataState = "live" | "no-limit" | "empty";
 export interface FilFxHeadroomB3Row {
   /** Always "B3" — the FX market-risk net-open-position cluster. */
   readonly cluster: "B3";
-  /** RAS limit row name (from the published schedule), or a placeholder. */
+  /**
+   * Fixed, name-free cluster label. We deliberately do NOT surface the raw
+   * `RasLimitSchedulePublished.limitName` prose here: that field is
+   * governance-authored free text and CAN carry persona names (e.g. the seeded
+   * MR-1-FX B3 row reads "… Helena §1.4 …"). Surfacing it raw would leak a
+   * persona name into a /api/v2 response (feedback_no_agent_names_in_ui). The
+   * V2 boundary uses a stable cluster label instead; the raw schedule prose
+   * stays on the V1 desk pages.
+   */
   readonly limitName: string;
   /**
    * Aggregate FX net-open-position EXPOSURE in functional-currency MINOR units,
@@ -102,6 +110,13 @@ export interface FilFxHeadroomView {
 }
 
 const ANCHOR_ENTITY = "LE-ZA-HOZ-BANK";
+
+/**
+ * The fixed, name-free B3 cluster label surfaced at the V2 boundary. The raw
+ * `RasLimitSchedulePublished.limitName` is intentionally NOT used (it is
+ * governance free text that can carry persona names — see the type doc).
+ */
+const B3_LIMIT_NAME = "B3 — FX net open position";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -193,7 +208,7 @@ export function buildFilFxHeadroomView(
         "lights up once FIL FX instruments exist. Authority: D-FX-OTC-CLOSURE-BACKLOG.",
       b3: {
         cluster: "B3",
-        limitName: b3LimitRow?.limitName ?? "B3 — FX net open position",
+        limitName: B3_LIMIT_NAME,
         currentExposureFunctionalMinor: 0,
         limitValueFunctionalMinor:
           b3LimitRow !== null ? Math.round(b3LimitRow.limitValue * 100) : null,
@@ -220,7 +235,7 @@ export function buildFilFxHeadroomView(
         "limit to light up the RAG. Authority: D-FX-OTC-CLOSURE-BACKLOG; ORG-PR-19.",
       b3: {
         cluster: "B3",
-        limitName: "B3 — FX net open position (no RAS limit published)",
+        limitName: `${B3_LIMIT_NAME} (no RAS limit published)`,
         currentExposureFunctionalMinor: exposureMinor,
         limitValueFunctionalMinor: null,
         utilisationPct: null,
@@ -275,7 +290,8 @@ export function buildFilFxHeadroomView(
       : null,
     b3: {
       cluster: "B3",
-      limitName: b3LimitRow.limitName,
+      // Name-free fixed label (NOT b3LimitRow.limitName — see the type doc).
+      limitName: B3_LIMIT_NAME,
       currentExposureFunctionalMinor: exposureMinor,
       limitValueFunctionalMinor: limitValueMinor,
       utilisationPct,

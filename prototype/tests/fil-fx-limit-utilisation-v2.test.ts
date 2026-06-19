@@ -163,6 +163,44 @@ describe("FIL-sourced B3 FX headroom — honesty contract", () => {
     expect(view.b3.ragStatus).toBe("green");
   });
 
+  test("name-free: a persona name in the RAS limitName never leaks to the V2 DTO", () => {
+    const store = new EventStore(":memory:");
+    const mds = new MarketDataStore(":memory:");
+    appendFxInstrument(store, { id: "FX-USD-1", foreign: "USD", direction: "long", notionalZar: "1000000.00" });
+    quote(mds, "USD", 18.5);
+    // Mirror the seeded home-store row that literally carries a persona name in
+    // its free-text limitName (the cause of the FU3 name-leak catch).
+    store.append(
+      makeRasLimitSchedulePublished({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: ["ORG-PR-19"],
+        payload: {
+          scheduleId: "sched-named",
+          publishedBy: "agent:helena",
+          effectiveFrom: AS_OF,
+          limits: [
+            {
+              cluster: "B3",
+              limitName:
+                "Market risk — FX net open position (proxy for MR-1-FX VaR pending VaR engine — Helena §1.4 EOD open-position ceiling)",
+              limitValue: 2_000_000,
+              currency: "ZAR",
+              breachThresholdAmber: 0.8,
+              breachThresholdRed: 1.0,
+            },
+          ],
+        },
+      }),
+    );
+    const view = buildFilFxHeadroomView(store, mds, NOW);
+    const json = JSON.stringify(view);
+    // The fixed name-free label is used; the raw prose (with "Helena") is dropped.
+    expect(view.b3.limitName).toBe("B3 — FX net open position");
+    expect(json).not.toContain("Helena");
+  });
+
   test("live: utilisation breach → red RAG", () => {
     const store = new EventStore(":memory:");
     const mds = new MarketDataStore(":memory:");
