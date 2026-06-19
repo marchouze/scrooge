@@ -514,7 +514,12 @@ contract = {
     "cells": cells,
 }
 
-json.dump(contract, open(OUT_JSON, "w"), indent=1, ensure_ascii=False)
+# Compact (no whitespace) — the JSON is machine-generated reference data read
+# programmatically (ba100-contract.ts), never hand-edited; compact keeps it
+# under the biome 1 MiB lint ceiling while staying diff-stable (sorted keys).
+with open(OUT_JSON, "w") as fh:
+    json.dump(contract, fh, separators=(",", ":"), ensure_ascii=False)
+    fh.write("\n")
 from collections import Counter
 print("wrote", OUT_JSON)
 print("cells:", len(cells))

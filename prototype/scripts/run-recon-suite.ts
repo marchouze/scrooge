@@ -601,6 +601,12 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:sla-rule-versioning",
     "recon:sla-approval-workflow",
     "recon:ba-form-numbering",
+    // ENFORCING (D-BA-RETURN-DATA-CONTRACT Phase B): every BA100.xsd cell has a
+    // complete data-requirement contract entry; citations resolve; sourced
+    // cells point at real GL categories / approved products / projections;
+    // non-sourced cells are honestly tracked. Marc's "every cell fully
+    // defined" guarantee, machine-checked.
+    "recon:ba-return-cell-contract",
     "recon:ba320-ir-general-weighting-basis",
     "recon:rwa-computed-sourcing",
     "recon:fx-subledger-reconciliation",
