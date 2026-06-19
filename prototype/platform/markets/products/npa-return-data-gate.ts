@@ -152,10 +152,7 @@ function trackedDeferredGapFor(row: ProductRegisterRow, attribute: string): stri
   if (!accounting) return undefined;
   const needle = attribute.toLowerCase();
   for (const gap of accounting.deferredGaps) {
-    if (
-      gap.gapId.toLowerCase().includes(needle) ||
-      gap.title.toLowerCase().includes(needle)
-    ) {
+    if (gap.gapId.toLowerCase().includes(needle) || gap.title.toLowerCase().includes(needle)) {
       return gap.gapId;
     }
   }

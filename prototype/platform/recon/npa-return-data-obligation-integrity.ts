@@ -144,7 +144,9 @@ export function runOnEvents(events: Event[], contracts: readonly ReturnContract[
         subject: productId,
         message: `\`${productId}\` is return-incomplete — missing ${check.missing.length} required product-attribute(s) with no tracked deferred gap: ${check.missing
           .map((a) => `\`${a}\``)
-          .join(", ")} (the cells they feed cannot populate; capture them or track a ProductDeferredGap on the accounting dimension) (authority: D-BA-RETURN-DATA-CONTRACT)`,
+          .join(
+            ", ",
+          )} (the cells they feed cannot populate; capture them or track a ProductDeferredGap on the accounting dimension) (authority: D-BA-RETURN-DATA-CONTRACT)`,
         severity: "fail",
       });
       continue;
