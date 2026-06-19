@@ -146,9 +146,7 @@ describe("inverse index for the future credit product", () => {
       .filter((d) => d.sourceKind === "product-attribute" && d.required && d.ref.includes("#"))
       .map((d) => d.ref.split("#")[1] ?? "")
       .sort();
-    const expectedUnion = [
-      ...new Set(EXPECTED.flatMap((e) => e.requiredAttrs)),
-    ].sort();
+    const expectedUnion = [...new Set(EXPECTED.flatMap((e) => e.requiredAttrs))].sort();
     expect(required).toEqual(expectedUnion);
   });
 
