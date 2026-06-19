@@ -18,6 +18,7 @@
 //
 // Author: Atlas (substrate authority)
 
+import type { ReturnDataCapture } from "../../../v2-core/regulatory-returns/return-data-capture";
 import type {
   ProductDeferredGap,
   ProductScopeForEvent,
@@ -95,6 +96,19 @@ export interface ProductRegisterRow {
    * Retrospective reviews per findingId. Latest per findingId.
    */
   retrospectiveReviews: Map<string, RetrospectiveReviewRecord>;
+  /**
+   * Declared return-data captures (the D path of the capture model,
+   * D-BA-RETURN-DATA-CONTRACT). Keyed by attributeKey. WHOLE-SET REPLACE:
+   * the latest `ProductReturnDataCaptureDeclared` event (by as_of, event_id
+   * tie-break) supplies the COMPLETE declared set — never a delta-union. Empty
+   * for products that have never declared.
+   */
+  declaredReturnDataCaptures: Map<string, ReturnDataCapture>;
+  /**
+   * Tracked deferred return-data gaps from the latest capture-declaration event
+   * (whole-set replace, same latest-wins basis). Empty when none.
+   */
+  declaredCaptureGaps: ProductDeferredGap[];
 }
 
 // ---------------------------------------------------------------------------
@@ -118,6 +132,12 @@ export const ALL_NPA_DIMENSION_KEYS: readonly string[] = PRODUCT_DIMENSION_VALUE
 export function buildProductRegisterView(events: Event[]): Map<string, ProductRegisterRow> {
   const register = new Map<string, ProductRegisterRow>();
 
+  // Capture-declaration events are folded WHOLE-SET-REPLACE with a deterministic
+  // latest-wins basis (as_of, then event_id tie-break) that is INDEPENDENT of
+  // array order — collected here, resolved in a post-fold pass below so a replay
+  // with reordered equal-as_of events yields the identical declared set.
+  const captureDeclByProduct = new Map<string, Event[]>();
+
   for (const ev of events) {
     const p = ev.payload as Record<string, unknown>;
     if (typeof p.productId !== "string" || p.productId === "") continue;
@@ -138,6 +158,8 @@ export function buildProductRegisterView(events: Event[]): Map<string, ProductRe
           updatedAt: ev.as_of,
           postApprovalFindings: new Map(),
           retrospectiveReviews: new Map(),
+          declaredReturnDataCaptures: new Map(),
+          declaredCaptureGaps: [],
         };
         register.set(productId, r);
       }
@@ -322,10 +344,66 @@ export function buildProductRegisterView(events: Event[]): Map<string, ProductRe
         break;
       }
 
+      case "ProductReturnDataCaptureDeclared": {
+        // Ensure the row exists, collect for the deterministic post-fold pass.
+        // Do NOT apply the declared set here — order-independence requires the
+        // (as_of, event_id) latest-wins resolution below.
+        row();
+        let list = captureDeclByProduct.get(productId);
+        if (!list) {
+          list = [];
+          captureDeclByProduct.set(productId, list);
+        }
+        list.push(ev);
+        break;
+      }
+
       default:
         // Non-product-lifecycle event — skip.
         break;
     }
+  }
+
+  // Post-fold: WHOLE-SET-REPLACE the declared captures from the single latest
+  // `ProductReturnDataCaptureDeclared` event per product. Latest = max by as_of,
+  // ties broken by event_id (deterministic — folding N times yields the same
+  // result regardless of input order). Replay-safe (Principle 1).
+  for (const [productId, decls] of captureDeclByProduct) {
+    const r = register.get(productId);
+    if (!r) continue;
+    const latest = decls.reduce((acc, ev) => {
+      if (ev.as_of > acc.as_of) return ev;
+      if (ev.as_of === acc.as_of && ev.event_id > acc.event_id) return ev;
+      return acc;
+    });
+    const p = latest.payload as Record<string, unknown>;
+    const captures = new Map<string, ReturnDataCapture>();
+    if (Array.isArray(p.captures)) {
+      for (const c of p.captures) {
+        if (
+          c !== null &&
+          typeof c === "object" &&
+          typeof (c as Record<string, unknown>).attributeKey === "string"
+        ) {
+          const cap = c as ReturnDataCapture;
+          captures.set(cap.attributeKey, cap);
+        }
+      }
+    }
+    const gaps: ProductDeferredGap[] = Array.isArray(p.deferredCaptureGaps)
+      ? p.deferredCaptureGaps.filter(
+          (g): g is ProductDeferredGap =>
+            g !== null &&
+            typeof g === "object" &&
+            typeof (g as Record<string, unknown>).title === "string" &&
+            typeof (g as Record<string, unknown>).owner === "string" &&
+            typeof (g as Record<string, unknown>).targetTrigger === "string" &&
+            Array.isArray((g as Record<string, unknown>).citations),
+        )
+      : [];
+    r.declaredReturnDataCaptures = captures;
+    r.declaredCaptureGaps = gaps;
+    if (latest.as_of > r.updatedAt) r.updatedAt = latest.as_of;
   }
 
   // Compute pendingDimensions for every row once the fold is complete.

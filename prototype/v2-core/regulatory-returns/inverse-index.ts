@@ -36,6 +36,7 @@ import type {
   ReturnCellContract,
   ReturnContract,
   ReturnForm,
+  ValueType,
 } from "./cell-contract";
 
 // ---------------------------------------------------------------------------
@@ -54,6 +55,12 @@ export interface FedCell {
   readonly productRequirements: readonly DataRequirement[];
   /** The cell's status (sourced | counsel-gated-TBC | licence-day-data). */
   readonly status: ReturnCellContract["status"];
+  /**
+   * The cell's value type (money | ratio | count | date | text | enum |
+   * hashtotal). Surfaced so the NPA capture gate can shape-match a declared
+   * return-data capture against the cell requirement it satisfies. Additive.
+   */
+  readonly valueType: ValueType;
 }
 
 /** A distinct datum the product must capture (deduplicated across cells). */
@@ -116,6 +123,7 @@ export function returnDataObligationsForProduct(
         citations: cell.citations,
         productRequirements: productReqs,
         status: cell.status,
+        valueType: cell.valueType,
         // Optional labels added below only when present (exactOptionalPropertyTypes).
         ...(cell.cellRef.rowLabel !== undefined ? { rowLabel: cell.cellRef.rowLabel } : {}),
         ...(cell.cellRef.columnLabel !== undefined

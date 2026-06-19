@@ -581,6 +581,13 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // small (BA 100 only, mostly GL-/projection-derived) and auto-tightens as
     // Phase C lands each return's product-attribute requirements.
     "recon:npa-return-data-obligation-integrity",
+    // Capture-model coherence (D-BA-RETURN-DATA-CONTRACT "close the loop"):
+    // asserts the C engine (CAPTURE_CAPABILITY_MAP) and the D event
+    // (ProductReturnDataCaptureDeclared) stay grounded + non-redundant — no
+    // fabricated capability rows, no ungrounded/redundant declarations, and the
+    // gate-ready invariant holds for every effective product across both streams.
+    // BLOCKING.
+    "recon:product-return-capture-coherence",
     "recon:dsar-sla",
     "recon:counterparty-basel-classification-coverage",
     "recon:calc-no-silent-zero",
