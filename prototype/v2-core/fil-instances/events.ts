@@ -124,6 +124,21 @@ export const filEconomicTermsSchema = z.object({
    * FX trade created directly from execution) legitimately have no predecessor.
    */
   originatingInstrument: filInstanceUrnSchema.optional(),
+  /**
+   * Booking-time PRODUCT BINDING (S0d, D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD).
+   * The id of the NPA-approved `V2ProductRegistered` product the instance was
+   * booked under (e.g. `v2:prd:bank:fx:otc-vanilla`). Stamped at booking time
+   * (the `FilInstrumentCreated` emission) so the accounting fold can resolve the
+   * instance's composed reporting treatment DIRECTLY from the bound product —
+   * deterministically — instead of inferring it from a type-scope fallback. The
+   * booking path stamps this ONLY when an approved product governs the instance's
+   * FIL type (the NPA gate); an instance whose type has no approved governing
+   * product carries no `productId` and the fold fails closed for it (no silent
+   * default — Engineering Charter cmd 2). OPTIONAL + additive: legacy / un-migrated
+   * instances that predate S0d carry no `productId` and continue to fold via the
+   * documented fail-closed path, so existing events parse unchanged (replay-safe).
+   */
+  productId: z.string().min(1).optional(),
 });
 
 export type FilEconomicTerms = z.infer<typeof filEconomicTermsSchema>;

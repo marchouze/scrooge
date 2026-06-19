@@ -80,6 +80,7 @@ import { anchorFunctionalCurrency } from "../platform/identity/functional-curren
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../platform/market-data/store";
 import { MIN_RETURN_OBSERVATIONS } from "../platform/market-risk/var-engine";
+import { resolveBookingProductId } from "../platform/markets/products/booking-product-binding";
 import {
   type SettledCashLeg,
   materialiseFxInstanceToAnchor,
@@ -135,6 +136,21 @@ function majorNumberToMoney(majorUnits: number, currency: string): Money {
 function minorNumberToMajorMoney(minorUnits: number, currency: string): Money {
   const wholeMinor = roundDecimal(toDecimal(String(minorUnits)), 0, "HALF_UP");
   return moneyFromDecimal(currency, roundDecimal(divD(wholeMinor, toDecimal("100")), 2, "HALF_UP"));
+}
+
+// ---------------------------------------------------------------------------
+// S0d — booking-time product binding (NPA-gated; D-ACCT-MODULAR-PRODUCT-COMPOSED-
+// FOLD). Returns a `{ productId }` spread fragment to merge into FX economic
+// terms when an NPA-approved product governs the FIL type, else `{}` (no binding
+// → the fold fails closed for the instance, no silent default). Keeping it a
+// spread fragment means an un-governed type adds NO `productId` key at all (the
+// optional schema field stays absent), so legacy / un-bound instances are
+// byte-identical to today.
+// ---------------------------------------------------------------------------
+
+function bookingProductIdTerm(filTypeUrn: string): { productId?: string } {
+  const productId = resolveBookingProductId(filTypeUrn);
+  return productId !== undefined ? { productId } : {};
 }
 
 // ---------------------------------------------------------------------------
@@ -277,6 +293,12 @@ function fixtureDescriptors(): FilDescriptor[] {
       currency: REPORTING,
       settlementDate: FIXTURE_SETTLE_DATE,
       hedgingSetTag: `${ft.base}/${REPORTING}`,
+      // S0d — booking-time product binding (NPA-gated). The fixture FX book is FX
+      // spot, governed by the NPA-approved FX OTC Vanilla product; stamp its v2
+      // product id so the accounting fold resolves treatment from the product
+      // (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD). `resolveBookingProductId` returns
+      // undefined for a type with no approved governing product → no binding.
+      ...bookingProductIdTerm(FX_SPOT_TYPE_URN),
     },
   }));
 }
@@ -389,6 +411,9 @@ function descriptorsFromExistingTrades(): FilDescriptor[] {
         currency: REPORTING,
         settlementDate: near.settlementDate?.iso ?? e.as_of,
         ...(base && quote ? { hedgingSetTag: `${base}/${quote}` } : {}),
+        // S0d — booking-time product binding (NPA-gated), keyed off the resolved
+        // FIL type URN (spot vs forward). See bookingProductIdTerm.
+        ...bookingProductIdTerm(typeUrn),
       },
     });
   }

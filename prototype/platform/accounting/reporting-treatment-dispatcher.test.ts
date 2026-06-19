@@ -175,4 +175,64 @@ describe("resolveInstanceTreatment", () => {
     expect(r.resolved).toBe(false);
     if (!r.resolved) expect(r.reason).toBe("product-not-registered");
   });
+
+  // --- S0d: instance-bound productId (booking-time binding) ----------------
+
+  it("PREFERS the instance-bound productId over the originating-trade read (S0d)", () => {
+    // The originating trade carries NO productId, but the instance does (the S0d
+    // booking-time binding). The resolver must bind directly to the instance's
+    // productId — it never needs to reach the trade event.
+    const store = fixtureStore([
+      { event_id: "ev-trade-1", type: "FxTradeExecuted", payload: { tradeId: "T-1" } },
+      {
+        event_id: "ev-prod-1",
+        type: "V2ProductRegistered",
+        payload: PRODUCT as unknown as Record<string, unknown>,
+      },
+    ]);
+    const r = resolveInstanceTreatment(
+      { productId: "v2:prd:fx:otc-vanilla", originatingEvent: instance.originatingEvent },
+      store,
+      REGISTER,
+    );
+    expect(r.resolved).toBe(true);
+    if (r.resolved) {
+      expect(r.productId).toBe("v2:prd:fx:otc-vanilla");
+      expect(r.ifrsCategory).toBe("fvtpl");
+      expect(r.postingRuleIds).toEqual(["PR-FX-001-V2", "PR-FX-REVAL-V2"]);
+    }
+  });
+
+  it("resolves from the instance binding with NO originating trade event present", () => {
+    // Only the product is in the store — no originating trade event at all. The
+    // instance-bound path must still resolve (it does not reach the trade event).
+    const store = fixtureStore([
+      {
+        event_id: "ev-prod-1",
+        type: "V2ProductRegistered",
+        payload: PRODUCT as unknown as Record<string, unknown>,
+      },
+    ]);
+    const r = resolveInstanceTreatment(
+      { productId: "v2:prd:fx:otc-vanilla", originatingEvent: instance.originatingEvent },
+      store,
+      REGISTER,
+    );
+    expect(r.resolved).toBe(true);
+    if (r.resolved) expect(r.productId).toBe("v2:prd:fx:otc-vanilla");
+  });
+
+  it("fails closed (product-not-registered) when the instance binding names an unknown product", () => {
+    const store = fixtureStore([]);
+    const r = resolveInstanceTreatment(
+      { productId: "v2:prd:unknown", originatingEvent: instance.originatingEvent },
+      store,
+      REGISTER,
+    );
+    expect(r.resolved).toBe(false);
+    if (!r.resolved) {
+      expect(r.reason).toBe("product-not-registered");
+      expect(r.detail).toContain("instance-binding");
+    }
+  });
 });

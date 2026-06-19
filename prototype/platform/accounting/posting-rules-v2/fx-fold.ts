@@ -108,6 +108,15 @@ interface FilLifecyclePayloadMinimal {
   readonly type?: string;
   readonly instance?: string;
   readonly originatingEvent?: { readonly eventType: string; readonly eventId: string };
+  /**
+   * The instance's booking-time product binding (S0d). Lives on
+   * `economicTerms.productId` (created / amended events carry economic terms);
+   * read here so the treatment resolver can bind DIRECTLY to the product. Absent
+   * on settlement / NDF-fixing / bare-terminal events (which carry no economic
+   * terms) and on legacy un-migrated instances — in which case the fold falls
+   * back to the originating-trade read, then the documented fail-closed path.
+   */
+  readonly economicTerms?: { readonly productId?: string };
 }
 
 // ---------------------------------------------------------------------------
@@ -210,22 +219,33 @@ interface TreatmentDecision {
 /**
  * Decide whether the FX posting rules apply to `instance` of taxonomy `type`.
  *
- * Path 1 (preferred): product binding. If `resolveInstanceTreatment` resolves a
- * product, the FX posting rules apply iff the composed treatment references at
- * least one FX V2 posting-rule id.
+ * Path 1 (preferred, S0d): product binding. When the instance carries a
+ * booking-time `boundProductId` (stamped on `FilEconomicTerms.productId`), the
+ * resolver binds DIRECTLY to that product. Otherwise it reads `productId` off the
+ * originating trade event (the legacy path). If `resolveInstanceTreatment`
+ * resolves a product, the FX posting rules apply iff the composed treatment
+ * references at least one FX V2 posting-rule id.
  *
- * Path 2 (fallback, retired-by-S0d): no product binding. Match the instance
- * `type` against the registry's `posting-rules` modules; valid ONLY when exactly
- * one such module's scope matches. Ambiguous (>1) or empty (0) → fail closed.
+ * Path 2 (build-phase fallback, retained for un-migrated instances): no product
+ * binding at all. Match the instance `type` against the registry's `posting-rules`
+ * modules; valid ONLY when exactly one such module's scope matches. Ambiguous (>1)
+ * or empty (0) → fail closed. With S0d this fallback fires only for instances that
+ * carry no `productId` AND whose originating trade carries none either (genuinely
+ * un-migrated) — bound instances always take path 1.
  */
 function decideFxTreatment(
   type: string,
+  boundProductId: string | undefined,
   originatingEvent: { eventType: string; eventId: string },
   treatmentStore: TreatmentEventLookup,
   register: ReportingTreatmentRegister,
 ): TreatmentDecision {
-  // Path 1 — preferred product binding.
-  const input: InstanceTreatmentInput = { originatingEvent };
+  // Path 1 — preferred product binding. Instance-bound productId (S0d) wins; the
+  // originating-event read is the legacy fallback inside the resolver.
+  const input: InstanceTreatmentInput = {
+    ...(boundProductId !== undefined ? { productId: boundProductId } : {}),
+    originatingEvent,
+  };
   const resolved = resolveInstanceTreatment(input, treatmentStore, register);
   if (resolved.resolved) {
     const appliesFx = resolved.postingRuleIds.some((id) => id.startsWith("PR-FX-"));
@@ -252,11 +272,17 @@ function decideFxTreatment(
     };
   }
 
-  // Path 2 — build-phase fallback (retired-by-S0d). Exactly-one match required.
+  // Path 2 — build-phase fallback, NARROWED by S0d. Exactly-one match required.
   //
-  // TODO(D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD, S0d): when booking-time product
-  // binding lands (trade.productId + NPA gate), path 1 always resolves and this
-  // fallback is DEAD CODE — remove it then.
+  // S0d (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD) wires booking-time product binding:
+  // every FX instance booked under an NPA-approved product now carries a
+  // `productId` on `FilEconomicTerms.productId`, so it ALWAYS takes path 1. This
+  // fallback now fires ONLY for instances that carry NO `productId` and whose
+  // originating trade carries none either — i.e. genuinely un-migrated / legacy
+  // instances. It is RETAINED (not removed) so those instances fail closed with a
+  // typed reason rather than guessing, and so a future un-bound FX instance cannot
+  // silently mis-post (Engineering Charter cmd 2). It must NEVER produce a posting
+  // for a bound instance — path 1 handles every bound instance before this point.
   const matches = register.rows.filter(
     (r) => r.category === POSTING_RULES_CATEGORY && r.scope.some((s) => matchesFilScope(s, type)),
   );
@@ -447,6 +473,23 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
     return a.event_id < b.event_id ? -1 : a.event_id > b.event_id ? 1 : 0;
   });
 
+  // S0d — the instance → bound productId map. The booking-time product binding
+  // lives on `economicTerms.productId` of the CREATED / AMENDED events (the events
+  // that carry economic terms). Settlement / NDF-fixing / bare-terminal events do
+  // NOT carry economic terms, so they inherit the instance's binding from this
+  // map — the binding is an instance-level fact, set at booking and stable across
+  // the instance's whole lifecycle. Sourced in sort order so a later amendment's
+  // binding (latest-wins) supersedes the created event's, consistent with the
+  // full-snapshot re-stamp semantics of `FilInstrumentAmended.economicTerms`.
+  const boundProductIdByInstance = new Map<string, string>();
+  for (const e of filEvents) {
+    const p = e.payload as unknown as FilLifecyclePayloadMinimal;
+    const pid = p.economicTerms?.productId;
+    if (p.instance !== undefined && typeof pid === "string" && pid.length > 0) {
+      boundProductIdByInstance.set(p.instance, pid);
+    }
+  }
+
   for (const e of filEvents) {
     const p = e.payload as unknown as FilLifecyclePayloadMinimal;
     const type = p.type;
@@ -463,12 +506,22 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
       if (type === undefined || !isFxInstance(type)) continue; // non-FX → not this fold's concern
     }
 
-    // Resolve treatment (preferred product binding, else fail-closed fallback).
+    // Resolve treatment (preferred booking-time product binding, else the
+    // originating-trade read, else the fail-closed type-scope fallback). The
+    // instance-bound productId (S0d) is sourced from the per-instance map so a
+    // settlement / terminal event for a bound instance also resolves via path 1.
     // Terminated events carry the type URN too (the backfill stamps it), so the
-    // fallback can match; if a terminated event lacks a type, the fallback's
-    // exactly-one check below will fail closed.
+    // fallback can still match for un-bound instances; if a terminated event lacks
+    // a type, the fallback's exactly-one check below will fail closed.
     const originatingEvent = p.originatingEvent ?? { eventType: "", eventId: "" };
-    const decision = decideFxTreatment(type ?? "", originatingEvent, treatmentStore, register);
+    const boundProductId = boundProductIdByInstance.get(instance);
+    const decision = decideFxTreatment(
+      type ?? "",
+      boundProductId,
+      originatingEvent,
+      treatmentStore,
+      register,
+    );
     if (!decision.applyFxPostingRules) {
       skipped.push({
         instance,

@@ -39,6 +39,7 @@ import { dirname, resolve } from "node:path";
 
 import { Database } from "bun:sqlite";
 
+import { resolveBookingProductId } from "../platform/markets/products/booking-product-binding";
 import { divD, roundDecimal, toDecimal } from "../v2-core/fil-core/decimal";
 import { type Money, moneyFromDecimal } from "../v2-core/fil-core/primitives";
 import { formatInstanceUrn, formatTypeUrn } from "../v2-core/fil-core/urn";
@@ -61,6 +62,16 @@ import {
 function minorNumberToMajorMoney(minorUnits: number, currency: string): Money {
   const wholeMinor = roundDecimal(toDecimal(String(minorUnits)), 0, "HALF_UP");
   return moneyFromDecimal(currency, roundDecimal(divD(wholeMinor, toDecimal("100")), 2, "HALF_UP"));
+}
+
+// S0d — booking-time product binding (NPA-gated; D-ACCT-MODULAR-PRODUCT-COMPOSED-
+// FOLD). Returns a `{ productId }` spread fragment when an NPA-approved product
+// governs the FIL type, else `{}` (no binding key → the fold fails closed for the
+// instance). A spread fragment keeps an un-governed type byte-identical (no
+// `productId` key at all).
+function bookingProductIdTerm(filTypeUrn: string): { productId?: string } {
+  const productId = resolveBookingProductId(filTypeUrn);
+  return productId !== undefined ? { productId } : {};
 }
 
 // ---------------------------------------------------------------------------
@@ -336,6 +347,12 @@ function materialiseFx(): { created: number; terminated: number; skipped: number
       currency: "ZAR",
       settlementDate: near.settlementDate?.iso ?? r.as_of,
       ...(base && quote ? { hedgingSetTag: `${base}/${quote}` } : {}),
+      // S0d — booking-time product binding (NPA-gated). FX spot/forward is
+      // governed by the NPA-approved FX OTC Vanilla product; stamp its v2 product
+      // id so the accounting fold resolves treatment from the bound product
+      // (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD). Returns undefined for a type with
+      // no approved governing product → no binding key (fold fails closed).
+      ...bookingProductIdTerm(typeUrn),
     };
 
     // FilInstrumentCreated — at the trade-execution as_of.
