@@ -48,13 +48,22 @@
 // values + as-of), it does NOT adjust the feed to force a match. A genuine
 // divergence here is exactly what this cutover exists to surface (brief §4).
 //
-// Gate behaviour:
-//   - For each live netting set, run BOTH engines over the SAME inputs and
-//     build BOTH event payloads. Assert byte-equivalence (JSON-stable compare).
-//   - ANY divergence → severity "fail" with a per-netting-set diff.
-//   - When the live book carries zero SA-CCR netting sets (a flat bench),
-//     the gate passes with an `info` note — there is nothing to reconcile but
-//     the structural port is still exercised by the model's own unit tests.
+// Gate behaviour (ENFORCING on the construction conditions; data-dependent legs
+// advisory — D-FX-OTC-CLOSURE-BACKLOG, D-BANK-WIDE-V2-MIGRATION):
+//   - CONSTRUCTION CONDITIONS (ENFORCING, always-on, clean-store-provable):
+//     run the production FIL SA-CCR model (`computeSaCcr`) on a deterministic
+//     synthetic netting set and assert the structural-port invariants —
+//     α = 1.4 exactly, EAD = round_halfup(1.4 × (RC + PFE)) over the model's
+//     own RC + PFE outputs, and EAD ≥ RC ≥ 0. ANY violation → "fail" (exit 1).
+//     These hold independent of recorded history, so the previously vacuous
+//     "0 netting sets" pass now ENFORCES the model wiring rather than asserting
+//     nothing.
+//   - RECORDED-HISTORY BYTE-PARITY (DATA-DEPENDENT): for each live netting set,
+//     run BOTH engines over the SAME FIL-mediated inputs and assert byte-
+//     equivalence. Any recompute divergence → "fail"; recorded-RC oracle
+//     divergences → "warn" (surfaced, not forced). On a flat build-phase store
+//     with zero recorded SA-CCR netting sets this leg is VACUOUS (awaiting
+//     licence-day book data) — honest, not a manufactured green.
 //
 // Authority: D-W4-MODEL-LIBRARY-PILOT; D-MODEL-BINDING-CONTRACT-V1;
 //   D-FIL-FRAMEWORK-UNIFICATION; D-V2-BBAAS-BLUEPRINT-SYNTHESIS;
@@ -62,9 +71,10 @@
 // Author: Rohan (Risk Engineer, engineering) ·
 //         Vera (Internal audit engineer, third line — recon shape).
 
-import type { Money as V2Money } from "../../v2-core/fil-core/primitives";
+import { type Money as V2Money, money as v2Money } from "../../v2-core/fil-core/primitives";
 // --- v2 FIL-Model (the candidate) ---
 import {
+  ALPHA_SA_CCR,
   type SaCcrNettingSet as V2NettingSet,
   type SaCcrTradeSummary as V2TradeSummary,
   computeSaCcr,
@@ -304,9 +314,127 @@ function normaliseRecorded(
   };
 }
 
+// ---------------------------------------------------------------------------
+// CONSTRUCTION-CONDITION ASSERTIONS (always-on; ENFORCING on the clean store).
+//
+// The recorded-history anchors below are VACUOUS on a flat build-phase store
+// (0 recorded SA-CCR netting sets — the engine has not run there). Historically
+// that made the whole gate advisory-by-vacuity: a clean run asserted nothing.
+//
+// These construction conditions close that hole WITHOUT fabricating book data.
+// They exercise the PRODUCTION FIL SA-CCR model (`computeSaCcr`) on a
+// deterministic synthetic netting set and ENFORCE the structural invariants the
+// model must satisfy by construction — independent of any recorded history:
+//
+//   (C1) α = 1.4 exactly (BCBS d317 §10 / CRE52 §52.5). A drift here means the
+//        EAD multiplier was changed — a hard methodology defect.
+//   (C2) EAD = round_halfup(α × (RC + PFE)) over the model's OWN RC + PFE
+//        outputs, in integer minor units (the d317 §10 composition identity).
+//        This binds the model's `computeSaCcr` end-to-end: RC, PFE, and the EAD
+//        composition must agree. A mismatch is a port-fidelity / arithmetic
+//        regression and is FATAL.
+//   (C3) EAD ≥ RC and EAD ≥ 0 (monotonic floor — α ≥ 1 and PFE ≥ 0).
+//
+// These are not byte-parity-against-history (that is data-dependent and stays
+// the warn-class oracle diagnostic below). They are the leg that is honestly
+// provable on the clean store, so they are FAIL-severity (Charter cmd 3 — land
+// the engineering that holds, keep the data-dependent legs honest).
+// ---------------------------------------------------------------------------
+
+interface ConstructionConditionResult {
+  readonly violations: readonly ReconViolation[];
+  readonly assertions: number;
+}
+
+/** Half-up round of (α × x) in integer minor units — mirrors `computeEad`'s
+ *  `(rcPlusPfeUnits * alphaScaled + 5_000n) / 10_000n` byte-locked arithmetic. */
+function alphaScaledHalfUp(rcPlusPfeUnits: bigint): bigint {
+  const alphaScaled = BigInt(Math.round(ALPHA_SA_CCR * 10_000));
+  return (rcPlusPfeUnits * alphaScaled + 5_000n) / 10_000n;
+}
+
+function runConstructionConditions(): ConstructionConditionResult {
+  const violations: ReconViolation[] = [];
+  let assertions = 0;
+
+  // Deterministic synthetic netting set — a single 1-year long EURZAR forward,
+  // unmargined, with a positive vMtm and zero collateral. Values are fixed
+  // constants (no store reads), so the result is identical on every run.
+  const asOf = "2099-12-31T00:00:00.000Z";
+  const ns: V2NettingSet = {
+    nettingSetId: "NS-CONSTRUCTION-PROOF",
+    counterpartyId: "CP-CONSTRUCTION-PROOF",
+    csaPresent: false,
+    currency: "ZAR",
+  };
+  const trades: V2TradeSummary[] = [
+    {
+      tradeId: "T-CONSTRUCTION-PROOF",
+      counterpartyId: ns.counterpartyId,
+      nettingSetId: ns.nettingSetId,
+      assetClass: "fx",
+      notional: v2Money("ZAR", "1000000.00"),
+      direction: "long",
+      remainingYears: 1,
+      currency: "ZAR",
+      hedgingSetTag: "EUR/ZAR",
+    },
+  ];
+  const vMtm = v2Money("ZAR", "50000.00");
+  const collateralHeld = v2Money("ZAR", "0.00");
+
+  const { rc, ead } = computeSaCcr({ nettingSet: ns, vMtm, collateralHeld, trades, asOf });
+
+  // (C1) α = 1.4 exactly.
+  assertions += 1;
+  if (ead.alpha !== 1.4) {
+    violations.push({
+      subject: "construction:alpha-must-be-1.4",
+      message: `SA-CCR α multiplier must be 1.4 (BCBS d317 §10 / CRE52 §52.5); computeSaCcr returned α=${ead.alpha}. A drift here is a hard methodology defect.`,
+      severity: "fail",
+    });
+  }
+
+  // (C2) EAD = round_halfup(α × (RC + PFE)) over the model's own outputs.
+  assertions += 1;
+  const rcUnits = v2MoneyToMinor(rc.rc);
+  const pfeUnits = v2MoneyToMinor(ead.pfe);
+  const eadUnits = v2MoneyToMinor(ead.ead);
+  const expectedEadUnits = alphaScaledHalfUp(rcUnits + pfeUnits);
+  if (eadUnits !== expectedEadUnits) {
+    violations.push({
+      subject: "construction:ead-equals-alpha-times-rc-plus-pfe",
+      message:
+        `SA-CCR EAD composition identity violated (BCBS d317 §10: EAD = round_halfup(1.4 × (RC + PFE))). ` +
+        `computeSaCcr returned EAD=${eadUnits} minor; expected round_halfup(1.4 × (${rcUnits} + ${pfeUnits})) = ${expectedEadUnits} minor. ` +
+        `This is a port-fidelity / arithmetic regression in the production FIL SA-CCR model.`,
+      severity: "fail",
+    });
+  }
+
+  // (C3) EAD ≥ RC and EAD ≥ 0 (α ≥ 1, PFE ≥ 0 ⇒ monotonic floor).
+  assertions += 1;
+  if (eadUnits < rcUnits || eadUnits < 0n) {
+    violations.push({
+      subject: "construction:ead-monotonic-floor",
+      message: `SA-CCR EAD must satisfy EAD ≥ RC ≥ 0 (α ≥ 1, PFE ≥ 0). computeSaCcr returned EAD=${eadUnits}, RC=${rcUnits} minor.`,
+      severity: "fail",
+    });
+  }
+
+  return { violations, assertions };
+}
+
 export function run(): ReconResult {
   const result = emptyResult(PIPELINE);
   const violations: ReconViolation[] = [];
+
+  // CONSTRUCTION CONDITIONS — always run, ENFORCING on the clean store. These
+  // hold independent of recorded history, so they convert the previously
+  // vacuous-by-empty-store pass into a real structural-port enforcement.
+  const construction = runConstructionConditions();
+  violations.push(...construction.violations);
+  result.asserted += construction.assertions;
 
   let nettingSetsChecked = 0;
   let byteDiffs = 0;
@@ -459,16 +587,20 @@ export function run(): ReconResult {
   }
 
   result.violations = violations;
+  // ENFORCING: ok is fail-gated in ALL branches. The construction-condition
+  // assertions (C1–C3) run on every store and are FAIL-severity, so a clean
+  // build-phase store with 0 recorded netting sets is NO LONGER a vacuous pass —
+  // it still enforces the SA-CCR model's structural-port invariants. The
+  // recorded-history byte-parity legs remain DATA-DEPENDENT: vacuous (nothing to
+  // reconcile) when no netting sets are recorded.
+  const failCount = violations.filter((v) => v.severity === "fail").length;
+  result.ok = failCount === 0;
+  const oracleDivergences = violations.filter((v) => v.severity === "warn").length;
   if (nettingSetsChecked === 0) {
-    result.ok = true;
-    result.asOf =
-      "saccr-parity: 0 recorded SA-CCR netting sets — nothing to reconcile (engine has not run on this store)";
+    result.asOf = `saccr-parity: ${construction.assertions} construction-condition assertion(s) ENFORCED (α=1.4, EAD=round_halfup(1.4×(RC+PFE)), EAD≥RC≥0) over the production FIL SA-CCR model — ${failCount} fail. Recorded-history byte-parity legs VACUOUS on this store (0 recorded SA-CCR netting sets — awaiting licence-day book data). PRODUCTION PATH = FIL SA-CCR (D-FIL-FRAMEWORK-UNIFICATION).`;
     return result;
   }
-
-  result.ok = violations.filter((v) => v.severity === "fail").length === 0;
-  const oracleDivergences = violations.filter((v) => v.severity === "warn").length;
-  result.asOf = `saccr-parity: ${nettingSetsChecked} netting set(s) checked over recorded history, ${byteDiffs} hard byte-diff(s) (v1-recompute vs v2 over identical FIL-mediated inputs); ${oracleDivergences} recorded-RC oracle divergence(s) surfaced (warn). PRODUCTION PATH = FIL SA-CCR (D-FIL-FRAMEWORK-UNIFICATION); CcrEadComputed event-fold retired. Self-consistency gate: FIL model vs v1 oracle over feed-sourced inputs.`;
+  result.asOf = `saccr-parity: ${construction.assertions} construction-condition assertion(s) ENFORCED + ${nettingSetsChecked} netting set(s) checked over recorded history, ${byteDiffs} hard byte-diff(s) (v1-recompute vs v2 over identical FIL-mediated inputs); ${oracleDivergences} recorded-RC oracle divergence(s) surfaced (warn). PRODUCTION PATH = FIL SA-CCR (D-FIL-FRAMEWORK-UNIFICATION); CcrEadComputed event-fold retired. Self-consistency gate: FIL model vs v1 oracle over feed-sourced inputs.`;
   return result;
 }
 
@@ -477,7 +609,10 @@ if (import.meta.main) {
   for (const v of r.violations) {
     process.stderr.write(`[${v.severity}] ${v.subject}: ${v.message}\n`);
   }
-  const label = r.ok && r.violations.length === 0 ? "OK" : r.ok ? "OK (advisory)" : "FAIL";
+  // ENFORCING on the construction conditions (C1–C3): a fail exits 1. Warn-only
+  // violations are the DATA-DEPENDENT recorded-history oracle diagnostics, which
+  // stay advisory (vacuous on the clean store / awaiting licence-day book data).
+  const label = r.ok && r.violations.length === 0 ? "OK (enforcing)" : r.ok ? "OK (enforcing; data-dependent legs advisory)" : "FAIL";
   process.stdout.write(
     `\nrecon:${PIPELINE} ${label} — ${r.asOf}; ${r.violations.length} violation(s)\n`,
   );

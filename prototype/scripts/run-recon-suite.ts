@@ -326,11 +326,16 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // CcrEadComputed v2-parallel). Advisory: V2 capital numerator is zero at Phase 3e
     // (no capital GL posting rules emit GlPostingEmitted yet — GAP-3E-001).
     "recon:ba700-v2-parity",
-    // D-V1-REMOVAL-PHASE-3E — BA-320 FX market risk V2 parity gate (advisory).
-    // Compares V1 BA-320 FX (FxTradeExecuted + TradeMatured → fxPositionCalculator)
-    // vs V2 BA-320 FX (FilInstrumentCreated + FilInstrumentTerminated → FIL lifecycle).
-    // Advisory: rate conversion (GAP-3E-005) unavailable at Phase 3e; no-data expected
-    // on clean CI store. Open-position charge comparison deferred to rate-feed workstream.
+    // D-FX-OTC-CLOSURE-BACKLOG (Phase B4) — BA-320 FX market risk V2 parity gate.
+    // ENFORCING on the clean-store-provable legs: parity-harness self-test, the
+    // FilInstrumentCreated/Terminated v2-parallel registration (FAIL for ANY
+    // non-v2-parallel status), neither projection throws, and — when BOTH the V1
+    // and V2 Reg 28(5) open-position charges are populated (a real book + production
+    // rates) — charge equality (one shared rate snapshot + one shared decimal-engine
+    // HALF_UP rounding; the precision gap is root-caused, not tolerance-loosened).
+    // DATA-DEPENDENT legs (coverage gap, per-currency comparison) stay advisory/
+    // vacuous on the clean store (no FX book — awaiting licence-day data).
+    // Authority: D-FX-OTC-CLOSURE-BACKLOG; D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-PHASE-3E.
     "recon:ba320-fx-v2-parity",
     // WS-V2-AUTHORITATIVE S6 — ALM-snapshot-SHAPE V2 parity gate (advisory).
     // Structural-compares V1 getALMPositionSnapshot vs V2 getALMPositionSnapshotV2
@@ -424,7 +429,15 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // declaration (hard fold error) blocks CI. Authority:
     // D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD; D-DERIVED-EVENT-IRREDUCIBILITY-TEST.
     "recon:reporting-treatment-registry-conflict",
-    // WS-V2-BBAAS S7-FIL — SA-CCR FIL-Model ↔ v1 engine byte-equivalence gate.
+    // WS-V2-BBAAS S7-FIL / D-FX-OTC-CLOSURE-BACKLOG (Phase B4) — SA-CCR FIL-Model
+    // gate. ENFORCING on the clean-store-provable CONSTRUCTION CONDITIONS: the
+    // production FIL SA-CCR model (`computeSaCcr`) on a deterministic synthetic
+    // netting set must satisfy α=1.4, EAD=round_halfup(1.4×(RC+PFE)) over its own
+    // RC+PFE outputs, and EAD≥RC≥0 — FAIL on any violation, so a flat store no
+    // longer passes vacuously. The recorded-history byte-equivalence legs are
+    // DATA-DEPENDENT: hard FAIL on a recompute divergence where netting sets are
+    // recorded; vacuous (awaiting licence-day book data) on the clean store.
+    // Authority: D-FX-OTC-CLOSURE-BACKLOG; D-BANK-WIDE-V2-MIGRATION; D-FIL-FRAMEWORK-UNIFICATION.
     "recon:v2-saccr-parity",
     // Wave 2 PILOT — posture domain V1-store ↔ v2-control-plane-store register
     // byte-equivalence. ENFORCING once byte-clean (the pilot flip evidence).
