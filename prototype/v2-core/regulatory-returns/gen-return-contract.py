@@ -3,9 +3,26 @@
 form's XSD/xlsx in `Regulations/SARB-PA/ba-returns/schemas/<FORM>.zip`.
 
 This is the GENERALISED generator for the financial-family returns (BA 110,
-BA 120, BA 600, BA 610) AND the credit-family returns (BA 200, BA 210, BA 220) —
-the parametrised sibling of `gen-ba100-contract.py` (which keeps the rich BA-100
-balance-sheet line→GL→product mapping).
+BA 120, BA 600, BA 610), the credit-family returns (BA 200, BA 210, BA 220) AND
+the liquidity-family returns (BA 300, BA 310) — the parametrised sibling of
+`gen-ba100-contract.py` (which keeps the rich BA-100 balance-sheet
+line→GL→product mapping).
+
+LIQUIDITY FAMILY (Phase C batch 3): the LCR / NSFR / minimum-reserve returns
+carry product-attribute requirements on TWO axes — the DEPOSIT / funding axis
+(funding-stability, counterparty category, operational relationship, maturity /
+callability → LCR run-off + NSFR ASF) and the HQLA-ELIGIBLE-ASSET axis (HQLA
+level / eligibility / haircut / repo-eligibility → LCR numerator + BA 310 liquid-
+asset stock). Unlike the credit family, the liquidity NUMERATOR has LIVE
+substrate (the HQLA classifier + SecurityMaster + the BA-300 LCR fold), so the
+HQLA / LCR-numerator cells are `sourced` while the deposit-funding / NSFR /
+reserve cells (which need real funding positions) are `licence-day-data`. The
+`liquidity_product_attributes()` mapper attaches each edge to the right future
+product (`prd:bank:deposit:transactional` or
+`prd:bank:treasury:hqla-eligible-asset`); `liquidity_cell_status()` makes the
+per-cell sourced-vs-licence-day decision (a cell carrying a required attribute on
+an unapproved future product is forced licence-day so the NPA gate stays
+coherent). The live FX product feeds none of these, so it is not wrongly blocked.
 
 FINANCIAL FAMILY (Phase C batch 1): the cell→source mapping is form-LEVEL (a
 named report fold over the GL trial balance + the form's projection), NOT a

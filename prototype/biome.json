@@ -10,6 +10,8 @@
       "v2-core/regulatory-returns/ba200-contract.json",
       "v2-core/regulatory-returns/ba210-contract.json",
       "v2-core/regulatory-returns/ba220-contract.json",
+      "v2-core/regulatory-returns/ba300-contract.json",
+      "v2-core/regulatory-returns/ba310-contract.json",
       "v2-core/regulatory-returns/ba600-contract.json",
       "v2-core/regulatory-returns/ba610-contract.json"
     ]
