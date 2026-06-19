@@ -123,15 +123,40 @@ const FORBIDDEN: readonly ForbiddenPair[] = [
 ];
 
 const PENDING_REMEDIATION = new Set<string>([
-  // Seeded 2026-06-09 from the bank-wide scan (87 conflicts / 21 files) under
-  // D-BA-RETURN-NUMBERING-EXCEL-CANONICAL. All 21 policy/procedure files were
-  // re-numbered to the canonical Excel forms by Mira (Compliance / RegTech engineer)
-  // under WS-BA-NUMBERING-REMEDIATION and removed from this allowlist (2026-06-09).
-  // The set is now EMPTY: the policy/procedure corpus is clean. The reporting code
-  // (ba-110-lcr.ts etc.) and the obligations register ORG-PR-RETURNS-* are NOT scanned
-  // by this gate (it walks Policies/ + Procedures/ only); their replay-safe re-number is
-  // a separate track owned by Bea/Atlas under the same authority. End state reached: empty.
+  // The Policies/ + Procedures/ corpus was fully drained 2026-06-09 (87 conflicts / 21
+  // files) under D-BA-RETURN-NUMBERING-EXCEL-CANONICAL by Mira (Compliance / RegTech
+  // engineer); that policy/procedure slice is now EMPTY (clean).
+  //
+  // Phase A widening (D-BA-RETURN-DATA-CONTRACT, CEO 2026-06-19): the scan now also walks
+  // Regulations/SARB-PA/ba-returns/. The schemas/README.md and the obligations register
+  // (ORG-PR-RETURNS-*) were corrected to canonical numbering in the same PR and pass CLEAN
+  // (not allowlisted). The 11 instrument-analyses below are titled/scoped on the superseded
+  // fabricated scheme; they carry a numbering-status banner (pointing at the canonical form)
+  // but are NOT yet re-authored — that full re-author is Phase B/C. They are seeded here so
+  // the gate WARNS (tracked) rather than FAILS, and the fan-out drains them as each form is
+  // authored. Author: Mira (Compliance / RegTech engineer) under Zara (Chief Compliance
+  // Officer). ba-200.md (Credit Risk) and ba-330.md (IRRBB) are already canonical → not
+  // listed (they must pass clean).
+  "Regulations/SARB-PA/ba-returns/ba-100.md", // titled BA 100=capital-adequacy; canonical BA 100 = Balance Sheet (capital is BA 700)
+  "Regulations/SARB-PA/ba-returns/ba-110.md", // titled BA 110=LCR; canonical BA 110 = Off-Balance-Sheet Activities (LCR is BA 300)
+  "Regulations/SARB-PA/ba-returns/ba-120.md", // titled BA 120=NSFR; canonical BA 120 = Income Statement (NSFR within BA 300 series)
+  "Regulations/SARB-PA/ba-returns/ba-210.md", // titled BA 210=counterparty-credit-risk; canonical BA 210 = Credit Concentration Risk / Large Exposures
+  "Regulations/SARB-PA/ba-returns/ba-300.md", // titled BA 300=operational-risk; canonical BA 300 = Liquidity Risk (op-risk is BA 400)
+  "Regulations/SARB-PA/ba-returns/ba-310.md", // titled BA 310=market-risk; canonical BA 310 = Minimum Liquid Reserve / Liquid Assets (market risk is BA 320)
+  "Regulations/SARB-PA/ba-returns/ba-320.md", // titled BA 320=alternative market-risk; canonical BA 320 = Market Risk (the "alternative" scope is fabricated framing) + carries BA 310 cross-refs
+  "Regulations/SARB-PA/ba-returns/ba-325.md", // titled BA 325=FRTB market-risk; canonical BA 325 = Selected Risk Exposure Arising from Trading and Treasury Activities
+  "Regulations/SARB-PA/ba-returns/ba-400.md", // titled BA 400=leverage-ratio; canonical BA 400 = Operational Risk (leverage is BA 700)
+  "Regulations/SARB-PA/ba-returns/ba-600.md", // titled BA 600=balance-sheet; canonical BA 600 = Consolidated Return (balance sheet is BA 100)
+  "Regulations/SARB-PA/ba-returns/ba-610.md", // titled BA 610=income-statement; canonical BA 610 = Foreign Operations (income statement is BA 120)
 ]);
+
+// EXEMPT files — scanned but never flagged. _canonical-register.md is the source of truth
+// for this gate: its §2–§3 correction tables DELIBERATELY co-locate every fabricated
+// (form, meaning) pair beside its canonical correction, so the gate's forbidden-pair test
+// would otherwise fire on the very document it derives its rules from. Exempting it is not a
+// weakening: the register is verbatim from the SARB Excel A1 headers (the authority), not a
+// living policy/procedure that could drift onto a fabricated scheme.
+const NUMBERING_EXEMPT = new Set<string>(["Regulations/SARB-PA/ba-returns/_canonical-register.md"]);
 
 function findRepoRoot(start: string): string {
   let dir = start;
@@ -172,12 +197,18 @@ export function runBaFormNumberingRecon(opts: BaFormNumberingOpts = {}): ReconRe
     paths = [];
     collectMarkdown(resolve(repoRoot, "Policies"), repoRoot, paths);
     collectMarkdown(resolve(repoRoot, "Procedures"), repoRoot, paths);
+    // Phase A widening (D-BA-RETURN-DATA-CONTRACT): the BA-return reference layer
+    // (schemas/README.md, the obligations-adjacent instrument-analyses) is now in scope so
+    // the canonical numbering is gated there too — previously a blind spot.
+    collectMarkdown(resolve(repoRoot, "Regulations/SARB-PA/ba-returns"), repoRoot, paths);
   }
 
   let asserted = 0;
   const flaggedFiles = new Set<string>();
 
   for (const rel of paths) {
+    // The canonical register documents the forbidden pairs as corrections; never flag it.
+    if (NUMBERING_EXEMPT.has(rel)) continue;
     asserted++;
     let content: string;
     try {
