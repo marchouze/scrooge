@@ -137,6 +137,13 @@ const PENDING_REMEDIATION = new Set<string>([
   // authored. Author: Mira (Compliance / RegTech engineer) under Zara (Chief Compliance
   // Officer). ba-200.md (Credit Risk) and ba-330.md (IRRBB) are already canonical → not
   // listed (they must pass clean).
+  //
+  // TRACKED CARVE-OUT (charter command 5 — not silent deferral): the reporting-code
+  // replay-safe rename (ba-110-lcr.ts, ba-120-nsfr.ts, etc. → canonical forms) is a SEPARATE
+  // track owned by Bea/Atlas, recorded in _canonical-register.md §4 under
+  // D-BA-RETURN-NUMBERING-EXCEL-CANONICAL and carried forward under D-BA-RETURN-DATA-CONTRACT.
+  // It does not block this reference-layer remediation (cell contracts source from the XSDs,
+  // not the code) and is intentionally NOT scanned here.
   "Regulations/SARB-PA/ba-returns/ba-100.md", // titled BA 100=capital-adequacy; canonical BA 100 = Balance Sheet (capital is BA 700)
   "Regulations/SARB-PA/ba-returns/ba-110.md", // titled BA 110=LCR; canonical BA 110 = Off-Balance-Sheet Activities (LCR is BA 300)
   "Regulations/SARB-PA/ba-returns/ba-120.md", // titled BA 120=NSFR; canonical BA 120 = Income Statement (NSFR within BA 300 series)
