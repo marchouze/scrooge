@@ -78,6 +78,10 @@ const KNOWN_PROJECTIONS = new Set([
   "ba120-income-statement-fold",
   "ba600-consolidation-fold",
   "ba610-foreign-operations-fold",
+  // Phase C batch 2 — credit-family report folds (one per form).
+  "ba200-credit-risk-fold",
+  "ba210-large-exposures-fold",
+  "ba220-assets-bought-in-fold",
 ]);
 const KNOWN_REFERENCE_DATA_PREFIXES = ["legal-entity-tree", "party-register", "return-form-meta"];
 
@@ -154,6 +158,20 @@ const KNOWN_LEAF_BASE_TYPES = new Set([
   "CP_YesNo",
   "RegulatoryApproach",
   "SourceOfCapital",
+  // Phase C batch 2 — credit-family leaf types (BA 200 / BA 210 / BA 220).
+  // The XSD carries the spreadsheetML-escaped names for the parenthesised
+  // numeric types (e.g. `Number_x0020__x0028_19_x002C_2_x0029_` = "Number
+  // (19,2)"); both BA 210 and BA 220 variants are listed.
+  "Monetary1000NN", // non-negative Monetary1000 (BA 200 / BA 210)
+  "Date", // BA 220 — date bought-in / acquired
+  "Number_x0020__x0028_19_x002C_2_x0029_", // "Number (19,2)" — BA 210 exposure amounts
+  "Number_x0020__x0028_14_x002C_2_x0029_", // "Number (14,2)" — BA 220 currency
+  // BA 210 credit-category enum types.
+  "ExposureTypeBA210",
+  "ConnectionType",
+  "AssetClass",
+  "IndustryType",
+  "PD_bucket",
 ]);
 
 function isLeafBaseType(base: string): boolean {

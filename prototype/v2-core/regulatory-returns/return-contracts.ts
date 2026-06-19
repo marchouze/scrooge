@@ -22,7 +22,9 @@
 //
 // Authority: D-BA-RETURN-DATA-CONTRACT (CEO-approved 2026-06-19):
 //   Phase B = framework + BA 100 pilot; Phase C batch 1 = the financial family
-//   (BA 110, BA 120, BA 600, BA 610).
+//   (BA 110, BA 120, BA 600, BA 610); Phase C batch 2 = the credit family
+//   (BA 200, BA 210, BA 220) — the first batch with real product-attribute
+//   requirements the NPA gate binds on.
 // Author: Bea (Accounting and financial reporting engineer, engineering —
 //   reports to Camille (Chief Financial Officer)).
 
@@ -83,6 +85,27 @@ export const RETURN_CONTRACT_REGISTRY: readonly ReturnContractRegistryEntry[] = 
     contractJsonPath: jsonPath("ba610-contract.json"),
     xsdName: "BA610.xsd",
     schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA610.zip",
+  },
+  // Phase C batch 2 — the credit family (BA 200 / BA 210 / BA 220). The first
+  // batch to carry real product-attribute requirements a credit product must
+  // capture (the NPA gate binds on these). XSD names are version-suffixed.
+  {
+    form: "BA200",
+    contractJsonPath: jsonPath("ba200-contract.json"),
+    xsdName: "BA200_v15012026.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA200.zip",
+  },
+  {
+    form: "BA210",
+    contractJsonPath: jsonPath("ba210-contract.json"),
+    xsdName: "BA210.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA210.zip",
+  },
+  {
+    form: "BA220",
+    contractJsonPath: jsonPath("ba220-contract.json"),
+    xsdName: "BA220_v20022026.xsd",
+    schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA220.zip",
   },
 ];
 
