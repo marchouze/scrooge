@@ -86,6 +86,7 @@
     "recon:model-risk-gap-inventory": "bun run platform/recon/model-risk-gap-inventory.ts",
     "recon:calc-model-binding": "bun run platform/recon/calc-model-binding.ts",
     "recon:fx-model-validation-of-record": "bun run platform/recon/fx-model-validation-of-record.ts",
+    "recon:fx-data-feed-lineage": "bun run platform/recon/fx-data-feed-lineage.ts",
     "recon:seed-manifest-parity": "bun run platform/recon/seed-manifest-parity.ts",
     "recon:financial-constants-coverage": "bun run platform/recon/financial-constants-coverage.ts",
     "recon:basel-constants-coverage": "bun run platform/recon/basel-constants-coverage.ts",

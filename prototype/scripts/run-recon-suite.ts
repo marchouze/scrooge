@@ -550,6 +550,12 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:model-risk-gap-inventory",
     "recon:calc-model-binding",
     "recon:fx-model-validation-of-record",
+    // FX C8 (WS-FX-OTC-CLOSURE) — data-quality lineage audit. Asserts every FX
+    // rate-feed tick + settlement-confirmation event carries lineage-to-source;
+    // fail-closed on missing lineage. Closes the NPA gap `fx-data-feed-lineage-
+    // audit`. Authority: D-FX-OTC-CLOSURE-BACKLOG; D-OPERATING-BOOK-PROVENANCE-
+    // ARCHITECTURE.
+    "recon:fx-data-feed-lineage",
     "recon:seed-manifest-parity",
     "recon:financial-constants-coverage",
     "recon:basel-constants-coverage",
