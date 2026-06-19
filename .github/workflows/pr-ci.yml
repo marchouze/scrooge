@@ -119,6 +119,20 @@ jobs:
       # HISTORY proof is vacuous (the defect Nadia raised). Authority:
       # D-CASH-ASSET-CLASS-V1; D-FIL-FRAMEWORK-UNIFICATION.
       BANK_V2_ANCHOR_DB: .local/v2-anchor.db
+      # Pin the v2 control-plane store to the same repo-local path. `ci:migrate`'s
+      # backfill:v2-store-tee WRITES this store and the *-v2-parity gates READ it;
+      # both resolve via defaultControlPlanePath() (v2-core/control-plane/store.ts),
+      # which falls back to $HOME/.local/share/bank/v2-control-plane.db when this
+      # env var is unset. On a clean GitHub runner that home store is empty so the
+      # gates pass, but a developer/agent with an accumulated home control-plane
+      # store sees ~10 spurious parity failures that pass on CI — making local
+      # `bun run ci` non-reproducible against CI. Pinning it repo-local (mirroring
+      # BANK_V2_ANCHOR_DB above) makes both the write and the read hit the same
+      # store, never $HOME, so local runs reproduce CI regardless of home state.
+      # Authority: Engineering Charter command 7 (whole-tree integrity /
+      # reproducibility — full recon on a clean store); mirrors the
+      # D-CASH-ASSET-CLASS-V1 repo-local pin convention.
+      BANK_V2_CONTROL_PLANE_DB: .local/v2-control-plane.db
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -156,6 +170,13 @@ jobs:
       # WS-CASH-ASSET-CLASS / MV-CASH-001 — see recon-infra note. Pin the anchor
       # store so the backfill + any anchor-reading gate share one store.
       BANK_V2_ANCHOR_DB: .local/v2-anchor.db
+      # See recon-infra note. Pin the v2 control-plane store repo-local so
+      # ci:migrate's backfill:v2-store-tee (WRITE) and the *-v2-parity gates
+      # (READ) share one store and never fall back to $HOME — keeping local
+      # `bun run ci` reproducible against CI. Authority: Engineering Charter
+      # command 7 (whole-tree integrity / reproducibility); mirrors
+      # D-CASH-ASSET-CLASS-V1's repo-local pin convention.
+      BANK_V2_CONTROL_PLANE_DB: .local/v2-control-plane.db
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
