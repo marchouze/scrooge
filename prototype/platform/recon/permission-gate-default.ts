@@ -177,6 +177,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // ("approved with tracked deferred gaps"). Gate is a no-op on replay. Citation:
   // D-FX-OTC-NPA-SCOPE-EXPANSION, P4-SECURITY-DESIGNED-IN.
   "platform/recon/npa-deferred-gap-tracking.ts",
+  // BA-return cell-contract recon (D-BA-RETURN-DATA-CONTRACT) — read-only
+  // replay of ProductApproved events to enumerate the approved-product set the
+  // BA 100 cell-data-requirement contract sources from (assertion 3: every
+  // sourced cell's product refs are real approved products). Gate is a no-op
+  // on replay. Citation: D-BA-RETURN-DATA-CONTRACT, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/ba-return-cell-contract.ts",
   // NPA post-approval finding review recon (D-NPA-POST-APPROVAL-FINDING-REVIEW) —
   // read-only replay of ProductPostApprovalFinding + ProductDimensionRetrospectiveReview
   // events to assert every finding has a review within SLA. Gate is a no-op on

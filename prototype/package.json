@@ -90,6 +90,7 @@
     "recon:financial-constants-coverage": "bun run platform/recon/financial-constants-coverage.ts",
     "recon:basel-constants-coverage": "bun run platform/recon/basel-constants-coverage.ts",
     "recon:ba-form-numbering": "bun run platform/recon/ba-form-numbering.ts",
+    "recon:ba-return-cell-contract": "bun run platform/recon/ba-return-cell-contract.ts",
     "recon:ba320-ir-general-weighting-basis": "bun run platform/recon/ba320-ir-general-weighting-basis.ts",
     "recon:rwa-computed-sourcing": "bun run platform/recon/recon-rwa-computed-sourcing.ts",
     "recon:extraction-provenance": "bun run platform/recon/extraction-provenance.ts",
