@@ -79,10 +79,21 @@ const CITATIONS = [
 
 interface FilFxInstrument {
   readonly instanceUrn: string;
-  /** The non-ZAR currency (base leg). */
+  /**
+   * Notional-leg currency from `economicTerms.currency`. In the anchor-book FX
+   * materialisation this is the reporting (ZAR) notional leg — the FOREIGN
+   * exposure is carried on `pair` / `foreignCurrency`, NOT here. Do not key the
+   * per-currency breakdown on this field.
+   */
   readonly currency: string;
   /** Full pair string, e.g. "EUR/ZAR" or from hedgingSetTag. */
   readonly pair: string;
+  /**
+   * The FOREIGN (non-reporting) currency of the pair — the axis the per-currency
+   * P&L breakdown buckets on. Derived from `pair`. `undefined` for a degenerate
+   * reporting/reporting pair (no FX exposure → no currency bucket).
+   */
+  readonly foreignCurrency: string | undefined;
   /** Notional currency (= currency). */
   readonly notionalCurrency: string;
   /** Signed notional in major units (decimal string). Long = +, short = −. */
@@ -130,6 +141,41 @@ function buildMarketDataSlice(
     // marks the instrument as "unavailable" (no-silent-zero).
   }
   return { asOf: asOf as Instant, observables };
+}
+
+// ---------------------------------------------------------------------------
+// Derive the foreign (non-reporting) currency of an FX pair
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve the FOREIGN (non-reporting) currency of an FX instrument from its pair
+ * string (`BASE/QUOTE`, e.g. "USD/ZAR"). This is the axis the per-currency P&L
+ * breakdown buckets on — NOT `economicTerms.currency`, which in the anchor-book
+ * FX materialisation is ALWAYS the reporting (ZAR) notional leg (see
+ * scripts/seed-v2-fil-instances-ir-fx.ts: `currency: "ZAR"` + `hedgingSetTag`).
+ * Keying byCurrency on `economicTerms.currency` therefore dropped EVERY bucket
+ * (each `currency === reporting`) and left `byCurrency` empty even though the
+ * headline total was non-zero.
+ *
+ * Returns the leg of the pair that is not the resolved reporting currency. When
+ * neither leg is foreign (a degenerate reporting/reporting pair) returns
+ * `undefined` — such a position carries no FX P&L and forms no currency bucket
+ * (consistent with the V1 engine, which skips the reporting leg). Compared
+ * against the resolved reporting currency, NOT a literal "ZAR" (Charter cmd 4).
+ * WS-MULTI-BASE-CURRENCY.
+ */
+function foreignCurrencyOf(pair: string, reporting: string): string | undefined {
+  const slash = pair.indexOf("/");
+  if (slash <= 0 || slash === pair.length - 1) {
+    // Not a BASE/QUOTE pair: treat the whole token as a currency (foreign only
+    // if it differs from reporting).
+    return pair !== reporting ? pair : undefined;
+  }
+  const base = pair.slice(0, slash);
+  const quote = pair.slice(slash + 1);
+  if (base !== reporting) return base;
+  if (quote !== reporting) return quote;
+  return undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -225,6 +271,7 @@ export function computeDailyPnLV2(
         instanceUrn: instance,
         currency,
         pair,
+        foreignCurrency: foreignCurrencyOf(pair, reporting),
         notionalCurrency: currency,
         signedNotional: signedNotional(notionalAmount, direction),
         counterpartyId,
@@ -341,14 +388,22 @@ export function computeDailyPnLV2(
     // we only prove the MTM (unrealised) component equivalence at Gap A2).
     const unrealisedForReporting = markStatus === "live" ? unrealisedZarMinor : 0;
 
-    // Aggregate by currency. Skip the reporting (functional) currency itself —
-    // domestic cash carries no FX P&L. Compared against the resolved reporting
-    // currency, NOT a literal "ZAR" (Charter cmd 4). WS-MULTI-BASE-CURRENCY.
-    if (inst.currency !== reporting) {
-      const cr = byCurrencyMap.get(inst.currency) ?? { trades: 0, unrealised: 0, realised: 0 };
+    // Aggregate by the FOREIGN (non-reporting) currency of the pair — derived
+    // from the hedgingSetTag pair, NOT `economicTerms.currency` (which is the
+    // reporting ZAR notional leg in the anchor-book FX materialisation, so
+    // keying on it dropped every bucket and left byCurrency empty while the
+    // headline was non-zero). A position with no foreign leg carries no FX P&L
+    // and forms no bucket — consistent with the V1 engine, which skips the
+    // reporting leg. See foreignCurrencyOf. WS-MULTI-BASE-CURRENCY; Charter cmd 4.
+    if (inst.foreignCurrency !== undefined) {
+      const cr = byCurrencyMap.get(inst.foreignCurrency) ?? {
+        trades: 0,
+        unrealised: 0,
+        realised: 0,
+      };
       cr.trades++;
       if (markStatus === "live") cr.unrealised += unrealisedForReporting;
-      byCurrencyMap.set(inst.currency, cr);
+      byCurrencyMap.set(inst.foreignCurrency, cr);
     }
 
     // Aggregate by counterparty
