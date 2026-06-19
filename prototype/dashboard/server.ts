@@ -506,15 +506,22 @@ function buildCapitalPositions(): CapitalMetrics | null {
   return computeCapitalMetrics(eventStore, nowUtc());
 }
 
-// V1-removal Phase 4 (D-V1-REMOVAL-PHASE-4): presentation-boundary promotion of
-// the V2 market-risk figure into the primary VaR/SVaR/ES fields. The projection
-// (getMarketRiskMeasure) already folds the V2 MarketRiskVarComputed event and
-// exposes it as `v2Measure`; this helper re-points the headline figures at it
-// when useV2Store is ON, re-deriving utilisation + RAG against the SAME appetite
-// the V1 path uses (no new appetite, no projection mutation). When the V2 measure
-// is absent the view is returned unchanged (no silent zero — the V1 lineage and
-// absent-reason are preserved). RAG bands mirror the projection (amber 0.8, red
-// 1.0 of the VaR appetite — D-B3-6).
+// Presentation-boundary promotion of the V2 market-risk figure into the primary
+// VaR/SVaR/ES fields. The projection (getMarketRiskMeasure) already folds the V2
+// MarketRiskVarComputed event and exposes it as `v2Measure`; this helper
+// re-points the headline figures at it, re-deriving utilisation + RAG against
+// the SAME appetite the V1 path uses (no new appetite, no projection mutation).
+//
+// WS-FX-OTC-CLOSURE A3 (D-FX-OTC-CLOSURE-BACKLOG, CEO-approved 2026-06-19): this
+// promotion is now the UNCONDITIONAL serving path for /api/risk/market-risk-
+// measure (the `useV2Store` flag no longer gates it) — the V2 VaR is
+// authoritative at the route boundary. When the V2 measure is ABSENT (flat book
+// / insufficient history → the V2 emitter is fail-closed and emits nothing) the
+// view is returned UNCHANGED: the V1 lineage and loud absent-reason are
+// preserved, never a silent zero (Charter cmd 5). The promotion is reversible —
+// it retires no V1 event (MarketRiskMeasureComputed stays v1-only) and re-points
+// only the served figure. RAG bands mirror the projection (amber 0.8, red 1.0 of
+// the VaR appetite — D-B3-6).
 const MARKET_RISK_AMBER_THRESHOLD = 0.8;
 const MARKET_RISK_RED_THRESHOLD = 1.0;
 
@@ -546,7 +553,7 @@ function promoteMarketRiskV2(view: MarketRiskMeasureView): MarketRiskMeasureView
     esZar: v2.esZar,
     utilisationPct: utilisationPct === null ? null : Math.min(utilisationPct, 9.99),
     ragStatus,
-    lineage: `V2 read (useV2Store ON): MarketRiskVarComputed asOf ${v2.asOf}, tenant ${v2.tenantId}. ${view.lineage}`,
+    lineage: `V2 AUTHORITATIVE (A3 cutover): MarketRiskVarComputed asOf ${v2.asOf}, tenant ${v2.tenantId}. ${view.lineage}`,
   };
 }
 
@@ -4362,21 +4369,40 @@ const server = Bun.serve({
       // MR-1-FX VaR appetite. The risk-calibrated rung of the appetite stack;
       // surfaced on the CRO risk page alongside the RAS clusters.
       //
-      // V1-removal Phase 4 (D-V1-REMOVAL-PHASE-4): the projection already folds
-      // the V2 `MarketRiskVarComputed` event in parallel and exposes it as
-      // `v2Measure`. When useV2Store is ON we promote that V2 figure into the
-      // primary VaR/SVaR/ES fields (re-deriving utilisation + RAG against the
-      // same appetite) at the route boundary — projection untouched. When OFF
-      // (default), the V1 figure stays authoritative — fully reversible.
+      // V2-AUTHORITATIVE CUTOVER (WS-FX-OTC-CLOSURE A3; D-FX-OTC-CLOSURE-BACKLOG,
+      // CEO-approved 2026-06-19). The FX market-risk-measure serving path now
+      // promotes the V2 `MarketRiskVarComputed` figure UNCONDITIONALLY (the
+      // `useV2Store` flag no longer gates THIS route) — mirroring the A2
+      // daily-P&L cutover (PR #1446).
+      //
+      // Why this is the honest cutover, and how it DIFFERS from A2:
+      //   - A2's V1 source events were retired-by-construction (un-emittable
+      //     `*Minor` schemas), so its V1 engine was structurally DEAD and serving
+      //     V1 meant serving an empty report. A3 is NOT that shape:
+      //     `MarketRiskMeasureComputed` (V1) is `v2Status: "v1-only"` and FULLY
+      //     EMITTABLE (its schema carries major-unit float figures, no `*Minor`
+      //     fields). It is NOT retired-by-construction and MUST NOT be flipped to
+      //     `v2-replaced` — that has no parity proof + no CEO flip Decision, and
+      //     would trip the fx-v2-parity premature-replaced sentinel.
+      //   - The honest A3 cutover is therefore a ROUTE-BOUNDARY promotion, fully
+      //     reversible: the V2 figure (emitted by var-engine-v2.ts from the SAME
+      //     standing-NOP fold + ported historical-simulation kernel as V1, via
+      //     the rohan-market-risk-measure dual-emit) becomes the served headline
+      //     VaR/SVaR/ES whenever a V2 event exists.
+      //   - NO SILENT ZERO (Charter cmd 5): `promoteMarketRiskV2` returns the V1
+      //     view UNCHANGED when no V2 figure is present (flat book / insufficient
+      //     history → the V2 emitter is fail-closed and emits nothing). In that
+      //     data-empty state the loud V1 absent-reason lineage is preserved — the
+      //     route never serves a fabricated 0. This is the same data-empty state
+      //     the recon:var-v2-parity byte-parity leg leaves advisory.
+      // Authority: D-FX-OTC-CLOSURE-BACKLOG; D-BANK-WIDE-V2-MIGRATION;
+      //   D-V1-REMOVAL-PHASE2-GAP-A3; D-FIL-ATTRIBUTION-A1-BUILD; D-B3-5 (R8).
       const measureEvents = [
         ...eventStore.replay({ type: "MarketRiskMeasureComputed" }),
         ...eventStore.replay({ type: "MarketRiskVarComputed" }),
       ];
       const measureView = getMarketRiskMeasure(measureEvents);
-      if (isFlagEnabled("useV2Store")) {
-        return jsonResponse(promoteMarketRiskV2(measureView));
-      }
-      return jsonResponse(measureView);
+      return jsonResponse(promoteMarketRiskV2(measureView));
     }
     if (url.pathname.startsWith("/api/regulatory-returns/") && req.method === "GET") {
       // WS-V2-AUTHORITATIVE S9 — read-only regulatory-returns route boundary for

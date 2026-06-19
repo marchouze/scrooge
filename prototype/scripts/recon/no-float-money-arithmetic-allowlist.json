@@ -17,32 +17,32 @@
     },
     {
       "file": "dashboard/server.ts",
-      "line": 630,
+      "line": 637,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 631,
+      "line": 638,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 721,
+      "line": 728,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 741,
+      "line": 748,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 764,
+      "line": 771,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 765,
+      "line": 772,
       "pattern": "money-multiply/divide"
     },
     {
