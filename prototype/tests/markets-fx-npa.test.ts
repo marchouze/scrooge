@@ -268,7 +268,10 @@ async function bootServer(): Promise<BootedServer> {
   return { process: proc, port, tmpDir: serverTmpDir };
 }
 
-describe("FX Slice 7 — GET /api/markets/fx/products/attestation (server smoke)", () => {
+describe("FX NPA — GET /api/v2/markets/fx/npa (server smoke, V2 read)", () => {
+  // MIGRATED (FU5; D-FX-OTC-CLOSURE-BACKLOG) from the retired
+  // GET /api/markets/fx/products/attestation legacy route to the name-free V2
+  // surface the desk NPA badge strip now reads.
   let booted: BootedServer | null = null;
 
   beforeAll(async () => {
@@ -282,20 +285,24 @@ describe("FX Slice 7 — GET /api/markets/fx/products/attestation (server smoke)
     }
   });
 
-  it("8. returns 200 with correct shape (attestations array, 4 rows, asOf)", async () => {
+  it("8. returns 200 with the V2 npa shape (productId + attestations array, honest empty state)", async () => {
     if (!booted) throw new Error("server not booted");
-    const res = await fetch(`http://127.0.0.1:${booted.port}/api/markets/fx/products/attestation`, {
+    const res = await fetch(`http://127.0.0.1:${booted.port}/api/v2/markets/fx/npa`, {
       headers: { Accept: "application/json" },
     });
     expect(res.status).toBe(200);
     const body = (await res.json()) as Record<string, unknown>;
-    // Shape checks.
+    // V2 shape checks: { productId, attestations, dataState, reason, pageProvenance }.
+    expect(body).toHaveProperty("productId");
     expect(body).toHaveProperty("attestations");
-    expect(body).toHaveProperty("asOf");
+    expect(body).toHaveProperty("dataState");
     expect(Array.isArray(body.attestations)).toBe(true);
     const attestations = body.attestations as Array<{ productCode: string; status: string }>;
     expect(attestations).toHaveLength(4);
-    // Fresh empty store → all pending.
+    // Fresh build-phase store → no ProductApproved/Withheld → all pending +
+    // honest "empty" dataState with a reason (never a silent zero).
+    expect(body.dataState).toBe("empty");
+    expect(body.reason).toBeTruthy();
     for (const att of attestations) {
       expect(att).toHaveProperty("productCode");
       expect(att).toHaveProperty("status");

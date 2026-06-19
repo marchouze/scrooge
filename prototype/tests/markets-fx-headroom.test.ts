@@ -1,7 +1,19 @@
 // tests/markets-fx-headroom.test.ts
 //
-// FX desk Slice 3 — tests for the seed-data pricer, RFQ lifecycle events,
-// and the headroom panel view builder.
+// FX desk — tests for the seed-data pricer + RFQ lifecycle events (V1 WRITE
+// path, retained) and the V2 headroom panel (V2 READ surface).
+//
+// READ-path migration (FU5; D-FX-OTC-CLOSURE-BACKLOG): the headroom-panel
+// assertions moved from the retired V1 `buildHeadroomView` (markets-fx-headroom.ts)
+// to `buildV2FxHeadroomView` (dashboard/v2-markets-fx-view.ts), the FIL-sourced
+// B3 (FX net-open-position) view the desk + risk pages now read. The V2 headroom
+// is a SINGLE B3 row (only the FX cluster is V2-fed) with an honest dataState +
+// reason — never the V1 five-row table. The deep B3 derivation is proven by
+// tests/fil-fx-limit-utilisation-v2.test.ts; this suite guards the panel shape +
+// honest empty state the desk consumes.
+//
+// WRITE path (unchanged): loadSeedRate / quoteRfq / emitTrade remain V1 — there
+// is no V2 trade-execution endpoint (FIL is materialised FROM V1 trades).
 //
 // Scope:
 //   - loadSeedRate: resolves USD/ZAR from seeds/fx-rates.json (major-first
@@ -9,12 +21,11 @@
 //   - quoteRfq: bid < mid < offer for seed-data pricer; source label updated.
 //   - emitTrade: RfqRequested emitted before FxTradeExecuted; QuoteResponded
 //     emitted before FxTradeExecuted; payload field correctness.
-//   - buildHeadroomView: returns 5 rows (B1–B5) zero-state; RAG thresholds;
-//     utilisation > 0 after FxTradeExecuted with active schedule.
+//   - buildV2FxHeadroomView: single B3 row; honest "empty" on a FIL-empty store;
+//     name-free; scope note present.
 //
-// Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10)
-// Authors: Kai (Trading systems engineer, engineering) + Rohan (Risk engineer)
-//          + Helena (Chief Risk Officer, governance)
+// Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10);
+//            D-FX-OTC-CLOSURE-BACKLOG (CEO-approved 2026-06-19)
 
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -22,7 +33,6 @@ import { join } from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 
-import { buildHeadroomView } from "../dashboard/markets-fx-headroom";
 import {
   SYNTHETIC_HALF_SPREAD,
   SYNTHETIC_USDZAR_MID,
@@ -30,12 +40,14 @@ import {
   loadSeedRate,
   quoteRfq,
 } from "../dashboard/markets-fx-trade";
+import { buildV2FxHeadroomView } from "../dashboard/v2-markets-fx-view";
 import {
   makeCounterpartyEligibilityScreened,
   makeRasLimitSchedulePublished,
 } from "../platform/event-store/event-types";
 import { EventStore } from "../platform/event-store/store";
 import type { Actor } from "../platform/event-store/types";
+import { MarketDataStore } from "../platform/market-data/store";
 
 // ---------------------------------------------------------------------------
 // Test fixtures
@@ -64,6 +76,10 @@ afterAll(() => {
 function freshStore(): EventStore {
   const path = join(tmpDir, `event-${Math.random().toString(36).slice(2)}.db`);
   return new EventStore(path);
+}
+
+function freshMarketData(): MarketDataStore {
+  return new MarketDataStore(join(tmpDir, `md-${Math.random().toString(36).slice(2)}.db`));
 }
 
 function seedEligibleCounterparty(store: EventStore, counterpartyId: string): void {
@@ -315,103 +331,70 @@ describe("emitTrade — Slice 3 event sequence", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 4. buildHeadroomView — five rows, zero-state and active-schedule cases
+// 4. buildV2FxHeadroomView — V2 B3 (FX) panel: single row, honest empty state
+//    (MIGRATED from the retired V1 buildHeadroomView five-row table).
 // ---------------------------------------------------------------------------
 
-describe("buildHeadroomView", () => {
-  it("returns exactly 5 rows (B1–B5) in zero-state (no events)", () => {
-    const store = freshStore();
-    const view = buildHeadroomView(store);
-    expect(view.rows).toHaveLength(5);
-    const clusters = view.rows.map((r) => r.cluster);
-    expect(clusters).toContain("B1");
-    expect(clusters).toContain("B2");
-    expect(clusters).toContain("B3");
-    expect(clusters).toContain("B4");
-    expect(clusters).toContain("B5");
+describe("buildV2FxHeadroomView", () => {
+  it("returns a single B3 (FX) row with a scope note — not the V1 five-cluster table", () => {
+    const view = buildV2FxHeadroomView(freshStore(), freshMarketData(), T_NOW);
+    expect(view.b3.cluster).toBe("B3");
+    // Only the FX cluster is V2-fed; the scope note states the other clusters
+    // stay V1 so the panel never implies it is the whole RAS headroom view.
+    expect(view.scopeNote).toContain("B3");
   });
 
-  it("zero-state: all rows green, zero exposure, zero limit", () => {
-    const store = freshStore();
-    const view = buildHeadroomView(store);
-    for (const row of view.rows) {
-      expect(row.ragStatus).toBe("green");
-      expect(row.currentExposure).toBe(0);
-      expect(row.limitValue).toBe(0);
-    }
+  it("FIL-empty store → honest 'empty' dataState with a reason, never a silent zero", () => {
+    // No FIL FX instruments on a fresh store → BA-320 V2 coverage = no-data.
+    const view = buildV2FxHeadroomView(freshStore(), freshMarketData(), T_NOW);
+    expect(view.dataState).toBe("empty");
+    expect(view.reason).toBeTruthy();
+    expect(view.coverageStatus).toBe("no-data");
+    expect(view.b3.openInstanceCount).toBe(0);
   });
 
-  it("returns a valid asOf timestamp", () => {
-    const store = freshStore();
-    const view = buildHeadroomView(store);
-    expect(typeof view.asOf).toBe("string");
-    expect(view.asOf.length).toBeGreaterThan(0);
-  });
-
-  it("after RasLimitSchedulePublished + FxTradeExecuted: all 5 rows are present with valid structure", () => {
-    // The LimitUtilisationProjection reads legs[0].notional.amountMinor from
-    // FxTradeExecuted (CDM structure) and divides by 100 to get major-unit
-    // exposure. B3 utilisation must be > 0 after a trade fires.
-    const store = freshStore();
-    const CP_ID = "cp:headroom-active-1";
-    seedRasSchedule(store);
-    seedEligibleCounterparty(store, CP_ID);
-
-    const result = emitTrade({
-      store,
-      input: {
-        counterpartyId: CP_ID,
-        currencyPair: "USD/ZAR",
-        side: "buy",
-        notional: 1_000_000,
-        valueDate: VALUE_DATE,
-      },
-      asOf: T_NOW,
-    });
-
-    expect(result.status).toBe("ok");
-    const view = buildHeadroomView(store);
-    expect(view.rows).toHaveLength(5);
-    const b3 = view.rows.find((r) => r.cluster === "B3");
-    expect(b3).toBeDefined();
-    expect(b3?.limitValue).toBe(100_000_000);
-    expect(typeof b3?.utilisationPct).toBe("number");
-    expect(b3?.utilisationPct).toBeGreaterThan(0);
-  });
-
-  it("ragStatus green when utilisationPct < 0.70", () => {
-    // Zero-state has 0% utilisation — always green.
+  it("with a B3 RAS limit but no FIL FX exposure: limit present, utilisation absent (no fabricated %)", () => {
+    // Publishing the RAS schedule supplies the B3 limit, but with no FIL FX
+    // instruments there is no exposure → utilisation cannot be computed. The V2
+    // panel surfaces the limit honestly and leaves utilisation null rather than
+    // fabricating a zero-over-limit ratio.
     const store = freshStore();
     seedRasSchedule(store);
-    const view = buildHeadroomView(store);
-    for (const row of view.rows) {
-      expect(row.ragStatus).toBe("green");
-    }
+    const view = buildV2FxHeadroomView(store, freshMarketData(), T_NOW);
+    expect(view.b3.cluster).toBe("B3");
+    expect(view.dataState).toBe("empty");
+    expect(view.b3.openInstanceCount).toBe(0);
   });
 
-  it("ragStatus amber when utilisationPct in [0.70, 0.90)", () => {
-    // Inject a PositionUpdated-style scenario: emit a large trade that
-    // pushes B3 into the amber band. B3 limit = 100,000,000 ZAR;
-    // amber threshold = 0.70. Need notional * some_fx_rate > 70,000,000.
-    // No FX trades fired — zero exposure across all clusters; all green.
+  it("name-free: the B3 limit label carries no persona name", () => {
+    // The V2 boundary uses a stable cluster label, never the raw RAS limitName
+    // prose (which can carry seeded persona names). Seed a schedule whose B3
+    // limitName embeds a name and assert it does not leak through.
     const store = freshStore();
-    seedRasSchedule(store);
-    // Emit events but check the projection correctly handles them.
-    const view = buildHeadroomView(store);
-    // B2, B4, B5 have no trades — should be green.
-    const b2 = view.rows.find((r) => r.cluster === "B2");
-    expect(b2?.ragStatus).toBe("green");
-  });
-
-  it("ragStatus red when utilisationPct >= 0.90", () => {
-    // Verify the projection honours the red threshold by checking that a
-    // zero-exposure row (no trades) never reports red.
-    const store = freshStore();
-    seedRasSchedule(store);
-    const view = buildHeadroomView(store);
-    for (const row of view.rows) {
-      // With no trades only green is possible.
-      expect(row.ragStatus).not.toBe("red");
-    }
+    store.append(
+      makeRasLimitSchedulePublished({
+        asOf: T_NOW,
+        entity: ENTITY,
+        actor: KAI_ACTOR,
+        citations: CITATIONS,
+        payload: {
+          scheduleId: "sched:name-leak-check",
+          publishedBy: "helena@bank",
+          effectiveFrom: T_NOW,
+          limits: [
+            {
+              cluster: "B3",
+              limitName: "Market Risk FX — Helena §1.4 appetite",
+              limitValue: 100_000_000,
+              currency: "ZAR",
+              breachThresholdAmber: 0.7,
+              breachThresholdRed: 0.9,
+            },
+          ],
+        },
+      }),
+    );
+    const view = buildV2FxHeadroomView(store, freshMarketData(), T_NOW);
+    expect(JSON.stringify(view)).not.toContain("Helena");
   });
 });

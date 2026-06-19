@@ -1,23 +1,27 @@
 // tests/markets-fx-risk.test.ts
 //
-// FX desk Slice 5 — tests for the risk-officer view builder and API endpoints.
+// FX desk Slice 5 — tests for the risk-officer view.
+//
+// READ-path split after FU5 (D-FX-OTC-CLOSURE-BACKLOG):
+//   - The REJECTION feed migrated to the V2-native panel
+//     `buildV2FxRejectionsView` (the FX risk page reads
+//     GET /api/v2/markets/fx/rejections). Its V2-shape + honest-empty contract
+//     is asserted below.
+//   - The CORRESPONDENT-routing status has NO V2 equivalent, so the legacy
+//     `/api/markets/fx/risk` route + `buildRiskView` (markets-fx-risk.ts) are
+//     RETAINED as the tracked FU5 residual. Its correspondent-routing /
+//     switch-test behaviour is still validated here against `buildRiskView`.
 //
 // Scope:
-//   1. buildRiskView returns correct shape.
-//   2. Empty store → zero rejections, correspondentStatus.primary === null.
-//   3. One OrderRejectedAtGateway event → one rejection row.
-//   4. Multiple events → newest-first ordering.
-//   5. 51 events → feed capped at 50.
-//   6. RejectionFeedRow has all required fields.
-//   7. correspondentStatus.switchTestActive reflects SwitchTestActivated event.
-//   8. GET /api/markets/fx/risk returns 200 with correct shape.
-//   9. GET /api/markets/fx/rejections returns 200 with rejections array.
-//   10. No crash on empty store.
+//   1. buildRiskView returns correct shape (retained residual).
+//   2. Empty store → correspondentStatus defaults sane.
+//   3. correspondentStatus.switchTestActive reflects SwitchTestActivated/Ended.
+//   4. buildV2FxRejectionsView: V2 rejection-row shape; honest empty on no V2
+//      events; never falls back to V1; carries the tracked substrate gap.
+//   5. No crash on empty store.
 //
-// Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10)
-// Authors: Kai (Trading systems engineer, engineering) +
-//          Helena (Chief Risk Officer, governance) +
-//          Tomas (Operations & payments engineer, engineering)
+// Authority: D-FX-SALES-TRADING-FRONTEND (CEO-approved 2026-05-10);
+//            D-FX-OTC-CLOSURE-BACKLOG (CEO-approved 2026-06-19)
 
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -26,6 +30,7 @@ import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 
 import { buildRiskView } from "../dashboard/markets-fx-risk";
+import { type V2FxRejectionRow, buildV2FxRejectionsView } from "../dashboard/v2-markets-fx-view";
 import {
   makeOrderRejectedAtGateway,
   makeSwitchTestActivated,
@@ -289,26 +294,18 @@ describe("buildRiskView — switchTestActive", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 8 & 9. HTTP endpoints — unit-tested via the view builder (no server spawn)
+// 8. Correspondent-routing residual — GET /api/markets/fx/risk shape (retained).
 //
-// The server integration path (spawning a real Bun process) is brittle in
-// isolated test runs because the server's boot path replays the global event
-// store, registers fleet workers, and other side-effects that require a full
-// environment. The unit tests below exercise the same code paths by calling
-// buildRiskView directly (which is exactly what the server handler calls) and
-// asserting the response shape. A full server-level smoke test is covered by
-// the broader CI suite (scenario tests).
+// The legacy /api/markets/fx/risk route is RETAINED for correspondent routing
+// (no V2 equivalent). Assert the shape the server endpoint still returns via
+// buildRiskView (exactly what the handler calls), so the FU5 residual stays
+// honest.
 // ---------------------------------------------------------------------------
 
-describe("HTTP API shape (via buildRiskView — endpoint contract tests)", () => {
-  it("response shape for /api/markets/fx/risk matches expected contract", () => {
+describe("HTTP API shape — /api/markets/fx/risk residual (via buildRiskView)", () => {
+  it("response shape carries correspondentStatus the risk page reads", () => {
     const store = freshStore();
-    appendRejection(store, "ord:api-test-1", T_BASE);
-
     const view = buildRiskView(store);
-
-    // Assert the shape the server endpoint would return.
-    expect(Array.isArray(view.rejections)).toBe(true);
     expect(typeof view.correspondentStatus).toBe("object");
     expect("primary" in view.correspondentStatus).toBe(true);
     expect("backup" in view.correspondentStatus).toBe(true);
@@ -316,19 +313,44 @@ describe("HTTP API shape (via buildRiskView — endpoint contract tests)", () =>
     expect("asOf" in view.correspondentStatus).toBe(true);
     expect(typeof view.asOf).toBe("string");
   });
+});
 
-  it("response shape for /api/markets/fx/rejections matches expected contract", () => {
-    const store = freshStore();
-    appendRejection(store, "ord:api-test-2", T_BASE);
+// ---------------------------------------------------------------------------
+// 9. Rejection feed — MIGRATED to the V2-native panel buildV2FxRejectionsView
+//    (GET /api/v2/markets/fx/rejections). The reader is injected so the test
+//    never touches the home control-plane store.
+// ---------------------------------------------------------------------------
 
-    // The rejections endpoint returns { rejections, asOf } — a sub-slice of the risk view.
-    const view = buildRiskView(store);
-    const rejectionPayload = { rejections: view.rejections, asOf: view.asOf };
+describe("buildV2FxRejectionsView — V2 rejection feed", () => {
+  const SAMPLE_ROW: V2FxRejectionRow = {
+    eventId: "evt:v2-rej-1",
+    orderId: "ord:v2-api-test",
+    currencyPair: "USD/ZAR",
+    counterpartyId: "cp:test-1",
+    rejectingCheck: "sanctions",
+    rejectionReason: "sanctions-hit",
+    citationToRule: "D-FX-SALES-TRADING-FRONTEND",
+    timestamp: T_BASE,
+  };
 
-    expect(Array.isArray(rejectionPayload.rejections)).toBe(true);
-    expect(typeof rejectionPayload.asOf).toBe("string");
-    const first = rejectionPayload.rejections[0];
-    expect(first?.orderId).toBe("ord:api-test-2");
+  it("honest 'empty' on no V2 events — never falls back to V1, carries the substrate gap", () => {
+    const view = buildV2FxRejectionsView(() => []);
+    expect(view.dataState).toBe("empty");
+    expect(view.count).toBe(0);
+    expect(view.rows).toEqual([]);
+    expect(view.reason).toBeTruthy();
+    expect(view.substrateGap).toContain("V2 gateway-rejection");
+  });
+
+  it("'live' with V2 rows — surfaces the V2 rejection-row shape the risk page reads", () => {
+    const view = buildV2FxRejectionsView(() => [SAMPLE_ROW]);
+    expect(view.dataState).toBe("live");
+    expect(view.count).toBe(1);
+    const first = view.rows[0];
+    expect(first?.orderId).toBe("ord:v2-api-test");
+    expect(first?.rejectingCheck).toBe("sanctions");
+    expect(typeof first?.rejectionReason).toBe("string");
+    expect(typeof first?.timestamp).toBe("string");
   });
 });
 
