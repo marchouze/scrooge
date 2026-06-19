@@ -44,6 +44,20 @@ Every deliverable that records a decision, dispatches work, files a record, or e
 
 **Authority: `D-ENGINEERING-INTEGRITY-CHARTER` (CEO-approved 2026-06-14). Canonical text: [`Engineering-Charter.md`](Engineering-Charter.md).** All coding takes the *proper* path, never the pragmatic/fast shortcut — and the bias is durable, not session-dependent. Ten standing commands: (1) root-cause before remedy; (2) fail-closed by default; (3) no green by concealment (no skipped tests / suppressed types / weakened assertions / loosened ratchets without a recorded Decision; ratchets harden only); (4) source, don't hardcode; (5) no silent deferral (gaps become typed events + register entries); (6) the type system is a tool, not an obstacle (no `any`/`!`/`@ts-ignore`; errors handled, never swallowed); (7) whole-tree integrity (full `tsc` + full recon on a clean store; no partial passes); (8) traceability before code (Principle 2); (9) replay-safe & append-only (Principle 1); (10) the Definition of Done checklist gates "done". Four enforcing recon gates back the commands — `recon:no-ts-suppression`, `recon:no-skipped-tests`, `recon:no-swallowed-errors`, `recon:tracked-todo` — plus the advisory meta-gate `recon:ratchet-hardening-only`. A change is *done* only when the Charter's Definition of Done holds; claiming otherwise is itself a violation.
 
+### V1 retirement — no new dependency, near-term full removal
+
+**Authority: `D-V1-REMOVAL-PHASE-1` (CEO-approved 2026-06-15); extended by CEO session-delegation 2026-06-19 to a standing no-new-dependency + near-term full-retirement directive.** This sits under the Engineering Charter (Charter commands 1 root-cause, 4 source-don't-hardcode, 5 no-silent-deferral, 3 ratchets-harden-only).
+
+Two binding rules, no exceptions absent a recorded Decision:
+
+1. **Never embed new V1 dependency.** New code never imports V1 modules (route through the `v2-core/` canonical homes, never the v1 re-export shims) and never emits `v1-only` event types — every new event type is born V2 (`v2status` `v2-parallel` or `v2-replaced`). The `v1-only` count is harden-only and must trend to zero. Adding *any* new `v1-only` type or V1 importer requires an explicit CEO-approved `Decision` (category `engineering`) recorded via `recordDecision`, and is the rare exception — not the default path.
+
+2. **Actively retire V1, near-term.** V1 removal is a standing priority of the build phase, not background cleanup. Whenever an agent touches a module that still depends on V1, it retires that dependency in the same change wherever feasible (root-cause, not defer). Each run that can flip a type `v1-only → v2-parallel → v2-replaced` does so and ratchets the baseline down in the same PR. Target end-state: **zero `v1-only` event types and zero v1 re-export shims.**
+
+**Enforcement.** Four recon gates back this directive — `recon:v2-no-v1-import` (no new V1 imports), `recon:v1-removal-ratchet` (harden-only `v1-only` count, baseline 585 as of 2026-06-15, decreases only), `recon:v1-removal-v2status-coverage` (every type carries a `v2status`), and `recon:v1-only-count-trend` (count moves down over time). A V1 dependency added without a backing Decision is a Vera recon finding and an Engineering-Charter command-5 violation.
+
+**Dispatch discipline.** Every dispatch brief touching accounting, posting-rules, or event-schema scope states the V1-retirement expectation in-line: import only V2, flip what you touch, never widen the `v1-only` estate. Dispatches cite this section alongside the Engineering Charter.
+
 ### Deliverables
 
 **Direction of travel:** all deliverables route through the Records Management Substrate (RMS) — see `D-RMS-PHASE-1` and the Phase-1 spec at `Owner Inbox/2026-05-09_owen-atlas_records-management-substrate_phase-1-spec.md`. RMS lands seven typed events + a content-addressed document store + seven projection-derived registers (Decisions, Correspondence, Records-of-agent-runs, Document, Feedback, Briefs / dispatches, Workstreams).
