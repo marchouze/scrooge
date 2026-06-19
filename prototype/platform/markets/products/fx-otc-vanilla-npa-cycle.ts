@@ -42,15 +42,50 @@
 // D-NPA-GATE-POLICY-REDESIGN, implementation-attested passes unconditionally and
 // design-attested-WITH-a-tracked-gap passes with a recorded open condition; a
 // design-attested-NO-gap or a `failed` dimension blocks. With the honest set
-// here under the Amendment A re-check — 4 implementation-attested (market-risk,
-// liquidity-risk, operational-readiness, accounting — each citing a green,
-// non-vacuous completeness recon) + 11 design-attested-with-gaps (credit-risk,
-// operational-risk, capital, conduct, aml, model-risk, legal, infosec, privacy,
-// tax, data-quality) — the gate is `ready` with open conditions → an
-// **INTERNAL-TEST-scope** `ProductApproved` is the honest result. We do NOT emit
-// a production-scope approval: production is gated on closing every tracked gap
-// and on the real-counterparty / external-counsel triggers. The `approvedBy`
+// here under the Amendment A re-check + the FU2 evidence promotion (2026-06-19,
+// WS-FX-OTC-CLOSURE) — 6 implementation-attested (market-risk, liquidity-risk,
+// operational-readiness, accounting, model-risk, data-quality — each citing a
+// GREEN, non-vacuous completeness recon RUN on the clean ci:migrate store) + 9
+// design-attested-with-gaps (credit-risk, operational-risk, capital, conduct,
+// aml, legal, infosec, privacy, tax) — the gate is `ready` with open conditions
+// → an **INTERNAL-TEST-scope** `ProductApproved` is the honest result. We do NOT
+// emit a production-scope approval: production is gated on closing every tracked
+// gap and on the real-counterparty / external-counsel triggers. The `approvedBy`
 // tag and the `conditions[]` carry that boundary explicitly.
+//
+// FU2 HONEST RE-ATTESTATION (2026-06-19, D-FX-OTC-CLOSURE-BACKLOG) — two
+// dimensions previously design-attested are PROMOTED to implementation-attested
+// because two green, non-vacuous completeness recons now exist and were RUN on
+// the clean ci:migrate store (Charter command 3 — evidence, not assertion):
+//   - model-risk → implementation-attested: `recon:fx-model-validation-of-record`
+//     (PR #1453) is GREEN and non-vacuous on the gated store (asserted=2 — both
+//     FX models carry a genuine `agent:nadia:*` validation-of-record with a
+//     non-empty expiry; `seed:nadia-fx-model-validations` is wired into
+//     ci:migrate so the validation-of-record reproduces deterministically). The
+//     closed gap `fx-model-validation-of-record-not-in-gated-store` is DROPPED
+//     (superseded — done); the forward gap `fx-forward-model-revalidation-live-
+//     curve` is KEPT (an impl-attested dimension may carry a forward/licence-day
+//     gap, exactly as market-risk does).
+//   - data-quality → implementation-attested: `recon:fx-data-feed-lineage`
+//     (PR #1458) is GREEN and non-vacuous over the FX RATE-FEED scope on the
+//     clean store (78 fx-quote production ticks audited for lineage-to-source,
+//     all carrying a non-empty source + a recognised provenance). The
+//     SETTLEMENT-confirmation leg is genuinely unpopulated in the build phase —
+//     the recon surfaces it as an explicit `info` tracked residual (never green-
+//     by-omission) and the rule is fail-closed (regression-proven non-vacuous).
+//     So data-quality is impl-attested on the audited rate-feed lineage, and the
+//     settlement-confirmation lineage residual is KEPT as a tracked deferred gap
+//     (`fx-settlement-confirmation-lineage`) awaiting licence-day settlement data.
+// STALE-OPEN SWEEP (FU2): `fx-sa-ccr-daily-cadence` is DROPPED from credit-risk
+// — it was completed + merged by PR #1258 (SA-CCR EOD scheduled handler +
+// staleness watchdog, 2026-06-12). credit-risk RETAINS
+// `fx-counterparty-basel-class-values`, so it stays design-attested-with-a-gap
+// (valid). A live-check of the other tracked gaps confirmed the remainder are
+// genuinely still open (licence-day-gated, external-counsel-gated, quarterly-
+// cadence-gated, or V2-cutover-incomplete — e.g. the FX V2 dashboard surface
+// exists per PR #1454 but the legacy-V1-read retirement clause is NOT yet done
+// and panel parity does NOT hold, so `fx-dashboard-v2-surface` remains open),
+// so none of those is dropped.
 //
 // INVENTORY RECONCILIATION (2026-06-19, D-FX-OTC-CLOSURE-BACKLOG): the FX
 // gap-analysis closure plan (record:documents:scrooge:fx-otc-vanilla-gap-
@@ -75,11 +110,15 @@
 //     fx-ndf-cash-leg-posting (NDF is out of v1.0 scope; a v1.1 posting follow-on).
 //   - conduct (design-attested, +1): fx-finsurv-reporting-procedure — author the
 //     SARB FinSurv reporting procedure + BoP-category tagging (ORG-FX-FIN orphan).
-// No result changed: 4 implementation-attested + 11 design-attested-with-gaps
-// stands; the gate is RE-RUN over the fuller inventory and still yields the
-// INTERNAL-TEST approval. The cycle CITES D-FX-OTC-CLOSURE-BACKLOG (the Decision
-// is recorded canonically by Scrooge in the shared store — this cycle does NOT
-// record it; recording a Decision in the seed path trips recon:decision-symmetry).
+// The inventory reconciliation itself changed NO result. The subsequent FU2
+// re-attestation (see "FU2 HONEST RE-ATTESTATION" above) DID change two results
+// on EVIDENCE — model-risk and data-quality were promoted design→implementation-
+// attested against two green, non-vacuous recons RUN on the clean store — so the
+// honest end-state is 6 implementation-attested + 9 design-attested-with-gaps;
+// the gate is RE-RUN over that set and still yields the INTERNAL-TEST approval.
+// The cycle CITES D-FX-OTC-CLOSURE-BACKLOG (the Decision is recorded canonically
+// by Scrooge in the shared store — this cycle does NOT record it; recording a
+// Decision in the seed path trips recon:decision-symmetry).
 //
 // Authority:
 //   - D-FX-OTC-CLOSURE-BACKLOG (CEO-approved 2026-06-19) — approve the FX closure
@@ -287,9 +326,16 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
   // (recon:v2-saccr-parity) is VACUOUS on the clean store ("0 recorded SA-CCR
   // netting sets — engine has not run"); it does not prove the EAD/RWA capability
   // is exercised and complete across the FX book. With no green completeness
-  // recon evidencing liveness, the honest result is design-attested + tracked
-  // gaps (the authoritative Basel-class run + the daily SA-CCR cadence both
-  // pending). The interim conservative 100% RWA stands.
+  // recon evidencing liveness, the honest result is design-attested + the tracked
+  // gap (the authoritative Basel-class run pending). The interim conservative
+  // 100% RWA stands.
+  // FU2 stale-open sweep (2026-06-19): the `fx-sa-ccr-daily-cadence` gap is
+  // DROPPED — it was completed + merged by PR #1258 (runtime/agents/
+  // rohan-sa-ccr-eod.ts EOD scheduled handler + per-netting-set staleness
+  // watchdog, 2026-06-12); carrying it overstated the backlog. credit-risk
+  // RETAINS `fx-counterparty-basel-class-values`, so it remains design-attested-
+  // with-a-gap (the authoritative Basel-class value-assignment run is genuinely
+  // still pending — verified open).
   {
     dimension: "credit-risk",
     owner:
@@ -316,15 +362,8 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
           "CRO counterparty Basel-classification run lands CounterpartyBaselClassAssigned events",
         citations: ["D-FX-CCR-INTERIM-CONSERVATIVE-RWA", "D-FX-COUNTERPARTY-BASEL-CLASSIFICATION"],
       },
-      {
-        gapId: "fx-sa-ccr-daily-cadence",
-        title:
-          "SA-CCR over the FX book runs via the on-demand production driver; register it as a scheduled EOD handler so CcrEadComputed refreshes daily without operator action.",
-        owner: "Rohan (Market risk quantitative engineer, engineering)",
-        targetTrigger:
-          "SA-CCR EOD run registered in runtime/handlers-metadata.ts on the daily scheduled cadence",
-        citations: ["D-FX-SA-CCR-BUILD-PHASE-ACTIVATION", "scripts/run-sa-ccr-fx-eod.ts"],
-      },
+      // `fx-sa-ccr-daily-cadence` was here — DROPPED in the FU2 stale-open sweep
+      // (closed by PR #1258: SA-CCR EOD scheduled handler + staleness watchdog).
     ],
   },
   // -- Dimension 3: liquidity-risk (Eitan / Ravi) — implementation-attested. --
@@ -663,38 +702,42 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       },
     ],
   },
-  // -- Dimension 10: model-risk (Nadia) — DESIGN-ATTESTED (honest). ------------
-  // Amendment A (§3a.1) re-check: the citationChain points at two
-  // ModelValidationApproved events of record (fx-forward-irp-v1, market-risk-
-  // var-hs-v1), but those validation events are NOT present in the gated /
-  // ci:migrate clean store — they live only in the shared home store from prior
-  // model-validation runs, and no seeder for them is wired into ci:migrate.
-  // There is therefore no green completeness recon and no validation-of-record
-  // in the gated store evidencing the FX models are independently validated for
-  // this product. Honest result: design-attested with a tracked gap to land the
-  // validation-of-record into the canonical (CI-reproducible) store.
+  // -- Dimension 10: model-risk (Nadia) — IMPLEMENTATION-ATTESTED (FU2). -------
+  // FU2 promotion (2026-06-19, D-FX-OTC-CLOSURE-BACKLOG): the prior design-
+  // attested result rested on the validation-of-record being absent from the
+  // gated / ci:migrate clean store (it lived only in the home store). PR #1453
+  // closes that: `seed:nadia-fx-model-validations` is wired into ci:migrate, so
+  // the `ModelValidationApproved` events for BOTH FX models the model-risk
+  // dimension binds to (model:fx-forward-irp-v1, model:market-risk-var-hs-v1)
+  // reproduce deterministically on the clean store, and `recon:fx-model-
+  // validation-of-record` (BLOCKING) asserts them. RUN on the clean ci:migrate
+  // store this gate is GREEN and NON-VACUOUS: asserted=2, both models carry a
+  // genuine `agent:nadia:*` second-line verdict with a non-empty expiry horizon
+  // (not a hollow row). That is the green, non-vacuous completeness recon the
+  // Amendment-A rule requires for implementation-attested. The closed gap
+  // `fx-model-validation-of-record-not-in-gated-store` is DROPPED (superseded —
+  // done). The forward gap `fx-forward-model-revalidation-live-curve` is KEPT: an
+  // impl-attested dimension may carry a forward/licence-day gap (market-risk
+  // carries `fx-forward-curve-live-feed` the same way), and the static-curve
+  // input-regime revalidation is genuinely deferred until the live curve lands.
   {
     dimension: "model-risk",
     owner: "Nadia (Independent-validation engineer, second line)",
-    result: "design-attested",
+    result: "implementation-attested",
     citationChain: [
       ...BASE_CHAIN,
+      // FU2 (§3a.1): GREEN, non-vacuous completeness recon — the FX model
+      // validation-of-record is present on the gated store (asserted=2, both
+      // models, genuine Nadia verdict + expiry). PR #1453.
+      "recon:fx-model-validation-of-record",
       "ModelValidationApproved:model:fx-forward-irp-v1",
       "ModelValidationApproved:model:market-risk-var-hs-v1",
       "D-TRUSTED-FIGURES-PROGRAM-V1",
       "Policies/model-risk-policy-v1.md",
+      "platform/model-registry/fx-model-validation-seed.ts",
       "platform/market-risk/var-engine.ts",
     ],
     deferredGaps: [
-      {
-        gapId: "fx-model-validation-of-record-not-in-gated-store",
-        title:
-          "The ModelValidationApproved events for model:fx-forward-irp-v1 and model:market-risk-var-hs-v1 exist only in the shared home store; no seeder lands them in the ci:migrate clean store, so the gated store carries no validation-of-record for the FX models. Land the validation-of-record into the canonical CI-reproducible store before model-risk may be implementation-attested.",
-        owner: "Nadia (Independent-validation engineer, second line)",
-        targetTrigger:
-          "FX model-validation seeder wired into ci:migrate (ModelValidationApproved reproducible on the clean store)",
-        citations: ["D-TRUSTED-FIGURES-PROGRAM-V1", "Policies/model-risk-policy-v1.md"],
-      },
       {
         gapId: "fx-forward-model-revalidation-live-curve",
         title:
@@ -951,32 +994,53 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       },
     ],
   },
-  // -- Dimension 15: data-quality (Anya) — DESIGN-ATTESTED with a tracked gap. --
-  // The original umbrella driver left data-quality design-attested with NO gap
-  // (a recon violation: design-attested needs ≥1 well-formed gap). The honest
-  // state: the provenance architecture is in place, but per-feed lineage metadata
-  // is pending Anya's data-quality audit — that IS the well-formed tracked gap.
+  // -- Dimension 15: data-quality (Anya) — IMPLEMENTATION-ATTESTED (FU2). ------
+  // FU2 promotion (2026-06-19, D-FX-OTC-CLOSURE-BACKLOG): PR #1458 landed
+  // `recon:fx-data-feed-lineage` (BLOCKING), which audits the FX product's data
+  // feeds end-to-end and FAILS CLOSED on missing lineage. RUN on the clean
+  // ci:migrate store this gate is GREEN and NON-VACUOUS over the FX RATE-FEED
+  // scope: 78 fx-quote production ticks are audited for lineage-to-source, every
+  // one carrying a non-empty `source` (the provider/feed axis) and a recognised
+  // `provenance`. That is a real, exercised, complete lineage assertion over the
+  // rate-feed population — the green, non-vacuous completeness recon the
+  // Amendment-A rule requires — so data-quality is implementation-attested on the
+  // audited rate-feed lineage. The previous catch-all gap `fx-data-feed-lineage-
+  // audit` (rate + settlement, untracked-complete) is SUPERSEDED: its rate-feed
+  // leg is now green-evidenced.
+  // HONEST RESIDUAL (kept, not hidden — Charter command 3 + 5): the SETTLEMENT-
+  // confirmation lineage leg is genuinely unpopulated in the build phase (no
+  // production seed emits `FilFxSettlementConfirmed` yet; the FX book is
+  // materialised as FIL instances). The recon does NOT silently green that — it
+  // surfaces an explicit `info` tracked residual and the rule is fail-closed
+  // (regression-proven non-vacuous: a populated store with a lineage-less
+  // settlement event makes the gate FAIL). So the settlement-confirmation lineage
+  // residual is KEPT as a well-formed tracked deferred gap awaiting licence-day
+  // settlement-event population.
   {
     dimension: "data-quality",
     owner: "Anya (Data & analytics engineer, engineering)",
-    result: "design-attested",
+    result: "implementation-attested",
     citationChain: [
       ...BASE_CHAIN,
+      // FU2 (§3a.1): GREEN, non-vacuous completeness recon — FX rate-feed lineage
+      // audited to source over 78 production fx-quote ticks; fail-closed on any
+      // missing lineage. PR #1458.
+      "recon:fx-data-feed-lineage",
       "D-NPA-POST-APPROVAL-FINDING-REVIEW",
       "D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE",
       "platform/event-store/provenance-category.ts",
     ],
     deferredGaps: [
       {
-        gapId: "fx-data-feed-lineage-audit",
+        gapId: "fx-settlement-confirmation-lineage",
         title:
-          "Data provenance architecture is in place (categoryForEventType, provenance-category.ts, bank-mode projection), but per-instrument rate-feed and settlement-confirmation lineage metadata is not yet audited end-to-end. No silent data-quality gap may reach a live product, so the per-feed lineage audit is tracked rather than asserted complete.",
+          "The FX RATE-FEED lineage is audited green-to-source (recon:fx-data-feed-lineage, 78 production fx-quote ticks). The SETTLEMENT-confirmation lineage leg is wired and fail-closed but exercises ZERO events in the build phase — no production seed emits `FilFxSettlementConfirmed` yet (the FX book is materialised as FIL instances). The lineage assertion (originatingEvent ref + envelope provenance.sourceLineage) is live and will FAIL on the first lineage-less settlement event (regression-tested); it awaits licence-day FX settlement-event population before it can be exercised on real data.",
         owner: "Anya (Data & analytics engineer, engineering)",
         targetTrigger:
-          "Anya data-quality lineage audit completes (per-feed rate + settlement-confirmation lineage metadata verified to source)",
+          "licence-day FX settlement flow populates `FilFxSettlementConfirmed` events; the fail-closed settlement-confirmation lineage rule then exercises real data (recon:fx-data-feed-lineage settlement leg)",
         citations: [
-          "D-NPA-POST-APPROVAL-FINDING-REVIEW",
           "D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE",
+          "platform/recon/fx-data-feed-lineage.ts",
         ],
       },
     ],
