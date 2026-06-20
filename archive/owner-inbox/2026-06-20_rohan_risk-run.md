@@ -1,7 +1,7 @@
 ---
 agent: Rohan
 trigger: risk-run
-asOf: 2026-06-20T06:04:55.760Z
+asOf: 2026-06-20T06:17:15.271Z
 decision-required: false
 ---
 
@@ -57,7 +57,7 @@ _No `RiskRaised` events in the last 7 days._
 
 ## Rohan's narrative
 
-_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CcE1PstmP9XptRvJcCRUt"})._
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CcE2MVFoK2xTxpGRAs7Cn"})._
 
 ## Provenance
 
