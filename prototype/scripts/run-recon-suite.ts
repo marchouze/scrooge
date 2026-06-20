@@ -95,6 +95,10 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:madge-circular-deps",
     "recon:v2-no-v1-import",
     "recon:fx-v2-sim-boundary",
+    // WS-FX-V2-SIMULATOR Phase 1 — simulator-oracle gate (ENFORCING). Replaces
+    // the retired FX V1-parity legs: asserts the SUT produces the expected
+    // VaR/P&L/cash from known simulated inputs. Authority: D-FX-V2-SIMULATOR-FIRST.
+    "recon:fx-v2-sim-oracle",
     "recon:v2-tenant-axis-present",
     "recon:v2-released-surface-clean-core",
     // WS-V2-BBAAS S16 — tier-entitlement coherence (ENFORCING): the K/R/C

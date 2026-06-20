@@ -68,7 +68,6 @@
 import { eventStore } from "../composition";
 import { EVENT_TYPE_REGISTRY } from "../event-store/registry/index";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
-import { runParityCheck } from "./v1-v2-parity-harness";
 
 const PIPELINE = "fx-v2-parity";
 
@@ -98,23 +97,21 @@ export function run(): ReconResult {
   const result = emptyResult(PIPELINE);
   const violations: ReconViolation[] = [];
 
-  // (1) Structural self-test — the vacuous parity harness must still pass.
-  const vacuousViolations = runParityCheck({
-    label: "fx-v2-parity:structural-check",
-    readV1: () => ({}),
-    readV2: () => ({}),
-  });
+  // (1) FX V1↔V2 PARITY-HARNESS LEG — RETIRED (D-FX-V2-SIMULATOR-FIRST). The
+  //     structural parity-harness self-test (the FX-path vestige of comparing the
+  //     V1 and V2 FX read paths) is gone: V1 is no longer a correctness oracle for
+  //     FX. The FX V2 read-path correctness is now asserted by recon:fx-v2-sim-
+  //     oracle (deterministic simulated scenario → expected outputs). The
+  //     premature-v2-replaced SENTINELS (2)–(4) below — which guard the V1-removal
+  //     invariants, not parity — are PRESERVED and stay ENFORCING (Engineering
+  //     Charter cmd 3 — retired assurance is replaced, not dropped).
   result.asserted += 1;
-  if (vacuousViolations.length > 0) {
-    violations.push({
-      subject: "parity-harness-structural-check",
-      message:
-        "The parity harness structural check failed: the vacuous (empty == empty) " +
-        "self-test did not pass. This is a harness bug, not a domain divergence. " +
-        "Inspect v1-v2-parity-harness.ts.",
-      severity: "fail",
-    });
-  }
+  violations.push({
+    subject: "fx-v2-parity:fx-parity-harness-retired",
+    message:
+      "FX V1↔V2 parity-harness leg is RETIRED under D-FX-V2-SIMULATOR-FIRST — V1 is no longer the FX correctness oracle. The replacement assurance is recon:fx-v2-sim-oracle (the SUT's FX outputs match known simulated inputs). The premature-v2-replaced sentinels below stay enforcing. Authority: D-FX-V2-SIMULATOR-FIRST; D-V1-REMOVAL-PHASE-2.",
+    severity: "info",
+  });
 
   // (2) FxBookValuationSnapshotted must be `v2-parallel` (not yet v2-replaced).
   //     A premature v2-replaced tag without A4 completion is a fail.
@@ -216,7 +213,7 @@ export function run(): ReconResult {
   result.violations = violations;
   result.ok = violations.every((v) => v.severity !== "fail");
 
-  const summary = `fx-v2-parity [ENFORCING sentinel — Phase 2 / S2]: A2 FxPositionRevalued FLIPPED to v2-replaced (retired-by-construction; un-emittable V1 + V2 FIL-snapshot produces). A3 MarketRiskVarComputed REGISTERED (v2-parallel) + emitter wired — VaR flip NOT taken (MarketRiskMeasureComputed is emittable, parity proof pending). Tags: FxBookValuationSnapshotted=${fxBookEntry?.v2Status ?? "MISSING"} | FxPositionRevalued=${fxPosEntry?.v2Status ?? "MISSING"} | MarketRiskMeasureComputed=${varEntry?.v2Status ?? "MISSING"}. Harness: ${vacuousViolations.length === 0 ? "OK" : "FAILED"}.`;
+  const summary = `fx-v2-parity [ENFORCING sentinel — Phase 2 / S2]: A2 FxPositionRevalued FLIPPED to v2-replaced (retired-by-construction; un-emittable V1 + V2 FIL-snapshot produces). A3 MarketRiskVarComputed REGISTERED (v2-parallel) + emitter wired — VaR flip NOT taken (MarketRiskMeasureComputed is emittable, parity proof pending). Tags: FxBookValuationSnapshotted=${fxBookEntry?.v2Status ?? "MISSING"} | FxPositionRevalued=${fxPosEntry?.v2Status ?? "MISSING"} | MarketRiskMeasureComputed=${varEntry?.v2Status ?? "MISSING"}. FX parity-harness leg RETIRED → recon:fx-v2-sim-oracle.`;
 
   result.asOf = summary;
   return result;
