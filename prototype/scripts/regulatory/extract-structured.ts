@@ -138,6 +138,10 @@ function hashStampMode(slug: string, hash: string, outPath: string | undefined):
 interface ExtractedSection {
   id: string;
   number: string;
+  /** Provision title (JSE profile carries the heading verbatim). */
+  heading?: string;
+  /** True when the body text is taken verbatim from the source (JSE profile). */
+  verbatim?: boolean;
   pages?: string;
   footnotes?: Array<{ marker: string; text: string }>;
   text?: string;
@@ -377,6 +381,256 @@ function extractIasbParagraphs(pages: ParsedPage[]): ExtractedSection[] {
       pages: p.startPage === p.endPage ? String(p.startPage) : `${p.startPage}–${p.endPage}`,
     };
     result.push(entry);
+  }
+  return result;
+}
+
+// ---------------------------------------------------------------------------
+// JSE profile — chapter-aware rule/directive segmentation
+//
+// The JSE IRC Derivatives Rules and Directives use a hierarchical numbering
+// scheme the generic `^\d+\.` heuristic cannot parse:
+//
+//   Rules:      chapters are `SECTION N: TITLE` (running header); operative
+//               provisions are numbered `N.M0` at column 0 (e.g. `1.40`,
+//               `1.100`, `3.35`), with `N.M0.K` subsections indented beneath.
+//   Directives: chapters are `SECTION X : TITLE` (running header, X = A..E);
+//               operative directives are 2-letter codes at column 0 (e.g.
+//               `AA`, `AB`, `CE`), with numbered/lettered items beneath.
+//
+// This profile walks the `pdftotext -layout` output, drops the repeated
+// running-header / footer / page-number lines (never part of any provision's
+// verbatim body), tracks the current chapter, opens a new section at each
+// column-0 heading, and accretes the verbatim body (including indented
+// sub-items) onto the current section. The leading table-of-contents pages
+// (lines carrying dot-leaders `.....N`) are skipped — they are an index, not
+// regulatory text, and would otherwise produce duplicate empty headings.
+//
+// Verbatim discipline (Engineering Charter cmd 4, D-REGULATORY-LIBRARY-V1):
+// every character of body text is taken straight from the PDF text layer — the
+// profile only SPLITS and STRIPS chrome, it never rewrites or fabricates.
+// ---------------------------------------------------------------------------
+
+interface JseChapter {
+  number: string;
+  heading: string;
+  sections: ExtractedSection[];
+}
+
+/** A column-0 line carrying dot-leaders is a table-of-contents entry, not body. */
+function isTocLine(line: string): boolean {
+  return /\.{5,}\s*\d+\s*$/.test(line);
+}
+
+/**
+ * A per-Section "Scope of section" contents block lists each heading without
+ * dot-leaders but sometimes with a trailing page number ("Reserved     79").
+ * Strip a trailing run of 2+ spaces followed by a bare page number so the
+ * captured heading is the clean title only. Never strips a single-space-joined
+ * trailing number (those are part of a real title, e.g. "Rule 7.50.4").
+ */
+function stripTrailingTocPage(heading: string): string {
+  return heading.replace(/\s{2,}\d{1,4}$/, "").trimEnd();
+}
+
+/**
+ * Running-header / footer chrome that repeats on every page and is never part
+ * of a provision's verbatim text. Matches the `SECTION ...` running header, the
+ * `Interest Rate and Currency Derivatives ... Page N of M` footer, bare page
+ * numbers, and the JSE copyright strip.
+ */
+function isJseChrome(line: string): boolean {
+  const t = line.trim();
+  if (t.length === 0) return false;
+  if (/^SECTION\s+[0-9A-Z]+\s*:/.test(t)) return true; // running header (rules + directives)
+  if (/^Interest Rate and Currency Derivatives\b.*Page\s+\d+\s+of\s+\d+/i.test(t)) return true;
+  if (/^Page\s+\d+\s+of\s+\d+$/i.test(t)) return true;
+  if (/^JSE Limited Reg No/i.test(t)) return true;
+  if (/^©\s*JSE Limited/i.test(t)) return true;
+  if (/^\d{1,4}$/.test(t)) return true; // bare page number
+  return false;
+}
+
+/** Detect a chapter header `SECTION N: TITLE` / `SECTION X : TITLE`. */
+function isJseChapterHeading(line: string): { number: string; heading: string } | null {
+  const m = line.trim().match(/^SECTION\s+([0-9]+|[A-Z])\s*:\s*(.+?)\s*$/);
+  if (!m) return null;
+  const number = (m[1] ?? "").trim();
+  // Normalise to title case for the visible label; keep verbatim wording.
+  const rawTitle = (m[2] ?? "").trim();
+  return { number, heading: rawTitle };
+}
+
+/**
+ * Detect a JSE Rules provision heading: `N.M0` at column 0 followed by 2+
+ * spaces and a title (never a sub-item `N.M0.K`, which is indented body text,
+ * and never a TOC dot-leader line).
+ */
+function isJseRuleHeading(line: string): { number: string; heading: string } | null {
+  if (/^\s/.test(line)) return null; // must be column 0
+  if (isTocLine(line)) return null;
+  // Guard: reject `N.M0.K` sub-items (they carry a second dot — they are
+  // indented body text or amendment-history notes, not provision headings).
+  // Checked BEFORE the heading match so a single-space `11.10.1 amended …`
+  // amendment note never latches as a `11.10` heading.
+  if (/^\d+\.\d+\./.test(line)) return null;
+  // Guard: amendment-history notes recur at single-space column 0 but are
+  // editorial annotations, not the provision heading. They always contain a
+  // change verb followed by "with effect from …", optionally after a
+  // sub-clause list ("9.110 and 9.110.1 to 9.110.8 deleted with effect from …",
+  // "7.55 introduced with effect from …", "1.40.2 amended with effect from …").
+  if (
+    /^\d+\.\d+\b.*\b(amended|deleted|inserted|introduced|substituted|added|renumbered|repealed)\b.*\bwith effect from\b/i.test(
+      line,
+    )
+  ) {
+    return null;
+  }
+  // `1.40    Powers exercisable …` (2-space gap) OR `11.10 Default …`
+  // (single-space gap — Section 11 of the Rules uses a single space). The
+  // heading text must start with a letter so `11.10 (something)` numeric
+  // continuations are not mistaken for a titled provision.
+  const m = line.match(/^(\d+\.\d+)\s+([A-Za-z“"].*?)\s*$/);
+  if (!m) return null;
+  const number = m[1] ?? "";
+  const heading = stripTrailingTocPage((m[2] ?? "").trim());
+  return { number, heading };
+}
+
+/**
+ * Detect a JSE Directives provision heading: a 2-letter code at column 0
+ * followed by 2+ spaces and a title (e.g. `AA   Capital Adequacy Requirements`).
+ */
+function isJseDirectiveHeading(line: string): { number: string; heading: string } | null {
+  if (/^\s/.test(line)) return null;
+  if (isTocLine(line)) return null;
+  const m = line.match(/^([A-Z]{2})\s{2,}(\S.*?)\s*$/);
+  if (!m) return null;
+  return { number: m[1] ?? "", heading: stripTrailingTocPage((m[2] ?? "").trim()) };
+}
+
+/**
+ * Walk the pages and produce a chapter→section tree for a JSE document.
+ *
+ * @param kind "rules" → `N.M0` headings + `SECTION N` chapters;
+ *             "directives" → 2-letter headings + `SECTION X` chapters.
+ */
+function extractJseChapters(pages: ParsedPage[], kind: "rules" | "directives"): JseChapter[] {
+  const isHeading = kind === "rules" ? isJseRuleHeading : isJseDirectiveHeading;
+
+  // Mutable accumulator for a single provision. Each chapter holds an ordered
+  // list of these PLUS a by-number index so a heading that recurs (every JSE
+  // Section opens with a "Scope of section" contents block that lists each
+  // heading with NO body, then repeats each heading followed by its real body)
+  // RE-ATTACHES to the same accumulator and keeps accreting body verbatim,
+  // rather than creating a duplicate empty stub.
+  interface SectionAcc {
+    number: string;
+    heading: string;
+    startPage: number;
+    endPage: number;
+    lines: string[];
+  }
+  interface ChapterAcc {
+    number: string;
+    heading: string;
+    order: SectionAcc[];
+    byNumber: Map<string, SectionAcc>;
+  }
+
+  const chapterAccs: ChapterAcc[] = [];
+  const chapterByNumber = new Map<string, ChapterAcc>();
+  let currentChapter: ChapterAcc | null = null;
+  let currentSection: SectionAcc | null = null;
+
+  for (const page of pages) {
+    const { pageNum, lines } = page;
+    for (const line of lines) {
+      // Chapter transition. A `SECTION N:` line is a running header repeated on
+      // every page; OPEN a new chapter the first time each distinct number is
+      // seen, otherwise just switch the active chapter. Never body text.
+      const chap = isJseChapterHeading(line);
+      if (chap) {
+        const existing = chapterByNumber.get(chap.number);
+        if (existing) {
+          currentChapter = existing;
+        } else {
+          const created: ChapterAcc = {
+            number: chap.number,
+            heading: chap.heading,
+            order: [],
+            byNumber: new Map(),
+          };
+          chapterAccs.push(created);
+          chapterByNumber.set(chap.number, created);
+          currentChapter = created;
+        }
+        currentSection = null;
+        continue;
+      }
+
+      // Drop running-header / footer / page-number chrome.
+      if (isJseChrome(line)) continue;
+
+      // The literal "Scope of section" label that precedes the contents block.
+      if (/^\s*Scope of section\s*$/i.test(line)) continue;
+
+      // Provision heading — open OR re-attach to its accumulator.
+      const head = isHeading(line);
+      if (head && currentChapter) {
+        const existing = currentChapter.byNumber.get(head.number);
+        if (existing) {
+          // Recurrence (contents-block stub → body, or page-top continuation):
+          // re-attach so the body that follows accretes onto the same section.
+          // The body occurrence comes AFTER the per-Section contents block (which
+          // can carry stale pre-amendment titles), so the latest non-empty
+          // heading is authoritative — last-wins. (e.g. rule 4.80 reads "Open
+          // transactions and positions" in a stale contents list but "Reserved"
+          // in the current body; the body title wins.)
+          if (head.heading.length > 0) existing.heading = head.heading;
+          existing.endPage = pageNum;
+          currentSection = existing;
+        } else {
+          const created: SectionAcc = {
+            number: head.number,
+            heading: head.heading,
+            startPage: pageNum,
+            endPage: pageNum,
+            lines: [],
+          };
+          currentChapter.order.push(created);
+          currentChapter.byNumber.set(head.number, created);
+          currentSection = created;
+        }
+        continue;
+      }
+
+      // Body line — accrete onto the current section verbatim.
+      if (currentSection) {
+        currentSection.endPage = pageNum;
+        currentSection.lines.push(line.replace(/\s+$/, ""));
+      }
+    }
+  }
+
+  // Finalise: build the immutable chapter tree, dropping empty chapters.
+  const result: JseChapter[] = [];
+  for (const chap of chapterAccs) {
+    if (chap.order.length === 0) continue;
+    const sections: ExtractedSection[] = chap.order.map((sec) => {
+      const body = sec.lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+      const entry: ExtractedSection = {
+        id: `s${sec.number.toLowerCase().replace(/\./g, "-")}`,
+        number: sec.number,
+        heading: sec.heading,
+        verbatim: true,
+        pages:
+          sec.startPage === sec.endPage ? String(sec.startPage) : `${sec.startPage}–${sec.endPage}`,
+      };
+      if (body.length > 0) entry.text = body;
+      return entry;
+    });
+    result.push({ number: chap.number, heading: chap.heading, sections });
   }
   return result;
 }
@@ -703,7 +957,7 @@ function fullExtractionMode(
   outPath: string | undefined,
   goldenHash: string | undefined,
   withExcerpts: boolean,
-  profile: "default" | "iasb",
+  profile: "default" | "iasb" | "jse-rules" | "jse-directives",
 ): void {
   if (!existsSync(fromPdf)) die(`--from path not found: ${fromPdf}`);
   if (!existsSync(PDFTOTEXT_BIN)) {
@@ -722,6 +976,62 @@ function fullExtractionMode(
   }
 
   const pages = splitPages(rawText);
+
+  // ---- JSE profile: chapter-aware rule/directive segmentation ----
+  // Builds the chapter→section tree directly from the JSE numbering scheme and
+  // writes the structured JSON, then returns. (The generic merge path below is
+  // only for the default/iasb single-chapter profiles.)
+  if (profile === "jse-rules" || profile === "jse-directives") {
+    const kind = profile === "jse-rules" ? "rules" : "directives";
+    const jseChapters = extractJseChapters(pages, kind);
+    if (jseChapters.length === 0) {
+      die(`JSE extraction produced no chapters for slug "${slug}" — check the PDF text layer.`);
+    }
+
+    // Preserve any hand-authored doc-level metadata (slug, title, regulator,
+    // citationPatterns, …) if a structured JSON already exists; only the
+    // chapter tree is (re)built from the PDF.
+    const jsonPathJse = outPath ?? findStructuredJsonPath(slug);
+    let docJse: StructuredSourceDocument;
+    if (jsonPathJse && existsSync(jsonPathJse)) {
+      docJse = JSON.parse(readFileSync(jsonPathJse, "utf-8")) as StructuredSourceDocument;
+    } else {
+      docJse = { slug, title: slug, chapters: [] };
+    }
+
+    docJse.chapters = jseChapters.map((c) => ({
+      id: `ch-${slug}-s${c.number.toLowerCase()}`,
+      number: c.number,
+      heading: `Section ${c.number}: ${c.heading}`,
+      sections: c.sections,
+    }));
+
+    if (goldenHash) docJse.goldenSourceHash = goldenHash;
+
+    const writePathJse = outPath ?? jsonPathJse ?? `${slug}-structured.json`;
+    writeFileSync(writePathJse, `${JSON.stringify(docJse, null, 2)}\n`, "utf-8");
+
+    let sectionsEnrichedJse = 0;
+    let pagesAddedJse = 0;
+    for (const chap of docJse.chapters) {
+      for (const sec of chap.sections ?? []) {
+        sectionsEnrichedJse++;
+        if (sec.pages) pagesAddedJse++;
+      }
+    }
+
+    emitOk({
+      slug,
+      ...(docJse.goldenSourceHash ? { goldenSourceHash: docJse.goldenSourceHash } : {}),
+      chapters: docJse.chapters.length,
+      sectionsEnriched: sectionsEnrichedJse,
+      pagesAdded: pagesAddedJse,
+      footnotesAdded: 0,
+      path: writePathJse,
+    });
+    return;
+  }
+
   const extractedSections =
     profile === "iasb" ? extractIasbParagraphs(pages) : extractSectionsFromPages(pages);
   const extractedMap = new Map<string, ExtractedSection>(
@@ -853,10 +1163,11 @@ function main(): void {
   const fromPdf = optionalString(args, "from");
   const outPath = optionalString(args, "out");
   const profileFlag = optionalString(args, "profile") ?? "default";
-  if (profileFlag !== "default" && profileFlag !== "iasb") {
-    die(`Unknown --profile "${profileFlag}". Expected "default" or "iasb".`);
+  const VALID_PROFILES = ["default", "iasb", "jse-rules", "jse-directives"] as const;
+  if (!(VALID_PROFILES as readonly string[]).includes(profileFlag)) {
+    die(`Unknown --profile "${profileFlag}". Expected one of: ${VALID_PROFILES.join(", ")}.`);
   }
-  const profile = profileFlag as "default" | "iasb";
+  const profile = profileFlag as (typeof VALID_PROFILES)[number];
 
   if (!hashFlag && !fromPdf) {
     die("One of --hash <blake3:...> or --from <local-pdf> is required.");

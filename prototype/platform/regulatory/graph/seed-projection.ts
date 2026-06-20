@@ -141,6 +141,11 @@ const INSTRUMENT_APPLICABILITY_EXACT: Record<string, DocumentApplicabilityStatus
   "JSE-EQUITY-RULES": "direct",
   "JSE-DEBT-LISTINGS-REQUIREMENTS": "direct",
   "JSE-BOND-MARKET-RULES": "direct",
+  // JSE IRC market Derivatives Rules + Directives (WS-JSE-IRC-REGULATORY-VIEWER,
+  // D-REGULATORY-LIBRARY-V1). Both instrument-id and slug-cased keys resolve
+  // here (the slug-keyed Document node uppercases its slug, which equals the id).
+  "JSE-IRC-DERIVATIVES-RULES": "direct",
+  "JSE-IRC-DERIVATIVES-DIRECTIVES": "direct",
 };
 
 /**
