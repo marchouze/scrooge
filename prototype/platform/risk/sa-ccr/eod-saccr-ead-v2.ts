@@ -35,12 +35,12 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { type Money as V2Money, money as v2Money } from "../../../v2-core/fil-core/primitives";
+import { remainingYears } from "../../../v2-core/fil-instances";
 import {
   type SaCcrNettingSet,
   type SaCcrTradeSummary,
   computeSaCcr,
 } from "../../../v2-core/fil-models/sa-ccr";
-import { remainingYears } from "../../../v2-core/fil-instances";
 import { moneyWireFromMinor } from "../../core/money-codec";
 import {
   makeCcrEadComputed,
@@ -246,7 +246,8 @@ export function computeAndEmitCohortSaCcrEad(args: {
   const alreadyComputed = new Set<string>();
   for (const ev of eventStore.replay({ type: "CcrEadComputed" })) {
     const p = ev.payload as { computationDate?: string; nettingSetId?: string };
-    if (p.computationDate === computationDate && p.nettingSetId) alreadyComputed.add(p.nettingSetId);
+    if (p.computationDate === computationDate && p.nettingSetId)
+      alreadyComputed.add(p.nettingSetId);
   }
 
   const emitted: string[] = [];

@@ -69,7 +69,9 @@ export function respondToMarginCalls(args: {
 
   // Open calls for this counterparty, in issue order (store order).
   const openCalls = [...store.replay({ type: "MarginCallIssued" })]
-    .map((e) => e.payload as { marginCallId: string; counterpartyId: string; callAmountMajor: number })
+    .map(
+      (e) => e.payload as { marginCallId: string; counterpartyId: string; callAmountMajor: number },
+    )
     .filter((p) => p.counterpartyId === counterpartyId && !respondedIds.has(p.marginCallId));
 
   // How many calls this counterparty has ALREADY responded to (for disputes-once).

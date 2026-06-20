@@ -382,8 +382,7 @@ export function run(): ReconResult {
       // (`computeEad`: (rcPlusPfe × alphaScaled + 5_000n) / 10_000n), NOT a float
       // round (which drifts by ±1 minor on the half-up boundary).
       const alphaScaled = 14_000n; // round(1.4 × 10_000)
-      const expectedEadUnits =
-        (BigInt(fig.rc + fig.pfe) * alphaScaled + 5_000n) / 10_000n;
+      const expectedEadUnits = (BigInt(fig.rc + fig.pfe) * alphaScaled + 5_000n) / 10_000n;
       if (BigInt(fig.ead) !== expectedEadUnits) {
         violations.push({
           subject: "fx-v2-sim-oracle:saccr-ead-identity",

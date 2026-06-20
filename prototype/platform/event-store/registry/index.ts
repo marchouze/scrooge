@@ -345,8 +345,6 @@ import { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillat
 import { DECISION_IMPACT_SWEEP_EVENT_TYPES_REGISTRY } from "./decision-impact-sweep";
 import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
 import { EXTERNAL_CREDIT_RATING_EVENT_TYPES_REGISTRY } from "./external-credit-rating";
-import { MARGIN_CALL_RESPONSE_EVENT_TYPES_REGISTRY } from "./margin-call-response";
-import { MARGIN_COLLATERAL_EVENT_TYPES_REGISTRY } from "./margin-collateral";
 import { FIL_ATTRIBUTION_EVENT_TYPES_REGISTRY } from "./fil-attribution";
 import { FIL_INSTANCES_EVENT_TYPES_REGISTRY } from "./fil-instances";
 import { FIL_MODELS_EVENT_TYPES_REGISTRY } from "./fil-models";
@@ -380,6 +378,8 @@ import {
 import { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 import { LIQUIDITY_EVENT_TYPES_REGISTRY } from "./liquidity";
 import { LIQUIDITY_LIMIT_EVENT_TYPES_REGISTRY } from "./liquidity-limit";
+import { MARGIN_CALL_RESPONSE_EVENT_TYPES_REGISTRY } from "./margin-call-response";
+import { MARGIN_COLLATERAL_EVENT_TYPES_REGISTRY } from "./margin-collateral";
 import { MARKET_DATA_EVENT_TYPES_REGISTRY } from "./market-data";
 import {
   BANK_ACCOUNT_EVENT_TYPES,

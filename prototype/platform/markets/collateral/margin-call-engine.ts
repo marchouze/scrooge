@@ -26,12 +26,12 @@
 //   BCBS d317 §136 / CRE52 §52.10 (collateral in RC). Principle 1; fail-closed.
 // Author: Atlas (Core banking platform architect, engineering).
 
+import type { MarginCallRespondedPayload } from "../../event-store/event-types/margin-call-response";
 import {
   makeCollateralPosted,
   makeMarginCallIssued,
   makeMarginCallSettled,
 } from "../../event-store/event-types/margin-collateral";
-import type { MarginCallRespondedPayload } from "../../event-store/event-types/margin-call-response";
 import type { EventStore } from "../../event-store/store";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
@@ -43,10 +43,6 @@ export interface SutCsaTerms {
   readonly thresholdMajor: number;
   readonly mtaMajor: number;
   readonly haircut: number;
-}
-
-export interface MarginCallId {
-  readonly marginCallId: string;
 }
 
 /** Net posted collateral (MAJOR units) held against a netting set as-of `asOf`. */

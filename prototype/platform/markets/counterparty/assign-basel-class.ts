@@ -182,7 +182,11 @@ export function assignBaselClassFromFeed(args: {
   let existingClass: BaselCounterpartyClass | undefined;
   let existingEffectiveFrom = "";
   for (const ev of store.replay({ type: "CounterpartyBaselClassAssigned" })) {
-    const p = ev.payload as { counterpartyId?: string; baselClass?: string; effectiveFrom?: string };
+    const p = ev.payload as {
+      counterpartyId?: string;
+      baselClass?: string;
+      effectiveFrom?: string;
+    };
     if (p.counterpartyId !== counterpartyId) continue;
     if ((p.effectiveFrom ?? "") >= existingEffectiveFrom) {
       existingClass = p.baselClass as BaselCounterpartyClass;

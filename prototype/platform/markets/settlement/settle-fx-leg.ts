@@ -28,12 +28,12 @@
 //   D-CASH-ASSET-CLASS-V1; D-FIL-FRAMEWORK-UNIFICATION; D-V2-CORE-MONEY-DECIMAL-NATIVE.
 // Author: Atlas (Core banking platform architect, engineering).
 
+import { formatInstanceUrn } from "../../../v2-core/fil-core/urn";
 import {
   type SettledCashLeg,
   buildFxTerminatedPayload,
   buildSettledCashPayloads,
 } from "../../../v2-core/fil-instances/cash-materialisation";
-import { formatInstanceUrn } from "../../../v2-core/fil-core/urn";
 import type { EventStore } from "../../event-store/store";
 import { type CashSink, EventStoreCashSink } from "./cash-sink";
 

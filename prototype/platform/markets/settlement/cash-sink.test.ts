@@ -53,7 +53,12 @@ describe("Slice 0 — shared store-agnostic cash sink", () => {
     const esSink = new EventStoreCashSink(store);
     for (const leg of legs) {
       expect(esSink.hasCreated(leg.instance)).toBe(false);
-      esSink.appendCreated({ asOf: leg.payload.asOf, entity: ENTITY, citations: CITATIONS, payload: leg.payload });
+      esSink.appendCreated({
+        asOf: leg.payload.asOf,
+        entity: ENTITY,
+        citations: CITATIONS,
+        payload: leg.payload,
+      });
     }
     const esPayloads = [...store.replay({ type: "FilInstrumentCreated" })]
       .map((e) => JSON.stringify(e.payload))
@@ -64,13 +69,20 @@ describe("Slice 0 — shared store-agnostic cash sink", () => {
     const anchorSink = new AnchorDbCashSink(dbPath);
     for (const leg of legs) {
       expect(anchorSink.hasCreated(leg.instance)).toBe(false);
-      anchorSink.appendCreated({ asOf: leg.payload.asOf, entity: ENTITY, citations: CITATIONS, payload: leg.payload });
+      anchorSink.appendCreated({
+        asOf: leg.payload.asOf,
+        entity: ENTITY,
+        citations: CITATIONS,
+        payload: leg.payload,
+      });
     }
     anchorSink.close();
 
     const db = new Database(dbPath, { readonly: true });
     const anchorPayloads = db
-      .query<{ payload: string }, []>("SELECT payload FROM v2_events WHERE type='FilInstrumentCreated'")
+      .query<{ payload: string }, []>(
+        "SELECT payload FROM v2_events WHERE type='FilInstrumentCreated'",
+      )
       .all()
       .map((r) => JSON.stringify(JSON.parse(r.payload)))
       .sort();
@@ -89,7 +101,12 @@ describe("Slice 0 — shared store-agnostic cash sink", () => {
     for (let i = 0; i < 2; i++) {
       for (const leg of legs) {
         if (esSink.hasCreated(leg.instance)) continue;
-        esSink.appendCreated({ asOf: leg.payload.asOf, entity: ENTITY, citations: CITATIONS, payload: leg.payload });
+        esSink.appendCreated({
+          asOf: leg.payload.asOf,
+          entity: ENTITY,
+          citations: CITATIONS,
+          payload: leg.payload,
+        });
       }
     }
     expect([...store.replay({ type: "FilInstrumentCreated" })].length).toBe(2);
@@ -100,12 +117,19 @@ describe("Slice 0 — shared store-agnostic cash sink", () => {
     for (let i = 0; i < 2; i++) {
       for (const leg of legs) {
         if (anchorSink.hasCreated(leg.instance)) continue;
-        anchorSink.appendCreated({ asOf: leg.payload.asOf, entity: ENTITY, citations: CITATIONS, payload: leg.payload });
+        anchorSink.appendCreated({
+          asOf: leg.payload.asOf,
+          entity: ENTITY,
+          citations: CITATIONS,
+          payload: leg.payload,
+        });
       }
     }
     const db = new Database(dbPath, { readonly: true });
     const n = db
-      .query<{ c: number }, []>("SELECT COUNT(*) AS c FROM v2_events WHERE type='FilInstrumentCreated'")
+      .query<{ c: number }, []>(
+        "SELECT COUNT(*) AS c FROM v2_events WHERE type='FilInstrumentCreated'",
+      )
       .get();
     db.close();
     expect(n?.c).toBe(2);

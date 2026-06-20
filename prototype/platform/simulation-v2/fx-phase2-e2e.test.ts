@@ -17,12 +17,12 @@
 import { describe, expect, test } from "bun:test";
 
 import { formatInstanceUrn } from "../../v2-core/fil-core/urn";
-import { assignBaselClassFromFeed } from "../markets/counterparty/assign-basel-class";
 import {
   issueMarginCall,
   postedCollateralMajor,
   recordMarginResponse,
 } from "../markets/collateral/margin-call-engine";
+import { assignBaselClassFromFeed } from "../markets/counterparty/assign-basel-class";
 import { provisionCounterparty } from "../markets/counterparty/provision-counterparty";
 import { bookAffirmedFxTrade } from "../markets/products/book-affirmed-fx-trade";
 import { computeAndEmitCohortSaCcrEad } from "../risk/sa-ccr/eod-saccr-ead-v2";
@@ -31,8 +31,8 @@ import type { ScenarioCsaTerms, ScenarioDay, ScenarioManifest } from "./scenario
 import { runScenario } from "./scenario-runner";
 import { emitCounterpartyProvisioning } from "./sim-modules/counterparty-provisioning";
 import { emitExternalCreditRating } from "./sim-modules/credit-rating-feed";
-import { emitSimulatedMarketFeed, ingestMarketFeed } from "./sim-modules/market-data-feed-v2";
 import { respondToMarginCalls } from "./sim-modules/margin-call-response";
+import { emitSimulatedMarketFeed, ingestMarketFeed } from "./sim-modules/market-data-feed-v2";
 import { emitCounterpartyConfirmation } from "./sim-modules/trade-confirmation";
 
 const REPORTING = "ZAR";
@@ -112,7 +112,12 @@ const MANIFEST: ScenarioManifest = {
       bic: "SIMPZAJJXXX",
       eligiblePairs: ["USD/ZAR"],
       behaviourProfile: "reliable",
-      agreement: { agreementType: "ISDA-2002", csaInScope: true, csaCurrency: "ZAR", csaTerms: POSTING_CSA },
+      agreement: {
+        agreementType: "ISDA-2002",
+        csaInScope: true,
+        csaCurrency: "ZAR",
+        csaTerms: POSTING_CSA,
+      },
       creditRating: { agency: "S&P", rating: "A", counterpartyType: "bank" },
     },
     {
@@ -121,7 +126,12 @@ const MANIFEST: ScenarioManifest = {
       bic: "SIMFZAJJXXX",
       eligiblePairs: ["USD/ZAR"],
       behaviourProfile: "reliable",
-      agreement: { agreementType: "ISDA-2002", csaInScope: true, csaCurrency: "ZAR", csaTerms: FAILING_CSA },
+      agreement: {
+        agreementType: "ISDA-2002",
+        csaInScope: true,
+        csaCurrency: "ZAR",
+        csaTerms: FAILING_CSA,
+      },
       creditRating: { agency: "S&P", rating: "BB", counterpartyType: "corporate" },
     },
   ],
@@ -144,8 +154,6 @@ function csaFor(counterpartyId: string): ScenarioCsaTerms {
 
 describe("FX V2 Phase 2 full E2E — counterparty-risk, simulator-judged", () => {
   test("rating→Basel class; daily SA-CCR EAD; margin call → collateral reduces next-day RC; dispute/fail exercised", () => {
-    const rcByDateNs = new Map<string, number>(); // `${date}|${nsId}` → RC minor
-
     const result = runScenario(MANIFEST, {
       provisioningDrivers: [
         ({ eventStore, clock, manifest }) => {
@@ -241,7 +249,7 @@ describe("FX V2 Phase 2 full E2E — counterparty-risk, simulator-judged", () =>
           cadence: "end-of-day",
           priority: 35,
           run: (ctx) => {
-            const res = computeAndEmitCohortSaCcrEad({
+            computeAndEmitCohortSaCcrEad({
               eventStore,
               marketDataStore,
               reporting: REPORTING,
@@ -250,9 +258,6 @@ describe("FX V2 Phase 2 full E2E — counterparty-risk, simulator-judged", () =>
               bookedRateByInstance,
               csaTermsByNettingSet,
             });
-            for (const [nsId, fig] of res.figures) {
-              rcByDateNs.set(`${ctx.reportDate}|${nsId}`, fig.rc);
-            }
           },
         },
         {
@@ -354,7 +359,12 @@ describe("FX V2 Phase 2 full E2E — counterparty-risk, simulator-judged", () =>
       // exposure (V) for the posting CP: RC = max(V − C, 0) and C > 0 ⇒ RC < V.
       let vDay4Minor = 0;
       for (const e of result.eventStore.replay({ type: "CcrReplacementCostComputed" })) {
-        const p = e.payload as { nettingSetId?: string; computationDate?: string; vMtm?: number; rc?: number };
+        const p = e.payload as {
+          nettingSetId?: string;
+          computationDate?: string;
+          vMtm?: number;
+          rc?: number;
+        };
         if (p.nettingSetId === nsPost && p.computationDate === "2026-02-05") {
           vDay4Minor = p.vMtm ?? 0;
           expect((p.rc ?? 0) < vDay4Minor).toBe(true); // RC = max(V − C,…) < V since C > 0
