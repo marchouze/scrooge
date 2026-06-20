@@ -82,6 +82,42 @@ export function forwardPointsObservableRef(currency: string, reporting: string):
 }
 
 // ---------------------------------------------------------------------------
+// OIS discount-factor observable (M1 — WS-FX-V2-SIMULATOR).
+//
+// Present-valuing a forward MtM requires the reporting-currency risk-free
+// discount factor to the settlement date. The discount factor for tenor T is
+// carried as its OWN observable, keyed `OIS:<REPORTING>:<tenorDays>d`, holding
+// the multiplicative factor DF(0,T) ∈ (0,1]. The simulator injects it on the
+// market path; the SUT reads it from the marks slice — never from the
+// simulator directly.
+//
+// This RETIRES the flat-discount approximation ([GAP-FWD-2] in the v1 EOD
+// module): a forward's MtM is `notional × (F_t − K) × DF(0,T)`, not the
+// undiscounted `(F_t − K) × notional` of the flat-discount path.
+// ---------------------------------------------------------------------------
+
+/** OIS discount-factor observable id for the reporting ccy at a tenor (calendar days). */
+export function oisDiscountObservableId(reporting: string, tenorDays: number): string {
+  return `OIS:${reporting}:${tenorDays}d`;
+}
+
+export function oisDiscountObservableRef(reporting: string, tenorDays: number): ObservableRef {
+  return { observableId: oisDiscountObservableId(reporting, tenorDays), kind: "curve" };
+}
+
+/**
+ * Compute the multiplicative OIS discount factor DF(0,T) = exp(−r·T) for a
+ * continuously-compounded annualised rate `r` and a tenor of `tenorDays`
+ * calendar days (ACT/365). Returns 1 for a zero/negative tenor (spot or past).
+ * Pure — the rate enters as a number; the result is bounded in (0, 1].
+ */
+export function oisDiscountFactor(annualRate: number, tenorDays: number): number {
+  if (tenorDays <= 0) return 1;
+  const t = tenorDays / 365;
+  return Math.exp(-annualRate * t);
+}
+
+// ---------------------------------------------------------------------------
 // The valuation kernel — signed notional × all-in rate, in the reporting ccy.
 //
 // `signedNotional` is the position's notional in its OWN currency's MAJOR units,
@@ -187,6 +223,89 @@ export function resolveAllInRate(args: {
     used.push(forwardPointsObservableRef(args.currency, reporting));
   }
   return { allInRate: allIn, observablesUsed: used };
+}
+
+// ---------------------------------------------------------------------------
+// Present-valued forward MtM (M1 — WS-FX-V2-SIMULATOR).
+//
+// A forward booked at rate K, valued at all-in forward rate F_t for the
+// remaining tenor, has an unrealised mark-to-market in the reporting currency:
+//
+//   MtM = signedNotionalBase × (F_t − K) × DF(0,T)
+//
+// where DF(0,T) is the reporting-currency OIS discount factor to settlement.
+// This is the present-valued forward valuation that RETIRES the flat-discount
+// approximation: setting DF = 1 recovers the undiscounted (flat) figure, so the
+// flat path is the degenerate r=0 case of this function.
+//
+// DECIMAL-NATIVE: notional + booked rate enter as decimal strings; the all-in
+// rate and DF enter as numbers (curve reads). The result is reporting-currency
+// Money rounded HALF-AWAY-FROM-ZERO to the reporting dp.
+// ---------------------------------------------------------------------------
+
+export interface ForwardMtmInput {
+  /** Base (foreign) currency, ISO-4217 alpha-3. */
+  readonly currency: string;
+  /** Signed base-currency notional, MAJOR-unit decimal string (long +, short −). */
+  readonly signedNotional: string;
+  /** Agreed (booked) all-in forward rate, reporting per 1 base. */
+  readonly bookedRate: number;
+  /** Current all-in forward rate for the remaining tenor (spot + fwd points). */
+  readonly currentForwardRate: number;
+  /** OIS discount factor DF(0,T) to settlement (multiplicative, in (0,1]). */
+  readonly discountFactor: number;
+  /** Reporting currency — REQUIRED, fail-closed (no `?? "ZAR"`). */
+  readonly reporting: string;
+}
+
+export interface ForwardMtm {
+  /** Present-valued mark-to-market in the reporting currency (decimal Money). */
+  readonly value: Money;
+  /** The all-in forward rate applied. */
+  readonly forwardRateApplied: number;
+  /** The discount factor applied. */
+  readonly discountFactorApplied: number;
+}
+
+/**
+ * Present-value a forward position's mark-to-market in the reporting currency.
+ * PURE — no lifecycle/settlement input. `currency === reporting` yields a zero
+ * MtM (a reporting-leg forward has no FX MtM). Throws on a non-positive or
+ * out-of-range discount factor (fail-closed: a bad curve read must never pass
+ * silently as DF=1).
+ */
+export function forwardMtmValue(input: ForwardMtmInput): ForwardMtm {
+  const reporting = input.reporting;
+  if (
+    !Number.isFinite(input.discountFactor) ||
+    input.discountFactor <= 0 ||
+    input.discountFactor > 1
+  ) {
+    throw new Error(
+      `forwardMtmValue: discountFactor must be in (0,1] (got ${input.discountFactor}) — a bad OIS curve read must fail closed, never default to 1`,
+    );
+  }
+  if (input.currency === reporting) {
+    return {
+      value: moneyFromDecimal(
+        reporting,
+        roundDecimal(toDecimal("0"), displayDp(reporting), "HALF_UP"),
+      ),
+      forwardRateApplied: input.currentForwardRate,
+      discountFactorApplied: input.discountFactor,
+    };
+  }
+  // rateDelta (reporting per base) = F_t − K
+  const rateDelta = toDecimal(String(input.currentForwardRate - input.bookedRate));
+  // undiscounted = signedNotional × rateDelta  (reporting major)
+  const undiscounted = mulD(toDecimal(input.signedNotional), rateDelta);
+  // present-valued = undiscounted × DF
+  const pv = mulD(undiscounted, toDecimal(String(input.discountFactor)));
+  return {
+    value: moneyFromDecimal(reporting, roundDecimal(pv, displayDp(reporting), "HALF_UP")),
+    forwardRateApplied: input.currentForwardRate,
+    discountFactorApplied: input.discountFactor,
+  };
 }
 
 // ---------------------------------------------------------------------------
