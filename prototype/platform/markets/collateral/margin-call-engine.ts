@@ -26,6 +26,7 @@
 //   BCBS d317 §136 / CRE52 §52.10 (collateral in RC). Principle 1; fail-closed.
 // Author: Atlas (Core banking platform architect, engineering).
 
+import { mulD, subD, toCanonicalString, toDecimal } from "../../core/decimal-engine";
 import type { MarginCallRespondedPayload } from "../../event-store/event-types/margin-call-response";
 import {
   makeCollateralPosted,
@@ -173,7 +174,12 @@ export function recordMarginResponse(args: {
 
   if (r.response === "post") {
     // Haircut-adjusted collateral enters the netting set (post-haircut value).
-    const postedMajor = r.postedAmountMajor * (1 - csa.haircut);
+    // Decimal engine — NO float money arithmetic (recon:no-float-money-arithmetic):
+    // postedMajor = postedAmountMajor × (1 − haircut).
+    const haircutFactor = subD(toDecimal("1"), toDecimal(String(csa.haircut)));
+    const postedMajor = Number(
+      toCanonicalString(mulD(toDecimal(String(r.postedAmountMajor)), haircutFactor)),
+    );
     store.append(
       makeCollateralPosted({
         asOf,

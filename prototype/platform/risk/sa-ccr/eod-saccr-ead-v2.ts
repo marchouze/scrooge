@@ -49,6 +49,7 @@ import {
 import type { EventStore } from "../../event-store/store";
 import { type MarketDataStore, lookupQuoteWithInverse } from "../../market-data/store";
 import { computeCohortPnL } from "../../product-control/eod-cohort-pnl-v2";
+import { v2MoneyToMinor } from "./v2-money-bridge";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const SUT_ACTOR = { type: "service" as const, id: "agent:sut:sa-ccr-engine" };
@@ -60,11 +61,12 @@ function reportingMoney(majorUnits: number, currency: string): V2Money {
   return v2Money(currency, majorUnits.toFixed(2));
 }
 
-/** Convert a v2 decimal-native Money (MAJOR units) to integer minor units for the
- *  legacy CCR `rc`/`vMtm`/`collateralHeld` integer fields (2dp ⇒ × 100). */
+/** Convert a v2 decimal-native Money (MAJOR units) to integer minor units (as a
+ *  Number) for the legacy CCR `rc`/`vMtm`/`collateralHeld` integer fields. Routes
+ *  through the decimal-engine bridge (`v2MoneyToMinor`, bigint) — NO float money
+ *  arithmetic (recon:no-float-money-arithmetic). */
 function v2MoneyToMinorNumber(m: V2Money): number {
-  // amount is a 2dp-or-less decimal string; × 100 with rounding is exact.
-  return Math.round(Number(m.amount) * 100);
+  return Number(v2MoneyToMinor(m));
 }
 
 interface CohortNettingGroup {
