@@ -287,6 +287,11 @@ export { FX_SIM_SETTLEMENT_LIFECYCLE_EVENT_TYPES_REGISTRY } from "./fx-settlemen
 // rating-agency fact; drives the SUT Basel-class mapping). Born V2.
 // Authority: D-FX-V2-SIMULATOR-FIRST; BCBS CRE20.
 export { EXTERNAL_CREDIT_RATING_EVENT_TYPES_REGISTRY } from "./external-credit-rating";
+// WS-FX-V2-SIMULATOR Phase 2 M8 — margin-call + collateral family. SUT-internal
+// (MarginCallIssued / CollateralPosted / CollateralReturned / MarginCallSettled)
+// + external (MarginCallResponded). Born V2. Authority: D-FX-V2-SIMULATOR-FIRST.
+export { MARGIN_COLLATERAL_EVENT_TYPES_REGISTRY } from "./margin-collateral";
+export { MARGIN_CALL_RESPONSE_EVENT_TYPES_REGISTRY } from "./margin-call-response";
 // WS-V2-BBAAS S4 — anchor-bank standing-data events (products / CoA / RAS).
 // V2ProductRegistered, V2ProductDeprecated, V2AccountTypeRegistered, V2RiskAppetiteSet.
 // Emitted ONLY into `BANK_V2_ANCHOR_DB`; never touch the v1 canonical store.
@@ -340,6 +345,8 @@ import { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillat
 import { DECISION_IMPACT_SWEEP_EVENT_TYPES_REGISTRY } from "./decision-impact-sweep";
 import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
 import { EXTERNAL_CREDIT_RATING_EVENT_TYPES_REGISTRY } from "./external-credit-rating";
+import { MARGIN_CALL_RESPONSE_EVENT_TYPES_REGISTRY } from "./margin-call-response";
+import { MARGIN_COLLATERAL_EVENT_TYPES_REGISTRY } from "./margin-collateral";
 import { FIL_ATTRIBUTION_EVENT_TYPES_REGISTRY } from "./fil-attribution";
 import { FIL_INSTANCES_EVENT_TYPES_REGISTRY } from "./fil-instances";
 import { FIL_MODELS_EVENT_TYPES_REGISTRY } from "./fil-models";
@@ -674,6 +681,10 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // WS-FX-V2-SIMULATOR Phase 2 M6 — external credit-rating feed (external-party
   // rating-agency fact → SUT Basel-class mapping). Born V2. D-FX-V2-SIMULATOR-FIRST.
   ...EXTERNAL_CREDIT_RATING_EVENT_TYPES_REGISTRY,
+  // WS-FX-V2-SIMULATOR Phase 2 M8 — margin-call + collateral family (SUT-internal
+  // call/collateral acts + external counterparty response). Born V2. D-FX-V2-SIMULATOR-FIRST.
+  ...MARGIN_COLLATERAL_EVENT_TYPES_REGISTRY,
+  ...MARGIN_CALL_RESPONSE_EVENT_TYPES_REGISTRY,
   // WS-V2-BBAAS S4 — anchor-bank standing-data events (products / CoA / RAS).
   // V2ProductRegistered, V2ProductDeprecated, V2AccountTypeRegistered, V2RiskAppetiteSet.
   // Emitted ONLY into BANK_V2_ANCHOR_DB; never touch the v1 canonical store.

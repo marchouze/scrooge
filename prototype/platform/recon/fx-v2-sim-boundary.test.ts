@@ -10,7 +10,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { SIMULATOR_EXTERNAL_EVENT_TYPES, run } from "./fx-v2-sim-boundary";
+import { SIMULATOR_EXTERNAL_EVENT_TYPES, emittedEventTypes, run } from "./fx-v2-sim-boundary";
 
 describe("recon:fx-v2-sim-boundary", () => {
   test("the live tree is clean (no boundary breach)", () => {
@@ -61,6 +61,21 @@ describe("recon:fx-v2-sim-boundary", () => {
     expect(found.has("FxTradeExecuted")).toBe(true);
     expect(found.has("FilInstrumentCreated")).toBe(true);
     expect(found.has("DailyPnLReportGenerated")).toBe(true);
+  });
+
+  test("emittedEventTypes EMITS an appended SUT type but IGNORES a replay() READ (M8)", () => {
+    // A simulator legitimately READS an SUT-internal type to respond to it
+    // (M8: respondToMarginCalls reads MarginCallIssued). The gate must NOT flag a
+    // `replay({ type: "X" })` read as an emission — only an actual append/make.
+    const readOnly = `for (const e of store.replay({ type: "MarginCallIssued" })) { /* respond */ }`;
+    expect(emittedEventTypes(readOnly).has("MarginCallIssued")).toBe(false);
+
+    // But a genuine EMISSION of an SUT type is still caught (append envelope + factory).
+    const emits = `store.append({ type: "MarginCallIssued", payload: {} });
+      store.append(makeCollateralPosted({}));`;
+    const found = emittedEventTypes(emits);
+    expect(found.has("MarginCallIssued")).toBe(true);
+    expect(found.has("CollateralPosted")).toBe(true);
   });
 
   // Use a temp dir mirroring the package layout would require pointing the gate

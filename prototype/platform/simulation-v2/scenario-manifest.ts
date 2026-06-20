@@ -72,6 +72,29 @@ export interface ScenarioCreditRating {
     | "corporate";
 }
 
+/**
+ * The CSA (Credit Support Annex) terms the scenario stands up for a margined
+ * counterparty (M8). All amounts are MAJOR units of the CSA currency.
+ */
+export interface ScenarioCsaTerms {
+  /** CSA threshold (TH) — uncollateralised exposure tolerated before a call. */
+  readonly thresholdMajor: number;
+  /** Minimum transfer amount (MTA) — calls below this are not made. */
+  readonly mtaMajor: number;
+  /** Eligible collateral kinds the counterparty may post. */
+  readonly eligibleCollateral: readonly ("cash" | "government-bond")[];
+  /** Haircut applied to posted collateral (fraction, e.g. 0.02 = 2%). */
+  readonly haircut: number;
+  /**
+   * How the counterparty responds to a margin call (M8 behaviour profile):
+   *   "posts-in-full"  → always posts the full called amount;
+   *   "disputes-once"  → disputes the FIRST call, then posts subsequent calls;
+   *   "fails"          → fails to post (a defaulting counterparty).
+   * Defaults to "posts-in-full".
+   */
+  readonly marginBehaviour?: "posts-in-full" | "disputes-once" | "fails";
+}
+
 /** The ISDA/CSA agreement the scenario stands up for a counterparty (M2). */
 export interface ScenarioAgreement {
   /** Master-agreement form. */
@@ -80,6 +103,8 @@ export interface ScenarioAgreement {
   readonly csaInScope: boolean;
   /** CSA threshold currency, when csaInScope. Defaults to the reporting ccy. */
   readonly csaCurrency?: string;
+  /** CSA collateral terms (thresholds, MTA, eligible collateral, haircut) — M8. */
+  readonly csaTerms?: ScenarioCsaTerms;
 }
 
 /** A counterparty the scenario provisions (M2 wires the full Niko lifecycle). */

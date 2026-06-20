@@ -74,6 +74,13 @@ interface CohortNettingGroup {
   readonly trades: SaCcrTradeSummary[];
 }
 
+/** CSA threshold + MTA (reporting MAJOR units) per netting set — feeds the
+ *  margined RC branch `max(V − C, MTA + TH, 0)`. Optional; defaults to 0/0. */
+export interface SaCcrCsaTerms {
+  readonly thresholdMajor: number;
+  readonly mtaMajor: number;
+}
+
 export interface SaCcrEadCohortResult {
   readonly reportDate: string;
   readonly reporting: string;
@@ -208,8 +215,18 @@ export function computeAndEmitCohortSaCcrEad(args: {
   readonly asOf: string;
   /** Booked rate per FX instance URN — the simulator's known input (for vMtm). */
   readonly bookedRateByInstance: ReadonlyMap<string, number>;
+  /** Optional CSA threshold/MTA per netting set (M8). Defaults to 0/0. */
+  readonly csaTermsByNettingSet?: ReadonlyMap<string, SaCcrCsaTerms>;
 }): SaCcrEadCohortResult {
-  const { eventStore, marketDataStore, reporting, reportDate, asOf, bookedRateByInstance } = args;
+  const {
+    eventStore,
+    marketDataStore,
+    reporting,
+    reportDate,
+    asOf,
+    bookedRateByInstance,
+    csaTermsByNettingSet,
+  } = args;
 
   const groups = foldCohortNettingGroups(eventStore, marketDataStore, reporting, asOf);
 
@@ -245,16 +262,17 @@ export function computeAndEmitCohortSaCcrEad(args: {
     const vMtmMajor = vMtmByNettingSet.get(grp.nettingSetId) ?? 0;
     const collateralMajor = resolvePostedCollateralMajor(eventStore, grp.nettingSetId, asOf);
 
+    const csa = csaTermsByNettingSet?.get(grp.nettingSetId);
     const nettingSet: SaCcrNettingSet = grp.csaPresent
       ? {
           nettingSetId: grp.nettingSetId,
           counterpartyId: grp.counterpartyId,
           csaPresent: true,
           currency: reporting,
-          // CSA terms — threshold + MTA. Zero-threshold CSA is the common IG case
-          // (Credit Risk Policy §3 line 137); M8 enriches these from CSA elections.
-          threshold: reportingMoney(0, reporting),
-          mta: reportingMoney(0, reporting),
+          // CSA terms — threshold + MTA from the CSA elections (M8); zero-threshold
+          // CSA is the common IG case (Credit Risk Policy §3 line 137).
+          threshold: reportingMoney(csa?.thresholdMajor ?? 0, reporting),
+          mta: reportingMoney(csa?.mtaMajor ?? 0, reporting),
         }
       : {
           nettingSetId: grp.nettingSetId,

@@ -117,6 +117,13 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   // rating-agency fact). Trading category → simulated under the build-phase
   // policy (this IS a simulator emission). F-032 site 3.
   ExternalCreditRatingReceived: "trading",
+  // WS-FX-V2-SIMULATOR Phase 2 M8 — margin-call + collateral family. SUT-internal
+  // call/collateral acts + the external counterparty response. Trading category.
+  MarginCallIssued: "trading",
+  CollateralPosted: "trading",
+  CollateralReturned: "trading",
+  MarginCallSettled: "trading",
+  MarginCallResponded: "trading",
   // RWA-computed Pillar-1 capital-adequacy basis records. These are the
   // regulatory capital denominator of record (BA 700) under D-RWA-ENGINE-W2-
   // SLICE-3 — a governance/regulatory commitment, NOT operational simulated
