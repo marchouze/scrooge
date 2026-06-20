@@ -331,6 +331,7 @@ import {
   buildClientOnboardingView,
 } from "./v2-client-onboarding-view";
 import { buildGlAccountLedger, buildGlView } from "./v2-finance-gl-view";
+import { buildFinanceReturnsView } from "./v2-finance-returns-view";
 import { buildCapitalView } from "./v2-finance-view";
 import { buildV2FxTradeHistoryView } from "./v2-markets-fx-trades-view";
 import {
@@ -344,7 +345,6 @@ import {
   buildV2FxSurfaceView,
   buildV2FxVarView,
 } from "./v2-markets-fx-view";
-import { buildFinanceReturnsView } from "./v2-finance-returns-view";
 import {
   buildV2ObligationDetailView,
   buildV2ObligationsView,

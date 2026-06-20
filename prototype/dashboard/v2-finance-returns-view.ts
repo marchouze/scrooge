@@ -46,9 +46,9 @@
 //
 // There is NO ReportFiled / filing-lifecycle event in the substrate, so
 // "Last Filed" / "Reporting period" / "Overdue" CANNOT be sourced. They are
-// rendered "—" / "N/A", never fabricated. The gap is tracked as a
-// ProductDeferredGap-style register TODO — see GAP-BA-RETURNS-FILING-LIFECYCLE
-// below and the deliverable.
+// rendered "—" / "N/A", never fabricated. The gap is tracked in the canonical
+// substrate-gap register as `ba-returns-filing-lifecycle`
+// (platform/substrate/gap-register.ts) and sourced from there below.
 //
 // ## NAME-FREE (standing policy; feedback_no_agent_names_in_ui)
 //
@@ -66,11 +66,11 @@ import type { EventStore } from "../platform/event-store/store";
 import { anchorFunctionalCurrency } from "../platform/identity/functional-currency";
 import type { MarketDataStore } from "../platform/market-data/store";
 import { getSubstrateGap } from "../platform/substrate/gap-register";
+import type { ReturnForm } from "../v2-core/regulatory-returns/cell-contract";
 import {
   RETURN_CONTRACT_REGISTRY,
   loadReturnContract,
 } from "../v2-core/regulatory-returns/return-contracts";
-import type { ReturnForm } from "../v2-core/regulatory-returns/cell-contract";
 import {
   type BA320ViewFigures,
   type BA700ViewFigures,
