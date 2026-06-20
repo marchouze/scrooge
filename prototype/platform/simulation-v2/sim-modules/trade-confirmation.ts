@@ -30,36 +30,16 @@
 // born V2 (v2status v2-parallel) — never v1-only (D-V1-REMOVAL-PHASE-1).
 // Author: Atlas (Core banking platform architect, engineering).
 
-import { z } from "zod";
-
+import {
+  makeTradeAffirmed,
+  makeTradeConfirmationSent,
+  makeTradeRejected,
+} from "../../event-store/event-types/fx-trade-confirmation";
 import { simulatedTag } from "../../event-store/provenance";
 import type { EventStore } from "../../event-store/store";
 import type { ScenarioTradeAction } from "../scenario-manifest";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
-
-// ---------------------------------------------------------------------------
-// Typed confirmation event family (born V2, simulator-emitted)
-// ---------------------------------------------------------------------------
-
-export const TRADE_CONFIRMATION_EVENT_TYPES = [
-  "TradeConfirmationSent",
-  "TradeAffirmed",
-  "TradeRejected",
-] as const;
-
-export const tradeConfirmationPayloadSchema = z.object({
-  tradeId: z.string().min(1),
-  counterpartyId: z.string().min(1),
-  /** Confirmation channel (modelled — SWIFT MT300 in a real flow). */
-  channel: z.literal("MT300"),
-});
-export type TradeConfirmationPayload = z.infer<typeof tradeConfirmationPayloadSchema>;
-
-export const tradeRejectedPayloadSchema = tradeConfirmationPayloadSchema.extend({
-  reason: z.string().min(1),
-});
-export type TradeRejectedPayload = z.infer<typeof tradeRejectedPayloadSchema>;
 
 function simProvenance(scenarioId: string) {
   return simulatedTag({
@@ -72,10 +52,10 @@ const SIM_ACTOR = { type: "service" as const, id: "agent:env:fx-trade-confirmati
 const CITATIONS = ["D-FX-V2-SIMULATOR-FIRST"];
 
 /**
- * SIMULATOR — emit the counterparty's confirmation flow for a trade. The
- * counterparty affirms unless its behaviour profile is "fail" (reject) — the
- * decision is deterministic given the manifest seed (passed via `affirm`).
- * Returns the terminal confirmation event type emitted.
+ * SIMULATOR — emit the counterparty's confirmation flow for a trade via the
+ * registered (F-032) born-V2 event factories. The counterparty affirms unless
+ * its behaviour profile is "fail" (reject) — the decision is deterministic given
+ * the manifest seed (passed via `affirm`). Returns the terminal event type.
  */
 export function emitCounterpartyConfirmation(args: {
   readonly store: EventStore;
@@ -94,43 +74,43 @@ export function emitCounterpartyConfirmation(args: {
   };
 
   // The bank sent a confirmation; the counterparty received it (external fact).
-  store.append({
-    event_id: `${scenarioId}:${trade.tradeId}:confirm-sent`,
-    type: "TradeConfirmationSent",
-    as_of: asOf,
-    entity: ENTITY,
-    actor: SIM_ACTOR,
-    citations: CITATIONS,
-    payload: tradeConfirmationPayloadSchema.parse(base),
-    provenance,
-  });
-
-  if (affirm) {
-    store.append({
-      event_id: `${scenarioId}:${trade.tradeId}:affirmed`,
-      type: "TradeAffirmed",
-      as_of: asOf,
+  store.append(
+    makeTradeConfirmationSent({
+      asOf,
       entity: ENTITY,
       actor: SIM_ACTOR,
       citations: CITATIONS,
-      payload: tradeConfirmationPayloadSchema.parse(base),
+      payload: base,
+      eventId: `${scenarioId}:${trade.tradeId}:confirm-sent`,
       provenance,
-    });
+    }),
+  );
+
+  if (affirm) {
+    store.append(
+      makeTradeAffirmed({
+        asOf,
+        entity: ENTITY,
+        actor: SIM_ACTOR,
+        citations: CITATIONS,
+        payload: base,
+        eventId: `${scenarioId}:${trade.tradeId}:affirmed`,
+        provenance,
+      }),
+    );
     return "TradeAffirmed";
   }
 
-  store.append({
-    event_id: `${scenarioId}:${trade.tradeId}:rejected`,
-    type: "TradeRejected",
-    as_of: asOf,
-    entity: ENTITY,
-    actor: SIM_ACTOR,
-    citations: CITATIONS,
-    payload: tradeRejectedPayloadSchema.parse({
-      ...base,
-      reason: "counterparty-credit-or-settlement-fail-profile",
+  store.append(
+    makeTradeRejected({
+      asOf,
+      entity: ENTITY,
+      actor: SIM_ACTOR,
+      citations: CITATIONS,
+      payload: { ...base, reason: "counterparty-credit-or-settlement-fail-profile" },
+      eventId: `${scenarioId}:${trade.tradeId}:rejected`,
+      provenance,
     }),
-    provenance,
-  });
+  );
   return "TradeRejected";
 }

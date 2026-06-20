@@ -268,6 +268,10 @@ export { ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY } from "./odp-umoja-uti";
 // Authority: D-TREASURER-WAVE2-SUBSTRATE (CEO-approved 2026-06-11);
 //   NPS-ACT-78-1998; SARB-NPSD; ISO-20022; PROC-PAY-RBH-01.
 export { CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY } from "./correspondent-settlement";
+// WS-FX-V2-SIMULATOR M3 — FX trade-confirmation event family (external-party
+// counterparty confirmation flow; settlement gated on TradeAffirmed). Born V2.
+// Authority: D-FX-V2-SIMULATOR-FIRST.
+export { FX_TRADE_CONFIRMATION_EVENT_TYPES_REGISTRY } from "./fx-trade-confirmation";
 // WS-V2-BBAAS S4 — anchor-bank standing-data events (products / CoA / RAS).
 // V2ProductRegistered, V2ProductDeprecated, V2AccountTypeRegistered, V2RiskAppetiteSet.
 // Emitted ONLY into `BANK_V2_ANCHOR_DB`; never touch the v1 canonical store.
@@ -322,6 +326,7 @@ import { FIL_ATTRIBUTION_EVENT_TYPES_REGISTRY } from "./fil-attribution";
 import { FIL_INSTANCES_EVENT_TYPES_REGISTRY } from "./fil-instances";
 import { FIL_MODELS_EVENT_TYPES_REGISTRY } from "./fil-models";
 import { FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY } from "./financial-instrument";
+import { FX_TRADE_CONFIRMATION_EVENT_TYPES_REGISTRY } from "./fx-trade-confirmation";
 import {
   ANALYTICS_EVENT_TYPES,
   AUDIT_EVENT_TYPES,
@@ -641,6 +646,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   //   placeholder rows from missing-types.ts.
   // Authority: D-TREASURER-WAVE2-SUBSTRATE (CEO-approved 2026-06-11).
   ...CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY,
+  ...FX_TRADE_CONFIRMATION_EVENT_TYPES_REGISTRY,
   // WS-V2-BBAAS S4 — anchor-bank standing-data events (products / CoA / RAS).
   // V2ProductRegistered, V2ProductDeprecated, V2AccountTypeRegistered, V2RiskAppetiteSet.
   // Emitted ONLY into BANK_V2_ANCHOR_DB; never touch the v1 canonical store.
