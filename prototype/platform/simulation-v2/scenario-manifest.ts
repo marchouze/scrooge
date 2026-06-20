@@ -29,6 +29,49 @@
  */
 export type CounterpartyBehaviourProfileId = "reliable" | "slow" | "occasional-fail" | "unreliable";
 
+/**
+ * The external credit rating the scenario's rating-agency feed publishes for a
+ * counterparty at provisioning (M6). The SUT maps this to a Basel class
+ * fail-closed. A mid-scenario upgrade/downgrade is declared per day via
+ * `ScenarioDay.ratingActions`.
+ */
+export interface ScenarioCreditRating {
+  /** The rating agency (S&P / Moody's / Fitch). */
+  readonly agency: "S&P" | "Moodys" | "Fitch";
+  /** The long-term issuer rating notch (S&P/Fitch scale, e.g. "AA-", "BBB+"). */
+  readonly rating:
+    | "AAA"
+    | "AA+"
+    | "AA"
+    | "AA-"
+    | "A+"
+    | "A"
+    | "A-"
+    | "BBB+"
+    | "BBB"
+    | "BBB-"
+    | "BB+"
+    | "BB"
+    | "BB-"
+    | "B+"
+    | "B"
+    | "B-"
+    | "CCC+"
+    | "CCC"
+    | "CCC-"
+    | "CC"
+    | "C"
+    | "D";
+  /** The supervisory counterparty type the rating applies to (CRE20 map input). */
+  readonly counterpartyType:
+    | "sovereign-domestic-currency"
+    | "sovereign-foreign-currency"
+    | "mdb-zero-weight"
+    | "bank"
+    | "pse"
+    | "corporate";
+}
+
 /** The ISDA/CSA agreement the scenario stands up for a counterparty (M2). */
 export interface ScenarioAgreement {
   /** Master-agreement form. */
@@ -58,6 +101,20 @@ export interface ScenarioCounterparty {
    * is emitted. Forwards (a derivative) require a master agreement in scope.
    */
   readonly agreement?: ScenarioAgreement;
+  /**
+   * The external credit rating the rating-agency feed publishes for this
+   * counterparty at provisioning (M6). When omitted the SUT fails closed to the
+   * prudent conservative Basel class (CRE20 unrated/100% interim).
+   */
+  readonly creditRating?: ScenarioCreditRating;
+}
+
+/** A mid-scenario rating upgrade/downgrade the agency feed publishes on a day (M6). */
+export interface ScenarioRatingAction {
+  /** Counterparty whose rating changes (must be a provisioned counterparty). */
+  readonly counterpartyId: string;
+  /** The new rating + agency + type the feed publishes this day. */
+  readonly rating: ScenarioCreditRating;
 }
 
 /** A single observable on the market path for one pair on one day. */
@@ -87,6 +144,8 @@ export interface ScenarioDay {
   readonly market: readonly ScenarioMarketObservation[];
   /** Trade actions the counterparty initiates on this day (booked intra-day). */
   readonly trades?: readonly ScenarioTradeAction[];
+  /** Mid-scenario rating revisions the agency feed publishes this day (M6). */
+  readonly ratingActions?: readonly ScenarioRatingAction[];
 }
 
 /** A trade the simulated counterparty requests on a given day. */

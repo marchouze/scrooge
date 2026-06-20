@@ -283,6 +283,10 @@ export { COUNTERPARTY_PROVISIONED_EVENT_TYPES_REGISTRY } from "./counterparty-pr
 // settlement: instructed → failed/retry → confirmed). Born V2.
 // Authority: D-FX-V2-SIMULATOR-FIRST; D-CASH-ASSET-CLASS-V1.
 export { FX_SIM_SETTLEMENT_LIFECYCLE_EVENT_TYPES_REGISTRY } from "./fx-settlement-lifecycle";
+// WS-FX-V2-SIMULATOR Phase 2 M6 — external credit-rating feed (external-party
+// rating-agency fact; drives the SUT Basel-class mapping). Born V2.
+// Authority: D-FX-V2-SIMULATOR-FIRST; BCBS CRE20.
+export { EXTERNAL_CREDIT_RATING_EVENT_TYPES_REGISTRY } from "./external-credit-rating";
 // WS-V2-BBAAS S4 — anchor-bank standing-data events (products / CoA / RAS).
 // V2ProductRegistered, V2ProductDeprecated, V2AccountTypeRegistered, V2RiskAppetiteSet.
 // Emitted ONLY into `BANK_V2_ANCHOR_DB`; never touch the v1 canonical store.
@@ -335,6 +339,7 @@ import { CROSS_TENANT_CSI_EVENT_TYPES } from "./cross-tenant-csi";
 import { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillation";
 import { DECISION_IMPACT_SWEEP_EVENT_TYPES_REGISTRY } from "./decision-impact-sweep";
 import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
+import { EXTERNAL_CREDIT_RATING_EVENT_TYPES_REGISTRY } from "./external-credit-rating";
 import { FIL_ATTRIBUTION_EVENT_TYPES_REGISTRY } from "./fil-attribution";
 import { FIL_INSTANCES_EVENT_TYPES_REGISTRY } from "./fil-instances";
 import { FIL_MODELS_EVENT_TYPES_REGISTRY } from "./fil-models";
@@ -666,6 +671,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...COUNTERPARTY_PROVISIONING_EVENT_TYPES_REGISTRY,
   ...COUNTERPARTY_PROVISIONED_EVENT_TYPES_REGISTRY,
   ...FX_SIM_SETTLEMENT_LIFECYCLE_EVENT_TYPES_REGISTRY,
+  // WS-FX-V2-SIMULATOR Phase 2 M6 — external credit-rating feed (external-party
+  // rating-agency fact → SUT Basel-class mapping). Born V2. D-FX-V2-SIMULATOR-FIRST.
+  ...EXTERNAL_CREDIT_RATING_EVENT_TYPES_REGISTRY,
   // WS-V2-BBAAS S4 — anchor-bank standing-data events (products / CoA / RAS).
   // V2ProductRegistered, V2ProductDeprecated, V2AccountTypeRegistered, V2RiskAppetiteSet.
   // Emitted ONLY into BANK_V2_ANCHOR_DB; never touch the v1 canonical store.

@@ -72,6 +72,10 @@ const SUT_INTERNAL_EVENT_TYPES = [
   // simulator emits only the EXTERNAL party's lifecycle (sounding/KYC/mandate/
   // agreement acceptance); the bank's provisioning decision is SUT-internal.
   "CounterpartyProvisioned",
+  // WS-FX-V2-SIMULATOR Phase 2 M6 — the bank's OWN Basel-class assignment mapped
+  // from the external rating feed. The simulator emits only the rating fact
+  // (ExternalCreditRatingReceived); the class is the bank's credit judgement.
+  "CounterpartyBaselClassAssigned",
 ] as const;
 
 /**
@@ -103,6 +107,10 @@ export const SIMULATOR_EXTERNAL_EVENT_TYPES = [
   "FxSimSettlementInstructed",
   "FxSimSettlementFailed",
   "FxSimSettlementConfirmed",
+  // WS-FX-V2-SIMULATOR Phase 2 M6 — external rating-agency feed fact (the outside
+  // world publishing a counterparty's credit rating; drives the SUT Basel-class
+  // mapping, which is itself SUT-internal — see CounterpartyBaselClassAssigned below).
+  "ExternalCreditRatingReceived",
 ] as const;
 
 const SUT_SET: ReadonlySet<string> = new Set(SUT_INTERNAL_EVENT_TYPES);
