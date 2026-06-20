@@ -25,7 +25,11 @@ import {
   oisDiscountFactor,
 } from "../../v2-core/fil-models/fx-valuation/methodology";
 import type { EventStore } from "../event-store/store";
-import { type MarketDataStore, lookupQuoteWithInverse } from "../market-data/store";
+import {
+  type MarketDataStore,
+  type ProvenanceSelector,
+  lookupQuoteWithInverse,
+} from "../market-data/store";
 
 /** Per-instrument cohort P&L row (reporting-ccy major units). */
 export interface CohortPnLRow {
@@ -187,7 +191,10 @@ function forwardPointsFor(store: MarketDataStore, pair: string): number {
   const base = slash > 0 ? pair.slice(0, slash) : pair;
   const reporting = slash > 0 ? pair.slice(slash + 1) : "";
   const instrument = `${base}/${reporting}:fwd-points`;
-  const tick = store.getLatest("fx-sim", instrument, undefined, "production");
+  // SUT read: PRODUCTION marks only — a simulated tick must never leak into a
+  // live valuation (market-data-provenance-gate; D-MARKETS-SCHEMA-FOUNDATION).
+  const provenance: ProvenanceSelector = "production";
+  const tick = store.getLatest("fx-sim", instrument, undefined, provenance);
   if (!tick) return 0;
   const points = (tick.payload as { points?: number; mid?: number }).points;
   return typeof points === "number" ? points : 0;
@@ -195,7 +202,9 @@ function forwardPointsFor(store: MarketDataStore, pair: string): number {
 
 function oisRateFor(store: MarketDataStore, reporting: string): number {
   const instrument = `OIS:${reporting}:${STANDARD_FORWARD_TENOR_DAYS}d`;
-  const tick = store.getLatest("fx-sim", instrument, undefined, "production");
+  // SUT read: PRODUCTION marks only (see forwardPointsFor).
+  const provenance: ProvenanceSelector = "production";
+  const tick = store.getLatest("fx-sim", instrument, undefined, provenance);
   if (!tick) return 0;
   const rate = (tick.payload as { annualRate?: number }).annualRate;
   return typeof rate === "number" ? rate : 0;
