@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Project Plan — Scrooge Bank</title>
-  <meta name="description" content="Scrooge Bank build-phase project plan — four workstreams, past milestones, open blockers, and the path to pre-licence readiness.">
+  <title>Build Status — Scrooge Bank</title>
+  <meta name="description" content="Scrooge Bank build status — the complete build-phase roadmap with the live status of every element, derived from the event store: workstreams, decisions, V1-removal ratchet, RMS phases, and the recon-gate harness.">
   <link rel="stylesheet" href="/_brand.css">
   <link rel="stylesheet" href="/provenance-badge.css">
   <link rel="stylesheet" href="/_shell.css">
@@ -30,40 +30,28 @@
       border-right: 1px solid var(--neutral-rule);
     }
     .rm-phase:last-child { border-right: none; }
-    .rm-phase.active {
-      background: #e8f5e9; border-top: 3px solid #2e7d32;
-    }
-    .rm-phase.future {
-      background: var(--surface-raised); border-top: 3px solid var(--neutral-rule);
-      opacity: .75;
-    }
-    .rm-phase.endpoint {
-      background: #f3e5f5; border-top: 3px solid #6a1b9a;
-      opacity: .7;
-    }
+    .rm-phase.current  { background: #e8f5e9; border-top: 3px solid #2e7d32; }
+    .rm-phase.gate     { background: var(--surface-raised); border-top: 3px solid var(--neutral-rule); opacity: .8; }
+    .rm-phase.target   { background: #f3e5f5; border-top: 3px solid #6a1b9a; opacity: .75; }
     .rm-phase-label {
       font-size: 11px; font-weight: 600; text-transform: uppercase;
       letter-spacing: .05em; color: var(--text-secondary); margin-bottom: 4px;
     }
-    .rm-phase.active .rm-phase-label { color: #2e7d32; }
-    .rm-phase.endpoint .rm-phase-label { color: #6a1b9a; }
+    .rm-phase.current .rm-phase-label { color: #2e7d32; }
+    .rm-phase.target  .rm-phase-label { color: #6a1b9a; }
     .rm-phase-title { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
     .rm-phase-sub { font-size: 11.5px; color: var(--text-secondary); margin-top: 3px; }
     .rm-arrow {
       display: flex; align-items: center; justify-content: center;
       padding: 0 6px; background: var(--surface-raised); color: var(--neutral-stone);
-      font-size: 14px; border-right: 1px solid var(--neutral-rule);
-      flex-shrink: 0;
+      font-size: 14px; border-right: 1px solid var(--neutral-rule); flex-shrink: 0;
     }
 
     /* ── Stat cards ── */
-    .rm-stats {
-      display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: var(--space-8);
-    }
+    .rm-stats { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: var(--space-8); }
     .rm-stat {
-      flex: 1; min-width: 120px; padding: 12px 14px;
-      border: 1px solid var(--neutral-rule); border-radius: 6px;
-      background: var(--surface-base);
+      flex: 1; min-width: 130px; padding: 12px 14px;
+      border: 1px solid var(--neutral-rule); border-radius: 6px; background: var(--surface-base);
     }
     .rm-stat-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; color: var(--text-secondary); }
     .rm-stat-value { font-size: 26px; font-weight: 700; color: var(--text-primary); line-height: 1.1; margin: 4px 0 2px; }
@@ -73,127 +61,76 @@
     .rm-stat-value[data-tone="muted"]  { color: var(--neutral-stone); }
     .rm-stat-sub { font-size: 11px; color: var(--neutral-stone); }
 
-    /* ── Workstream section ── */
-    .rm-workstream {
-      border: 1px solid var(--neutral-rule); border-radius: 8px;
-      margin-bottom: var(--space-6); overflow: hidden;
+    /* ── V1-removal progress ── */
+    .rm-progress-track {
+      height: 14px; border-radius: 7px; background: var(--surface-hover);
+      overflow: hidden; margin: 10px 0 6px; border: 1px solid var(--neutral-rule);
     }
-    .rm-ws-head {
-      display: flex; align-items: baseline; gap: 12px;
-      padding: 14px 18px; background: var(--surface-raised);
-      border-bottom: 1px solid var(--neutral-rule);
+    .rm-progress-fill { height: 100%; background: linear-gradient(90deg,#2e7d32,#4caf50); transition: width .4s; }
+    .rm-v2-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .rm-v2-chip {
+      display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 10px;
+      border-radius: 6px; font-size: 12px; border: 1px solid var(--neutral-rule);
+      background: var(--surface-base);
     }
-    .rm-ws-id {
-      font-size: 11px; font-weight: 700; font-family: var(--font-mono);
-      background: var(--brand-primary); color: #fff;
-      padding: 2px 7px; border-radius: 4px; flex-shrink: 0;
-    }
-    .rm-ws-name { font-size: 15px; font-weight: 600; color: var(--text-primary); }
-    .rm-ws-owner { font-size: 12px; color: var(--text-secondary); margin-left: auto; }
-    .rm-ws-body { padding: 0; }
-
-    /* ── Done / In-flight / To-do panels ── */
-    details.rm-panel { border-bottom: 1px solid var(--neutral-rule); }
-    details.rm-panel:last-child { border-bottom: none; }
-    details.rm-panel summary {
-      padding: 10px 18px; font-weight: 600; font-size: 13px;
-      cursor: pointer; list-style: none;
-      display: flex; align-items: center; gap: 10px;
-      color: var(--text-primary); user-select: none;
-    }
-    details.rm-panel summary::-webkit-details-marker { display: none; }
-    details.rm-panel summary::before {
-      content: "▶"; font-size: 10px; color: var(--neutral-stone);
-      transition: transform .15s; flex-shrink: 0;
-    }
-    details.rm-panel[open] summary::before { transform: rotate(90deg); }
-    details.rm-panel .rm-panel-body { padding: 2px 18px 14px 42px; }
-
-    /* Panel type badges in summary */
-    .rm-panel-badge {
-      font-size: 11px; font-weight: 600; padding: 1px 7px;
-      border-radius: 10px; flex-shrink: 0;
-    }
-    .rm-panel-badge.done     { background: #e8f5e9; color: #2e6b34; border: 1px solid #bce0c0; }
-    .rm-panel-badge.inflight { background: #e3f2fd; color: #1c4d80; border: 1px solid #cae0f5; }
-    .rm-panel-badge.todo     { background: #fff8e1; color: #7a5a00; border: 1px solid #ffe082; }
-    .rm-panel-count {
-      font-size: 11px; color: var(--neutral-stone); margin-left: auto;
+    .rm-v2-chip b { font-size: 14px; }
+    .rm-v2-chip.v1   b { color: #7d1e10; }
+    .rm-v2-chip.par  b { color: #a04200; }
+    .rm-v2-chip.repl b { color: #2e7d32; }
+    .rm-gate-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .rm-gate-pill {
+      font-family: var(--font-mono); font-size: 11px; padding: 2px 8px;
+      border-radius: 10px; background: #e8f5e9; color: #2e6b34; border: 1px solid #bce0c0;
     }
 
-    /* Item lists */
-    .rm-items { list-style: none; padding: 0; margin: 0; }
-    .rm-items li {
-      display: flex; align-items: flex-start; gap: 8px;
-      padding: 5px 0; border-bottom: 1px solid var(--neutral-rule);
-      font-size: 12.5px; color: var(--text-primary);
+    /* ── Generic status badge ── */
+    .rm-badge {
+      font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 10px;
+      flex-shrink: 0; white-space: nowrap; text-transform: capitalize;
     }
-    .rm-items li:last-child { border-bottom: none; }
-    .rm-item-icon { flex-shrink: 0; margin-top: 1px; }
-    .rm-item-text { flex: 1; }
-    .rm-item-owner {
-      font-size: 11px; color: var(--neutral-stone); white-space: nowrap;
-      margin-left: 6px; flex-shrink: 0;
-    }
-    .rm-item-ref {
-      font-family: var(--font-mono); font-size: 10.5px;
-      background: var(--surface-raised); padding: 1px 5px;
-      border-radius: 3px; color: var(--neutral-stone); flex-shrink: 0;
-    }
+    .rm-badge.complete    { background: #e8f5e9; color: #2e6b34; border: 1px solid #bce0c0; }
+    .rm-badge.in-progress,
+    .rm-badge.active      { background: #e3f2fd; color: #1c4d80; border: 1px solid #cae0f5; }
+    .rm-badge.planned     { background: #fff8e1; color: #7a5a00; border: 1px solid #ffe082; }
+    .rm-badge.blocked     { background: #fbe9e7; color: #7d1e10; border: 1px solid #f3c1bc; }
 
-    /* Status icons */
-    .icon-done     { color: #2e7d32; }
-    .icon-inflight { color: #1c4d80; }
-    .icon-todo     { color: #7a5a00; }
+    /* ── RMS phase list ── */
+    .rm-phase-list { list-style: none; padding: 0; margin: 0; border: 1px solid var(--neutral-rule); border-radius: 8px; overflow: hidden; }
+    .rm-phase-list li {
+      display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px;
+      border-bottom: 1px solid var(--neutral-rule); background: var(--surface-base);
+    }
+    .rm-phase-list li:last-child { border-bottom: none; }
+    .rm-phase-main { flex: 1; }
+    .rm-phase-name { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+    .rm-phase-summary { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
+    .rm-phase-ref { font-family: var(--font-mono); font-size: 10.5px; color: var(--neutral-stone); }
 
-    /* Blockers strip */
-    .rm-blockers {
-      display: flex; flex-wrap: wrap; gap: 6px;
-      padding: 10px 18px; background: #fff7f6;
-      border-top: 1px solid #f3c1bc;
+    /* ── Workstreams table ── */
+    .rm-filter-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+    .rm-filter-btn {
+      font-size: 12px; padding: 4px 12px; border-radius: 14px; cursor: pointer;
+      border: 1px solid var(--neutral-rule); background: var(--surface-base); color: var(--text-secondary);
     }
-    .rm-blocker-label {
-      font-size: 11px; font-weight: 600; color: #7d1e10;
-      align-self: center; margin-right: 4px;
+    .rm-filter-btn.active { background: var(--brand-primary); color: #fff; border-color: var(--brand-primary); }
+    .rm-table-wrap { overflow-x: auto; border: 1px solid var(--neutral-rule); border-radius: 8px; }
+    table.rm-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    table.rm-table th, table.rm-table td {
+      border-bottom: 1px solid var(--neutral-rule); padding: 8px 12px; text-align: left; vertical-align: top;
     }
-    .rm-blocker-chip {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 2px 8px; border-radius: 10px; font-size: 11px;
-      background: #fbe9e7; color: #7d1e10; border: 1px solid #f3c1bc;
-      font-family: var(--font-mono); font-weight: 600;
-    }
+    table.rm-table th { background: var(--surface-raised); font-weight: 600; font-size: 11.5px; color: var(--text-secondary); }
+    table.rm-table tr:last-child td { border-bottom: none; }
+    table.rm-table tr:hover td { background: var(--surface-hover); }
+    table.rm-table code { font-size: 11px; background: var(--surface-raised); padding: 1px 4px; border-radius: 3px; font-family: var(--font-mono); }
+    .rm-num { text-align: right; font-variant-numeric: tabular-nums; }
+    .rm-empty { font-size: 13px; color: var(--neutral-stone); padding: 14px; text-align: center; }
 
-    /* ── CEO queue table ── */
-    .rm-queue-wrap { overflow-x: auto; margin-top: 8px; }
-    table.rm-queue { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-    table.rm-queue th, table.rm-queue td {
-      border-bottom: 1px solid var(--neutral-rule);
-      padding: 7px 10px; text-align: left; vertical-align: top;
+    .rm-section { margin-top: var(--space-8); }
+    .rm-section > p.rm-note { font-size: 12.5px; color: var(--text-secondary); margin: 0 0 var(--space-4); }
+    #bs-error {
+      border: 1px solid #f3c1bc; background: #fff7f6; color: #7d1e10;
+      padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: var(--space-6);
     }
-    table.rm-queue th {
-      background: var(--surface-raised); font-weight: 600;
-      font-size: 11.5px; color: var(--text-secondary);
-    }
-    table.rm-queue tr:hover td { background: var(--surface-hover); }
-    table.rm-queue code {
-      font-size: 11px; background: var(--surface-raised);
-      padding: 1px 4px; border-radius: 3px; font-family: var(--font-mono);
-    }
-    .rm-empty { font-size: 13px; color: var(--neutral-stone); padding: 12px 0; }
-
-    /* ── Cross-cutting watch items ── */
-    .rm-watch { list-style: none; padding: 0; margin: 0; }
-    .rm-watch li {
-      padding: 8px 0; border-bottom: 1px solid var(--neutral-rule);
-      font-size: 12.5px; display: flex; gap: 10px; align-items: flex-start;
-    }
-    .rm-watch li:last-child { border-bottom: none; }
-    .rm-watch-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--neutral-stone); flex-shrink: 0; margin-top: 4px;
-    }
-    .rm-watch-dot.active { background: #2e7d32; }
-    .rm-watch-dot.amber  { background: #a04200; }
   </style>
 </head>
 <body>
@@ -201,137 +138,93 @@
   <main id="content" class="main-content">
     <span data-provenance-badge="page-top" aria-label="Provenance badge"></span>
     <div class="page-header">
-      <h1 class="page-title">Project Plan</h1>
+      <h1 class="page-title">Build Status</h1>
       <p class="muted">
-        Scrooge (Chief of Staff) — build-phase roadmap across four workstreams.
-        Past milestones are anchors; the forward queue is sequenced by dependency.
-        Live counts (decisions, workstreams) are derived from the event store.
+        The complete build-phase roadmap with the live status of every element.
+        Every figure on this page is derived from the canonical event store and
+        engineering registries — workstreams, decisions, the V1-removal ratchet,
+        RMS phases, and the recon-gate harness. Nothing here is hand-maintained.
+        <span id="bs-generated" class="rm-phase-ref"></span>
       </p>
     </div>
 
-      <!-- ── Phase timeline ── -->
-      <section id="phase-overview" aria-labelledby="rm-phase-head">
-        <h2 class="shell-category-title" id="rm-phase-head" style="margin-bottom:var(--space-4)">Phase overview</h2>
-        <div class="rm-timeline" role="list">
-          <div class="rm-phase active" role="listitem">
-            <div class="rm-phase-label">Current</div>
-            <div class="rm-phase-title">Build Phase</div>
-            <div class="rm-phase-sub">Engineering substrate, governance seats, regulatory chain, markets franchise prep</div>
-          </div>
-          <div class="rm-arrow" aria-hidden="true">→</div>
-          <div class="rm-phase future" role="listitem">
-            <div class="rm-phase-label">Gate</div>
-            <div class="rm-phase-title">Pre-licence Readiness</div>
-            <div class="rm-phase-sub">Saskia + Rashida + Devon co-own; lights green when substrate is production-grade</div>
-          </div>
-          <div class="rm-arrow" aria-hidden="true">→</div>
-          <div class="rm-phase endpoint" role="listitem">
-            <div class="rm-phase-label">Target</div>
-            <div class="rm-phase-title">Licence Day</div>
-            <div class="rm-phase-sub">Real capital, real customers, minimum human layer appointed under Banks Act</div>
-          </div>
-        </div>
+    <div id="bs-error" style="display:none" role="alert"></div>
 
-        <!-- Stats -->
-        <div class="rm-stats">
-          <div class="rm-stat">
-            <div class="rm-stat-label">Decisions resolved</div>
-            <div class="rm-stat-value" id="rm-resolved" data-tone="muted">–</div>
-            <div class="rm-stat-sub">CEO decisions actioned</div>
-          </div>
-          <div class="rm-stat">
-            <div class="rm-stat-label">Decisions open</div>
-            <div class="rm-stat-value" id="rm-open" data-tone="muted">–</div>
-            <div class="rm-stat-sub">CEO queue</div>
-          </div>
-          <div class="rm-stat">
-            <div class="rm-stat-label">Workstreams active</div>
-            <div class="rm-stat-value" id="rm-inflight" data-tone="muted">–</div>
-            <div class="rm-stat-sub">In-flight now</div>
-          </div>
-          <div class="rm-stat">
-            <div class="rm-stat-label">Procedures</div>
-            <div class="rm-stat-value" id="rm-procedures" data-tone="muted">–</div>
-            <div class="rm-stat-sub">Populated · 0 STUB / PLANNED</div>
-          </div>
-          <div class="rm-stat">
-            <div class="rm-stat-label">Obligations</div>
-            <div class="rm-stat-value" id="rm-obligations" data-tone="muted">–</div>
-            <div class="rm-stat-sub">Across ~16 domains</div>
-          </div>
-          <div class="rm-stat">
-            <div class="rm-stat-label">Policies</div>
-            <div class="rm-stat-value" id="rm-policies" data-tone="muted">–</div>
-            <div class="rm-stat-sub">Policy register</div>
-          </div>
-        </div>
-      </section>
+    <!-- ── Phase overview ── -->
+    <section aria-labelledby="bs-phase-head">
+      <h2 class="shell-category-title" id="bs-phase-head" style="margin-bottom:var(--space-4)">Phase overview</h2>
+      <div class="rm-timeline" id="bs-phases" role="list"></div>
+      <div class="rm-stats" id="bs-stats"></div>
+    </section>
 
-      <!-- ── Workstreams ── -->
-      <section aria-labelledby="rm-ws-head">
-        <h2 class="shell-category-title" id="rm-ws-head" style="margin-bottom:var(--space-4)">Workstreams</h2>
-        <div id="rm-workstreams"></div>
-      </section>
+    <!-- ── V1 removal ── -->
+    <section class="rm-section" aria-labelledby="bs-v1-head">
+      <h2 class="shell-category-title" id="bs-v1-head" style="margin-bottom:var(--space-4)">V1 retirement</h2>
+      <p class="rm-note">
+        Bank-wide V2 migration (<code>D-V1-REMOVAL-PHASE-1</code>). The
+        <code>v1-only</code> event-type count is harden-only and trends to zero;
+        the figures below are counted live from the current event-type registry.
+      </p>
+      <div id="bs-v1"></div>
+    </section>
 
-      <!-- ── CEO decision queue ── -->
-      <section id="ceo-queue" aria-labelledby="rm-ceo-head" style="margin-top:var(--space-8)">
-        <h2 class="shell-category-title" id="rm-ceo-head" style="margin-bottom:var(--space-4)">CEO decision queue</h2>
-        <p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:var(--space-4)">
-          Open decisions requiring CEO action — ordered by sequencing pressure.
-        </p>
-        <div class="rm-queue-wrap">
-          <table class="rm-queue" aria-label="Open CEO decisions">
-            <thead>
-              <tr>
-                <th style="width:90px">ID</th>
-                <th>Decision</th>
-                <th style="width:110px">Owner</th>
-                <th style="width:110px">Category</th>
-              </tr>
-            </thead>
-            <tbody id="rm-queue-body">
-              <tr><td colspan="4" class="rm-empty">Loading…</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
+    <!-- ── RMS phases ── -->
+    <section class="rm-section" aria-labelledby="bs-rms-head">
+      <h2 class="shell-category-title" id="bs-rms-head" style="margin-bottom:var(--space-4)">Records Management Substrate</h2>
+      <p class="rm-note">Each phase's status is derived from the Decisions register — resolved → complete.</p>
+      <ul class="rm-phase-list" id="bs-rms"></ul>
+    </section>
 
-      <!-- ── Cross-cutting watch items ── -->
-      <section id="watch-items" aria-labelledby="rm-watch-head" style="margin-top:var(--space-8)">
-        <h2 class="shell-category-title" id="rm-watch-head" style="margin-bottom:var(--space-4)">Cross-cutting watch items</h2>
-        <ul class="rm-watch">
-          <li>
-            <div class="rm-watch-dot active"></div>
-            <div><strong>Build-phase endpoint</strong> — pre-licence go-live readiness gate (Saskia + Rashida + Devon). Target not yet date-set; defines the transition from build-phase to licence-day.</div>
-          </li>
-          <li>
-            <div class="rm-watch-dot amber"></div>
-            <div><strong>Anthropic API token spend</strong> — currently the largest real cost. Marc + Camille (CFO) tracking under <code>S6</code> / <code>WS-API-CLOUD-BUDGET</code>.</div>
-          </li>
-          <li>
-            <div class="rm-watch-dot amber"></div>
-            <div><strong>Agent-spec completeness</strong> — persona files require sections 6–17 (operating spec proper). Vera Wave-4 #10 asserts at audit time. Touch-time upgrade ongoing.</div>
-          </li>
-          <li>
-            <div class="rm-watch-dot active"></div>
-            <div><strong>Azure migration</strong> — single-coherent-phase per Principle 3. Substrate-replacement seams in place; migration executes once the platform is production-grade.</div>
-          </li>
-          <li>
-            <div class="rm-watch-dot active"></div>
-            <div><strong>M-phase markers</strong> — M2 (reporting build) → M3 → … → M8 (single auto-commit ingest). Sequenced behind the product-construction substrate gap closure.</div>
-          </li>
-          <li>
-            <div class="rm-watch-dot active"></div>
-            <div><strong>Dispatch-discipline harness</strong> — worktree isolation, scaffold-commit, push-retry, citation-gate, no-pause rule all live in <code>CLAUDE.md</code>. Substrate fixes (chroot/namespace, M8 ingest) on the to-do.</div>
-          </li>
-        </ul>
-      </section>
+    <!-- ── Workstreams ── -->
+    <section class="rm-section" aria-labelledby="bs-ws-head">
+      <h2 class="shell-category-title" id="bs-ws-head" style="margin-bottom:var(--space-4)">Workstreams</h2>
+      <p class="rm-note">
+        Logical groupings from the RMS Workstreams register. Status is derived
+        from the per-brief outcomes inside each workstream.
+      </p>
+      <div class="rm-filter-bar" id="bs-ws-filter"></div>
+      <div class="rm-table-wrap">
+        <table class="rm-table" aria-label="Workstreams">
+          <thead>
+            <tr>
+              <th style="width:30%">Workstream</th>
+              <th style="width:110px">Status</th>
+              <th class="rm-num">Briefs</th>
+              <th class="rm-num">Runs</th>
+              <th class="rm-num">Decisions</th>
+              <th style="width:160px">Last activity</th>
+            </tr>
+          </thead>
+          <tbody id="bs-ws-body"><tr><td colspan="6" class="rm-empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── Open decision queue ── -->
+    <section class="rm-section" aria-labelledby="bs-queue-head">
+      <h2 class="shell-category-title" id="bs-queue-head" style="margin-bottom:var(--space-4)">Open decision queue</h2>
+      <p class="rm-note">Open decisions from the Decisions register — owners shown by seat title.</p>
+      <div class="rm-table-wrap">
+        <table class="rm-table" aria-label="Open decisions">
+          <thead>
+            <tr>
+              <th style="width:130px">ID</th>
+              <th>Decision</th>
+              <th style="width:150px">Owner</th>
+              <th style="width:120px">Authority</th>
+            </tr>
+          </thead>
+          <tbody id="bs-queue-body"><tr><td colspan="4" class="rm-empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
   </main>
 
   <script src="/_shell.js"></script>
   <script src="/provenance-badge.js"></script>
   <script src="/_components.js"></script>
+  <script src="/_refresh-controls.js"></script>
   <script src="/roadmap.js"></script>
-  <script>initShell({ title: "Project Plan" });</script>
+  <script>initShell({ title: "Build Status" });</script>
 </body>
 </html>

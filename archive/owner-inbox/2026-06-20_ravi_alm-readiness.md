@@ -1,11 +1,11 @@
 ---
 agent: Ravi
 trigger: alm-readiness
-asOf: 2026-06-19T06:23:36.021Z
+asOf: 2026-06-20T06:23:47.295Z
 decision-required: false
 ---
 
-# Ravi — ALM readiness, 2026-06-19
+# Ravi — ALM readiness, 2026-06-20
 
 Autonomous run of Ravi's daily ALM-readiness attestation per `Team/Ravi.md` operating spec § 6 (Cadence). Run by the agent runtime; no human-in-the-loop. Seventeenth handler in the fleet-rollout sequence under `D-FLEET-ROLLOUT-SEQUENCING`. Engineer-side counterpart to Eitan's `LiquiditySnapshot` — Eitan reports counts of liquidity / treasury events the ALCO chair would consume; Ravi reports the substrate-readiness state for each ALM pipeline (LCR, NSFR, IRRBB, FX position, FTP, collateral, SAMOS funding) the engineer would build to make those events real.
 
@@ -13,7 +13,7 @@ Autonomous run of Ravi's daily ALM-readiness attestation per `Team/Ravi.md` oper
 
 ## Eitan's latest snapshot
 
-Latest `LiquiditySnapshot` event: 2026-06-18T07:13:58.386Z
+Latest `LiquiditySnapshot` event: 2026-06-19T07:13:37.396Z
 
 | Eitan event class (last 24h) | Count |
 |---|---|
@@ -78,7 +78,7 @@ Ravi's daily run pairs with Eitan's daily run: Eitan reports the ALCO-chair side
 
 ## Ravi's narrative
 
-_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CcC92YSa32DunYDDJenRe"})._
+_Narrative generation failed (auth failed (check ANTHROPIC_API_KEY): 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CcE2reAPRKXCMGBSRfUs7"})._
 
 ## Provenance
 

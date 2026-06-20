@@ -241,6 +241,7 @@ import {
   loadObligationSeed,
 } from "./bank-obligations-view";
 import { bookBondTrade, registerBondGatewayRoutes } from "./bond-gateway";
+import { buildBuildStatusView } from "./build-status-view";
 import { buildConfigView } from "./config-view";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
 import { registerFxSimRoutes } from "./fx-sim-view";
@@ -5600,6 +5601,19 @@ const server = Bun.serve({
     if (req.method === "GET" && url.pathname === "/api/v2/decisions") {
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       return jsonResponse({ ...buildDecisionsView(cachedState, nowUtc()), pageProvenance: filter });
+    }
+    // Build Status — the complete build-phase roadmap with the status of every
+    // element derived live (Workstreams register, Decisions, V1-removal ratchet
+    // + live registry counts, recon-gate inventory). Backs /roadmap.html.
+    if (req.method === "GET" && url.pathname === "/api/v2/build-status") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const now = nowUtc();
+      const view = buildBuildStatusView({
+        workstreams: getRmsFold().workstreams,
+        decisions: buildDecisionsView(cachedState, now),
+        now,
+      });
+      return jsonResponse({ ...view, pageProvenance: filter });
     }
     if (req.method === "GET" && url.pathname.startsWith("/api/v2/decisions/")) {
       const decisionId = decodeURIComponent(url.pathname.slice("/api/v2/decisions/".length));
