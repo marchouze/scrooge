@@ -7,6 +7,15 @@
   <link rel="stylesheet" href="/v2/_v2-shell.css">
   <link rel="stylesheet" href="/v2/_v2-tile.css">
   <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    .v2-chip { display:inline-flex; align-items:center; padding:1px 8px; border-radius:10px; font-size:0.78em; font-weight:600; }
+    .v2-chip--ok { background:var(--color-success-bg); color:var(--color-success); }
+    .v2-chip--info { background:var(--color-info-bg); color:var(--color-info); }
+    .v2-chip--muted { background:var(--color-surface-raised); color:var(--color-text-secondary); }
+    .v2-mono { font-family:var(--font-mono, ui-monospace, monospace); font-size:0.92em; }
+    .v2-note { margin-top:12px; padding:10px 12px; border-radius:6px; background:var(--color-surface-raised);
+      color:var(--color-text-secondary); font-size:0.85em; line-height:1.5; }
+  </style>
 </head>
 <body data-provenance-content="none">
   <header class="v2-header">
@@ -19,7 +28,10 @@
         <button class="v2-prov-btn" data-mode="prod">Prod</button>
         <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
       </div>
-      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html" title="Errors &amp; recon violations">
+        <span class="v2-errors-icon">⚠</span>
+        <span class="v2-errors-count" id="errors-count">…</span>
+      </a>
       <span class="v2-as-of" id="as-of">—</span>
     </div>
   </header>
@@ -30,6 +42,7 @@
   <script src="/v2/_v2-shell.js"></script>
   <script src="/provenance-badge.js"></script>
   <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
   <script>
     const main = document.getElementById("v2-main");
     renderPageHeader(main, {
@@ -37,23 +50,118 @@
       title: "Regulatory Returns",
       seat: "SARB submissions",
     });
-    renderTileGroup(main, {
-      tiles: [
-        { label: "BA-700", unit: "Capital adequacy" },
-        { label: "BA-320", unit: "Market risk — FX" },
-        { label: "Last Filed", unit: "Most recent submission date" },
-        { label: "Overdue Returns", unit: "Past deadline" },
-      ],
-    });
-    const s = document.createElement("div"); s.className = "v2-section"; main.appendChild(s);
-    const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "Returns Register"; s.appendChild(h);
-    renderTable(s, { columns: ["Return", "Description", "Period", "Filed", "Status", "Source"] });
+
+    // Mount points the loader repaints. The page is data-driven: every form name,
+    // status and figure comes from GET /api/v2/finance/returns (sourced from the
+    // typed BA-return contract registry — no hard-coded form names here).
+    const tilesMount = document.createElement("div"); main.appendChild(tilesMount);
+    const tableSection = document.createElement("div"); tableSection.className = "v2-section"; main.appendChild(tableSection);
+    const tableHeading = document.createElement("h2"); tableHeading.className = "v2-section-title"; tableHeading.textContent = "Returns Register"; tableSection.appendChild(tableHeading);
+    const tableMount = document.createElement("div"); tableSection.appendChild(tableMount);
+
     renderRefs(main, {
       refs: [
-        { label: "Banks Act Reg 38 — BA-700 Capital Adequacy", href: "#" },
-        { label: "Banks Act Reg 28(13) — BA-320 Market Risk", href: "#" },
+        { label: "SARB BA-return canonical register (Excel A1 names)", href: "/v2/compliance/regulations.html" },
+        { label: "D-BA-RETURN-NUMBERING-EXCEL-CANONICAL", href: "#" },
         { label: "D-BANK-WIDE-V2-MIGRATION", href: "#" },
       ],
+    });
+
+    // Format functional-currency minor units as a major-unit figure for display.
+    function fmtMinor(minor, ccy) {
+      if (minor === null || minor === undefined) return "—";
+      const major = (Number(minor) / 100).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return `${v2Esc(ccy)} ${major}`;
+    }
+
+    function statusChip(status) {
+      const label = status === "live" ? "Live" : status === "built" ? "Built" : "Planned";
+      const variant = status === "live" ? "ok" : status === "built" ? "info" : "muted";
+      return `<span class="v2-chip v2-chip--${variant}">${label}</span>`;
+    }
+
+    function carRatioTile(returns) {
+      const ba700 = returns.find((r) => r.form === "BA 700");
+      const fig = ba700 && ba700.figures;
+      if (!fig || fig.carRatio === null || fig.carRatio === undefined) {
+        return { label: "BA 700", value: "—", unit: "Total capital ratio (RWA is zero — no real capital)" };
+      }
+      return { label: "BA 700", value: `${(fig.carRatio * 100).toFixed(2)}%`, unit: "Total capital ratio" };
+    }
+
+    function fxChargeTile(returns, ccy) {
+      const ba320 = returns.find((r) => r.form === "BA 320");
+      const fig = ba320 && ba320.figures;
+      if (!fig || fig.openPositionChargeMinor === null || fig.openPositionChargeMinor === undefined) {
+        return { label: "BA 320", value: "—", unit: "FX open-position charge (no production rate)" };
+      }
+      return { label: "BA 320", value: fmtMinor(fig.openPositionChargeMinor, ccy), unit: "FX open-position charge" };
+    }
+
+    // Headline cell per row — the live figure, else "—".
+    function headlineFor(row, ccy) {
+      if (row.status !== "live" || !row.figures) return "—";
+      if (row.form === "BA 700") {
+        const r = row.figures.carRatio;
+        return (r === null || r === undefined) ? "—" : `CAR ${(r * 100).toFixed(2)}%`;
+      }
+      if (row.form === "BA 320") {
+        return fmtMinor(row.figures.openPositionChargeMinor, ccy);
+      }
+      return "—";
+    }
+
+    // Source cell — the read path (V1 / V2) for live rows, else blank.
+    function sourceFor(row) {
+      if (row.status !== "live" || !row.readPath) return "";
+      return `<span class="v2-mono">${row.readPath.toUpperCase()} read</span>`;
+    }
+
+    v2WireLoader(async () => {
+      tilesMount.replaceChildren();
+      tableMount.replaceChildren();
+      let data;
+      try {
+        data = await v2Fetch("/api/v2/finance/returns");
+      } catch (err) {
+        v2RenderError(tilesMount, v2Esc(err.message));
+        return;
+      }
+
+      const ccy = data.functionalCurrency;
+      renderTileGroup(tilesMount, {
+        tiles: [
+          carRatioTile(data.returns),
+          fxChargeTile(data.returns, ccy),
+          { label: "Returns Built", value: `${data.liveCount} / ${data.totalCount}`, unit: "Live on-demand of canonical returns" },
+          // No ReportFiled / filing-lifecycle event exists — overdue cannot be
+          // sourced. Honest "N/A", never a fabricated count.
+          { label: "Overdue Returns", value: "N/A", unit: "No filing-lifecycle event (see gap)" },
+        ],
+      });
+
+      const rows = data.returns.map((r) => ({
+        cells: [
+          `<span class="v2-mono">${v2Esc(r.form)}</span>`,
+          v2Esc(r.name),
+          statusChip(r.status),
+          headlineFor(r, ccy),
+          sourceFor(r),
+        ],
+      }));
+      renderTable(tableMount, {
+        columns: ["Return", "Description", "Status", "Headline", "Source"],
+        rows,
+        emptyMsg: "No returns in the register.",
+      });
+
+      // Surface the filing-lifecycle substrate gap honestly beneath the table.
+      if (data.filingLifecycleGap) {
+        const note = document.createElement("p");
+        note.className = "v2-note";
+        note.innerHTML = `<strong>Substrate gap (${v2Esc(data.filingLifecycleGap.id)}):</strong> ${v2Esc(data.filingLifecycleGap.reason)}`;
+        tableMount.appendChild(note);
+      }
     });
   </script>
 </body>

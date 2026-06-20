@@ -175,6 +175,25 @@ export const SUBSTRATE_GAP_REGISTER: readonly SubstrateGapRecord[] = [
     status: "planned",
     mitigation: "none",
   },
+  // ---------------------------------------------------------------------------
+  // BA-return filing-lifecycle gap (no silent deferral — Engineering Charter #5).
+  // Surfaced while wiring the V2 Finance → Regulatory-Returns register page
+  // (brief:mira:wire-ba-returns-register-onto-v2-finance-regulat:2026-06-20):
+  // the register shows what each return IS and (for BA 700 / BA 320) its live
+  // figure, but the page CANNOT show "last filed" / "reporting period" /
+  // "overdue" because there is no filing-lifecycle event in the substrate. The
+  // page renders those columns "—" / "N/A" (never fabricated); this register
+  // entry is the tracked obligation to build the event family.
+  // ---------------------------------------------------------------------------
+  {
+    id: "ba-returns-filing-lifecycle",
+    title: "BA-return filing-lifecycle event family (ReportFiled / ReportDue)",
+    description:
+      "No filing-lifecycle event (e.g. ReportFiled / ReportDue / ReportSubmissionAcknowledged) exists in the substrate, so a BA return's reporting period, last-filed date, and overdue status cannot be sourced. The V2 Finance Regulatory-Returns page (GET /api/v2/finance/returns) therefore renders those fields '—' / 'N/A' (fail-closed, never fabricated). Closing this gap = a typed filing-lifecycle event family per BA return + a projection that folds it into the register. Trigger: licence-day reporting calendar / SARB submission substrate. Authority: D-BANK-WIDE-V2-MIGRATION. Brief: brief:mira:wire-ba-returns-register-onto-v2-finance-regulat:2026-06-20.",
+    severity: "medium",
+    status: "planned",
+    mitigation: "none",
+  },
 ];
 
 /** Look up a gap record by id. */
