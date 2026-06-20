@@ -609,6 +609,12 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
   "tests/",
   "scenarios/",
   "scripts/",
+  // FX V2 simulator spine — the scenario runner builds in-memory EventStore /
+  // MarketDataStore fixtures for a controlled simulated-outside-world replay
+  // (same carve-out rationale as scenarios/; no production access path — the
+  // simulator never touches the canonical store). Citation:
+  // D-FX-V2-SIMULATOR-FIRST (WS-FX-V2-SIMULATOR), P4-SECURITY-DESIGNED-IN.
+  "platform/simulation-v2/",
   // Per-module unit test directory — same carve-out rationale as tests/.
   // The semantic-layer module co-locates its fixture-store tests here.
   "platform/semantic-layer/__tests__/",
