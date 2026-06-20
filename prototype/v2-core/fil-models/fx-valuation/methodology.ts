@@ -96,6 +96,14 @@ export function forwardPointsObservableRef(currency: string, reporting: string):
 // undiscounted `(F_t − K) × notional` of the flat-discount path.
 // ---------------------------------------------------------------------------
 
+/**
+ * Standard forward tenor (calendar days) the build-phase FX scenario quotes
+ * forward points + an OIS discount factor at. One standard tenor in Phase 1;
+ * a multi-tenor curve is a named follow-on. Shared by the SUT cohort P&L read
+ * and the simulator's market-data feed so both agree on the observable key.
+ */
+export const STANDARD_FORWARD_TENOR_DAYS = 90;
+
 /** OIS discount-factor observable id for the reporting ccy at a tenor (calendar days). */
 export function oisDiscountObservableId(reporting: string, tenorDays: number): string {
   return `OIS:${reporting}:${tenorDays}d`;

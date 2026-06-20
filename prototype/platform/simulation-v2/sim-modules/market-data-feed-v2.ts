@@ -21,6 +21,7 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import {
+  STANDARD_FORWARD_TENOR_DAYS,
   forwardPointsObservableId,
   oisDiscountObservableId,
   spotObservableId,
@@ -35,12 +36,8 @@ const FEED_DATA_TYPE = "fx-quote";
 const FWD_DATA_TYPE = "fx-forward-points";
 const OIS_DATA_TYPE = "ois-discount-factor";
 
-/**
- * Standard forward tenor (calendar days) the feed quotes forward points + an OIS
- * discount factor at. Phase-1 scope is one standard tenor; multi-tenor curves are
- * a named follow-on.
- */
-export const STANDARD_FORWARD_TENOR_DAYS = 90;
+// STANDARD_FORWARD_TENOR_DAYS is sourced from the v2-core methodology so the
+// simulator feed and the SUT cohort read agree on the observable key (no drift).
 
 /**
  * Emit one simulated market-feed observation set for `day` to the MarketDataStore
