@@ -245,12 +245,13 @@ function collectIds(doc: LoaderDoc, into: Set<string>): void {
 }
 
 // ---------------------------------------------------------------------------
-// CLI runner — load the 8 docs, build the obligation-safety keep-set, write.
+// CLI runner — load the docs, build the obligation-safety keep-set, write.
 // ---------------------------------------------------------------------------
 
-/** The 8 in-scope guidance-note slugs and their on-disk paths (relative to repo root). */
+/** The in-scope guidance-note slugs and their on-disk paths (relative to repo root). */
 export const TARGET_DOCS: ReadonlyArray<{ slug: string; relPath: string }> = [
-  { slug: "gn2-2019", relPath: "Regulations/CoopBanks/source-docs/gn2-2019-structured.json" },
+  // gn2-2019 (Co-operative Banks) removed 2026-06-20 — out of applicable scope
+  // for a Banks-Act commercial bank (D-COOP-BANKS-REGS-OUT-OF-SCOPE).
   {
     slug: "banks-gn3-2011",
     relPath: "Regulations/Banks/source-docs/banks-gn3-2011-structured.json",
