@@ -1459,14 +1459,36 @@ export async function runSeed(): Promise<SeedStats> {
       },
     });
 
+    // Per-document collision guard. `normSectionRef` strips dots, so two
+    // distinct dotted section numbers in the SAME document can normalise to the
+    // same ref (e.g. JSE IRC Rules `1.110` and `11.10` both → `1110`). Without
+    // disambiguation the second `upsertNode` silently overwrites the first and
+    // a provision is lost from the graph plane. Track the raw number each
+    // normalised ref was first minted from; on a genuine collision (same ref,
+    // DIFFERENT raw number) fall back to a dot→`-` form that `normSectionRef`
+    // never collapses (`1-110` ≠ `11-10`), keeping every provision independently
+    // citable. Re-derivable + deterministic (document order). Authority:
+    // D-REGULATORY-LIBRARY-V1, Principle 2 (no orphans / no silent drops).
+    const usedSectionRefs = new Map<string, string>();
+
     for (const chapter of doc.chapters ?? []) {
       for (const section of chapter.sections ?? []) {
         const raw = section.number ?? section.sectionNumber ?? section.id;
         if (!raw) continue;
         // Strip non-alphanumeric prefix (e.g. "reg27" → "27", "gcc11" → "11")
         const numPart = raw.replace(/^[a-z-]+/i, "").trim() || raw.trim();
-        const normSect = normSectionRef(numPart);
+        let normSect = normSectionRef(numPart);
         if (!normSect) continue;
+
+        const prevRaw = usedSectionRefs.get(normSect);
+        if (prevRaw !== undefined && prevRaw !== numPart) {
+          // Collision with a DIFFERENT section number — disambiguate by keeping
+          // the dot structure as hyphens (preserved verbatim through
+          // `normSectionRef`'s cleaning rules, which strip dots but not hyphens).
+          const safe = numPart.toLowerCase().replace(/\./g, "-");
+          normSect = safe;
+        }
+        usedSectionRefs.set(normSect, numPart);
 
         const provisionId = `PROV-${slugUpper}-s${normSect}`;
         const heading = section.heading ?? section.title ?? `${slug} §${numPart}`;
