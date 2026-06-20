@@ -67,6 +67,11 @@ const SUT_INTERNAL_EVENT_TYPES = [
   "IfrsClassificationApplied",
   "FilFxSettlementConfirmed",
   "FilNdfFixingObserved",
+  // WS-FX-V2-SIMULATOR M2 — the bank's OWN counterparty-provisioning record
+  // (KYC clear, mandate grant, ISDA/CSA election, netting-set stand-up). The
+  // simulator emits only the EXTERNAL party's lifecycle (sounding/KYC/mandate/
+  // agreement acceptance); the bank's provisioning decision is SUT-internal.
+  "CounterpartyProvisioned",
 ] as const;
 
 /**
@@ -89,6 +94,15 @@ export const SIMULATOR_EXTERNAL_EVENT_TYPES = [
   "SettlementFailed",
   "CounterpartyCreditRatingObserved",
   "MarginCallResponded",
+  // WS-FX-V2-SIMULATOR M2 — counterparty-provisioning external-party lifecycle.
+  "CounterpartySoundingMade",
+  "CounterpartyKycDocumentsSubmitted",
+  "CounterpartyMandateAccepted",
+  "CounterpartyAgreementAccepted",
+  // WS-FX-V2-SIMULATOR M5 — FX settlement-lifecycle external-party statuses.
+  "FxSimSettlementInstructed",
+  "FxSimSettlementFailed",
+  "FxSimSettlementConfirmed",
 ] as const;
 
 const SUT_SET: ReadonlySet<string> = new Set(SUT_INTERNAL_EVENT_TYPES);

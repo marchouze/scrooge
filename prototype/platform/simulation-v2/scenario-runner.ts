@@ -41,6 +41,20 @@ export type DayDriver = (args: {
   readonly manifest: ScenarioManifest;
 }) => void;
 
+/**
+ * A pre-day-1 provisioning callback the runner invokes ONCE before the day loop
+ * (M2). The simulator stands up the scenario's counterparties + ISDA/CSA
+ * agreements from the manifest and the SUT records the provisioning. Pinned to
+ * the manifest baseline instant.
+ */
+export type ProvisioningDriver = (args: {
+  readonly clock: SimulatedClock;
+  readonly eventStore: EventStore;
+  readonly marketDataStore: MarketDataStore;
+  readonly rng: SeededRng;
+  readonly manifest: ScenarioManifest;
+}) => void;
+
 /** A factory producing the SUT cadence hooks for a run (M1/M4 supply these). */
 export type CadenceHookFactory = (env: {
   readonly eventStore: EventStore;
@@ -50,6 +64,12 @@ export type CadenceHookFactory = (env: {
 }) => readonly EodHook[];
 
 export interface ScenarioRunOptions {
+  /**
+   * Pre-day-1 provisioning drivers, applied in order ONCE before the day loop
+   * (M2). The scenario stands up its counterparties + ISDA/CSA agreements from
+   * the manifest here.
+   */
+  readonly provisioningDrivers?: readonly ProvisioningDriver[];
   /**
    * Per-day external-party drivers, applied in order at the START of each day
    * (before the EOD bus advances to that day's close). M1+ supply market-path
@@ -105,6 +125,12 @@ export function runScenario(
     for (const hook of opts.cadenceHooks({ eventStore, marketDataStore, clock, manifest })) {
       bus.register(hook);
     }
+  }
+
+  // Pre-day-1 provisioning (M2): stand up counterparties + ISDA/CSA from the
+  // manifest, pinned to the baseline instant (before the first trading day).
+  for (const provision of opts.provisioningDrivers ?? []) {
+    provision({ clock, eventStore, marketDataStore, rng, manifest });
   }
 
   const dayDrivers = opts.dayDrivers ?? [];

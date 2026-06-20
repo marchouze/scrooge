@@ -272,6 +272,17 @@ export { CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY } from "./correspondent-s
 // counterparty confirmation flow; settlement gated on TradeAffirmed). Born V2.
 // Authority: D-FX-V2-SIMULATOR-FIRST.
 export { FX_TRADE_CONFIRMATION_EVENT_TYPES_REGISTRY } from "./fx-trade-confirmation";
+// WS-FX-V2-SIMULATOR M2 — counterparty-provisioning family (external-party
+// onboarding lifecycle: sounding → KYC → mandate → ISDA/CSA acceptance). Born V2.
+// Authority: D-FX-V2-SIMULATOR-FIRST.
+export { COUNTERPARTY_PROVISIONING_EVENT_TYPES_REGISTRY } from "./counterparty-provisioning";
+// WS-FX-V2-SIMULATOR M2 — SUT-internal CounterpartyProvisioned record (the bank's
+// own provisioning decision; netting set stood up). Born V2.
+export { COUNTERPARTY_PROVISIONED_EVENT_TYPES_REGISTRY } from "./counterparty-provisioned";
+// WS-FX-V2-SIMULATOR M5 — FX settlement-lifecycle family (external-party
+// settlement: instructed → failed/retry → confirmed). Born V2.
+// Authority: D-FX-V2-SIMULATOR-FIRST; D-CASH-ASSET-CLASS-V1.
+export { FX_SIM_SETTLEMENT_LIFECYCLE_EVENT_TYPES_REGISTRY } from "./fx-settlement-lifecycle";
 // WS-V2-BBAAS S4 — anchor-bank standing-data events (products / CoA / RAS).
 // V2ProductRegistered, V2ProductDeprecated, V2AccountTypeRegistered, V2RiskAppetiteSet.
 // Emitted ONLY into `BANK_V2_ANCHOR_DB`; never touch the v1 canonical store.
@@ -317,6 +328,8 @@ import { CONTEXT_PACK_EVENT_TYPES_REGISTRY } from "./context-pack";
 import { CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY } from "./correspondent-settlement";
 import { COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY } from "./counterparty-credit-risk";
 import { COUNTERPARTY_EXPOSURE_EVENT_TYPES } from "./counterparty-exposure";
+import { COUNTERPARTY_PROVISIONED_EVENT_TYPES_REGISTRY } from "./counterparty-provisioned";
+import { COUNTERPARTY_PROVISIONING_EVENT_TYPES_REGISTRY } from "./counterparty-provisioning";
 import { CREDIT_LIMIT_EVENT_TYPES_REGISTRY } from "./credit-limit";
 import { CROSS_TENANT_CSI_EVENT_TYPES } from "./cross-tenant-csi";
 import { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillation";
@@ -326,6 +339,7 @@ import { FIL_ATTRIBUTION_EVENT_TYPES_REGISTRY } from "./fil-attribution";
 import { FIL_INSTANCES_EVENT_TYPES_REGISTRY } from "./fil-instances";
 import { FIL_MODELS_EVENT_TYPES_REGISTRY } from "./fil-models";
 import { FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY } from "./financial-instrument";
+import { FX_SIM_SETTLEMENT_LIFECYCLE_EVENT_TYPES_REGISTRY } from "./fx-settlement-lifecycle";
 import { FX_TRADE_CONFIRMATION_EVENT_TYPES_REGISTRY } from "./fx-trade-confirmation";
 import {
   ANALYTICS_EVENT_TYPES,
@@ -647,6 +661,11 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Authority: D-TREASURER-WAVE2-SUBSTRATE (CEO-approved 2026-06-11).
   ...CORRESPONDENT_SETTLEMENT_EVENT_TYPES_REGISTRY,
   ...FX_TRADE_CONFIRMATION_EVENT_TYPES_REGISTRY,
+  // WS-FX-V2-SIMULATOR M2 + M5 — counterparty-provisioning + FX settlement
+  // lifecycle (external-party). Born V2. Authority: D-FX-V2-SIMULATOR-FIRST.
+  ...COUNTERPARTY_PROVISIONING_EVENT_TYPES_REGISTRY,
+  ...COUNTERPARTY_PROVISIONED_EVENT_TYPES_REGISTRY,
+  ...FX_SIM_SETTLEMENT_LIFECYCLE_EVENT_TYPES_REGISTRY,
   // WS-V2-BBAAS S4 — anchor-bank standing-data events (products / CoA / RAS).
   // V2ProductRegistered, V2ProductDeprecated, V2AccountTypeRegistered, V2RiskAppetiteSet.
   // Emitted ONLY into BANK_V2_ANCHOR_DB; never touch the v1 canonical store.

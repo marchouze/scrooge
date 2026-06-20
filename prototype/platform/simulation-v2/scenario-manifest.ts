@@ -16,6 +16,29 @@
 // Authority: D-FX-V2-SIMULATOR-FIRST (CEO-approved 2026-06-20).
 // Author: Atlas (Core banking platform architect, engineering).
 
+/**
+ * Counterparty behaviour profile id — selects confirmation/settlement
+ * reliability. Maps to the env-sim counterparty profiles
+ * (platform/simulation/env-sim/counterparty-profiles.ts):
+ *   "reliable"        → ALWAYS_SETTLE   (always settles on-time, never rejects)
+ *   "slow"            → SLOW_SETTLER    (settles T+3, never fails)
+ *   "occasional-fail" → OCCASIONAL_FAIL (5% settlement-failure probability)
+ *   "unreliable"      → UNRELIABLE      (10% failure + delay + 2% rejection)
+ * Determinism: the per-trade fail/retry draw is taken from the scenario's
+ * SeededRng, never Math.random (recon:fx-v2-sim-boundary enforces).
+ */
+export type CounterpartyBehaviourProfileId = "reliable" | "slow" | "occasional-fail" | "unreliable";
+
+/** The ISDA/CSA agreement the scenario stands up for a counterparty (M2). */
+export interface ScenarioAgreement {
+  /** Master-agreement form. */
+  readonly agreementType: "ISDA-2002" | "ISDA-1992";
+  /** Whether a CSA (collateral support annex) is in scope. */
+  readonly csaInScope: boolean;
+  /** CSA threshold currency, when csaInScope. Defaults to the reporting ccy. */
+  readonly csaCurrency?: string;
+}
+
 /** A counterparty the scenario provisions (M2 wires the full Niko lifecycle). */
 export interface ScenarioCounterparty {
   /** Stable counterparty id (e.g. "CP-SIM-RELIABLE-001"). */
@@ -26,11 +49,15 @@ export interface ScenarioCounterparty {
   readonly bic: string;
   /** FX pairs this counterparty trades (e.g. ["USD/ZAR", "EUR/ZAR"]). */
   readonly eligiblePairs: readonly string[];
+  /** Behaviour profile id selecting confirmation/settlement reliability. */
+  readonly behaviourProfile: CounterpartyBehaviourProfileId;
   /**
-   * Behaviour profile id selecting confirmation/settlement reliability.
-   * "reliable" | "slow" | "fail" map to the env-sim counterparty profiles.
+   * The ISDA/CSA agreement the scenario stands up from the manifest (M2). When
+   * omitted the counterparty trades spot-only with no master agreement — the
+   * runner still provisions the netting set, but no CounterpartyAgreementAccepted
+   * is emitted. Forwards (a derivative) require a master agreement in scope.
    */
-  readonly behaviourProfile: "reliable" | "slow" | "fail";
+  readonly agreement?: ScenarioAgreement;
 }
 
 /** A single observable on the market path for one pair on one day. */

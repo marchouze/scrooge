@@ -54,43 +54,17 @@ import {
   historicalVaR,
   simulatePnLDistribution,
 } from "../../v2-core/fil-models/market-risk-var/methodology";
-import { eventStore } from "../composition";
-import { type MoneyWire, minorFromMoneyWire, moneyWireFromMinor } from "../core/money-codec";
-import type {
-  MarketRiskMeasureComputedPayload,
-  MarketRiskVarComputedPayload,
-} from "../event-store/event-types/market-risk-measure";
+import { minorFromMoneyWire, moneyWireFromMinor } from "../core/money-codec";
 import { EVENT_TYPE_REGISTRY } from "../event-store/registry/index";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "var-v2-parity";
 
-/** Tolerance: 1 ZAR minor unit (cent). Two independently-derived major-unit
- *  floats rounded to 2 d.p. can differ by at most ½ cent on each side. */
-const TOLERANCE_MINOR = 1;
-
 // ---------------------------------------------------------------------------
-// Helpers
+// Helpers — the V2 MoneyWire codec round-trip used by the kernel-live probe (3).
+// The V1↔V2 byte-comparison helpers (zarMajorToMinor / moneyWireToZarMinor /
+// approxEqual) were RETIRED with the FX byte-parity leg (D-FX-V2-SIMULATOR-FIRST).
 // ---------------------------------------------------------------------------
-
-/** Round a ZAR major-unit float to the nearest minor unit (cent). */
-function zarMajorToMinor(major: number): number {
-  return Math.round(major * 100);
-}
-
-/** Convert a V2 MoneyWire VaR figure to a ZAR minor-unit integer via the
- *  canonical decimal-engine codec (`minorFromMoneyWire`). The MoneyWire amount
- *  is in CANONICAL major-unit form (trailing zeros trimmed — e.g. a whole-rand
- *  "660000", not "660000.00"), so a naive decimal-point strip undercounts by the
- *  cent factor. `minorFromMoneyWire` scales by the ISO 4217 exponent with no
- *  IEEE-754 drift — the same engine the emitter encodes with. */
-function moneyWireToZarMinor(wire: MoneyWire): number {
-  return minorFromMoneyWire(wire);
-}
-
-function approxEqual(v1Minor: number, v2Minor: number): boolean {
-  return Math.abs(v1Minor - v2Minor) <= TOLERANCE_MINOR;
-}
 
 // ---------------------------------------------------------------------------
 // Construction-condition (3): the V2 emit path is structurally LIVE.
@@ -151,7 +125,7 @@ function probeV2Kernel(): KernelProbeResult {
   // at cent precision.
   const varMinor = Math.round(varZar * 100);
   const wire = moneyWireFromMinor(varMinor, "ZAR");
-  const backMinor = moneyWireToZarMinor(wire);
+  const backMinor = minorFromMoneyWire(wire);
   const moneyWireRoundTrips = backMinor === varMinor;
 
   // The synthetic cohort MUST produce a strictly-positive VaR over 25 scenarios:
@@ -240,120 +214,29 @@ export function run(): ReconResult {
   }
 
   // -------------------------------------------------------------------------
-  // (4) Fold the latest V1 + V2 events for the byte-parity comparison.
-  // -------------------------------------------------------------------------
-  let latestV1: MarketRiskMeasureComputedPayload | undefined;
-  let latestV2: MarketRiskVarComputedPayload | undefined;
-
-  for (const e of eventStore.replay()) {
-    if (e.type === "MarketRiskMeasureComputed") {
-      latestV1 = e.payload as unknown as MarketRiskMeasureComputedPayload;
-    }
-    if (e.type === "MarketRiskVarComputed") {
-      latestV2 = e.payload as unknown as MarketRiskVarComputedPayload;
-    }
-  }
-
-  // -------------------------------------------------------------------------
-  // (5) BYTE-PARITY (ENFORCING WHEN DATA EXISTS / honest-skip when vacuous).
-  //
-  // No V2 event → the book is flat or history is too short on this store, so the
-  // V2 emitter is fail-closed. Byte-parity is genuinely VACUOUS — skipped with an
-  // explicit "awaiting licence-day data" reason. ok stays true (construction legs
-  // (1)–(3) already bind). The instant a V2 event lands the comparison ENFORCES.
+  // (4) FX V1↔V2 VaR BYTE-PARITY — RETIRED (D-FX-V2-SIMULATOR-FIRST). The
+  //     byte-comparison of the V1 MarketRiskMeasureComputed and V2
+  //     MarketRiskVarComputed figures that lived here is gone: V1 is no longer a
+  //     correctness oracle for FX. The replacement assurance — that the V2
+  //     historical-simulation VaR over the SIMULATED cohort equals the closed-form
+  //     expected tail loss from KNOWN inputs (with SVaR ≥ VaR, ES ≥ VaR) — is
+  //     enforced by recon:fx-v2-sim-oracle (Engineering Charter cmd 3 — the
+  //     retired assurance is REPLACED, not dropped). The construction/wiring legs
+  //     (1)–(3) above (registry status, V1-not-prematurely-replaced sentinel, V2
+  //     kernel-live) are PRESERVED and stay ENFORCING — they guard the V1-removal
+  //     invariants, not V1↔V2 parity.
   // -------------------------------------------------------------------------
   result.asserted += 1;
-  if (!latestV2) {
-    violations.push({
-      subject: "var-v2-parity:byte-parity-vacuous-awaiting-data",
-      message:
-        'BYTE-PARITY VACUOUS ON CLEAN STORE — no "MarketRiskVarComputed" event exists. ' +
-        "VaR needs a live position cohort + a sufficient historical-return window; on the " +
-        "build-phase clean store the book is flat / history is too short, so the V2 emitter " +
-        "(var-engine-v2.ts) is fail-closed and emits nothing. The byte-parity comparison is " +
-        "skipped (vacuous), NOT forced green — it becomes enforcing the instant a V2 event is " +
-        "emitted (licence-day data / `bun run mr:var-v2-run` against a populated store). The " +
-        "construction/wiring legs (1)–(3) ARE enforcing and bind this run. " +
-        "Authority: D-FX-OTC-CLOSURE-BACKLOG; D-V1-REMOVAL-PHASE2-GAP-A3.",
-      severity: "info",
-    });
-    result.violations = violations;
-    result.ok = violations.every((v) => v.severity !== "fail");
-    result.asOf = `${PIPELINE} [construction ENFORCING / byte-parity VACUOUS — awaiting data]: kernel ${probe.ok ? "LIVE" : "DEAD"} (${probe.detail}); V1 present: ${latestV1 !== undefined}; V2 present: false. ${result.ok ? "PASS" : "FAIL"}.`;
-    return result;
-  }
-
-  // A V2 event exists but no V1 event — cannot byte-compare. This is a real
-  // coherence gap (the dual-emit should produce both), surfaced as fail since
-  // data is present on the V2 side.
-  if (!latestV1) {
-    violations.push({
-      subject: "var-v2-parity:v2-present-v1-missing",
-      message:
-        'A "MarketRiskVarComputed" (V2) event exists but no "MarketRiskMeasureComputed" (V1) event. The rohan-market-risk-measure handler dual-emits both from the same fold; a V2 event without its V1 sibling is a dual-emit coherence break. Run `bun run mr:measure-run`. Authority: D-V1-REMOVAL-PHASE2-GAP-A3.',
-      severity: "fail",
-    });
-    result.violations = violations;
-    result.ok = violations.every((v) => v.severity !== "fail");
-    result.asOf = `${PIPELINE}: V2 present, V1 missing — dual-emit coherence break. V2 asOf=${latestV2.asOf}.`;
-    return result;
-  }
-
-  // -------------------------------------------------------------------------
-  // (6) Both sides have data → ENFORCE ≤1 ZAR-cent agreement (severity: fail).
-  // -------------------------------------------------------------------------
-  const comparisons: Array<{ name: string; v1: number | null; v2: number | null }> = [
-    {
-      name: "VaR",
-      v1: latestV1.var.present ? zarMajorToMinor(latestV1.var.value) : null,
-      v2: latestV2.var.present ? moneyWireToZarMinor(latestV2.var.value) : null,
-    },
-    {
-      name: "SVaR",
-      v1: latestV1.svar.present ? zarMajorToMinor(latestV1.svar.value) : null,
-      v2: latestV2.svar.present ? moneyWireToZarMinor(latestV2.svar.value) : null,
-    },
-    {
-      name: "ES",
-      v1: latestV1.es.present ? zarMajorToMinor(latestV1.es.value) : null,
-      v2: latestV2.es.present ? moneyWireToZarMinor(latestV2.es.value) : null,
-    },
-  ];
-
-  for (const { name, v1, v2 } of comparisons) {
-    result.asserted += 1;
-    if (v1 === null && v2 === null) continue; // both absent — agree
-    if (v1 === null || v2 === null) {
-      violations.push({
-        subject: `var-v2-parity:presence-mismatch:${name}`,
-        message: `${name}: V1 present=${v1 !== null} vs V2 present=${v2 !== null} — one side has a figure and the other does not. Both sides must be computed or both absent for parity to hold. Authority: D-V1-REMOVAL-PHASE2-GAP-A3.`,
-        severity: "fail",
-      });
-      continue;
-    }
-    if (!approxEqual(v1, v2)) {
-      violations.push({
-        subject: `var-v2-parity:divergence:${name}`,
-        message: `${name}: V1=${v1} minor units (ZAR ${(v1 / 100).toFixed(2)}) ≠ V2=${v2} minor units (ZAR ${(v2 / 100).toFixed(2)}). Delta: ${Math.abs(v1 - v2)} minor units (tolerance: ${TOLERANCE_MINOR}). A divergence > 1 cent between the V1 historical-simulation engine and the V2 ported kernel breaks the A3 authoritative-path guarantee. Authority: D-V1-REMOVAL-PHASE2-GAP-A3; D-FX-OTC-CLOSURE-BACKLOG.`,
-        severity: "fail",
-      });
-    }
-  }
-
-  const v1VarMinor = comparisons[0]?.v1 ?? null;
-  const v2VarMinor = comparisons[0]?.v2 ?? null;
-  const parityStr =
-    v1VarMinor !== null && v2VarMinor !== null
-      ? `V1 VaR=${v1VarMinor}c vs V2 VaR=${v2VarMinor}c (delta ${Math.abs(v1VarMinor - v2VarMinor)}c)`
-      : "VaR present flags differ";
+  violations.push({
+    subject: "var-v2-parity:fx-byte-parity-retired",
+    message:
+      "FX V1↔V2 VaR byte-parity is RETIRED under D-FX-V2-SIMULATOR-FIRST — V1 is no longer the FX correctness oracle. The replacement assurance (V2 VaR over the simulated cohort matches the closed-form expected tail loss; SVaR ≥ VaR; ES ≥ VaR) is enforced by recon:fx-v2-sim-oracle. This gate now enforces ONLY the construction/wiring sentinels (1)–(3): registry status, V1-not-prematurely-replaced, V2 kernel-live. Authority: D-FX-V2-SIMULATOR-FIRST; D-V1-REMOVAL-PHASE2-GAP-A3.",
+    severity: "info",
+  });
 
   result.violations = violations;
   result.ok = violations.every((v) => v.severity !== "fail");
-  result.asOf =
-    `${PIPELINE} [construction ENFORCING / byte-parity ENFORCING — data present]: ${parityStr}; ` +
-    `V1 asOf=${latestV1.asOf}; V2 asOf=${latestV2.asOf}; ${result.asserted} assertion(s); ` +
-    `${violations.filter((v) => v.severity === "fail").length} fail(s).`;
-
+  result.asOf = `${PIPELINE} [construction ENFORCING / FX byte-parity RETIRED → recon:fx-v2-sim-oracle]: kernel ${probe.ok ? "LIVE" : "DEAD"} (${probe.detail}); ${result.asserted} assertion(s); ${violations.filter((v) => v.severity === "fail").length} fail(s).`;
   return result;
 }
 
