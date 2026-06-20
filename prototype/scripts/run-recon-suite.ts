@@ -94,6 +94,7 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:aggregate-id-coverage",
     "recon:madge-circular-deps",
     "recon:v2-no-v1-import",
+    "recon:fx-v2-sim-boundary",
     "recon:v2-tenant-axis-present",
     "recon:v2-released-surface-clean-core",
     // WS-V2-BBAAS S16 — tier-entitlement coherence (ENFORCING): the K/R/C
