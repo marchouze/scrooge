@@ -27,11 +27,7 @@
  * Determinism: the per-trade fail/retry draw is taken from the scenario's
  * SeededRng, never Math.random (recon:fx-v2-sim-boundary enforces).
  */
-export type CounterpartyBehaviourProfileId =
-  | "reliable"
-  | "slow"
-  | "occasional-fail"
-  | "unreliable";
+export type CounterpartyBehaviourProfileId = "reliable" | "slow" | "occasional-fail" | "unreliable";
 
 /** The ISDA/CSA agreement the scenario stands up for a counterparty (M2). */
 export interface ScenarioAgreement {

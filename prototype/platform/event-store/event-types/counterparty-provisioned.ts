@@ -37,9 +37,7 @@ export const counterpartyProvisionedPayloadSchema = z.object({
   /** Whether a CSA is in scope under the elected agreement. */
   csaInScope: z.boolean(),
 });
-export type CounterpartyProvisionedPayload = z.infer<
-  typeof counterpartyProvisionedPayloadSchema
->;
+export type CounterpartyProvisionedPayload = z.infer<typeof counterpartyProvisionedPayloadSchema>;
 
 export function makeCounterpartyProvisioned(args: {
   asOf: string;

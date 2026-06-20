@@ -126,8 +126,7 @@ export function emitSettlementLifecycle(args: {
   readonly rng: SeededRng;
   readonly forceFirstFail?: boolean;
 }): SettlementOutcome {
-  const { store, scenarioId, asOf, reporting, trade, behaviourProfile, rng, forceFirstFail } =
-    args;
+  const { store, scenarioId, asOf, reporting, trade, behaviourProfile, rng, forceFirstFail } = args;
   const provenance = simProvenance(scenarioId);
   const base = {
     tradeId: trade.tradeId,

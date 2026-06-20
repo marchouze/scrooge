@@ -93,9 +93,7 @@ export function provisionCounterparty(args: {
         baseCurrency: reporting,
         nettingSetId: nettingSetIdFor(cpId, reporting),
         masterAgreementElected: wantsAgreement,
-        ...(counterparty.agreement
-          ? { agreementType: counterparty.agreement.agreementType }
-          : {}),
+        ...(counterparty.agreement ? { agreementType: counterparty.agreement.agreementType } : {}),
         csaInScope: counterparty.agreement?.csaInScope ?? false,
       },
     }),

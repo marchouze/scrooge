@@ -126,9 +126,7 @@ export function emitCounterpartyProvisioning(args: {
           counterpartyId: cpId,
           agreementType: agreement.agreementType,
           csaInScope: agreement.csaInScope,
-          ...(agreement.csaInScope
-            ? { csaCurrency: agreement.csaCurrency ?? reporting }
-            : {}),
+          ...(agreement.csaInScope ? { csaCurrency: agreement.csaCurrency ?? reporting } : {}),
         },
         eventId: `${scenarioId}:${cpId}:agreement-accepted`,
         provenance,

@@ -27,10 +27,7 @@ import type { ScenarioDay, ScenarioManifest, ScenarioMarketObservation } from ".
 import { runScenario } from "./scenario-runner";
 import { emitCounterpartyProvisioning } from "./sim-modules/counterparty-provisioning";
 import { emitSimulatedMarketFeed, ingestMarketFeed } from "./sim-modules/market-data-feed-v2";
-import {
-  deriveSettlementLegs,
-  emitSettlementLifecycle,
-} from "./sim-modules/settlement-lifecycle";
+import { emitSettlementLifecycle } from "./sim-modules/settlement-lifecycle";
 import { emitCounterpartyConfirmation } from "./sim-modules/trade-confirmation";
 
 const REPORTING = "ZAR";
@@ -183,12 +180,8 @@ describe("FX V2 Phase 1 full E2E — simulator-judged", () => {
           // ≥1 fail-then-retry), then it retries to confirmation.
           if (day.date === settlementDate) {
             const cp = manifest.counterparties;
-            const spotTrade = MANIFEST.days[0]?.trades?.find(
-              (t) => t.tradeId === "T-SPOT-USD-001",
-            );
-            const fwdTrade = MANIFEST.days[0]?.trades?.find(
-              (t) => t.tradeId === "T-FWD-USD-002",
-            );
+            const spotTrade = MANIFEST.days[0]?.trades?.find((t) => t.tradeId === "T-SPOT-USD-001");
+            const fwdTrade = MANIFEST.days[0]?.trades?.find((t) => t.tradeId === "T-FWD-USD-002");
             if (spotTrade) {
               emitSettlementLifecycle({
                 store: eventStore,
@@ -197,8 +190,8 @@ describe("FX V2 Phase 1 full E2E — simulator-judged", () => {
                 reporting: REPORTING,
                 trade: spotTrade,
                 behaviourProfile:
-                  cp.find((c) => c.counterpartyId === spotTrade.counterpartyId)
-                    ?.behaviourProfile ?? "reliable",
+                  cp.find((c) => c.counterpartyId === spotTrade.counterpartyId)?.behaviourProfile ??
+                  "reliable",
                 rng,
               });
               settleFxLeg({
@@ -278,9 +271,9 @@ describe("FX V2 Phase 1 full E2E — simulator-judged", () => {
       expect((reliable?.payload as { nettingSetId?: string }).nettingSetId).toBe(
         "NS-CP-SIM-RELIABLE-001-ZAR",
       );
-      expect((reliable?.payload as { masterAgreementElected?: boolean }).masterAgreementElected).toBe(
-        true,
-      );
+      expect(
+        (reliable?.payload as { masterAgreementElected?: boolean }).masterAgreementElected,
+      ).toBe(true);
       // The agreement-acceptance lifecycle fact was emitted (external party).
       const agreements = [...result.eventStore.replay({ type: "CounterpartyAgreementAccepted" })];
       expect(agreements.length).toBe(2);
@@ -378,8 +371,8 @@ describe("FX V2 Phase 1 full E2E — simulator-judged", () => {
       counts.push({
         cash: [...r.eventStore.replay({ type: "FilInstrumentCreated" })].filter(
           (e) =>
-            ((e.payload as { economicTerms?: { assetClass?: string } }).economicTerms
-              ?.assetClass ?? "") === "cash",
+            ((e.payload as { economicTerms?: { assetClass?: string } }).economicTerms?.assetClass ??
+              "") === "cash",
         ).length,
         fails: [...r.eventStore.replay({ type: "FxSimSettlementFailed" })].length,
       });

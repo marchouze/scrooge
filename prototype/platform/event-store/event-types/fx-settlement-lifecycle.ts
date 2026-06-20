@@ -67,9 +67,7 @@ export const fxSimSettlementConfirmedPayloadSchema = fxSimSettlementInstructedPa
   receiveCurrency: z.string().min(1),
   receiveAmountMajor: z.number(),
 });
-export type FxSimSettlementConfirmedPayload = z.infer<
-  typeof fxSimSettlementConfirmedPayloadSchema
->;
+export type FxSimSettlementConfirmedPayload = z.infer<typeof fxSimSettlementConfirmedPayloadSchema>;
 
 // ---------------------------------------------------------------------------
 // Factories

@@ -42,9 +42,7 @@ export const counterpartySoundingMadePayloadSchema = z.object({
   /** FX pairs the counterparty wishes to deal. */
   eligiblePairs: z.array(z.string().min(1)).min(1),
 });
-export type CounterpartySoundingMadePayload = z.infer<
-  typeof counterpartySoundingMadePayloadSchema
->;
+export type CounterpartySoundingMadePayload = z.infer<typeof counterpartySoundingMadePayloadSchema>;
 
 export const counterpartyKycDocumentsSubmittedPayloadSchema = z.object({
   counterpartyId: z.string().min(1),
