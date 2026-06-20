@@ -98,6 +98,21 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   TradeConfirmationSent: "trading",
   TradeAffirmed: "trading",
   TradeRejected: "trading",
+  // WS-FX-V2-SIMULATOR M2 — counterparty-provisioning family (external-party
+  // onboarding lifecycle). Trading category → simulated under the build-phase
+  // policy (these ARE simulator emissions). F-032 site 3.
+  CounterpartySoundingMade: "trading",
+  CounterpartyKycDocumentsSubmitted: "trading",
+  CounterpartyMandateAccepted: "trading",
+  CounterpartyAgreementAccepted: "trading",
+  // SUT-internal provisioning record (the bank's own onboarding decision).
+  CounterpartyProvisioned: "trading",
+  // WS-FX-V2-SIMULATOR M5 — FX settlement-lifecycle family (external-party
+  // settlement statuses). Trading category → simulated under the build-phase
+  // policy. F-032 site 3.
+  FxSimSettlementInstructed: "trading",
+  FxSimSettlementFailed: "trading",
+  FxSimSettlementConfirmed: "trading",
   // RWA-computed Pillar-1 capital-adequacy basis records. These are the
   // regulatory capital denominator of record (BA 700) under D-RWA-ENGINE-W2-
   // SLICE-3 — a governance/regulatory commitment, NOT operational simulated
