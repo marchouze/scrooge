@@ -618,7 +618,10 @@ function extractJseChapters(pages: ParsedPage[], kind: "rules" | "directives"): 
   for (const chap of chapterAccs) {
     if (chap.order.length === 0) continue;
     const sections: ExtractedSection[] = chap.order.map((sec) => {
-      const body = sec.lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+      const body = sec.lines
+        .join("\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
       const entry: ExtractedSection = {
         id: `s${sec.number.toLowerCase().replace(/\./g, "-")}`,
         number: sec.number,
