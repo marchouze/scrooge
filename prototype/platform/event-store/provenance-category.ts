@@ -92,6 +92,12 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   BondPositionRevaluedV2: "trading",
   BondMaturedV2: "trading",
   BondSoldV2: "trading",
+  // WS-FX-V2-SIMULATOR M3 — FX trade-confirmation family (external-party
+  // counterparty confirmation flow). Trading category → simulated under the
+  // build-phase policy (these ARE simulator emissions). F-032 site 3.
+  TradeConfirmationSent: "trading",
+  TradeAffirmed: "trading",
+  TradeRejected: "trading",
   // RWA-computed Pillar-1 capital-adequacy basis records. These are the
   // regulatory capital denominator of record (BA 700) under D-RWA-ENGINE-W2-
   // SLICE-3 — a governance/regulatory commitment, NOT operational simulated
