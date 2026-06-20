@@ -18,15 +18,24 @@
 //       expected historical-simulation tail loss (exposure × max|return|), with
 //       SVaR ≥ VaR and ES ≥ VaR (coherent measures);
 //   (3) the settled cash leg materialises as a `fil:type:cash` instrument-of-
-//       record and the FX instrument terminates (settled).
+//       record and the FX instrument terminates (settled);
+//   (4) (M7, Phase 2) the EOD SA-CCR EAD over the simulated cohort COMPUTES and
+//       satisfies the d317 identities against the known exposure: unmargined
+//       RC = max(vMtm, 0), EAD = round_halfup(1.4 × (RC + PFE)), EAD ≥ RC ≥ 0,
+//       and PFE > 0 for an open FX add-on. This is the FX-path SA-CCR assurance
+//       that REPLACES the (vacuous-on-a-clean-store) FX recorded-history leg of
+//       recon:v2-saccr-parity — that gate keeps its always-on construction
+//       conditions (C1–C3); the FX cohort SA-CCR is now judged against the
+//       simulator here (D-FX-V2-SIMULATOR-FIRST; Charter cmd 3 — replaced, not
+//       dropped).
 //
 // This is the assurance that REPLACES the byte-parity-against-V1 legs of
-// recon:var-v2-parity, recon:daily-pnl-v2-parity, and the FX path of
-// recon:fx-v2-parity (Engineering Charter cmd 3 — no green by concealment: the
-// retired assurance is replaced, not dropped). Those gates retain their
-// CONSTRUCTION sentinels (registry status, premature-v2-replaced guards,
-// kernel-live) which guard the V1-removal invariants and are NOT parity
-// scaffolding.
+// recon:var-v2-parity, recon:daily-pnl-v2-parity, the FX path of
+// recon:fx-v2-parity, and the FX path of recon:v2-saccr-parity (Engineering
+// Charter cmd 3 — no green by concealment: the retired assurance is replaced,
+// not dropped). Those gates retain their CONSTRUCTION sentinels (registry
+// status, premature-v2-replaced guards, kernel-live, SA-CCR C1–C3) which guard
+// the V1-removal + model-port invariants and are NOT parity scaffolding.
 //
 // Authority: D-FX-V2-SIMULATOR-FIRST (CEO-approved 2026-06-20);
 //   D-CASH-ASSET-CLASS-V1; D-VAR-EXPOSURE-INCLUDES-STANDING-NOP. Principle 1.
@@ -38,6 +47,7 @@ import { provisionCounterparty } from "../markets/counterparty/provision-counter
 import { bookAffirmedFxTrade } from "../markets/products/book-affirmed-fx-trade";
 import { settleFxLeg } from "../markets/settlement/settle-fx-leg";
 import { computeCohortPnL } from "../product-control/eod-cohort-pnl-v2";
+import { computeAndEmitCohortSaCcrEad } from "../risk/sa-ccr/eod-saccr-ead-v2";
 import type { EodHook } from "../simulation-v2/eod-bus";
 import type {
   ScenarioDay,
@@ -122,6 +132,7 @@ export function run(): ReconResult {
 
   let pnlDay1: ReturnType<typeof computeCohortPnL> | undefined;
   let varLate: ReturnType<typeof computeCohortVar> | undefined;
+  let saccrDay1: ReturnType<typeof computeAndEmitCohortSaCcrEad> | undefined;
 
   const sim = runScenario(manifest, {
     provisioningDrivers: [
@@ -219,6 +230,25 @@ export function run(): ReconResult {
               reporting: REPORTING,
               reportDate: ctx.reportDate,
               asOf: ctx.boundaryInstant,
+            });
+          }
+        },
+      },
+      {
+        id: "oracle-saccr-ead",
+        cadence: "end-of-day",
+        priority: 35,
+        run: (ctx) => {
+          // Capture day-1 (2026-02-02) — the FX spot is open (settles 02-04), so
+          // the SA-CCR cohort has a live exposure to assert against.
+          if (ctx.reportDate === "2026-02-02") {
+            saccrDay1 = computeAndEmitCohortSaCcrEad({
+              eventStore,
+              marketDataStore,
+              reporting: REPORTING,
+              reportDate: ctx.reportDate,
+              asOf: ctx.boundaryInstant,
+              bookedRateByInstance,
             });
           }
         },
@@ -321,6 +351,54 @@ export function run(): ReconResult {
           "SIMULATOR ORACLE BREACH: the settled FX instrument was not terminated (settled). Authority: D-FX-V2-SIMULATOR-FIRST.",
         severity: "fail",
       });
+    }
+
+    // ---- (4) SA-CCR EAD oracle (M7): RC/EAD identities over the known cohort ---
+    // The day-1 cohort has one OPEN FX trade (5m USD buy @ 18.50, spot 18.60).
+    // vMtm = 5m × (18.60 − 18.50) = 500,000 ZAR. The netting set is margined
+    // (CSA, threshold/MTA = 0) with zero posted collateral, so the RC branch is
+    // max(V − C, MTA + TH, 0) = max(500,000, 0, 0) = 500,000 ZAR (= 50,000,000 minor).
+    result.asserted += 1;
+    const ns = "NS-CP-SIM-RELIABLE-001-ZAR";
+    const fig = saccrDay1?.figures.get(ns);
+    if (!saccrDay1 || !saccrDay1.emitted.includes(ns) || !fig) {
+      violations.push({
+        subject: "fx-v2-sim-oracle:saccr-not-computed",
+        message: `SIMULATOR ORACLE BREACH: the EOD SA-CCR EAD did not compute for ${ns} on 2026-02-02 — the M7 cohort fold or emission did not run over the open FX exposure. Authority: D-FX-V2-SIMULATOR-FIRST; BCBS d317.`,
+        severity: "fail",
+      });
+    } else {
+      result.asserted += 3;
+      // (4a) RC = max(vMtm, 0) = 500,000 ZAR.
+      if (fig.rc !== 50_000_000) {
+        violations.push({
+          subject: "fx-v2-sim-oracle:saccr-rc-mismatch",
+          message: `SIMULATOR ORACLE BREACH: SA-CCR RC for ${ns} = ${fig.rc} minor, expected 50,000,000 minor (max(vMtm=500,000 ZAR, 0)). The replacement-cost basis does not match the known cohort MtM. Authority: BCBS d317 §136 / CRE52 §52.10.`,
+          severity: "fail",
+        });
+      }
+      // (4b) EAD = round_halfup(1.4 × (RC + PFE)) — the d317 §10 composition
+      // identity, reproduced with the model's EXACT byte-locked bigint arithmetic
+      // (`computeEad`: (rcPlusPfe × alphaScaled + 5_000n) / 10_000n), NOT a float
+      // round (which drifts by ±1 minor on the half-up boundary).
+      const alphaScaled = 14_000n; // round(1.4 × 10_000)
+      const expectedEadUnits =
+        (BigInt(fig.rc + fig.pfe) * alphaScaled + 5_000n) / 10_000n;
+      if (BigInt(fig.ead) !== expectedEadUnits) {
+        violations.push({
+          subject: "fx-v2-sim-oracle:saccr-ead-identity",
+          message: `SIMULATOR ORACLE BREACH: SA-CCR EAD for ${ns} = ${fig.ead} minor, expected round_halfup(1.4 × (${fig.rc} + ${fig.pfe})) = ${expectedEadUnits} minor. The EAD composition identity is violated. Authority: BCBS d317 §10.`,
+          severity: "fail",
+        });
+      }
+      // (4c) EAD ≥ RC ≥ 0 and PFE > 0 (an open FX trade carries a positive add-on).
+      if (fig.ead < fig.rc || fig.rc < 0 || fig.pfe <= 0) {
+        violations.push({
+          subject: "fx-v2-sim-oracle:saccr-monotone-floor",
+          message: `SIMULATOR ORACLE BREACH: SA-CCR must satisfy EAD ≥ RC ≥ 0 and PFE > 0 for an open FX add-on; got EAD=${fig.ead}, RC=${fig.rc}, PFE=${fig.pfe} minor. Authority: BCBS d317 §10/§149.`,
+          severity: "fail",
+        });
+      }
     }
   } finally {
     sim.close();
