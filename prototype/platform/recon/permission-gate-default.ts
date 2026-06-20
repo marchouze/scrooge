@@ -127,6 +127,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // (D-EVENT-STORE-SELECTIVE-ARCHIVE-EXTRACTION). No production access
   // path. Citation: P4-SECURITY-DESIGNED-IN.
   "platform/recon/event-store-append-only.test.ts",
+  // WS-FX-V2-SIMULATOR Phase 2 — per-module unit tests that build in-memory
+  // throwaway EventStore fixtures for the shared cash sink (Slice 0) and the SUT
+  // Basel-class mapping (M6). Same carve-out rationale as tests/ and the
+  // platform/simulation-v2/ dir: no production access path. Citation:
+  // D-FX-V2-SIMULATOR-FIRST, P4-SECURITY-DESIGNED-IN.
+  "platform/markets/settlement/cash-sink.test.ts",
+  "platform/markets/counterparty/assign-basel-class.test.ts",
   // The recon self-test (formerly harness.ts) builds an in-memory throwaway
   // store for the round-trip assertion; gating it would require synthesising
   // a fake policy resolver for every test event, defeating the purpose.

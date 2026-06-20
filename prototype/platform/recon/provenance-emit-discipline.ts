@@ -152,6 +152,14 @@ export const EXPLICIT_PROVENANCE_ALLOWLIST: Readonly<Record<string, string>> = {
     "FX V2 settlement-lifecycle simulator (M5) — the correspondent/counterparty's settlement statuses " +
     "(instructed/failed/confirmed) are external-party events, simulated + scenario-bound by construction; " +
     "the kind is fixed by the simulator, never derivable from bank mode. Authority: D-FX-V2-SIMULATOR-FIRST.",
+  "platform/simulation-v2/sim-modules/credit-rating-feed.ts":
+    "FX V2 credit-rating-feed simulator (M6) — the rating-agency's external rating facts are simulated + " +
+    "scenario-bound by construction; the kind is fixed by the simulator, never derivable from bank mode. " +
+    "Authority: D-FX-V2-SIMULATOR-FIRST.",
+  "platform/simulation-v2/sim-modules/margin-call-response.ts":
+    "FX V2 margin-call-response simulator (M8) — the counterparty's external margin-call response " +
+    "(post/dispute/fail) is simulated + scenario-bound by construction; the kind is fixed by the simulator, " +
+    "never derivable from bank mode. Authority: D-FX-V2-SIMULATOR-FIRST.",
   "platform/projections/filter.ts":
     "read-side filter default for legacy untagged events (UNTAGGED_AS_SIMULATED mirrors " +
     "PRE_SUBSTRATE_BACKFILL_TAG without the import cycle) — not an emit site.",

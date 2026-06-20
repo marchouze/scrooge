@@ -67,6 +67,18 @@ export function majorNumberToCashMoney(majorUnits: number, currency: string): Mo
   return moneyFromDecimal(currency, roundDecimal(toDecimal(String(majorUnits)), 2, "HALF_UP"));
 }
 
+/**
+ * Normalise a settlement `as-of` to a full ISO-8601 datetime. The FIL lifecycle
+ * payload schema requires a datetime; some callers pass a bare calendar date
+ * (`YYYY-MM-DD`, a settlement DATE with no time component). A bare date is
+ * interpreted as start-of-day UTC (the conventional close-of-business as-of for a
+ * settlement date). A value already carrying a time component passes through.
+ */
+function asOfDateTime(asOf: string): string {
+  // Bare `YYYY-MM-DD` → start-of-day UTC; anything with a `T` is left intact.
+  return /^\d{4}-\d{2}-\d{2}$/.test(asOf) ? `${asOf}T00:00:00.000Z` : asOf;
+}
+
 // ---------------------------------------------------------------------------
 // Inputs for the settled-cash materialisation. The caller (the settlement seam)
 // has already determined the trade settled (a confirmation exists) and derived
@@ -125,7 +137,7 @@ export function buildSettledCashPayloads(input: CashMaterialisationInput): Built
       instance,
       type: cashTypeUrn,
       tenant: input.tenant,
-      asOf: input.settledAsOf,
+      asOf: asOfDateTime(input.settledAsOf),
       originatingEvent: { ...input.originatingEvent },
       initialStage: "active",
       economicTerms: {
@@ -162,7 +174,7 @@ export function buildFxTerminatedPayload(input: {
     instance: input.fxInstance,
     type: input.fxTypeUrn,
     tenant: input.tenant,
-    asOf: input.settledAsOf,
+    asOf: asOfDateTime(input.settledAsOf),
     originatingEvent: { ...input.originatingEvent },
     terminalStage: "settled",
   });

@@ -101,6 +101,14 @@ const EXCLUDED_FILES = new Set<string>([
   "platform/event-store/event-types/counterparty-credit-risk.ts", // maker definition
   "platform/recon/v2-saccr-parity.ts", // parity oracle harness (no append)
   "platform/recon/ccr-single-emitter.ts", // this gate (mentions maker names)
+  // WS-FX-V2-SIMULATOR Phase 2 M7 — the SIMULATOR-path SA-CCR EAD cadence job.
+  // It emits CCR events to the ISOLATED in-memory SCENARIO store (never the
+  // global production event store this gate guards), using the SAME validated
+  // store-agnostic `computeSaCcr` methodology as the production emitter — so it
+  // does NOT fork the recorded PRODUCTION capital figures (the hazard this gate
+  // closes). It is the simulator-oracle emitter, not a second production emitter.
+  // Authority: D-FX-V2-SIMULATOR-FIRST; D-SACCR-V2-CUTOVER-ACCELERATE.
+  "platform/risk/sa-ccr/eod-saccr-ead-v2.ts",
 ]);
 
 function isExcluded(rel: string): boolean {
