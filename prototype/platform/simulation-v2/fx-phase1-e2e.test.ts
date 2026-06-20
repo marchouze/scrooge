@@ -16,12 +16,12 @@
 
 import { describe, expect, test } from "bun:test";
 
+import { formatInstanceUrn } from "../../v2-core/fil-core/urn";
 import { computeCohortVar } from "../market-risk/eod-cohort-var-v2";
 import { provisionCounterparty } from "../markets/counterparty/provision-counterparty";
 import { bookAffirmedFxTrade } from "../markets/products/book-affirmed-fx-trade";
 import { settleFxLeg } from "../markets/settlement/settle-fx-leg";
 import { computeCohortPnL } from "../product-control/eod-cohort-pnl-v2";
-import { formatInstanceUrn } from "../../v2-core/fil-core/urn";
 import type { EodHook } from "./eod-bus";
 import type { ScenarioDay, ScenarioManifest, ScenarioMarketObservation } from "./scenario-manifest";
 import { runScenario } from "./scenario-runner";

@@ -28,13 +28,13 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { roundDecimal, toDecimal } from "../../../v2-core/fil-core/decimal";
-import { CASH_BALANCE_TYPE_URN } from "../../../v2-core/fil-models/cash/types/cash-type-definitions";
 import { moneyFromDecimal } from "../../../v2-core/fil-core/primitives";
 import { formatInstanceUrn } from "../../../v2-core/fil-core/urn";
 import {
   filInstrumentCreatedPayloadSchema,
   filInstrumentTerminatedPayloadSchema,
 } from "../../../v2-core/fil-instances/events";
+import { CASH_BALANCE_TYPE_URN } from "../../../v2-core/fil-models/cash/types/cash-type-definitions";
 import {
   makeFilInstrumentCreated,
   makeFilInstrumentTerminated,

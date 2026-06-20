@@ -32,6 +32,8 @@
 //   owner Helena, Chief Risk Officer); BCBS d457 / MAR33; Basel-2.5 MAR.
 // Author: Atlas (Core banking platform architect, engineering).
 
+import type { EventStore } from "../event-store/store";
+import { type MarketDataStore, lookupQuoteWithInverse } from "../market-data/store";
 import {
   type RiskFactorExposure,
   confidenceFor,
@@ -39,8 +41,6 @@ import {
   historicalVaR,
   simulatePnLDistribution,
 } from "./var-engine";
-import type { EventStore } from "../event-store/store";
-import { type MarketDataStore, lookupQuoteWithInverse } from "../market-data/store";
 
 export type CohortVarStatus = "computed" | "no-positions" | "insufficient-history";
 
