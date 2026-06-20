@@ -121,8 +121,11 @@ function isFscaRow(citation: string): boolean {
  */
 function isInactiveStatus(status: string): boolean {
   const s = status.toLowerCase().trim();
-  // v1.18 closed enum values
-  if (s === "not_applicable" || s === "deferred" || s === "superseded") {
+  // v1.18 closed enum values. RETIRED is a terminal out-of-scope status
+  // (D-JSE-OBLIGATION-SCOPE-RETIREMENT under D-LICENCE-TYPE): the bank is no
+  // longer bound by the obligation (adopted=false), so it requires no active
+  // fulfilment policy — short-circuit the policy check exactly like SUPERSEDED.
+  if (s === "not_applicable" || s === "deferred" || s === "superseded" || s === "retired") {
     return true;
   }
   // DRAFTING rows are still being formulated — policy mapping is not yet finalised.
