@@ -16,51 +16,34 @@
 // — which the simulator emits only once a leg clears, after any retries.
 //
 // Each settled cash leg is denominated in ITS OWN currency (MV-CASH-001): the
-// received foreign leg + the paid funding leg. The cash instance grammar mirrors
-// platform/markets/products/materialise-settled-cash.ts EXACTLY (same URN stem
-// `<tradeId>-cash-<side>`, same economicTerms shape) so the scenario-store
-// instrument-of-record is identical to the live/backfill one (Principle 1; no
-// fork) — but it is appended to the SCENARIO EventStore via the registered
-// born-V2 factory, not the standalone v2-anchor SQLite the live path writes.
+// received foreign leg + the paid funding leg. The cash-instance + FX-termination
+// GRAMMAR is now the ONE shared store-agnostic builder
+// (`v2-core/fil-instances/cash-materialisation.ts`, Slice 0), so the scenario-
+// store instrument-of-record is byte-identical to the live/backfill one
+// (Principle 1; no fork). This seam routes the built payloads to an
+// `EventStoreCashSink` (the scenario EventStore via the registered born-V2
+// factory); the production path routes the SAME payloads to an `AnchorDbCashSink`.
 //
 // Authority: D-FX-V2-SIMULATOR-FIRST (CEO-approved 2026-06-20);
 //   D-CASH-ASSET-CLASS-V1; D-FIL-FRAMEWORK-UNIFICATION; D-V2-CORE-MONEY-DECIMAL-NATIVE.
 // Author: Atlas (Core banking platform architect, engineering).
 
-import { roundDecimal, toDecimal } from "../../../v2-core/fil-core/decimal";
-import { moneyFromDecimal } from "../../../v2-core/fil-core/primitives";
 import { formatInstanceUrn } from "../../../v2-core/fil-core/urn";
 import {
-  filInstrumentCreatedPayloadSchema,
-  filInstrumentTerminatedPayloadSchema,
-} from "../../../v2-core/fil-instances/events";
-import { CASH_BALANCE_TYPE_URN } from "../../../v2-core/fil-models/cash/types/cash-type-definitions";
-import {
-  makeFilInstrumentCreated,
-  makeFilInstrumentTerminated,
-} from "../../event-store/event-types/fil-instances";
+  type SettledCashLeg,
+  buildFxTerminatedPayload,
+  buildSettledCashPayloads,
+} from "../../../v2-core/fil-instances/cash-materialisation";
 import type { EventStore } from "../../event-store/store";
+import { type CashSink, EventStoreCashSink } from "./cash-sink";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const TENANT = ENTITY;
-const SUT_ACTOR = { type: "service" as const, id: "agent:sut:fx-settlement-engine" };
 const CITATIONS = [
   "D-FX-V2-SIMULATOR-FIRST",
   "D-CASH-ASSET-CLASS-V1",
   "D-FIL-FRAMEWORK-UNIFICATION",
 ];
-
-/** Major-unit number → v2 decimal-native Money (2dp HALF_UP). */
-function majorNumberToMoney(majorUnits: number, currency: string) {
-  return moneyFromDecimal(currency, roundDecimal(toDecimal(String(majorUnits)), 2, "HALF_UP"));
-}
-
-/** One settled cash flow of a settling FX trade (+ received, − paid). */
-interface SettledCashLeg {
-  readonly currency: string;
-  readonly signedMajor: number;
-  readonly side: "received" | "paid";
-}
 
 export interface SettleFxResult {
   /** Whether the trade was settled (a confirmation existed). */
@@ -106,6 +89,14 @@ export function settleFxLeg(args: {
   const settledAsOf = confirmed.as_of;
   const fxInstance = formatInstanceUrn({ tenant: TENANT, instanceId: tradeId });
   const nettingSetId = `NS-${c.counterpartyId}-${reporting}`;
+  const originatingEvent = {
+    eventType: "FxSimSettlementConfirmed" as const,
+    eventId: confirmed.event_id,
+  };
+
+  // The scenario routes the SHARED grammar's payloads to an EventStore sink. The
+  // production path routes the SAME payloads to an AnchorDbCashSink (Slice 0).
+  const sink: CashSink = new EventStoreCashSink(store);
 
   const legs: SettledCashLeg[] = [];
   if (c.receiveCurrency && c.receiveAmountMajor !== 0) {
@@ -123,86 +114,60 @@ export function settleFxLeg(args: {
     });
   }
 
-  let materialised = 0;
-  for (const leg of legs) {
-    const cashInstance = formatInstanceUrn({
-      tenant: TENANT,
-      instanceId: `${tradeId}-cash-${leg.side}`,
-    });
-    const already = [...store.replay({ type: "FilInstrumentCreated" })].some(
-      (e) => (e.payload as { instance?: string }).instance === cashInstance,
-    );
-    if (already) continue;
+  const builtLegs = buildSettledCashPayloads({
+    tradeId,
+    tenant: TENANT,
+    reporting,
+    counterpartyId: c.counterpartyId,
+    nettingSetId,
+    settledAsOf,
+    fxInstance,
+    legs,
+    originatingEvent,
+  });
 
-    const direction: "long" | "short" = leg.signedMajor >= 0 ? "long" : "short";
-    store.append(
-      makeFilInstrumentCreated({
-        asOf: settledAsOf,
-        entity: ENTITY,
-        actor: SUT_ACTOR,
-        citations: CITATIONS,
-        eventId: `${scenarioId}:${tradeId}:cash-${leg.side}`,
-        payload: filInstrumentCreatedPayloadSchema.parse({
-          kind: "FilInstrumentCreated",
-          instance: cashInstance,
-          type: CASH_BALANCE_TYPE_URN,
-          tenant: TENANT,
-          asOf: settledAsOf,
-          originatingEvent: {
-            eventType: "FxSimSettlementConfirmed",
-            eventId: confirmed.event_id,
-          },
-          initialStage: "active",
-          economicTerms: {
-            assetClass: "cash",
-            notional: majorNumberToMoney(Math.abs(leg.signedMajor), leg.currency),
-            direction,
-            counterpartyId: c.counterpartyId,
-            nettingSetId,
-            currency: leg.currency,
-            settlementDate: c.settlementDate,
-            hedgingSetTag: `${leg.currency}/${reporting}`,
-            originatingInstrument: fxInstance,
-          },
-        }),
-      }),
-    );
+  let materialised = 0;
+  for (const built of builtLegs) {
+    if (sink.hasCreated(built.instance)) continue;
+    sink.appendCreated({
+      asOf: settledAsOf,
+      entity: ENTITY,
+      citations: CITATIONS,
+      // Replay-stable scenario event-id keyed on the leg side (in the URN suffix).
+      eventId: `${scenarioId}:${tradeId}:cash-${sideOf(built.instance)}`,
+      payload: built.payload,
+    });
     materialised += 1;
   }
 
-  // Terminate the originating FX instrument (settled) — idempotent.
+  // Terminate the originating FX instrument (settled) — idempotent via the sink.
   let fxTerminated = false;
   const fxCreated = [...store.replay({ type: "FilInstrumentCreated" })].find(
     (e) => (e.payload as { instance?: string }).instance === fxInstance,
   );
-  const fxAlreadyTerminated = [...store.replay({ type: "FilInstrumentTerminated" })].some(
-    (e) => (e.payload as { instance?: string }).instance === fxInstance,
-  );
-  if (fxCreated && !fxAlreadyTerminated) {
+  if (fxCreated && !sink.hasTerminated(fxInstance)) {
     const fxType = (fxCreated.payload as { type?: string }).type ?? "";
-    store.append(
-      makeFilInstrumentTerminated({
-        asOf: settledAsOf,
-        entity: ENTITY,
-        actor: SUT_ACTOR,
-        citations: CITATIONS,
-        eventId: `${scenarioId}:${tradeId}:fx-terminated`,
-        payload: filInstrumentTerminatedPayloadSchema.parse({
-          kind: "FilInstrumentTerminated",
-          instance: fxInstance,
-          type: fxType,
-          tenant: TENANT,
-          asOf: settledAsOf,
-          originatingEvent: {
-            eventType: "FxSimSettlementConfirmed",
-            eventId: confirmed.event_id,
-          },
-          terminalStage: "settled",
-        }),
+    sink.appendTerminated({
+      asOf: settledAsOf,
+      entity: ENTITY,
+      citations: CITATIONS,
+      eventId: `${scenarioId}:${tradeId}:fx-terminated`,
+      payload: buildFxTerminatedPayload({
+        fxInstance,
+        fxTypeUrn: fxType,
+        tenant: TENANT,
+        settledAsOf,
+        originatingEvent,
       }),
-    );
+    });
     fxTerminated = true;
   }
 
   return { settled: true, cashInstancesMaterialised: materialised, fxTerminated };
+}
+
+/** Recover the `received`/`paid` side suffix from a cash-instance URN for the
+ * deterministic, replay-stable scenario event-id. */
+function sideOf(cashInstanceUrn: string): "received" | "paid" {
+  return cashInstanceUrn.endsWith("-received") ? "received" : "paid";
 }

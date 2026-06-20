@@ -57,10 +57,12 @@ import { dirname, resolve } from "node:path";
 
 import { Database } from "bun:sqlite";
 
-import { roundDecimal, toDecimal } from "../../../v2-core/fil-core/decimal";
-import { type Money, moneyFromDecimal } from "../../../v2-core/fil-core/primitives";
-import { formatInstanceUrn } from "../../../v2-core/fil-core/urn";
+import {
+  type SettledCashLeg as SharedSettledCashLeg,
+  buildSettledCashPayloads,
+} from "../../../v2-core/fil-instances/cash-materialisation";
 import { newEventId } from "../../core/types";
+import { AnchorDbCashSink } from "../settlement/cash-sink";
 import { resolveMaturityMaterialisation } from "./maturity-materialisation";
 
 // ---------------------------------------------------------------------------
@@ -88,14 +90,10 @@ const FIL_CITATIONS = [
 // − paid); the emitter routes them through the decimal engine — NO float Money.
 // ---------------------------------------------------------------------------
 
-export interface SettledCashLeg {
-  /** ISO-4217 alpha-3 of the cash flow (its OWN currency, not the reporting ccy). */
-  readonly currency: string;
-  /** Signed amount in MAJOR units (+ received, − paid). */
-  readonly signedMajor: number;
-  /** `received` | `paid` — for the deterministic leg-URN suffix. */
-  readonly side: "received" | "paid";
-}
+// SLICE 0 — the leg shape is now the ONE shared type from the canonical grammar
+// (`v2-core/fil-instances/cash-materialisation.ts`); re-exported here so existing
+// importers of `materialise-settled-cash`'s `SettledCashLeg` are unchanged.
+export type SettledCashLeg = SharedSettledCashLeg;
 
 export interface SettledFxForCashMaterialisation {
   /** The originating FX trade id (the cash-leg URN stem). */
@@ -116,14 +114,6 @@ export interface SettledFxForCashMaterialisation {
   readonly nettingSetId: string;
   /** The two settled cash flows (received + paid). */
   readonly cashLegs: readonly SettledCashLeg[];
-}
-
-// ---------------------------------------------------------------------------
-// Decimal-native Money — MAJOR-unit. NEVER float arithmetic on Money.
-// ---------------------------------------------------------------------------
-
-function majorNumberToMoney(majorUnits: number, currency: string): Money {
-  return moneyFromDecimal(currency, roundDecimal(toDecimal(String(majorUnits)), 2, "HALF_UP"));
 }
 
 // ---------------------------------------------------------------------------
@@ -284,52 +274,41 @@ export function materialiseSettledCash(
   const legs = rule.bothLegs ? fx.cashLegs : fx.cashLegs.filter((l) => l.side === "received");
   if (legs.length === 0) return 0;
 
+  // SLICE 0 — build the cash payloads through the ONE shared store-agnostic
+  // grammar (`v2-core/fil-instances/cash-materialisation.ts`), then route them to
+  // the anchor-store sink. The scenario path routes the SAME payloads to an
+  // EventStoreCashSink — one grammar, one sink, parameterised by store.
+  const built = buildSettledCashPayloads({
+    tradeId: fx.tradeId,
+    tenant: fx.tenant,
+    reporting: fx.reporting,
+    counterpartyId: fx.counterpartyId,
+    nettingSetId: fx.nettingSetId,
+    settledAsOf: fx.settledAsOf,
+    fxInstance: fx.fxInstance,
+    legs,
+    // The driving event is the FX settlement; the originating INSTRUMENT is the
+    // FX instance (carried in economicTerms.originatingInstrument for the graph).
+    originatingEvent: { eventType: "SettlementConfirmed", eventId: fx.fxInstance },
+    cashTypeUrn: rule.materialisesTypeUrn,
+  });
+
   const dbPath = opts.dbPath ?? resolveV2AnchorDb();
-  const db = openV2Anchor(dbPath);
+  const sink = new AnchorDbCashSink(dbPath);
   let emitted = 0;
   try {
-    for (const leg of legs) {
-      // Instance-id grammar is `[A-Za-z0-9._-]+` (no colons) — hyphen separator.
-      const cashInstance = formatInstanceUrn({
-        tenant: fx.tenant,
-        instanceId: `${fx.tradeId}-cash-${leg.side}`,
-      });
-      if (hasLifecycle(db, "FilInstrumentCreated", cashInstance)) continue;
-
-      // Sign → direction: a RECEIVED balance is a long (asset) cash position; a
-      // PAID/funding balance is a short. The Money notional is always positive
-      // (schema requires it); the sign lives in `direction`.
-      const direction: "long" | "short" = leg.signedMajor >= 0 ? "long" : "short";
-
-      const payload = {
-        kind: "FilInstrumentCreated" as const,
-        instance: cashInstance,
-        type: rule.materialisesTypeUrn,
-        tenant: fx.tenant,
+    for (const leg of built) {
+      if (sink.hasCreated(leg.instance)) continue;
+      sink.appendCreated({
         asOf: fx.settledAsOf,
-        // The driving event is the FX settlement; the originating INSTRUMENT is
-        // the FX spot (carried in economicTerms for the single-graph link).
-        originatingEvent: { eventType: "SettlementConfirmed", eventId: fx.fxInstance },
-        initialStage: "active" as const,
-        economicTerms: {
-          assetClass: "cash" as const,
-          // FOREIGN-CURRENCY DENOMINATION: each leg in ITS OWN currency.
-          notional: majorNumberToMoney(Math.abs(leg.signedMajor), leg.currency),
-          direction,
-          counterpartyId: fx.counterpartyId,
-          nettingSetId: fx.nettingSetId,
-          currency: leg.currency,
-          settlementDate: fx.settledAsOf,
-          hedgingSetTag: `${leg.currency}/${fx.reporting}`,
-          originatingInstrument: fx.fxInstance,
-        },
-      };
-
-      appendLifecycle(db, "FilInstrumentCreated", fx.settledAsOf, fx.entity, payload);
+        entity: fx.entity,
+        citations: FIL_CITATIONS,
+        payload: leg.payload,
+      });
       emitted += 1;
     }
   } finally {
-    db.close();
+    sink.close();
   }
   return emitted;
 }

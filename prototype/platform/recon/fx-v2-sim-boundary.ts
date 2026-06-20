@@ -72,6 +72,17 @@ const SUT_INTERNAL_EVENT_TYPES = [
   // simulator emits only the EXTERNAL party's lifecycle (sounding/KYC/mandate/
   // agreement acceptance); the bank's provisioning decision is SUT-internal.
   "CounterpartyProvisioned",
+  // WS-FX-V2-SIMULATOR Phase 2 M6 — the bank's OWN Basel-class assignment mapped
+  // from the external rating feed. The simulator emits only the rating fact
+  // (ExternalCreditRatingReceived); the class is the bank's credit judgement.
+  "CounterpartyBaselClassAssigned",
+  // WS-FX-V2-SIMULATOR Phase 2 M8 — the bank's OWN margin-call + collateral acts
+  // (issue a call, record posted/returned collateral, close a call). The
+  // simulator emits only the counterparty's response (MarginCallResponded).
+  "MarginCallIssued",
+  "CollateralPosted",
+  "CollateralReturned",
+  "MarginCallSettled",
 ] as const;
 
 /**
@@ -103,6 +114,10 @@ export const SIMULATOR_EXTERNAL_EVENT_TYPES = [
   "FxSimSettlementInstructed",
   "FxSimSettlementFailed",
   "FxSimSettlementConfirmed",
+  // WS-FX-V2-SIMULATOR Phase 2 M6 — external rating-agency feed fact (the outside
+  // world publishing a counterparty's credit rating; drives the SUT Basel-class
+  // mapping, which is itself SUT-internal — see CounterpartyBaselClassAssigned below).
+  "ExternalCreditRatingReceived",
 ] as const;
 
 const SUT_SET: ReadonlySet<string> = new Set(SUT_INTERNAL_EVENT_TYPES);
@@ -131,8 +146,26 @@ function stripComments(src: string): string {
   return src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/[^\n]*/g, "$1");
 }
 
-/** Match `type: "EventType"` and `makeEventType(` / `EventType as const` emit shapes. */
-function emittedEventTypes(src: string): Set<string> {
+/**
+ * Strip the argument of event-store READ calls — `replay({ type: "X" })`,
+ * `.replay({ type: "X", ... })` — so a simulator module READING an SUT-internal
+ * type (to know what external response to emit, e.g. M8 reading MarginCallIssued)
+ * is NOT mis-flagged as EMITTING it. The boundary invariant is about EMISSION
+ * (the simulator must not pretend to be the bank), not about reads: a simulator
+ * legitimately observes the bank's calls to respond to them. A read-filter
+ * `replay({type:"X"})` is structurally a discriminator literal but semantically a
+ * query, so it is excluded before the `type:`/`kind:` emission scan.
+ */
+function stripReplayFilters(src: string): string {
+  // Remove the parenthesised argument of any `replay(...)` call (single-level —
+  // replay filters are flat object literals, never nested calls with `type:`).
+  return src.replace(/\breplay\s*\(\s*\{[^}]*\}\s*\)/g, "replay()");
+}
+
+/** Match `type: "EventType"` and `makeEventType(` / `EventType as const` emit shapes.
+ *  Exported for the regression test (read-vs-emit distinction). */
+export function emittedEventTypes(rawSrc: string): Set<string> {
+  const src = stripReplayFilters(rawSrc);
   const found = new Set<string>();
   // type: "X" or kind: "X" (event-envelope discriminators).
   const typeKey = /\b(?:type|kind)\s*:\s*["']([A-Z][A-Za-z0-9]+)["']/g;

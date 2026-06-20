@@ -2,6 +2,19 @@
 //
 // recon:v2-saccr-parity — FIL SA-CCR self-consistency gate (post-flip).
 //
+// FX-PATH ASSURANCE NOTE (WS-FX-V2-SIMULATOR Phase 2, M7): the FX recorded-
+// history byte-parity leg of this gate is VACUOUS on a clean build-phase store
+// (0 recorded FX SA-CCR netting sets — the engine has not run there). Under
+// D-FX-V2-SIMULATOR-FIRST the FX SA-CCR EAD is now judged AGAINST THE SIMULATOR:
+// `recon:fx-v2-sim-oracle` runs the EOD SA-CCR EAD over the simulated FX cohort
+// and asserts the d317 identities (RC = max(vMtm,0) unmargined; EAD =
+// round_halfup(1.4 × (RC + PFE)); EAD ≥ RC ≥ 0; PFE > 0) against the KNOWN
+// exposure. That is the FX-path replacement assurance (Charter cmd 3 — replaced,
+// not dropped). THIS gate retains its ALWAYS-ON construction conditions (C1–C3,
+// FAIL-severity, clean-store-provable) which enforce the SA-CCR model port
+// independent of recorded history, plus the data-dependent recorded-history
+// byte-parity legs (vacuous until licence-day book data).
+//
 // PRODUCTION PATH NOW FIL: `computeRwaFromPositions()` sources SA-CCR EAD
 // directly from the FIL SA-CCR model (D-FIL-FRAMEWORK-UNIFICATION). The
 // CcrEadComputed event-stream fold has been retired; this gate now validates
