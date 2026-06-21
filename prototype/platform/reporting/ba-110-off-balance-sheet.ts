@@ -55,6 +55,7 @@
 // Author: Mira (Regulatory reporting engineer, engineering — reports to
 //   Camille CFO; BA-returns sourcing).
 
+import { returnContractCitation } from "../../v2-core/regulatory-returns/return-contracts";
 import type { EventStore } from "../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 import type { LeverageExposureDecomposition } from "./ba-700-leverage-ratio";
@@ -416,7 +417,12 @@ export function generateBa110OffBalanceSheetFromEvents(
   const placeholders: string[] = [
     "[citation: TBC — derivative notionals reported gross with a build-phase CCF of 1.00 pending the SA-CCR add-on projection (D-CREDIT-LIMIT-ENGINE-BUILD)]",
     "[citation: TBC — securities-financing exposure uses gross collateral face value; bilateral netting under a master-netting-agreement (BCBS §165(g)) deferred]",
-    "[citation: TBC — exact SARB BA 110 line-numbering pending the published-schema mapping]",
+    // Line-numbering is no longer TBC: the exact SARB BA 110 cell coordinates are
+    // the typed per-cell data-requirement contract. NB FX OTC forwards/swaps have
+    // NO dedicated BA 110 line (recorded finding FINDING-FX-BA110-NO-LINE in
+    // v2-core/regulatory-returns/fx-product-return-cells.ts) — FX derivative
+    // exposure reports via BA 320 / BA 200, not as a BA 110 notional.
+    returnContractCitation("BA110"),
   ];
 
   return {

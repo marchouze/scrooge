@@ -71,6 +71,7 @@
 //   semantic-layer integration; JSON-schema co-design).
 
 import Decimal from "decimal.js";
+import { returnContractCitation } from "../../v2-core/regulatory-returns/return-contracts";
 import {
   COUNTERPARTY_SECTORS,
   type CounterpartySector,
@@ -480,13 +481,18 @@ export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600Bala
     );
   }
   if (classificationGaps.length > 0) {
+    // Runtime classification gap (tracked): specific trial-balance rows fell
+    // through the line-classification map for THIS period's data. Not a
+    // schema-numbering gap (the BA 600 line-numbering is now sourced below) — a
+    // data-classification gap surfaced honestly per run. recon:gl-line-classification-coverage
     placeholders.push(
-      `[citation: TBC — BA 600: ${classificationGaps.length} trial-balance rows have no line classification; pending Mira's WS-INSTRUMENT-ANALYSES SARB BA 600 published-schema mapping]`,
+      `[GAP-BA600-ROW-CLASSIFICATION recon:ba-return-cell-contract — BA 600: ${classificationGaps.length} trial-balance row(s) have no line classification this period; surfaced for classification-map extension]`,
     );
   }
-  placeholders.push(
-    "[citation: TBC — exact SARB BA 600 line-numbering pending Mira's WS-INSTRUMENT-ANALYSES schema ingestion]",
-  );
+  // Line-numbering is no longer TBC: the exact SARB BA 600 cell coordinates are
+  // the typed per-cell data-requirement contract. Citation derived from the
+  // contract (Engineering-Charter cmd 4 — source, don't hardcode).
+  placeholders.push(returnContractCitation("BA600"));
 
   const classificationsFingerprint = fingerprintClassifications(input.classifications);
 

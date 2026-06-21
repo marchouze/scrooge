@@ -74,6 +74,7 @@
 //   + Ravi (Treasury & ALM engineer, engineering — FTP + ALM banding
 //   substrate consult).
 
+import { returnContractCitation } from "../../v2-core/regulatory-returns/return-contracts";
 import { type Money, amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
 import type { Currency } from "../core/types";
 import type { Ba610IncomeStatement, Ba610LineItem } from "./ba-120-income-statement";
@@ -790,9 +791,9 @@ export function generateBa610DetailIncomeDetail(
       "[citation: TBC — BA 610 detail: FTP rates not supplied; client NIM vs structural NIM split deferred; Ravi's IRRBB FTP engine downstream]",
     );
   }
-  placeholders.push(
-    "[citation: TBC — exact SARB BA 610 detail line-numbering pending Mira's WS-INSTRUMENT-ANALYSES schema ingestion]",
-  );
+  // Line-numbering is no longer TBC: the exact SARB BA 610 cell coordinates are
+  // the typed per-cell data-requirement contract. Citation derived (cmd 4).
+  placeholders.push(returnContractCitation("BA610"));
   placeholders.push(
     "[citation: TBC — BA 610 detail: no real loan book at build-phase; NII by instrument class has FX-spot activity only; synthetic fixtures cover interbank/corporate/sovereign/retail slots]",
   );

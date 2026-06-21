@@ -647,6 +647,14 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // non-sourced cells are honestly tracked. Marc's "every cell fully
     // defined" guarantee, machine-checked.
     "recon:ba-return-cell-contract",
+    // ENFORCING (D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING): the FX→return-
+    // cell inverse index (fx-product-return-cells.ts) names the SARB cells an FX
+    // OTC vanilla trade feeds at verbatim XSD coordinates; this gate asserts each
+    // declared cell resolves verbatim (form+row+column+label) against the XSD-
+    // sourced L2 contract, the BA 100 per-product edges stay non-empty, and every
+    // deferred edge / non-applicable finding is tracked. Drift in the FX lineage
+    // is caught, never silent.
+    "recon:fx-return-cell-lineage",
     "recon:ba320-ir-general-weighting-basis",
     "recon:rwa-computed-sourcing",
     "recon:fx-subledger-reconciliation",

@@ -507,17 +507,17 @@
     },
     {
       "file": "platform/reporting/ba-100-balance-sheet.ts",
-      "line": 632,
+      "line": 638,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/reporting/ba-120-income-detail.ts",
-      "line": 651,
+      "line": 652,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/reporting/ba-120-income-detail.ts",
-      "line": 755,
+      "line": 756,
       "pattern": "money-multiply/divide"
     },
     {
@@ -532,32 +532,32 @@
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1312,
+      "line": 1313,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1830,
+      "line": 1837,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1832,
+      "line": 1839,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1444,
+      "line": 1445,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1659,
+      "line": 1660,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/reporting/ba-300-lcr.ts",
-      "line": 1826,
+      "line": 1833,
       "pattern": "money-multiply/divide"
     },
     {
@@ -582,22 +582,22 @@
     },
     {
       "file": "platform/reporting/ba-320-market-risk.ts",
-      "line": 368,
+      "line": 369,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/reporting/ba-320-market-risk.ts",
-      "line": 383,
+      "line": 384,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/reporting/ba-320-market-risk.ts",
-      "line": 385,
+      "line": 386,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/reporting/ba-320-market-risk.ts",
-      "line": 424,
+      "line": 425,
       "pattern": "Math.round(money)"
     },
     {
