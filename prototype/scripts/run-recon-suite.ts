@@ -216,6 +216,15 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // instance under a cash-materialising NPA has a matching cash instance (the
     // settlement path ran the product rule). Authority: D-CASH-ASSET-CLASS-V1.
     "recon:cash-materialisation-integrity",
+    // Capital FIL asset-class fail-closed gate (D-CAPITAL-ASSET-CLASS-V1): every
+    // `capital` FIL instance carries a valid typed qualifying-capital tier
+    // (CET1/AT1/T2) + a tier-coherent sub-category + an originating back-ref (no
+    // orphan); no own-funds leg lands in a suspense account; the composition tier
+    // rollups (Tier 1 = CET1+AT1, Total = Tier1+T2) are internally consistent.
+    // Non-vacuous on the anchor store (the R300m injection sim → one CET1 instance,
+    // emitted by ci:migrate's capital:emit-injection-v2-sim). Authority:
+    // D-CAPITAL-ASSET-CLASS-V1; Reg 38; Banks Act §70; BCBS CAP/RBC.
+    "recon:capital-materialisation-integrity",
     // WS-CASH-ASSET-CLASS fail-closed gate (D-CASH-ASSET-CLASS-V1): ties
     // FX-settlement GL cash recognition to the Cash FIL instrument-of-record —
     // the sub-ledger cash leg (PR-FX-PRIN: received → Dr nostro, paid → Cr
@@ -424,6 +433,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:fx-pair-direction",
     "recon:fx-pair-canonical-aggregation",
     "recon:fx-quoting-convention",
+    // FRTB trading-desk compliance (D-FRTB-TRADING-DESK-STRUCTURE). ENFORCING:
+    // every registered desk carries the full MAR12 desk-definition attribute set
+    // + a valid bookType; every FX trade's deskId resolves to a registered active
+    // desk whose bookType matches the trade's bookType (FRTB boundary integrity).
+    "recon:frtb-desk-integrity",
     "recon:fx-rate-magnitude",
     "recon:entity-identity-coherence",
     "recon:procedure-event-name-coherence",
@@ -633,6 +647,14 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // non-sourced cells are honestly tracked. Marc's "every cell fully
     // defined" guarantee, machine-checked.
     "recon:ba-return-cell-contract",
+    // ENFORCING (D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING): the FX→return-
+    // cell inverse index (fx-product-return-cells.ts) names the SARB cells an FX
+    // OTC vanilla trade feeds at verbatim XSD coordinates; this gate asserts each
+    // declared cell resolves verbatim (form+row+column+label) against the XSD-
+    // sourced L2 contract, the BA 100 per-product edges stay non-empty, and every
+    // deferred edge / non-applicable finding is tracked. Drift in the FX lineage
+    // is caught, never silent.
+    "recon:fx-return-cell-lineage",
     "recon:ba320-ir-general-weighting-basis",
     "recon:rwa-computed-sourcing",
     "recon:fx-subledger-reconciliation",

@@ -77,6 +77,7 @@ for (const t of TRANCHES) {
       trader: "saskia@bank.local",
       bookId: "FX-TRADING",
       bookType: "trading",
+      deskId: "urn:desk:trading-desk:trading-desk-1",
       settlementForm: "physical",
       settlementPath: "correspondent",
       clientFlowRef: `nop-unwind:${t.id}`,

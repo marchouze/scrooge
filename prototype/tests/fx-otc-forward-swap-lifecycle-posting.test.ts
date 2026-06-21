@@ -194,6 +194,7 @@ describe("FX OTC umbrella — out-of-scope flows still block", () => {
         trader: "t",
         bookId: "FX-OTC-BOOK",
         bookType: "trading",
+        deskId: "urn:desk:trading-desk:trading-desk-1",
         settlementForm: "physical",
         settlementPath: "correspondent",
         clientFlowRef: "client-trade:regression",

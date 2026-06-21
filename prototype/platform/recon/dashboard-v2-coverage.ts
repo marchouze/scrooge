@@ -108,7 +108,7 @@ const ROUTES: readonly RouteEntry[] = [
     v2Wired: false,
     wiredMarker: "",
     reason:
-      "A V2 BA-700 projection (platform/projections/ba700-v2.ts, #1378) now exists, but at Phase 3e its capital numerator is structurally no-data (no capital-GL posting rules emit GlPostingEmitted yet — GAP-3E-001) and its output shape (BA700ReturnV2) differs from the CapitalMetrics tile shape. Promoting it under the flag would replace real V1 capital figures with zero — a regression, not an equivalent dual-read. Stays V1-only until capital-GL posting rules + a CapitalMetrics-shaped V2 adapter land.",
+      "A V2 BA-700 projection (platform/projections/ba700-v2.ts) now sources its capital numerator FOLD-NATIVE from the Capital FIL asset class (ba700-capital-composition.ts, D-CAPITAL-ASSET-CLASS-V1) — the former GAP-3E-001 (zero-because-no-rule) is RESOLVED. Two reasons it stays V1-only on this tile: (1) its output shape (BA700ReturnV2) differs from the CapitalMetrics tile shape, needing a CapitalMetrics-shaped V2 adapter; (2) in the build phase there is no real capital (only the simulated R300m injection, which the production provenance filter excludes), so promoting it under the flag would show zero on the live tile — a regression, not an equivalent dual-read. Stays V1-only until a CapitalMetrics-shaped V2 adapter lands + real capital exists (licence-day).",
   },
   {
     route: "ALM positions / LCR / NSFR (treasury tiles, getALMPositionSnapshot)",

@@ -58,6 +58,7 @@ const baseSpotPayload = {
   trader: "TRADER-FX-001",
   bookId: "BOOK-FX-MARKETS-LP",
   bookType: "trading" as const,
+  deskId: "urn:desk:trading-desk:trading-desk-1",
   settlementForm: "physical" as const,
   settlementPath: "correspondent" as const,
   clientFlowRef: "client-trade:NK-2026-05-22-00001",

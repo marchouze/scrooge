@@ -523,6 +523,27 @@
       "side": "credit"
     },
     {
+      "id": "ACC-5000-003",
+      "name": "Share Premium",
+      "currency": "ZAR",
+      "category": "equity",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-5000-004",
+      "name": "Accumulated OCI Reserve — CET1",
+      "currency": "ZAR",
+      "category": "equity",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-5050-001",
+      "name": "Additional Tier 1 Instruments (Perpetual Non-Cumulative)",
+      "currency": "ZAR",
+      "category": "liability-at1-capital",
+      "side": "credit"
+    },
+    {
       "id": "ACC-5100-001",
       "name": "Repo Asset (Secured Lending Receivable)",
       "currency": "ZAR",

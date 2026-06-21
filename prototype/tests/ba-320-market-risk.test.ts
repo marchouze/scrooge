@@ -271,7 +271,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 sub-charge arithmetic", () =
     ).toThrow(/non-negative/);
   });
 
-  it("placeholders array populated per Q1 (rehearsal-grade)", () => {
+  it("placeholders carry the SOURCED BA 320 line-numbering citation (TBC retired)", () => {
     const out = generateBa310MarketRisk({
       ...COMMON,
       irGeneralMaturityLadder: [],
@@ -281,7 +281,17 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 sub-charge arithmetic", () =
       commodity: [],
     });
     expect(out.placeholders.length).toBeGreaterThanOrEqual(1);
-    expect(out.placeholders.some((p) => p.includes("[citation: TBC"))).toBe(true);
+    // The BA 320 line-numbering is no longer a bare "[citation: TBC … pending
+    // WS-INSTRUMENT-ANALYSES]" — it is sourced from the typed per-cell contract
+    // (D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING). Assert the sourced marker.
+    expect(
+      out.placeholders.some((p) =>
+        p.includes("exact line-numbering sourced from the typed per-cell"),
+      ),
+    ).toBe(true);
+    expect(out.placeholders.some((p) => p.includes("pending Mira's WS-INSTRUMENT-ANALYSES"))).toBe(
+      false,
+    );
   });
 });
 

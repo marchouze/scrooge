@@ -390,3 +390,22 @@ export function loadReturnContract(form: ReturnForm): ReturnContract {
 export function allReturnContracts(): readonly ReturnContract[] {
   return RETURN_CONTRACT_REGISTRY.map((e) => loadReturnContract(e.form));
 }
+
+/**
+ * The SOURCED line-numbering citation for a return form — derived from the
+ * form's typed L2 contract (formName + obligation + the SARB XSD/xlsx the
+ * contract was sourced from). This is the canonical replacement for the legacy
+ * "[citation: TBC — exact SARB BA <n> line-numbering pending … schema
+ * ingestion]" placeholders the return generators carried before the per-cell
+ * contracts landed: the exact line-numbering is no longer TBC — it is the
+ * XSD-sourced contract, which `recon:ba-return-cell-contract` asserts complete.
+ *
+ * Source-don't-hardcode (Engineering-Charter cmd 4): the string is built from
+ * the loaded contract's own provenance fields, not a literal — so it cannot
+ * drift from the contract.
+ */
+export function returnContractCitation(form: ReturnForm): string {
+  const contract = loadReturnContract(form);
+  const display = form.replace(/^BA/, "BA "); // "BA320" → "BA 320"
+  return `[citation: SARB ${display} ${contract.formName} — exact line-numbering sourced from the typed per-cell data-requirement contract (${contract.obligationId}; ${contract.schemaSource}), asserted complete + verbatim by recon:ba-return-cell-contract]`;
+}

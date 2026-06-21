@@ -77,6 +77,7 @@
 
 import { z } from "zod";
 
+import { returnContractCitation } from "../../v2-core/regulatory-returns/return-contracts";
 import {
   type DebtExposure,
   type ExposureClass,
@@ -610,12 +611,13 @@ export function generateBa200CreditRisk(input: Ba200GeneratorInput): Ba200Credit
   }
   if (classificationGapSet.size > 0) {
     placeholders.push(
-      `[citation: TBC — ${classificationGapSet.size} product category gap(s) in classification map: ${[...classificationGapSet].sort().join(", ")}; Mira's WS-INSTRUMENT-ANALYSES will resolve to SARB BA 200 published taxonomy]`,
+      `[GAP-BA200-PRODUCT-CATEGORY-CLASSIFICATION recon:ba-return-cell-contract — ${classificationGapSet.size} product category gap(s) in classification map: ${[...classificationGapSet].sort().join(", ")}; map each to a BA 200 credit-asset-class line]`,
     );
   }
-  placeholders.push(
-    "[citation: TBC — exact SARB BA 200 line-numbering pending Mira's WS-INSTRUMENT-ANALYSES schema ingestion]",
-  );
+  // Line-numbering is no longer TBC: the exact SARB BA 200 cell coordinates are
+  // the typed per-cell data-requirement contract (the FX OTC counterparty-credit
+  // EAD lands on R0120 "Exposure at default (EAD) / Total"). Citation derived (cmd 4).
+  placeholders.push(returnContractCitation("BA200"));
   placeholders.push(
     "[citation: TBC — ECL amounts are caller-supplied at v0; PD/LGD/EAD model outputs replace at licence-day per D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN]",
   );

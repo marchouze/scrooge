@@ -1249,6 +1249,7 @@ export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResul
     },
     bookId: "BK-FX-MM-001",
     bookType: "trading",
+    deskId: "urn:desk:trading-desk:trading-desk-1",
     venue: "OTC",
     settlementForm: "physical",
     settlementPath: "correspondent",

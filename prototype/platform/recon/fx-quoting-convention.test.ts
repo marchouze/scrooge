@@ -38,6 +38,7 @@ function canonicalPayload(): Record<string, unknown> {
     trader: "kai-test",
     bookId: "FX-MM-ZAR-01",
     bookType: "trading",
+    deskId: "urn:desk:trading-desk:trading-desk-1",
     settlementForm: "physical",
     settlementPath: "correspondent",
     clientFlowRef: "client-trade:recon-test-001",

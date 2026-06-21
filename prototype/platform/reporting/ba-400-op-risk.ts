@@ -40,6 +40,8 @@
 //   + Anya (Data / analytics engineer, engineering — reports to Devon COO;
 //   semantic-layer integration).
 
+import { returnContractCitation } from "../../v2-core/regulatory-returns/return-contracts";
+
 // ---------------------------------------------------------------------------
 // Business lines + β factors
 // ---------------------------------------------------------------------------
@@ -272,7 +274,11 @@ export function generateBa300OpRisk(input: Ba300GeneratorInput): Ba300Output {
   const rwa = Math.round(12.5 * selectedCapital);
 
   const placeholders: string[] = [
-    "[citation: TBC — exact SARB BA 300 line-numbering pending Mira's WS-INSTRUMENT-ANALYSES schema ingestion]",
+    // Line-numbering is no longer TBC: the canonical form is BA 400 (Operational
+    // Risk; the prior "BA 300" was a fabricated-numbering artefact, see file
+    // header). The exact cell coordinates are the typed per-cell data-requirement
+    // contract. Citation derived from the contract (Engineering-Charter cmd 4).
+    returnContractCitation("BA400"),
     "[citation: TBC — SMA (BCBS D424) replaces BIA / TSA at SARB transition; Reg 33 revision tracked as substrate gap]",
   ];
   if (bia.nPositiveYears < 3) {

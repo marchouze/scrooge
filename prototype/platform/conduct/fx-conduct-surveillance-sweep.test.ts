@@ -54,6 +54,7 @@ function seedFxTrade(
         trader: "test@bank.local",
         bookId: "BOOK-FX-TEST",
         bookType: "trading",
+        deskId: "urn:desk:trading-desk:trading-desk-1",
         settlementForm: "physical",
         settlementPath: "correspondent",
         finsurvCategory: "ODP-001-cross-border-institutional",

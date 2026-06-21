@@ -492,6 +492,7 @@ export function buildPhaseAEvents(): PhaseAEvents {
       trader: "saskia@bank.local",
       bookId: "BOOK-FX-MARKETS-LP",
       bookType: "trading",
+      deskId: "urn:desk:trading-desk:trading-desk-1",
       settlementForm: "physical",
       settlementPath: "correspondent",
       // No-prop attribution (G-3) — client-flow rehearsal.

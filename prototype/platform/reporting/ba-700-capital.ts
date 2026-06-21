@@ -86,6 +86,7 @@
 //   + Anya (Data / analytics engineer, engineering — reports to Devon COO;
 //   semantic-layer integration).
 
+import { returnContractCitation } from "../../v2-core/regulatory-returns/return-contracts";
 import { type Money, amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
 import type { Currency } from "../core/types";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
@@ -689,13 +690,18 @@ export function generateBa100Capital(input: Ba100GeneratorInput): Ba100Output {
     );
   }
   if (input.classifications.some((c) => c.subCategory === undefined)) {
+    // Runtime data gap (tracked): one or more accounts lack a capital-tier
+    // subCategory for THIS period. Not a schema-numbering gap (the line-numbering
+    // is now sourced below) — a per-run classification gap. recon:ba-return-cell-contract
     placeholders.push(
-      "[citation: TBC — capital-tier classification subCategory missing for one or more accounts; Mira's WS-INSTRUMENT-ANALYSES will resolve to SARB-published BA 100 line labels]",
+      "[GAP-BA700-CAPITAL-TIER-SUBCATEGORY recon:ba-return-cell-contract — capital-tier classification subCategory missing for one or more accounts this period; classify to a CET1/AT1/T2 tier line]",
     );
   }
-  placeholders.push(
-    "[citation: TBC — exact SARB BA 100 line-numbering pending Mira's WS-INSTRUMENT-ANALYSES schema ingestion]",
-  );
+  // Line-numbering is no longer TBC: the exact SARB BA 700 capital-adequacy cell
+  // coordinates are the typed per-cell data-requirement contract (the FX
+  // market-risk capital allocation lands on R0870 "allocated to support market
+  // risk"). Citation derived from the contract (Engineering-Charter cmd 4).
+  placeholders.push(returnContractCitation("BA700"));
 
   const classificationsFingerprint = fingerprintClassifications(input.classifications);
   const deductionsFingerprint = fingerprintDeductions(input.deductions);

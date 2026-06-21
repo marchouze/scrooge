@@ -621,9 +621,17 @@ describe("BA 200 — citations and placeholders", () => {
     expect(eclPlaceholder).toBeDefined();
   });
 
-  it("includes SARB taxonomy placeholder", () => {
-    const taxPlaceholder = out.placeholders.find((p) => p.includes("WS-INSTRUMENT-ANALYSES"));
-    expect(taxPlaceholder).toBeDefined();
+  it("carries the SOURCED BA 200 line-numbering citation (WS-INSTRUMENT-ANALYSES TBC retired)", () => {
+    // The BA 200 line-numbering is no longer a bare "pending WS-INSTRUMENT-
+    // ANALYSES" stub — it is sourced from the typed per-cell contract
+    // (D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING).
+    const sourced = out.placeholders.find((p) =>
+      p.includes("exact line-numbering sourced from the typed per-cell"),
+    );
+    expect(sourced).toBeDefined();
+    expect(out.placeholders.some((p) => p.includes("pending Mira's WS-INSTRUMENT-ANALYSES"))).toBe(
+      false,
+    );
   });
 
   it("render output propagates citations and placeholders", () => {

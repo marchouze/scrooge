@@ -602,7 +602,14 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — end-to-end (events → close → BA
       classifications: [{ leafAccountId: "ACC-1100-001", hqlaLevel: "level-1" }],
     });
     expect(out.placeholders.length).toBeGreaterThanOrEqual(1);
-    expect(out.placeholders.some((p) => p.includes("[citation: TBC"))).toBe(true);
+    // BA 300 line-numbering is now SOURCED from the typed per-cell contract — the
+    // bare "[citation: TBC … pending WS-INSTRUMENT-ANALYSES]" stub is retired
+    // (D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING).
+    expect(
+      out.placeholders.some((p) =>
+        p.includes("exact line-numbering sourced from the typed per-cell"),
+      ),
+    ).toBe(true);
   });
 });
 
@@ -828,6 +835,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors (P1-fix
           trader: "trader:test",
           bookId: "FX-BOOK",
           bookType: "trading",
+          deskId: "urn:desk:trading-desk:trading-desk-1",
           settlementForm: "physical",
           settlementPath: "correspondent",
           clientFlowRef: "cf:RATE-LCR-1",

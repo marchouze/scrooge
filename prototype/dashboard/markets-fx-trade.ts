@@ -343,6 +343,7 @@ export function buildSpotPayload(args: {
     trader: "agent:kai:fx-pricer",
     bookId: "fx-spot-zaru-trading-book-1",
     bookType: "trading",
+    deskId: "urn:desk:trading-desk:trading-desk-1",
     settlementForm: "physical",
     settlementPath: "correspondent",
     finsurvCategory: "[citation: TBC]",

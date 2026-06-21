@@ -75,6 +75,7 @@
 //   + Anya (Data / analytics engineer, engineering — reports to Devon COO;
 //   semantic-layer integration; JSON-schema co-design).
 
+import { returnContractCitation } from "../../v2-core/regulatory-returns/return-contracts";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
 
 // ---------------------------------------------------------------------------
@@ -331,13 +332,16 @@ export function generateBa610IncomeStatement(input: Ba610GeneratorInput): Ba610I
 
   const placeholders: string[] = [];
   if (classificationGaps.length > 0) {
+    // Runtime classification gap (tracked): specific trial-balance rows fell
+    // through the line-classification map this period. Not a schema-numbering gap
+    // (now sourced below). recon:ba-return-cell-contract
     placeholders.push(
-      `[citation: TBC — BA 610: ${classificationGaps.length} trial-balance rows have no line classification; pending Mira's WS-INSTRUMENT-ANALYSES SARB BA 610 published-schema mapping]`,
+      `[GAP-BA610-ROW-CLASSIFICATION recon:ba-return-cell-contract — BA 610: ${classificationGaps.length} trial-balance row(s) have no line classification this period; extend the classification map]`,
     );
   }
-  placeholders.push(
-    "[citation: TBC — exact SARB BA 610 line-numbering pending Mira's WS-INSTRUMENT-ANALYSES schema ingestion]",
-  );
+  // Line-numbering is no longer TBC: the exact SARB BA 610 cell coordinates are
+  // the typed per-cell data-requirement contract. Citation derived (cmd 4).
+  placeholders.push(returnContractCitation("BA610"));
   placeholders.push(
     "[citation: TBC — income tax expense + profit-after-tax deferred; bottom line is profit-before-tax at v0 (Yael's CIT slice paused until commencement-of-trading per CLAUDE.md project_rules_bind_at_commencement)]",
   );

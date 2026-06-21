@@ -80,6 +80,7 @@ function makeFxSpotTrade(tradeId: string): Event {
       trader: "trader-001",
       bookId: "FX-TRADING",
       bookType: "trading",
+      deskId: "urn:desk:trading-desk:trading-desk-1",
       settlementForm: "physical",
       settlementPath: "correspondent",
       clientFlowRef: `client-trade:test-${tradeId}`,

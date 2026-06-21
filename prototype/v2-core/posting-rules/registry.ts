@@ -317,6 +317,55 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
   },
 
   // ══════════════════════════════════════════════════════════════════════════
+  // CAPITAL V2 FIL-FOLD posting rules (lifecycleId: "capital-fil-instance").
+  //
+  // The V2 capital composition (D-CAPITAL-ASSET-CLASS-V1) computes the BA-700 /
+  // BA-100 own-funds composition as a PURE FOLD over the generic FIL instance
+  // lifecycle events (FilInstrumentCreated / FilInstrumentAmended /
+  // FilInstrumentTerminated) for `capital` asset-class instances, via the pure
+  // rules in `v2-core/posting-rules/capital.ts`. No `SubLedgerPostingEmitted` /
+  // `GlPostingEmitted` is stored on the capital read path — the legs are folded in
+  // memory — so these are NOT gl-ledger-coverage mandates; they document the V2
+  // capital posting determination so the capital treatment module's
+  // `applicablePostingRuleIds` resolve (recon:accounting-schema-home assertion c).
+  // lifecycleId "capital-fil-instance" is NOT a TRADE_LIFECYCLE_REGISTRY lifecycle.
+  // Authority: D-CAPITAL-ASSET-CLASS-V1; D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD.
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    triggerEventType: "FilInstrumentCreated",
+    triggerDomain: "trade",
+    lifecycleId: "capital-fil-instance",
+    lifecycleStage: "opening",
+    postingRuleId: "PR-CAP-ISSUE-001-V2",
+    postingType: "capital-fil-issuance",
+    condition: "always",
+    conditionDetail:
+      "IAS 32 §22 (CET1 equity at proceeds) / IFRS 9 §4.2.1 (AT1/T2 liability amortised cost) — own-funds recognition on issuance (FIL fold). Dr settlement-cash / Cr own-funds account per qualifying tier. Reg 38; Banks Act §70; BCBS RBC20.2; CAP.",
+  },
+  {
+    triggerEventType: "FilInstrumentAmended",
+    triggerDomain: "trade",
+    lifecycleId: "capital-fil-instance",
+    lifecycleStage: "in-flight",
+    postingRuleId: "PR-CAP-ADJUST-002-V2",
+    postingType: "capital-fil-adjustment",
+    condition: "non-zero-delta",
+    conditionDetail:
+      "Partial redemption / Tier 2 straight-line amortisation step (last 5 years; BCBS CAP). Re-stamps the carrying amount the composition counts. CET1 distributions (IAS 32 §35) are an equity charge in the retained-earnings fold, NOT a capital-instrument posting — tracked deferred gap.",
+  },
+  {
+    triggerEventType: "FilInstrumentTerminated",
+    triggerDomain: "trade",
+    lifecycleId: "capital-fil-instance",
+    lifecycleStage: "terminal",
+    postingRuleId: "PR-CAP-REDEEM-003-V2",
+    postingType: "capital-fil-redemption",
+    condition: "always",
+    conditionDetail:
+      "IAS 32 §33 (own equity derecognition) / IFRS 9 §3.3.1 (liability extinguishment) — own-funds derecognition on redemption/call/maturity/cancellation (FIL fold). A bare terminal posts the zero-amount memo; the redemption-proceeds cash leg requires a richer FIL terminal event (tracked deferred gap, mirrors PR-FX-CLOSE-V2).",
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
   // BOND  (lifecycleId: "bond-trade")
   // ══════════════════════════════════════════════════════════════════════════
   {

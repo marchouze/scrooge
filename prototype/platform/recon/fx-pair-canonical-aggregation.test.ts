@@ -186,6 +186,7 @@ describe("EUR/USD byCurrency split test", () => {
           currencyPair: { base: "EUR", quote: "USD" },
           side: "buy",
           bookType: "trading",
+          deskId: "urn:desk:trading-desk:trading-desk-1",
           venue: "OTC",
           trader: "test@bank.local",
           tradeDate: { iso: REPORT_DATE, calendar: "JIHCAL" },

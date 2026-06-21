@@ -79,6 +79,7 @@ const baseSpotPayload = {
   trader: "TRADER-FX-001",
   bookId: "BOOK-FX-MARKETS-LP",
   bookType: "trading" as const,
+  deskId: "urn:desk:trading-desk:trading-desk-1",
   settlementForm: "physical" as const,
   settlementPath: "correspondent" as const,
   // No-prop attribution — exactly one of clientFlowRef / hedgeProgrammeRef
@@ -130,7 +131,13 @@ describe("FxTradeExecuted — Spot", () => {
 
   it("accepts a Spot trade with bookType = banking-treasury (Eitan HQLA rotation)", () => {
     expect(() =>
-      fxTradeExecutedPayloadSchema.parse({ ...baseSpotPayload, bookType: "banking-treasury" }),
+      fxTradeExecutedPayloadSchema.parse({
+        ...baseSpotPayload,
+        bookType: "banking-treasury",
+        // FRTB boundary integrity: a banking-treasury-book trade must book to a
+        // banking-book (treasury) desk — Treasury Desk 1.
+        deskId: "urn:desk:treasury-desk:treasury-desk-1",
+      }),
     ).not.toThrow();
   });
 
@@ -173,6 +180,7 @@ describe("FxTradeExecuted — Swap", () => {
       tradeId: { scheme: "INTERNAL", value: "FX-TRD-SWP-001" },
       productTaxonomy: "FX-swap" as const,
       bookType: "banking-treasury" as const,
+      deskId: "urn:desk:treasury-desk:treasury-desk-1",
       legs: [
         {
           legKind: "near" as const,

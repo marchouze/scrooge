@@ -78,6 +78,7 @@ function makeBuyUsdTrade(tradeId: string) {
       currencyPair: { base: "USD", quote: "ZAR" },
       side: "buy",
       bookType: "trading",
+      deskId: "urn:desk:trading-desk:trading-desk-1",
       venue: "OTC",
       trader: "bea@bank.local",
       tradeDate: { iso: "2026-05-19", calendar: "JIHCAL" },
