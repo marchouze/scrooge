@@ -93,6 +93,11 @@ import {
   decisionImpactAssessedPayloadSchema,
   decisionImpactSweepRequestedPayloadSchema,
 } from "../decision-impact/events";
+import {
+  deskAttributeChangedPayloadSchema,
+  deskRegisteredPayloadSchema,
+  deskRetiredPayloadSchema,
+} from "../desk/events";
 import { evalRunCompletedPayloadSchema, examSetRegisteredPayloadSchema } from "../eval/events";
 import {
   instrumentDimensionAssignedPayloadSchema,
@@ -247,6 +252,32 @@ function foothold(
     migrationStatus: "v2-parallel",
     ...(tee !== undefined ? { tee } : {}),
     source: FOOTHOLD_SOURCE,
+  };
+}
+
+const DESK_REGISTER_SOURCE =
+  "brief:atlas:frtb-compliant-trading-desk-structure-simulator-:2026-06-21 — " +
+  "born-V2 FRTB trading-desk register (D-FRTB-TRADING-DESK-STRUCTURE)";
+
+/**
+ * A born-V2 FRTB trading-desk register row. Unlike a `foothold` (a v2-parallel
+ * mirror of a v1-authoritative type), the desk register types are BORN V2 —
+ * the v2 control-plane store is their SOLE authority (no v1 emitter exists), so
+ * `migrationStatus` is `"v2-canonical"`. Desk-definition records carry the same
+ * 7-year market-record retention floor as trading records (V2_RETENTION_JSE_-
+ * TRADE_7Y). No store-tee — there is no v1 source to mirror from.
+ *
+ * Authority: D-FRTB-TRADING-DESK-STRUCTURE.
+ */
+function desk(type: string, schema: z.ZodTypeAny): V2EventTypeMetadata {
+  return {
+    type,
+    class: "governance",
+    payloadSchema: asPayloadSchema(schema),
+    schemaVersion: 1,
+    retention: V2_RETENTION_JSE_TRADE_7Y,
+    migrationStatus: "v2-canonical",
+    source: DESK_REGISTER_SOURCE,
   };
 }
 
@@ -804,6 +835,13 @@ export const V2_EVENT_TYPE_REGISTRY: readonly V2EventTypeMetadata[] = [
   foothold("PostureActivated", "governance", postureActivatedPayloadSchema, {}),
   foothold("PostureDeactivated", "governance", postureDeactivatedPayloadSchema, {}),
   foothold("PostureRevised", "governance", postureRevisedPayloadSchema, {}),
+
+  // 5b. desk — BORN V2 FRTB trading-desk register (v2-canonical; sole authority
+  // is the v2 control-plane store; no v1 emitter, no store-tee). MAR12
+  // compliance-by-construction. Authority: D-FRTB-TRADING-DESK-STRUCTURE.
+  desk("DeskRegistered", deskRegisteredPayloadSchema),
+  desk("DeskAttributeChanged", deskAttributeChangedPayloadSchema),
+  desk("DeskRetired", deskRetiredPayloadSchema),
 
   // 6. applicability — BATCH-3 TEE-ENABLED (foothold schemas; v1 has its own
   // re-declaration guarded by the batch-3 anti-drift schema-parity test).
