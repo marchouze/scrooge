@@ -81,6 +81,13 @@ export * from "./fil-models/fx-valuation";
  * Authority: D-FIL-ATTRIBUTION-A1-BUILD (A3); D-VAR-EXPOSURE-INCLUDES-STANDING-NOP. */
 export * from "./fil-models/market-risk-var";
 
+/** @tier R — Capital: the bank's OWN qualifying regulatory capital (CET1 / AT1 /
+ * Tier 2) as a first-class FIL asset class. Implements Accountable + Reportable;
+ * NOT a Valuable / RiskMeasurable market exposure — it is the capital-adequacy
+ * NUMERATOR (own funds), the SOURCE of the BA-700 / BA-100 composition.
+ * Authority: D-CAPITAL-ASSET-CLASS-V1; Reg 38; Banks Act §70; BCBS CAP/RBC. */
+export * from "./fil-models/capital";
+
 // --- Reporting-treatment menu (shared accounting-composition substrate) -----
 
 /** @tier R — Reporting-treatment module declaration shape: a Product composes

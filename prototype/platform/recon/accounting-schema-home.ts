@@ -198,11 +198,22 @@ async function assertTreatmentPostingRulesResolve(violations: ReconViolation[]):
       applicablePostingRuleIds?: readonly string[];
     }>;
   };
+  // Capital treatment modules (D-CAPITAL-ASSET-CLASS-V1) — same assertion: every
+  // posting-rule id a capital module references must resolve in the registry.
+  const capitalModules = (await import(
+    "../../v2-core/reporting-treatments/capital-modules.ts"
+  )) as {
+    CAPITAL_TREATMENT_MODULES: ReadonlyArray<{
+      treatmentId: string;
+      applicablePostingRuleIds?: readonly string[];
+    }>;
+  };
   const registry = (await import("../accounting/posting-rule-registry.ts")) as {
     POSTING_RULE_REGISTRY: ReadonlyArray<{ postingRuleId: string }>;
   };
   const definedRuleIds = new Set(registry.POSTING_RULE_REGISTRY.map((r) => r.postingRuleId));
-  for (const m of fxModules.FX_TREATMENT_MODULES) {
+  const allModules = [...fxModules.FX_TREATMENT_MODULES, ...capitalModules.CAPITAL_TREATMENT_MODULES];
+  for (const m of allModules) {
     for (const ruleId of m.applicablePostingRuleIds ?? []) {
       asserted++;
       if (!definedRuleIds.has(ruleId)) {
