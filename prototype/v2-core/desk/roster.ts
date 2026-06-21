@@ -39,12 +39,17 @@ import {
 export const DESK_ROSTER_EFFECTIVE_FROM = "2026-06-21T00:00:00.000Z" as Instant;
 
 /** Upward citations every seeded DeskRegistered event carries (Principle 2). */
-export const DESK_ROSTER_CITATIONS: readonly string[] = [
+const DESK_ROSTER_CITATIONS_BASE = [
   "D-FRTB-TRADING-DESK-STRUCTURE",
   "D-FX-BOOK-BOUNDARY",
   "Principles/1-events-are-truth.md",
   "Principles/2-single-graph-discipline.md",
-];
+] as const;
+
+/** A fresh mutable copy of the roster citations (one per desk literal). */
+function rosterCitations(): string[] {
+  return [...DESK_ROSTER_CITATIONS_BASE];
+}
 
 /**
  * The three canonical desks. Authored as raw payload objects, then validated
@@ -87,7 +92,7 @@ const RAW_DESKS: readonly DeskRegisteredPayload[] = [
     },
     status: "active",
     effectiveFrom: DESK_ROSTER_EFFECTIVE_FROM,
-    citations: DESK_ROSTER_CITATIONS,
+    citations: rosterCitations(),
   },
   // Hedging Desk 1 — hedges trading-book market risk (trading book).
   {
@@ -117,7 +122,7 @@ const RAW_DESKS: readonly DeskRegisteredPayload[] = [
     },
     status: "active",
     effectiveFrom: DESK_ROSTER_EFFECTIVE_FROM,
-    citations: DESK_ROSTER_CITATIONS,
+    citations: rosterCitations(),
   },
   // Treasury Desk 1 — funding / liquidity / ALM / IRRBB (banking book).
   {
@@ -147,7 +152,7 @@ const RAW_DESKS: readonly DeskRegisteredPayload[] = [
     },
     status: "active",
     effectiveFrom: DESK_ROSTER_EFFECTIVE_FROM,
-    citations: DESK_ROSTER_CITATIONS,
+    citations: rosterCitations(),
   },
 ];
 

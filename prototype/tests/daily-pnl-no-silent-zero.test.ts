@@ -49,6 +49,7 @@ function makeLiveTrade(tradeId: string) {
       currencyPair: { base: "USD", quote: "ZAR" },
       side: "buy",
       bookType: "trading",
+      deskId: "urn:desk:trading-desk:trading-desk-1",
       venue: "OTC",
       trader: "atlas@bank.local",
       tradeDate: { iso: REPORT_DATE, calendar: "JIHCAL" },

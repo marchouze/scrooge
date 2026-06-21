@@ -433,6 +433,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:fx-pair-direction",
     "recon:fx-pair-canonical-aggregation",
     "recon:fx-quoting-convention",
+    // FRTB trading-desk compliance (D-FRTB-TRADING-DESK-STRUCTURE). ENFORCING:
+    // every registered desk carries the full MAR12 desk-definition attribute set
+    // + a valid bookType; every FX trade's deskId resolves to a registered active
+    // desk whose bookType matches the trade's bookType (FRTB boundary integrity).
+    "recon:frtb-desk-integrity",
     "recon:fx-rate-magnitude",
     "recon:entity-identity-coherence",
     "recon:procedure-event-name-coherence",

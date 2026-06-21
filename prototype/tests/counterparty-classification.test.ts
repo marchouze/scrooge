@@ -252,6 +252,7 @@ describe("rwa-from-positions uses the authoritative class over the fallback (FIL
           trader: "trader:test",
           bookId: "FX-BOOK",
           bookType: "trading",
+          deskId: "urn:desk:trading-desk:trading-desk-1",
           settlementForm: "physical",
           settlementPath: "correspondent",
           clientFlowRef: "cf:RATE-1",

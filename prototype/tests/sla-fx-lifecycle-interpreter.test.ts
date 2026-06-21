@@ -149,6 +149,7 @@ function buildExecuted(args: {
     trader: "t",
     bookId: "FX-SPOT-BOOK",
     bookType: "trading",
+    deskId: "urn:desk:trading-desk:trading-desk-1",
     settlementForm: "physical",
     settlementPath: "correspondent",
     clientFlowRef: "client-trade:regression",

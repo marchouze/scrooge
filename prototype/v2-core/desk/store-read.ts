@@ -40,13 +40,16 @@ export function buildDeskRegister(store: ControlPlaneStore): DeskRegister {
   for (const ev of store.replay()) {
     switch (ev.type) {
       case DESK_REGISTERED:
-        events.push({ type: "DeskRegistered", payload: ev.payload as RegisteredPayload });
+        events.push({ type: "DeskRegistered", payload: ev.payload as unknown as RegisteredPayload });
         break;
       case DESK_ATTRIBUTE_CHANGED:
-        events.push({ type: "DeskAttributeChanged", payload: ev.payload as ChangedPayload });
+        events.push({
+          type: "DeskAttributeChanged",
+          payload: ev.payload as unknown as ChangedPayload,
+        });
         break;
       case DESK_RETIRED:
-        events.push({ type: "DeskRetired", payload: ev.payload as RetiredPayload });
+        events.push({ type: "DeskRetired", payload: ev.payload as unknown as RetiredPayload });
         break;
       default:
         break;

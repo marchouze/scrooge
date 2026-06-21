@@ -10,6 +10,11 @@
 
 import { randomUUID } from "node:crypto";
 
+import {
+  DEFAULT_SIM_DESK_ID,
+  type DeskId,
+  SIM_TRADING_BOOK_DESK_IDS,
+} from "../../v2-core/desk";
 import { nowUtc } from "../core/types";
 import { type MarketDataStore, lookupQuoteWithInverse } from "../market-data/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
@@ -147,6 +152,15 @@ export interface SimTradeOptions {
    * the currency pair that most reduces the open position.
    */
   eligiblePairsFilter?: readonly string[];
+  /**
+   * FRTB desk the simulated trade books to. Defaults to Trading Desk 1
+   * (`DEFAULT_SIM_DESK_ID`). The simulator generates trading-book positions,
+   * so the selector is CONSTRAINED to trading-book desks — passing a
+   * banking-book (treasury) desk throws (the sim must not book a trading-book
+   * trade to a banking-book desk; that would violate the FRTB boundary the FX
+   * schema enforces). Authority: D-FRTB-TRADING-DESK-STRUCTURE.
+   */
+  deskId?: DeskId;
 }
 
 export function generateSimTrade(
@@ -156,6 +170,17 @@ export function generateSimTrade(
   options?: SimTradeOptions,
 ): FxTradeExecutedPayload {
   const rng = options?.rng ?? Math.random;
+  // FRTB desk selection — default Trading Desk 1; constrain to trading-book
+  // desks (the sim generates trading-book positions). A banking-book desk is
+  // rejected fail-closed. Authority: D-FRTB-TRADING-DESK-STRUCTURE.
+  const deskId: DeskId = options?.deskId ?? DEFAULT_SIM_DESK_ID;
+  if (!SIM_TRADING_BOOK_DESK_IDS.includes(deskId)) {
+    throw new Error(
+      `FX simulator desk '${deskId}' is not a trading-book desk; the simulator may only book ` +
+        `trading-book trades to trading-book desks (${SIM_TRADING_BOOK_DESK_IDS.join(", ")}). ` +
+        `Authority: D-FRTB-TRADING-DESK-STRUCTURE.`,
+    );
+  }
   // Wall-clock sourced via the approved boundary helper `nowUtc()` (platform/
   // core/types.ts) rather than a direct `Date.now()` read, so the simulator
   // stays inside the clock-abstraction boundary (recon:wall-clock-callsite-
@@ -306,6 +331,7 @@ export function generateSimTrade(
     trader: "agent:devon:fx-sim-engine",
     bookId,
     bookType: "trading",
+    deskId,
     settlementForm: "physical",
     settlementPath: "correspondent",
     finsurvCategory: "SIM",

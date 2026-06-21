@@ -65,6 +65,7 @@ const ZAR_USD_BUY_TRADE: FxTradeExecutedPayload = {
   trader: "trader@bank.local",
   bookId: "BOOK-FX-MARKETS",
   bookType: "trading",
+  deskId: "urn:desk:trading-desk:trading-desk-1",
   settlementForm: "physical",
   settlementPath: "correspondent",
   finsurvCategory: "ODP-001",

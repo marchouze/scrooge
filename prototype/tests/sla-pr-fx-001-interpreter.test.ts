@@ -374,6 +374,7 @@ function buildPayload(f: FixtureSpec): FxTradeExecutedPayload {
     trader: "test-trader",
     bookId: "FX-SPOT-BOOK",
     bookType: "trading",
+    deskId: "urn:desk:trading-desk:trading-desk-1",
     settlementForm: "physical",
     settlementPath: "correspondent",
     clientFlowRef: "client-trade:sla-interpreter",

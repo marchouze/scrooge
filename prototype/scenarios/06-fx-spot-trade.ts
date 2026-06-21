@@ -134,6 +134,7 @@ function buildFxTradeExecuted(asOf: string): Event {
       trader: "saskia@bank.local",
       bookId: "BOOK-FX-MARKETS-LP",
       bookType: "trading",
+      deskId: "urn:desk:trading-desk:trading-desk-1",
       settlementForm: "physical",
       settlementPath: "correspondent",
       // FinSurv category per ORG-EXCON-ODP-001 — non-resident counterparty OTC

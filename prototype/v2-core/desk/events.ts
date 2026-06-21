@@ -42,7 +42,7 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { z } from "zod";
-import { type Instant, instantSchema } from "../fil-core/primitives";
+import { instantSchema } from "../fil-core/primitives";
 
 // ---------------------------------------------------------------------------
 // DeskKind vocabulary
@@ -101,6 +101,20 @@ export const deskIdSchema = z
       "(kind ∈ {trading-desk, hedging-desk, treasury-desk}; slug = lowercase alnum/hyphen)",
   })
   .transform((s) => s as DeskId);
+
+/**
+ * A plain-`string` (NON-branded) desk-id URN schema — same URN-shape regex as
+ * `deskIdSchema` but WITHOUT the `.transform` to the `DeskId` brand. Foreign
+ * payloads (e.g. the v1 FX trade payload) that merely carry a desk reference
+ * use this so their inferred field type stays plain `string` — a branded field
+ * would force every construction site to brand-cast its literal. The desk
+ * module itself uses the branded `deskIdSchema`.
+ */
+export const deskIdStringSchema = z.string().regex(DESK_ID_RE, {
+  message:
+    "deskId must be a URN of the form urn:desk:<kind>:<slug> " +
+    "(kind ∈ {trading-desk, hedging-desk, treasury-desk}; slug = lowercase alnum/hyphen)",
+});
 
 /** Construct a DeskId URN from a kind + slug (validated, fail-closed). */
 export function makeDeskId(kind: DeskKind, slug: string): DeskId {
@@ -212,20 +226,10 @@ export const deskStatusSchema = z.enum(DESK_STATUSES);
  * `deskKind`, and `(deskKind, bookType)` must be coherent — a trading-desk or
  * hedging-desk is trading-book; a treasury-desk is banking-treasury-book. This
  * is the FRTB boundary integrity rule expressed at the type level.
+ *
+ * The payload TYPE is derived from the schema (`z.infer`) below — the schema is
+ * the single source of truth (Principle 1); the type is its compile-time shadow.
  */
-export interface DeskRegisteredPayload {
-  readonly deskId: DeskId;
-  readonly deskName: string;
-  readonly deskKind: DeskKind;
-  readonly bookType: DeskBookType;
-  readonly businessStrategy: string;
-  readonly deskHeadSeat: string;
-  readonly reportingLine: string;
-  readonly riskManagementStructure: DeskRiskManagementStructure;
-  readonly status: DeskStatus;
-  readonly effectiveFrom: Instant;
-  readonly citations: readonly string[];
-}
 
 /**
  * The coherent `(deskKind, bookType)` pairing. A trading-desk and a hedging-desk
@@ -239,7 +243,7 @@ export const DESK_KIND_BOOK_TYPE: Readonly<Record<DeskKind, DeskBookType>> = {
   "treasury-desk": "banking-treasury",
 };
 
-export const deskRegisteredPayloadSchema: z.ZodType<DeskRegisteredPayload> = z
+export const deskRegisteredPayloadSchema = z
   .object({
     deskId: deskIdSchema,
     deskName: z.string().min(1),
@@ -277,7 +281,10 @@ export const deskRegisteredPayloadSchema: z.ZodType<DeskRegisteredPayload> = z
           `got '${data.bookType}' (FRTB trading/banking-book boundary; D-FX-BOOK-BOUNDARY)`,
       });
     }
-  }) as z.ZodType<DeskRegisteredPayload>;
+  });
+
+/** The DeskRegistered payload type — derived from the schema (single source). */
+export type DeskRegisteredPayload = z.infer<typeof deskRegisteredPayloadSchema>;
 
 export const DESK_REGISTERED = "DeskRegistered" as const;
 
@@ -290,23 +297,10 @@ export const DESK_REGISTERED = "DeskRegistered" as const;
  * Identity attributes (deskId, deskKind, bookType) are IMMUTABLE — they are not
  * present in `revisedFields` (changing a desk's book or kind is a retire +
  * re-register, never an in-place mutation). Each revised field is optional;
- * present fields overwrite, absent fields are unchanged.
+ * present fields overwrite, absent fields are unchanged. The payload type is
+ * derived from the schema (`z.infer`) below.
  */
-export interface DeskAttributeChangedPayload {
-  readonly deskId: DeskId;
-  readonly revisedFields: {
-    readonly deskName?: string;
-    readonly businessStrategy?: string;
-    readonly deskHeadSeat?: string;
-    readonly reportingLine?: string;
-    readonly riskManagementStructure?: DeskRiskManagementStructure;
-  };
-  readonly revisedAt: Instant;
-  readonly authority: string;
-  readonly citations: readonly string[];
-}
-
-export const deskAttributeChangedPayloadSchema: z.ZodType<DeskAttributeChangedPayload> = z
+export const deskAttributeChangedPayloadSchema = z
   .object({
     deskId: deskIdSchema,
     revisedFields: z
@@ -322,7 +316,10 @@ export const deskAttributeChangedPayloadSchema: z.ZodType<DeskAttributeChangedPa
     authority: z.string().min(1),
     citations: z.array(z.string().min(1)).min(1),
   })
-  .strict() as z.ZodType<DeskAttributeChangedPayload>;
+  .strict();
+
+/** The DeskAttributeChanged payload type — derived from the schema. */
+export type DeskAttributeChangedPayload = z.infer<typeof deskAttributeChangedPayloadSchema>;
 
 export const DESK_ATTRIBUTE_CHANGED = "DeskAttributeChanged" as const;
 
@@ -330,15 +327,7 @@ export const DESK_ATTRIBUTE_CHANGED = "DeskAttributeChanged" as const;
 // DeskRetired payload — retire a desk (status → "retired").
 // ---------------------------------------------------------------------------
 
-export interface DeskRetiredPayload {
-  readonly deskId: DeskId;
-  readonly retiredAt: Instant;
-  readonly reason: string;
-  readonly authority: string;
-  readonly citations: readonly string[];
-}
-
-export const deskRetiredPayloadSchema: z.ZodType<DeskRetiredPayload> = z
+export const deskRetiredPayloadSchema = z
   .object({
     deskId: deskIdSchema,
     retiredAt: instantSchema,
@@ -346,7 +335,10 @@ export const deskRetiredPayloadSchema: z.ZodType<DeskRetiredPayload> = z
     authority: z.string().min(1),
     citations: z.array(z.string().min(1)).min(1),
   })
-  .strict() as z.ZodType<DeskRetiredPayload>;
+  .strict();
+
+/** The DeskRetired payload type — derived from the schema. */
+export type DeskRetiredPayload = z.infer<typeof deskRetiredPayloadSchema>;
 
 export const DESK_RETIRED = "DeskRetired" as const;
 

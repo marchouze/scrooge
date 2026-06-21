@@ -56,6 +56,7 @@ function tradeEvent(tradeId: string): Event {
       trader: "trader:test",
       bookId: "BOOK-FX-MARKETS-LP",
       bookType: "trading",
+      deskId: "urn:desk:trading-desk:trading-desk-1",
       settlementForm: "physical",
       settlementPath: "correspondent",
       finsurvCategory: "ODP-001",
