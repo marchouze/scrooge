@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Outside World Simulator — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    .v2-chip { display:inline-flex; align-items:center; padding:1px 8px; border-radius:10px;
+      font-size:0.78em; font-weight:600; white-space:nowrap; }
+    .v2-chip--green { background:var(--color-success-bg); color:var(--color-success); }
+    .v2-chip--red { background:var(--color-danger-bg, #fde8e8); color:var(--color-danger, #b42318); }
+    .v2-attest { border:1px solid var(--color-border); border-radius:var(--radius-md, 8px);
+      padding:var(--space-4); margin-bottom:var(--space-4); }
+    .v2-attest--green { border-left:4px solid var(--color-success); }
+    .v2-attest--red { border-left:4px solid var(--color-danger, #b42318); }
+    .v2-attest-head { display:flex; align-items:center; gap:var(--space-3); margin-bottom:var(--space-2); }
+    .v2-attest-title { font-weight:700; font-size:1.05em; }
+    .v2-attest-body { color:var(--color-text-secondary); font-size:0.9em; line-height:1.5; }
+    .v2-note { color:var(--color-text-secondary); font-size:0.85em; margin-top:var(--space-2);
+      line-height:1.5; }
+  </style>
+</head>
+<body data-provenance-content="none">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Markets", href: "/v2/markets/index.html" },
+        { label: "World Simulator" },
+      ],
+      title: "Outside World Simulator",
+      seat: "FX V2 simulator-first model",
+    });
+
+    // Section hosts (stable nodes so refreshes repaint in place).
+    const tileHost = document.createElement("div"); main.appendChild(tileHost);
+
+    const secScenario = section("The Simulated Outside World");
+    const scenarioMeta = document.createElement("div"); scenarioMeta.className = "v2-note"; secScenario.appendChild(scenarioMeta);
+    const cpHost = document.createElement("div"); secScenario.appendChild(cpHost);
+    const pathHost = document.createElement("div"); secScenario.appendChild(pathHost);
+
+    const secTimeline = section("EOD Cadence Timeline");
+    const timelineMeta = document.createElement("div"); timelineMeta.className = "v2-note"; secTimeline.appendChild(timelineMeta);
+    const timelineHost = document.createElement("div"); secTimeline.appendChild(timelineHost);
+
+    const secBoundary = section("Simulator ↔ SUT Boundary Attestation");
+    const boundaryHost = document.createElement("div"); secBoundary.appendChild(boundaryHost);
+
+    const secRun = section("Run-Result Summary");
+    const runHost = document.createElement("div"); secRun.appendChild(runHost);
+
+    const refsHost = document.createElement("div"); main.appendChild(refsHost);
+
+    function section(title) {
+      const s = document.createElement("div"); s.className = "v2-section"; main.appendChild(s);
+      const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = title; s.appendChild(h);
+      return s;
+    }
+    function fmt(n) {
+      return n === null || n === undefined ? "—" : Number(n).toLocaleString("en-ZA", { maximumFractionDigits: 2 });
+    }
+
+    function render(data) {
+      const sc = data.scenario, tl = data.eodTimeline, at = data.boundaryAttestation, rr = data.runResult;
+      const asOfEl = document.getElementById("as-of"); if (asOfEl) asOfEl.textContent = data.asOf || "—";
+
+      // Headline tiles.
+      tileHost.innerHTML = "";
+      renderTileGroup(tileHost, { tiles: [
+        { label: "Scenario Days", value: String(sc.dayCount), unit: "Deterministic trading days" },
+        { label: "EOD Boundaries Fired", value: String(tl.boundariesFired), unit: "Cadence ticks" },
+        { label: "Boundary Invariant", value: at.statusLabel.toUpperCase(), unit: at.ok ? "Holds" : "Breach",
+          variant: at.ok ? "success" : "danger" },
+        { label: "FIL Cohort", value: String(rr.filCohortSize), unit: "Instruments materialised" },
+      ]});
+
+      // 1. Scenario.
+      scenarioMeta.innerHTML =
+        `<strong>${v2Esc(sc.scenarioId)}</strong> — seed <code>${v2Esc(sc.seedHex)}</code>, ` +
+        `baseline <code>${v2Esc(sc.baselineInstant)}</code>, EOD ${v2Esc(sc.eodHourUtc)}:00 UTC.` +
+        `<div style="margin-top:6px">${v2Esc(sc.description)}</div>`;
+      cpHost.innerHTML = "<h3 class='v2-section-title' style='font-size:0.95em'>Counterparties</h3>";
+      renderTable(cpHost, {
+        columns: ["Counterparty", "BIC", "Pairs", "Behaviour", "Agreement", "CSA"],
+        rows: sc.counterparties.map((c) => ({ cells: [
+          v2Esc(c.counterpartyId), v2Esc(c.bic), v2Esc((c.eligiblePairs || []).join(", ")),
+          v2Esc(c.behaviourProfile), v2Esc(c.agreementType || "—"),
+          c.csaInScope ? "in scope" : "—",
+        ]})),
+        emptyMsg: "No counterparties provisioned in the manifest.",
+      });
+      pathHost.innerHTML = "<h3 class='v2-section-title' style='font-size:0.95em'>Market-Observation Path</h3>";
+      renderTable(pathHost, {
+        columns: ["Date", "Pair", "Spot Mid", "Fwd Points"],
+        rows: sc.marketPath.map((o) => ({ cells: [
+          v2Esc(o.date), v2Esc(o.pair), fmt(o.spotMid), o.forwardPoints === null ? "—" : fmt(o.forwardPoints),
+        ]})),
+        emptyMsg: "No market observations declared.",
+      });
+
+      // 2. EOD timeline.
+      timelineMeta.innerHTML =
+        `Final clock instant <code>${v2Esc(tl.finalInstant)}</code>. ` +
+        `Registered SUT cadence hooks: ${tl.hookIds.length ? tl.hookIds.map((h) => `<code>${v2Esc(h)}</code>`).join(", ") : "none (no-op spine)"}.`;
+      timelineHost.innerHTML = "";
+      renderTable(timelineHost, {
+        columns: ["Boundary #", "Report Date", "Boundary Instant", "Hook", "Priority"],
+        rows: tl.rows.map((r) => ({ cells: [
+          String(r.boundaryIndex), v2Esc(r.reportDate), v2Esc(r.boundaryInstant),
+          `<code>${v2Esc(r.hookId)}</code>`, String(r.priority),
+        ]})),
+        emptyMsg: "No cadence hooks fired (the Phase-0 spine registers none by default).",
+      });
+
+      // 3. Boundary attestation (load-bearing).
+      boundaryHost.innerHTML = "";
+      const card = document.createElement("div");
+      card.className = `v2-attest v2-attest--${at.statusLabel}`;
+      const chip = `<span class="v2-chip v2-chip--${at.statusLabel}">${at.ok ? "● GREEN — invariant holds" : "✕ RED — boundary breach"}</span>`;
+      card.innerHTML =
+        `<div class="v2-attest-head">${chip}` +
+        `<span class="v2-attest-title">recon:fx-v2-sim-boundary</span></div>` +
+        `<div class="v2-attest-body">${v2Esc(at.invariant)}</div>` +
+        `<div class="v2-note">${at.asserted} assertion(s) scanned across the simulator source tree; ` +
+        `${at.failCount} fail(s).</div>`;
+      boundaryHost.appendChild(card);
+      if (at.violations && at.violations.length) {
+        renderTable(boundaryHost, {
+          columns: ["Severity", "Subject", "Message"],
+          rows: at.violations.map((v) => ({ cells: [v2Esc(v.severity), v2Esc(v.subject), v2Esc(v.message)] })),
+        });
+      }
+
+      // 4. Run result.
+      runHost.innerHTML = "";
+      renderTable(runHost, {
+        columns: ["Measure", "Value"],
+        rows: [
+          ["Trades generated (booked FX FIL)", String(rr.tradesGenerated)],
+          ["FIL cohort size", String(rr.filCohortSize)],
+          ["Cash legs materialised", String(rr.cashLegsMaterialised)],
+          ["FX instruments terminated (settled)", String(rr.fxTerminated)],
+          ["Settlement failures (fail-then-retry)", String(rr.settlementFailures)],
+          [`Day-1 cohort daily P&L (${rr.reporting})`, fmt(rr.dailyPnlReporting)],
+          [`Cohort VaR (${rr.reporting}) [status: ${v2Esc(rr.varStatus)}]`, fmt(rr.varReporting)],
+          [`Cohort SVaR (${rr.reporting})`, fmt(rr.svarReporting)],
+          [`Cohort ES (${rr.reporting})`, fmt(rr.esReporting)],
+          ["Day-1 SA-CCR EAD (minor units)", fmt(rr.saccrEadMinor)],
+          ["Day-1 SA-CCR RC (minor units)", fmt(rr.saccrRcMinor)],
+        ].map((r) => ({ cells: [v2Esc(r[0]), `<strong>${v2Esc(r[1])}</strong>`] })),
+      });
+
+      // References + deferred-gap note.
+      refsHost.innerHTML = "";
+      const gap = document.createElement("div"); gap.className = "v2-note";
+      gap.innerHTML = `<strong>Read-only (v1).</strong> ${v2Esc(data.deferredGap)}`;
+      refsHost.appendChild(gap);
+      renderRefs(refsHost, { refs: [
+        { label: "FX desk owner: " + v2Esc(data.deskOwnerSeatTitle), href: "#" },
+        { label: "platform/simulation-v2 — scenario runner + EOD bus", href: "#" },
+        { label: "recon:fx-v2-sim-boundary — the binding invariant", href: "#" },
+        { label: "D-FX-V2-SIMULATOR-FIRST", href: "#" },
+      ]});
+    }
+
+    async function load() {
+      let data;
+      try { data = await v2Fetch("/api/v2/markets/world-simulator"); }
+      catch (e) { v2RenderError(secRun, String(e.message || e)); return; }
+      render(data);
+    }
+
+    // Wire the provenance toggle + initial load.
+    v2WireLoader(load);
+    // The page shows live run state — refresh periodically and on tab focus so the
+    // operator view never goes stale (golden-source-stale-pages idiom).
+    setInterval(load, 60_000);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") load();
+    });
+  </script>
+</body>
+</html>
