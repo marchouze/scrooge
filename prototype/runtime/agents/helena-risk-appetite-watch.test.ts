@@ -96,6 +96,7 @@ function seedLiveFxTrade(store: EventStore): void {
         trader: "helena-gap-test@bank.local",
         bookId: "BOOK-FX-HELENA-GAP",
         bookType: "trading",
+        deskId: "urn:desk:trading-desk:trading-desk-1",
         settlementForm: "physical",
         settlementPath: "correspondent",
         finsurvCategory: "ODP-001-cross-border-institutional",

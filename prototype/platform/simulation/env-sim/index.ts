@@ -15,6 +15,7 @@
 
 import { randomUUID } from "node:crypto";
 
+import type { DeskId } from "../../../v2-core/desk";
 import { nowUtc } from "../../core/types";
 import type { EventStore } from "../../event-store/store";
 import { MarketDataStore, lookupQuoteWithInverse } from "../../market-data/store";
@@ -47,6 +48,13 @@ export interface EnvSimOptions {
   maxIntervalMs?: number;
   /** Trading book identifier. Default "BK-FX-MM-SIM-001". */
   bookId?: string;
+  /**
+   * FRTB desk the simulated trades book to. Defaults to Trading Desk 1 (via
+   * `generateSimTrade`'s `DEFAULT_SIM_DESK_ID`). Constrained to trading-book
+   * desks — the sim generates trading-book positions. Authority:
+   * D-FRTB-TRADING-DESK-STRUCTURE.
+   */
+  deskId?: DeskId;
   /** Seed for the PRNG — enables deterministic replay. */
   seed?: number;
   /** Per-counterparty behavior profiles. Defaults to ALWAYS_SETTLE for all. */
@@ -196,6 +204,7 @@ export class EnvSimEngine {
     provenance: "simulated" | "production";
     notionalUsdMin?: number;
     notionalUsdMax?: number;
+    deskId?: DeskId;
     seed?: number;
     counterpartyProfiles?: CounterpartyBehaviorProfile[];
     getCounterparties?: () => SimCounterparty[];
@@ -241,6 +250,7 @@ export class EnvSimEngine {
         ? { getCounterparties: options.getCounterparties }
         : {}),
       ...(options?.executeFxTrade !== undefined ? { executeFxTrade: options.executeFxTrade } : {}),
+      ...(options?.deskId !== undefined ? { deskId: options.deskId } : {}),
     };
 
     // Seeded PRNG or Math.random.
@@ -574,6 +584,7 @@ export class EnvSimEngine {
         : {}),
       ...(opts?.forcedSide ? { forcedSide: opts.forcedSide } : {}),
       ...(opts?.eligiblePairsFilter ? { eligiblePairsFilter: opts.eligiblePairsFilter } : {}),
+      ...(this.opts.deskId !== undefined ? { deskId: this.opts.deskId } : {}),
     });
     const asOf = nowUtc();
     const cp = counterparties.find((c) => c.partyId === payload.counterparty.partyId);

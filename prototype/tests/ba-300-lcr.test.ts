@@ -828,6 +828,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — denominator caps and floors (P1-fix
           trader: "trader:test",
           bookId: "FX-BOOK",
           bookType: "trading",
+          deskId: "urn:desk:trading-desk:trading-desk-1",
           settlementForm: "physical",
           settlementPath: "correspondent",
           clientFlowRef: "cf:RATE-LCR-1",

@@ -50,6 +50,7 @@
 
 import { z } from "zod";
 
+import { canonicalDeskBookType, deskIdStringSchema } from "../../../v2-core/desk";
 import { newEventId } from "../../core/types";
 import { type Actor, type Event, eventSchema } from "../../event-store/types";
 import {
@@ -200,6 +201,18 @@ export const fxTradeExecutedPayloadSchema = z
      * dispatch reads it; Camille's capital reporting reads it.
      */
     bookType: bookTypeSchema,
+    /**
+     * FRTB desk allocation — the registered desk this trade books to.
+     * REQUIRED (FRTB MAR12 desk-definition + boundary integrity per
+     * D-FRTB-TRADING-DESK-STRUCTURE). A `DeskId` URN
+     * (`urn:desk:<kind>:<slug>`). The refinement below enforces the
+     * trading/banking-book boundary: the desk's `bookType` must match this
+     * trade's `bookType` (a trading-book trade may only book to a trading-book
+     * desk). The desk must resolve to a registered canonical desk; the
+     * `recon:frtb-desk-integrity` gate is the runtime audit that every
+     * persisted trade's deskId resolves to the event-sourced desk register.
+     */
+    deskId: deskIdStringSchema,
     /**
      * Settlement-form discriminator. Spot/Forward/Swap → "physical";
      * NDF → "cash" (single-currency settlement against fixing).
@@ -442,6 +455,35 @@ export const fxTradeExecutedPayloadSchema = z
           message: `side '${data.side}' requires receiveCurrency '${expectedReceive}', got '${leg.receiveCurrency}'`,
         });
       }
+    }
+
+    // -----------------------------------------------------------------
+    // FRTB desk boundary-integrity invariant (D-FRTB-TRADING-DESK-STRUCTURE).
+    //
+    // The trade's `deskId` must resolve to a REGISTERED canonical desk, and
+    // that desk's `bookType` must MATCH the trade's `bookType`. This is the
+    // FRTB trading/banking-book boundary expressed at the type level: a
+    // trading-book trade may only book to a trading-book desk; a
+    // banking-treasury trade may only book to a banking-book (treasury) desk.
+    //
+    // The resolution is against the v2-core canonical desk roster (the same
+    // typed data the ci:migrate seed emits as DeskRegistered events), so the
+    // check is store-free and replay-safe. The event-sourced desk register
+    // remains the runtime authority that `recon:frtb-desk-integrity` reads.
+    // -----------------------------------------------------------------
+    const deskBookType = canonicalDeskBookType(data.deskId);
+    if (deskBookType === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["deskId"],
+        message: `deskId '${data.deskId}' does not resolve to a registered desk (FRTB; D-FRTB-TRADING-DESK-STRUCTURE)`,
+      });
+    } else if (deskBookType !== data.bookType) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["deskId"],
+        message: `FRTB boundary integrity: a '${data.bookType}'-book trade cannot book to desk '${data.deskId}' (a '${deskBookType}'-book desk). The desk's bookType must match the trade's bookType (D-FRTB-TRADING-DESK-STRUCTURE; D-FX-BOOK-BOUNDARY).`,
+      });
     }
 
     // -----------------------------------------------------------------

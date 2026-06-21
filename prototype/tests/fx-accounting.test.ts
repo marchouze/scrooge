@@ -92,6 +92,7 @@ const BASE_TRADE_PAYLOAD = {
   trader: "TRADER-01",
   bookId: "FX-TRADING-BOOK",
   bookType: "trading" as const,
+  deskId: "urn:desk:trading-desk:trading-desk-1",
   settlementForm: "physical" as const,
   settlementPath: "correspondent" as const,
   // No-prop attribution (G-3) — fixtures default to client-flow.
@@ -632,6 +633,7 @@ describe("unrealisedPnlCalculator", () => {
       trader: "TRADER-01",
       bookId: "FX-TRADING-BOOK",
       bookType: "trading" as const,
+      deskId: "urn:desk:trading-desk:trading-desk-1",
       settlementForm: "physical" as const,
       settlementPath: "correspondent" as const,
       clientFlowRef: "client-trade:slice-2-regression",

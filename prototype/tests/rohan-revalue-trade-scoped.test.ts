@@ -48,6 +48,7 @@ function tradePayload(tradeId: string): FxTradeExecutedPayload {
       currencyPair: { base: "USD", quote: "ZAR" },
       side: "buy",
       bookType: "trading",
+      deskId: "urn:desk:trading-desk:trading-desk-1",
       venue: "OTC",
       trader: "rohan@bank.local",
       tradeDate: { iso: AS_OF.slice(0, 10), calendar: "JIHCAL" },

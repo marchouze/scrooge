@@ -59,6 +59,7 @@ const TRADE_FIXTURE: FxTradeExecutedPayload = {
   trader: "trader@bank.local",
   bookId: "BOOK-FX-001",
   bookType: "trading",
+  deskId: "urn:desk:trading-desk:trading-desk-1",
   settlementForm: "physical",
   settlementPath: "correspondent",
   finsurvCategory: "TEST",

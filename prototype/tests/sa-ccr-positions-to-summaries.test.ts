@@ -64,6 +64,7 @@ function appendFx(
         trader: "trader:test",
         bookId: "FX-BOOK",
         bookType: "trading",
+        deskId: "urn:desk:trading-desk:trading-desk-1",
         settlementForm: "physical",
         settlementPath: "correspondent",
         clientFlowRef: `cf:${opts.tradeId}`,

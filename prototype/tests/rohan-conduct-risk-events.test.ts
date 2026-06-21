@@ -113,6 +113,10 @@ function makeTestFxSpotTrade(opts: {
       trader: "trader-001",
       bookId: "FX-TRADING",
       bookType: opts.bookType ?? "trading",
+      deskId:
+        (opts.bookType ?? "trading") === "banking-treasury"
+          ? "urn:desk:treasury-desk:treasury-desk-1"
+          : "urn:desk:trading-desk:trading-desk-1",
       settlementForm: "physical",
       settlementPath: "correspondent",
       // No-prop attribution (G-3) — fixtures default to client-flow.

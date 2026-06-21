@@ -174,6 +174,7 @@ function seedExistingAudPosition(store: EventStore): void {
         trader: "trader:test",
         bookId: "FX-SPOT-BOOK",
         bookType: "trading",
+        deskId: "urn:desk:trading-desk:trading-desk-1",
         settlementForm: "physical",
         settlementPath: "correspondent",
         finsurvCategory: "ODP-001",
