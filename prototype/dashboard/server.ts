@@ -332,6 +332,7 @@ import {
   buildV2FxSurfaceView,
   buildV2FxVarView,
 } from "./v2-markets-fx-view";
+import { buildV2WorldSimulatorView } from "./v2-world-simulator-view";
 import {
   buildV2ObligationDetailView,
   buildV2ObligationsView,
@@ -5682,6 +5683,21 @@ const server = Bun.serve({
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       return jsonResponse({
         ...buildV2FxSurfaceView(eventStore, marketDataStore, nowUtc()),
+        pageProvenance: filter,
+      });
+    }
+    // Outside-World Simulator (WS-FX-V2-SIMULATOR-FIRST). Read-surface onto the FX
+    // V2 simulator-first model (platform/simulation-v2/): replays the canonical
+    // deterministic Phase-1 USD/ZAR scenario and surfaces the active manifest, the
+    // EOD cadence-hook timeline, the load-bearing simulator↔SUT boundary attestation
+    // (recon:fx-v2-sim-boundary), and the run-result figures (trades / FIL cohort /
+    // MtM / VaR / SA-CCR). Name-free DTOs (seat Titles only). Read-only — control
+    // actions are a v1.1 deferral (surfaced as a tracked deferred gap, not built).
+    // Authority: D-FX-V2-SIMULATOR-FIRST (CEO-approved 2026-06-20).
+    if (req.method === "GET" && url.pathname === "/api/v2/markets/world-simulator") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildV2WorldSimulatorView(nowUtc()),
         pageProvenance: filter,
       });
     }

@@ -44,6 +44,7 @@ const NAV = [
       { label: "Overview", href: "/v2/markets/index.html" },
       { label: "FIL Positions", href: "/v2/markets/positions.html" },
       { label: "FX Positions", href: "/v2/markets/fx.html" },
+      { label: "World Simulator", href: "/v2/markets/world-simulator.html" },
     ],
   },
   {
