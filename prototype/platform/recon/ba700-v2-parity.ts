@@ -202,11 +202,19 @@ export function run(): ReconResult {
     severity: "warn",
   });
 
-  // (5) Advisory gap — credit RWA structural partial at Phase 3e.
+  // (5) Advisory gap — RWA decomposition coverage at Phase 3e.
+  //
+  // GAP-3E-002 (market RWA) is now CLOSED: computeBA700V2 wires market RWA =
+  // 12.5 × the BA-320 V2 FX open-position charge (reused from computeBA320V2),
+  // fail-closed when the charge is null (marketRwaAvailable=false). On the clean
+  // store there is no open FX book, so the charge is null and market RWA is
+  // legitimately excluded — the wiring, not a non-zero figure, is what closed the
+  // gap. Credit RWA stays an EAD-sum proxy; operational RWA (GAP-3E-003) is still
+  // open (no V2 op-risk event type).
   result.asserted += 1;
   violations.push({
     subject: "ba700-v2-parity:gap:phase-3e-rwa-coverage",
-    message: `ADVISORY GAP (Phase 3e): V2 RWA is credit-RWA-only (from CcrEadComputed V2 events). Market RWA (12.5 × BA-320 FX capital charge) is GAP-3E-002 (no V2 VaR event). Operational RWA is GAP-3E-003 (no V2 op-risk event). V1 totalRwa=${v1Rwa} V2 creditRwa=${v2CreditRwa} (V2 creditRwa uses EAD sum as proxy, not CRE20-weighted — conservative overstatement). Coverage status: ${v2CoverageStatus}. TO RESOLVE: (a) wire BA-320 V2 → marketRwa in BA-700 V2 once flip approved; (b) build V2 op-risk event type. Authority: D-V1-REMOVAL-PHASE-3E.`,
+    message: `ADVISORY GAP (Phase 3e): V2 RWA decomposition — credit RWA from CcrEadComputed V2 events (EAD-sum proxy, not CRE20-weighted — conservative overstatement); market RWA = 12.5 × BA-320 V2 FX charge (GAP-3E-002 CLOSED by D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING — wired from computeBA320V2, fail-closed when the charge is null, marketRwaAvailable flag on meta); operational RWA still GAP-3E-003 (no V2 op-risk event). V1 totalRwa=${v1Rwa} V2 creditRwa=${v2CreditRwa}. Coverage status: ${v2CoverageStatus}. REMAINING: build a V2 op-risk event type for operational RWA. Authority: D-V1-REMOVAL-PHASE-3E; D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING.`,
     severity: "warn",
   });
 

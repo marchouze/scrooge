@@ -344,6 +344,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // foreign leg and reconciles those sums to the headline total. Not a production
   // access path. T-01 carve-out. F-031.
   "platform/product-control/daily-pnl-v2.test.ts",
+  // D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING — GAP-3E-002 closure proof:
+  // computeBA700V2 wires market RWA = 12.5 × the BA-320 V2 FX charge. Same
+  // build-phase fixture pattern as daily-pnl-v2 above: raw EventStore(":memory:")
+  // seeds production FIL FX instruments, then asserts the BA-700 market-RWA term
+  // equals 12.5 × the BA-320 charge (rate present) and is EXCLUDED-with-flag /
+  // fail-closed (charge null). Not a production access path. T-01 carve-out. F-031.
+  "platform/projections/ba700-v2-market-rwa.test.ts",
   // WS-V2-AUTHORITATIVE S6 — dashboard-shaped V2 ALM-position-snapshot projection
   // unit test. Same build-phase fixture pattern as the V2 GL tests above: raw
   // EventStore(":memory:") seeds V1 / V2 money-market lifecycle events and asserts

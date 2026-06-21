@@ -167,7 +167,7 @@ The `recon:ba320-fx-v2-parity` gate:
 | Gap ID | Description | Resolution path |
 |---|---|---|
 | GAP-3E-001 | No V2 capital GL posting rules (CET1/T2 accounts never hit by GlPostingEmitted) | Phase 3f: build V2 capital posting rules; emit GlPostingEmitted on CapitalContributionRecorded equivalents |
-| GAP-3E-002 | Market RWA leg (12.5 × BA-320 capital charge) has no V2 event source | Phase 3e BA-320 V2 feeds here once the flip is approved |
+| ~~GAP-3E-002~~ RESOLVED | Market RWA leg (12.5 × BA-320 capital charge). **CLOSED 2026-06-21** (`D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING`): `computeBA700V2` now reuses `computeBA320V2` and populates `marketRwa = 12.5 × openPositionChargeMinor` (Reg 38 / BCBS §50–§90: RWA = 12.5 × capital charge), summed into `totalRwa` alongside credit RWA. Fail-closed when the BA-320 charge is `null` (no production FX rate): `marketRwa` is excluded (not zero-coerced), `sources.marketRwa = "none"`, and a `marketRwaAvailable: false` flag is surfaced. | RESOLVED — BA-320 V2 FX charge fed into BA-700 V2 market RWA |
 | GAP-3E-003 | Operational RWA leg — no V2 event type yet | Separate workstream; gross-income-blocked placeholder |
 | GAP-3E-004 | Balance sheet / income statement — only FX accounts have GlPostingEmitted | Phase 3 completion: all 42 posting rules on V2 |
 | GAP-3E-005 | FX rate data (ZAR conversion) for BA-320 V2 — no V2 rate-feed event | Separate rate-feed workstream |
