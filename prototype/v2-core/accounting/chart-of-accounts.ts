@@ -665,6 +665,47 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     capitalTier: "cet1",
     capitalSubCategory: "cet1.retained-earnings",
   },
+  // ACC-5000-003 — CET1 Share Premium (D-CAPITAL-ASSET-CLASS-V1). The premium
+  // over par on paid-up ordinary shares; a CET1 component per BCBS CAP (definition
+  // of capital) / Reg 38(8). Equity, credit, ZAR presentation.
+  {
+    id: "ACC-5000-003",
+    name: "Share Premium",
+    category: "equity",
+    currency: "ZAR",
+    side: "credit",
+    capitalTier: "cet1",
+    capitalSubCategory: "cet1.share-premium",
+  },
+  // ACC-5000-004 — CET1 Accumulated OCI reserve (D-CAPITAL-ASSET-CLASS-V1). The
+  // accumulated other-comprehensive-income reserve that qualifies as CET1 per
+  // BCBS CAP / Reg 38(8) (distinct from the FX-FVOCI trading OCI reserve
+  // ACC-2100-008 and the equities-FVOCI reserve ACC-3200-004, which are
+  // instrument-specific). Equity, credit, ZAR presentation.
+  {
+    id: "ACC-5000-004",
+    name: "Accumulated OCI Reserve — CET1",
+    category: "equity",
+    currency: "ZAR",
+    side: "credit",
+    capitalTier: "cet1",
+    capitalSubCategory: "cet1.oci-reserve",
+  },
+  // ACC-5050-001 — AT1 Additional Tier 1 instruments (D-CAPITAL-ASSET-CLASS-V1).
+  // Perpetual non-cumulative instruments with going-concern loss-absorbency
+  // triggers (BCBS CAP). When liability-classified per IAS 32 §16 they sit as a
+  // financial liability at amortised cost (IFRS 9 §4.2.1); when the bank has an
+  // unconditional right to avoid coupons + redemption they are equity. Carried
+  // as `liability-at1-capital`, credit, ZAR presentation, capitalTier `at1`.
+  {
+    id: "ACC-5050-001",
+    name: "Additional Tier 1 Instruments (Perpetual Non-Cumulative)",
+    category: "liability-at1-capital",
+    currency: "ZAR",
+    side: "credit",
+    capitalTier: "at1",
+    capitalSubCategory: "at1.perpetual-noncumulative",
+  },
 
   // 5100 — Repo (secured borrowing) sub-ledger
   {

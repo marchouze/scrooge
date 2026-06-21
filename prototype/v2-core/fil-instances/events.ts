@@ -66,9 +66,93 @@ export const filSaCcrAssetClassSchema = z.enum([
   "credit",
   "equity",
   "commodity",
+  // `capital` — the bank's OWN qualifying regulatory capital (D-CAPITAL-ASSET-
+  // CLASS-V1). NOT itself an SA-CCR derivative exposure; it is the own-funds
+  // instrument-of-record that sources the BA-700 / BA-100 capital numerator. It
+  // is admitted into the FIL economic-terms asset-class union so a capital FIL
+  // instance is a real, event-sourced instrument carrying its qualifying-capital
+  // tier (read by the capital-composition fold), exactly as `cash` is admitted as
+  // the post-settlement member without being an SA-CCR derivative.
+  "capital",
 ]);
 
 export type FilSaCcrAssetClass = z.infer<typeof filSaCcrAssetClassSchema>;
+
+// ---------------------------------------------------------------------------
+// Qualifying-capital dimension (D-CAPITAL-ASSET-CLASS-V1). A `capital`
+// asset-class FIL instance carries the typed regulatory-capital tier the BA-700 /
+// BA-100 composition fold sums on. The tier vocabulary is the Basel III / Reg 38
+// three-tier partition (CET1 / AT1 / Tier 2); the sub-category names the specific
+// own-funds component (paid-up ordinary shares, share premium, retained earnings,
+// AT1 perpetual non-cumulative, Tier 2 subordinated debt, etc.).
+//
+// The tier values are byte-identical to `v2-core/accounting/chart-of-accounts.ts`
+// `CoaCapitalTier` (`"cet1" | "at1" | "t2"`); re-declared here (not imported) to
+// keep the event grammar self-contained, exactly as `filSaCcrAssetClassSchema`
+// re-declares the SA-CCR asset-class subset. The composition fold cross-checks the
+// instance tier against the CoA `capitalTier` of the resolved equity/liability
+// account, so the two stay consistent (the recon gate fails closed on drift).
+//
+// SOURCE (Charter cmd 4 — source, don't hardcode): the tier partition is
+// Reg 38(8) / BCBS RBC20.2 + CAP; the sub-categories are the CAP definition-of-
+// capital components. Citations are carried on the Capital FIL model declaration
+// and the posting rules, NOT magic numbers here — this is the typed vocabulary.
+// ---------------------------------------------------------------------------
+
+/** Basel III / Reg 38(8) qualifying-capital tier (aligned with CoaCapitalTier). */
+export const filCapitalTierSchema = z.enum(["cet1", "at1", "t2"]);
+
+export type FilCapitalTier = z.infer<typeof filCapitalTierSchema>;
+
+/**
+ * The own-funds sub-category — the specific CAP capital component within a tier.
+ * A closed set so the composition fold can render BA-100 capital lines and the
+ * recon gate can assert tier↔sub-category coherence (a `cet1.*` sub-category may
+ * only sit under tier `cet1`, etc.). Fail-closed: an unknown sub-category is
+ * rejected at parse, never silently bucketed.
+ */
+export const filCapitalSubCategorySchema = z.enum([
+  // CET1 components (BCBS CAP; Reg 38(8); Banks Act §70 — paid-up share capital).
+  "cet1.paid-up-ordinary-shares",
+  "cet1.share-premium",
+  "cet1.retained-earnings",
+  "cet1.oci-reserve",
+  // AT1 components (BCBS CAP — perpetual, non-cumulative, going-concern triggers).
+  "at1.perpetual-noncumulative",
+  // Tier 2 components (BCBS CAP — subordinated debt ≥5yr; qualifying provisions).
+  "t2.subordinated-debt",
+  "t2.qualifying-general-provisions",
+]);
+
+export type FilCapitalSubCategory = z.infer<typeof filCapitalSubCategorySchema>;
+
+/**
+ * The qualifying-capital dimension carried on a `capital` FIL instance's economic
+ * terms. The tier is the composition axis; the sub-category names the CAP
+ * component. The composition fold buckets the instrument by `tier`; the BA-100
+ * line render keys on `subCategory`.
+ */
+export const filQualifyingCapitalSchema = z.object({
+  /** The regulatory-capital tier (CET1 / AT1 / Tier 2). */
+  tier: filCapitalTierSchema,
+  /** The specific own-funds component within the tier (CAP definition of capital). */
+  subCategory: filCapitalSubCategorySchema,
+});
+
+export type FilQualifyingCapital = z.infer<typeof filQualifyingCapitalSchema>;
+
+/**
+ * Tier↔sub-category coherence — `true` iff `subCategory` belongs to `tier` (the
+ * sub-category string is prefixed with the tier). Pure, fail-closed-friendly:
+ * the recon gate + the posting rules call this so a `cet1` instrument tagged
+ * `t2.subordinated-debt` is caught, never silently summed into the wrong tier.
+ */
+export function capitalSubCategoryMatchesTier(
+  tier: FilCapitalTier,
+  subCategory: FilCapitalSubCategory,
+): boolean {
+  return subCategory.startsWith(`${tier}.`);
+}
 
 // ---------------------------------------------------------------------------
 // A reference to the canonical v1 event of record that this lifecycle event
@@ -140,6 +224,16 @@ export const filEconomicTermsSchema = z.object({
    * documented fail-closed path, so existing events parse unchanged (replay-safe).
    */
   productId: z.string().min(1).optional(),
+  /**
+   * Qualifying-capital dimension (D-CAPITAL-ASSET-CLASS-V1). Carried on a
+   * `capital` asset-class FIL instance — the typed regulatory-capital tier +
+   * own-funds sub-category the BA-700 / BA-100 capital-composition fold sums on.
+   * OPTIONAL + additive: only `capital` instances carry it; every existing
+   * (ir/fx/cash/…) instance parses unchanged (replay-safe — Charter cmd 9). The
+   * capital-materialisation recon gate fails closed on a `capital` instance that
+   * lacks this block (no silent default — Charter cmd 2).
+   */
+  qualifyingCapital: filQualifyingCapitalSchema.optional(),
 });
 
 export type FilEconomicTerms = z.infer<typeof filEconomicTermsSchema>;

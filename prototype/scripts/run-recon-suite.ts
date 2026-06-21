@@ -216,6 +216,15 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // instance under a cash-materialising NPA has a matching cash instance (the
     // settlement path ran the product rule). Authority: D-CASH-ASSET-CLASS-V1.
     "recon:cash-materialisation-integrity",
+    // Capital FIL asset-class fail-closed gate (D-CAPITAL-ASSET-CLASS-V1): every
+    // `capital` FIL instance carries a valid typed qualifying-capital tier
+    // (CET1/AT1/T2) + a tier-coherent sub-category + an originating back-ref (no
+    // orphan); no own-funds leg lands in a suspense account; the composition tier
+    // rollups (Tier 1 = CET1+AT1, Total = Tier1+T2) are internally consistent.
+    // Non-vacuous on the anchor store (the R300m injection sim → one CET1 instance,
+    // emitted by ci:migrate's capital:emit-injection-v2-sim). Authority:
+    // D-CAPITAL-ASSET-CLASS-V1; Reg 38; Banks Act §70; BCBS CAP/RBC.
+    "recon:capital-materialisation-integrity",
     // WS-CASH-ASSET-CLASS fail-closed gate (D-CASH-ASSET-CLASS-V1): ties
     // FX-settlement GL cash recognition to the Cash FIL instrument-of-record —
     // the sub-ledger cash leg (PR-FX-PRIN: received → Dr nostro, paid → Cr

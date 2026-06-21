@@ -8,12 +8,13 @@
 //
 // ## V2 data sources at Phase 3e
 //
-//   Capital numerator: `GlPostingEmitted` (v2-parallel, Phase 3A) for capital-
-//     classified accounts. At Phase 3e, only FX posting rules (PR-FX-001-V2,
-//     PR-FX-REVAL-V2, PR-FX-CLOSE-V2) emit GlPostingEmitted. The capital accounts
-//     (ACC-5000-001/002, ACC-5200-001/002) are NOT FX accounts, so V2 capital
-//     will be zero on all stores until capital-GL posting rules are built.
-//     → `capitalV2Source: "gl-posting-v2"` (structural partial).
+//   Capital numerator: the OWN-FUNDS COMPOSITION folded from the `capital`
+//     asset-class FIL instance lifecycle events (D-CAPITAL-ASSET-CLASS-V1) via
+//     `ba700-capital-composition.ts` — a PURE FOLD over the Capital posting rules,
+//     NOT a stored `GlPostingEmitted`. This RESOLVES the former GAP-3E-001 (the
+//     capital numerator folded to zero because no capital GL rules existed); the
+//     numerator is now derived fold-native from the capital instruments-of-record
+//     (CET1 / AT1 / Tier 2). → `capital: "capital-fil-composition"`.
 //
 //   RWA denominator: `CcrEadComputed` (v2-parallel) — SA-CCR EAD in MoneyWire.
 //     Summed across all netting sets → credit RWA proxy.
@@ -36,14 +37,12 @@
 // Citations: BCBS Basel III §50–§90; Reg 38; Banks Act 94 §70; P1-EVENTS-AS-TRUTH.
 // Author: Atlas (Substrate Architect, engineering).
 
-import { coaToCapitalClassifications } from "../accounting/coa-registry";
-import { amountToMinorUnits } from "../core/decimal-money";
-import { legAmountMoney } from "../core/money-codec";
 import { minorFromMoneyWire } from "../core/money-codec";
 import { normalizeCcrEadPayload } from "../event-store/event-types/counterparty-credit-risk";
 import type { EventStore } from "../event-store/store";
 import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import type { BA700Return } from "../returns/ba700/generator";
+import { computeCapitalComposition } from "./ba700-capital-composition";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "./filter";
 
 // ---------------------------------------------------------------------------
@@ -71,7 +70,7 @@ export interface BA700ReturnV2 {
     readonly coverageStatus: "partial" | "no-data";
     /** Source labels for each component. */
     readonly sources: {
-      readonly capital: "gl-posting-v2" | "none";
+      readonly capital: "capital-fil-composition" | "none";
       readonly rwa: "ccr-ead-v2-credit-only" | "none";
     };
   };
@@ -153,88 +152,50 @@ export function computeBA700V2(args: ComputeBA700V2Args): BA700ReturnV2 {
   const gaps: string[] = [];
 
   // -------------------------------------------------------------------------
-  // Step 1: Fold GlPostingEmitted for capital-classified accounts.
+  // Step 1: Fold the OWN-FUNDS COMPOSITION from the capital FIL events.
   //
-  // Capital-classified accounts from the canonical COA (coaToCapitalClassifications):
-  //   CET1: ACC-5000-001 (Share Capital), ACC-5000-002 (Retained Earnings)
-  //   T2:   ACC-5200-001 (Subordinated Debt), ACC-5200-002 (General Provisions)
+  // CAPITAL FIL ASSET CLASS (D-CAPITAL-ASSET-CLASS-V1): the capital numerator is
+  // now sourced from the `capital` asset-class FIL instance lifecycle events
+  // (FilInstrumentCreated / FilInstrumentAmended / FilInstrumentTerminated) via
+  // the PURE FOLD in `ba700-capital-composition.ts` (the lifted Capital posting
+  // rules), NOT from a stored `GlPostingEmitted` for capital accounts. This is
+  // what RESOLVES the former GAP-3E-001: the capital numerator folded to zero
+  // because no capital GL posting rules existed; now the composition is derived
+  // fold-native from the capital own-funds instruments-of-record.
   //
-  // At Phase 3e scope: only FX posting rules (PR-FX-001-V2, PR-FX-REVAL-V2,
-  // PR-FX-CLOSE-V2) emit GlPostingEmitted. These post to FX nostro accounts
-  // (e.g. ACC-1100-*), NOT to capital accounts — so the capital-account fold
-  // will produce zero. This is expected; the parity gate surfaces it as an
-  // advisory gap (GAP-3E-001).
+  // The composition is reported in the entity's functional currency; cross-
+  // currency own funds are a licence-day refinement (tracked below).
   //
-  // Authority: D-V1-REMOVAL-PHASE-3A (GlPostingEmitted; v2-parallel).
+  // Authority: D-CAPITAL-ASSET-CLASS-V1; D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD;
+  //   Reg 38(8); Banks Act §70; BCBS RBC20.2; D5/2025 §2.1.3 (form BA 100).
   // -------------------------------------------------------------------------
 
-  const classifications = coaToCapitalClassifications();
-  const capitalAccountIds = new Set(classifications.map((c) => c.leafAccountId));
-
-  // Per-(accountId, currency) signed balance in minor units.
-  // Sign convention: debit = positive, credit = negative (GL convention).
-  const capitalBalances = new Map<string, number>();
-
-  for (const ev of args.eventStore.replay({
+  const composition = computeCapitalComposition({
+    eventStore: args.eventStore,
     entity,
-    type: "GlPostingEmitted",
     asOf: args.asOf,
-  })) {
-    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+    functionalCurrency,
+  });
 
-    // GlPostingEmitted payload shape (from gl-projection-v2.ts GlLeg interface):
-    //   { accountCode, creditDebit, amount: MoneyWire, postingDate }
-    const leg = ev.payload as {
-      accountCode?: string;
-      creditDebit?: "credit" | "debit";
-      amount?: { currency?: string; amount?: string };
-      postingDate?: string;
-    };
-
-    const accountCode = leg.accountCode;
-    const ccy = leg.amount?.currency;
-    if (!accountCode || !ccy) continue;
-    if (!capitalAccountIds.has(accountCode)) continue;
-    if (ccy !== functionalCurrency) continue; // multi-currency capital at Slice 6+
-
-    // Decode MoneyWire amount to minor units (same pattern as gl-projection-v2.ts).
-    const legMoney = legAmountMoney({ amount: leg.amount, currency: ccy });
-    const legMinor = Number(amountToMinorUnits(legMoney));
-
-    const key = `${accountCode}|${ccy}`;
-    const current = capitalBalances.get(key) ?? 0;
-    capitalBalances.set(key, current + (leg.creditDebit === "debit" ? legMinor : -legMinor));
-  }
-
-  // Bucket balances into CET1 / AT1 / T2.
-  const classMap = new Map(classifications.map((c) => [c.leafAccountId, c]));
-  let cet1Minor = 0;
-  let at1Minor = 0;
-  let t2Minor = 0;
-
-  for (const [key, balance] of capitalBalances.entries()) {
-    const accountId = key.split("|")[0];
-    if (!accountId) continue;
-    const cls = classMap.get(accountId);
-    if (!cls) continue;
-    const stock = Math.abs(balance); // capital is credit-side → positive magnitude
-    if (cls.capitalTier === "cet1") cet1Minor += stock;
-    else if (cls.capitalTier === "at1") at1Minor += stock;
-    else t2Minor += stock;
-  }
-
-  const tier1Capital = cet1Minor + at1Minor;
-  const tier2Capital = t2Minor;
-  const hasCapital = tier1Capital > 0 || tier2Capital > 0;
+  const cet1Minor = composition.cet1Minor;
+  const at1Minor = composition.at1Minor;
+  const t2Minor = composition.tier2Minor;
+  const tier1Capital = composition.tier1Minor; // CET1 + AT1
+  const tier2Capital = composition.tier2Minor;
+  const hasCapital = composition.totalOwnFundsMinor !== 0;
 
   if (!hasCapital) {
     gaps.push(
-      "GAP-3E-001: V2 capital numerator is zero — no V2 GL posting rules for capital accounts " +
-        "(ACC-5000-001/002, ACC-5200-001/002) exist at Phase 3e. Only FX posting rules (PR-FX-001-V2, " +
-        "PR-FX-REVAL-V2, PR-FX-CLOSE-V2) emit GlPostingEmitted. Capital GL rules land in a future phase. " +
-        "Authority: D-V1-REMOVAL-PHASE-3E.",
+      "GAP-CAP-001: V2 own-funds composition is zero — no `capital` asset-class FIL instruments " +
+        "found for the entity as of the as-of date. This is expected on a clean / pre-capital-raise " +
+        "store (no real capital pre-licence-day). The capital numerator is now fold-native from the " +
+        "Capital FIL asset class (D-CAPITAL-ASSET-CLASS-V1), resolving the former GAP-3E-001 " +
+        "(zero-because-no-rule). Authority: D-CAPITAL-ASSET-CLASS-V1.",
     );
   }
+  void cet1Minor;
+  void at1Minor;
+  void t2Minor;
 
   // -------------------------------------------------------------------------
   // Step 2: Fold CcrEadComputed V2 events for credit RWA.
@@ -306,7 +267,7 @@ export function computeBA700V2(args: ComputeBA700V2Args): BA700ReturnV2 {
       functionalCurrency,
       coverageStatus,
       sources: {
-        capital: hasCapital ? "gl-posting-v2" : "none",
+        capital: hasCapital ? "capital-fil-composition" : "none",
         rwa: ccrEadCount > 0 ? "ccr-ead-v2-credit-only" : "none",
       },
     },

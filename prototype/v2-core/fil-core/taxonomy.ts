@@ -47,6 +47,19 @@ export const FIL_ASSET_CLASSES = [
   // asset-class-agnostic. Cash is atomic, implements Valuable, and carries the
   // standing-NOP risk contribution post-settlement.
   "cash",
+  // `capital` — a first-class asset class for the bank's OWN qualifying regulatory
+  // capital (CET1 / AT1 / Tier 2), SEPARATE from every market asset class
+  // (D-CAPITAL-ASSET-CLASS-V1). A capital instrument is the bank's own-funds
+  // instrument-of-record: a paid-up ordinary-share subscription (CET1), a
+  // perpetual non-cumulative AT1 instrument, or a subordinated-debt / qualifying-
+  // general-provision Tier 2 instrument. It is the SOURCE of the BA-700 / BA-100
+  // capital numerator (Reg 38, Banks Act §70, BCBS CAP/RBC). Capital is atomic,
+  // implements Accountable (IAS 32 / IFRS 9), and carries a typed qualifying-
+  // capital tier dimension (the tier the composition fold sums on). It is NOT an
+  // SA-CCR / market-risk exposure — it is the denominator's complement, the bank's
+  // own funds. The kernel stays asset-class-agnostic; the capital tiering lives on
+  // the instance economic terms + the chart-of-accounts `capitalTier` field.
+  "capital",
   "hybrid",
 ] as const;
 
