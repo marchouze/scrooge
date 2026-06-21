@@ -89,7 +89,7 @@ them, to keep `recon:graph-ontology` green.
 
 - **0 (this):** model + docs + `extraction-contract.ts`; decision recorded.
 - **1:** producers emit the contract w/ provenance; `seed-projection.ts` the sole
-  loader; collapse regulation representations; drop `graphify-out/` from the path.
+  loader; collapse regulation representations.
 - **2:** obligation-lifecycle event family; project `ORG-*`; backfill 417 rows;
   `DERIVES_FROM` bridge; `obligations.html` source drill-through.
 - **3:** single-home policies/procedures; capability layer (`urn:capability:*`);
