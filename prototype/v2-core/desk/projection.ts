@@ -17,12 +17,7 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import type { Instant } from "../fil-core/primitives";
-import {
-  type DeskBookType,
-  type DeskKind,
-  type DeskRiskManagementStructure,
-  type DeskStatus,
-} from "./events";
+import type { DeskBookType, DeskKind, DeskRiskManagementStructure, DeskStatus } from "./events";
 
 // ---------------------------------------------------------------------------
 // Desk record — the projected state of a single desk.

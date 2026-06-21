@@ -40,14 +40,11 @@
 // Brief: brief:atlas:frtb-compliant-trading-desk-structure-simulator-:2026-06-21
 // Author: Atlas (Core banking platform architect, engineering).
 
+import { defaultControlPlanePath, openControlPlaneStore } from "../../v2-core/control-plane";
 import {
-  defaultControlPlanePath,
-  openControlPlaneStore,
-} from "../../v2-core/control-plane";
-import {
-  type Desk,
   DESK_KIND_BOOK_TYPE,
   DESK_REGISTERED,
+  type Desk,
   type DeskBookType,
   buildDeskRegister,
   deskRegisteredPayloadSchema,
@@ -129,9 +126,7 @@ export function assertDeskRegisterIntegrity(
       violations.push({
         subject: `desk:${desk.deskId}`,
         severity,
-        message:
-          `deskKind '${desk.deskKind}' requires bookType '${expected}', got '${desk.bookType}' ` +
-          `(FRTB trading/banking-book boundary; D-FX-BOOK-BOUNDARY)`,
+        message: `deskKind '${desk.deskKind}' requires bookType '${expected}', got '${desk.bookType}' (FRTB trading/banking-book boundary; D-FX-BOOK-BOUNDARY)`,
       });
     }
   }
@@ -175,9 +170,7 @@ export function assertFxTradeDeskBoundary(
       violations.push({
         subject: `FxTradeExecuted:${trade.eventId}:deskId`,
         severity,
-        message:
-          `deskId '${trade.deskId}' does not resolve to a registered active desk ` +
-          `(D-FRTB-TRADING-DESK-STRUCTURE)`,
+        message: `deskId '${trade.deskId}' does not resolve to a registered active desk (D-FRTB-TRADING-DESK-STRUCTURE)`,
       });
       continue;
     }
@@ -185,10 +178,7 @@ export function assertFxTradeDeskBoundary(
       violations.push({
         subject: `FxTradeExecuted:${trade.eventId}:deskId`,
         severity,
-        message:
-          `FRTB boundary integrity: a '${trade.bookType}'-book trade is booked to desk ` +
-          `'${trade.deskId}' (a '${deskBookType}'-book desk). The desk's bookType must match ` +
-          `the trade's bookType (D-FRTB-TRADING-DESK-STRUCTURE; D-FX-BOOK-BOUNDARY).`,
+        message: `FRTB boundary integrity: a '${trade.bookType}'-book trade is booked to desk '${trade.deskId}' (a '${deskBookType}'-book desk). The desk's bookType must match the trade's bookType (D-FRTB-TRADING-DESK-STRUCTURE; D-FX-BOOK-BOUNDARY).`,
       });
     }
   }
@@ -208,7 +198,8 @@ export function run(controlPlanePath?: string): ReconResult {
   let asserted = 0;
 
   // (A) Desk-register integrity from the control-plane store.
-  const cpPath = controlPlanePath ?? process.env.BANK_V2_CONTROL_PLANE_DB ?? defaultControlPlanePath();
+  const cpPath =
+    controlPlanePath ?? process.env.BANK_V2_CONTROL_PLANE_DB ?? defaultControlPlanePath();
   const store = openControlPlaneStore(cpPath);
   try {
     const register = buildDeskRegister(store);

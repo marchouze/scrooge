@@ -36,10 +36,7 @@
 // Brief: brief:atlas:frtb-compliant-trading-desk-structure-simulator-:2026-06-21
 // Author: Atlas (Core banking platform architect, engineering).
 
-import {
-  defaultControlPlanePath,
-  openControlPlaneStore,
-} from "../v2-core/control-plane";
+import { defaultControlPlanePath, openControlPlaneStore } from "../v2-core/control-plane";
 import {
   CANONICAL_DESKS,
   DESK_REGISTERED,

@@ -13,11 +13,7 @@
 
 import type { ControlPlaneStore } from "../control-plane/store";
 import { DESK_ATTRIBUTE_CHANGED, DESK_REGISTERED, DESK_RETIRED } from "./events";
-import {
-  type DeskRegister,
-  type FoldedDeskEvent,
-  foldDeskRegister,
-} from "./projection";
+import { type DeskRegister, type FoldedDeskEvent, foldDeskRegister } from "./projection";
 
 type RegisteredPayload = Extract<FoldedDeskEvent, { type: "DeskRegistered" }>["payload"];
 type ChangedPayload = Extract<FoldedDeskEvent, { type: "DeskAttributeChanged" }>["payload"];
@@ -40,7 +36,10 @@ export function buildDeskRegister(store: ControlPlaneStore): DeskRegister {
   for (const ev of store.replay()) {
     switch (ev.type) {
       case DESK_REGISTERED:
-        events.push({ type: "DeskRegistered", payload: ev.payload as unknown as RegisteredPayload });
+        events.push({
+          type: "DeskRegistered",
+          payload: ev.payload as unknown as RegisteredPayload,
+        });
         break;
       case DESK_ATTRIBUTE_CHANGED:
         events.push({

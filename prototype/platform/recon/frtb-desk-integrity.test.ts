@@ -10,10 +10,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { CANONICAL_DESKS, type Desk } from "../../v2-core/desk";
-import {
-  assertDeskRegisterIntegrity,
-  assertFxTradeDeskBoundary,
-} from "./frtb-desk-integrity";
+import { assertDeskRegisterIntegrity, assertFxTradeDeskBoundary } from "./frtb-desk-integrity";
 
 const DESKS: readonly Desk[] = CANONICAL_DESKS.map((d) => ({ ...d }));
 const STORED = CANONICAL_DESKS.map((d) => ({ ...d }));

@@ -482,10 +482,7 @@ export const fxTradeExecutedPayloadSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["deskId"],
-        message:
-          `FRTB boundary integrity: a '${data.bookType}'-book trade cannot book to desk '${data.deskId}' ` +
-          `(a '${deskBookType}'-book desk). The desk's bookType must match the trade's bookType ` +
-          `(D-FRTB-TRADING-DESK-STRUCTURE; D-FX-BOOK-BOUNDARY).`,
+        message: `FRTB boundary integrity: a '${data.bookType}'-book trade cannot book to desk '${data.deskId}' (a '${deskBookType}'-book desk). The desk's bookType must match the trade's bookType (D-FRTB-TRADING-DESK-STRUCTURE; D-FX-BOOK-BOUNDARY).`,
       });
     }
 

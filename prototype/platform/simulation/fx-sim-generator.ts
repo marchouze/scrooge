@@ -10,11 +10,7 @@
 
 import { randomUUID } from "node:crypto";
 
-import {
-  DEFAULT_SIM_DESK_ID,
-  type DeskId,
-  SIM_TRADING_BOOK_DESK_IDS,
-} from "../../v2-core/desk";
+import { DEFAULT_SIM_DESK_ID, type DeskId, SIM_TRADING_BOOK_DESK_IDS } from "../../v2-core/desk";
 import { nowUtc } from "../core/types";
 import { type MarketDataStore, lookupQuoteWithInverse } from "../market-data/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
@@ -176,9 +172,7 @@ export function generateSimTrade(
   const deskId: DeskId = options?.deskId ?? DEFAULT_SIM_DESK_ID;
   if (!SIM_TRADING_BOOK_DESK_IDS.includes(deskId)) {
     throw new Error(
-      `FX simulator desk '${deskId}' is not a trading-book desk; the simulator may only book ` +
-        `trading-book trades to trading-book desks (${SIM_TRADING_BOOK_DESK_IDS.join(", ")}). ` +
-        `Authority: D-FRTB-TRADING-DESK-STRUCTURE.`,
+      `FX simulator desk '${deskId}' is not a trading-book desk; the simulator may only book trading-book trades to trading-book desks (${SIM_TRADING_BOOK_DESK_IDS.join(", ")}). Authority: D-FRTB-TRADING-DESK-STRUCTURE.`,
     );
   }
   // Wall-clock sourced via the approved boundary helper `nowUtc()` (platform/
