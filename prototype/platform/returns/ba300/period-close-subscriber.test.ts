@@ -348,6 +348,13 @@ describe("BA300 period-close subscriber — end-to-end", () => {
     });
 
     expect(result.ba300LcrOutput.placeholders.length).toBeGreaterThanOrEqual(1);
-    expect(result.ba300LcrOutput.placeholders.some((p) => p.includes("[citation: TBC"))).toBe(true);
+    // BA 300 line-numbering is now SOURCED from the typed per-cell contract — the
+    // bare "[citation: TBC … pending WS-INSTRUMENT-ANALYSES]" stub is retired
+    // (D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING).
+    expect(
+      result.ba300LcrOutput.placeholders.some((p) =>
+        p.includes("exact line-numbering sourced from the typed per-cell"),
+      ),
+    ).toBe(true);
   });
 });

@@ -129,7 +129,14 @@ describe("BA320 period-close subscriber — zero-position baseline", () => {
     });
 
     expect(result.ba310Output.placeholders.length).toBeGreaterThanOrEqual(1);
-    expect(result.ba310Output.placeholders.some((p) => p.includes("[citation: TBC"))).toBe(true);
+    // BA 320 line-numbering is now SOURCED from the typed per-cell contract — the
+    // bare "[citation: TBC … pending WS-INSTRUMENT-ANALYSES]" stub is retired
+    // (D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING).
+    expect(
+      result.ba310Output.placeholders.some((p) =>
+        p.includes("exact line-numbering sourced from the typed per-cell"),
+      ),
+    ).toBe(true);
   });
 });
 
