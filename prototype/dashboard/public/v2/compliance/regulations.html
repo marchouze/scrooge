@@ -81,7 +81,7 @@
       const reg = document.getElementById("regulator").value;
       const ob = document.getElementById("obls").value;
       const rows = all.filter((i) =>
-        (!reg || i.regulator === reg) &&
+        (!reg || (i.regulators || []).includes(reg)) &&
         (!ob || (ob === "yes" ? i.hasObligations : !i.hasObligations)) &&
         (!q || `${i.title} ${i.shortTitle} ${i.slug}`.toLowerCase().includes(q)));
       document.getElementById("count").textContent = `${rows.length} of ${all.length}`;
@@ -113,7 +113,7 @@
         { label: "With obligations", value: String(data.summary?.withObligations ?? 0), unit: "Bank has identified", variant: "success" },
         { label: "Bank obligations", value: String(data.summary?.totalBankObligations ?? 0), unit: "Traced to source" },
       ]});
-      const regs = [...new Set(all.map((i) => i.regulator).filter(Boolean))].sort();
+      const regs = [...new Set(all.flatMap((i) => i.regulators || []))].sort();
       const sel = document.getElementById("regulator");
       for (const r of regs) { const o = document.createElement("option"); o.value = r; o.textContent = r; sel.appendChild(o); }
       for (const id of ["q", "regulator", "obls"]) document.getElementById(id).addEventListener("input", render);

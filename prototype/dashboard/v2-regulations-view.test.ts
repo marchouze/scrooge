@@ -14,9 +14,51 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "bun:test";
 
 import { EventStore } from "../platform/event-store/store";
-import { buildV2RegulationDetailView } from "./v2-regulations-view";
+import {
+  buildV2RegulationDetailView,
+  parseRegulators,
+  regulatorDisplay,
+} from "./v2-regulations-view";
 
 const REPO_ROOT = resolve(import.meta.dir, "..", "..");
+
+describe("parseRegulators — canonicalisation + joint splitting", () => {
+  it("collapses Prudential Authority aliases to one canonical name", () => {
+    expect(parseRegulators("Prudential Authority")).toEqual(["SARB Prudential Authority"]);
+    expect(parseRegulators("SARB Prudential Authority")).toEqual(["SARB Prudential Authority"]);
+  });
+
+  it("splits joint labels into every constituent regulator", () => {
+    expect(parseRegulators("FSCA and Prudential Authority (joint)")).toEqual([
+      "SARB Prudential Authority",
+      "FSCA",
+    ]);
+    expect(parseRegulators("SARB PA / FSCA")).toEqual(["SARB Prudential Authority", "FSCA"]);
+  });
+
+  it("does not surface the Reserve Bank's concurrence as a regulator", () => {
+    const regs = parseRegulators(
+      "FSCA and Prudential Authority (joint), with concurrence of the Reserve Bank",
+    );
+    expect(regs).toEqual(["SARB Prudential Authority", "FSCA"]);
+  });
+
+  it("keeps standalone regulators distinct and falls back on unknowns", () => {
+    expect(parseRegulators("FSCA")).toEqual(["FSCA"]);
+    expect(parseRegulators("Basel Committee on Banking Supervision")).toEqual([
+      "Basel Committee on Banking Supervision",
+    ]);
+    expect(parseRegulators("SARB Financial Surveillance")).toEqual(["SARB Financial Surveillance"]);
+    expect(parseRegulators("Some Future Regulator")).toEqual(["Some Future Regulator"]);
+  });
+
+  it("renders a joint display label but a bare name for single regulators", () => {
+    expect(regulatorDisplay("Prudential Authority")).toBe("SARB Prudential Authority");
+    expect(regulatorDisplay("FSCA and Prudential Authority (joint)")).toBe(
+      "SARB Prudential Authority & FSCA (joint)",
+    );
+  });
+});
 
 describe("buildV2RegulationDetailView — verbatim blocks", () => {
   it("threads parsed blocks onto sections and surfaces tables for table-heavy RRB regs", () => {

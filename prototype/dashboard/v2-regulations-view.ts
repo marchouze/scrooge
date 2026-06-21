@@ -51,6 +51,58 @@ export function cleanObligationTitle(raw: string, id: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// Regulator normalisation
+// ---------------------------------------------------------------------------
+//
+// Structured-doc sources name the same supervisory body inconsistently
+// ("Prudential Authority" vs "SARB Prudential Authority") and pack several
+// bodies into one joint label ("FSCA and Prudential Authority (joint)"). The
+// regulator filter must list each individual regulator exactly once and let a
+// jointly-issued instrument match EITHER constituent — so we parse the raw
+// label into a canonical set rather than treating each raw string as opaque.
+
+const REG_PRUDENTIAL_AUTHORITY = "SARB Prudential Authority";
+const REG_FSCA = "FSCA";
+const REG_BASEL = "Basel Committee on Banking Supervision";
+const REG_FINSURV = "SARB Financial Surveillance";
+const REG_FIC = "Financial Intelligence Centre";
+const REG_INFO_REGULATOR = "Information Regulator";
+
+/**
+ * Parse a raw regulator label into its canonical constituent regulators.
+ * "Prudential Authority", "SARB Prudential Authority" and "SARB PA" all collapse
+ * to the single canonical {@link REG_PRUDENTIAL_AUTHORITY}; joint labels split
+ * into every body they name (the Reserve Bank's "concurrence" is not itself a
+ * regulator of the instrument and is intentionally not surfaced). An
+ * unrecognised label falls back to its trimmed raw form so it still appears in
+ * the dropdown rather than silently vanishing.
+ */
+export function parseRegulators(raw: string): string[] {
+  const s = (raw ?? "").trim();
+  if (!s) return [];
+  const lower = s.toLowerCase();
+  const out: string[] = [];
+  if (/prudential authority|\bsarb pa\b|\bpa\b/.test(lower)) out.push(REG_PRUDENTIAL_AUTHORITY);
+  if (/\bfsca\b/.test(lower)) out.push(REG_FSCA);
+  if (/basel/.test(lower)) out.push(REG_BASEL);
+  if (/financial surveillance/.test(lower)) out.push(REG_FINSURV);
+  if (/financial intelligence centre|\bfic\b/.test(lower)) out.push(REG_FIC);
+  if (/information regulator/.test(lower)) out.push(REG_INFO_REGULATOR);
+  return out.length > 0 ? out : [s];
+}
+
+/**
+ * Display label for the table's "Regulator" column: the canonical name for a
+ * single-regulator instrument, or a "A & B (joint)" label for a jointly-issued
+ * one — so the column reads consistently regardless of the raw source spelling.
+ */
+export function regulatorDisplay(raw: string): string {
+  const regs = parseRegulators(raw);
+  if (regs.length <= 1) return regs[0] ?? (raw ?? "").trim();
+  return `${regs.join(" & ")} (joint)`;
+}
+
+// ---------------------------------------------------------------------------
 // Regulations list
 // ---------------------------------------------------------------------------
 
@@ -58,7 +110,13 @@ export interface V2RegulationSummary {
   slug: string;
   title: string;
   shortTitle: string;
+  /** Canonical display label (single name, or "A & B (joint)"). */
   regulator: string;
+  /**
+   * Canonical constituent regulators backing the filter dropdown. A joint
+   * instrument carries every body it names, so it matches a filter on either.
+   */
+  regulators: string[];
   year: number;
   sectionCount: number;
   /** Source obligations linked to this instrument (Plane A graph + coverage). */
@@ -81,7 +139,8 @@ export function buildV2RegulationsView(repoRoot: string, store: EventStore): V2R
     slug: i.slug,
     title: i.title,
     shortTitle: i.shortTitle,
-    regulator: i.regulator,
+    regulator: regulatorDisplay(i.regulator),
+    regulators: parseRegulators(i.regulator),
     year: i.year,
     sectionCount: i.sectionCount,
     sourceObligations: i.obligationsLinked,
