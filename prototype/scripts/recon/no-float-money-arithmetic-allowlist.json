@@ -882,37 +882,37 @@
     },
     {
       "file": "platform/simulation/fx-sim-generator.ts",
-      "line": 258,
+      "line": 277,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/simulation/fx-sim-generator.ts",
-      "line": 261,
+      "line": 280,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/simulation/fx-sim-generator.ts",
-      "line": 274,
+      "line": 293,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/simulation/fx-sim-generator.ts",
-      "line": 85,
+      "line": 86,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/simulation/fx-sim-generator.ts",
-      "line": 89,
-      "pattern": "money-multiply/divide"
-    },
-    {
-      "file": "platform/simulation/fx-sim-generator.ts",
-      "line": 100,
+      "line": 90,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/simulation/fx-sim-generator.ts",
       "line": 101,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "platform/simulation/fx-sim-generator.ts",
+      "line": 102,
       "pattern": "money-multiply/divide"
     },
     {
@@ -997,17 +997,17 @@
     },
     {
       "file": "scenarios/fx-spot-internal-pre-licence-test.ts",
-      "line": 1742,
-      "pattern": "money-multiply/divide"
-    },
-    {
-      "file": "scenarios/fx-spot-internal-pre-licence-test.ts",
-      "line": 1860,
+      "line": 1743,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "scenarios/fx-spot-internal-pre-licence-test.ts",
       "line": 1861,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "scenarios/fx-spot-internal-pre-licence-test.ts",
+      "line": 1862,
       "pattern": "money-multiply/divide"
     },
     {
@@ -1102,7 +1102,7 @@
     },
     {
       "file": "scripts/sim-saskia-unwind-ravi-recompute.ts",
-      "line": 88,
+      "line": 89,
       "pattern": "money-multiply/divide"
     },
     {
