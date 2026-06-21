@@ -357,9 +357,7 @@ export function computeBA700V2(args: ComputeBA700V2Args): BA700ReturnV2 {
     // position). Market RWA is EXCLUDED — not zero-as-if-complete. The flag
     // (marketRwaAvailable=false) is the signal; the 0 is only the additive identity.
     gaps.push(
-      `GAP-3E-002 (FAIL-CLOSED): BA-320 V2 FX open-position charge is null (BA-320 coverageStatus="${ba320.fx.coverageStatus}") — market-risk RWA is EXCLUDED from totalRwa, not zero-coerced. ` +
-        `On the clean build-phase store this is the expected no-open-FX-position state; where an open FX pair lacks a production fx-quote tick it is the fail-closed missing-rate state (no fabricated rate). ` +
-        `When the BA-320 charge resolves, market RWA = 12.5 × charge is included automatically. Authority: D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING; Reg 38; BCBS Basel III §50–§90.`,
+      `GAP-3E-002 (FAIL-CLOSED): BA-320 V2 FX open-position charge is null (BA-320 coverageStatus="${ba320.fx.coverageStatus}") — market-risk RWA is EXCLUDED from totalRwa, not zero-coerced. On the clean build-phase store this is the expected no-open-FX-position state; where an open FX pair lacks a production fx-quote tick it is the fail-closed missing-rate state (no fabricated rate). When the BA-320 charge resolves, market RWA = 12.5x charge is included automatically. Authority: D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING; Reg 38; BCBS Basel III §50–§90.`,
     );
   }
 
