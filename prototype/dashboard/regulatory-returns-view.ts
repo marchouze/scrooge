@@ -202,12 +202,21 @@ function buildBA700V1(eventStore: EventStore, functionalCurrency: string): Regul
   };
 }
 
-function buildBA700V2(eventStore: EventStore, functionalCurrency: string): RegulatoryReturnView {
+function buildBA700V2(
+  eventStore: EventStore,
+  marketData: MarketDataStore,
+  functionalCurrency: string,
+): RegulatoryReturnView {
+  // Pass the MarketDataStore so the market-risk RWA term (12.5 × BA-320 V2 FX
+  // open-position charge) can be derived from the SAME production fx-quote rate
+  // source the BA-320 view uses. Fail-closed when a pair has no production tick
+  // (market RWA excluded, marketRwaAvailable=false).
   const v2 = computeBA700V2({
     eventStore,
     asOf: AS_OF,
     entity: ANCHOR_ENTITY,
     functionalCurrency,
+    marketDataStore: marketData,
   });
 
   const ca = v2.capitalAdequacy;
@@ -218,7 +227,7 @@ function buildBA700V2(eventStore: EventStore, functionalCurrency: string): Regul
     functionalCurrency,
     entity: ANCHOR_ENTITY,
     asOf: AS_OF,
-    lineage: `V2 read (useV2Store ON): computeBA700V2 — GlPostingEmitted (capital accounts) + CcrEadComputed (credit RWA). coverageStatus=${v2.meta.coverageStatus}. Authority: D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-PHASE-4.`,
+    lineage: `V2 read (useV2Store ON): computeBA700V2 — GlPostingEmitted (capital accounts) + CcrEadComputed (credit RWA) + 12.5 × BA-320 V2 FX charge (market RWA, marketRwaAvailable=${v2.meta.marketRwaAvailable}). coverageStatus=${v2.meta.coverageStatus}. Authority: D-BANK-WIDE-V2-MIGRATION; D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING; D-V1-REMOVAL-PHASE-4.`,
     figures: {
       tier1Capital: ca.tier1Capital,
       tier2Capital: ca.tier2Capital,
@@ -385,7 +394,7 @@ export function selectRegulatoryReturn(
 
   if (which === "ba700") {
     return v2
-      ? buildBA700V2(eventStore, functionalCurrency)
+      ? buildBA700V2(eventStore, marketData, functionalCurrency)
       : buildBA700V1(eventStore, functionalCurrency);
   }
   return v2

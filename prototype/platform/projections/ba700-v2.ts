@@ -18,8 +18,17 @@
 //
 //   RWA denominator: `CcrEadComputed` (v2-parallel) — SA-CCR EAD in MoneyWire.
 //     Summed across all netting sets → credit RWA proxy.
-//     Market RWA + operational RWA have no V2 source at Phase 3e.
-//     → `rwaV2Source: "ccr-ead-v2-credit-only"` (structural partial).
+//     Market RWA = 12.5 × the BA-320 V2 FX open-position capital charge
+//       (`computeBA320V2().fx.openPositionChargeMinor`), per Reg 38 / BCBS Basel III
+//       §50–§90 (RWA = 12.5 × capital requirement). REUSES the BA-320 projection —
+//       it does NOT recompute the FX position or re-derive the charge (Principle 2 —
+//       single derivation site; Charter cmd 4 — source, don't duplicate). GAP-3E-002
+//       CLOSED by D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING (2026-06-21).
+//       Where the BA-320 charge is `null` (no production FX rate → BA-320 already
+//       fails closed), market RWA is reported as UNAVAILABLE/EXCLUDED via the
+//       `marketRwaAvailable` flag — never zero-coerced as-if-complete (Charter cmd 2).
+//     Operational RWA has no V2 source at Phase 3e (GAP-3E-003).
+//     → `rwa` sources: "ccr-ead-v2-credit-only" (credit), "ba320-fx-v2" (market).
 //
 // ## No-data handling
 //
@@ -37,13 +46,24 @@
 // Citations: BCBS Basel III §50–§90; Reg 38; Banks Act 94 §70; P1-EVENTS-AS-TRUTH.
 // Author: Atlas (Substrate Architect, engineering).
 
+import { mulD, roundDecimal, toDecimal, toMinorUnits } from "../core/decimal-engine";
 import { minorFromMoneyWire } from "../core/money-codec";
 import { normalizeCcrEadPayload } from "../event-store/event-types/counterparty-credit-risk";
 import type { EventStore } from "../event-store/store";
 import { anchorFunctionalCurrency } from "../identity/functional-currency";
+import type { MarketDataStore } from "../market-data/store";
 import type { BA700Return } from "../returns/ba700/generator";
+import { computeBA320V2 } from "./ba320-fx-v2";
 import { computeCapitalComposition } from "./ba700-capital-composition";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "./filter";
+
+/**
+ * Basel III / Reg 38 capital-charge → RWA scalar: RWA = 12.5 × capital requirement
+ * (the reciprocal of the 8% minimum capital ratio). Applied to the BA-320 FX
+ * open-position capital charge to derive the market-risk RWA component.
+ * BCBS Basel III §50–§90; Reg 38.
+ */
+const RWA_PER_CAPITAL_CHARGE = "12.5";
 
 // ---------------------------------------------------------------------------
 // Output shape
@@ -72,7 +92,22 @@ export interface BA700ReturnV2 {
     readonly sources: {
       readonly capital: "capital-fil-composition" | "none";
       readonly rwa: "ccr-ead-v2-credit-only" | "none";
+      /**
+       * Market-RWA source. `"ba320-fx-v2"` when the BA-320 V2 FX open-position
+       * charge resolved (a production FX rate was available); `"none"` when it is
+       * `null` (fail-closed — no fabricated rate, market RWA excluded).
+       */
+      readonly marketRwa: "ba320-fx-v2" | "none";
     };
+    /**
+     * Whether the market-risk RWA component (12.5 × BA-320 FX charge) is included
+     * in `totalRwa`. `false` = the BA-320 charge was `null` (no production FX rate
+     * → BA-320 fails closed), so market RWA is EXCLUDED — NOT zero-coerced as-if
+     * complete (Charter cmd 2 — fail-closed). When `false`, `capitalAdequacy.marketRwa`
+     * is 0 only as the additive identity for the excluded term; the flag, not the
+     * zero, is the signal.
+     */
+    readonly marketRwaAvailable: boolean;
   };
   /**
    * V2 capital adequacy section. Fields are comparable to V1's
@@ -85,10 +120,21 @@ export interface BA700ReturnV2 {
     readonly tier1Capital: number;
     readonly tier2Capital: number;
     /**
-     * Credit RWA from summed CcrEadComputed V2 events (minor units).
-     * Market RWA (GAP-3E-002) and operational RWA (GAP-3E-003) are zero.
+     * Credit RWA from summed CcrEadComputed V2 events (minor units). Separately
+     * inspectable from `marketRwa` for the credit-vs-market RWA decomposition.
      */
     readonly creditRwa: number;
+    /**
+     * Market-risk RWA (minor units) = 12.5 × the BA-320 V2 FX open-position
+     * capital charge (`computeBA320V2().fx.openPositionChargeMinor`), per Reg 38 /
+     * BCBS Basel III §50–§90. Separately inspectable from `creditRwa`.
+     *
+     * `0` ONLY when (a) there is no open FX position (charge legitimately 0) or
+     * (b) `meta.marketRwaAvailable === false` — i.e. the BA-320 charge was `null`
+     * (no production FX rate, fail-closed) and market RWA is EXCLUDED from
+     * `totalRwa`. Read `meta.marketRwaAvailable` to disambiguate "zero charge"
+     * from "excluded / unavailable". Operational RWA (GAP-3E-003) is still zero.
+     */
     readonly marketRwa: number;
     readonly operationalRwa: number;
     readonly totalRwa: number;
@@ -119,6 +165,22 @@ export interface ComputeBA700V2Args {
    * default. WS-MULTI-BASE-CURRENCY.
    */
   readonly functionalCurrency?: string;
+  /**
+   * Market-data store holding production `fx-quote` ticks — the SAME rate source
+   * the BA-320 V2 FX projection (and daily-pnl-v2) consumes. Threaded straight
+   * through to `computeBA320V2` so the market-RWA term is derived from the BA-320
+   * charge (NOT recomputed here). When absent (or when no production tick exists
+   * for an open pair), the BA-320 charge is `null` and market RWA is reported
+   * EXCLUDED via `marketRwaAvailable === false` (fail-closed, Charter cmd 2).
+   */
+  readonly marketDataStore?: MarketDataStore;
+  /**
+   * Optional explicit rate map (base currency → functional-units-per-base, MAJOR
+   * units) threaded through to `computeBA320V2`. Lets a caller (e.g. the parity
+   * gate) feed BA-320 and BA-700 from one identical rate snapshot. Overrides the
+   * `marketDataStore` lookup per currency; absent from BOTH ⇒ BA-320 fails closed.
+   */
+  readonly zarRates?: Readonly<Record<string, number>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -133,6 +195,9 @@ export interface ComputeBA700V2Args {
  *      At Phase 3e: zero — no capital GL posting rules emit V2 events yet.
  *   2. `CcrEadComputed` → credit RWA (v2-parallel, MoneyWire amounts).
  *      Sums EAD across all netting sets as the credit-RWA proxy.
+ *   3. Market RWA = 12.5 × `computeBA320V2().fx.openPositionChargeMinor`
+ *      (Reg 38 / BCBS §50–§90). REUSES the BA-320 V2 projection — no FX position
+ *      or charge is recomputed here. Fail-closed when the charge is `null`.
  *
  * Returns a `BA700ReturnV2`. When both numerator and denominator are zero,
  * `meta.coverageStatus = "no-data"` so the parity gate can emit an advisory
@@ -210,8 +275,9 @@ export function computeBA700V2(args: ComputeBA700V2Args): BA700ReturnV2 {
   // before risk-weighting. As a phase-3e advisory proxy we use raw EAD sum
   // (conservative, overstates credit RWA relative to weighted path).
   //
-  // Market RWA (GAP-3E-002) and operational RWA (GAP-3E-003) are zero — no
-  // V2 event types for these components exist at Phase 3e.
+  // Market RWA is wired from the BA-320 V2 FX charge in Step 3 below
+  // (GAP-3E-002 CLOSED). Operational RWA (GAP-3E-003) is still zero — no V2
+  // event type for it exists at Phase 3e.
   //
   // Authority: D-CREDIT-LIMIT-ENGINE-BUILD; BCBS d317 §10.
   // -------------------------------------------------------------------------
@@ -244,19 +310,73 @@ export function computeBA700V2(args: ComputeBA700V2Args): BA700ReturnV2 {
     );
   }
 
-  gaps.push(
-    "GAP-3E-002: Market RWA (12.5 × BA-320 capital charge) has no V2 event source at Phase 3e. " +
-      "Resolution: Phase 3e BA-320 V2 gate → flip → wire market RWA here. Authority: D-V1-REMOVAL-PHASE-3E.",
-  );
+  // -------------------------------------------------------------------------
+  // Step 3: Market-risk RWA = 12.5 × BA-320 V2 FX open-position capital charge.
+  //
+  // GAP-3E-002 CLOSED (D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING, 2026-06-21).
+  //
+  // We REUSE computeBA320V2 — its `fx.openPositionChargeMinor` is the Reg 28(5)
+  // FX open-position CAPITAL charge in functional-currency minor units. We do NOT
+  // recompute the FX position or re-derive the charge here (Principle 2 — single
+  // derivation site; Charter cmd 4). RWA = 12.5 × capital requirement (Reg 38 /
+  // BCBS Basel III §50–§90), computed on the decimal engine (no float on a money
+  // figure; same HALF_UP rule the BA-320 charge itself uses).
+  //
+  // FAIL-CLOSED (Charter cmd 2): when the BA-320 charge is `null` — no production
+  // FX rate for an open pair, BA-320 already fails closed — market RWA is reported
+  // UNAVAILABLE/EXCLUDED (`marketRwaAvailable === false`, source "none", the term
+  // contributes 0 to totalRwa). It is NEVER zero-coerced as-if-complete and the
+  // rate is NEVER fabricated. A `null` charge with NO open FX position (the clean
+  // build-phase store) and a `null` charge from a missing rate are distinguished
+  // by the BA-320 coverageStatus in the gap text.
+  // -------------------------------------------------------------------------
+
+  const ba320 = computeBA320V2({
+    eventStore: args.eventStore,
+    asOf: args.asOf,
+    entity,
+    functionalCurrency,
+    ...(args.marketDataStore !== undefined ? { marketDataStore: args.marketDataStore } : {}),
+    ...(args.zarRates !== undefined ? { zarRates: args.zarRates } : {}),
+  });
+
+  const fxChargeMinor = ba320.fx.openPositionChargeMinor;
+  const marketRwaAvailable = fxChargeMinor !== null;
+
+  let marketRwaMinor = 0;
+  if (marketRwaAvailable) {
+    // RWA = 12.5 × capital charge, decimal-engine HALF_UP (no float on money).
+    const rwaD = roundDecimal(
+      mulD(toDecimal(String(fxChargeMinor)), toDecimal(RWA_PER_CAPITAL_CHARGE)),
+      0,
+      "HALF_UP",
+    );
+    marketRwaMinor = Number(toMinorUnits(rwaD, 0));
+  } else {
+    // Fail-closed: BA-320 charge is null (no production FX rate, or no open FX
+    // position). Market RWA is EXCLUDED — not zero-as-if-complete. The flag
+    // (marketRwaAvailable=false) is the signal; the 0 is only the additive identity.
+    gaps.push(
+      `GAP-3E-002 (FAIL-CLOSED): BA-320 V2 FX open-position charge is null (BA-320 coverageStatus="${ba320.fx.coverageStatus}") — market-risk RWA is EXCLUDED from totalRwa, not zero-coerced. ` +
+        `On the clean build-phase store this is the expected no-open-FX-position state; where an open FX pair lacks a production fx-quote tick it is the fail-closed missing-rate state (no fabricated rate). ` +
+        `When the BA-320 charge resolves, market RWA = 12.5 × charge is included automatically. Authority: D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING; Reg 38; BCBS Basel III §50–§90.`,
+    );
+  }
+
   gaps.push(
     "GAP-3E-003: Operational RWA has no V2 event type at Phase 3e (gross-income-blocked placeholder). " +
       "Resolution: future op-risk V2 event workstream. Authority: D-V1-REMOVAL-PHASE-3E.",
   );
 
-  const totalRwa = creditRwaMinor; // market + operational are zero at Phase 3e
+  // Total RWA = credit RWA + market RWA (when available) + operational RWA (zero).
+  // Market RWA is summed in ONLY when marketRwaAvailable; a null BA-320 charge
+  // contributes nothing (fail-closed), and marketRwaMinor stays 0 as the identity.
+  const totalRwa = creditRwaMinor + marketRwaMinor;
   const carRatio = totalRwa > 0 ? (tier1Capital + tier2Capital) / totalRwa : null;
 
-  const coverageStatus: "partial" | "no-data" = hasCapital || hasRwa ? "partial" : "no-data";
+  const hasMarketRwa = marketRwaAvailable && marketRwaMinor > 0;
+  const coverageStatus: "partial" | "no-data" =
+    hasCapital || hasRwa || hasMarketRwa ? "partial" : "no-data";
 
   return {
     meta: {
@@ -269,13 +389,15 @@ export function computeBA700V2(args: ComputeBA700V2Args): BA700ReturnV2 {
       sources: {
         capital: hasCapital ? "capital-fil-composition" : "none",
         rwa: ccrEadCount > 0 ? "ccr-ead-v2-credit-only" : "none",
+        marketRwa: marketRwaAvailable ? "ba320-fx-v2" : "none",
       },
+      marketRwaAvailable,
     },
     capitalAdequacy: {
       tier1Capital,
       tier2Capital,
       creditRwa: creditRwaMinor,
-      marketRwa: 0,
+      marketRwa: marketRwaMinor,
       operationalRwa: 0,
       totalRwa,
       carRatio,
