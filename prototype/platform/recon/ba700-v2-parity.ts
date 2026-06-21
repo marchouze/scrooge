@@ -185,11 +185,20 @@ export function run(): ReconResult {
     result.asserted += 1;
   }
 
-  // (4) Advisory gap — structural coverage gap at Phase 3e.
+  // (4) Advisory note — capital numerator source.
+  //
+  // D-CAPITAL-ASSET-CLASS-V1: the V2 capital numerator is now FOLD-NATIVE from the
+  // `capital` asset-class FIL instruments (ba700-capital-composition.ts), resolving
+  // the former GAP-3E-001 (zero-because-no-rule). When no capital instruments exist
+  // on the store (the pre-capital-raise / clean state — no real capital pre-licence)
+  // V2 capital is legitimately zero; that is data-absence, not a missing rule.
   result.asserted += 1;
+  const v2CapitalZero = v2Tier1 === 0 && v2Tier2 === 0;
   violations.push({
-    subject: "ba700-v2-parity:gap:phase-3e-capital-coverage",
-    message: `ADVISORY GAP (Phase 3e): V2 capital numerator (tier1/tier2) is zero — no V2 GL posting rules for capital accounts (ACC-5000-001/002, ACC-5200-001/002) exist at Phase 3e. Only FX posting rules (PR-FX-001-V2, PR-FX-REVAL-V2, PR-FX-CLOSE-V2) emit GlPostingEmitted; these post to FX nostro accounts, not capital. GAP-3E-001. V1 tier1=${v1Tier1} V1 tier2=${v1Tier2} V2 tier1=${v2Tier1} V2 tier2=${v2Tier2}. TO RESOLVE: build V2 GL posting rules for capital accounts (CapitalContributionRecorded V2 equivalent), then assert V2 capital > 0. Authority: D-V1-REMOVAL-PHASE-3E.`,
+    subject: "ba700-v2-parity:capital-numerator-source",
+    message: v2CapitalZero
+      ? `ADVISORY: V2 capital numerator is zero — no \`capital\` asset-class FIL instruments on the store (the pre-capital-raise / clean state; no real capital pre-licence-day). The numerator is now FOLD-NATIVE from the Capital FIL asset class (D-CAPITAL-ASSET-CLASS-V1), resolving the former GAP-3E-001. V1 tier1=${v1Tier1} V1 tier2=${v1Tier2} V2 tier1=${v2Tier1} V2 tier2=${v2Tier2}. TO POPULATE: emit capital FIL instruments (e.g. scripts/emit-capital-injection-v2-sim.ts). Authority: D-CAPITAL-ASSET-CLASS-V1.`
+      : `ADVISORY: V2 capital numerator is fold-native from the Capital FIL asset class (D-CAPITAL-ASSET-CLASS-V1). V1 tier1=${v1Tier1} V1 tier2=${v1Tier2} V2 tier1=${v2Tier1} V2 tier2=${v2Tier2}. Cross-currency own funds remain a licence-day refinement. Authority: D-CAPITAL-ASSET-CLASS-V1.`,
     severity: "warn",
   });
 
