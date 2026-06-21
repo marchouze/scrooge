@@ -42,7 +42,6 @@
 // not stored state); Principle 2 (the boundary is a topology invariant surfaced here).
 // Author: Atlas (Core banking platform architect, engineering).
 
-import { formatInstanceUrn } from "../v2-core/fil-core/urn";
 import { computeCohortVar } from "../platform/market-risk/eod-cohort-var-v2";
 import { provisionCounterparty } from "../platform/markets/counterparty/provision-counterparty";
 import { bookAffirmedFxTrade } from "../platform/markets/products/book-affirmed-fx-trade";
@@ -64,6 +63,7 @@ import {
 } from "../platform/simulation-v2/sim-modules/market-data-feed-v2";
 import { emitSettlementLifecycle } from "../platform/simulation-v2/sim-modules/settlement-lifecycle";
 import { emitCounterpartyConfirmation } from "../platform/simulation-v2/sim-modules/trade-confirmation";
+import { formatInstanceUrn } from "../v2-core/fil-core/urn";
 import { seatTitle } from "./agent-title";
 
 const REPORTING = "ZAR";
@@ -466,13 +466,13 @@ function buildRunResultDto(
   const created = [...result.eventStore.replay({ type: "FilInstrumentCreated" })];
   const cash = created.filter(
     (e) =>
-      ((e.payload as { economicTerms?: { assetClass?: string } }).economicTerms?.assetClass ?? "") ===
-      "cash",
+      ((e.payload as { economicTerms?: { assetClass?: string } }).economicTerms?.assetClass ??
+        "") === "cash",
   );
   const fxBooked = created.filter(
     (e) =>
-      ((e.payload as { economicTerms?: { assetClass?: string } }).economicTerms?.assetClass ?? "") ===
-      "fx",
+      ((e.payload as { economicTerms?: { assetClass?: string } }).economicTerms?.assetClass ??
+        "") === "fx",
   );
   const terminated = [...result.eventStore.replay({ type: "FilInstrumentTerminated" })];
   const fails = [...result.eventStore.replay({ type: "FxSimSettlementFailed" })];

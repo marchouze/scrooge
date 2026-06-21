@@ -332,7 +332,6 @@ import {
   buildV2FxSurfaceView,
   buildV2FxVarView,
 } from "./v2-markets-fx-view";
-import { buildV2WorldSimulatorView } from "./v2-world-simulator-view";
 import {
   buildV2ObligationDetailView,
   buildV2ObligationsView,
@@ -353,6 +352,7 @@ import {
   redactDecisionDetailNames,
   redactNpaDetailNames,
 } from "./v2-views";
+import { buildV2WorldSimulatorView } from "./v2-world-simulator-view";
 
 const PORT = Number(process.env.BANK_DASHBOARD_PORT ?? 3010);
 const REFRESH_MS = Number(process.env.BANK_DASHBOARD_REFRESH_MS ?? 30_000);
