@@ -200,7 +200,8 @@ export const FX_CURATED_FED_CELLS: readonly FxFedCellDeclaration[] = [
     xsdElement: "BA01020462",
     row: "R0870",
     column: "C0010",
-    sarbLabel: "of which: allocated to support market risk",
+    sarbLabel:
+      "of which: \nallocated to support market risk / Balance at the end of the reporting period",
     throughTreatment: "prudential-treatment:fx-trading-book",
     rationale:
       "The BA 320 FX market-risk charge (8 %) becomes market RWA (× 12.5) and consumes capital allocated to support market risk in the BA 700 capital-adequacy return — the BA 320 → BA 700 numerator/denominator link. Licence-day-data (no real capital pre-licence-day), but the FX→BA 700 edge is real and the line exists.",

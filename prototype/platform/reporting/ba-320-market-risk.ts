@@ -61,6 +61,7 @@
 // positions directly from FxTradeExecuted events rather than from the trial
 // balance. Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
 
+import { returnContractCitation } from "../../v2-core/regulatory-returns/return-contracts";
 import type { BaselMaturityBand } from "../types/basel";
 import {
   BAND_ZONE,
@@ -437,7 +438,12 @@ export function generateBa310MarketRisk(input: Ba310GeneratorInput): Ba310Output
   const totalRwa = Math.round(12.5 * totalCapital);
 
   const placeholders: string[] = [
-    "[citation: TBC — exact SARB BA 320 line-numbering pending Mira's WS-INSTRUMENT-ANALYSES schema ingestion]",
+    // Line-numbering is no longer TBC: the exact SARB BA 320 cell coordinates are
+    // the typed per-cell data-requirement contract (the FX-risk-class aggregate
+    // lands on R0140/C0030 "Foreign exchange risk / Total"; net-open-position
+    // basis at R0650). See v2-core/regulatory-returns/fx-product-return-cells.ts
+    // for the FX→cell lineage. Citation derived from the contract (cmd 4).
+    returnContractCitation("BA320"),
   ];
   // IR-general vertical/horizontal disallowances are now computed in closed form
   // from the signed weighted-nominal ladder (Reg 28(3)(a); BCBS D352 §718(iv)–(x);

@@ -114,6 +114,7 @@
 //   semantic-layer integration)
 //   + Atlas (Core banking platform architect, engineering — P1 fix).
 
+import { returnContractCitation } from "../../v2-core/regulatory-returns/return-contracts";
 import { buildRateMap, convertMinor } from "../accounting/fx-rate-projection";
 import { type Money, amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
 import type { Currency } from "../core/types";
@@ -1663,13 +1664,19 @@ export function generateBa300Lcr(
   // Placeholders.
   // -------------------------------------------------------------------------
   if (input.classifications.some((c) => c.hqlaLevel && c.subCategory === undefined)) {
+    // Runtime data gap (tracked): one or more HQLA accounts lack a subCategory
+    // this period. Not a schema-numbering gap (now sourced below). The canonical
+    // form is BA 300 (the prior "BA 110" was a fabricated-numbering artefact, see
+    // file header). recon:ba-return-cell-contract
     placeholders.push(
-      "[citation: TBC — classification subCategory missing for one or more accounts; Mira's WS-INSTRUMENT-ANALYSES will resolve to SARB-published BA 110 line labels]",
+      "[GAP-BA300-HQLA-SUBCATEGORY recon:ba-return-cell-contract — HQLA classification subCategory missing for one or more accounts this period; classify to an HQLA level line]",
     );
   }
-  placeholders.push(
-    "[citation: TBC — exact SARB BA 110 line-numbering pending Mira's WS-INSTRUMENT-ANALYSES schema ingestion]",
-  );
+  // Line-numbering is no longer TBC: the exact SARB BA 300 (Liquidity Risk / LCR)
+  // cell coordinates are the typed per-cell data-requirement contract. NB the FX
+  // settlement-cashflow → LCR inflow/outflow edge is a tracked gap
+  // (GAP-FX-BA300-CASHFLOW, see fx-product-return-cells.ts). Citation derived (cmd 4).
+  placeholders.push(returnContractCitation("BA300"));
 
   const classificationsFingerprint = fingerprintClassifications(input.classifications);
 
