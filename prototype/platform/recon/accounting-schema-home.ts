@@ -212,7 +212,10 @@ async function assertTreatmentPostingRulesResolve(violations: ReconViolation[]):
     POSTING_RULE_REGISTRY: ReadonlyArray<{ postingRuleId: string }>;
   };
   const definedRuleIds = new Set(registry.POSTING_RULE_REGISTRY.map((r) => r.postingRuleId));
-  const allModules = [...fxModules.FX_TREATMENT_MODULES, ...capitalModules.CAPITAL_TREATMENT_MODULES];
+  const allModules = [
+    ...fxModules.FX_TREATMENT_MODULES,
+    ...capitalModules.CAPITAL_TREATMENT_MODULES,
+  ];
   for (const m of allModules) {
     for (const ruleId of m.applicablePostingRuleIds ?? []) {
       asserted++;

@@ -190,7 +190,7 @@ function toMoneyWire(money: { currency: string; amount: string }): MoneyWire {
 
 /** Extract the qualifying-capital block, fail-closed (a capital instance MUST carry it). */
 function requireQualifyingCapital(
-  payload: { economicTerms: { qualifyingCapital?: FilQualifyingCapital } },
+  payload: FilInstrumentCreatedPayload,
   context: string,
 ): FilQualifyingCapital {
   const qc = payload.economicTerms.qualifyingCapital;
@@ -208,9 +208,7 @@ function requireQualifyingCapital(
 // IAS 32 §22 (CET1 equity) / IFRS 9 §4.2.1 (AT1/T2 liability).
 // ---------------------------------------------------------------------------
 
-export function postCapitalIssuanceLegs(
-  payload: FilInstrumentCreatedPayload,
-): CapitalPostingLeg[] {
+export function postCapitalIssuanceLegs(payload: FilInstrumentCreatedPayload): CapitalPostingLeg[] {
   const t = payload.economicTerms;
   const qc = requireQualifyingCapital(payload, "issuance");
   const ownFundsAccount = resolveOwnFundsAccount(qc);

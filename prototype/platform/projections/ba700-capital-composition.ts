@@ -41,21 +41,21 @@
 //   Principle 1; Principle 2.
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
-import { amountToMinorUnits } from "../core/decimal-money";
-import { legAmountMoney } from "../core/money-codec";
-import type { EventStore } from "../event-store/store";
-import {
-  type CapitalPostingLeg,
-  postCapitalIssuanceLegs,
-  postCapitalRedemptionLegs,
-} from "../../v2-core/posting-rules/capital";
 import type {
   FilCapitalSubCategory,
   FilCapitalTier,
   FilInstrumentCreatedPayload,
   FilInstrumentTerminatedPayload,
 } from "../../v2-core/fil-instances/events";
+import {
+  type CapitalPostingLeg,
+  postCapitalIssuanceLegs,
+  postCapitalRedemptionLegs,
+} from "../../v2-core/posting-rules/capital";
 import { isCapitalPostingInstance } from "../../v2-core/posting-rules/capital";
+import { amountToMinorUnits } from "../core/decimal-money";
+import { legAmountMoney } from "../core/money-codec";
+import type { EventStore } from "../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "./filter";
 
 // ---------------------------------------------------------------------------
@@ -121,7 +121,10 @@ export function foldCapitalComposition(
   functionalCurrency: string,
 ): CapitalComposition {
   // Per-(tier, sub-category) signed net in minor units (credit-positive).
-  const byLine = new Map<string, { tier: FilCapitalTier; sub: FilCapitalSubCategory; minor: number }>();
+  const byLine = new Map<
+    string,
+    { tier: FilCapitalTier; sub: FilCapitalSubCategory; minor: number }
+  >();
   let legCount = 0;
 
   for (const ev of events) {
@@ -137,7 +140,8 @@ export function foldCapitalComposition(
       legs = postCapitalIssuanceLegs(created);
     } else if (kind === "FilInstrumentTerminated") {
       const terminated = ev.payload as FilInstrumentTerminatedPayload;
-      if (typeof terminated.type !== "string" || !isCapitalPostingInstance(terminated.type)) continue;
+      if (typeof terminated.type !== "string" || !isCapitalPostingInstance(terminated.type))
+        continue;
       legs = postCapitalRedemptionLegs(terminated);
     } else {
       // FilInstrumentAmended (Tier 2 amortisation) carries the re-stamped notional
@@ -158,7 +162,9 @@ export function foldCapitalComposition(
       if (!isOwnFundsAccount(leg.accountCode)) continue;
       if (leg.amount.currency !== functionalCurrency) continue; // multi-currency at licence-day
 
-      const minor = Number(amountToMinorUnits(legAmountMoney({ amount: leg.amount, currency: leg.amount.currency })));
+      const minor = Number(
+        amountToMinorUnits(legAmountMoney({ amount: leg.amount, currency: leg.amount.currency })),
+      );
       const signed = leg.creditDebit === "credit" ? minor : -minor;
       const key = `${leg.capitalTier}::${leg.capitalSubCategory}`;
       const cur = byLine.get(key);

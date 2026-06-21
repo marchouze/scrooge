@@ -58,7 +58,7 @@ import { eventStore } from "../platform/composition";
 import { makeFilInstrumentCreated } from "../platform/event-store/event-types/fil-instances";
 import { simulatedTag } from "../platform/event-store/provenance";
 import { formatInstanceUrn } from "../v2-core/fil-core/urn";
-import { type FilEconomicTerms } from "../v2-core/fil-instances/events";
+import type { FilEconomicTerms } from "../v2-core/fil-instances/events";
 import { CAPITAL_INSTRUMENT_TYPE_URN } from "../v2-core/fil-models/capital/types/capital-type-definitions";
 
 // ---------------------------------------------------------------------------
@@ -142,7 +142,10 @@ function emitToMainStore(): boolean {
       type: CAPITAL_INSTRUMENT_TYPE_URN,
       tenant: TENANT,
       asOf: AS_OF,
-      originatingEvent: { eventType: "CapitalSubscriptionConfirmed", eventId: ORIGINATING_EVENT_ID },
+      originatingEvent: {
+        eventType: "CapitalSubscriptionConfirmed",
+        eventId: ORIGINATING_EVENT_ID,
+      },
       initialStage: "active",
       economicTerms,
     },
@@ -193,7 +196,9 @@ CREATE INDEX IF NOT EXISTS idx_v2_as_of  ON v2_events(as_of);
       try {
         const p = JSON.parse(r.payload) as { instance?: string };
         if (p.instance === instance) {
-          console.log(`[emit-capital-injection-v2-sim] anchor store already has ${instance} — skipped`);
+          console.log(
+            `[emit-capital-injection-v2-sim] anchor store already has ${instance} — skipped`,
+          );
           return false;
         }
       } catch {
@@ -206,7 +211,10 @@ CREATE INDEX IF NOT EXISTS idx_v2_as_of  ON v2_events(as_of);
       type: CAPITAL_INSTRUMENT_TYPE_URN,
       tenant: TENANT,
       asOf: AS_OF,
-      originatingEvent: { eventType: "CapitalSubscriptionConfirmed", eventId: ORIGINATING_EVENT_ID },
+      originatingEvent: {
+        eventType: "CapitalSubscriptionConfirmed",
+        eventId: ORIGINATING_EVENT_ID,
+      },
       initialStage: "active",
       economicTerms,
       provenance: SIM_PROVENANCE,
