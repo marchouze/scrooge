@@ -234,6 +234,7 @@ import { getSeedManifestEntry } from "../seeds/manifest";
 import { buildSeedsView } from "../seeds/seeds-view";
 import { type AppliesToScope, appliesToScopeSchema } from "../v2-core/posture";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
+import { ownerSeatTitle, redactAgentNames } from "./agent-title";
 import {
   getBankObligationsView,
   getObligationDetail,
@@ -3696,11 +3697,32 @@ const server = Bun.serve({
       // rather than contributing a silent 0. Folded into the same `failures`
       // section. Authority: D-TRUSTED-FIGURES-PROGRAM-V1; WS-TRUSTED-FIGURES.
       const pnlFailures = buildPnLDataFailuresView(eventStore, nowUtc().slice(0, 10));
-      const failures = [...modelFailures, ...pnlFailures];
+      // No-agent-names rule (Marc): user-facing dashboard UI surfaces seats by
+      // Title only, never persona names. The owner cells are authored as
+      // "Name (Title)" and free-text fields (figure, missingInputs) can embed a
+      // persona name — strip both at this API boundary, the same pattern the
+      // /api/v2 DTO builders use, so the global data-failure banner never
+      // receives a name to render. The upstream view domain types are left
+      // intact (non-UI callers keep the raw owner cell); this transforms only
+      // the response shape. Authority: the no-agent-names standing rule (Marc;
+      // see dashboard/agent-title.ts).
+      const failures = [...modelFailures, ...pnlFailures].map((f) => ({
+        ...f,
+        figure: redactAgentNames(f.figure),
+        owningAgent: ownerSeatTitle(f.owningAgent),
+        missingInputs: f.missingInputs.map(redactAgentNames),
+      }));
       // Expected-event gaps — the other silent-gap shape: an event that should
       // have been emitted but wasn't (no degraded calc to show; figure reads
-      // from stale/absent state). Surfaced in the same banner.
-      const expectedEventGaps = checkExpectedEvents(eventStore);
+      // from stale/absent state). Surfaced in the same banner. The `rationale`
+      // and `label` carry persona names in prose ("Rohan's daily run …",
+      // "Helena's MR-1-FX appetite") — redact them too.
+      const expectedEventGaps = checkExpectedEvents(eventStore).map((g) => ({
+        ...g,
+        label: redactAgentNames(g.label),
+        owningRole: ownerSeatTitle(g.owningRole),
+        rationale: redactAgentNames(g.rationale),
+      }));
       // A `deferred` gap is an honest, tracked build-phase deferral (the event's
       // trigger does not yet exist on the live event flow), NOT a silent-red
       // fault. It is still surfaced (so the disposition is visible) but counted
