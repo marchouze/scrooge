@@ -242,7 +242,6 @@ import {
   loadObligationSeed,
 } from "./bank-obligations-view";
 import { bookBondTrade, registerBondGatewayRoutes } from "./bond-gateway";
-import { buildBankConfigView } from "./v2-bank-config-view";
 import { buildBuildStatusView } from "./build-status-view";
 import { buildConfigView } from "./config-view";
 import { defaultSourcePaths, deriveState, eventSourceFromStore, watchTargets } from "./derive";
@@ -322,6 +321,7 @@ import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
 import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
 import type { DashboardState } from "./types";
+import { buildBankConfigView } from "./v2-bank-config-view";
 import {
   buildClientOnboardingDetail,
   buildClientOnboardingView,

@@ -51,6 +51,12 @@ import { spawnSync } from "node:child_process";
 export const RECON_SUITES: Record<string, readonly string[]> = {
   infra: [
     "recon",
+    // D-BANK-CONFIG-STORE — store-inventory coverage gate (ENFORCING, harden-only).
+    // Every BANK_*_DB store-path env var in the source tree must appear in the
+    // canonical STORE_INVENTORY registry (so a new store can't ship without being
+    // advertised on the V2 Bank Config page); named non-store env vars excluded
+    // explicitly. Authority: D-BANK-CONFIG-STORE; D-ENGINEERING-INTEGRITY-CHARTER.
+    "recon:store-inventory-coverage",
     "recon:runtime-handler-sync",
     "recon:posting-engine-single-subscriber",
     // WS-V2-BBAAS — SA-CCR alias-flip single-emitter gate (CCR events of record).

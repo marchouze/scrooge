@@ -21,6 +21,7 @@
 
 import { statSync } from "node:fs";
 import { getResolvedConfig } from "../platform/config/loader";
+import type { ResolvedConfig } from "../platform/config/schema";
 import {
   STORE_INVENTORY,
   STORE_TIER_LABELS,
@@ -28,7 +29,6 @@ import {
   type StoreDescriptor,
   type StoreTier,
 } from "../platform/config/store-inventory";
-import type { ResolvedConfig } from "../platform/config/schema";
 
 export type PathSource = "env" | "file" | "default";
 
