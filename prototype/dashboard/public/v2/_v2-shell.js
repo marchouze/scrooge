@@ -102,6 +102,7 @@ const NAV = [
       { label: "Evaluations", href: "/v2/operations/evals.html" },
       { label: "Event Schemas", href: "/v2/operations/schemas.html" },
       { label: "Substrate", href: "/v2/operations/substrate.html" },
+      { label: "Bank Config", href: "/v2/operations/config.html" },
     ],
   },
   {

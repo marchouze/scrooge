@@ -52,10 +52,11 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { existsSync, mkdirSync } from "node:fs";
-import { homedir } from "node:os";
-import { dirname, resolve } from "node:path";
+import { dirname } from "node:path";
 
 import { Database } from "bun:sqlite";
+
+import { getBankConfig } from "../../config/loader";
 
 import {
   type SettledCashLeg as SharedSettledCashLeg,
@@ -66,14 +67,16 @@ import { AnchorDbCashSink } from "../settlement/cash-sink";
 import { resolveMaturityMaterialisation } from "./maturity-materialisation";
 
 // ---------------------------------------------------------------------------
-// v2 anchor store resolution (mirrors fil-instance-positions.ts + the recon
-// gates — single canonical resolution, NEVER hardcoded path).
+// v2 anchor store resolution — centralized in the platform config loader
+// (D-BANK-CONFIG-STORE). `getBankConfig().v2AnchorDb` applies the same
+// env → file → default precedence (BANK_V2_ANCHOR_DB → platform.json →
+// $HOME/.local/share/bank/v2-anchor.db) as every other store path, so the
+// resolution is no longer duplicated here. The export is retained for the
+// existing callers (and the test/recon ergonomics) — it now delegates to config.
 // ---------------------------------------------------------------------------
 
 export function resolveV2AnchorDb(): string {
-  const fromEnv = process.env.BANK_V2_ANCHOR_DB;
-  if (fromEnv && fromEnv.length > 0) return fromEnv;
-  return resolve(homedir(), ".local", "share", "bank", "v2-anchor.db");
+  return getBankConfig().v2AnchorDb;
 }
 
 const FIL_CITATIONS = [

@@ -11,6 +11,27 @@ export interface BankConfigPaths {
   eventDb: string;
   marketDataDb: string;
   graphDb: string;
+  /**
+   * V2 anchor store — the FIL-instance-of-record book (FilInstrumentCreated /
+   * Terminated). A projection-tier store: rebuildable by replaying the canonical
+   * event store + product rules. Env: BANK_V2_ANCHOR_DB.
+   */
+  v2AnchorDb: string;
+  /**
+   * V2 control-plane store — cross-tenant fleet/registry metadata (tenant
+   * registry, fleet state, the bucket-C store-tee mirror). A projection-tier
+   * store. Env: BANK_V2_CONTROL_PLANE_DB.
+   *
+   * NOTE (tracked de-dup gap): the production resolver in
+   * `v2-core/control-plane/store.ts` (`defaultControlPlanePath`) CANNOT import
+   * this loader — the `recon:v2-no-v1-import` boundary forbids any v2-core file
+   * from importing `platform/`. That resolver reads the SAME env var
+   * (BANK_V2_CONTROL_PLANE_DB) and SAME default
+   * (`$HOME/.local/share/bank/v2-control-plane.db`), so the value never diverges;
+   * but the two resolution sites are not literally one function. Recorded as a
+   * tracked gap rather than papered over. Authority: D-BANK-CONFIG-STORE.
+   */
+  v2ControlPlaneDb: string;
   documentStoreRoot: string;
   archiveDir: string;
   repoRoot: string;
