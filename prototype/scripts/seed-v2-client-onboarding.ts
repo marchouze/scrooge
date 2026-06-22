@@ -95,6 +95,29 @@ interface SeedClient {
   readonly crsResidency: string;
   readonly creditGrade: string;
   readonly accountCurrency: string;
+  /**
+   * SWIFT BIC — present for tradeable institutions (banks). A client without a
+   * BIC is onboarded but is NOT an FX counterparty (the FX resolver excludes it,
+   * fail-closed). Corporates here onboard WITHOUT a BIC + FX pairs to
+   * demonstrate that exclusion (onboarded ≠ FX-eligible).
+   */
+  readonly bic?: string;
+  /** FX-spot eligible pairs. Non-empty ⇒ FX-spot authorised. */
+  readonly fxEligiblePairs?: readonly string[];
+}
+
+/** Standard FX-spot pair set a sim bank counterparty is authorised for. */
+const SIM_BANK_FX_PAIRS = ["USD/ZAR", "EUR/ZAR", "GBP/ZAR", "EUR/USD", "GBP/USD"] as const;
+
+/**
+ * Deterministic, replay-stable 11-char BIC for a sim bank from its slug +
+ * jurisdiction. Shape: 4-letter institution code (slug, A-Z padded) + 2-letter
+ * country + "JJ" location + "XXX" branch. Synthetic — build-phase fixtures only.
+ */
+function simBic(slug: string, jurisdiction: string): string {
+  const inst = (slug.replace(/[^a-zA-Z]/g, "").toUpperCase() + "XXXX").slice(0, 4);
+  const country = jurisdiction.slice(0, 2).toUpperCase();
+  return `${inst}${country}JJXXX`;
 }
 
 // The 15 simulated institutional clients.
@@ -132,6 +155,8 @@ function bank(slug: string, legalName: string, jurisdiction: string): SeedClient
     crsResidency: jurisdiction,
     creditGrade: "A",
     accountCurrency: "ZAR",
+    bic: simBic(slug, jurisdiction),
+    fxEligiblePairs: [...SIM_BANK_FX_PAIRS],
   };
 }
 
@@ -163,6 +188,8 @@ function intlBank(slug: string, legalName: string, jurisdiction: string): SeedCl
     crsResidency: jurisdiction,
     creditGrade: "A",
     accountCurrency: "USD",
+    bic: simBic(slug, jurisdiction),
+    fxEligiblePairs: [...SIM_BANK_FX_PAIRS],
   };
 }
 
@@ -203,6 +230,8 @@ function lifecycleEvents(c: SeedClient): Event[] {
         jurisdiction: c.jurisdiction,
         sector: c.sector,
         partyRef: `urn:party:counterparty:${c.slug}`,
+        ...(c.bic !== undefined ? { bic: c.bic } : {}),
+        ...(c.fxEligiblePairs !== undefined ? { fxEligiblePairs: [...c.fxEligiblePairs] } : {}),
         citations: CITES,
       },
     }),

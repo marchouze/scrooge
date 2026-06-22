@@ -173,6 +173,7 @@ import { tracePolicyBackToRegulation } from "../platform/regulatory/graph/query"
 import { getActiveBondCounterparties } from "../platform/simulation/bond-counterparty-registry";
 import { BondSimEngine } from "../platform/simulation/bond-sim-engine";
 import { getActiveFxCounterparties } from "../platform/simulation/fx-counterparty-registry";
+import { getOnboardedFxCounterparties } from "../platform/simulation/onboarded-fx-counterparty-resolver";
 
 import {
   makeApplicabilityAssessmentConcluded,
@@ -454,7 +455,13 @@ function fxPayloadToBookBody(
 
 const fxSimEngine = new FxSimEngine(eventStore, {
   marketDataStore,
-  getCounterparties: () => getActiveFxCounterparties(eventStore),
+  // WS-FX-V2-SIMULATOR-FIRST: the FX simulator transacts ONLY with clients
+  // onboarded WITHIN the simulation (terminal ClientOnboardingActivated, FX-spot
+  // authorised), never a static seed/party-register list. No onboarded client →
+  // no counterparty → fireTrade emits no trade (fail-closed). The production /
+  // real-bank path (getActiveFxCounterparties) is unchanged and used elsewhere.
+  // Authority: D-FX-V2-SIMULATOR-FIRST.
+  getCounterparties: () => getOnboardedFxCounterparties(eventStore),
   executeFxTrade: (payload, _asOf, _counterpartyBic, provenanceMode, settlementMode) => {
     void bookFxTrade(fxPayloadToBookBody(payload, provenanceMode, settlementMode)).catch(
       (err: unknown) => {

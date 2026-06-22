@@ -455,6 +455,14 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // credit / accounts) + a prospect registration. A concealed activation is a
     // fail-closed compliance breach. Authority: D-V1-REMOVAL-PHASE-1.
     "recon:v2-client-onboarding-integrity",
+    // WS-FX-V2-SIMULATOR-FIRST — the FX simulator's counterparty-source coherence
+    // gate. ENFORCING: every simulator-authored FX trade (venue OTC-SIM) must name
+    // a counterparty that is an IN-SIM ONBOARDED, active, FX-eligible client
+    // (terminal ClientOnboardingActivated + BIC + FX-spot eligibility) — no static
+    // seed / party-register fallback. A simulator trade with a non-onboarded
+    // counterparty is a fail-closed coherence breach. Authority:
+    // D-FX-V2-SIMULATOR-FIRST.
+    "recon:fx-sim-counterparty-onboarded",
     "recon:fx-rate-magnitude",
     "recon:entity-identity-coherence",
     "recon:procedure-event-name-coherence",
