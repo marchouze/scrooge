@@ -134,6 +134,14 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // D-FX-V2-SIMULATOR-FIRST, P4-SECURITY-DESIGNED-IN.
   "platform/markets/settlement/cash-sink.test.ts",
   "platform/markets/counterparty/assign-basel-class.test.ts",
+  // WS-FX-V2-SIMULATOR-FIRST — the FX-sim onboarded-counterparty resolver test
+  // builds in-memory throwaway EventStore fixtures to exercise the onboarding →
+  // FX-eligible resolution + the EnvSimEngine wiring (a client must be onboarded
+  // in-sim before it can be an FX counterparty). Same carve-out rationale as
+  // tests/ and the platform/simulation-v2/ dir: no production access path — the
+  // simulator never touches the canonical store. Citation: D-FX-V2-SIMULATOR-FIRST,
+  // P4-SECURITY-DESIGNED-IN.
+  "platform/simulation/onboarded-fx-counterparty-resolver.test.ts",
   // The recon self-test (formerly harness.ts) builds an in-memory throwaway
   // store for the round-trip assertion; gating it would require synthesising
   // a fake policy resolver for every test event, defeating the purpose.

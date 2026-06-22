@@ -8,6 +8,9 @@
 //   projection — ClientOnboardingRegister, foldClientOnboardingRegister,
 //                emptyClientOnboardingRegister, ClientOnboardingPhase,
 //                REQUIRED_GATING_PHASES
+//   fx-counterparties — fxCounterpartiesFromOnboardingRegister /
+//                ...FromOnboardingEvents, isFxEligibleOnboardedClient,
+//                OnboardedFxCounterparty (the onboarded→FX-eligible resolver)
 //
 // PACKAGE BOUNDARY: no v1 imports (D-V1-REMOVAL-PHASE-1; recon:v2-no-v1-import).
 // Authority: D-V1-REMOVAL-PHASE-1; WS-V2-CLIENT-ONBOARDING.
@@ -15,3 +18,4 @@
 
 export * from "./events";
 export * from "./projection";
+export * from "./fx-counterparties";
