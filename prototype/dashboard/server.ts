@@ -326,8 +326,8 @@ import {
   buildClientOnboardingDetail,
   buildClientOnboardingView,
 } from "./v2-client-onboarding-view";
-import { buildCapitalView } from "./v2-finance-view";
 import { buildGlAccountLedger, buildGlView } from "./v2-finance-gl-view";
+import { buildCapitalView } from "./v2-finance-view";
 import {
   buildV2FxBlotterView,
   buildV2FxCounterpartiesView,

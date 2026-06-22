@@ -58,16 +58,16 @@
 //   IFRS-9-§4.2.1; Principle 1; Principle 2.
 // Author: Atlas (Core banking platform architect, engineering).
 
+import type {
+  FilInstrumentCreatedPayload,
+  FilInstrumentTerminatedPayload,
+} from "../../../v2-core/fil-instances/events";
 import {
   type CapitalPostingLeg,
   isCapitalPostingInstance,
   postCapitalIssuanceLegs,
   postCapitalRedemptionLegs,
 } from "../../../v2-core/posting-rules/capital";
-import type {
-  FilInstrumentCreatedPayload,
-  FilInstrumentTerminatedPayload,
-} from "../../../v2-core/fil-instances/events";
 import type { EventStore } from "../../event-store/store";
 import type { Event } from "../../event-store/types";
 import {

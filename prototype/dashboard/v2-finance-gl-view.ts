@@ -39,11 +39,7 @@
 //   D-V1-REMOVAL-PHASE-4; IFRS-9; Principle 1; Principle 6.
 // Author: Atlas (Core banking platform architect, engineering).
 
-import {
-  fromMinorUnits,
-  roundDecimal,
-  toCanonicalString,
-} from "../platform/core/decimal-engine";
+import { fromMinorUnits, roundDecimal, toCanonicalString } from "../platform/core/decimal-engine";
 import type { EventStore } from "../platform/event-store/store";
 import type { ProvenanceFilter } from "../platform/projections/filter";
 import {
