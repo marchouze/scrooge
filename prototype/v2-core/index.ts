@@ -164,6 +164,16 @@ export * from "./fil-attribution";
  * predicate; PostureRegister projection. Authority: D-W8-POSTURE-REGISTER-SLICE-1. */
 export * from "./posture";
 
+// --- Client (counterparty) onboarding (WS-V2-CLIENT-ONBOARDING) -------------
+
+/** @tier K — born-V2 client (counterparty) onboarding event family
+ * (ClientOnboarding* sounding→…→activated/offboarded payload schemas + kind constants)
+ * + ClientOnboardingRegister projection (foldClientOnboardingRegister, listActiveClients,
+ * REQUIRED_GATING_PHASES). Copies the SHAPE of the V1 institutional-client lifecycle, imports
+ * none of it. ANCHOR-BANK ONLY — the bank's own counterparty onboarding lifecycle is internal.
+ * Authority: D-V1-REMOVAL-PHASE-1; WS-V2-CLIENT-ONBOARDING. */
+export * from "./client-onboarding";
+
 // --- Applicability-assessment lifecycle (S8) -------------------------------
 
 /** @tier R — ApplicabilityAssessmentRequested / Performed / Concluded event types; the pure
