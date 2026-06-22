@@ -37,7 +37,7 @@ import { run as runMandateOwnership } from "../../platform/recon/mandate-ownersh
 import { run as runPermissionGateDefault } from "../../platform/recon/permission-gate-default";
 import { run as runProseDuplication } from "../../platform/recon/prose-duplication";
 import type { ReconResult, ReconViolation } from "../../platform/recon/types";
-import { claudeAvailable, tryGenerateNarrative } from "../claude";
+import { narrativeAvailable, narrativeSkippedNote, tryGenerateNarrative } from "../narrative";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 interface PipelineEntry {
@@ -334,7 +334,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     eventsEmitted += emitAuditFindingEvents(ctx, r);
   }
 
-  // Generate the Claude narrative (when API key is available + not dry-run).
+  // Generate the narrative via the configured provider (when available + not dry-run).
   // This is the substrate piece that closes Atlas's gap #4 — agents now
   // produce substantive narrative on top of mechanical observation.
   // Failures here do NOT fail the run: the mechanical content is the
@@ -342,9 +342,10 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   let narrative: string | null = null;
   let narrativeNote: string | null = null;
   if (!ctx.dryRun) {
-    if (!claudeAvailable()) {
-      narrativeNote =
-        "Narrative skipped: ANTHROPIC_API_KEY not set on this runner. Mechanical recon results above stand on their own. Set the secret in GitHub Actions to enable narrative generation.";
+    if (!narrativeAvailable()) {
+      narrativeNote = narrativeSkippedNote(
+        "Mechanical recon results above stand on their own. Set the selected provider's API key on this runner to enable narrative generation.",
+      );
     } else {
       const userInput = buildNarrativeInput(ctx, results);
       const r = await tryGenerateNarrative({
