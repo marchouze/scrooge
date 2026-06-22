@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  com.scrooge.scheduler-autopull.plist
+  ====================================
+
+  macOS LaunchAgent that keeps the dedicated CLEAN scheduler worktree
+  (`.scheduler-live`) pinned to origin/main every 30s, so the interval-driven
+  `com.scrooge.scheduler-tick` job always runs the latest merged code.
+
+  This is the scheduler analogue of `com.scrooge.dashboard-autopull`: it mirrors
+  origin/main into a serve-only worktree via `git fetch origin main && git reset
+  --hard origin/main` (run by `scrooge-scheduler-autopull.sh`). Unlike the
+  dashboard, the scheduler is interval-driven (not a long-lived server), so the
+  next tick picks up the refreshed checkout automatically — no kickstart needed.
+
+  WHY THIS EXISTS (D-SCHEDULER-DEPLOY-DECOUPLE, CEO-approved 2026-06-22):
+  the scheduler-tick used to self-update its own code in-process via
+  `git fetch origin main` + `git pull --rebase` (a side-effect of committing
+  derived archive renders to the MAIN worktree). Accumulated render-commits
+  conflicted on rebase → the rebase wedged → the fleet ran STALE code until a
+  manual `reset --hard`. Decoupling deploy onto a clean autopull mirror removes
+  that failure mode entirely (same fix the dashboard received 2026-06-22).
+
+  Author: Atlas (Core banking platform architect, engineering).
+
+  This file is a TEMPLATE. The companion install.sh substitutes the literal
+  tokens `__SCHEDULER_AUTOPULL_SCRIPT__`, `__SCHEDULER_LIVE_DIR__`, and
+  `__LOG_DIR__` with absolute paths derived at install time, then writes the
+  rendered plist to ~/Library/LaunchAgents/.
+
+  NOT FOR PRODUCTION — build-phase fixture. Production-grade always-on is
+  deferred to the Azure migration workstream (Principle 3).
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.scrooge.scheduler-autopull</string>
+
+    <key>ProgramArguments</key>
+    <array>
+      <string>/bin/bash</string>
+      <string>__SCHEDULER_AUTOPULL_SCRIPT__</string>
+    </array>
+
+    <!-- Every 30 seconds: fetch origin/main and hard-reset the live worktree if it advanced. -->
+    <key>StartInterval</key>
+    <integer>30</integer>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>Nice</key>
+    <integer>10</integer>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+
+    <key>StandardOutPath</key>
+    <string>__LOG_DIR__/scheduler-autopull.log</string>
+    <key>StandardErrorPath</key>
+    <string>__LOG_DIR__/scheduler-autopull.log</string>
+
+    <!--
+      EnvironmentVariables.
+        - PATH so `git` resolves.
+        - SCHEDULER_LIVE_DIR points the autopull script at the dedicated clean
+          scheduler worktree. Sourced here (not hardcoded in the script) per
+          Engineering Charter command 4 (source, don't hardcode).
+      NOTE: this job performs NO git commit/push and NEVER writes to the main
+      worktree (it only `reset --hard`s the serve-only `.scheduler-live`
+      worktree), so it intentionally does NOT carry the
+      BANK_ALLOW_MAIN_WORKTREE_WRITE allowlist opt-in.
+    -->
+    <key>EnvironmentVariables</key>
+    <dict>
+      <key>PATH</key>
+      <string>/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+      <key>SCHEDULER_LIVE_DIR</key>
+      <string>__SCHEDULER_LIVE_DIR__</string>
+    </dict>
+
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+  </dict>
+</plist>

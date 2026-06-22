@@ -21,7 +21,6 @@
 //
 // Author: Atlas (A2.1; S8 §3.3 dispatch wiring 2026-05-10)
 
-import { execSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -205,50 +204,36 @@ async function main(): Promise<number> {
     );
   }
 
-  // 6. Auto-commit any new archive/owner-inbox/ outputs produced by this tick.
-  //    Conditional: skip silently when nothing changed. Rebase-before-push per
-  //    dispatch discipline. 5-attempt push-retry on non-fast-forward rejection.
-  try {
-    const archiveStatus = execSync(
-      `git -C "${REPO_ROOT}" status --porcelain archive/owner-inbox/`,
-      { encoding: "utf8" },
-    ).trim();
-    if (archiveStatus.length > 0) {
-      const dateStr = now.toISOString().slice(0, 10);
-      const commitMsg = `chore(archive): launchd scheduler outputs — ${dateStr}`;
-      execSync(`git -C "${REPO_ROOT}" add archive/owner-inbox/`, { stdio: "pipe" });
-      execSync(`git -C "${REPO_ROOT}" commit -m "${commitMsg}"`, { stdio: "pipe" });
-      logger.info({ commitMsg }, `scheduler:tick — archive committed: ${commitMsg}`);
-
-      execSync(`git -C "${REPO_ROOT}" fetch origin main`, { stdio: "pipe" });
-      execSync(`git -C "${REPO_ROOT}" rebase origin/main`, { stdio: "pipe" });
-
-      let pushed = false;
-      for (let attempt = 1; attempt <= 5; attempt++) {
-        try {
-          execSync(`git -C "${REPO_ROOT}" push`, { stdio: "pipe" });
-          pushed = true;
-          logger.info({ attempt }, `scheduler:tick — archive push succeeded (attempt ${attempt})`);
-          break;
-        } catch {
-          if (attempt < 5) {
-            logger.warn(
-              { attempt },
-              `scheduler:tick — archive push rejected (attempt ${attempt}), rebasing`,
-            );
-            execSync(`git -C "${REPO_ROOT}" pull --rebase`, { stdio: "pipe" });
-          }
-        }
-      }
-      if (!pushed) {
-        logger.error({}, "scheduler:tick — archive push failed after 5 attempts");
-      }
-    } else {
-      logger.debug({}, "scheduler:tick — archive: nothing new to commit");
-    }
-  } catch (err) {
-    logger.error({ err }, "scheduler:tick — archive auto-commit failed");
-  }
+  // NOTE (D-SCHEDULER-DEPLOY-DECOUPLE, 2026-06-22): the scheduler tick NO
+  // LONGER commits, rebases, fetches, or pushes git. Two prior behaviours were
+  // removed here:
+  //   (a) it auto-committed event-derived `archive/owner-inbox/*.md` renders to
+  //       the canonical main worktree every tick — a Principle 1 violation
+  //       (markdown is a render of events, never the canonical artefact; the
+  //       events + RMS registers are the source of truth, see RMS Phase 4); and
+  //   (b) as a side-effect of pushing those commits it ran in-process
+  //       `git fetch origin main` + `git rebase origin/main` + `git pull
+  //       --rebase`, which double-served as the scheduler's code self-update.
+  //       Accumulated render-commits conflicted on rebase → the rebase wedged →
+  //       the fleet ran STALE code until a manual `reset --hard origin/main`.
+  //
+  // Both concerns are now handled OUTSIDE this process, mirroring the dashboard
+  // deploy topology (`.dashboard-live` + `com.scrooge.dashboard-autopull`):
+  //   - Code freshness is owned by the new `com.scrooge.scheduler-autopull`
+  //     launchd job, which pins a dedicated CLEAN `.scheduler-live` worktree to
+  //     origin/main via `git fetch origin main && git reset --hard origin/main`.
+  //     The tick is a pure consumer of whatever code is checked out — it never
+  //     mutates the repo.
+  //   - Deliverable renders are written to disk / the document store by the
+  //     authoring path (RMS `RecordFiled` + `runtime/lib/record-deliverable.ts`)
+  //     and are never committed to git by the scheduler.
+  //
+  // Net effect: the scheduler tick performs ZERO git operations and ZERO writes
+  // to the main worktree, so it no longer needs (nor receives) the
+  // `BANK_ALLOW_MAIN_WORKTREE_WRITE` allowlist opt-in.
+  //
+  // Authority: D-SCHEDULER-DEPLOY-DECOUPLE (CEO-approved 2026-06-22);
+  //   Principles/1-events-are-truth.md; D-ENGINEERING-INTEGRITY-CHARTER.
 
   // Summary line.
   logger.info(
