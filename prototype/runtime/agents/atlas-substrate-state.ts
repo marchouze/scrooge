@@ -27,8 +27,8 @@ import {
   SUBSTRATE_GAP_REGISTER,
   type SubstrateGapRecord,
 } from "../../platform/substrate/gap-register";
-import { claudeAvailable, tryGenerateNarrative } from "../claude";
 import { HANDLERS_METADATA } from "../handlers-metadata";
+import { narrativeAvailable, narrativeSkippedNote, tryGenerateNarrative } from "../narrative";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
 const EVENT_CITATIONS = ["GOV-FRAMEWORK-CEO-RESERVED"];
@@ -623,13 +623,12 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     }
   }
 
-  // Narrative pass (degrades gracefully when ANTHROPIC_API_KEY is unset).
+  // Narrative pass (degrades gracefully when the selected narrative provider is unavailable).
   let narrative: string | null = null;
   let narrativeNote: string | null = null;
   if (!ctx.dryRun) {
-    if (!claudeAvailable()) {
-      narrativeNote =
-        "Narrative skipped: ANTHROPIC_API_KEY not set on this runner. Substrate snapshot above stands on its own.";
+    if (!narrativeAvailable()) {
+      narrativeNote = narrativeSkippedNote("Substrate snapshot above stands on its own.");
     } else {
       const r = await tryGenerateNarrative({
         stableSystem: ATLAS_NARRATIVE_SYSTEM,

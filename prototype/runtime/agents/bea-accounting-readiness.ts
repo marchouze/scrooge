@@ -50,7 +50,7 @@ import { resolve } from "node:path";
 
 import { eventStore, logger } from "../../platform/composition";
 import { makeAccountingReadinessSnapshot } from "../../platform/event-store/event-types-readiness-snapshots";
-import { claudeAvailable, tryGenerateNarrative } from "../claude";
+import { narrativeAvailable, narrativeSkippedNote, tryGenerateNarrative } from "../narrative";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
@@ -524,9 +524,8 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   let narrative: string | null = null;
   let narrativeNote: string | null = null;
   if (!ctx.dryRun) {
-    if (!claudeAvailable()) {
-      narrativeNote =
-        "Narrative skipped: ANTHROPIC_API_KEY not set on this runner. Inventory above stands on its own.";
+    if (!narrativeAvailable()) {
+      narrativeNote = narrativeSkippedNote("Inventory above stands on its own.");
     } else {
       const r = await tryGenerateNarrative({
         stableSystem: BEA_NARRATIVE_SYSTEM,
