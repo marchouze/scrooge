@@ -135,6 +135,13 @@ export interface ClientOnboardingRecord {
   readonly sector: ClientSector | undefined;
   readonly kycTier: string | undefined;
   readonly faisCategory: string | undefined;
+  /** SWIFT BIC captured at prospect registration (tradeable-party identity). */
+  readonly bic: string | undefined;
+  /**
+   * FX-spot pairs declared at prospect registration. Non-empty ⇒ FX-spot
+   * authorised. The FX-counterparty resolver requires this AND `activated`.
+   */
+  readonly fxEligiblePairs: readonly string[] | undefined;
   readonly phase: ClientOnboardingPhase;
   readonly isTerminal: boolean;
   /** Phases seen for this counterparty (set membership, for gate checks). */
@@ -185,6 +192,8 @@ interface MutableRecord {
   sector: ClientSector | undefined;
   kycTier: string | undefined;
   faisCategory: string | undefined;
+  bic: string | undefined;
+  fxEligiblePairs: readonly string[] | undefined;
   phase: ClientOnboardingPhase | null;
   phasesSeen: Set<ClientOnboardingPhase>;
   lastEventKind: string;
@@ -219,6 +228,8 @@ class ClientOnboardingAccumulator {
         sector: undefined,
         kycTier: undefined,
         faisCategory: undefined,
+        bic: undefined,
+        fxEligiblePairs: undefined,
         phase: null,
         phasesSeen: new Set<ClientOnboardingPhase>(),
         lastEventKind: ev.kind,
@@ -236,6 +247,12 @@ class ClientOnboardingAccumulator {
       if (typeof payload.legalName === "string") rec.legalName = payload.legalName;
       if (typeof payload.jurisdiction === "string") rec.jurisdiction = payload.jurisdiction;
       if (typeof payload.sector === "string") rec.sector = payload.sector as ClientSector;
+      if (typeof payload.bic === "string") rec.bic = payload.bic;
+      if (Array.isArray(payload.fxEligiblePairs)) {
+        rec.fxEligiblePairs = payload.fxEligiblePairs.filter(
+          (p): p is string => typeof p === "string",
+        );
+      }
     }
     if (ev.kind === CLIENT_KYC_PASSED && typeof payload.tier === "string") {
       rec.kycTier = payload.tier;
@@ -293,6 +310,8 @@ class ClientOnboardingAccumulator {
         sector: r.sector,
         kycTier: r.kycTier,
         faisCategory: r.faisCategory,
+        bic: r.bic,
+        fxEligiblePairs: r.fxEligiblePairs ? [...r.fxEligiblePairs] : undefined,
         phase,
         isTerminal: phase === "activated" || phase === "offboarded",
         phasesSeen: new Set(r.phasesSeen),

@@ -99,6 +99,21 @@ export const clientProspectRegisteredPayloadSchema = z
     sector: clientSectorSchema,
     /** Party-axis lineage ref (string only — V2 never imports the V1 party type). */
     partyRef: z.string().min(1).optional(),
+    /**
+     * SWIFT BIC (8 or 11 chars) — the prospect's settlement identity. Present
+     * when the prospect is a tradeable institution (a counterparty the bank may
+     * later deal with). A prospect without a BIC is not yet a tradeable party;
+     * downstream FX-eligibility resolution requires it (an onboarded client with
+     * no BIC is never an FX counterparty — fail-closed).
+     */
+    bic: z.string().min(8).max(11).optional(),
+    /**
+     * FX-spot pairs the prospect is eligible to trade once activated. Format
+     * `BASE/QUOTE` (e.g. `USD/ZAR`). Non-empty ⇒ the client is FX-spot
+     * authorised; absent / empty ⇒ NOT an FX counterparty (the resolver excludes
+     * it — no onboarding-to-FX leakage without an explicit eligibility grant).
+     */
+    fxEligiblePairs: z.array(z.string().min(1)).optional(),
     citations: z.array(citationRefSchema).min(1),
   })
   .strict();
