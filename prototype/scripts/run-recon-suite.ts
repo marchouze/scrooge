@@ -583,6 +583,16 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:period-close-cursor-integrity",
     "recon:ba310-submission-completeness",
     "recon:ba-returns-vs-gl-balances",
+    // D-V2-UI-VISIBILITY-REMEDIATION — GL ⇿ BA-700 capital coherence (ENFORCING,
+    // fail-closed). Over the LIVE event store, the V2 GL Share Capital balance
+    // (ACC-5000-001) must equal the BA-700 capital-composition CET1
+    // paid-up-ordinary-shares numerator under BOTH provenance lenses
+    // (production-only and combined) — the two views fold the SAME capital FIL
+    // events, so a divergence (a stray GL posting bypassing the capital fold) is a
+    // Principle-1 incoherence. Non-vacuous on the live store: the +Sim lens MUST
+    // fold the R300m injection (ci:migrate's capital:emit-injection-v2-sim).
+    // Authority: D-V2-UI-VISIBILITY-REMEDIATION; D-CAPITAL-ASSET-CLASS-V1.
+    "recon:gl-ba700-capital-coherence",
     "recon:mtm-vs-gl-amount-delta",
     "recon:liquidity-position-vs-settled-notional",
     "recon:posting-rule-stub-audit",
