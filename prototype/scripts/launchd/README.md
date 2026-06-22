@@ -234,6 +234,36 @@ installed copies pick up the new `BANK_ALLOW_MAIN_WORKTREE_WRITE=1` key
 templates in this directory are the source). You cannot edit the installed
 copies from a dispatched worktree — re-render is the supported path.
 
+## Agent narrative provider (`BANK_NARRATIVE_PROVIDER`)
+
+The per-agent narrative path (Vera's overnight recon + the `*-readiness` /
+`*-snapshot` agents) is provider-agnostic: the backend is selected at call
+time by the facade `runtime/narrative.ts`, **not** named at any call site.
+
+| `BANK_NARRATIVE_PROVIDER` | Backend                | API key read     |
+| ------------------------- | ---------------------- | ---------------- |
+| _unset_ / `gemini`        | Gemini (default)       | `GEMINI_API_KEY` |
+| `anthropic` / `claude`    | Anthropic (Claude)     | `ANTHROPIC_API_KEY` |
+| anything else             | run fails closed (typed throw) | — |
+
+**Default is Gemini** — the live `ANTHROPIC_API_KEY` is currently invalid
+(401) while the Gemini key is valid (it already drives the regulation-distill
+path). Flipping the whole agent fleet back to Claude is a **config change,
+not a code change**: set `BANK_NARRATIVE_PROVIDER=anthropic` in `.env.local`.
+
+`BANK_NARRATIVE_PROVIDER` is a `BANK_*` key, so it propagates through the
+env-block whitelist (`env-extract.ts` / `whitelistBankKeys`) into the rendered
+plists — re-run `install.sh` after changing it, same as any other `BANK_*` var.
+The provider **keys** (`GEMINI_API_KEY` / `ANTHROPIC_API_KEY`) are not `BANK_*`
+and are loaded by Bun from `.env.local` at process start (the scheduler tick
+runs from `prototype/`); they are never written into the plist env block.
+
+Graceful degradation is preserved per provider: if the selected provider's key
+is missing/invalid the narrative is skipped and the run still completes
+`ok:true` (the mechanical content stands on its own). Authority:
+`D-NARRATIVE-PROVIDER-CONFIG` (CEO-approved 2026-06-22);
+`D-ENGINEERING-INTEGRITY-CHARTER` (command 4 — source, don't hardcode).
+
 ## Related work
 
 - **Brief:** [`Owner Inbox/2026-05-11_atlas_agent-autonomy-operational-status-and-delta-brief.md`](../../../Owner%20Inbox/2026-05-11_atlas_agent-autonomy-operational-status-and-delta-brief.md)
