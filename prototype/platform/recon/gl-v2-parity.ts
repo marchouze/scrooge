@@ -171,12 +171,30 @@ export function run(): ReconResult {
         // byte). So FX-fold V2-only accounts are advisory `warn`; every OTHER
         // (non-fold) V2-only account stays `fail` — a genuine engine regression.
         const isFxFoldAccount = key.startsWith("ACC-2100-");
+        // Capital-fold V2-only accounts — the same EXPECTED pure-fold-ahead-of-V1
+        // state as FX (D-V2-UI-VISIBILITY-REMEDIATION). The V2 capital contribution
+        // is a pure fold over the primary capital FIL events (gl-projection-v2 →
+        // capital-fold) through the lifted capital posting rules; V1 has NO capital
+        // posting chain at all, so the own-funds accounts (ACC-5000-/5050-/5200-)
+        // and the capital settlement nostro (ACC-1200-001) are legitimately
+        // V2-only. The R300m injection is the simulated demonstration admitted under
+        // the operating-book lens; its coherence with BA-700 is independently proven
+        // by capital-fold.test.ts. Advisory warn, mirroring the FX-fold case — NOT a
+        // "V2 posts where it shouldn't" regression.
+        const isCapitalFoldAccount =
+          key.startsWith("ACC-5000-") ||
+          key.startsWith("ACC-5050-") ||
+          key.startsWith("ACC-5200-") ||
+          key.startsWith("ACC-1200-001|");
+        const isFoldAccount = isFxFoldAccount || isCapitalFoldAccount;
         violations.push({
           subject: `gl-v2-parity:v2-only:${key}`,
           message: isFxFoldAccount
             ? `V2 FX-fold account/currency "${key}" has no V1 SubLedger posting. EXPECTED under D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD: the V2 FX contribution is a pure fold over FIL FX events and runs ahead of V1 when the store has no parallel V1 FX SubLedger chain (build-phase / CI-store norm). Byte-equivalence is proven by recon:gl-v2-fold-equivalence-fx. Advisory, not a regression. Authority: D-V1-REMOVAL-PHASE-3A; D-FX-OTC-CLOSURE-BACKLOG.`
-            : `V2 posted to account/currency "${key}" but V1 has no posting there. V2 should not post to accounts outside V1's coverage at Phase 3A scope. Inspect gl-posting-engine-v2.ts to verify account code resolution. Authority: D-V1-REMOVAL-PHASE-3A.`,
-          severity: isFxFoldAccount ? "warn" : "fail",
+            : isCapitalFoldAccount
+              ? `V2 capital-fold account/currency "${key}" has no V1 SubLedger posting. EXPECTED under D-V2-UI-VISIBILITY-REMEDIATION: the V2 capital contribution is a pure fold over the primary capital FIL events (capital-fold) and V1 has no capital posting chain. The R300m injection is the simulated demonstration; its GL ⇿ BA-700 coherence is proven by capital-fold.test.ts. Advisory, not a regression. Authority: D-V1-REMOVAL-PHASE-3A; D-CAPITAL-ASSET-CLASS-V1; D-V2-UI-VISIBILITY-REMEDIATION.`
+              : `V2 posted to account/currency "${key}" but V1 has no posting there. V2 should not post to accounts outside V1's coverage at Phase 3A scope. Inspect gl-posting-engine-v2.ts to verify account code resolution. Authority: D-V1-REMOVAL-PHASE-3A.`,
+          severity: isFoldAccount ? "warn" : "fail",
         });
       } else {
         const v1Minor = v1Map.get(key) ?? 0;

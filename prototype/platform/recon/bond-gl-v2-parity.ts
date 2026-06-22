@@ -117,7 +117,19 @@ export function run(): ReconResult {
 
   try {
     const v1Balance = computeTrialBalanceUncached(args);
-    const v2Balance = computeTrialBalanceV2Uncached(args);
+    // PRODUCTION-ONLY lens for the V2 side. This gate proves V1↔V2 PRODUCTION
+    // posting parity over the (shared) bond account set. The simulated R300m
+    // capital injection (D-V2-UI-VISIBILITY-REMEDIATION) is fold-native and posts
+    // its Dr settlement-cash leg to the shared ZAR nostro (ACC-1200-001) — but it
+    // is `provenance:simulated` and has NO V1 counterpart by design, so admitting
+    // it (the operating-book default) would falsely flag a V2-only bond posting.
+    // The production lens excludes it, keeping the comparison strictly about real
+    // bond postings. (The capital fold-through itself is proven coherent in
+    // platform/accounting/posting-rules-v2/capital-fold.test.ts.)
+    const v2Balance = computeTrialBalanceV2Uncached({
+      ...args,
+      filter: { mode: "production-only" },
+    });
 
     const v1Map = new Map<string, number>();
     for (const row of v1Balance.rows) {
