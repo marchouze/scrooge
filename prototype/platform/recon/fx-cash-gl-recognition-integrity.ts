@@ -82,6 +82,7 @@ import { Database } from "bun:sqlite";
 import {
   type FilInstanceLifecycleEvent,
   type FilInstanceRow,
+  effectiveLiveCashInstances,
   foldFilInstances,
 } from "../../v2-core";
 import { isZeroD, toDecimal } from "../../v2-core/fil-core/decimal";
@@ -178,10 +179,16 @@ export function run(opts: RunOpts = {}): ReconResult {
   const filEvents = opts.filEvents ?? readFilInstanceEvents();
   const register = foldFilInstances(filEvents);
 
-  // Index `cash` instances by their originating FX instance URN.
+  // Index EFFECTIVELY-LIVE `cash` instances by their originating FX instance URN.
+  // `effectiveLiveCashInstances` drops any cash whose originating parent is
+  // terminal (cancelled / terminated) — the derived-liveness cascade
+  // (D-FIL-CONSUMER-SURFACE-ARCHITECTURE). A cancelled-parent cash therefore
+  // contributes NO GL recognition here: the consumer never has to know to cancel
+  // the child. For a settled (non-terminal) parent — the case that PRODUCES the
+  // cash — every leg stays live, so this read is byte-identical to the prior
+  // all-cash scan and the recognition invariants below are unchanged.
   const cashByOrigin = new Map<string, FilInstanceRow[]>();
-  for (const row of register.values()) {
-    if (row.economicTerms.assetClass !== "cash") continue;
+  for (const row of effectiveLiveCashInstances(register)) {
     const origin = row.economicTerms.originatingInstrument;
     if (!origin || origin.length === 0) continue; // orphans are the sibling gate's concern.
     const list = cashByOrigin.get(origin) ?? [];

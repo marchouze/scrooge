@@ -227,6 +227,14 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // instance under a cash-materialising NPA has a matching cash instance (the
     // settlement path ran the product rule). Authority: D-CASH-ASSET-CLASS-V1.
     "recon:cash-materialisation-integrity",
+    // Reverse-cascade fail-closed gate (D-FIL-CONSUMER-SURFACE-ARCHITECTURE): for
+    // every CANCELLED/TERMINATED FX instance, no `cash` it materialised
+    // (originatingInstrument back-ref) may stay EFFECTIVELY LIVE — the derived-
+    // liveness cascade (effectiveLiveCashInstances) must have voided it, so a
+    // consumer never has to know to cancel the child. Closes the reverse-coherence
+    // gap the forward gates above do not police. Non-vacuous on a cancelled-parent-
+    // with-cash case (MV-CASH-002). Authority: D-FIL-CONSUMER-SURFACE-ARCHITECTURE.
+    "recon:fx-cash-reverse-coherence",
     // Capital FIL asset-class fail-closed gate (D-CAPITAL-ASSET-CLASS-V1): every
     // `capital` FIL instance carries a valid typed qualifying-capital tier
     // (CET1/AT1/T2) + a tier-coherent sub-category + an originating back-ref (no

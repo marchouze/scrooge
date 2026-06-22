@@ -8,5 +8,6 @@
 // Authority: D-FIL-FRAMEWORK-UNIFICATION; D-MODEL-BINDING-CONTRACT-V1.
 // Author: Atlas (Substrate Architect, engineering).
 
+export * from "./cash-cascade";
 export * from "./events";
 export * from "./projection";
