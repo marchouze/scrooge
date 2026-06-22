@@ -337,6 +337,14 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // asserts the pure FX fold reproduces it byte-for-byte and the cohort is
   // excluded/reclassified. Not a production access path. T-01 carve-out. F-031.
   "platform/accounting/posting-rules-v2/fx-fold.test.ts",
+  // D-V2-UI-VISIBILITY-REMEDIATION — capital trial-balance fold-through proof
+  // (GL ⇿ BA-700 coherence). Same build-phase fixture pattern as fx-fold.test.ts:
+  // raw EventStore(":memory:") seeds one simulated capital FIL instrument and
+  // asserts the capital fold produces the balanced Dr-nostro / Cr-share-capital
+  // pair, the R300m injection is admitted under +Sim / excluded under Prod, and
+  // the GL Share Capital balance equals the BA-700 CET1 numerator. Not a
+  // production access path. T-01 carve-out. F-031.
+  "platform/accounting/posting-rules-v2/capital-fold.test.ts",
   // D-FIL-BOOK-COMPOSITE-VALUATION — V2 daily-P&L per-currency-breakdown
   // regression proof. Same build-phase fixture pattern: raw EventStore(":memory:")
   // seeds production FIL FX instruments + a MarketDataStore(":memory:") of
