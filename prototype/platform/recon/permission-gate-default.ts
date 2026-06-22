@@ -345,6 +345,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // asserts the pure FX fold reproduces it byte-for-byte and the cohort is
   // excluded/reclassified. Not a production access path. T-01 carve-out. F-031.
   "platform/accounting/posting-rules-v2/fx-fold.test.ts",
+  // D-FIL-CONSUMER-SURFACE-ARCHITECTURE (Step B) — state-driven FX derivation
+  // byte-equivalence proof. Same build-phase fixture pattern as fx-fold.test.ts:
+  // raw EventStore(":memory:") seeds FIL FX events + treatment modules
+  // (production-tagged) and asserts deriveFxInstanceLegs reproduces the event fold
+  // net byte-for-byte (incl. the cancelled-parent + cross-lens cases). Not a
+  // production access path. T-01 carve-out. F-031.
+  "platform/accounting/posting-rules-v2/fx-instance-fold.test.ts",
   // D-V2-UI-VISIBILITY-REMEDIATION — capital trial-balance fold-through proof
   // (GL ⇿ BA-700 coherence). Same build-phase fixture pattern as fx-fold.test.ts:
   // raw EventStore(":memory:") seeds one simulated capital FIL instrument and
