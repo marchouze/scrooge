@@ -13,8 +13,19 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import "../platform/event-store/resolve-event-db-boot";
-
+// NB: this script deliberately imports NEITHER `resolve-event-db-boot` NOR
+// `resolve-document-store-boot`. It is wired into `ci:migrate`, and a CI-chained
+// emission script must keep its event AND its document blob in the SAME
+// per-worktree store (composition posture, `excludeHomeDefault`) so the
+// `RecordFiled.documentHash` is never dangling for `recon:rms-document-blob-
+// integrity` on a clean CI machine. Importing the boot shims would push the blob
+// to the shared HOME document store while the recon reads the per-worktree one —
+// a dangling-record fail. (Same rule the `nadia:*` / `record-d-*` / `npa:*`
+// ci:migrate scripts follow: NEITHER shim → event + blob both stay per-worktree,
+// the pairing holds.) For a standalone shared-store emission, set BANK_EVENT_DB
+// *and* BANK_DOCUMENT_STORE to the shared HOME paths on the command line.
+// Authority: D-CROSS-WORKTREE-EVENT-STORE-SYNC; brief:atlas:extend-cross-worktree-
+// sync-to-document-store-blo:2026-06-10.
 import { clock, eventStore } from "../platform/composition";
 import { recordFiled } from "../platform/records";
 
