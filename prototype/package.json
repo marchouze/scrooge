@@ -11,6 +11,7 @@
     "sla:codegen": "bun run platform/accounting/sla/codegen.ts",
     "recon:fx-subledger-reconciliation": "bun run platform/recon/fx-subledger-reconciliation.ts",
     "recon:escalation-surface-parity": "bun run platform/recon/escalation-surface-parity.ts",
+    "recon:store-inventory-coverage": "bun run platform/recon/store-inventory-coverage.ts",
     "recon:no-ts-suppression": "bun run platform/recon/no-ts-suppression.ts",
     "recon:no-skipped-tests": "bun run platform/recon/no-skipped-tests.ts",
     "recon:no-swallowed-errors": "bun run platform/recon/no-swallowed-errors.ts",

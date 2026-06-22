@@ -11,8 +11,11 @@
 //   BANK_EVENT_DB              → paths.eventDb
 //   BANK_MARKET_DATA_DB        → paths.marketDataDb
 //   BANK_GRAPH_DB              → paths.graphDb
+//   BANK_V2_ANCHOR_DB          → paths.v2AnchorDb
+//   BANK_V2_CONTROL_PLANE_DB   → paths.v2ControlPlaneDb
 //   BANK_DOCUMENT_STORE        → paths.documentStoreRoot (primary; mirrors BANK_EVENT_DB)
 //   BANK_DOCUMENT_STORE_PATH   → paths.documentStoreRoot (legacy alias)
+//   BANK_ARCHIVE_DIR           → paths.archiveDir
 //   BANK_REPO_ROOT             → paths.repoRoot
 //   BANK_DASHBOARD_PORT        → server.port
 //   BANK_DASHBOARD_REFRESH_MS  → server.refreshMs
@@ -51,6 +54,11 @@ function buildDefaults(): BankConfigFile {
       eventDb: resolve(home, ".local", "share", "bank", "event.db"),
       marketDataDb: resolve(home, ".local", "share", "bank", "market-data.db"),
       graphDb: resolve(home, ".local", "share", "bank", "graph.db"),
+      // Defaults MUST match the standalone resolvers these mirror:
+      //   v2AnchorDb       ← materialise-settled-cash.ts resolveV2AnchorDb()
+      //   v2ControlPlaneDb ← v2-core/control-plane/store.ts defaultControlPlanePath()
+      v2AnchorDb: resolve(home, ".local", "share", "bank", "v2-anchor.db"),
+      v2ControlPlaneDb: resolve(home, ".local", "share", "bank", "v2-control-plane.db"),
       documentStoreRoot: resolve(home, ".local", "share", "bank", "documents"),
       archiveDir: resolve(home, "code", "Bank", "archive"),
       repoRoot: resolve(home, "code", "Bank"),
@@ -190,6 +198,12 @@ function buildResolved(): ResolvedConfig {
       eventDb: resolveStr(process.env.BANK_EVENT_DB, fp?.eventDb, dp.eventDb),
       marketDataDb: resolveStr(process.env.BANK_MARKET_DATA_DB, fp?.marketDataDb, dp.marketDataDb),
       graphDb: resolveStr(process.env.BANK_GRAPH_DB, fp?.graphDb, dp.graphDb),
+      v2AnchorDb: resolveStr(process.env.BANK_V2_ANCHOR_DB, fp?.v2AnchorDb, dp.v2AnchorDb),
+      v2ControlPlaneDb: resolveStr(
+        process.env.BANK_V2_CONTROL_PLANE_DB,
+        fp?.v2ControlPlaneDb,
+        dp.v2ControlPlaneDb,
+      ),
       documentStoreRoot: resolveStr(
         // Primary env (mirrors BANK_EVENT_DB naming) wins over the legacy
         // alias — same ordering as resolve-document-store.ts.
@@ -199,7 +213,7 @@ function buildResolved(): ResolvedConfig {
         fp?.documentStoreRoot,
         dp.documentStoreRoot,
       ),
-      archiveDir: resolveStr(undefined, fp?.archiveDir, dp.archiveDir),
+      archiveDir: resolveStr(process.env.BANK_ARCHIVE_DIR, fp?.archiveDir, dp.archiveDir),
       repoRoot: resolveStr(process.env.BANK_REPO_ROOT, fp?.repoRoot, dp.repoRoot),
     },
     server: {
@@ -241,6 +255,8 @@ export function getBankConfig(): BankConfigPaths & {
     eventDb: resolved.paths.eventDb.value,
     marketDataDb: resolved.paths.marketDataDb.value,
     graphDb: resolved.paths.graphDb.value,
+    v2AnchorDb: resolved.paths.v2AnchorDb.value,
+    v2ControlPlaneDb: resolved.paths.v2ControlPlaneDb.value,
     documentStoreRoot: resolved.paths.documentStoreRoot.value,
     archiveDir: resolved.paths.archiveDir.value,
     repoRoot: resolved.paths.repoRoot.value,

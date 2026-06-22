@@ -321,6 +321,7 @@ import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
 import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
 import type { DashboardState } from "./types";
+import { buildBankConfigView } from "./v2-bank-config-view";
 import {
   buildClientOnboardingDetail,
   buildClientOnboardingView,
@@ -5604,6 +5605,21 @@ const server = Bun.serve({
       return jsonResponse({
         ...buildSubstrateView(eventStore, filter, nowUtc()),
         pageProvenance: filter,
+      });
+    }
+    // Bank Config (Operations) — advertises every persistent data store grouped
+    // by tier, with the load-bearing market-data distinction explicit (market
+    // data is OBSERVATION, not events). Reads the canonical STORE_INVENTORY
+    // registry + the resolved platform config (env → file → default). Store
+    // metadata is structural reference data, not event-derived and not
+    // provenance-toggled, so pageProvenance is production-reference (both toggle
+    // modes show the same page). Name-free by construction (no owners to mask).
+    // Authority: D-BANK-CONFIG-STORE (centralized config). Mirrors V1 /config.
+    if (req.method === "GET" && url.pathname === "/api/v2/operations/config") {
+      return jsonResponse({
+        ...buildBankConfigView(),
+        asOf: nowUtc(),
+        pageProvenance: productionReferencePageProvenance(),
       });
     }
     // Capital position (Finance) — own-funds composition + capital-adequacy
