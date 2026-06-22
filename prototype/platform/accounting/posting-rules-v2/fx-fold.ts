@@ -84,6 +84,7 @@ import {
   type FxElectionOverride,
   type FxPostingLeg,
   isFxInstance,
+  postFxCancellationReversalLegs,
   postFxCloseLegs,
   postFxInitialRecognitionLegs,
   postFxRevaluationLegs,
@@ -142,6 +143,68 @@ export interface FxFoldSkip {
 export interface FxFoldLeg extends FxPostingLeg {
   /** The FIL lifecycle event_id this leg was folded from. */
   readonly filEventId: string;
+}
+
+// ---------------------------------------------------------------------------
+// Bare-cancellation detection (D-FX-FIXTURE-PROVENANCE-CANCEL-AND-HARDEN).
+//
+// "A cancel must undo what WAS done." A bare cancellation
+// (FilInstrumentTerminated, terminalStage "cancelled", no derecognition / FVOCI
+// terms) carries no economic terms, so the close rule posts only a zero memo and
+// the opening position persists. The fold reverses the instance's accumulated
+// opening legs to net it to zero.
+//
+// PROVENANCE-DECOUPLED BY DESIGN: the cancellation events are scanned across the
+// FULL stream WITHOUT the lens filter, so a cancellation tagged
+// `build-phase-fixture` is still observed when the GL is read under the
+// `production-only` lens (where the cancelled instance's `production` creation
+// DOES fold). The reversal then nets WITHIN the lens partition the creation
+// appears in, because it reverses only the opening legs the fold actually
+// produced under that lens — never inventing a leg for an out-of-lens creation.
+// ---------------------------------------------------------------------------
+
+/** Cancellation metadata captured for reversal: the earliest bare-cancellation
+ * event for an instance (replay-stable: re-stamped reversal is deterministic). */
+interface BareCancellation {
+  readonly instance: string;
+  readonly tenant?: string;
+  readonly asOf: string;
+}
+
+/**
+ * Scan the FULL FIL terminated stream (NO provenance filter) for instances with a
+ * BARE cancellation — terminalStage "cancelled" and neither `derecognitionTerms`
+ * nor `fvociReclassTerms`. A settled-with-reval termination (terms present) is NOT
+ * a bare cancellation: its explicit derecognition legs already net the position,
+ * so it must not be double-reversed. Returns the EARLIEST (asOf, then event_id)
+ * bare cancellation per instance, so the reversal posting date is deterministic
+ * and idempotent regardless of how many cancellation events the instance carries.
+ */
+function findBareCancellations(eventStore: EventStore): Map<string, BareCancellation> {
+  const byInstance = new Map<string, { asOf: string; eventId: string; cancel: BareCancellation }>();
+  for (const e of eventStore.replay({ type: "FilInstrumentTerminated" })) {
+    const p = e.payload as unknown as FilInstrumentTerminatedPayload;
+    if (p.terminalStage !== "cancelled") continue;
+    if (p.derecognitionTerms !== undefined || p.fvociReclassTerms !== undefined) continue;
+    const instance = p.instance;
+    if (instance === undefined || instance.length === 0) continue;
+    const candidate = { asOf: p.asOf, eventId: e.event_id };
+    const existing = byInstance.get(instance);
+    const isEarlier =
+      existing === undefined ||
+      candidate.asOf < existing.asOf ||
+      (candidate.asOf === existing.asOf && candidate.eventId < existing.eventId);
+    if (isEarlier) {
+      byInstance.set(instance, {
+        asOf: candidate.asOf,
+        eventId: candidate.eventId,
+        cancel: { instance, ...(p.tenant !== undefined ? { tenant: p.tenant } : {}), asOf: p.asOf },
+      });
+    }
+  }
+  const result = new Map<string, BareCancellation>();
+  for (const [k, v] of byInstance) result.set(k, v.cancel);
+  return result;
 }
 
 /**
@@ -465,6 +528,14 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
   // De-dup deviation records per (instance, facet) — one election, one deviation.
   const recordedDeviations = new Set<string>();
 
+  // Instances with a BARE cancellation anywhere in the stream (provenance-
+  // independent — see findBareCancellations). After producing the normal legs we
+  // reverse each such instance's accumulated opening position to net it to zero,
+  // ONCE per instance (idempotent). The window-passing opening legs are collected
+  // per instance below.
+  const bareCancellations = findBareCancellations(args.eventStore);
+  const openingLegsByInstance = new Map<string, FxPostingLeg[]>();
+
   // Read the FIL FX lifecycle events from the store in sequence order (stable,
   // matching the engine's iteration). Iterate each registered type stream and
   // merge in sequence order via the store's natural ordering per type; the GL
@@ -601,6 +672,39 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
       if (!leg.postingDate) continue;
       if (leg.postingDate < args.periodStart || leg.postingDate > args.periodEnd) continue;
       legs.push({ ...leg, filEventId: e.event_id });
+      // Collect the instance's window-passing OPENING legs (recognition +
+      // revaluation) so a bare cancellation can reverse exactly the position that
+      // actually folded under THIS lens. Close / settlement / NDF legs are not part
+      // of the standing position and are excluded.
+      if (
+        bareCancellations.has(instance) &&
+        (p.kind === "FilInstrumentCreated" || p.kind === "FilInstrumentAmended")
+      ) {
+        const acc = openingLegsByInstance.get(instance) ?? [];
+        acc.push(leg);
+        openingLegsByInstance.set(instance, acc);
+      }
+    }
+  }
+
+  // Bare-cancellation reversal pass (D-FX-FIXTURE-PROVENANCE-CANCEL-AND-HARDEN).
+  // For each instance with a bare cancellation in the stream, append the equal-and-
+  // opposite legs that net its accumulated opening position to zero. ONCE per
+  // instance (the map has one entry per instance → idempotent). An instance whose
+  // creation did NOT fold under this lens has no accumulated opening legs → nothing
+  // to reverse (correct: there is no standing position to undo in this partition).
+  // The reversal posting date is the cancellation's own date; gate it on the window
+  // so an out-of-window cancellation does not emit (consistent with every other
+  // leg). The reversal is instance-derived (not a single source event), so each
+  // leg's filEventId is addressed by the instance URN + a stable suffix.
+  for (const [instance, cancel] of bareCancellations) {
+    const opening = openingLegsByInstance.get(instance);
+    if (opening === undefined || opening.length === 0) continue;
+    const reversalLegs = postFxCancellationReversalLegs(opening, cancel);
+    for (const leg of reversalLegs) {
+      if (!leg.postingDate) continue;
+      if (leg.postingDate < args.periodStart || leg.postingDate > args.periodEnd) continue;
+      legs.push({ ...leg, filEventId: `${instance}::cancellation-reversal` });
     }
   }
 

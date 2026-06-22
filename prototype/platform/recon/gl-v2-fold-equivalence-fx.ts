@@ -36,6 +36,7 @@ import type {
 } from "../../v2-core/fil-instances/events";
 import {
   type FxPostingLeg,
+  postFxCancellationReversalLegs,
   postFxCloseLegs,
   postFxInitialRecognitionLegs,
   postFxRevaluationLegs,
@@ -96,25 +97,73 @@ function goldenFxBalances(): Map<string, number> {
   );
   void register; // registry is consumed inside foldFxContributionLegs; kept for parity of inputs.
 
+  // Bare-cancellation reversal (D-FX-FIXTURE-PROVENANCE-CANCEL-AND-HARDEN). The
+  // golden mirrors the fold: a bare cancellation (terminalStage "cancelled", no
+  // derecognition / FVOCI terms) reverses the instance's accumulated opening
+  // position. Scanned across the FULL terminated stream (no provenance filter) so a
+  // build-phase-fixture cancellation is observed when the production creation folds.
+  const bareCancellations = new Map<string, { instance: string; tenant?: string; asOf: string }>();
+  for (const e of eventStore.replay({
+    entity: V2_ANCHOR_ENTITY,
+    type: "FilInstrumentTerminated",
+  })) {
+    const p = e.payload as unknown as FilInstrumentTerminatedPayload;
+    if (p.terminalStage !== "cancelled") continue;
+    if (p.derecognitionTerms !== undefined || p.fvociReclassTerms !== undefined) continue;
+    if (p.instance === undefined || p.instance.length === 0) continue;
+    const existing = bareCancellations.get(p.instance);
+    if (existing === undefined || p.asOf < existing.asOf) {
+      bareCancellations.set(p.instance, {
+        instance: p.instance,
+        ...(p.tenant !== undefined ? { tenant: p.tenant } : {}),
+        asOf: p.asOf,
+      });
+    }
+  }
+  const openingByInstance = new Map<string, FxPostingLeg[]>();
+
   for (const t of FX_FIL_EVENT_TYPES) {
     for (const e of eventStore.replay({ entity: V2_ANCHOR_ENTITY, type: t })) {
       if (!eventMatchesProvenanceFilter(e, filter)) continue;
       if (!admitted.has(e.event_id)) continue;
       let legs: FxPostingLeg[] = [];
+      let isOpening = false;
       switch (t) {
         case "FilInstrumentCreated":
           legs = postFxInitialRecognitionLegs(e.payload as unknown as FilInstrumentCreatedPayload);
+          isOpening = true;
           break;
         case "FilInstrumentAmended":
           legs = postFxRevaluationLegs(e.payload as unknown as FilInstrumentAmendedPayload);
+          isOpening = true;
           break;
         case "FilInstrumentTerminated":
           legs = postFxCloseLegs(e.payload as unknown as FilInstrumentTerminatedPayload);
           break;
       }
-      for (const leg of legs) accumulate(map, leg);
+      const instance = (e.payload as { instance?: string }).instance ?? "";
+      for (const leg of legs) {
+        accumulate(map, leg);
+        // Window-passing opening legs for a bare-cancelled instance are captured to
+        // reverse below (mirrors the fold's per-lens capture).
+        if (isOpening && bareCancellations.has(instance)) {
+          if (!leg.postingDate) continue;
+          if (leg.postingDate < V2_PERIOD_START || leg.postingDate > V2_PERIOD_END) continue;
+          const acc = openingByInstance.get(instance) ?? [];
+          acc.push(leg);
+          openingByInstance.set(instance, acc);
+        }
+      }
     }
   }
+
+  // Apply the reversal once per bare-cancelled instance.
+  for (const [instance, cancel] of bareCancellations) {
+    const opening = openingByInstance.get(instance);
+    if (opening === undefined || opening.length === 0) continue;
+    for (const leg of postFxCancellationReversalLegs(opening, cancel)) accumulate(map, leg);
+  }
+
   for (const [k, v] of [...map.entries()]) if (v === 0) map.delete(k);
   return map;
 }

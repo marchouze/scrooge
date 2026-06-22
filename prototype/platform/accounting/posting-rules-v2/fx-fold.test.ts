@@ -895,3 +895,136 @@ describe("WS-FIL-FX-SETTLEMENT-EVENTS — the five rules fire at fold time + bal
     expect(legs.every((l) => l.amount.amount === "0")).toBe(true);
   });
 });
+
+// ---------------------------------------------------------------------------
+// D-FX-FIXTURE-PROVENANCE-CANCEL-AND-HARDEN — "a cancel must undo what WAS done".
+// ---------------------------------------------------------------------------
+
+/** A BARE cancellation (terminalStage "cancelled", no enriched terms) for `id`,
+ * tagged `provenance` — independent of the creation's provenance. */
+function fxCancelled(id: string, asOf: string, provenance: ProvenanceTag): Event {
+  const base = makeFilInstrumentTerminated({
+    asOf,
+    entity: ENTITY,
+    actor: ACTOR,
+    citations: CITES,
+    payload: filInstrumentTerminatedPayloadSchema.parse({
+      kind: "FilInstrumentTerminated",
+      instance: instanceUrn(id),
+      type: FX_TYPE_URN,
+      tenant: TENANT,
+      asOf,
+      originatingEvent: ORIG,
+      terminalStage: "cancelled",
+    }),
+  });
+  return { ...base, provenance };
+}
+
+/** Sum the FX (ACC-2100-*) rows in the trial balance under `mode`. */
+function fxRows(store: EventStore, mode: "production-only" | "combined"): Map<string, number> {
+  const tb = computeTrialBalanceV2Uncached({ ...args(store), filter: { mode } });
+  const out = new Map<string, number>();
+  for (const r of tb.rows) {
+    if (!r.leafAccountId.startsWith("ACC-2100-")) continue;
+    out.set(`${r.leafAccountId}|${r.currency}`, r.amountMinor);
+  }
+  return out;
+}
+
+describe("FX cancellation reversal — a cancelled instance nets to ZERO (gap fix)", () => {
+  test("a bare cancellation reverses the opening position to zero in the trial balance", () => {
+    const store = new EventStore(":memory:");
+    seedTreatmentModules(store);
+    store.append(
+      fxCreated("FX-CANCEL-1", "long", "9260000", "2026-06-01T10:00:00.000Z", PROD_TAG, {
+        eventType: "Ws-v2-s1-fixture-book",
+        eventId: "s1:FX-CANCEL-1",
+      }),
+    );
+    // Before the cancellation: standing FX rows exist.
+    expect(fxRows(store, "production-only").size).toBeGreaterThan(0);
+
+    store.append(fxCancelled("FX-CANCEL-1", "2026-06-22T10:00:00.000Z", PROD_TAG));
+
+    // After the cancellation: ZERO FX rows (opening position fully reversed).
+    expect([...fxRows(store, "production-only").entries()]).toEqual([]);
+    expect([...fxRows(store, "combined").entries()]).toEqual([]);
+
+    // The trial balance stays in balance (ΣDr = ΣCr) — reversal legs are balanced.
+    const tb = computeTrialBalanceV2Uncached(args(store));
+    for (const t of tb.perCurrencyTotals) expect(t.debitMinor).toBe(t.creditMinor);
+  });
+
+  test("the cancellation nets within the CREATION's lens even when its own provenance differs", () => {
+    // Reproduces the live gap: a PRODUCTION creation cancelled by a
+    // BUILD-PHASE-FIXTURE cancellation. Under the production-only lens the
+    // cancellation event is itself filtered out — but the reversal is decoupled
+    // from the cancellation's provenance (scanned across the full stream) and nets
+    // the production opening legs that DID fold under that lens.
+    const store = new EventStore(":memory:");
+    seedTreatmentModules(store);
+    store.append(
+      fxCreated("FX-MISMATCH", "long", "4680000", "2026-06-01T10:00:00.000Z", PROD_TAG, {
+        eventType: "Ws-v2-s1-fixture-book",
+        eventId: "s1:FX-MISMATCH",
+      }),
+    );
+    const fixtureTag: ProvenanceTag = {
+      kind: "build-phase-fixture",
+      sourceLineage: "ws-v2-s1-fixture-remediation",
+    };
+    store.append(fxCancelled("FX-MISMATCH", "2026-06-22T10:00:00.000Z", fixtureTag));
+
+    // Production-only: the production creation folds, the fixture cancellation is
+    // lens-filtered, yet the reversal still nets the production opening to zero.
+    expect([...fxRows(store, "production-only").entries()]).toEqual([]);
+    expect([...fxRows(store, "combined").entries()]).toEqual([]);
+  });
+
+  test("reversal is idempotent — multiple cancellation events reverse the opening exactly once", () => {
+    const store = new EventStore(":memory:");
+    seedTreatmentModules(store);
+    store.append(
+      fxCreated("FX-IDEMP", "long", "6045000", "2026-06-01T10:00:00.000Z", PROD_TAG, {
+        eventType: "Ws-v2-s1-fixture-book",
+        eventId: "s1:FX-IDEMP",
+      }),
+    );
+    // Two cancellation events for the same instance (replay / re-run scenario).
+    store.append(fxCancelled("FX-IDEMP", "2026-06-22T10:00:00.000Z", PROD_TAG));
+    store.append(fxCancelled("FX-IDEMP", "2026-06-23T10:00:00.000Z", PROD_TAG));
+
+    // Net is still exactly zero (not over-reversed into a mirror-image position).
+    expect([...fxRows(store, "production-only").entries()]).toEqual([]);
+    const fold = foldFxContributionLegs(args(store));
+    const reversalLegs = fold.legs.filter((l) => l.postingRuleId === "PR-FX-CANCEL-REVERSAL-V2");
+    // Exactly the opening pair reversed once (2 legs), not 4.
+    expect(reversalLegs.length).toBe(2);
+  });
+
+  test("a settled-with-reval (derecognition terms) trade is NOT cancellation-reversed", () => {
+    // Guard: the enriched-terminal derecognition path is preserved byte-for-byte —
+    // it carries its own balanced legs and must not be double-reversed.
+    const store = new EventStore(":memory:");
+    seedTreatmentModules(store);
+    store.append(
+      fxCreated("FX-SETTLED-REVAL", "long", "9260000", "2026-06-01T10:00:00.000Z", PROD_TAG, {
+        eventType: "Ws-v2-s1-fixture-book",
+        eventId: "s1:FX-SETTLED-REVAL",
+      }),
+    );
+    store.append(
+      terminatedWith("FX-SETTLED-REVAL", "2026-06-10T10:00:00.000Z", {
+        derecognition: { currency: "ZAR", amount: "250000" },
+      }),
+    );
+    const fold = foldFxContributionLegs(args(store));
+    // No cancellation-reversal legs (terminalStage is "settled", terms present).
+    expect(fold.legs.filter((l) => l.postingRuleId === "PR-FX-CANCEL-REVERSAL-V2").length).toBe(0);
+    // The derecognition (PR-FX-CLOSE-V2) legs still fire with non-zero amounts.
+    const closeLegs = fold.legs.filter((l) => l.postingRuleId === "PR-FX-CLOSE-V2");
+    expect(closeLegs.length).toBe(2);
+    expect(closeLegs.every((l) => l.amount.amount !== "0")).toBe(true);
+  });
+});

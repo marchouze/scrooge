@@ -352,3 +352,65 @@ export function postFxCloseLegs(payload: FilInstrumentTerminatedPayload): FxPost
     },
   ];
 }
+
+// ---------------------------------------------------------------------------
+// PR-FX-CANCEL-REVERSAL-V2 — Derecognition that actually UNDOES the opening.
+//
+// "A cancel must undo what WAS done" (D-FX-FIXTURE-PROVENANCE-CANCEL-AND-HARDEN,
+// CEO-approved 2026-06-22). A BARE cancellation (FilInstrumentTerminated with
+// terminalStage "cancelled" and no `derecognitionTerms` / `fvociReclassTerms`)
+// carries no economic terms, so the close rule above can only post a Dr 0 / Cr 0
+// memo that nets nothing — leaving the instance's opening recognition standing in
+// the trial balance. That is the gap: a cancelled FX trade still shows its
+// position legs.
+//
+// The reversal is necessarily an INSTANCE-LEVEL fold operation, not a per-event
+// rule: the terminal event does not carry the prior notional, so the reversal is
+// derived from the legs the instance's own Created / Amended events already
+// produced (its accumulated opening position). This function is the PURE core —
+// given the accumulated opening legs for one cancelled instance, it returns the
+// equal-and-opposite legs that net the position to zero, stamped with the
+// cancellation's posting date / tenant. Both the FX fold (read path) and the
+// fold-equivalence recon golden call it, so the two stay byte-equivalent by
+// construction.
+//
+// IDEMPOTENT BY CONTRACT: the caller invokes this AT MOST ONCE per instance,
+// passing the FULL accumulated opening legs — so replaying additional termination
+// events for the same instance produces no extra reversal (Charter cmd 9).
+// ---------------------------------------------------------------------------
+
+export const FX_CANCEL_REVERSAL_RULE_ID = "PR-FX-CANCEL-REVERSAL-V2";
+
+/**
+ * Produce the reversal legs that net a CANCELLED FX instance's accumulated
+ * opening position to zero. `openingLegs` are the recognition / revaluation legs
+ * the fold already produced for the instance (each a balanced `{accountCode,
+ * creditDebit, amount}`); the reversal flips each leg's `creditDebit` and
+ * re-stamps it with the cancellation's posting date / tenant / source event.
+ * Because the input is balanced (every opening posting is a balanced pair), the
+ * reversal is balanced too — the trial balance stays in balance. An empty input
+ * yields no legs (nothing to reverse).
+ */
+export function postFxCancellationReversalLegs(
+  openingLegs: readonly FxPostingLeg[],
+  cancellation: { instance: string; tenant?: string; asOf: string },
+): FxPostingLeg[] {
+  const postingDate = cancellation.asOf.substring(0, 10);
+  const tenantId = (cancellation.tenant ?? ANCHOR_TENANT_ID) as TenantId;
+  const sourceEventId = cancellation.instance;
+  const iasRule = FX_IAS_RULES.close;
+  const postingRuleId = FX_CANCEL_REVERSAL_RULE_ID;
+  const description = "FX Cancellation reversal — undo opening position (V2)";
+
+  return openingLegs.map((leg) => ({
+    creditDebit: leg.creditDebit === "debit" ? ("credit" as const) : ("debit" as const),
+    accountCode: leg.accountCode,
+    amount: leg.amount,
+    postingDate,
+    tenantId,
+    sourceEventId,
+    iasRule,
+    postingRuleId,
+    description,
+  }));
+}
