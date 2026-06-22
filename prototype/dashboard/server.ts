@@ -321,6 +321,7 @@ import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
 import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
 import type { DashboardState } from "./types";
+import { buildCapitalView } from "./v2-finance-view";
 import {
   buildV2FxBlotterView,
   buildV2FxCounterpartiesView,
@@ -352,7 +353,6 @@ import {
   redactDecisionDetailNames,
   redactNpaDetailNames,
 } from "./v2-views";
-import { buildCapitalView } from "./v2-finance-view";
 import { buildV2WorldSimulatorView } from "./v2-world-simulator-view";
 
 const PORT = Number(process.env.BANK_DASHBOARD_PORT ?? 3010);

@@ -49,6 +49,15 @@
 //   urn:reg:bcbs:rbc:20.2; D5/2025 §2.1.3 (form BA 100); Principle 1; Principle 6.
 // Author: Atlas (Core banking platform architect, engineering).
 
+import {
+  divD,
+  fromMinorUnits,
+  mulD,
+  roundDecimal,
+  toCanonicalString,
+  toDecimal,
+} from "../platform/core/decimal-engine";
+import type { EventStore } from "../platform/event-store/store";
 import { anchorFunctionalCurrency } from "../platform/identity/functional-currency";
 import {
   type CapitalComposition,
@@ -57,7 +66,6 @@ import {
 } from "../platform/projections/ba700-capital-composition";
 import { computeCapitalMetrics } from "../platform/projections/capital-metrics";
 import type { ProvenanceFilter } from "../platform/projections/filter";
-import type { EventStore } from "../platform/event-store/store";
 
 // ---------------------------------------------------------------------------
 // The anchor bank whose capital position this surface reports.
@@ -183,24 +191,39 @@ function subCategoryLabel(sub: string): string {
   return SUB_CATEGORY_LABELS[sub] ?? sub;
 }
 
-/** Format a minor-unit ZAR amount as "R1,234,567" (rands, no cents). */
+/** Group an integer string with thousands separators (display only, not money
+ *  arithmetic). e.g. "300000000" → "300,000,000". */
+function groupThousands(intDigits: string): string {
+  return intDigits.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+/**
+ * Format a minor-unit ZAR amount as "R1,234,567" (rands, no cents). Uses the
+ * exact decimal engine for the minor→major conversion (Charter cmd 6 — no IEEE
+ * float money arithmetic); the thousands grouping is a pure display transform on
+ * the integer digit string, not arithmetic.
+ */
 function fmtMinor(minor: number, currency: string): string {
-  const major = minor / 100;
+  const major = roundDecimal(fromMinorUnits(BigInt(Math.trunc(minor)), 2), 0, "DOWN");
+  const canonical = toCanonicalString(major); // plain, no exponent
+  const negative = canonical.startsWith("-");
+  const digits = negative ? canonical.slice(1) : canonical;
   const symbol = currency === "ZAR" ? "R" : `${currency} `;
-  return `${symbol}${major.toLocaleString("en-ZA", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  })}`;
+  return `${negative ? "−" : ""}${symbol}${groupThousands(digits)}`;
 }
 
 /**
  * Format a ratio (numerator/denominator minor units) as a percentage string.
- * A zero denominator yields "n/a" rather than Infinity — an honest non-value
- * (the bank has no RWA denominator yet under this lens).
+ * Computed with the exact decimal engine — never IEEE float money division.
+ * A zero (or negative) denominator yields "n/a" rather than Infinity — an
+ * honest non-value (the bank has no RWA denominator yet under this lens).
  */
 function fmtRatioPct(numeratorMinor: number, denominatorMinor: number): string {
   if (denominatorMinor <= 0) return "n/a";
-  return `${((numeratorMinor / denominatorMinor) * 100).toFixed(2)}%`;
+  const num = fromMinorUnits(BigInt(Math.trunc(numeratorMinor)), 2);
+  const den = fromMinorUnits(BigInt(Math.trunc(denominatorMinor)), 2);
+  const pct = roundDecimal(mulD(divD(num, den), toDecimal("100")), 2, "HALF_UP");
+  return `${toCanonicalString(pct)}%`;
 }
 
 function toCompositionRow(line: CapitalCompositionLine, currency: string): CapitalCompositionRow {
@@ -234,8 +257,14 @@ export interface BuildCapitalViewArgs {
 export function buildCapitalView(args: BuildCapitalViewArgs): CapitalView {
   const { eventStore, filter, asOf } = args;
   const functionalCurrency = anchorFunctionalCurrency();
-  // Provenance lens → admit simulated own-funds events only under the combined
-  // (+Sim) view. Under production-only the composition is legitimately empty.
+  // Provenance lens drives the composition fold directly via the EXPLICIT
+  // filter (authoritative): `production-only` rejects the simulated R300m
+  // injection in both lifecycle phases → the honest empty state pre-licence;
+  // `combined` admits it → the demonstration figure shows. We do NOT use the
+  // fold's `includeSimulated` boolean, because that only WIDENS the operating-
+  // book default (which already admits simulated in build phase) and so would
+  // paint R300m under Prod too — the exact silent-zero-inverse the standard
+  // forbids. The page filter is `{ mode: "production-only" | "combined" }`.
   const includeSimulated = filter.mode === "combined";
 
   const composition: CapitalComposition = computeCapitalComposition({
@@ -243,7 +272,7 @@ export function buildCapitalView(args: BuildCapitalViewArgs): CapitalView {
     entity: ANCHOR_ENTITY,
     asOf,
     functionalCurrency,
-    includeSimulated,
+    filter,
   });
 
   // Capital-adequacy ratios + RWA denominator + RAS status. This projection is
@@ -310,7 +339,6 @@ export function buildCapitalView(args: BuildCapitalViewArgs): CapitalView {
   // ---- Per-metric decomposition (formula + constituents) ----
   const cet1Lines = compositionRows.filter((r) => r.tier === "cet1");
   const at1Lines = compositionRows.filter((r) => r.tier === "at1");
-  const tier2Lines = compositionRows.filter((r) => r.tier === "t2");
   const tier1Lines = [...cet1Lines, ...at1Lines];
 
   const metricDetails: CapitalMetricDetail[] = [
