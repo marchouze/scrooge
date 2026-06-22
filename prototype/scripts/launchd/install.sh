@@ -29,6 +29,16 @@
 #   dict via the `render-env-block.ts` helper. If absent or empty, the
 #   plist installs with PATH only (current behaviour preserved).
 #
+# Main-worktree write-guard opt-in:
+#   Every plist rendered here also carries `BANK_ALLOW_MAIN_WORKTREE_WRITE=1`
+#   (injected by render-env-block.ts → env-extract.ts). These three agents
+#   are the only legitimate writers to the canonical main worktree, so they
+#   are allowlisted past the fail-closed `.githooks/pre-commit|pre-rebase|
+#   pre-push` guard. Re-run this installer once after the guard lands so the
+#   installed `~/Library/LaunchAgents` copies pick the key up.
+#   Authority: CLAUDE.md §"Dispatch discipline → Worktree isolation";
+#   Engineering Charter D-ENGINEERING-INTEGRITY-CHARTER command 2.
+#
 set -euo pipefail
 
 # --------------------------------------------------------------------
