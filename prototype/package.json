@@ -264,6 +264,7 @@
     "recon:v2-no-v1-import": "bun run platform/recon/v2-no-v1-import.ts",
     "recon:fx-v2-sim-boundary": "bun run platform/recon/fx-v2-sim-boundary.ts",
     "recon:fx-v2-sim-oracle": "bun run platform/recon/fx-v2-sim-oracle.ts",
+    "recon:fx-v2-market-path-grounding": "bun run platform/recon/fx-v2-market-path-grounding.ts",
     "recon:v2-released-surface-clean-core": "bun run platform/recon/v2-released-surface-gate.ts",
     "recon:v2-tier-entitlement-coherence": "bun run platform/recon/v2-tier-entitlement-coherence.ts",
     "recon:v2-standing-data-seed-parity": "bun run platform/recon/v2-standing-data-seed-parity.ts",

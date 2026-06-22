@@ -21,6 +21,7 @@ import { resolve } from "node:path";
 
 import { describe, expect, it } from "bun:test";
 
+import { MarketDataStore } from "../platform/market-data/store";
 import { buildV2WorldSimulatorView } from "./v2-world-simulator-view";
 
 const NOW = "2026-06-21T12:00:00.000Z";
@@ -98,6 +99,77 @@ describe("buildV2WorldSimulatorView — four sections present + populated", () =
     expect(rr.saccrEadMinor).not.toBeNull();
     expect(rr.saccrRcMinor).not.toBeNull();
     expect(rr.saccrEadMinor as number).toBeGreaterThanOrEqual(rr.saccrRcMinor as number);
+  });
+});
+
+describe("buildV2WorldSimulatorView — market path is GROUNDED in real production marks", () => {
+  // Seed an in-memory market-data store with one real production USD/ZAR mark
+  // (the live level ~16.43) + one production zaronia-rate, and assert the
+  // displayed market path grounds spot + OIS from those marks (NOT the synthetic
+  // 18.5) while forward points stay flagged ungrounded (no feed). Authority:
+  // D-FX-V2-SIMULATOR-FIRST; Engineering-Charter cmd 4 (source, don't hardcode).
+  const store = new MarketDataStore(":memory:");
+  store.append({
+    id: "t-usdzar-real",
+    source: "twelve-data",
+    instrument: "USD/ZAR",
+    dataType: "fx-quote",
+    provenance: "production",
+    asOf: "2026-06-20T17:00:00.000Z",
+    payload: { pair: "USD/ZAR", mid: 16.4339 },
+  });
+  store.append({
+    id: "t-zaronia-real",
+    source: "zaronia-sarb",
+    instrument: "ZARONIA",
+    dataType: "zaronia-rate",
+    provenance: "production",
+    asOf: "2026-06-20T15:00:00+02:00",
+    payload: { rate: "0.0793" },
+  });
+  const view = buildV2WorldSimulatorView(NOW, store);
+
+  it("the displayed spot path is the REAL ~16.4 level, not the synthetic 18.5", () => {
+    const gp = view.groundedMarketPath;
+    expect(gp.observations.length).toBeGreaterThan(0);
+    const anchor = gp.observations[gp.observations.length - 1];
+    expect(anchor).toBeDefined();
+    // Re-anchored to the seeded data window.
+    expect(anchor?.date).toBe("2026-06-20");
+    // Spot is the seeded real mark, grounded-from-store — not synthetic 18.5.
+    expect(anchor?.spotMid).toBeCloseTo(16.4339, 4);
+    expect(Math.abs((anchor?.spotMid ?? 0) - 18.5)).toBeGreaterThan(1);
+    expect(anchor?.grounding.spot.grounded).toBe(true);
+    expect(anchor?.grounding.spot.source).toBe("twelve-data");
+    expect(anchor?.grounding.spot.asOf).toBe("2026-06-20T17:00:00.000Z");
+  });
+
+  it("forward points are flagged UNGROUNDED (no feed) on every day", () => {
+    const gp = view.groundedMarketPath;
+    expect(gp.summary.forwardPointsGrounded).toBe(false);
+    for (const o of gp.observations) {
+      expect(o.grounding.forwardPoints.grounded).toBe(false);
+      expect(o.grounding.forwardPoints.reason).toBe("no-forward-points-feed");
+    }
+  });
+
+  it("the ZAR OIS leg is grounded from the production zaronia-rate", () => {
+    const gp = view.groundedMarketPath;
+    const anchor = gp.observations[gp.observations.length - 1];
+    expect(anchor?.grounding.oisRate.grounded).toBe(true);
+    expect(anchor?.grounding.oisRate.source).toBe("zaronia-sarb");
+    expect(anchor?.oisRate).toBeCloseTo(0.0793, 4);
+  });
+
+  it("a clean (no-store) build flags every field ungrounded — never synthetic-as-real", () => {
+    const cleanView = buildV2WorldSimulatorView(NOW, undefined);
+    const gp = cleanView.groundedMarketPath;
+    expect(gp.summary.hasUngroundedField).toBe(true);
+    for (const o of gp.observations) {
+      // Spot falls back to a labelled synthetic value, but flagged ungrounded.
+      expect(o.grounding.spot.grounded).toBe(false);
+      expect(o.grounding.spot.reason).toBeTruthy();
+    }
   });
 });
 

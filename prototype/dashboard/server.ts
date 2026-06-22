@@ -5762,7 +5762,7 @@ const server = Bun.serve({
     if (req.method === "GET" && url.pathname === "/api/v2/markets/world-simulator") {
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       return jsonResponse({
-        ...buildV2WorldSimulatorView(nowUtc()),
+        ...buildV2WorldSimulatorView(nowUtc(), marketDataStore),
         pageProvenance: filter,
       });
     }

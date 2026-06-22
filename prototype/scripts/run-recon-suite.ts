@@ -105,6 +105,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // the retired FX V1-parity legs: asserts the SUT produces the expected
     // VaR/P&L/cash from known simulated inputs. Authority: D-FX-V2-SIMULATOR-FIRST.
     "recon:fx-v2-sim-oracle",
+    // WS-FX-V2-SIMULATOR — market-path grounding-honesty gate (ENFORCING): every
+    // world-simulator market-path field is grounded in a real production mark OR
+    // explicitly flagged ungrounded — no synthetic value without a flag.
+    // Authority: D-FX-V2-SIMULATOR-FIRST; Engineering-Charter cmd 4.
+    "recon:fx-v2-market-path-grounding",
     "recon:v2-tenant-axis-present",
     "recon:v2-released-surface-clean-core",
     // WS-V2-BBAAS S16 — tier-entitlement coherence (ENFORCING): the K/R/C
