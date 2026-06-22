@@ -316,6 +316,7 @@
     "recon:fx-settlement-continuity": "bun run platform/recon/fx-settlement-continuity.ts",
     "recon:cash-materialisation-integrity": "bun run platform/recon/cash-materialisation-integrity.ts",
     "recon:capital-materialisation-integrity": "bun run platform/recon/capital-materialisation-integrity.ts",
+    "recon:gl-ba700-capital-coherence": "bun run platform/recon/gl-ba700-capital-coherence.ts",
     "recon:fx-cash-gl-recognition-integrity": "bun run platform/recon/fx-cash-gl-recognition-integrity.ts",
     "recon:fx-book-nop-parity": "bun run platform/recon/fx-book-nop-parity.ts",
     "recon:no-hardcoded-reporting-currency": "bun run platform/recon/no-hardcoded-reporting-currency.ts",

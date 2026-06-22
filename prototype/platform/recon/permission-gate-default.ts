@@ -353,6 +353,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // the GL Share Capital balance equals the BA-700 CET1 numerator. Not a
   // production access path. T-01 carve-out. F-031.
   "platform/accounting/posting-rules-v2/capital-fold.test.ts",
+  // D-V2-UI-VISIBILITY-REMEDIATION — recon:gl-ba700-capital-coherence unit + negative
+  // tests. Same build-phase fixture pattern as capital-fold.test.ts: raw
+  // EventStore(":memory:") seeds the simulated R300m capital FIL instrument (and, in
+  // the negative test, a stray GlPostingEmitted to ACC-5000-001) and asserts the gate
+  // PASSES on coherence, FAIL-CLOSES on divergence, and FAIL-CLOSES on a vacuous +Sim
+  // lens. Not a production access path. T-01 carve-out. F-031.
+  "platform/recon/gl-ba700-capital-coherence.test.ts",
   // D-FIL-BOOK-COMPOSITE-VALUATION — V2 daily-P&L per-currency-breakdown
   // regression proof. Same build-phase fixture pattern: raw EventStore(":memory:")
   // seeds production FIL FX instruments + a MarketDataStore(":memory:") of
