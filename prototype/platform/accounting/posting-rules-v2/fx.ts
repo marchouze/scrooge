@@ -23,4 +23,6 @@ export {
   postFxInitialRecognitionLegs,
   postFxRevaluationLegs,
   postFxCloseLegs,
+  FX_CANCEL_REVERSAL_RULE_ID,
+  postFxCancellationReversalLegs,
 } from "../../../v2-core/posting-rules/fx";
