@@ -5,13 +5,14 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { describe, expect, test } from "bun:test";
-import type { FilInstanceLifecycleEvent } from "./events";
+import type { FilInstanceUrn } from "../fil-core/urn";
 import {
   effectiveLiveCashInstances,
   isCashParentTerminal,
   isEffectivelyLiveCash,
   isParentTerminalStage,
 } from "./cash-cascade";
+import type { FilInstanceLifecycleEvent } from "./events";
 import { foldFilInstances, liveInstances } from "./projection";
 
 const FX_INSTANCE = "fil:inst:LE-ZA-HOZ-BANK:fx-1";
@@ -102,7 +103,7 @@ describe("effectiveLiveCashInstances — settled (non-terminal) parent keeps cas
     ];
     const register = foldFilInstances(events);
     const live = effectiveLiveCashInstances(register);
-    expect(live.map((r) => r.instance).sort()).toEqual([CASH_PAID, CASH_RECEIVED].sort());
+    expect(live.map((r) => String(r.instance)).sort()).toEqual([CASH_PAID, CASH_RECEIVED].sort());
     // The raw cash-live read agrees for a settled parent — no cascade drop.
     const rawCashLive = liveInstances(register).filter(
       (r) => r.economicTerms.assetClass === "cash",
@@ -132,7 +133,7 @@ describe("effectiveLiveCashInstances — CANCELLED parent voids the derived cash
     const live = effectiveLiveCashInstances(register);
     expect(live.length).toBe(0);
 
-    const received = register.get(CASH_RECEIVED);
+    const received = register.get(CASH_RECEIVED as FilInstanceUrn);
     expect(received).toBeDefined();
     if (received) {
       expect(isCashParentTerminal(received, register)).toBe(true);
@@ -172,7 +173,7 @@ describe("orphan / absent-parent handling (the sibling gate's concern, not the c
   test("cash with no originatingInstrument is NOT parent-terminal (orphan handled elsewhere)", () => {
     const events = [cashLeg(CASH_RECEIVED, "received", undefined)];
     const register = foldFilInstances(events);
-    const cash = register.get(CASH_RECEIVED);
+    const cash = register.get(CASH_RECEIVED as FilInstanceUrn);
     expect(cash).toBeDefined();
     if (cash) {
       expect(isCashParentTerminal(cash, register)).toBe(false);

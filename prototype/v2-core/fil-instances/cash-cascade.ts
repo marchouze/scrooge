@@ -63,10 +63,7 @@ export function isParentTerminalStage(stage: FilLifecycleStage): boolean {
  * (the orphan / completeness checks are `recon:cash-materialisation-integrity`'s
  * concern — this cascade only voids cash whose parent is PRESENT and TERMINAL).
  */
-export function isCashParentTerminal(
-  row: FilInstanceRow,
-  register: FilInstanceRegister,
-): boolean {
+export function isCashParentTerminal(row: FilInstanceRow, register: FilInstanceRegister): boolean {
   const origin = row.economicTerms.originatingInstrument;
   if (!origin || origin.length === 0) return false;
   const parent = register.get(origin);
@@ -79,10 +76,7 @@ export function isCashParentTerminal(
  * stage AND not voided by a terminal originating parent. Non-`cash` rows return
  * `false` (this predicate is cash-specific).
  */
-export function isEffectivelyLiveCash(
-  row: FilInstanceRow,
-  register: FilInstanceRegister,
-): boolean {
+export function isEffectivelyLiveCash(row: FilInstanceRow, register: FilInstanceRegister): boolean {
   if (row.economicTerms.assetClass !== "cash") return false;
   if (!isLiveStage(row.stage)) return false;
   return !isCashParentTerminal(row, register);

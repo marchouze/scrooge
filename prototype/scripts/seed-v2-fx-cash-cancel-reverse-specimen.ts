@@ -34,16 +34,16 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { anchorFunctionalCurrency } from "../platform/identity/functional-currency";
-import { resolveMaturityMaterialisation } from "../platform/markets/products/maturity-materialisation";
 import { resolveV2AnchorDb } from "../platform/markets/products/materialise-settled-cash";
+import { materialiseFxInstanceToAnchor } from "../platform/markets/products/materialise-settled-cash";
+import { resolveMaturityMaterialisation } from "../platform/markets/products/maturity-materialisation";
 import { AnchorDbCashSink } from "../platform/markets/settlement/cash-sink";
+import { formatInstanceUrn, formatTypeUrn } from "../v2-core/fil-core/urn";
 import {
   type SettledCashLeg,
   buildSettledCashPayloads,
 } from "../v2-core/fil-instances/cash-materialisation";
 import { filInstrumentTerminatedPayloadSchema } from "../v2-core/fil-instances/events";
-import { formatInstanceUrn, formatTypeUrn } from "../v2-core/fil-core/urn";
-import { materialiseFxInstanceToAnchor } from "../platform/markets/products/materialise-settled-cash";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const TENANT = ENTITY;
