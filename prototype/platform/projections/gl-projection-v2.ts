@@ -46,10 +46,8 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { TrialBalance } from "../accounting/period-close";
-import {
-  foldCapitalContributionLegs,
-  isCapitalSourcedGlPosting,
-} from "../accounting/posting-rules-v2/capital-fold";
+import { isCapitalSourcedGlPosting } from "../accounting/posting-rules-v2/capital-fold";
+import { deriveCapitalInstanceLegs } from "../accounting/posting-rules-v2/capital-instance-fold";
 import { deriveFxInstanceLegs } from "../accounting/posting-rules-v2/fx-instance-fold";
 import { type Money, amountToMinorUnits } from "../core/decimal-money";
 import { type MoneyWire, legAmountMoney } from "../core/money-codec";
@@ -216,12 +214,17 @@ export function computeTrialBalanceV2Uncached(args: ComputeTrialBalanceV2Args): 
     uptoSequence += 1;
   }
 
-  // Capital contribution — PURE FOLD over primary capital FIL events (NO
-  // GlPostingEmitted). This closes the GL ⇿ BA-700 coherence seam: the R300m
-  // fold-native injection (Dr settlement-cash / Cr Share Capital) now appears in
-  // the trial balance. Both legs are folded so the balance stays in balance.
-  // Same provenance filter + posting-date window as the FX fold.
-  const capitalFold = foldCapitalContributionLegs({
+  // Capital contribution — STATE-DRIVEN derivation from the FIL instance register
+  // (`deriveCapitalInstanceLegs`), NOT the raw-event fold. Proven byte-equivalent
+  // to `foldCapitalContributionLegs` by `capital-instance-fold.test.ts` (incl. the
+  // R300m CET1 injection + cancelled-capital), so the combined TrialBalance stays
+  // byte-identical through this cutover; accounting now reads FIL STATE rather than
+  // re-scanning the capital lifecycle stream. This still closes the GL ⇿ BA-700
+  // coherence seam: the R300m fold-native injection (Dr settlement-cash / Cr Share
+  // Capital) appears in the trial balance. Both legs derive so the balance stays in
+  // balance. Same provenance filter + posting-date window as the FX derivation.
+  // Authority: D-FIL-CONSUMER-SURFACE-ARCHITECTURE (capital cutover).
+  const capitalFold = deriveCapitalInstanceLegs({
     eventStore: args.eventStore,
     entity: args.entity,
     periodStart: args.periodStart,
@@ -509,10 +512,12 @@ export function computeGlEntriesV2Uncached(args: ComputeTrialBalanceV2Args): GlL
     });
   }
 
-  // Capital entries — PURE FOLD over primary capital FIL events. Each folded leg
-  // (the Dr settlement-cash + Cr own-funds pair) is an individually-addressable
-  // ledger entry sourced from the FIL lifecycle event (GL ⇿ BA-700 coherence).
-  const capitalFold = foldCapitalContributionLegs({
+  // Capital entries — STATE-DRIVEN derivation from the FIL instance register
+  // (`deriveCapitalInstanceLegs`), byte-equivalent to the prior raw-event fold.
+  // Each derived leg (the Dr settlement-cash + Cr own-funds pair) is an
+  // individually-addressable ledger entry preserving its source FIL `filEventId`
+  // (GL ⇿ BA-700 coherence). Authority: D-FIL-CONSUMER-SURFACE-ARCHITECTURE.
+  const capitalFold = deriveCapitalInstanceLegs({
     eventStore: args.eventStore,
     entity: args.entity,
     periodStart: args.periodStart,
@@ -685,10 +690,11 @@ export function computeGlAccountsV2Uncached(args: ComputeTrialBalanceV2Args): Gl
     );
   }
 
-  // Capital accounts — PURE FOLD over primary capital FIL events (Dr settlement-
-  // cash / Cr own-funds). Closes the GL ⇿ BA-700 coherence seam in the account-
-  // master view too.
-  const capitalFold = foldCapitalContributionLegs({
+  // Capital accounts — STATE-DRIVEN derivation from the FIL instance register
+  // (`deriveCapitalInstanceLegs`), byte-equivalent to the prior raw-event fold (Dr
+  // settlement-cash / Cr own-funds). Closes the GL ⇿ BA-700 coherence seam in the
+  // account-master view too. Authority: D-FIL-CONSUMER-SURFACE-ARCHITECTURE.
+  const capitalFold = deriveCapitalInstanceLegs({
     eventStore: args.eventStore,
     entity: args.entity,
     periodStart: args.periodStart,
