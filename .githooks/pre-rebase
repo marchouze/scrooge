@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# pre-rebase hook — fail-closed main-worktree write guard.
+#
+# Aborts any rebase performed against the canonical main worktree
+# (/Users/marc/code/Bank) unless the actor is an allowlisted launchd writer
+# (BANK_ALLOW_MAIN_WORKTREE_WRITE=1) or Marc's interactive shell (TTY).
+# Dispatched-agent worktrees and the .dashboard-live worktree are unaffected
+# (their toplevel ≠ main, so the guard allows) — this lets the dispatch
+# `git fetch origin main && git rebase origin/main` step run normally in a
+# dispatched worktree.
+#
+# Authority: CLAUDE.md §"Dispatch discipline → Worktree isolation";
+#            Engineering Charter D-ENGINEERING-INTEGRITY-CHARTER command 2.
+# Author:    Atlas (Core banking platform architect, engineering).
+#
+# Install: git config core.hooksPath .githooks
+# (wired automatically by prototype/package.json `prepare` on `bun install`).
+
+set -euo pipefail
+
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=/dev/null
+source "${HOOK_DIR}/_main-worktree-guard.sh"
+
+run_main_worktree_guard

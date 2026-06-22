@@ -1,7 +1,17 @@
 #!/usr/bin/env bash
-# pre-push hook — enforce biome formatting before any push.
+# pre-push hook.
 #
-# Why: 5+ pure-format fix commits appeared in the last 100 (biome
+# Two responsibilities, in order:
+#   1. Fail-closed main-worktree write guard — abort a push against the
+#      canonical main worktree (/Users/marc/code/Bank) unless the actor is an
+#      allowlisted launchd writer (BANK_ALLOW_MAIN_WORKTREE_WRITE=1) or Marc's
+#      interactive shell (TTY). Dispatched-agent / .dashboard-live worktrees
+#      are unaffected (toplevel ≠ main → guard allows).
+#      Authority: CLAUDE.md §"Dispatch discipline → Worktree isolation";
+#      Engineering Charter D-ENGINEERING-INTEGRITY-CHARTER command 2.
+#   2. Enforce biome formatting before any push.
+#
+# Why (2): 5+ pure-format fix commits appeared in the last 100 (biome
 # import-order, template literals, non-null assertions). Each one
 # triggered a full CI run, costing 5–10 min. Running `biome check`
 # locally before push catches these in <1 second.
@@ -11,6 +21,13 @@
 
 set -euo pipefail
 
+# ── 1. Main-worktree write guard (fail-closed) ──────────────────────────
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=/dev/null
+source "${HOOK_DIR}/_main-worktree-guard.sh"
+run_main_worktree_guard
+
+# ── 2. Biome formatting check ───────────────────────────────────────────
 PROTOTYPE_DIR="$(git rev-parse --show-toplevel)/prototype"
 
 if [[ ! -d "$PROTOTYPE_DIR" ]]; then
