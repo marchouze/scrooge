@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>GL Account Ledger — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-source="/api/v2/finance/gl">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    const accountId = new URLSearchParams(location.search).get("account");
+
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Finance", href: "/v2/finance/index.html" },
+        { label: "General Ledger", href: "/v2/finance/gl.html" },
+        { label: accountId || "Account" },
+      ],
+      title: "Account ledger",
+      seat: "Posting legs behind the balance · source event · IFRS / posting rule",
+    });
+
+    const bodyHost = document.createElement("div"); main.appendChild(bodyHost);
+
+    if (!accountId) {
+      v2RenderError(bodyHost, `no account selected — choose a row on the <a href="/v2/finance/gl.html">General Ledger</a> page.`);
+    } else {
+      v2WireLoader(async () => {
+        bodyHost.replaceChildren();
+        let d;
+        try {
+          d = await v2Fetch(`/api/v2/finance/gl/account/${encodeURIComponent(accountId)}`);
+        } catch (err) {
+          v2RenderError(bodyHost, v2Esc(err.message));
+          return;
+        }
+        document.getElementById("as-of").textContent = `as of ${new Date(d.asOf).toLocaleString()}`;
+
+        // Update the page title to the account name.
+        const titleEl = document.querySelector(".v2-page-title");
+        if (titleEl) titleEl.textContent = `${d.accountName} (${d.accountId})`;
+
+        // Honest data-state banner — never a silent zero.
+        if (d.dataState === "empty") {
+          const banner = document.createElement("div");
+          banner.className = "v2-section";
+          banner.innerHTML = `
+            <div class="v2-empty">
+              <div class="v2-empty-icon">○</div>
+              <div class="v2-empty-msg"><strong>No posting legs under this lens.</strong><br>${v2Esc(d.reason)}</div>
+            </div>`;
+          bodyHost.appendChild(banner);
+        }
+
+        // Per-currency balance summary tiles.
+        renderTileGroup(bodyHost, {
+          tiles: (d.balances || []).map((b) => ({
+            label: `Net balance (${b.currency})`,
+            value: b.netFmt,
+            unit: `Dr ${b.debitFmt} · Cr ${b.creditFmt}`,
+          })),
+        });
+
+        const meta = document.createElement("div");
+        meta.className = "v2-section";
+        renderTable(meta, {
+          columns: ["Field", "Value"],
+          rows: [
+            { cells: ["Account", `<strong>${v2Esc(d.accountId)}</strong>`] },
+            { cells: ["Name", v2Esc(d.accountName)] },
+            { cells: ["Category", `<span class="v2-badge v2-badge-info">${v2Esc(d.categoryLabel)}</span>`] },
+            { cells: ["Entity", v2Esc(d.entity)] },
+          ],
+        });
+        bodyHost.appendChild(meta);
+
+        // Posting legs behind the balance — source event + IFRS/posting rule.
+        const ls = document.createElement("div"); ls.className = "v2-section"; bodyHost.appendChild(ls);
+        const lh = document.createElement("h2"); lh.className = "v2-section-title"; lh.textContent = "Posting legs"; ls.appendChild(lh);
+        renderTable(ls, {
+          columns: ["Date", "Description", "Debit", "Credit", "Source event", "Posting rule"],
+          emptyMsg: "No posting legs for this account under this lens — switch to + Sim to view the demonstration book.",
+          rows: (d.legs || []).map((l) => ({
+            cells: [
+              v2Esc(l.postedAt),
+              v2Esc(l.description),
+              l.debitCredit === "debit" ? `<strong>${v2Esc(l.amountFmt)}</strong>` : "",
+              l.debitCredit === "credit" ? `<strong>${v2Esc(l.amountFmt)}</strong>` : "",
+              `<span class="v2-muted">${v2Esc(l.sourceEventId)}</span>`,
+              `<span class="v2-badge v2-badge-info">${v2Esc(l.postingRuleId)}</span>`,
+            ],
+          })),
+        });
+
+        renderRefs(bodyHost, {
+          title: "References",
+          refs: [
+            { label: "General Ledger (back to trial balance)", href: "/v2/finance/gl.html" },
+            { label: "Capital Position (BA-700 own-funds composition)", href: "/v2/finance/capital.html" },
+            { label: "IFRS 9 — Financial Instruments", href: "/v2/compliance/reader.html?slug=ifrs-9" },
+            { label: "GlPostingEmitted / FilInstrumentCreated event schemas", href: "/v2/operations/schemas.html?type=FilInstrumentCreated" },
+          ],
+        });
+      });
+    }
+  </script>
+</body>
+</html>

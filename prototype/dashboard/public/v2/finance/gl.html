@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/v2/_v2-tile.css">
   <link rel="stylesheet" href="/provenance-badge.css">
 </head>
-<body data-provenance-content="none">
+<body data-provenance-source="/api/v2/finance/gl">
   <header class="v2-header">
     <div class="v2-header-left">
       <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
@@ -19,10 +19,8 @@
         <button class="v2-prov-btn" data-mode="prod">Prod</button>
         <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
       </div>
-      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html" title="Errors &amp; recon violations">
-        <span class="v2-errors-icon">⚠</span>
-        <span class="v2-errors-count" id="errors-count">…</span>
-      </a>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
       <span class="v2-as-of" id="as-of">—</span>
     </div>
   </header>
@@ -33,37 +31,96 @@
   <script src="/v2/_v2-shell.js"></script>
   <script src="/provenance-badge.js"></script>
   <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
   <script>
     const main = document.getElementById("v2-main");
     renderPageHeader(main, {
-      crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Finance", href: "/v2/finance/index.html" }, { label: "General Ledger" }],
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Finance", href: "/v2/finance/index.html" },
+        { label: "General Ledger" },
+      ],
       title: "General Ledger",
-      seat: "GlPostingEmitted",
+      seat: "Trial balance & account ledgers · V2 GL fold (FX + capital + GlPostingEmitted)",
     });
 
-    renderTileGroup(main, {
-      tiles: [
-        { label: "Total Assets", unit: "Debit balance" },
-        { label: "Total Liabilities", unit: "Credit balance" },
-        { label: "Equity", unit: "Assets − Liabilities" },
-        { label: "Posting Count", unit: "Total GL entries" },
-      ],
-    });
+    const stateHost = document.createElement("div"); main.appendChild(stateHost);
+    const tilesHost = document.createElement("div"); main.appendChild(tilesHost);
+    const tbHost = document.createElement("div"); main.appendChild(tbHost);
+    const refsHost = document.createElement("div"); main.appendChild(refsHost);
 
-    const s = document.createElement("div"); s.className = "v2-section"; main.appendChild(s);
-    const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "Trial Balance"; s.appendChild(h);
-    renderTable(s, { columns: ["Account Code", "Account Name", "Debit (ZAR)", "Credit (ZAR)", "Net (ZAR)"] });
+    const accountHref = (id) => `/v2/finance/gl-account.html?account=${encodeURIComponent(id)}`;
 
-    const s2 = document.createElement("div"); s2.className = "v2-section"; main.appendChild(s2);
-    const h2 = document.createElement("h2"); h2.className = "v2-section-title"; h2.textContent = "Recent GL Entries"; s2.appendChild(h2);
-    renderTable(s2, { columns: ["Date", "Account", "Description", "Debit", "Credit", "Source Event"] });
+    v2WireLoader(async () => {
+      stateHost.replaceChildren(); tilesHost.replaceChildren();
+      tbHost.replaceChildren(); refsHost.replaceChildren();
+      let d;
+      try {
+        d = await v2Fetch("/api/v2/finance/gl");
+      } catch (err) {
+        v2RenderError(stateHost, v2Esc(err.message));
+        return;
+      }
+      document.getElementById("as-of").textContent = `as of ${new Date(d.asOf).toLocaleString()}`;
 
-    renderRefs(main, {
-      refs: [
-        { label: "IFRS 9 — Financial Instruments", href: "#" },
-        { label: "Chart of Accounts — ACC-* series", href: "#" },
-        { label: "GlPostingEmitted event schema", href: "#" },
-      ],
+      // Honest data-state banner — never a silent zero (Engineering Charter cmd 3).
+      if (d.dataState === "empty") {
+        const banner = document.createElement("div");
+        banner.className = "v2-section";
+        banner.innerHTML = `
+          <div class="v2-empty">
+            <div class="v2-empty-icon">○</div>
+            <div class="v2-empty-msg"><strong>No GL postings folded under this lens.</strong><br>${v2Esc(d.reason)}</div>
+          </div>`;
+        stateHost.appendChild(banner);
+      }
+
+      // Totals tiles (assets / liabilities / equity / in-balance check).
+      renderTileGroup(tilesHost, {
+        tiles: d.tiles.map((t) => ({ label: t.label, value: t.valueFmt, unit: t.unit })),
+      });
+
+      // Trial-balance table — EVERY row drills to its account ledger.
+      const s = document.createElement("div"); s.className = "v2-section"; tbHost.appendChild(s);
+      const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "Trial balance"; s.appendChild(h);
+      const tbRows = d.rows.map((r) => ({
+        href: accountHref(r.accountId),
+        cells: [
+          `<strong>${v2Esc(r.accountName)}</strong><br><span class="v2-muted">${v2Esc(r.accountId)} · ${v2Esc(r.currency)}</span>`,
+          `<span class="v2-badge v2-badge-info">${v2Esc(r.categoryLabel)}</span>`,
+          v2Esc(r.debitFmt),
+          v2Esc(r.creditFmt),
+          `<strong>${v2Esc(r.netFmt)}</strong>`,
+        ],
+      }));
+      // Totals row (non-clickable) carrying the ΣDr = ΣCr in-balance check.
+      if (d.rows.length > 0) {
+        tbRows.push({
+          cells: [
+            `<strong>Totals</strong> ${d.inBalance
+              ? '<span class="v2-badge v2-badge-success">in balance</span>'
+              : '<span class="v2-badge v2-badge-danger">OUT OF BALANCE</span>'}`,
+            "",
+            `<strong>${v2Esc(d.totalDebitFmt)}</strong>`,
+            `<strong>${v2Esc(d.totalCreditFmt)}</strong>`,
+            "",
+          ],
+        });
+      }
+      renderTable(s, {
+        columns: ["Account", "Category", "Debit", "Credit", "Net"],
+        emptyMsg: "No accounts with a balance under this lens. Switch to + Sim to view the demonstration book (incl. the R300m capital injection).",
+        rows: tbRows,
+      });
+
+      renderRefs(refsHost, {
+        refs: [
+          { label: "Capital Position (BA-700 / own-funds composition)", href: "/v2/finance/capital.html" },
+          { label: "IFRS 9 — Financial Instruments (recognition)", href: "/v2/compliance/reader.html?slug=ifrs-9" },
+          { label: "Chart of Accounts — ACC-* series", href: "/v2/operations/schemas.html?type=GlPostingEmitted" },
+          { label: "GlPostingEmitted / FilInstrumentCreated event schemas", href: "/v2/operations/schemas.html?type=FilInstrumentCreated" },
+        ],
+      });
     });
   </script>
 </body>

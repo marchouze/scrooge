@@ -327,6 +327,7 @@ import {
   buildClientOnboardingView,
 } from "./v2-client-onboarding-view";
 import { buildCapitalView } from "./v2-finance-view";
+import { buildGlAccountLedger, buildGlView } from "./v2-finance-gl-view";
 import {
   buildV2FxBlotterView,
   buildV2FxCounterpartiesView,
@@ -5637,6 +5638,37 @@ const server = Bun.serve({
       const asOf = nowUtc();
       return jsonResponse({
         ...buildCapitalView({ eventStore, filter, asOf }),
+        asOf,
+        pageProvenance: filter,
+      });
+    }
+    // General Ledger (Finance) — the V2 trial balance + account ledgers, slice of
+    // D-V2-UI-VISIBILITY-REMEDIATION. The folds are provenance-aware AND fold
+    // capital from the primary capital FIL events (the fold-through fix): the R300m
+    // simulated injection now appears in the trial balance under +Sim and is
+    // excluded under Prod (honest empty pre-licence) — so GL Share Capital agrees
+    // with the BA-700 capital page under the same lens. pageProvenance is the same
+    // filter so the badge matches the lens. Name-free by construction (numeric fold).
+    // Authority: D-V2-UI-VISIBILITY-REMEDIATION; D-CAPITAL-ASSET-CLASS-V1;
+    //   D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD.
+    if (req.method === "GET" && url.pathname === "/api/v2/finance/gl") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const asOf = nowUtc();
+      return jsonResponse({
+        ...buildGlView({ eventStore, filter }),
+        asOf,
+        pageProvenance: filter,
+      });
+    }
+    if (req.method === "GET" && url.pathname.startsWith("/api/v2/finance/gl/account/")) {
+      const accountId = decodeURIComponent(
+        url.pathname.slice("/api/v2/finance/gl/account/".length),
+      );
+      if (!accountId) return jsonResponse({ error: "missing accountId" }, 400);
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const asOf = nowUtc();
+      return jsonResponse({
+        ...buildGlAccountLedger({ eventStore, filter, accountId }),
         asOf,
         pageProvenance: filter,
       });

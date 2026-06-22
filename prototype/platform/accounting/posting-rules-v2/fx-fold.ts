@@ -70,7 +70,11 @@ import {
 } from "../../../v2-core/reporting-treatments/registry";
 import type { EventStore } from "../../event-store/store";
 import type { Event } from "../../event-store/types";
-import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../../projections/filter";
+import {
+  type ProvenanceFilter,
+  defaultProvenanceFilter,
+  eventMatchesProvenanceFilter,
+} from "../../projections/filter";
 import {
   type InstanceTreatmentInput,
   type TreatmentEventLookup,
@@ -424,6 +428,14 @@ export interface FxFoldArgs {
   readonly periodStart: string;
   /** Inclusive posting-date window upper bound (ISO date). */
   readonly periodEnd: string;
+  /**
+   * Provenance lens for the fold. Defaults to `defaultProvenanceFilter()` (the
+   * operating-book read), preserving the existing GL read path + the parity gate.
+   * An oversight surface supplies an explicit `{ mode: "production-only" |
+   * "combined" }` so simulated FX flows are excluded under Prod and admitted under
+   * +Sim — the same lens the capital fold uses (consistent GL provenance).
+   */
+  readonly filter?: ProvenanceFilter;
 }
 
 /**
@@ -437,7 +449,7 @@ export interface FxFoldArgs {
  * window gate matches the old behaviour exactly.
  */
 export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
-  const filter = defaultProvenanceFilter();
+  const filter = args.filter ?? defaultProvenanceFilter();
   const treatmentStore = args.treatmentStore ?? args.eventStore;
   const register = foldTreatmentRegisterFromStore(treatmentStore);
 

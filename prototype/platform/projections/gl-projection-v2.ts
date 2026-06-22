@@ -46,12 +46,21 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { TrialBalance } from "../accounting/period-close";
+import {
+  foldCapitalContributionLegs,
+  isCapitalSourcedGlPosting,
+} from "../accounting/posting-rules-v2/capital-fold";
 import { foldFxContributionLegs } from "../accounting/posting-rules-v2/fx-fold";
 import { type Money, amountToMinorUnits } from "../core/decimal-money";
 import { type MoneyWire, legAmountMoney } from "../core/money-codec";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
 import type { EventStore } from "../event-store/store";
-import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "./filter";
+import {
+  type ProvenanceFilter,
+  defaultProvenanceFilter,
+  eventMatchesProvenanceFilter,
+  provenanceFilterDigest,
+} from "./filter";
 import { readWithOutputSnapshot } from "./output-snapshot-cache";
 
 // ---------------------------------------------------------------------------
@@ -92,6 +101,19 @@ export interface ComputeTrialBalanceV2Args {
   readonly periodStart: string;
   /** Inclusive end of the fold window. Convention: AccountingPeriodOpened.periodEnd. */
   readonly periodEnd: string;
+  /**
+   * Provenance lens for ALL three fold sources (GlPostingEmitted, the FX FIL fold,
+   * and the capital FIL fold). Defaults to `defaultProvenanceFilter()` (the
+   * operating-book read), preserving the existing read path AND the gl-v2-parity
+   * gate (which calls the Uncached entry points with no filter). An oversight
+   * surface supplies an explicit `{ mode: "production-only" | "combined" }` so the
+   * simulated R300m capital injection is excluded under Prod (honest empty pre-
+   * licence) and admitted under +Sim — the SAME lens the BA-700 capital view uses,
+   * which is what makes the GL Share Capital balance agree with the BA-700 capital
+   * numerator under the same lens (GL ⇿ BA-700 coherence,
+   * D-V2-UI-VISIBILITY-REMEDIATION).
+   */
+  readonly filter?: ProvenanceFilter;
 }
 
 // ---------------------------------------------------------------------------
@@ -126,9 +148,10 @@ export function computeTrialBalanceV2Uncached(args: ComputeTrialBalanceV2Args): 
   const balances = new Map<string, { account: string; currency: string; amount: number }>();
   let uptoSequence = 0;
 
-  // Provenance filter — mirror V1 discipline (exclude simulated events).
-  // Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12).
-  const provenanceFilter = defaultProvenanceFilter();
+  // Provenance lens — the caller's filter (oversight Prod / +Sim) or the
+  // operating-book default. Authority: D-PROVENANCE-FILTER-ENFORCEMENT;
+  // D-V2-UI-VISIBILITY-REMEDIATION (provenance-aware GL surface).
+  const provenanceFilter = args.filter ?? defaultProvenanceFilter();
 
   for (const e of args.eventStore.replay({
     entity: args.entity,
@@ -137,10 +160,13 @@ export function computeTrialBalanceV2Uncached(args: ComputeTrialBalanceV2Args): 
     if (!eventMatchesProvenanceFilter(e, provenanceFilter)) continue;
 
     const leg = e.payload as unknown as GlLeg;
-    // FX accounts now come from the FIL fold (below); skip FX-sourced
-    // GlPostingEmitted to avoid double-counting. Non-FX (bond/mm/capital) legs
-    // still fold here exactly as before.
+    // FX and capital accounts now come from the FIL folds (below); skip FX- and
+    // capital-sourced GlPostingEmitted to avoid double-counting. Non-FX/non-capital
+    // (bond / money-market) legs still fold here exactly as before. Capital emits
+    // no GlPostingEmitted today, so this is belt-and-suspenders against a future
+    // capital GlPostingEmitted leg.
     if (isFxSourcedGlPosting(leg.postingRuleId)) continue;
+    if (isCapitalSourcedGlPosting(leg.postingRuleId)) continue;
     // Date gate: filter against the posting period window.
     if (!leg.postingDate) continue;
     if (leg.postingDate < args.periodStart || leg.postingDate > args.periodEnd) continue;
@@ -169,8 +195,35 @@ export function computeTrialBalanceV2Uncached(args: ComputeTrialBalanceV2Args): 
     eventStore: args.eventStore,
     periodStart: args.periodStart,
     periodEnd: args.periodEnd,
+    filter: provenanceFilter,
   });
   for (const leg of fxFold.legs) {
+    const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
+    const legMinor = Number(amountToMinorUnits(legMoney));
+    const key = `${leg.accountCode}|${leg.amount.currency}`;
+    const row = balances.get(key) ?? {
+      account: leg.accountCode,
+      currency: leg.amount.currency,
+      amount: 0,
+    };
+    row.amount += leg.creditDebit === "debit" ? legMinor : -legMinor;
+    balances.set(key, row);
+    uptoSequence += 1;
+  }
+
+  // Capital contribution — PURE FOLD over primary capital FIL events (NO
+  // GlPostingEmitted). This closes the GL ⇿ BA-700 coherence seam: the R300m
+  // fold-native injection (Dr settlement-cash / Cr Share Capital) now appears in
+  // the trial balance. Both legs are folded so the balance stays in balance.
+  // Same provenance filter + posting-date window as the FX fold.
+  const capitalFold = foldCapitalContributionLegs({
+    eventStore: args.eventStore,
+    entity: args.entity,
+    periodStart: args.periodStart,
+    periodEnd: args.periodEnd,
+    filter: provenanceFilter,
+  });
+  for (const leg of capitalFold.legs) {
     const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
     const legMinor = Number(amountToMinorUnits(legMoney));
     const key = `${leg.accountCode}|${leg.amount.currency}`;
@@ -232,13 +285,26 @@ export function computeTrialBalanceV2Uncached(args: ComputeTrialBalanceV2Args): 
 export function computeTrialBalanceV2(args: ComputeTrialBalanceV2Args): TrialBalance {
   const { output } = readWithOutputSnapshot<TrialBalance>({
     store: args.eventStore,
-    streamKey: `gl-v2-trial-balance:${args.entity}:${args.periodStart}..${args.periodEnd}`,
+    streamKey: glV2StreamKey("gl-v2-trial-balance", args),
     asOf: args.periodEnd,
     compute: () => computeTrialBalanceV2Uncached(args),
     encode: (o) => JSON.stringify(o),
     decode: (p) => JSON.parse(p) as TrialBalance,
   });
   return output;
+}
+
+// ---------------------------------------------------------------------------
+// Cache stream-key helper — the filter digest is part of the key so a snapshot
+// computed under one provenance lens never serves a request for another (a Prod
+// snapshot must not paint the +Sim R300m injection). Omitting `filter` (the
+// operating-book default path) yields the bare key, preserving existing snapshot
+// rows + the parity gate (which uses the Uncached entry points, never cached).
+// ---------------------------------------------------------------------------
+
+function glV2StreamKey(prefix: string, args: ComputeTrialBalanceV2Args): string {
+  const base = `${prefix}:${args.entity}:${args.periodStart}..${args.periodEnd}`;
+  return args.filter ? `${base}#prov=${provenanceFilterDigest(args.filter)}` : base;
 }
 
 // ===========================================================================
@@ -366,7 +432,7 @@ export interface GlLedgerEntryV2 {
 
 export function computeGlEntriesV2Uncached(args: ComputeTrialBalanceV2Args): GlLedgerEntryV2[] {
   const entries: GlLedgerEntryV2[] = [];
-  const provenanceFilter = defaultProvenanceFilter();
+  const provenanceFilter = args.filter ?? defaultProvenanceFilter();
 
   for (const e of args.eventStore.replay({
     entity: args.entity,
@@ -375,8 +441,10 @@ export function computeGlEntriesV2Uncached(args: ComputeTrialBalanceV2Args): GlL
     if (!eventMatchesProvenanceFilter(e, provenanceFilter)) continue;
 
     const leg = e.payload as unknown as GlPostingLegFull;
-    // FX entries come from the FIL fold (below); skip FX-sourced GlPostingEmitted.
+    // FX + capital entries come from the FIL folds (below); skip FX- and
+    // capital-sourced GlPostingEmitted.
     if (isFxSourcedGlPosting(leg.postingRuleId)) continue;
+    if (isCapitalSourcedGlPosting(leg.postingRuleId)) continue;
     if (!leg.postingDate) continue;
     if (leg.postingDate < args.periodStart || leg.postingDate > args.periodEnd) continue;
 
@@ -410,8 +478,40 @@ export function computeGlEntriesV2Uncached(args: ComputeTrialBalanceV2Args): GlL
     eventStore: args.eventStore,
     periodStart: args.periodStart,
     periodEnd: args.periodEnd,
+    filter: provenanceFilter,
   });
   for (const leg of fxFold.legs) {
+    const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
+    const legMinor = Number(amountToMinorUnits(legMoney));
+    const coa = getCoaEntryV2(leg.accountCode);
+    entries.push({
+      eventId: leg.filEventId,
+      source: "GlPostingEmitted",
+      postedAt: leg.postingDate,
+      description: leg.description,
+      accountId: leg.accountCode,
+      accountName: coa.name,
+      accountCategory: coa.category,
+      debitCredit: leg.creditDebit,
+      amountMinor: legMinor,
+      amount: legMoney,
+      currency: leg.amount.currency,
+      sourceEventId: leg.sourceEventId,
+      postingRuleId: leg.postingRuleId,
+    });
+  }
+
+  // Capital entries — PURE FOLD over primary capital FIL events. Each folded leg
+  // (the Dr settlement-cash + Cr own-funds pair) is an individually-addressable
+  // ledger entry sourced from the FIL lifecycle event (GL ⇿ BA-700 coherence).
+  const capitalFold = foldCapitalContributionLegs({
+    eventStore: args.eventStore,
+    entity: args.entity,
+    periodStart: args.periodStart,
+    periodEnd: args.periodEnd,
+    filter: provenanceFilter,
+  });
+  for (const leg of capitalFold.legs) {
     const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
     const legMinor = Number(amountToMinorUnits(legMoney));
     const coa = getCoaEntryV2(leg.accountCode);
@@ -444,7 +544,7 @@ export function computeGlEntriesV2Uncached(args: ComputeTrialBalanceV2Args): GlL
 export function computeGlEntriesV2(args: ComputeTrialBalanceV2Args): GlLedgerEntryV2[] {
   const { output } = readWithOutputSnapshot<GlLedgerEntryV2[]>({
     store: args.eventStore,
-    streamKey: `gl-v2-entries:${args.entity}:${args.periodStart}..${args.periodEnd}`,
+    streamKey: glV2StreamKey("gl-v2-entries", args),
     asOf: args.periodEnd,
     compute: () => computeGlEntriesV2Uncached(args),
     encode: (o) => JSON.stringify(o),
@@ -529,7 +629,7 @@ function accumulateAccountLeg(
 export function computeGlAccountsV2Uncached(args: ComputeTrialBalanceV2Args): GlAccountMasterV2[] {
   // Outer key: accountId; inner key: currency.
   const byAccount = new Map<string, Map<string, GlAccountBalanceV2>>();
-  const provenanceFilter = defaultProvenanceFilter();
+  const provenanceFilter = args.filter ?? defaultProvenanceFilter();
 
   for (const e of args.eventStore.replay({
     entity: args.entity,
@@ -538,8 +638,10 @@ export function computeGlAccountsV2Uncached(args: ComputeTrialBalanceV2Args): Gl
     if (!eventMatchesProvenanceFilter(e, provenanceFilter)) continue;
 
     const leg = e.payload as unknown as GlPostingLegFull;
-    // FX accounts come from the FIL fold (below); skip FX-sourced GlPostingEmitted.
+    // FX + capital accounts come from the FIL folds (below); skip FX- and
+    // capital-sourced GlPostingEmitted.
     if (isFxSourcedGlPosting(leg.postingRuleId)) continue;
+    if (isCapitalSourcedGlPosting(leg.postingRuleId)) continue;
     if (!leg.postingDate) continue;
     if (leg.postingDate < args.periodStart || leg.postingDate > args.periodEnd) continue;
 
@@ -559,8 +661,31 @@ export function computeGlAccountsV2Uncached(args: ComputeTrialBalanceV2Args): Gl
     eventStore: args.eventStore,
     periodStart: args.periodStart,
     periodEnd: args.periodEnd,
+    filter: provenanceFilter,
   });
   for (const leg of fxFold.legs) {
+    const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
+    const legMinor = Number(amountToMinorUnits(legMoney));
+    accumulateAccountLeg(
+      byAccount,
+      leg.accountCode,
+      leg.creditDebit,
+      legMinor,
+      leg.amount.currency,
+    );
+  }
+
+  // Capital accounts — PURE FOLD over primary capital FIL events (Dr settlement-
+  // cash / Cr own-funds). Closes the GL ⇿ BA-700 coherence seam in the account-
+  // master view too.
+  const capitalFold = foldCapitalContributionLegs({
+    eventStore: args.eventStore,
+    entity: args.entity,
+    periodStart: args.periodStart,
+    periodEnd: args.periodEnd,
+    filter: provenanceFilter,
+  });
+  for (const leg of capitalFold.legs) {
     const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
     const legMinor = Number(amountToMinorUnits(legMoney));
     accumulateAccountLeg(
@@ -601,7 +726,7 @@ export function computeGlAccountsV2Uncached(args: ComputeTrialBalanceV2Args): Gl
 export function computeGlAccountsV2(args: ComputeTrialBalanceV2Args): GlAccountMasterV2[] {
   const { output } = readWithOutputSnapshot<GlAccountMasterV2[]>({
     store: args.eventStore,
-    streamKey: `gl-v2-accounts:${args.entity}:${args.periodStart}..${args.periodEnd}`,
+    streamKey: glV2StreamKey("gl-v2-accounts", args),
     asOf: args.periodEnd,
     compute: () => computeGlAccountsV2Uncached(args),
     encode: (o) => JSON.stringify(o),
