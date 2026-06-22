@@ -33,17 +33,17 @@
 
 import { eventStore } from "../platform/composition";
 import {
-  makeClientAccountsSetup,
-  makeClientActivated,
-  makeClientBeneficialOwnerResolved,
-  makeClientCreditAssessed,
-  makeClientFaisClassified,
-  makeClientFatcaCrsClassified,
-  makeClientKycPassed,
-  makeClientPopiaConsentRecorded,
-  makeClientProspectRegistered,
-  makeClientSanctionsCleared,
-  makeClientSoundingOpened,
+  makeClientOnboardingAccountsSetup,
+  makeClientOnboardingActivated,
+  makeClientOnboardingBeneficialOwnerResolved,
+  makeClientOnboardingCreditAssessed,
+  makeClientOnboardingFaisClassified,
+  makeClientOnboardingFatcaCrsClassified,
+  makeClientOnboardingKycPassed,
+  makeClientOnboardingPopiaConsentRecorded,
+  makeClientOnboardingProspectRegistered,
+  makeClientOnboardingSanctionsCleared,
+  makeClientOnboardingSoundingOpened,
 } from "../platform/event-store/event-types/client-onboarding";
 import type { Event } from "../platform/event-store/types";
 import {
@@ -181,7 +181,7 @@ function lifecycleEvents(c: SeedClient): Event[] {
   const cp = counterpartyId(c.slug);
   const reviewerRef = "urn:party:agent:mlro"; // seat ref (lineage only, name-free).
   return [
-    makeClientSoundingOpened({
+    makeClientOnboardingSoundingOpened({
       eventId: eid(c.slug, "sounding"),
       asOf: T.sounding,
       entity: ENTITY,
@@ -190,7 +190,7 @@ function lifecycleEvents(c: SeedClient): Event[] {
       provenance: PROVENANCE,
       payload: { counterpartyId: cp, channel: "outbound", citations: CITES },
     }),
-    makeClientProspectRegistered({
+    makeClientOnboardingProspectRegistered({
       eventId: eid(c.slug, "prospect"),
       asOf: T.prospect,
       entity: ENTITY,
@@ -206,7 +206,7 @@ function lifecycleEvents(c: SeedClient): Event[] {
         citations: CITES,
       },
     }),
-    makeClientKycPassed({
+    makeClientOnboardingKycPassed({
       eventId: eid(c.slug, "kyc"),
       asOf: T.kyc,
       entity: ENTITY,
@@ -223,7 +223,7 @@ function lifecycleEvents(c: SeedClient): Event[] {
         citations: CITES,
       },
     }),
-    makeClientSanctionsCleared({
+    makeClientOnboardingSanctionsCleared({
       eventId: eid(c.slug, "sanctions"),
       asOf: T.sanctions,
       entity: ENTITY,
@@ -238,7 +238,7 @@ function lifecycleEvents(c: SeedClient): Event[] {
         citations: CITES,
       },
     }),
-    makeClientFaisClassified({
+    makeClientOnboardingFaisClassified({
       eventId: eid(c.slug, "fais"),
       asOf: T.fais,
       entity: ENTITY,
@@ -252,7 +252,7 @@ function lifecycleEvents(c: SeedClient): Event[] {
         citations: CITES,
       },
     }),
-    makeClientBeneficialOwnerResolved({
+    makeClientOnboardingBeneficialOwnerResolved({
       eventId: eid(c.slug, "bo"),
       asOf: T.bo,
       entity: ENTITY,
@@ -272,7 +272,7 @@ function lifecycleEvents(c: SeedClient): Event[] {
         citations: CITES,
       },
     }),
-    makeClientFatcaCrsClassified({
+    makeClientOnboardingFatcaCrsClassified({
       eventId: eid(c.slug, "fatca"),
       asOf: T.fatca,
       entity: ENTITY,
@@ -287,7 +287,7 @@ function lifecycleEvents(c: SeedClient): Event[] {
         citations: CITES,
       },
     }),
-    makeClientPopiaConsentRecorded({
+    makeClientOnboardingPopiaConsentRecorded({
       eventId: eid(c.slug, "popia"),
       asOf: T.popia,
       entity: ENTITY,
@@ -301,7 +301,7 @@ function lifecycleEvents(c: SeedClient): Event[] {
         citations: CITES,
       },
     }),
-    makeClientCreditAssessed({
+    makeClientOnboardingCreditAssessed({
       eventId: eid(c.slug, "credit"),
       asOf: T.credit,
       entity: ENTITY,
@@ -316,7 +316,7 @@ function lifecycleEvents(c: SeedClient): Event[] {
         citations: CITES,
       },
     }),
-    makeClientAccountsSetup({
+    makeClientOnboardingAccountsSetup({
       eventId: eid(c.slug, "accounts"),
       asOf: T.accounts,
       entity: ENTITY,
@@ -336,7 +336,7 @@ function lifecycleEvents(c: SeedClient): Event[] {
         citations: CITES,
       },
     }),
-    makeClientActivated({
+    makeClientOnboardingActivated({
       eventId: eid(c.slug, "activated"),
       asOf: T.activated,
       entity: ENTITY,

@@ -116,7 +116,9 @@ interface MakeArgs<P> {
   aggregateLabel?: string;
 }
 
-export function makeClientSoundingOpened(args: MakeArgs<ClientSoundingOpenedPayload>): Event {
+export function makeClientOnboardingSoundingOpened(
+  args: MakeArgs<ClientSoundingOpenedPayload>,
+): Event {
   return makeClientOnboardingEvent({
     ...args,
     type: CLIENT_SOUNDING_OPENED,
@@ -124,7 +126,7 @@ export function makeClientSoundingOpened(args: MakeArgs<ClientSoundingOpenedPayl
   });
 }
 
-export function makeClientProspectRegistered(
+export function makeClientOnboardingProspectRegistered(
   args: MakeArgs<ClientProspectRegisteredPayload>,
 ): Event {
   return makeClientOnboardingEvent({
@@ -134,7 +136,7 @@ export function makeClientProspectRegistered(
   });
 }
 
-export function makeClientKycPassed(args: MakeArgs<ClientKycPassedPayload>): Event {
+export function makeClientOnboardingKycPassed(args: MakeArgs<ClientKycPassedPayload>): Event {
   return makeClientOnboardingEvent({
     ...args,
     type: CLIENT_KYC_PASSED,
@@ -142,7 +144,9 @@ export function makeClientKycPassed(args: MakeArgs<ClientKycPassedPayload>): Eve
   });
 }
 
-export function makeClientSanctionsCleared(args: MakeArgs<ClientSanctionsClearedPayload>): Event {
+export function makeClientOnboardingSanctionsCleared(
+  args: MakeArgs<ClientSanctionsClearedPayload>,
+): Event {
   return makeClientOnboardingEvent({
     ...args,
     type: CLIENT_SANCTIONS_CLEARED,
@@ -150,7 +154,9 @@ export function makeClientSanctionsCleared(args: MakeArgs<ClientSanctionsCleared
   });
 }
 
-export function makeClientFaisClassified(args: MakeArgs<ClientFaisClassifiedPayload>): Event {
+export function makeClientOnboardingFaisClassified(
+  args: MakeArgs<ClientFaisClassifiedPayload>,
+): Event {
   return makeClientOnboardingEvent({
     ...args,
     type: CLIENT_FAIS_CLASSIFIED,
@@ -158,7 +164,7 @@ export function makeClientFaisClassified(args: MakeArgs<ClientFaisClassifiedPayl
   });
 }
 
-export function makeClientBeneficialOwnerResolved(
+export function makeClientOnboardingBeneficialOwnerResolved(
   args: MakeArgs<ClientBeneficialOwnerResolvedPayload>,
 ): Event {
   return makeClientOnboardingEvent({
@@ -171,7 +177,7 @@ export function makeClientBeneficialOwnerResolved(
   });
 }
 
-export function makeClientFatcaCrsClassified(
+export function makeClientOnboardingFatcaCrsClassified(
   args: MakeArgs<ClientFatcaCrsClassifiedPayload>,
 ): Event {
   return makeClientOnboardingEvent({
@@ -181,7 +187,7 @@ export function makeClientFatcaCrsClassified(
   });
 }
 
-export function makeClientPopiaConsentRecorded(
+export function makeClientOnboardingPopiaConsentRecorded(
   args: MakeArgs<ClientPopiaConsentRecordedPayload>,
 ): Event {
   return makeClientOnboardingEvent({
@@ -191,7 +197,9 @@ export function makeClientPopiaConsentRecorded(
   });
 }
 
-export function makeClientCreditAssessed(args: MakeArgs<ClientCreditAssessedPayload>): Event {
+export function makeClientOnboardingCreditAssessed(
+  args: MakeArgs<ClientCreditAssessedPayload>,
+): Event {
   return makeClientOnboardingEvent({
     ...args,
     type: CLIENT_CREDIT_ASSESSED,
@@ -199,7 +207,9 @@ export function makeClientCreditAssessed(args: MakeArgs<ClientCreditAssessedPayl
   });
 }
 
-export function makeClientAccountsSetup(args: MakeArgs<ClientAccountsSetupPayload>): Event {
+export function makeClientOnboardingAccountsSetup(
+  args: MakeArgs<ClientAccountsSetupPayload>,
+): Event {
   return makeClientOnboardingEvent({
     ...args,
     type: CLIENT_ACCOUNTS_SETUP,
@@ -207,7 +217,7 @@ export function makeClientAccountsSetup(args: MakeArgs<ClientAccountsSetupPayloa
   });
 }
 
-export function makeClientActivated(args: MakeArgs<ClientActivatedPayload>): Event {
+export function makeClientOnboardingActivated(args: MakeArgs<ClientActivatedPayload>): Event {
   return makeClientOnboardingEvent({
     ...args,
     type: CLIENT_ACTIVATED,
@@ -215,7 +225,7 @@ export function makeClientActivated(args: MakeArgs<ClientActivatedPayload>): Eve
   });
 }
 
-export function makeClientOffboarded(args: MakeArgs<ClientOffboardedPayload>): Event {
+export function makeClientOnboardingOffboarded(args: MakeArgs<ClientOffboardedPayload>): Event {
   return makeClientOnboardingEvent({
     ...args,
     type: CLIENT_OFFBOARDED,

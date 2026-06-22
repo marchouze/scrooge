@@ -175,9 +175,7 @@ export const clientFatcaCrsClassifiedPayloadSchema = z
     citations: z.array(citationRefSchema).min(1),
   })
   .strict();
-export type ClientFatcaCrsClassifiedPayload = z.infer<
-  typeof clientFatcaCrsClassifiedPayloadSchema
->;
+export type ClientFatcaCrsClassifiedPayload = z.infer<typeof clientFatcaCrsClassifiedPayloadSchema>;
 
 /** Phase 7 — POPIA processing consent recorded (gating). POPIA s.11. */
 export const clientPopiaConsentRecordedPayloadSchema = z
@@ -198,9 +196,7 @@ export const clientCreditAssessedPayloadSchema = z
     counterpartyId,
     creditGrade: z.string().min(1),
     /** Exposure limit — canonical decimal string in MAJOR units (no JS number). */
-    exposureLimit: z
-      .object({ currency: z.string().length(3), amount: z.string().min(1) })
-      .strict(),
+    exposureLimit: z.object({ currency: z.string().length(3), amount: z.string().min(1) }).strict(),
     assessedAt: instantSchema,
     citations: z.array(citationRefSchema).min(1),
   })

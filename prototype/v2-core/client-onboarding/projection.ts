@@ -205,8 +205,7 @@ class ClientOnboardingAccumulator {
     if (phase === null) return; // not part of this family — skip silently.
 
     const payload = (ev.payload ?? {}) as Record<string, unknown>;
-    const counterpartyId =
-      typeof payload.counterpartyId === "string" ? payload.counterpartyId : "";
+    const counterpartyId = typeof payload.counterpartyId === "string" ? payload.counterpartyId : "";
     if (!counterpartyId) return;
 
     this.eventCount += 1;
