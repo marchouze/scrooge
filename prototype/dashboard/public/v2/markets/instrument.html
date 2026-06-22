@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/v2/_v2-tile.css">
   <link rel="stylesheet" href="/provenance-badge.css">
 </head>
-<body data-provenance-content="none">
+<body data-provenance-source="/api/v2/markets/fx/blotter">
   <header class="v2-header">
     <div class="v2-header-left">
       <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
@@ -19,6 +19,7 @@
         <button class="v2-prov-btn" data-mode="prod">Prod</button>
         <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
       </div>
+      <span data-provenance-badge="page-top"></span>
       <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
       <span class="v2-as-of" id="as-of">—</span>
     </div>
@@ -30,44 +31,106 @@
   <script src="/v2/_v2-shell.js"></script>
   <script src="/provenance-badge.js"></script>
   <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
   <script>
     const main = document.getElementById("v2-main");
-    const params = new URLSearchParams(location.search);
-    const id = params.get("id");
+    const id = new URLSearchParams(location.search).get("id");
 
     renderPageHeader(main, {
       crumbs: [
         { label: "Executive", href: "/v2/index.html" },
         { label: "Markets", href: "/v2/markets/index.html" },
         { label: "FIL Positions", href: "/v2/markets/positions.html" },
-        { label: id ? id : "Instrument Detail" },
+        { label: id ? (id.split(":").pop() || id) : "Instrument Detail" },
       ],
-      title: id ? `Instrument: ${id}` : "Instrument Detail",
+      title: id ? `Instrument: ${id.split(":").pop() || id}` : "Instrument Detail",
+      seat: "FX FIL instance · economic terms from live blotter",
     });
+
+    const bodyHost = document.createElement("div"); main.appendChild(bodyHost);
 
     if (!id) {
       const empty = document.createElement("div");
       empty.className = "v2-empty";
-      empty.innerHTML = `<div class="v2-empty-icon">⊙</div><div class="v2-empty-msg">No instrument selected — choose from <a href="/v2/markets/positions.html">FIL Positions</a>.</div>`;
-      main.appendChild(empty);
+      empty.innerHTML = `<div class="v2-empty-icon">⊙</div><div class="v2-empty-msg">No instrument selected — choose a row in <a href="/v2/markets/positions.html">FIL Positions</a> or the <a href="/v2/markets/fx.html">FX Desk</a> blotter.</div>`;
+      bodyHost.appendChild(empty);
     } else {
-      renderTileGroup(main, {
-        tiles: [
-          { label: "Stage", unit: "active / proposed / terminated" },
-          { label: "Asset Class", unit: "FX · IR" },
-          { label: "Notional", unit: "ZAR" },
-          { label: "Settlement Date", unit: "Date" },
-        ],
+      v2WireLoader(async () => {
+        bodyHost.replaceChildren();
+        let d;
+        try {
+          d = await v2Fetch("/api/v2/markets/fx/blotter");
+        } catch (err) {
+          v2RenderError(bodyHost, v2Esc(err.message));
+          return;
+        }
+        document.getElementById("as-of").textContent = d.asOf ? `as of ${new Date(d.asOf).toLocaleString()}` : "—";
+
+        const r = (d.rows || []).find((x) => x.instance === id);
+        if (!r) {
+          // Honest not-found — never a blank that reads as "exists but empty".
+          const banner = document.createElement("div");
+          banner.className = "v2-empty";
+          banner.innerHTML =
+            `<div class="v2-empty-icon">○</div><div class="v2-empty-msg">` +
+            `<strong>Instrument <code>${v2Esc(id)}</code> is not in the live FX blotter under this lens.</strong><br>` +
+            `It may be terminated, out of this provenance scope, or a non-FX instrument (cross-asset FIL is not yet served — see <a href="/v2/markets/positions.html">FIL Positions</a> scope note). ` +
+            `Switch to <strong>+ Sim</strong> if you expect the demonstration cohort.</div>`;
+          bodyHost.appendChild(banner);
+          return;
+        }
+
+        // Headline tiles.
+        renderTileGroup(bodyHost, {
+          tiles: [
+            { label: "Stage", value: r.stage, unit: "Lifecycle" },
+            { label: "Pair", value: r.pair, unit: "Hedging set" },
+            { label: "Notional", value: `${r.notional.amount} ${r.notional.currency}`, unit: "Netting-set ccy" },
+            { label: "Settlement", value: r.settlementDate, unit: "Driving-leg maturity" },
+          ],
+        });
+
+        // Economic terms.
+        const s = document.createElement("div"); s.className = "v2-section"; bodyHost.appendChild(s);
+        const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "Economic terms"; s.appendChild(h);
+        renderTable(s, {
+          columns: ["Field", "Value"],
+          rows: [
+            { cells: ["Instance URN", `<code>${v2Esc(r.instance)}</code>`] },
+            { cells: ["FIL type", `<code>${v2Esc(r.type)}</code>`] },
+            { cells: ["Pair", `<strong>${v2Esc(r.pair)}</strong>`] },
+            { cells: ["Direction", r.direction === "long"
+              ? '<span class="v2-badge v2-badge-success">long</span>'
+              : '<span class="v2-badge v2-badge-warning">short</span>'] },
+            { cells: ["Notional", `${v2Esc(r.notional.amount)} ${v2Esc(r.notional.currency)}`] },
+            { cells: ["Counterparty", v2Esc(r.counterpartyId)] },
+            { cells: ["Netting set", `<code>${v2Esc(r.nettingSetId)}</code>`] },
+            { cells: ["Settlement date", v2Esc(r.settlementDate)] },
+            { cells: ["Stage", v2Esc(r.stage)] },
+          ],
+        });
+
+        // Valuation + event-history are not served per-instrument yet — stated honestly.
+        const gapSection = document.createElement("div"); gapSection.className = "v2-section"; bodyHost.appendChild(gapSection);
+        const gh = document.createElement("h2"); gh.className = "v2-section-title"; gh.textContent = "Valuation & event history"; gapSection.appendChild(gh);
+        const gap = document.createElement("div");
+        gap.className = "v2-note";
+        gap.innerHTML =
+          "<strong>Substrate gap:</strong> there is no per-instrument <code>/api/v2</code> read endpoint serving " +
+          "this instance's mark-to-market valuation or its raw <code>FilInstrument*</code> event history. " +
+          "These terms are sourced from the live FX blotter (<code>/api/v2/markets/fx/blotter</code>); " +
+          "a dedicated instrument-detail endpoint (valuation + replay-derived event history) is a tracked " +
+          "follow-on, not rendered here as an empty zero.";
+        gapSection.appendChild(gap);
+
+        renderRefs(bodyHost, {
+          refs: [
+            { label: "FIL instance schema (FilInstrumentCreated)", href: "/v2/operations/schemas.html?type=FilInstrumentCreated" },
+            { label: "FX Desk (full book)", href: "/v2/markets/fx.html" },
+            { label: "FIL Positions (register)", href: "/v2/markets/positions.html" },
+          ],
+        });
       });
-      const s = document.createElement("div"); s.className = "v2-section"; main.appendChild(s);
-      const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "Economic Terms"; s.appendChild(h);
-      renderTable(s, { columns: ["Field", "Value", "Unit", "Source"] });
-      const s2 = document.createElement("div"); s2.className = "v2-section"; main.appendChild(s2);
-      const h2 = document.createElement("h2"); h2.className = "v2-section-title"; h2.textContent = "Valuation"; s2.appendChild(h2);
-      renderTable(s2, { columns: ["Metric", "Value", "Method", "As Of"] });
-      const s3 = document.createElement("div"); s3.className = "v2-section"; main.appendChild(s3);
-      const h3 = document.createElement("h2"); h3.className = "v2-section-title"; h3.textContent = "Event History"; s3.appendChild(h3);
-      renderTable(s3, { columns: ["Event Type", "Timestamp", "Payload Summary"] });
     }
   </script>
 </body>

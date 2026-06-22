@@ -546,3 +546,10 @@ body.sidebar-collapsed .v2-main {
   background: var(--color-surface-raised);
   color: var(--color-text-secondary);
 }
+
+/* Muted helper text — scope notes, substrate-gap callouts, formula context. */
+.v2-note {
+  color: var(--color-text-secondary);
+  font-size: 0.88em;
+  line-height: 1.45;
+}
