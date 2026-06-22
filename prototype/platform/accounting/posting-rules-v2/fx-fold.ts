@@ -277,7 +277,7 @@ export function foldElectionRegisterFromStore(
 
 const POSTING_RULES_CATEGORY = "posting-rules";
 
-interface TreatmentDecision {
+export interface TreatmentDecision {
   readonly applyFxPostingRules: boolean;
   readonly reason: FxFoldSkipReason | "ok";
   readonly detail: string;
@@ -300,7 +300,7 @@ interface TreatmentDecision {
  * carry no `productId` AND whose originating trade carries none either (genuinely
  * un-migrated) — bound instances always take path 1.
  */
-function decideFxTreatment(
+export function decideFxTreatment(
   type: string,
   boundProductId: string | undefined,
   originatingEvent: { eventType: string; eventId: string },
