@@ -409,6 +409,13 @@ const PREFIX: ReadonlyArray<[string, ProvenanceCategory]> = [
   ["InterbankLoan", "trading"],
   ["FundingLine", "trading"],
   ["FundingDrawn", "trading"],
+  // Counterparty / client. WS-V2-CLIENT-ONBOARDING — every born-V2 client
+  // onboarding phase event (ClientOnboardingSoundingOpened …
+  // ClientOnboardingOffboarded) is counterparty-axis data → simulated under the
+  // default build-phase policy (these are simulated client onboardings; the
+  // bank has no real customers pre-licence-day). One PREFIX entry covers all 12
+  // kinds (they share the `ClientOnboarding` stem). F-032 site 3.
+  ["ClientOnboarding", "counterparty"],
   // Accounting.
   ["SubLedger", "accounting"],
   ["Journal", "accounting"],

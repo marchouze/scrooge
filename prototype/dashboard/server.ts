@@ -321,6 +321,10 @@ import { getSubstrateGapsView } from "./substrate-gaps";
 import { buildTaxonomiesView } from "./taxonomy-view";
 import { type TradeBookBody, bookFxTrade, registerTradeBookRoutes } from "./trade-book-view";
 import type { DashboardState } from "./types";
+import {
+  buildClientOnboardingDetail,
+  buildClientOnboardingView,
+} from "./v2-client-onboarding-view";
 import { buildCapitalView } from "./v2-finance-view";
 import {
   buildV2FxBlotterView,
@@ -5619,6 +5623,32 @@ const server = Bun.serve({
         asOf,
         pageProvenance: filter,
       });
+    }
+    // Client (counterparty) onboarding register (Commercial). The born-V2
+    // onboarding family is counterparty-axis simulated data — the 15 seeded
+    // institutional clients appear under +Sim and are excluded under Prod (the
+    // bank has no real customers pre-licence-day, so Prod renders the honest
+    // empty state). pageProvenance is the same filter so the badge matches the
+    // lens. The DTOs carry no agent personal name (client institution names are
+    // counterparty identities, not seats) — name-free by construction.
+    // Authority: WS-V2-CLIENT-ONBOARDING; D-V1-REMOVAL-PHASE-1; D-V2-UI-VISIBILITY-REMEDIATION.
+    if (req.method === "GET" && url.pathname === "/api/v2/clients/onboarding") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildClientOnboardingView({ eventStore, filter }),
+        asOf: nowUtc(),
+        pageProvenance: filter,
+      });
+    }
+    if (req.method === "GET" && url.pathname.startsWith("/api/v2/clients/onboarding/")) {
+      const counterpartyId = decodeURIComponent(
+        url.pathname.slice("/api/v2/clients/onboarding/".length),
+      );
+      if (!counterpartyId) return jsonResponse({ error: "missing counterpartyId" }, 400);
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const detail = buildClientOnboardingDetail({ eventStore, filter, counterpartyId });
+      if (!detail) return jsonResponse({ error: `unknown counterparty: ${counterpartyId}` }, 404);
+      return jsonResponse({ ...detail, asOf: nowUtc(), pageProvenance: filter });
     }
     // New Product Approval register (Governance). NPA products are governance /
     // build-phase records (admitted under production-only in build phase), so

@@ -443,6 +443,12 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // + a valid bookType; every FX trade's deskId resolves to a registered active
     // desk whose bookType matches the trade's bookType (FRTB boundary integrity).
     "recon:frtb-desk-integrity",
+    // WS-V2-CLIENT-ONBOARDING — born-V2 client (counterparty) onboarding gating
+    // invariant. ENFORCING: a counterparty cannot reach `activated` without every
+    // required gating phase (KYC / sanctions / FAIS / BO / FATCA-CRS / POPIA /
+    // credit / accounts) + a prospect registration. A concealed activation is a
+    // fail-closed compliance breach. Authority: D-V1-REMOVAL-PHASE-1.
+    "recon:v2-client-onboarding-integrity",
     "recon:fx-rate-magnitude",
     "recon:entity-identity-coherence",
     "recon:procedure-event-name-coherence",
