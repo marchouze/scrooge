@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Bank Config — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    .cfg-tier { margin: var(--space-6, 24px) 0 var(--space-3, 12px); }
+    .cfg-tier-label { font-weight: 700; font-size: 0.95rem; }
+    .cfg-tier-badge {
+      display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 4px;
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .cfg-tier-canonical   { background: #d1e7dd; color: #0a5c36; }
+    .cfg-tier-observation { background: #fde2cf; color: #8a3b00; }
+    .cfg-tier-projection  { background: #cfe2ff; color: #0a3a8a; }
+    .cfg-tier-blob        { background: #e9ecef; color: #495057; }
+    .cfg-src {
+      display: inline-block; padding: 1px 7px; border-radius: 4px;
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+    }
+    .cfg-src-env     { background: #fff3cd; color: #856404; }
+    .cfg-src-file    { background: #d1e7dd; color: #0a5c36; }
+    .cfg-src-default { background: #e9ecef; color: #6c757d; }
+    .cfg-src-none    { background: #f8d7da; color: #842029; }
+    .cfg-mono { font-family: var(--font-mono, monospace); font-size: 0.8rem; word-break: break-all; }
+    .cfg-present-yes { color: #0a5c36; font-weight: 600; }
+    .cfg-present-no  { color: #842029; }
+    .cfg-gap {
+      margin-top: 6px; font-size: 0.75rem; color: #8a3b00; font-style: italic;
+    }
+    .cfg-gaps-box {
+      margin-top: var(--space-6, 24px); padding: var(--space-3, 12px);
+      border: 1px solid var(--color-border, #ddd); border-radius: 8px; background: var(--color-surface, #fafafa);
+    }
+    .cfg-gaps-box h3 { margin: 0 0 8px; font-size: 0.9rem; }
+    .cfg-gaps-box li { font-size: 0.8rem; margin-bottom: 6px; }
+  </style>
+</head>
+<body data-provenance-source="/api/v2/operations/config">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Operations", href: "/v2/operations/index.html" },
+        { label: "Bank Config" },
+      ],
+      title: "Bank Configuration — Data Stores",
+      seat: "STORE_INVENTORY — every persistent store the bank runs, classified by tier",
+    });
+
+    const fileHost = document.createElement("div"); main.appendChild(fileHost);
+    const tilesHost = document.createElement("div"); main.appendChild(tilesHost);
+    const storesHost = document.createElement("div"); main.appendChild(storesHost);
+    const gapsHost = document.createElement("div"); main.appendChild(gapsHost);
+
+    function fmtSize(bytes) {
+      if (bytes === null || bytes === undefined) return "—";
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    }
+
+    function srcBadge(src) {
+      const s = src || "none";
+      const label = src ? src : "not set";
+      return `<span class="cfg-src cfg-src-${s}">${v2Esc(label)}</span>`;
+    }
+
+    function statusCell(status) {
+      if (!status.present) return `<span class="cfg-present-no">absent</span>`;
+      const kind = status.isDirectory ? "dir" : fmtSize(status.sizeBytes);
+      return `<span class="cfg-present-yes">present</span> · ${v2Esc(kind)}`;
+    }
+
+    function renderStores(data) {
+      storesHost.replaceChildren();
+      for (const group of data.tierGroups) {
+        if (!group.stores.length) continue;
+        const head = document.createElement("div");
+        head.className = "cfg-tier";
+        head.innerHTML =
+          `<span class="cfg-tier-label">${v2Esc(group.tier)}</span>` +
+          `<span class="cfg-tier-badge cfg-tier-${v2Esc(group.tier)}">${v2Esc(group.label)}</span>`;
+        storesHost.appendChild(head);
+
+        const tableHost = document.createElement("div");
+        storesHost.appendChild(tableHost);
+        renderTable(tableHost, {
+          columns: ["Store", "Purpose", "Env var", "Resolved path", "Source", "Status"],
+          emptyMsg: "No stores in this tier.",
+          rows: group.stores.map((s) => ({
+            cells: [
+              `<strong>${v2Esc(s.name)}</strong>${s.dedupGap ? ` <span class="cfg-tier-badge cfg-tier-blob">de-dup gap</span>` : ""}`,
+              v2Esc(s.purpose),
+              `<span class="cfg-mono">${v2Esc(s.envVar)}</span>`,
+              s.resolvedPath ? `<span class="cfg-mono">${v2Esc(s.resolvedPath)}</span>` : "—",
+              srcBadge(s.source),
+              statusCell(s.status),
+            ],
+          })),
+        });
+
+        for (const s of group.stores) {
+          if (!s.dedupGap) continue;
+          const gap = document.createElement("div");
+          gap.className = "cfg-gap";
+          gap.innerHTML = `⚠ ${v2Esc(s.name)} de-dup gap: ${v2Esc(s.dedupGap)}`;
+          storesHost.appendChild(gap);
+        }
+      }
+    }
+
+    function renderGaps(data) {
+      gapsHost.replaceChildren();
+      if (!data.deferredGaps || !data.deferredGaps.length) return;
+      const box = document.createElement("div");
+      box.className = "cfg-gaps-box";
+      box.innerHTML =
+        `<h3>Deferred gaps</h3><ul>` +
+        data.deferredGaps.map((g) => `<li>${v2Esc(g)}</li>`).join("") +
+        `</ul>`;
+      gapsHost.appendChild(box);
+    }
+
+    function load() {
+      return v2Fetch("/api/v2/operations/config")
+        .then((data) => {
+          document.getElementById("as-of").textContent =
+            `as of ${new Date(data.asOf).toLocaleString()}`;
+          fileHost.replaceChildren();
+          const fileLine = document.createElement("div");
+          fileLine.className = "cfg-mono";
+          fileLine.style.margin = "8px 0 16px";
+          fileLine.innerHTML =
+            `Config file: <strong>${v2Esc(data.configFilePath)}</strong> · ` +
+            (data.configFileExists
+              ? `<span class="cfg-present-yes">exists</span>`
+              : `<span class="cfg-present-no">not yet created (defaults in force)</span>`);
+          fileHost.appendChild(fileLine);
+
+          tilesHost.replaceChildren();
+          const byTier = {};
+          for (const g of data.tierGroups) byTier[g.tier] = g.stores.length;
+          renderTileGroup(tilesHost, {
+            tiles: [
+              { label: "Stores inventoried", value: String(data.storeCount), unit: "single source: STORE_INVENTORY" },
+              { label: "Canonical", value: String(byTier.canonical || 0), unit: "bank truth (event log)" },
+              { label: "Observation", value: String(byTier.observation || 0), unit: "outside-world (NOT events)" },
+              { label: "Projection / blob", value: String((byTier.projection || 0) + (byTier.blob || 0)), unit: "rebuildable / content-addressed" },
+            ],
+          });
+
+          renderStores(data);
+          renderGaps(data);
+        })
+        .catch((err) => {
+          storesHost.replaceChildren();
+          v2RenderError(storesHost, v2Esc(err.message));
+        });
+    }
+
+    // Provenance toggle re-loads (this page is production-reference, so both
+    // modes render the same store metadata — the loader stays uniform).
+    v2WireLoader(load);
+
+    // Poll idiom (golden-source-stale-pages): refresh on an interval and when the
+    // tab becomes visible again, so on-disk store sizes/status never go stale.
+    setInterval(load, 30_000);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") load();
+    });
+  </script>
+</body>
+</html>
