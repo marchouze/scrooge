@@ -153,6 +153,30 @@ export function escapeXml(s: string): string {
  */
 export const DEFAULT_PATH_VALUE = "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin";
 
+/**
+ * Main-worktree write-guard opt-in, injected into EVERY plist this renderer
+ * produces. This renderer is used solely by `install.sh` for the three
+ * legitimate main-worktree writers:
+ *   - com.scrooge.event-store-archive
+ *   - com.scrooge.scheduler-tick
+ *   - com.scrooge.golden-source-integrity-tick
+ * Those jobs commit scheduler / archive / golden-source outputs to the
+ * canonical main worktree, so they must carry the opt-in the fail-closed
+ * `.githooks/pre-commit|pre-rebase|pre-push` guard checks for. The dashboard
+ * and fx/sens ingest jobs are installed separately (they do NOT commit to
+ * main) and therefore never receive this key.
+ *
+ * Sourced as a named constant — the literal `"1"` value MUST match
+ * `BANK_ALLOW_MAIN_WORKTREE_WRITE` / `ALLOW_ENV_VAR` in
+ * `scripts/githooks/main-worktree-guard.ts` (the guard only treats exactly
+ * `"1"` as the opt-in).
+ *
+ * Authority: CLAUDE.md §"Dispatch discipline → Worktree isolation";
+ * Engineering Charter D-ENGINEERING-INTEGRITY-CHARTER command 2.
+ */
+export const MAIN_WORKTREE_WRITE_ALLOW_KEY = "BANK_ALLOW_MAIN_WORKTREE_WRITE";
+export const MAIN_WORKTREE_WRITE_ALLOW_VALUE = "1";
+
 export function renderEnvironmentDictBody(args: {
   bankKeys: Record<string, string>;
   /** Override the PATH value. Defaults to the build-phase canonical set. */
@@ -166,7 +190,15 @@ export function renderEnvironmentDictBody(args: {
   lines.push(`${indent}<key>PATH</key>`);
   lines.push(`${indent}<string>${escapeXml(pathValue)}</string>`);
 
-  const sortedKeys = Object.keys(args.bankKeys).sort();
+  // Always emit the main-worktree write-guard opt-in for these jobs. If
+  // `.env.local` also carried the same BANK_* key we drop its copy here so
+  // the rendered plist stays deterministic (single, canonical value).
+  lines.push(`${indent}<key>${escapeXml(MAIN_WORKTREE_WRITE_ALLOW_KEY)}</key>`);
+  lines.push(`${indent}<string>${escapeXml(MAIN_WORKTREE_WRITE_ALLOW_VALUE)}</string>`);
+
+  const sortedKeys = Object.keys(args.bankKeys)
+    .filter((k) => k !== MAIN_WORKTREE_WRITE_ALLOW_KEY)
+    .sort();
   for (const k of sortedKeys) {
     const v = args.bankKeys[k] ?? "";
     lines.push(`${indent}<key>${escapeXml(k)}</key>`);

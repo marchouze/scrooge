@@ -163,7 +163,7 @@ export function denyMessage(canonicalMain: string): string {
     `  This operation targets the main worktree:  ${canonicalMain}`,
     "",
     "  Dispatched agents must NEVER commit, rebase, or push against the main",
-    "  worktree (CLAUDE.md §\"Dispatch discipline → Worktree isolation\"). Three",
+    '  worktree (CLAUDE.md §"Dispatch discipline → Worktree isolation"). Three',
     "  lost-work incidents (2026-05-09) plus a near-miss traced to exactly this.",
     "",
     "  What to do:",
@@ -249,7 +249,9 @@ if (import.meta.main) {
     .then((code) => process.exit(code))
     .catch((err: unknown) => {
       const message = err instanceof Error ? err.message : String(err);
-      process.stderr.write(`main-worktree-guard: unexpected error — failing closed.\n  ${message}\n`);
+      process.stderr.write(
+        `main-worktree-guard: unexpected error — failing closed.\n  ${message}\n`,
+      );
       process.exit(1);
     });
 }

@@ -207,6 +207,33 @@ var is referenced here but its value is not logged.
 risk; if the log grows unbounded (e.g. parse-failure flood), run
 `bash uninstall.sh && rm ~/Library/Logs/scrooge/*.log && bash install.sh`.
 
+## Main-worktree write-guard opt-in
+
+These three agents are the **only** legitimate writers to the canonical
+main worktree (`/Users/marc/code/Bank`) — they commit scheduler / archive /
+golden-source outputs there. A fail-closed git guard
+(`.githooks/pre-commit`, `pre-rebase`, and the folded check in `pre-push`)
+aborts any commit / rebase / push against main unless the actor carries
+`BANK_ALLOW_MAIN_WORKTREE_WRITE=1` (allowlisted launchd writer) or is Marc's
+interactive shell (TTY). This operationalises the standing worktree-isolation
+rule (CLAUDE.md §"Dispatch discipline → Worktree isolation"; Engineering
+Charter `D-ENGINEERING-INTEGRITY-CHARTER` command 2 — fail-closed by default).
+
+The opt-in is injected into every plist this installer renders, by
+`renderEnvironmentDictBody` in `env-extract.ts` (constant
+`MAIN_WORKTREE_WRITE_ALLOW_KEY` / `…_VALUE`). It is **not** read from
+`.env.local` — it is always present for these three jobs and never for the
+dashboard / fx-ingest jobs (which are installed separately and do not commit
+to main).
+
+**Re-render step:** the installed plists under
+`~/Library/LaunchAgents/com.scrooge.*.plist` are generated copies. After this
+change, re-run `bash prototype/scripts/launchd/install.sh` once so the
+installed copies pick up the new `BANK_ALLOW_MAIN_WORKTREE_WRITE=1` key
+(`install.sh` re-renders + re-bootstraps in place; the tracked plist
+templates in this directory are the source). You cannot edit the installed
+copies from a dispatched worktree — re-render is the supported path.
+
 ## Related work
 
 - **Brief:** [`Owner Inbox/2026-05-11_atlas_agent-autonomy-operational-status-and-delta-brief.md`](../../../Owner%20Inbox/2026-05-11_atlas_agent-autonomy-operational-status-and-delta-brief.md)
