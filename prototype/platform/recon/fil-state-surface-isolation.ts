@@ -260,7 +260,9 @@ function detectStateReplays(rel: string, src: string): SurfaceReplay[] {
   // file PLUS a `replay({ type: t })` somewhere in the same file. This is the
   // `for (const t of FX_FIL_EVENT_TYPES) { ... replay({ type: t }) }` shape. We
   // attribute it to the line that declares the iteration over the constant.
-  const fileNamesAReplayByVar = lines.some((l) => /\.replay\s*\(\s*\{[^}]*type:\s*\w+/.test(l.text));
+  const fileNamesAReplayByVar = lines.some((l) =>
+    /\.replay\s*\(\s*\{[^}]*type:\s*\w+/.test(l.text),
+  );
   if (fileNamesAReplayByVar) {
     for (const { line, text } of lines) {
       for (const c of FIL_EVENT_TYPE_CONSTANTS) {

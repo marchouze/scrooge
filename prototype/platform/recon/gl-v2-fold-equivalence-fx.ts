@@ -21,6 +21,17 @@
 // fold's FX contribution is compared against it. Non-FX GlPostingEmitted is not
 // in scope here (it is covered by recon:gl-v2-parity).
 //
+// STEP D — EVENT FOLD RETIRED TO ORACLE-ONLY (D-FIL-CONSUMER-SURFACE-ARCHITECTURE).
+// After the Step C cutover the GL projection sources FX/capital legs from the
+// STATE derivations (deriveFxInstanceLegs / deriveCapitalInstanceLegs); NO
+// production path consumes `foldFxContributionLegs` / `foldCapitalContributionLegs`
+// any more. The chosen retirement is OPTION (b): keep the event folds strictly as
+// recon ORACLES — they survive here as the independent third leg of the byte
+// proof (state == golden == event-fold), giving a stronger cross-check than a
+// two-way state==golden comparison would. Their oracle-only status (no production
+// importer) is now MECHANICALLY ENFORCED by `recon:fil-state-surface-isolation`
+// (Step D). This gate stays GREEN and NON-VACUOUS on the seeded anchor store.
+//
 // CLEAN-STORE BEHAVIOUR: on a store with no FIL FX events / no treatment modules,
 // both sides are empty → the gate passes vacuously (0 asserted divergences).
 //
