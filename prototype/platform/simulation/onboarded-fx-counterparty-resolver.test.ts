@@ -17,8 +17,8 @@
 import { describe, expect, it } from "bun:test";
 
 import { EventStore } from "../event-store/store";
-import { emitClientOnboardingLifecycle } from "../simulation-v2/sim-modules/counterparty-provisioning";
 import type { ScenarioCounterparty } from "../simulation-v2/scenario-manifest";
+import { emitClientOnboardingLifecycle } from "../simulation-v2/sim-modules/counterparty-provisioning";
 import { EnvSimEngine } from "./env-sim/index";
 import { getOnboardedFxCounterparties } from "./onboarded-fx-counterparty-resolver";
 

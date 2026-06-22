@@ -82,12 +82,7 @@ export function assertSimTradesOnboarded(
       violations.push({
         subject: `fx-sim-trade:${t.tradeId}`,
         severity,
-        message:
-          `simulator FX trade ${t.tradeId} names counterparty ${t.counterpartyPartyId}, ` +
-          "which is NOT an in-sim onboarded, active, FX-eligible client " +
-          "(terminal ClientOnboardingActivated + BIC + FX-spot eligibility). " +
-          "The FX simulator must transact ONLY with onboarded clients — no seed fallback " +
-          "(WS-FX-V2-SIMULATOR-FIRST; D-FX-V2-SIMULATOR-FIRST).",
+        message: `simulator FX trade ${t.tradeId} names counterparty ${t.counterpartyPartyId}, which is NOT an in-sim onboarded, active, FX-eligible client (terminal ClientOnboardingActivated + BIC + FX-spot eligibility). The FX simulator must transact ONLY with onboarded clients — no seed fallback (WS-FX-V2-SIMULATOR-FIRST; D-FX-V2-SIMULATOR-FIRST).`,
       });
     }
   }

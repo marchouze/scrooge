@@ -41,7 +41,12 @@ function lifecycle(
   });
   const events: Raw[] = [
     ev(CLIENT_SOUNDING_OPENED),
-    ev(CLIENT_PROSPECT_REGISTERED, { legalName: cp, jurisdiction: "ZA", sector: "banking", ...prospectExtra }),
+    ev(CLIENT_PROSPECT_REGISTERED, {
+      legalName: cp,
+      jurisdiction: "ZA",
+      sector: "banking",
+      ...prospectExtra,
+    }),
     ev(CLIENT_KYC_PASSED),
     ev(CLIENT_SANCTIONS_CLEARED),
     ev(CLIENT_FAIS_CLASSIFIED),
@@ -82,7 +87,11 @@ describe("fxCounterpartiesFromOnboardingRegister", () => {
 
   it("excludes a NOT-YET-activated client (no onboarding → no trading)", () => {
     const cps = fxCounterpartiesFromOnboardingEvents(
-      lifecycle("cp-pending", { bic: "ABCDZAJJXXX", fxEligiblePairs: ["USD/ZAR"] }, { activate: false }),
+      lifecycle(
+        "cp-pending",
+        { bic: "ABCDZAJJXXX", fxEligiblePairs: ["USD/ZAR"] },
+        { activate: false },
+      ),
     );
     expect(cps).toHaveLength(0);
   });

@@ -20,6 +20,12 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import {
+  type CitationRef,
+  type Instant,
+  citationRefSchema,
+  instantSchema,
+} from "../../../v2-core/fil-core/primitives";
+import {
   makeClientOnboardingAccountsSetup,
   makeClientOnboardingActivated,
   makeClientOnboardingBeneficialOwnerResolved,
@@ -41,12 +47,6 @@ import {
 import { simulatedTag } from "../../event-store/provenance";
 import type { EventStore } from "../../event-store/store";
 import type { Event } from "../../event-store/types";
-import {
-  type CitationRef,
-  type Instant,
-  citationRefSchema,
-  instantSchema,
-} from "../../../v2-core/fil-core/primitives";
 import type { ScenarioCounterparty } from "../scenario-manifest";
 
 const ENTITY = "LE-ZA-HOZ-BANK";

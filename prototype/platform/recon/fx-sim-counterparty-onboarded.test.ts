@@ -31,10 +31,7 @@ import {
   CLIENT_SOUNDING_OPENED,
   fxCounterpartiesFromOnboardingEvents,
 } from "../../v2-core/client-onboarding";
-import {
-  type SimFxTradeRef,
-  assertSimTradesOnboarded,
-} from "./fx-sim-counterparty-onboarded";
+import { type SimFxTradeRef, assertSimTradesOnboarded } from "./fx-sim-counterparty-onboarded";
 
 interface Raw {
   kind: string;
@@ -43,10 +40,7 @@ interface Raw {
 }
 
 /** Full clean onboarding lifecycle for `cp`, FX-eligible when `fx` set. */
-function onboardLifecycle(
-  cp: string,
-  fx: { bic: string; pairs: string[] } | null,
-): Raw[] {
+function onboardLifecycle(cp: string, fx: { bic: string; pairs: string[] } | null): Raw[] {
   const base = (kind: string, extra: Record<string, unknown> = {}): Raw => ({
     kind,
     payload: { counterpartyId: cp, ...extra },

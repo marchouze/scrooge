@@ -115,7 +115,7 @@ const SIM_BANK_FX_PAIRS = ["USD/ZAR", "EUR/ZAR", "GBP/ZAR", "EUR/USD", "GBP/USD"
  * country + "JJ" location + "XXX" branch. Synthetic — build-phase fixtures only.
  */
 function simBic(slug: string, jurisdiction: string): string {
-  const inst = (slug.replace(/[^a-zA-Z]/g, "").toUpperCase() + "XXXX").slice(0, 4);
+  const inst = `${slug.replace(/[^a-zA-Z]/g, "").toUpperCase()}XXXX`.slice(0, 4);
   const country = jurisdiction.slice(0, 2).toUpperCase();
   return `${inst}${country}JJXXX`;
 }

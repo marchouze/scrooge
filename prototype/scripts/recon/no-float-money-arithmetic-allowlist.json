@@ -12,37 +12,37 @@
     },
     {
       "file": "dashboard/server.ts",
-      "line": 445,
+      "line": 446,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 659,
+      "line": 666,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 660,
+      "line": 667,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 750,
+      "line": 757,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 770,
+      "line": 777,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 793,
+      "line": 800,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 794,
+      "line": 801,
       "pattern": "money-multiply/divide"
     },
     {

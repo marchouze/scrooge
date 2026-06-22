@@ -97,9 +97,7 @@ function toSimCounterparty(cp: OnboardedFxCounterparty): SimCounterparty {
  *
  * NEVER falls back to a static seed list.
  */
-export function getOnboardedFxCounterparties(
-  store: Pick<EventStore, "replay">,
-): SimCounterparty[] {
+export function getOnboardedFxCounterparties(store: Pick<EventStore, "replay">): SimCounterparty[] {
   const onboarded = fxCounterpartiesFromOnboardingEvents(
     collectOnboardingEvents(store, /* simulatedOnly */ true),
   );
