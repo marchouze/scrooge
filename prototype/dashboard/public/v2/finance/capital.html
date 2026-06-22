@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Capital Adequacy — Hoz Bank</title>
+  <title>Capital Position — Hoz Bank</title>
   <link rel="stylesheet" href="/v2/_v2-shell.css">
   <link rel="stylesheet" href="/v2/_v2-tile.css">
   <link rel="stylesheet" href="/provenance-badge.css">
 </head>
-<body data-provenance-content="none">
+<body data-provenance-source="/api/v2/finance/capital">
   <header class="v2-header">
     <div class="v2-header-left">
       <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
@@ -19,10 +19,8 @@
         <button class="v2-prov-btn" data-mode="prod">Prod</button>
         <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
       </div>
-      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html" title="Errors &amp; recon violations">
-        <span class="v2-errors-icon">⚠</span>
-        <span class="v2-errors-count" id="errors-count">…</span>
-      </a>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
       <span class="v2-as-of" id="as-of">—</span>
     </div>
   </header>
@@ -33,46 +31,119 @@
   <script src="/v2/_v2-shell.js"></script>
   <script src="/provenance-badge.js"></script>
   <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
   <script>
     const main = document.getElementById("v2-main");
     renderPageHeader(main, {
-      crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Finance", href: "/v2/finance/index.html" }, { label: "Capital Adequacy" }],
-      title: "Capital Adequacy",
-      seat: "BA-700",
-    });
-
-    renderTileGroup(main, {
-      tiles: [
-        { label: "CET-1 Ratio", unit: "CET-1 Capital / RWA" },
-        { label: "Total Capital Ratio", unit: "Total Capital / RWA" },
-        { label: "CET-1 Capital", unit: "ZAR" },
-        { label: "Risk-Weighted Assets", unit: "ZAR" },
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Finance", href: "/v2/finance/index.html" },
+        { label: "Capital Position" },
       ],
+      title: "Capital Position",
+      seat: "Own-funds composition & capital adequacy · BA-700 / BA-100 · Capital FIL fold",
     });
 
-    renderFormula(main, {
-      name: "CET-1 Ratio",
-      numLabel: "CET-1 Capital (ACC-5000)",
-      denLabel: "Risk-Weighted Assets",
-      resultLabel: "CET-1 Ratio",
-      reference: "BA-700 Part B; Reg 38(1)(a)",
-    });
+    const stateHost = document.createElement("div"); main.appendChild(stateHost);
+    const tilesHost = document.createElement("div"); main.appendChild(tilesHost);
+    const ratioHost = document.createElement("div"); main.appendChild(ratioHost);
+    const compHost = document.createElement("div"); main.appendChild(compHost);
+    const refsHost = document.createElement("div"); main.appendChild(refsHost);
 
-    const s = document.createElement("div"); s.className = "v2-section"; main.appendChild(s);
-    const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "CET-1 Capital Components"; s.appendChild(h);
-    renderTable(s, { columns: ["Account", "Description", "Amount (ZAR)", "Source Event"] });
+    const metricHref = (key) => `/v2/finance/capital-metric.html?metric=${encodeURIComponent(key)}`;
 
-    const s2 = document.createElement("div"); s2.className = "v2-section"; main.appendChild(s2);
-    const h2 = document.createElement("h2"); h2.className = "v2-section-title"; h2.textContent = "Risk-Weighted Assets Breakdown"; s2.appendChild(h2);
-    renderTable(s2, { columns: ["Asset Class", "Exposure (ZAR)", "RW%", "RWA (ZAR)", "Methodology"] });
+    v2WireLoader(async () => {
+      stateHost.replaceChildren(); tilesHost.replaceChildren();
+      ratioHost.replaceChildren(); compHost.replaceChildren(); refsHost.replaceChildren();
+      let d;
+      try {
+        d = await v2Fetch("/api/v2/finance/capital");
+      } catch (err) {
+        v2RenderError(stateHost, v2Esc(err.message));
+        return;
+      }
+      document.getElementById("as-of").textContent = `as of ${new Date(d.asOf).toLocaleString()}`;
 
-    renderRefs(main, {
-      refs: [
-        { label: "Banks Act Reg 38 — Minimum Capital Requirements", href: "#" },
-        { label: "BA-700 Capital Adequacy Return", href: "#" },
-        { label: "BCBS Basel III Capital Framework", href: "#" },
-        { label: "D-V2-CORE-MONEY-DECIMAL-NATIVE", href: "#" },
-      ],
+      // Honest data-state banner — never a silent zero (Engineering Charter cmd 3).
+      if (d.dataState === "empty") {
+        const banner = document.createElement("div");
+        banner.className = "v2-section";
+        banner.innerHTML = `
+          <div class="v2-empty">
+            <div class="v2-empty-icon">○</div>
+            <div class="v2-empty-msg"><strong>No capital folded under this lens.</strong><br>${v2Esc(d.reason)}</div>
+          </div>`;
+        stateHost.appendChild(banner);
+      }
+
+      // Headline metric tiles — each drills (click, no modal) to its detail page.
+      renderTileGroup(tilesHost, {
+        tiles: d.tiles.map((t) => ({
+          label: t.label,
+          value: t.valueFmt,
+          unit: t.unit,
+          href: metricHref(t.key),
+        })),
+      });
+
+      // Capital-adequacy formula block (CET1 ratio = CET1 / RWA), substrate-page idiom.
+      renderFormula(ratioHost, {
+        name: "CET1 ratio",
+        numLabel: "CET1 capital",
+        denLabel: "Risk-weighted assets",
+        reference: "Reg 38(1)(a) · BA-700 Part B · BCBS RBC20.1",
+      });
+      const fvals = ratioHost.querySelectorAll(".v2-formula-value");
+      const cet1Tile = d.tiles.find((t) => t.key === "cet1");
+      const ratioTile = d.tiles.find((t) => t.key === "cet1-ratio");
+      if (fvals[0]) fvals[0].textContent = cet1Tile ? cet1Tile.valueFmt : "—";
+      if (fvals[1]) fvals[1].textContent = d.totalRwaFmt;
+      const fres = ratioHost.querySelector(".v2-formula-result-value");
+      if (fres) fres.textContent = ratioTile ? ratioTile.valueFmt : "—";
+
+      // Status + headroom context line under the formula.
+      const ctx = document.createElement("div");
+      ctx.className = "v2-section";
+      const statusBadge = d.status === "green"
+        ? '<span class="v2-badge v2-badge-success">green</span>'
+        : d.status === "amber"
+          ? '<span class="v2-badge v2-badge-warning">amber</span>'
+          : '<span class="v2-badge v2-badge-danger">red</span>';
+      renderTable(ctx, {
+        columns: ["Measure", "Value"],
+        rows: [
+          { cells: ["RAS §B3 appetite status", `${statusBadge}${d.critical ? ' <span class="v2-badge v2-badge-danger">critical — below TICR</span>' : ""}`] },
+          { cells: ["Capital headroom", v2Esc(d.headroomFmt)] },
+          { cells: ["Total RWA (denominator)", v2Esc(d.totalRwaFmt)] },
+          { cells: ["Functional currency", v2Esc(d.functionalCurrency)] },
+          { cells: ["Source posture", d.buildPhase ? "Build-phase baseline (no live capital events)" : "Live capital events"] },
+        ],
+      });
+      ratioHost.appendChild(ctx);
+
+      // Own-funds composition table — one row per tier/sub-category; honest empty.
+      const cs = document.createElement("div"); cs.className = "v2-section"; compHost.appendChild(cs);
+      const ch = document.createElement("h2"); ch.className = "v2-section-title"; ch.textContent = "Own-funds composition"; cs.appendChild(ch);
+      renderTable(cs, {
+        columns: ["Tier", "Component", "Amount"],
+        emptyMsg: "No own-funds components folded under this lens — no capital instruments. Switch to + Sim to view the demonstration injection.",
+        rows: d.composition.map((r) => ({
+          cells: [
+            `<span class="v2-badge v2-badge-info">${v2Esc(r.tierLabel)}</span>`,
+            v2Esc(r.subCategoryLabel),
+            `<strong>${v2Esc(r.amountFmt)}</strong>`,
+          ],
+        })),
+      });
+
+      renderRefs(refsHost, {
+        refs: [
+          { label: "Regs Relating to Banks — Reg 38 (capital adequacy)", href: "/v2/compliance/reader.html?slug=regulations-relating-to-banks" },
+          { label: "Banks Act 94 of 1990 — §70 (minimum capital & reserve funds)", href: "/v2/compliance/reader.html?slug=banks-act" },
+          { label: "BCBS Basel III — CAP / RBC20 (definition & components of capital)", href: "/v2/compliance/reader.html?slug=bcbs-basel-iii" },
+          { label: "Capital FIL composition schema (D-CAPITAL-ASSET-CLASS-V1)", href: "/v2/operations/schemas.html?type=FilInstrumentCreated" },
+        ],
+      });
     });
   </script>
 </body>

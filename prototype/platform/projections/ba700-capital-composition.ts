@@ -56,7 +56,11 @@ import { isCapitalPostingInstance } from "../../v2-core/posting-rules/capital";
 import { amountToMinorUnits } from "../core/decimal-money";
 import { legAmountMoney } from "../core/money-codec";
 import type { EventStore } from "../event-store/store";
-import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "./filter";
+import {
+  type ProvenanceFilter,
+  defaultProvenanceFilter,
+  eventMatchesProvenanceFilter,
+} from "./filter";
 
 // ---------------------------------------------------------------------------
 // Output shape — the own-funds composition (minor units, functional currency).
@@ -242,8 +246,23 @@ export interface ComputeCapitalCompositionArgs {
   /**
    * When TRUE, include `provenance.kind:"simulated"` events (the R300m injection
    * demonstration path). DEFAULT FALSE — the production projection excludes them.
+   *
+   * Ignored when an explicit `filter` is supplied (the filter is authoritative).
    */
   readonly includeSimulated?: boolean;
+  /**
+   * Explicit provenance lens for the fold. When supplied, the fold admits ONLY
+   * events that satisfy this filter (and `includeSimulated` is ignored). This is
+   * how a provenance-aware oversight surface gets exact Prod / +Sim semantics:
+   *   - `{ mode: "production-only" }` rejects `simulated` in BOTH lifecycle
+   *     phases (the R300m demonstration injection is `simulated`, so it is
+   *     correctly absent → the honest empty state pre-licence).
+   *   - `{ mode: "combined" }` admits all kinds (the injection shows).
+   * When OMITTED, the legacy behaviour is preserved: the operating-book default
+   * filter, optionally widened by `includeSimulated` (the ba700-v2 caller path).
+   * Authority: D-V2-UI-VISIBILITY-REMEDIATION; D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE.
+   */
+  readonly filter?: ProvenanceFilter;
 }
 
 const CAPITAL_FIL_EVENT_TYPES = [
@@ -258,11 +277,19 @@ const CAPITAL_FIL_EVENT_TYPES = [
  * events). Pure read; no events written (Principle 1: composition is a query).
  */
 export function computeCapitalComposition(args: ComputeCapitalCompositionArgs): CapitalComposition {
-  const filter = defaultProvenanceFilter();
+  // An explicit `filter` is authoritative (exact Prod / +Sim lens for the
+  // oversight surface). Otherwise: the operating-book default, optionally
+  // widened by `includeSimulated` (legacy ba700-v2 path).
+  const explicitFilter = args.filter;
+  const defaultFilter = defaultProvenanceFilter();
   const collected: CapitalFilEvent[] = [];
   for (const t of CAPITAL_FIL_EVENT_TYPES) {
     for (const ev of args.eventStore.replay({ entity: args.entity, type: t, asOf: args.asOf })) {
-      if (!args.includeSimulated && !eventMatchesProvenanceFilter(ev, filter)) continue;
+      if (explicitFilter) {
+        if (!eventMatchesProvenanceFilter(ev, explicitFilter)) continue;
+      } else if (!args.includeSimulated && !eventMatchesProvenanceFilter(ev, defaultFilter)) {
+        continue;
+      }
       collected.push({ type: ev.type, payload: ev.payload });
     }
   }

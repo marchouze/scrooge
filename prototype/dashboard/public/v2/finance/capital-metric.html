@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Capital Metric — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-source="/api/v2/finance/capital">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    const metricKey = new URLSearchParams(location.search).get("metric");
+
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Finance", href: "/v2/finance/index.html" },
+        { label: "Capital Position", href: "/v2/finance/capital.html" },
+        { label: metricKey || "Metric" },
+      ],
+      title: "Capital metric",
+      seat: "Formula & constituents · how this number is computed",
+    });
+
+    const bodyHost = document.createElement("div"); main.appendChild(bodyHost);
+
+    if (!metricKey) {
+      v2RenderError(bodyHost, `no metric selected — choose a tile on the <a href="/v2/finance/capital.html">Capital Position</a> page.`);
+    } else {
+      v2WireLoader(async () => {
+        bodyHost.replaceChildren();
+        let d;
+        try {
+          d = await v2Fetch("/api/v2/finance/capital");
+        } catch (err) {
+          v2RenderError(bodyHost, v2Esc(err.message));
+          return;
+        }
+        document.getElementById("as-of").textContent = `as of ${new Date(d.asOf).toLocaleString()}`;
+
+        const m = (d.metrics || []).find((x) => x.key === metricKey);
+        if (!m) {
+          v2RenderError(bodyHost, `unknown capital metric: ${v2Esc(metricKey)}`);
+          return;
+        }
+
+        // Update the page title to the metric label.
+        const titleEl = document.querySelector(".v2-page-title");
+        if (titleEl) titleEl.textContent = m.label;
+
+        // Honest data-state banner — never a silent zero.
+        if (d.dataState === "empty") {
+          const banner = document.createElement("div");
+          banner.className = "v2-section";
+          banner.innerHTML = `
+            <div class="v2-empty">
+              <div class="v2-empty-icon">○</div>
+              <div class="v2-empty-msg"><strong>No capital folded under this lens.</strong><br>${v2Esc(d.reason)}</div>
+            </div>`;
+          bodyHost.appendChild(banner);
+        }
+
+        // Headline value tile (static).
+        renderTileGroup(bodyHost, {
+          tiles: [{ label: m.label, value: m.resultFmt, unit: m.resultLabel }],
+        });
+
+        // The formula: numerator / denominator → result (substrate-page idiom).
+        renderFormula(bodyHost, {
+          name: m.resultLabel,
+          numLabel: m.numLabel,
+          denLabel: m.denLabel || "—",
+          reference: m.reference,
+        });
+        const fvals = bodyHost.querySelectorAll(".v2-formula-value");
+        if (fvals[0]) fvals[0].textContent = m.numFmt;
+        if (fvals[1]) fvals[1].textContent = m.denFmt != null ? m.denFmt : "(none — pure sum)";
+        const fres = bodyHost.querySelector(".v2-formula-result-value");
+        if (fres) fres.textContent = m.resultFmt;
+        // For a pure-sum metric (no denominator), relabel the operator to "=" of a sum.
+        if (m.denLabel == null) {
+          const op = bodyHost.querySelector(".v2-formula-op");
+          if (op) op.textContent = "Σ";
+        }
+
+        // Constituent list — the composition lines behind the numerator.
+        const cs = document.createElement("div"); cs.className = "v2-section"; bodyHost.appendChild(cs);
+        const ch = document.createElement("h2"); ch.className = "v2-section-title"; ch.textContent = "Constituents"; cs.appendChild(ch);
+        renderTable(cs, {
+          columns: ["Tier", "Component", "Amount"],
+          emptyMsg: "No constituent components under this lens — switch to + Sim to view the demonstration injection.",
+          rows: (m.constituents || []).map((r) => ({
+            cells: [
+              `<span class="v2-badge v2-badge-info">${v2Esc(r.tierLabel)}</span>`,
+              v2Esc(r.subCategoryLabel),
+              `<strong>${v2Esc(r.amountFmt)}</strong>`,
+            ],
+          })),
+        });
+
+        renderRefs(bodyHost, {
+          title: "References",
+          refs: [
+            { label: "Regs Relating to Banks — Reg 38 (capital adequacy)", href: "/v2/compliance/reader.html?slug=regulations-relating-to-banks" },
+            { label: "Banks Act 94 of 1990 — §70 (minimum capital & reserve funds)", href: "/v2/compliance/reader.html?slug=banks-act" },
+            { label: "BCBS Basel III — CAP / RBC20", href: "/v2/compliance/reader.html?slug=bcbs-basel-iii" },
+            { label: "Capital Position (back to register)", href: "/v2/finance/capital.html" },
+          ],
+        });
+      });
+    }
+  </script>
+</body>
+</html>
