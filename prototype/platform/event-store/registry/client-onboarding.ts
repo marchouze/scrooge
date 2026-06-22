@@ -43,20 +43,6 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import {
-  clientAccountsSetupPayloadSchema,
-  clientActivatedPayloadSchema,
-  clientBeneficialOwnerResolvedPayloadSchema,
-  clientCreditAssessedPayloadSchema,
-  clientFaisClassifiedPayloadSchema,
-  clientFatcaCrsClassifiedPayloadSchema,
-  clientKycPassedPayloadSchema,
-  clientOffboardedPayloadSchema,
-  clientPopiaConsentRecordedPayloadSchema,
-  clientProspectRegisteredPayloadSchema,
-  clientSanctionsClearedPayloadSchema,
-  clientSoundingOpenedPayloadSchema,
-} from "../event-types/client-onboarding";
-import {
   CLIENT_ACCOUNTS_SETUP,
   CLIENT_ACTIVATED,
   CLIENT_BO_RESOLVED,
@@ -70,6 +56,20 @@ import {
   CLIENT_SANCTIONS_CLEARED,
   CLIENT_SOUNDING_OPENED,
 } from "../../../v2-core/client-onboarding/events";
+import {
+  clientAccountsSetupPayloadSchema,
+  clientActivatedPayloadSchema,
+  clientBeneficialOwnerResolvedPayloadSchema,
+  clientCreditAssessedPayloadSchema,
+  clientFaisClassifiedPayloadSchema,
+  clientFatcaCrsClassifiedPayloadSchema,
+  clientKycPassedPayloadSchema,
+  clientOffboardedPayloadSchema,
+  clientPopiaConsentRecordedPayloadSchema,
+  clientProspectRegisteredPayloadSchema,
+  clientSanctionsClearedPayloadSchema,
+  clientSoundingOpenedPayloadSchema,
+} from "../event-types/client-onboarding";
 import { RETENTION_FIC_5Y, RETENTION_GOVERNANCE_7Y } from "./types";
 import type { EventTypeMetadata } from "./types";
 

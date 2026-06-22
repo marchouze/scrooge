@@ -134,6 +134,7 @@ const NAV = [
     href: "/v2/commercial/index.html",
     items: [
       { label: "Overview", href: "/v2/commercial/index.html" },
+      { label: "Client Onboarding", href: "/v2/commercial/onboarding.html" },
       { label: "Subscribers", href: "/v2/commercial/subscribers.html" },
       { label: "Tiers", href: "/v2/commercial/tiers.html" },
     ],
