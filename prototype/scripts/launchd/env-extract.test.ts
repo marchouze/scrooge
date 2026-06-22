@@ -168,38 +168,36 @@ describe("renderEnvironmentDictBody", () => {
     expect(out.includes("\r")).toBe(false);
   });
 
-  test("always injects the main-worktree write-guard opt-in with value '1'", () => {
+  test("NEVER injects the main-worktree write-guard opt-in (D-SCHEDULER-DEPLOY-DECOUPLE)", () => {
+    // No installed launchd job writes to the main worktree any more, so the
+    // BANK_ALLOW_MAIN_WORKTREE_WRITE allowlist opt-in is no longer rendered.
     const out = renderEnvironmentDictBody({ bankKeys: {} });
-    expect(out).toContain("<key>BANK_ALLOW_MAIN_WORKTREE_WRITE</key>");
-    // Verify the key/value pair is contiguous and the value is exactly "1".
-    const noIndent = renderEnvironmentDictBody({ bankKeys: {}, indent: "" });
-    expect(noIndent).toContain("<key>BANK_ALLOW_MAIN_WORKTREE_WRITE</key>\n<string>1</string>");
+    expect(out).not.toContain("BANK_ALLOW_MAIN_WORKTREE_WRITE");
   });
 
-  test("de-dups a .env.local-supplied BANK_ALLOW_MAIN_WORKTREE_WRITE (single canonical line)", () => {
+  test("drops a .env.local-supplied BANK_ALLOW_MAIN_WORKTREE_WRITE entirely (cannot re-grant bypass)", () => {
     const out = renderEnvironmentDictBody({
-      bankKeys: { BANK_ALLOW_MAIN_WORKTREE_WRITE: "0", BANK_A: "1" },
+      bankKeys: { BANK_ALLOW_MAIN_WORKTREE_WRITE: "1", BANK_A: "1" },
     });
-    // Exactly one occurrence of the key — the injected canonical "1", not
-    // the user-supplied "0".
+    // The stray copy is dropped — zero occurrences of the key — so a .env.local
+    // entry cannot silently re-grant the main-worktree write bypass.
     const occurrences = out.split("<key>BANK_ALLOW_MAIN_WORKTREE_WRITE</key>").length - 1;
-    expect(occurrences).toBe(1);
-    expect(out).not.toContain("<string>0</string>");
+    expect(occurrences).toBe(0);
+    // The legitimate sibling key still renders.
+    expect(out).toContain("<key>BANK_A</key>");
   });
 });
 
 describe("renderFromDotEnv (end-to-end)", () => {
-  test("absent .env.local — emits PATH + write-guard opt-in, zero parsed BANK_* keys", () => {
+  test("absent .env.local — emits PATH only, no BANK_* keys (no write-guard opt-in)", () => {
     const { xml, bankKeyCount, bankKeyNames } = renderFromDotEnv({
       envLocalText: undefined,
     });
-    // The opt-in is injected at render time, not parsed from .env.local, so
-    // the parsed-key count/names are unaffected.
     expect(bankKeyCount).toBe(0);
     expect(bankKeyNames).toEqual([]);
     expect(xml).toContain("<key>PATH</key>");
-    // The always-injected write-guard opt-in is the only BANK_* key present.
-    expect(xml).toContain("<key>BANK_ALLOW_MAIN_WORKTREE_WRITE</key>");
+    // The write-guard opt-in is NO LONGER injected (D-SCHEDULER-DEPLOY-DECOUPLE).
+    expect(xml).not.toContain("BANK_ALLOW_MAIN_WORKTREE_WRITE");
     expect(xml).not.toContain("BANK_TWELVEDATA");
   });
 
