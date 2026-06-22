@@ -352,6 +352,7 @@ import {
   redactDecisionDetailNames,
   redactNpaDetailNames,
 } from "./v2-views";
+import { buildCapitalView } from "./v2-finance-view";
 import { buildV2WorldSimulatorView } from "./v2-world-simulator-view";
 
 const PORT = Number(process.env.BANK_DASHBOARD_PORT ?? 3010);
@@ -5598,6 +5599,24 @@ const server = Bun.serve({
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       return jsonResponse({
         ...buildSubstrateView(eventStore, filter, nowUtc()),
+        pageProvenance: filter,
+      });
+    }
+    // Capital position (Finance) — own-funds composition + capital-adequacy
+    // ratios, the reference slice of D-V2-UI-VISIBILITY-REMEDIATION. The
+    // composition fold is provenance-aware: the R300m demonstration injection
+    // is `provenance:simulated`, so it appears under +Sim and is excluded under
+    // Prod (where the honest empty/zero-with-reason state renders — no real
+    // capital pre-licence). pageProvenance is the same filter so the badge
+    // matches the lens. The response carries no agent personal name (the
+    // composition is a numeric fold) — name-free by construction.
+    // Authority: D-V2-UI-VISIBILITY-REMEDIATION; D-CAPITAL-ASSET-CLASS-V1.
+    if (req.method === "GET" && url.pathname === "/api/v2/finance/capital") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const asOf = nowUtc();
+      return jsonResponse({
+        ...buildCapitalView({ eventStore, filter, asOf }),
+        asOf,
         pageProvenance: filter,
       });
     }
