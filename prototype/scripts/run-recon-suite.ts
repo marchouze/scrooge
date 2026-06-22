@@ -310,6 +310,14 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // rules byte-for-byte (the legs the dual-run engine emits). Vacuous-pass on a
     // clean store (no FIL FX events). Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD.
     "recon:gl-v2-fold-equivalence-fx",
+    // D-FIL-CONSUMER-SURFACE-ARCHITECTURE (Step D, ENFORCING) — FIL consumer-surface
+    // isolation gate. Static scan: the accounting / GL surface (platform/accounting/**
+    // + gl-projection-v2.ts) may replay FilInstrument* FOR STATE only through the
+    // allowlisted state-derivation modules (fx-instance-fold / capital-instance-fold);
+    // the retired event folds (foldFxContributionLegs / foldCapitalContributionLegs)
+    // must stay oracle-only (no production importer). Post-cutover: zero production
+    // violations. Authority: D-FIL-CONSUMER-SURFACE-ARCHITECTURE.
+    "recon:fil-state-surface-isolation",
     // D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD FX3 — FX-fold election-provenance gate
     // (ADVISORY). Asserts every folded FX instance whose treatment DEVIATES from
     // the product default carries a backing recorded election with a citation
