@@ -86,6 +86,10 @@ export { COUNTERPARTY_CREDIT_RISK_EVENT_TYPES_REGISTRY } from "./counterparty-cr
 export { REGULATORY_PA_EVENT_TYPES_REGISTRY } from "./regulatory-pa";
 // D-KYC-ONBOARDING-BUILD — KYC gateway lifecycle events.
 export { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
+// WS-V2-CLIENT-ONBOARDING — born-V2 client (counterparty) onboarding lifecycle.
+// 12 ClientOnboarding* phase events; v2-replaced (no V1 ancestor). Authority:
+// D-V1-REMOVAL-PHASE-1; FIC Act 38/2001; FAIS Act 37/2002; POPIA s.11/s.55.
+export { CLIENT_ONBOARDING_EVENT_TYPES_REGISTRY } from "./client-onboarding";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE bond lifecycle accounting events.
 export { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 export { BOND_ACCOUNTING_V2_EVENT_TYPES_REGISTRY } from "./bond-accounting-v2";
@@ -330,6 +334,7 @@ import { CAE_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./cae-governance";
 import { CFP_TRIGGER_EVENT_TYPES_REGISTRY } from "./cfp-triggers";
 import { CISO_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./ciso-governance";
 import { CLIMATE_RISK_EVENT_TYPES_REGISTRY } from "./climate-risk";
+import { CLIENT_ONBOARDING_EVENT_TYPES_REGISTRY } from "./client-onboarding";
 import { CLOSE_MANAGEMENT_EVENT_TYPES_REGISTRY } from "./close-management";
 import { COLLATERAL_EVENT_TYPES_REGISTRY } from "./collateral";
 import { CONDUCT_EVENT_TYPES } from "./conduct";
@@ -477,6 +482,13 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // D-KYC-ONBOARDING-BUILD — KYC gateway lifecycle events. Placed last so
   // typed schema rows override any placeholder rows from missing-types.ts.
   ...KYC_EVENT_TYPES_REGISTRY,
+  // WS-V2-CLIENT-ONBOARDING — born-V2 client (counterparty) onboarding lifecycle.
+  // 12 ClientOnboarding* phase events (v2-replaced — no V1 ancestor). The
+  // projection enforces the gating invariant (a counterparty cannot reach
+  // `activated` without every required gating phase); recon:v2-client-onboarding-
+  // integrity asserts it fail-closed. Authority: D-V1-REMOVAL-PHASE-1;
+  // FIC Act 38/2001; FAIS Act 37/2002; POPIA s.11/s.55; IRC §1471–1474; OECD CRS.
+  ...CLIENT_ONBOARDING_EVENT_TYPES_REGISTRY,
   // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE bond lifecycle accounting events.
   // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
   ...BOND_ACCOUNTING_EVENT_TYPES_REGISTRY,
