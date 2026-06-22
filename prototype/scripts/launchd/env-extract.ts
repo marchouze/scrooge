@@ -154,28 +154,30 @@ export function escapeXml(s: string): string {
 export const DEFAULT_PATH_VALUE = "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin";
 
 /**
- * Main-worktree write-guard opt-in, injected into EVERY plist this renderer
- * produces. This renderer is used solely by `install.sh` for the three
- * legitimate main-worktree writers:
- *   - com.scrooge.event-store-archive
- *   - com.scrooge.scheduler-tick
- *   - com.scrooge.golden-source-integrity-tick
- * Those jobs commit scheduler / archive / golden-source outputs to the
- * canonical main worktree, so they must carry the opt-in the fail-closed
- * `.githooks/pre-commit|pre-rebase|pre-push` guard checks for. The dashboard
- * and fx/sens ingest jobs are installed separately (they do NOT commit to
- * main) and therefore never receive this key.
+ * The main-worktree write-guard opt-in key.
  *
- * Sourced as a named constant — the literal `"1"` value MUST match
- * `BANK_ALLOW_MAIN_WORKTREE_WRITE` / `ALLOW_ENV_VAR` in
- * `scripts/githooks/main-worktree-guard.ts` (the guard only treats exactly
- * `"1"` as the opt-in).
+ * HISTORY (D-SCHEDULER-DEPLOY-DECOUPLE, 2026-06-22): this renderer USED to
+ * inject `BANK_ALLOW_MAIN_WORKTREE_WRITE=1` into every plist, because the
+ * launchd jobs committed scheduler / archive / golden-source outputs to the
+ * canonical main worktree and needed to pass the fail-closed `.githooks` guard.
+ * That is no longer true:
+ *   - scheduler-tick performs ZERO git ops (the in-process self-update + the
+ *     derived-render commit were removed — renders are a Principle 1 violation);
+ *   - scheduler-autopull only `reset --hard`s the serve-only `.scheduler-live`
+ *     worktree (never main);
+ *   - event-store-archive writes only to the gitignored `~/.local/.../archives/`;
+ *   - golden-source-integrity-tick emits events only (its hash is never committed).
+ * No installed job writes to main, so the opt-in is NO LONGER injected. The key
+ * constant is retained (the guard at `scripts/githooks/main-worktree-guard.ts`
+ * still honours it as a general escape hatch, and the constant must stay in sync
+ * with `ALLOW_ENV_VAR` there — exactly `"1"`), but `renderEnvironmentDictBody`
+ * deliberately does not emit it. If a `.env.local` ever carries the key it is
+ * dropped here so a stray copy cannot silently re-grant the bypass.
  *
- * Authority: CLAUDE.md §"Dispatch discipline → Worktree isolation";
- * Engineering Charter D-ENGINEERING-INTEGRITY-CHARTER command 2.
+ * Authority: D-SCHEDULER-DEPLOY-DECOUPLE; CLAUDE.md §"Dispatch discipline →
+ * Worktree isolation"; Engineering Charter D-ENGINEERING-INTEGRITY-CHARTER cmd 2.
  */
 export const MAIN_WORKTREE_WRITE_ALLOW_KEY = "BANK_ALLOW_MAIN_WORKTREE_WRITE";
-export const MAIN_WORKTREE_WRITE_ALLOW_VALUE = "1";
 
 export function renderEnvironmentDictBody(args: {
   bankKeys: Record<string, string>;
@@ -190,12 +192,9 @@ export function renderEnvironmentDictBody(args: {
   lines.push(`${indent}<key>PATH</key>`);
   lines.push(`${indent}<string>${escapeXml(pathValue)}</string>`);
 
-  // Always emit the main-worktree write-guard opt-in for these jobs. If
-  // `.env.local` also carried the same BANK_* key we drop its copy here so
-  // the rendered plist stays deterministic (single, canonical value).
-  lines.push(`${indent}<key>${escapeXml(MAIN_WORKTREE_WRITE_ALLOW_KEY)}</key>`);
-  lines.push(`${indent}<string>${escapeXml(MAIN_WORKTREE_WRITE_ALLOW_VALUE)}</string>`);
-
+  // The main-worktree write-guard opt-in is NO LONGER injected (no installed
+  // job writes to main — D-SCHEDULER-DEPLOY-DECOUPLE). Any stray copy supplied
+  // via `.env.local` is dropped so it cannot silently re-grant the bypass.
   const sortedKeys = Object.keys(args.bankKeys)
     .filter((k) => k !== MAIN_WORKTREE_WRITE_ALLOW_KEY)
     .sort();

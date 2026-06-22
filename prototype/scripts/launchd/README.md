@@ -17,6 +17,39 @@ substrate. Once installed, the scheduler-tick chain (sync → tick →
 consume → inactivity-check) drives autonomously without any
 foreground process.
 
+## Clean-worktree deploy topology (D-SCHEDULER-DEPLOY-DECOUPLE)
+
+**Authority: `D-SCHEDULER-DEPLOY-DECOUPLE` (CEO-approved 2026-06-22).**
+
+The launchd jobs run from a **dedicated CLEAN worktree** — `.scheduler-live`,
+the scheduler analogue of the dashboard's `.dashboard-live` — that a companion
+`com.scrooge.scheduler-autopull` agent keeps pinned to `origin/main` every 30s
+(`git fetch origin main && git reset --hard origin/main`). The interval-driven
+scheduler-tick then picks up the refreshed checkout on its next tick.
+
+This **replaces** the old in-process self-update: the tick used to
+`git fetch origin main` + `git rebase origin/main` + `git pull --rebase` as a
+side-effect of committing event-derived `archive/owner-inbox/*.md` renders to
+the **main** worktree. Those render-commits accumulated, conflicted on rebase,
+**wedged** the rebase, and stranded the fleet on STALE code until a manual
+`reset --hard origin/main`. Committing event-derived markdown to git also
+violates **Principle 1** (events are the only source of truth; markdown is a
+render, never the canonical artefact — and RMS Phase 4 already made the RMS
+registers canonical and archived the inbox dirs).
+
+After this change the scheduler-tick performs **zero git operations** and writes
+**nothing** to the main worktree:
+
+| Job | Writes to main worktree? | What it does instead |
+| --- | --- | --- |
+| `com.scrooge.scheduler-tick` | **No** | Pure consumer of the autopulled checkout; emits events to the store. |
+| `com.scrooge.scheduler-autopull` | **No** | `reset --hard origin/main` on the serve-only `.scheduler-live` worktree. |
+| `com.scrooge.event-store-archive` | **No** | Writes only to the gitignored `~/.local/share/bank/archives/`. |
+| `com.scrooge.golden-source-integrity-tick` | **No** | Emits `SubstrateAlert` events; its hash is never committed (`data/documents/*` gitignored). |
+
+Because **no** installed job writes to main, the `BANK_ALLOW_MAIN_WORKTREE_WRITE=1`
+allowlist opt-in is **no longer injected** into any plist (see the section below).
+
 ## What this is **NOT**
 
 - This is **not** a production deployment. Per the CEO decision,
@@ -35,11 +68,13 @@ foreground process.
 
 | File                                              | Purpose                                                                        |
 | ------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `com.scrooge.scheduler-tick.plist`                | macOS LaunchAgent template; `install.sh` substitutes paths and renders.        |
+| `com.scrooge.scheduler-tick.plist`                | macOS LaunchAgent template; `install.sh` substitutes paths and renders. Runs from `.scheduler-live`. |
+| `com.scrooge.scheduler-autopull.plist`            | macOS LaunchAgent template — pins `.scheduler-live` to origin/main every 30 s (D-SCHEDULER-DEPLOY-DECOUPLE). |
+| `scrooge-scheduler-autopull.sh`                   | The autopull worker the above plist invokes (`git fetch` + `reset --hard origin/main`). |
 | `com.scrooge.event-store-archive.plist`           | macOS LaunchAgent — `archive:check` every 6 h (D-EVENT-STORE-SCALING-PHASE-5). |
 | `com.scrooge.golden-source-integrity-tick.plist`  | macOS LaunchAgent — daily shared-store golden-source integrity assertion (see below). |
-| `install.sh`                                      | macOS install script — renders the plists, bootstraps via `launchctl`, idempotent. Installs all three agents. |
-| `uninstall.sh`                                     | macOS uninstall — `launchctl bootout` + `rm` for all three agents, idempotent. |
+| `install.sh`                                      | macOS install script — renders the plists, bootstraps via `launchctl`, idempotent. Installs all four agents. |
+| `uninstall.sh`                                     | macOS uninstall — `launchctl bootout` + `rm` for all four agents, idempotent. |
 | `com.scrooge.scheduler-tick.service`              | Linux systemd user unit (one-shot worker).                                     |
 | `com.scrooge.scheduler-tick.timer`                | Linux systemd user timer (60s cadence).                                        |
 
@@ -71,7 +106,18 @@ not fail the host.
 
 ## macOS install
 
-From the repository root:
+**Prerequisite (D-SCHEDULER-DEPLOY-DECOUPLE):** create the clean
+`.scheduler-live` worktree pinned to origin/main first (once):
+
+```bash
+git -C /Users/marc/code/Bank worktree add --detach /Users/marc/code/Bank/.scheduler-live origin/main
+# `.env.local` is gitignored, so copy it into the live worktree so Bun loads
+# non-BANK keys (GEMINI_API_KEY / ANTHROPIC_API_KEY) at process start:
+cp /Users/marc/code/Bank/prototype/.env.local /Users/marc/code/Bank/.scheduler-live/prototype/.env.local
+( cd /Users/marc/code/Bank/.scheduler-live/prototype && bun install )
+```
+
+Then, from any checkout:
 
 ```bash
 bash prototype/scripts/launchd/install.sh
@@ -79,15 +125,18 @@ bash prototype/scripts/launchd/install.sh
 
 The script:
 
-1. Detects the absolute path to `prototype/`.
-2. Resolves `bun` (override with `BUN=/path/to/bun`).
-3. Creates `~/Library/Logs/scrooge/` (override with `LOG_DIR=...`).
-4. Renders the plist template into `~/Library/LaunchAgents/com.scrooge.scheduler-tick.plist`.
-5. `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.scrooge.scheduler-tick.plist`.
-6. Verifies via `launchctl print gui/$(id -u)/com.scrooge.scheduler-tick`.
+1. Detects the worktree it is run from (for templates + `.env.local`).
+2. Resolves `SCHEDULER_LIVE_DIR` — `<canonical-main>/.scheduler-live` by
+   default (derived from `git rev-parse --git-common-dir`; override with
+   `SCHEDULER_LIVE_DIR=/abs/path`). The four jobs' `WorkingDirectory` is
+   `$SCHEDULER_LIVE_DIR/prototype`.
+3. Resolves `bun` (override with `BUN=/path/to/bun`).
+4. Creates `~/Library/Logs/scrooge/` (override with `LOG_DIR=...`).
+5. Renders + bootstraps all four plists into `~/Library/LaunchAgents/`.
+6. Verifies each via `launchctl print gui/$(id -u)/<label>`.
 
-If already installed and the rendered plist matches the live one
-byte-for-byte, the script no-ops.
+If already installed and a rendered plist matches the live one
+byte-for-byte, that agent no-ops.
 
 ### macOS uninstall
 
@@ -207,31 +256,33 @@ var is referenced here but its value is not logged.
 risk; if the log grows unbounded (e.g. parse-failure flood), run
 `bash uninstall.sh && rm ~/Library/Logs/scrooge/*.log && bash install.sh`.
 
-## Main-worktree write-guard opt-in
+## Main-worktree write-guard opt-in — REMOVED (D-SCHEDULER-DEPLOY-DECOUPLE)
 
-These three agents are the **only** legitimate writers to the canonical
-main worktree (`/Users/marc/code/Bank`) — they commit scheduler / archive /
-golden-source outputs there. A fail-closed git guard
-(`.githooks/pre-commit`, `pre-rebase`, and the folded check in `pre-push`)
-aborts any commit / rebase / push against main unless the actor carries
-`BANK_ALLOW_MAIN_WORKTREE_WRITE=1` (allowlisted launchd writer) or is Marc's
-interactive shell (TTY). This operationalises the standing worktree-isolation
-rule (CLAUDE.md §"Dispatch discipline → Worktree isolation"; Engineering
-Charter `D-ENGINEERING-INTEGRITY-CHARTER` command 2 — fail-closed by default).
+**Before 2026-06-22** these launchd jobs were the only legitimate writers to the
+canonical main worktree and carried `BANK_ALLOW_MAIN_WORKTREE_WRITE=1` to pass
+the fail-closed `.githooks` guard. **That is no longer true.** After the deploy
+decouple, **no installed job writes to the main worktree** (see the topology
+table above): scheduler-tick performs zero git ops, scheduler-autopull only
+`reset --hard`s the serve-only `.scheduler-live` worktree, event-store-archive
+writes only to the gitignored archives store, and golden-source-integrity-tick
+emits events only.
 
-The opt-in is injected into every plist this installer renders, by
-`renderEnvironmentDictBody` in `env-extract.ts` (constant
-`MAIN_WORKTREE_WRITE_ALLOW_KEY` / `…_VALUE`). It is **not** read from
-`.env.local` — it is always present for these three jobs and never for the
-dashboard / fx-ingest jobs (which are installed separately and do not commit
-to main).
+Consequently `renderEnvironmentDictBody` in `env-extract.ts` **no longer
+injects** the opt-in; any stray copy supplied via `.env.local` is **dropped**
+so it cannot silently re-grant the bypass. The fail-closed git guard
+(`.githooks/pre-commit`, `pre-rebase`, and the folded check in `pre-push` →
+`scripts/githooks/main-worktree-guard.ts`) **stays in force** as a general
+worktree-isolation control (CLAUDE.md §"Dispatch discipline → Worktree
+isolation"; Engineering Charter `D-ENGINEERING-INTEGRITY-CHARTER` command 2 —
+fail-closed by default). Marc's interactive shell (recognised by its TTY) is now
+the **only** recognised legitimate main-worktree writer.
 
 **Re-render step:** the installed plists under
 `~/Library/LaunchAgents/com.scrooge.*.plist` are generated copies. After this
-change, re-run `bash prototype/scripts/launchd/install.sh` once so the
-installed copies pick up the new `BANK_ALLOW_MAIN_WORKTREE_WRITE=1` key
-(`install.sh` re-renders + re-bootstraps in place; the tracked plist
-templates in this directory are the source). You cannot edit the installed
+change, re-run `bash prototype/scripts/launchd/install.sh` once so the installed
+copies are re-rendered **without** the now-removed
+`BANK_ALLOW_MAIN_WORKTREE_WRITE` key and re-bootstrapped in place (the tracked
+plist templates in this directory are the source). You cannot edit the installed
 copies from a dispatched worktree — re-render is the supported path.
 
 ## Agent narrative provider (`BANK_NARRATIVE_PROVIDER`)

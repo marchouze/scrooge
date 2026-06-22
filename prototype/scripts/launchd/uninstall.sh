@@ -19,6 +19,7 @@ fi
 # `install_agent` calls there.
 LABELS=(
   "com.scrooge.scheduler-tick"
+  "com.scrooge.scheduler-autopull"
   "com.scrooge.event-store-archive"
   "com.scrooge.golden-source-integrity-tick"
 )
