@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/v2/_v2-tile.css">
   <link rel="stylesheet" href="/provenance-badge.css">
 </head>
-<body data-provenance-content="none">
+<body data-provenance-source="/api/v2/markets/fx/blotter">
   <header class="v2-header">
     <div class="v2-header-left">
       <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
@@ -19,6 +19,7 @@
         <button class="v2-prov-btn" data-mode="prod">Prod</button>
         <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
       </div>
+      <span data-provenance-badge="page-top"></span>
       <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
       <span class="v2-as-of" id="as-of">—</span>
     </div>
@@ -30,30 +31,105 @@
   <script src="/v2/_v2-shell.js"></script>
   <script src="/provenance-badge.js"></script>
   <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
   <script>
     const main = document.getElementById("v2-main");
     renderPageHeader(main, {
-      crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Markets", href: "/v2/markets/index.html" }, { label: "FIL Positions" }],
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Markets", href: "/v2/markets/index.html" },
+        { label: "FIL Positions" },
+      ],
       title: "FIL Position Register",
-      seat: "FilInstrumentCreated / Terminated",
+      seat: "Live FIL instances · FilInstrumentCreated / Terminated fold",
     });
-    renderTileGroup(main, {
-      tiles: [
-        { label: "Live Positions", unit: "Active FIL instruments" },
-        { label: "FX Instruments", unit: "Count" },
-        { label: "IR Instruments", unit: "Count" },
-        { label: "Avg Remaining Tenor", unit: "Days to maturity" },
-      ],
-    });
-    const s = document.createElement("div"); s.className = "v2-section"; main.appendChild(s);
-    const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "Live Instruments"; s.appendChild(h);
-    renderTable(s, { columns: ["URN", "Type", "Asset Class", "Counterparty", "Notional", "Currency", "Settlement Date", "Stage"] });
-    renderRefs(main, {
-      refs: [
-        { label: "FIL kernel — FilInstrumentCreated schema", href: "#" },
-        { label: "foldFilInstances projection", href: "#" },
-        { label: "D-V2-WAVE4-COMMERCIAL-POSTURE", href: "#" },
-      ],
+
+    const scopeHost = document.createElement("div"); main.appendChild(scopeHost);
+    const stateHost = document.createElement("div"); main.appendChild(stateHost);
+    const tilesHost = document.createElement("div"); main.appendChild(tilesHost);
+    const tableHost = document.createElement("div"); main.appendChild(tableHost);
+    const refsHost = document.createElement("div"); main.appendChild(refsHost);
+
+    const instrumentHref = (instance) => `/v2/markets/instrument.html?id=${encodeURIComponent(instance)}`;
+
+    // Tracked substrate gap: only FX FIL instances are served by /api/v2 today.
+    // Cross-asset (IR / cash / bond) FIL positions have no V2 read endpoint yet —
+    // stated honestly here, never implied by a blank "IR Instruments" tile.
+    const scopeNote = document.createElement("div");
+    scopeNote.className = "v2-note";
+    scopeNote.innerHTML =
+      "<strong>Scope:</strong> this register currently reads the FX FIL instances served by " +
+      "<code>/api/v2/markets/fx/blotter</code>. A cross-asset FIL read endpoint " +
+      "(IR / cash / bond instances) is a tracked substrate gap — no <code>/api/v2</code> " +
+      "route serves it yet, so it is NOT shown here rather than rendered as an empty zero.";
+    scopeHost.appendChild(scopeNote);
+
+    v2WireLoader(async () => {
+      stateHost.replaceChildren(); tilesHost.replaceChildren();
+      let d;
+      try {
+        d = await v2Fetch("/api/v2/markets/fx/blotter");
+      } catch (err) {
+        v2RenderError(stateHost, v2Esc(err.message));
+        return;
+      }
+      document.getElementById("as-of").textContent = d.asOf ? `as of ${new Date(d.asOf).toLocaleString()}` : "—";
+
+      const rows = d.rows || [];
+      const pairs = new Set(rows.map((r) => r.pair));
+      const counterparties = new Set(rows.map((r) => r.counterpartyId));
+
+      // Honest empty banner — never a silent zero.
+      if (d.dataState !== "live") {
+        const banner = document.createElement("div");
+        banner.className = "v2-section";
+        banner.innerHTML = `
+          <div class="v2-empty">
+            <div class="v2-empty-icon">○</div>
+            <div class="v2-empty-msg"><strong>No live FIL instruments under this lens.</strong><br>${v2Esc(d.reason)}<br>
+            <span class="v2-note">Switch to <strong>+ Sim</strong> to view the demonstration FX cohort.</span></div>
+          </div>`;
+        stateHost.appendChild(banner);
+      }
+
+      renderTileGroup(tilesHost, {
+        tiles: [
+          { label: "Live FX positions", value: String(d.count), unit: "Active FIL instruments (FX)" },
+          { label: "Currency pairs", value: String(pairs.size), unit: "Distinct hedging-set tags" },
+          { label: "Counterparties", value: String(counterparties.size), unit: "Distinct facing CPs" },
+          { label: "Asset classes served", value: "FX", unit: "Cross-asset = substrate gap" },
+        ],
+      });
+
+      const s = document.createElement("div"); s.className = "v2-section"; tableHost.replaceChildren(); tableHost.appendChild(s);
+      const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = `Live FX FIL instruments (${d.count})`; s.appendChild(h);
+      renderTable(s, {
+        columns: ["URN", "Type", "Pair", "Dir", "Counterparty", "Notional", "Settlement", "Stage"],
+        emptyMsg: "No live FX FIL instruments on this store.",
+        rows: rows.map((r) => ({
+          href: instrumentHref(r.instance),
+          cells: [
+            `<code>${v2Esc(r.tradeId)}</code>`,
+            `<code>${v2Esc(r.type)}</code>`,
+            `<strong>${v2Esc(r.pair)}</strong>`,
+            r.direction === "long"
+              ? '<span class="v2-badge v2-badge-success">long</span>'
+              : '<span class="v2-badge v2-badge-warning">short</span>',
+            v2Esc(r.counterpartyId),
+            `${v2Esc(r.notional.amount)} ${v2Esc(r.notional.currency)}`,
+            v2Esc(r.settlementDate),
+            v2Esc(r.stage),
+          ],
+        })),
+      });
+
+      renderRefs(refsHost, {
+        refs: [
+          { label: "FIL instance schema (FilInstrumentCreated)", href: "/v2/operations/schemas.html?type=FilInstrumentCreated" },
+          { label: "FX Desk (full FX book)", href: "/v2/markets/fx.html" },
+          { label: "Regs Relating to Banks — Reg 28 (market risk)", href: "/v2/compliance/reader.html?slug=regulations-relating-to-banks" },
+        ],
+      });
     });
   </script>
 </body>

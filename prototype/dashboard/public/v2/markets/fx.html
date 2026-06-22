@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>FX Positions — Hoz Bank</title>
+  <title>FX Desk — Hoz Bank</title>
   <link rel="stylesheet" href="/v2/_v2-shell.css">
   <link rel="stylesheet" href="/v2/_v2-tile.css">
   <link rel="stylesheet" href="/provenance-badge.css">
 </head>
-<body data-provenance-content="none">
+<body data-provenance-source="/api/v2/markets/fx">
   <header class="v2-header">
     <div class="v2-header-left">
       <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
@@ -19,6 +19,7 @@
         <button class="v2-prov-btn" data-mode="prod">Prod</button>
         <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
       </div>
+      <span data-provenance-badge="page-top"></span>
       <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
       <span class="v2-as-of" id="as-of">—</span>
     </div>
@@ -30,33 +31,281 @@
   <script src="/v2/_v2-shell.js"></script>
   <script src="/provenance-badge.js"></script>
   <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
   <script>
     const main = document.getElementById("v2-main");
     renderPageHeader(main, {
-      crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Markets", href: "/v2/markets/index.html" }, { label: "FX Positions" }],
-      title: "FX Positions",
-      seat: "Net Open Position",
-    });
-    renderTileGroup(main, {
-      tiles: [
-        { label: "FX Net Open Position", unit: "ZAR equivalent" },
-        { label: "Currency Pairs", unit: "Active pairs" },
-        { label: "Largest Long", unit: "Currency / ZAR" },
-        { label: "Largest Short", unit: "Currency / ZAR" },
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Markets", href: "/v2/markets/index.html" },
+        { label: "FX Desk" },
       ],
+      title: "FX Desk",
+      seat: "OTC vanilla FX book · FIL-instance sourced · BA-320 / daily-P&L / VaR V2",
     });
-    const s = document.createElement("div"); s.className = "v2-section"; main.appendChild(s);
-    const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "Net Open Position by Currency"; s.appendChild(h);
-    renderTable(s, { columns: ["Currency", "Long (ZAR)", "Short (ZAR)", "NOP (ZAR)", "% of Capital"] });
-    const s2 = document.createElement("div"); s2.className = "v2-section"; main.appendChild(s2);
-    const h2 = document.createElement("h2"); h2.className = "v2-section-title"; h2.textContent = "FX Instruments"; s2.appendChild(h2);
-    renderTable(s2, { columns: ["URN", "Product", "Buy", "Sell", "Notional", "Settlement", "MtM (ZAR)"] });
-    renderRefs(main, {
-      refs: [
-        { label: "BA-320 FX Market Risk Return", href: "#" },
-        { label: "deriveNetFxPositionByCurrency — shared NOP computation", href: "#" },
-        { label: "D-VAR-EXPOSURE-INCLUDES-STANDING-NOP", href: "#" },
-      ],
+
+    // Stable section hosts so the provenance toggle repaints in place.
+    const stateHost = document.createElement("div"); main.appendChild(stateHost);
+    const tilesHost = document.createElement("div"); main.appendChild(tilesHost);
+    const blotterHost = document.createElement("div"); main.appendChild(blotterHost);
+    const cpHost = document.createElement("div"); main.appendChild(cpHost);
+    const headroomHost = document.createElement("div"); main.appendChild(headroomHost);
+    const npaHost = document.createElement("div"); main.appendChild(npaHost);
+    const rejectHost = document.createElement("div"); main.appendChild(rejectHost);
+    const panelsHost = document.createElement("div"); main.appendChild(panelsHost);
+    const refsHost = document.createElement("div"); main.appendChild(refsHost);
+
+    const metricHref = (key) => `/v2/markets/fx-metric.html?metric=${encodeURIComponent(key)}`;
+    const instrumentHref = (instance) => `/v2/markets/instrument.html?id=${encodeURIComponent(instance)}`;
+
+    // Format functional-currency MINOR units (cents) → major-unit ZAR string.
+    function fmtMinor(minor, ccy) {
+      if (minor === null || minor === undefined) return "—";
+      const major = Number(minor) / 100;
+      return `${major.toLocaleString("en-ZA", { maximumFractionDigits: 2 })} ${ccy || "ZAR"}`;
+    }
+    function fmtZar(n) {
+      if (n === null || n === undefined) return "—";
+      return `${Number(n).toLocaleString("en-ZA", { maximumFractionDigits: 2 })} ZAR`;
+    }
+    function fmtPct(p) {
+      return p === null || p === undefined ? "—" : `${(Number(p) * 100).toFixed(1)}%`;
+    }
+    function ragBadge(status) {
+      if (status === "green") return '<span class="v2-badge v2-badge-success">green</span>';
+      if (status === "amber") return '<span class="v2-badge v2-badge-warning">amber</span>';
+      if (status === "red") return '<span class="v2-badge v2-badge-danger">red</span>';
+      return '<span class="v2-badge v2-badge-info">n/a</span>';
+    }
+    function section(host, title) {
+      host.replaceChildren();
+      const s = document.createElement("div"); s.className = "v2-section"; host.appendChild(s);
+      const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = title; s.appendChild(h);
+      return s;
+    }
+    // Honest empty/v1-only banner for a panel — never a silent zero.
+    function panelBanner(s, panel, emptyTitle) {
+      if (panel.dataState === "live") return false;
+      const banner = document.createElement("div");
+      banner.className = "v2-empty";
+      const icon = panel.dataState === "v1-only" ? "⚠" : "○";
+      banner.innerHTML =
+        `<div class="v2-empty-icon">${icon}</div>` +
+        `<div class="v2-empty-msg"><strong>${v2Esc(emptyTitle)}</strong><br>${v2Esc(panel.reason || "No data on this store.")}</div>`;
+      s.appendChild(banner);
+      return true;
+    }
+
+    v2WireLoader(async () => {
+      let d;
+      try {
+        d = await v2Fetch("/api/v2/markets/fx");
+      } catch (err) {
+        stateHost.replaceChildren();
+        v2RenderError(stateHost, v2Esc(err.message));
+        return;
+      }
+      document.getElementById("as-of").textContent = `as of ${new Date(d.asOf).toLocaleString()}`;
+
+      const summary = d.summary, risk = d.risk, blotter = d.blotter,
+        cps = d.counterparties, npa = d.npa, rejections = d.rejections, headroom = d.headroom;
+      const varPanel = summary.var;
+
+      // Surface-level honest banner when the whole book is empty.
+      stateHost.replaceChildren();
+      if (summary.dataState !== "live") {
+        const banner = document.createElement("div");
+        banner.className = "v2-section";
+        banner.innerHTML = `
+          <div class="v2-empty">
+            <div class="v2-empty-icon">○</div>
+            <div class="v2-empty-msg"><strong>No live FX book under this lens.</strong><br>${v2Esc(summary.reason)}<br>
+            <span class="v2-note">The book is autonomously run by the ${v2Esc(d.deskOwnerSeatTitle)} seat. Switch to <strong>+ Sim</strong> to view the demonstration FX cohort.</span></div>
+          </div>`;
+        stateHost.appendChild(banner);
+      }
+
+      // --- Headline metric tiles — each drills to formula + constituents. ---
+      tilesHost.replaceChildren();
+      renderTileGroup(tilesHost, {
+        tiles: [
+          {
+            label: "Unrealised P&L (YTD)",
+            value: fmtMinor(summary.pnl.totalUnrealisedFunctionalMinor, summary.functionalCurrency),
+            unit: summary.pnl.unrealisedComplete ? "daily-P&L V2 · complete" : "daily-P&L V2 · INCOMPLETE (marks missing)",
+            href: metricHref("pnl"),
+          },
+          {
+            label: "Net open position charge",
+            value: fmtMinor(risk.openPositionChargeMinor, risk.functionalCurrency),
+            unit: "BA-320 V2 · 8% open-position",
+            href: metricHref("net-position"),
+          },
+          {
+            label: "FX capital charge (BA-320)",
+            value: fmtMinor(summary.openPositionChargeMinor, summary.functionalCurrency),
+            unit: "Reg 28 market-risk",
+            href: metricHref("capital-charge"),
+          },
+          {
+            label: "Market-risk VaR",
+            value: fmtZar(varPanel.varZar),
+            unit: varPanel.ragStatus ? `99% / 10-day · ${varPanel.ragStatus}` : "99% / 10-day",
+            href: metricHref("var"),
+          },
+        ],
+      });
+
+      // --- Trade blotter — each row drills to instrument detail. ---
+      const sb = section(blotterHost, `Trade blotter — live FX FIL instances (${blotter.count})`);
+      if (!panelBanner(sb, blotter, "No live FX trades.")) {
+        renderTable(sb, {
+          columns: ["Pair", "Dir", "Notional", "Counterparty", "Netting set", "Settlement", "Stage", "Type"],
+          emptyMsg: "No live FX FIL instruments on this store.",
+          rows: blotter.rows.map((r) => ({
+            href: instrumentHref(r.instance),
+            cells: [
+              `<strong>${v2Esc(r.pair)}</strong>`,
+              r.direction === "long"
+                ? '<span class="v2-badge v2-badge-success">long</span>'
+                : '<span class="v2-badge v2-badge-warning">short</span>',
+              `${v2Esc(r.notional.amount)} ${v2Esc(r.notional.currency)}`,
+              v2Esc(r.counterpartyId),
+              `<code>${v2Esc(r.nettingSetId)}</code>`,
+              v2Esc(r.settlementDate),
+              v2Esc(r.stage),
+              `<code>${v2Esc(r.type)}</code>`,
+            ],
+          })),
+        });
+      }
+
+      // --- Counterparties. ---
+      const sc = section(cpHost, `Counterparties (${cps.count})`);
+      if (!panelBanner(sc, cps, "No screened or live FX counterparties.")) {
+        renderTable(sc, {
+          columns: ["Counterparty", "Eligibility", "Live FX instruments", "Screened as of"],
+          emptyMsg: "No counterparties under this lens.",
+          rows: cps.rows.map((r) => {
+            const eligBadge =
+              r.eligibility === "institutional-eligible"
+                ? '<span class="v2-badge v2-badge-success">eligible</span>'
+                : r.eligibility === "ineligible"
+                  ? '<span class="v2-badge v2-badge-danger">ineligible</span>'
+                  : `<span class="v2-badge v2-badge-info">${v2Esc(r.eligibility)}</span>`;
+            return {
+              cells: [
+                v2Esc(r.counterpartyId),
+                eligBadge,
+                String(r.liveFxInstruments),
+                r.asOf ? v2Esc(new Date(r.asOf).toLocaleDateString()) : "—",
+              ],
+            };
+          }),
+        });
+      }
+
+      // --- RAS B3 headroom. ---
+      const sh = section(headroomHost, "RAS §B3 — FX net-open-position headroom");
+      if (!panelBanner(sh, headroom, "No B3 FX headroom under this lens.")) {
+        const b3 = headroom.b3;
+        renderTable(sh, {
+          columns: ["Measure", "Value"],
+          rows: [
+            { cells: ["Exposure (FX NOP)", fmtZar(b3.exposureZar)] },
+            { cells: ["RAS B3 limit", b3.limitZar === null ? "— (no RAS B3 row)" : fmtZar(b3.limitZar)] },
+            { cells: ["Utilisation", fmtPct(b3.utilisationPct)] },
+            { cells: ["Status", ragBadge(b3.ragStatus)] },
+            { cells: ["BA-320 coverage", v2Esc(headroom.coverageStatus)] },
+          ],
+        });
+      }
+      // Scope note is always shown so the panel never implies whole-RAS coverage.
+      const scopeNote = document.createElement("div");
+      scopeNote.className = "v2-note";
+      scopeNote.style.marginTop = "6px";
+      scopeNote.textContent = headroom.scopeNote;
+      sh.appendChild(scopeNote);
+
+      // --- NPA attestation. ---
+      const sn = section(npaHost, "Product NPA attestation");
+      const npaIntro = document.createElement("div");
+      npaIntro.className = "v2-note";
+      npaIntro.innerHTML = `Umbrella product <code>${v2Esc(npa.productId)}</code>.`;
+      sn.appendChild(npaIntro);
+      renderTable(sn, {
+        columns: ["Product", "Status", "Approved", "Withheld", "Reason"],
+        emptyMsg: "No ProductApproved / ProductWithheld event for the umbrella FX product yet.",
+        rows: npa.attestations.map((a) => {
+          const statusBadge =
+            a.status === "approved"
+              ? '<span class="v2-badge v2-badge-success">approved</span>'
+              : a.status === "withheld"
+                ? '<span class="v2-badge v2-badge-danger">withheld</span>'
+                : `<span class="v2-badge v2-badge-info">${v2Esc(a.status)}</span>`;
+          return {
+            cells: [
+              `<code>${v2Esc(a.productCode)}</code>${a.outOfScope ? ' <span class="v2-badge v2-badge-info">out of scope</span>' : ""}`,
+              statusBadge,
+              a.approvedAt ? v2Esc(new Date(a.approvedAt).toLocaleDateString()) : "—",
+              a.withheldAt ? v2Esc(new Date(a.withheldAt).toLocaleDateString()) : "—",
+              a.withheldReason ? v2Esc(a.withheldReason) : "—",
+            ],
+          };
+        }),
+      });
+
+      // --- Gateway rejections. ---
+      const sr = section(rejectHost, `Pre-trade gateway rejections (${rejections.count})`);
+      if (!panelBanner(sr, rejections, "No V2 gateway rejections on this store.")) {
+        renderTable(sr, {
+          columns: ["Order", "Reason", "Counterparty", "Rejected at"],
+          emptyMsg: "No V2 gateway-rejection events.",
+          rows: rejections.rows.map((r) => ({
+            cells: [
+              v2Esc(r.orderId ?? r.id ?? "—"),
+              v2Esc(r.reason ?? r.rejectionReason ?? "—"),
+              v2Esc(r.counterpartyId ?? "—"),
+              r.rejectedAt ? v2Esc(new Date(r.rejectedAt).toLocaleString()) : "—",
+            ],
+          })),
+        });
+      }
+      if (rejections.substrateGap) {
+        const gap = document.createElement("div");
+        gap.className = "v2-note";
+        gap.style.marginTop = "6px";
+        gap.innerHTML = `<strong>Substrate gap:</strong> ${v2Esc(rejections.substrateGap)}`;
+        sr.appendChild(gap);
+      }
+
+      // --- Per-panel V2 provenance manifest (oversight: which read V2). ---
+      const sp = section(panelsHost, "Panel data-provenance manifest");
+      renderTable(sp, {
+        columns: ["Panel", "Source", "State", "Route", "Note"],
+        rows: d.panels.map((p) => ({
+          cells: [
+            v2Esc(p.panel),
+            p.source === "v2"
+              ? '<span class="v2-badge v2-badge-success">V2</span>'
+              : '<span class="v2-badge v2-badge-warning">V1-only</span>',
+            p.dataState === "live"
+              ? '<span class="v2-badge v2-badge-success">live</span>'
+              : `<span class="v2-badge v2-badge-info">${v2Esc(p.dataState)}</span>`,
+            `<code>${v2Esc(p.route)}</code>`,
+            p.reason ? v2Esc(p.reason) : "—",
+          ],
+        })),
+      });
+
+      renderRefs(refsHost, {
+        refs: [
+          { label: "Regs Relating to Banks — Reg 28 (market risk / BA-320)", href: "/v2/compliance/reader.html?slug=regulations-relating-to-banks" },
+          { label: "FX capital-charge formula & constituents", href: "/v2/markets/fx-metric.html?metric=capital-charge" },
+          { label: "FIL instance schema (FilInstrumentCreated)", href: "/v2/operations/schemas.html?type=FilInstrumentCreated" },
+          { label: "Outside-World Simulator (FX V2 simulator-first)", href: "/v2/markets/world-simulator.html" },
+        ],
+      });
     });
   </script>
 </body>
