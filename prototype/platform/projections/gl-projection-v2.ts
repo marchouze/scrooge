@@ -50,7 +50,7 @@ import {
   foldCapitalContributionLegs,
   isCapitalSourcedGlPosting,
 } from "../accounting/posting-rules-v2/capital-fold";
-import { foldFxContributionLegs } from "../accounting/posting-rules-v2/fx-fold";
+import { deriveFxInstanceLegs } from "../accounting/posting-rules-v2/fx-instance-fold";
 import { type Money, amountToMinorUnits } from "../core/decimal-money";
 import { type MoneyWire, legAmountMoney } from "../core/money-codec";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
@@ -187,11 +187,16 @@ export function computeTrialBalanceV2Uncached(args: ComputeTrialBalanceV2Args): 
     uptoSequence += 1;
   }
 
-  // FX contribution — PURE FOLD over primary FIL FX events (NO GlPostingEmitted).
+  // FX contribution — STATE-DRIVEN derivation from the FIL instance register
+  // (`deriveFxInstanceLegs`), NOT the raw-event fold. The two are proven
+  // byte-equivalent by `recon:gl-v2-fold-equivalence-fx`, so the combined
+  // TrialBalance stays byte-identical through this cutover; accounting now reads
+  // FIL STATE (the register `stage`) rather than re-scanning the lifecycle stream.
   // Same provenance filter + posting-date window. The FX legs accumulate into the
   // same per-(accountCode,currency) balances map as the non-FX GlPostingEmitted
   // legs, so the combined TrialBalance shape is unchanged.
-  const fxFold = foldFxContributionLegs({
+  // Authority: D-FIL-CONSUMER-SURFACE-ARCHITECTURE (Step C).
+  const fxFold = deriveFxInstanceLegs({
     eventStore: args.eventStore,
     periodStart: args.periodStart,
     periodEnd: args.periodEnd,
@@ -472,9 +477,12 @@ export function computeGlEntriesV2Uncached(args: ComputeTrialBalanceV2Args): GlL
     });
   }
 
-  // FX entries — PURE FOLD over primary FIL FX events. Each folded leg is an
-  // individually-addressable ledger entry sourced from the FIL lifecycle event.
-  const fxFold = foldFxContributionLegs({
+  // FX entries — STATE-DRIVEN derivation from the FIL instance register
+  // (`deriveFxInstanceLegs`). Each derived leg preserves its per-leg `filEventId`
+  // so the individually-addressable ledger entry remains sourced from the FIL
+  // lifecycle event, byte-identical to the prior raw-event fold.
+  // Authority: D-FIL-CONSUMER-SURFACE-ARCHITECTURE (Step C).
+  const fxFold = deriveFxInstanceLegs({
     eventStore: args.eventStore,
     periodStart: args.periodStart,
     periodEnd: args.periodEnd,
@@ -656,8 +664,10 @@ export function computeGlAccountsV2Uncached(args: ComputeTrialBalanceV2Args): Gl
     );
   }
 
-  // FX accounts — PURE FOLD over primary FIL FX events.
-  const fxFold = foldFxContributionLegs({
+  // FX accounts — STATE-DRIVEN derivation from the FIL instance register
+  // (`deriveFxInstanceLegs`), byte-equivalent to the prior raw-event fold.
+  // Authority: D-FIL-CONSUMER-SURFACE-ARCHITECTURE (Step C).
+  const fxFold = deriveFxInstanceLegs({
     eventStore: args.eventStore,
     periodStart: args.periodStart,
     periodEnd: args.periodEnd,
