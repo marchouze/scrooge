@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FX Metric — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-source="/api/v2/markets/fx">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    const metricKey = new URLSearchParams(location.search).get("metric");
+
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Markets", href: "/v2/markets/index.html" },
+        { label: "FX Desk", href: "/v2/markets/fx.html" },
+        { label: metricKey || "Metric" },
+      ],
+      title: "FX metric",
+      seat: "Formula & constituents · how this number is computed",
+    });
+
+    const bodyHost = document.createElement("div"); main.appendChild(bodyHost);
+
+    function fmtMinor(minor, ccy) {
+      if (minor === null || minor === undefined) return "—";
+      return `${(Number(minor) / 100).toLocaleString("en-ZA", { maximumFractionDigits: 2 })} ${ccy || "ZAR"}`;
+    }
+    function fmtZar(n) {
+      if (n === null || n === undefined) return "—";
+      return `${Number(n).toLocaleString("en-ZA", { maximumFractionDigits: 2 })} ZAR`;
+    }
+
+    // Build the metric descriptor (label, formula, constituents) from the surface.
+    function describe(key, d) {
+      const summary = d.summary, risk = d.risk;
+      const ccy = summary.functionalCurrency;
+      if (key === "pnl") {
+        const pnl = summary.pnl;
+        const constituents = (pnl.byCurrency || []).map((c) => ({
+          a: c.currency, b: String(c.trades), c: fmtMinor(c.unrealisedFunctionalMinor, ccy),
+        }));
+        return {
+          label: "Unrealised P&L (YTD)",
+          dataState: pnl.dataState,
+          reason: pnl.reason,
+          numLabel: "Σ mark-to-market over live FX FIL legs",
+          numFmt: fmtMinor(pnl.totalUnrealisedFunctionalMinor, ccy),
+          denLabel: null,
+          denFmt: null,
+          resultLabel: "Total unrealised P&L",
+          resultFmt: fmtMinor(pnl.totalUnrealisedFunctionalMinor, ccy),
+          reference: "daily-P&L V2 (computeDailyPnLV2) · Reg 28",
+          note: pnl.unrealisedComplete
+            ? `Complete: every live position was markable (${pnl.marksUnavailableCount} marks unavailable).`
+            : `INCOMPLETE — ${pnl.marksUnavailableCount} live position(s) had no mark; the figure EXCLUDES them (Engineering Charter cmd 3 — not a silent zero).`,
+          gap: pnl.byCurrencyGap,
+          colHeads: ["Currency", "Trades", "Unrealised P&L"],
+          constituents,
+        };
+      }
+      if (key === "net-position") {
+        const constituents = (risk.positions || []).map((p) => ({
+          a: p.baseCurrency,
+          b: String(p.openInstanceCount),
+          c: p.netPositionFunctionalMinor === null
+            ? `${p.netPositionBaseCurrencyMinor} (minor, base) · no rate`
+            : fmtMinor(p.netPositionFunctionalMinor, risk.functionalCurrency),
+        }));
+        return {
+          label: "Net open position charge",
+          dataState: risk.dataState,
+          reason: risk.reason,
+          numLabel: "8% × max(Σ|long|, Σ|short|)",
+          numFmt: fmtMinor(risk.openPositionChargeMinor, risk.functionalCurrency),
+          denLabel: null,
+          denFmt: null,
+          resultLabel: "Open-position capital charge",
+          resultFmt: fmtMinor(risk.openPositionChargeMinor, risk.functionalCurrency),
+          reference: "BA-320 V2 · Reg 28(5) (functional ccy excluded)",
+          note: `Σ long ${fmtMinor(risk.totalLongFunctionalMinor, risk.functionalCurrency)} · ` +
+            `Σ short ${fmtMinor(risk.totalShortFunctionalMinor, risk.functionalCurrency)} · ` +
+            `coverage ${risk.coverageStatus} · ${risk.openFxInstanceCount} open instrument(s)` +
+            (risk.gaps && risk.gaps.length ? ` · gaps: ${risk.gaps.join("; ")}` : ""),
+          gap: null,
+          colHeads: ["Base currency", "Open instruments", "Net position (functional)"],
+          constituents,
+        };
+      }
+      if (key === "capital-charge") {
+        const constituents = (risk.positions || []).map((p) => ({
+          a: p.baseCurrency, b: String(p.openInstanceCount),
+          c: p.netPositionFunctionalMinor === null ? "no rate" : fmtMinor(p.netPositionFunctionalMinor, risk.functionalCurrency),
+        }));
+        return {
+          label: "FX capital charge (BA-320)",
+          dataState: summary.dataState,
+          reason: summary.reason,
+          numLabel: "FX open-position market-risk charge",
+          numFmt: fmtMinor(summary.openPositionChargeMinor, ccy),
+          denLabel: null,
+          denFmt: null,
+          resultLabel: "BA-320 FX market-risk charge",
+          resultFmt: fmtMinor(summary.openPositionChargeMinor, ccy),
+          reference: "BA-320 V2 (computeBA320V2) · Reg 28",
+          note: `Live FX FIL instruments: ${summary.liveTradeCount}; distinct counterparties: ${summary.counterpartyCount}.`,
+          gap: null,
+          colHeads: ["Base currency", "Open instruments", "Net position (functional)"],
+          constituents,
+        };
+      }
+      if (key === "var") {
+        const v = summary.var;
+        const constituents = [
+          { a: "VaR (99% / 10-day)", b: "—", c: fmtZar(v.varZar) },
+          { a: "Stressed VaR", b: "—", c: fmtZar(v.svarZar) },
+          { a: "Expected shortfall", b: "—", c: fmtZar(v.esZar) },
+          { a: "VaR appetite", b: "—", c: fmtZar(v.varAppetiteZar) },
+        ];
+        return {
+          label: "Market-risk VaR",
+          dataState: v.dataState,
+          reason: v.reason,
+          numLabel: "VaR (99% / 10-day)",
+          numFmt: fmtZar(v.varZar),
+          denLabel: "VaR appetite",
+          denFmt: fmtZar(v.varAppetiteZar),
+          resultLabel: "Appetite utilisation",
+          resultFmt: v.utilisationPct === null ? "—" : `${(Number(v.utilisationPct) * 100).toFixed(1)}%`,
+          reference: "MarketRiskVarComputed (V2) · getMarketRiskMeasure",
+          note: (v.ragStatus ? `RAG status: ${v.ragStatus}. ` : "") +
+            (v.asOf ? `Measured as of ${new Date(v.asOf).toLocaleString()}.` : ""),
+          gap: null,
+          colHeads: ["Risk-factor measure", "—", "Value"],
+          constituents,
+        };
+      }
+      return null;
+    }
+
+    if (!metricKey) {
+      v2RenderError(bodyHost, `no metric selected — choose a tile on the <a href="/v2/markets/fx.html">FX Desk</a> page.`);
+    } else {
+      v2WireLoader(async () => {
+        bodyHost.replaceChildren();
+        let d;
+        try {
+          d = await v2Fetch("/api/v2/markets/fx");
+        } catch (err) {
+          v2RenderError(bodyHost, v2Esc(err.message));
+          return;
+        }
+        document.getElementById("as-of").textContent = `as of ${new Date(d.asOf).toLocaleString()}`;
+
+        const m = describe(metricKey, d);
+        if (!m) {
+          v2RenderError(bodyHost, `unknown FX metric: ${v2Esc(metricKey)}`);
+          return;
+        }
+
+        const titleEl = document.querySelector(".v2-page-title");
+        if (titleEl) titleEl.textContent = m.label;
+
+        // Honest data-state banner — never a silent zero.
+        if (m.dataState !== "live") {
+          const banner = document.createElement("div");
+          banner.className = "v2-section";
+          banner.innerHTML = `
+            <div class="v2-empty">
+              <div class="v2-empty-icon">${m.dataState === "v1-only" ? "⚠" : "○"}</div>
+              <div class="v2-empty-msg"><strong>No live data for this metric.</strong><br>${v2Esc(m.reason || "No data on this store.")}</div>
+            </div>`;
+          bodyHost.appendChild(banner);
+        }
+
+        // Headline value tile (static — no dead-end href).
+        renderTileGroup(bodyHost, { tiles: [{ label: m.label, value: m.resultFmt, unit: m.resultLabel }] });
+
+        // Formula: numerator / denominator → result.
+        renderFormula(bodyHost, {
+          name: m.resultLabel,
+          numLabel: m.numLabel,
+          denLabel: m.denLabel || "—",
+          reference: m.reference,
+        });
+        const fvals = bodyHost.querySelectorAll(".v2-formula-value");
+        if (fvals[0]) fvals[0].textContent = m.numFmt;
+        if (fvals[1]) fvals[1].textContent = m.denFmt != null ? m.denFmt : "(none — pure sum)";
+        const fres = bodyHost.querySelector(".v2-formula-result-value");
+        if (fres) fres.textContent = m.resultFmt;
+        if (m.denLabel == null) {
+          const op = bodyHost.querySelector(".v2-formula-op");
+          if (op) op.textContent = "Σ";
+        }
+
+        if (m.note) {
+          const noteEl = document.createElement("div");
+          noteEl.className = "v2-note"; noteEl.style.marginTop = "6px";
+          noteEl.textContent = m.note;
+          bodyHost.appendChild(noteEl);
+        }
+        if (m.gap) {
+          const gapEl = document.createElement("div");
+          gapEl.className = "v2-note"; gapEl.style.marginTop = "6px";
+          gapEl.innerHTML = `<strong>Known gap:</strong> ${v2Esc(m.gap)}`;
+          bodyHost.appendChild(gapEl);
+        }
+
+        // Constituent list — the lines behind the number.
+        const cs = document.createElement("div"); cs.className = "v2-section"; bodyHost.appendChild(cs);
+        const ch = document.createElement("h2"); ch.className = "v2-section-title"; ch.textContent = "Constituents"; cs.appendChild(ch);
+        renderTable(cs, {
+          columns: m.colHeads,
+          emptyMsg: "No constituent lines under this lens — switch to + Sim to view the demonstration FX cohort.",
+          rows: m.constituents.map((r) => ({
+            cells: [v2Esc(r.a), v2Esc(r.b), `<strong>${v2Esc(r.c)}</strong>`],
+          })),
+        });
+
+        renderRefs(bodyHost, {
+          refs: [
+            { label: "Regs Relating to Banks — Reg 28 (market risk / BA-320)", href: "/v2/compliance/reader.html?slug=regulations-relating-to-banks" },
+            { label: "FIL instance schema (FilInstrumentCreated)", href: "/v2/operations/schemas.html?type=FilInstrumentCreated" },
+            { label: "FX Desk (back to register)", href: "/v2/markets/fx.html" },
+          ],
+        });
+      });
+    }
+  </script>
+</body>
+</html>
