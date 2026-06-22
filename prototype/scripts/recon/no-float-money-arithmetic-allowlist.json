@@ -12,12 +12,7 @@
     },
     {
       "file": "dashboard/server.ts",
-      "line": 443,
-      "pattern": "money-multiply/divide"
-    },
-    {
-      "file": "dashboard/server.ts",
-      "line": 657,
+      "line": 444,
       "pattern": "money-multiply/divide"
     },
     {
@@ -27,22 +22,27 @@
     },
     {
       "file": "dashboard/server.ts",
-      "line": 748,
+      "line": 659,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 768,
+      "line": 749,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
-      "line": 791,
+      "line": 769,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "dashboard/server.ts",
       "line": 792,
+      "pattern": "money-multiply/divide"
+    },
+    {
+      "file": "dashboard/server.ts",
+      "line": 793,
       "pattern": "money-multiply/divide"
     },
     {
@@ -357,7 +357,7 @@
     },
     {
       "file": "platform/projections/alm-positions-v2.ts",
-      "line": 294,
+      "line": 310,
       "pattern": "money-multiply/divide"
     },
     {
@@ -372,17 +372,17 @@
     },
     {
       "file": "platform/projections/capital-metrics.ts",
-      "line": 295,
+      "line": 349,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/projections/capital-metrics.ts",
-      "line": 297,
+      "line": 356,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/projections/capital-metrics.ts",
-      "line": 302,
+      "line": 364,
       "pattern": "money-multiply/divide"
     },
     {

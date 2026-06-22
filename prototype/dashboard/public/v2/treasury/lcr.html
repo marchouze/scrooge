@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/v2/_v2-tile.css">
   <link rel="stylesheet" href="/provenance-badge.css">
 </head>
-<body data-provenance-content="none">
+<body data-provenance-source="/api/v2/treasury/lcr">
   <header class="v2-header">
     <div class="v2-header-left">
       <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
@@ -19,6 +19,7 @@
         <button class="v2-prov-btn" data-mode="prod">Prod</button>
         <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
       </div>
+      <span data-provenance-badge="page-top"></span>
       <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
       <span class="v2-as-of" id="as-of">—</span>
     </div>
@@ -30,40 +31,113 @@
   <script src="/v2/_v2-shell.js"></script>
   <script src="/provenance-badge.js"></script>
   <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
   <script>
     const main = document.getElementById("v2-main");
     renderPageHeader(main, {
-      crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Treasury", href: "/v2/treasury/index.html" }, { label: "LCR" }],
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Treasury", href: "/v2/treasury/index.html" },
+        { label: "LCR" },
+      ],
       title: "Liquidity Coverage Ratio (LCR)",
-      seat: "BCBS LCR standard / BA-300",
+      seat: "HQLA / net 30-day outflows · Reg 26 · BCBS LCR · BA-300",
     });
-    renderTileGroup(main, {
-      tiles: [
-        { label: "LCR", unit: "HQLA / Net 30-day outflows" },
-        { label: "HQLA Stock", unit: "High-Quality Liquid Assets (ZAR)" },
-        { label: "Net Cash Outflows", unit: "30-day stressed (ZAR)" },
-        { label: "Minimum Requirement", unit: "100% (SARB BA-300)" },
-      ],
-    });
-    renderFormula(main, {
-      name: "LCR",
-      numLabel: "Stock of HQLA",
-      denLabel: "Net Cash Outflows (30-day stress)",
-      resultLabel: "LCR (%)",
-      reference: "BCBS LCR Standard Jan 2013; BA-300",
-    });
-    const s = document.createElement("div"); s.className = "v2-section"; main.appendChild(s);
-    const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "HQLA Components"; s.appendChild(h);
-    renderTable(s, { columns: ["Asset Category", "Level", "Haircut %", "Adjusted Value (ZAR)", "Source"] });
-    const s2 = document.createElement("div"); s2.className = "v2-section"; main.appendChild(s2);
-    const h2 = document.createElement("h2"); h2.className = "v2-section-title"; h2.textContent = "Cash Outflow Components"; s2.appendChild(h2);
-    renderTable(s2, { columns: ["Outflow Category", "Gross (ZAR)", "Run-off Rate %", "Net Outflow (ZAR)"] });
-    renderRefs(main, {
-      refs: [
-        { label: "BCBS LCR Standard (January 2013)", href: "#" },
-        { label: "SARB BA-300 Liquidity Return", href: "#" },
-        { label: "Banks Act Reg 26 — Liquidity Risk", href: "#" },
-      ],
+
+    const stateHost = document.createElement("div"); main.appendChild(stateHost);
+    const tilesHost = document.createElement("div"); main.appendChild(tilesHost);
+    const formulaHost = document.createElement("div"); main.appendChild(formulaHost);
+    const hqlaHost = document.createElement("div"); main.appendChild(hqlaHost);
+    const outflowHost = document.createElement("div"); main.appendChild(outflowHost);
+    const refsHost = document.createElement("div"); main.appendChild(refsHost);
+
+    const metricHref = (key) => `/v2/treasury/liquidity-metric.html?surface=lcr&metric=${encodeURIComponent(key)}`;
+
+    v2WireLoader(async () => {
+      stateHost.replaceChildren(); tilesHost.replaceChildren();
+      formulaHost.replaceChildren(); hqlaHost.replaceChildren();
+      outflowHost.replaceChildren(); refsHost.replaceChildren();
+      let d;
+      try {
+        d = await v2Fetch("/api/v2/treasury/lcr");
+      } catch (err) {
+        v2RenderError(stateHost, v2Esc(err.message));
+        return;
+      }
+      document.getElementById("as-of").textContent = `as of ${new Date(d.asOf).toLocaleString()}`;
+
+      if (d.dataState === "empty") {
+        const banner = document.createElement("div");
+        banner.className = "v2-section";
+        banner.innerHTML = `
+          <div class="v2-empty">
+            <div class="v2-empty-icon">○</div>
+            <div class="v2-empty-msg"><strong>No liquidity positions under this lens.</strong><br>${v2Esc(d.reason)}</div>
+          </div>`;
+        stateHost.appendChild(banner);
+      }
+
+      renderTileGroup(tilesHost, {
+        tiles: d.tiles.map((t) => ({
+          label: t.label,
+          value: t.valueFmt,
+          unit: t.unit,
+          href: t.key === "lcr-minimum" ? undefined : metricHref(t.key),
+        })),
+      });
+
+      // LCR formula block: HQLA / net 30-day outflows = ratio.
+      renderFormula(formulaHost, {
+        name: "LCR",
+        numLabel: "Stock of HQLA (post-haircut)",
+        denLabel: "Net cash outflows (30-day stress)",
+        reference: "Reg 26 · BCBS LCR · BA-300",
+      });
+      const fvals = formulaHost.querySelectorAll(".v2-formula-value");
+      if (fvals[0]) fvals[0].textContent = d.hqlaFmt;
+      if (fvals[1]) fvals[1].textContent = d.netOutflowsFmt;
+      const fres = formulaHost.querySelector(".v2-formula-result-value");
+      if (fres) fres.textContent = d.lcrFmt;
+
+      // Status line under the formula.
+      const ctx = document.createElement("div"); ctx.className = "v2-section"; formulaHost.appendChild(ctx);
+      renderTable(ctx, {
+        columns: ["Measure", "Value"],
+        rows: [
+          { cells: ["LCR status", `<span class="v2-badge v2-badge-info">${v2Esc(d.status)}</span>`] },
+          { cells: ["HQLA stock (post-haircut)", v2Esc(d.hqlaFmt)] },
+          { cells: ["Net 30-day cash outflows", v2Esc(d.netOutflowsFmt)] },
+          { cells: ["Functional currency", v2Esc(d.functionalCurrency)] },
+          { cells: ["Entity (Reg 26 — bank licence)", v2Esc(d.entity)] },
+        ],
+      });
+
+      // HQLA constituents.
+      const hs = document.createElement("div"); hs.className = "v2-section"; hqlaHost.appendChild(hs);
+      const hh = document.createElement("h2"); hh.className = "v2-section-title"; hh.textContent = "HQLA constituents"; hs.appendChild(hh);
+      renderTable(hs, {
+        columns: ["HQLA tier", "Amount"],
+        emptyMsg: "No HQLA positions under this lens — no money-market HQLA events booked in the build phase.",
+        rows: d.hqlaConstituents.map((r) => ({ cells: r.cells.map((c, i) => i === 1 ? `<strong>${v2Esc(c)}</strong>` : v2Esc(c)) })),
+      });
+
+      // Outflow constituents.
+      const os = document.createElement("div"); os.className = "v2-section"; outflowHost.appendChild(os);
+      const oh = document.createElement("h2"); oh.className = "v2-section-title"; oh.textContent = "Outflow / inflow constituents"; os.appendChild(oh);
+      renderTable(os, {
+        columns: ["Category", "Amount"],
+        emptyMsg: "No funding / outflow positions under this lens — no money-market funding events booked in the build phase.",
+        rows: d.outflowConstituents.map((r) => ({ cells: r.cells.map((c, i) => i === 1 ? `<strong>${v2Esc(c)}</strong>` : v2Esc(c)) })),
+      });
+
+      renderRefs(refsHost, {
+        refs: [
+          { label: "Regs Relating to Banks — Reg 26 (liquidity risk / LCR)", href: "/v2/compliance/reader.html?slug=regulations-relating-to-banks" },
+          { label: "BCBS Basel III — LCR standard (Jan 2013)", href: "/v2/compliance/reader.html?slug=bcbs-basel-iii" },
+          { label: "ALM positions (source snapshot)", href: "/v2/treasury/alm.html" },
+          { label: "BA-300 liquidity return", href: "/v2/operations/schemas.html" },
+        ],
+      });
     });
   </script>
 </body>
