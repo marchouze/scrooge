@@ -46,6 +46,7 @@ import {
   foldFxContributionLegs,
   foldTreatmentRegisterFromStore,
 } from "../accounting/posting-rules-v2/fx-fold";
+import { deriveFxInstanceLegs } from "../accounting/posting-rules-v2/fx-instance-fold";
 import { eventStore } from "../composition";
 import { amountToMinorUnits } from "../core/decimal-money";
 import { legAmountMoney } from "../core/money-codec";
@@ -188,6 +189,20 @@ export function run(): ReconResult {
     for (const leg of fxLegs.legs) accumulate(folded, leg);
     for (const [k, v] of [...folded.entries()]) if (v === 0) folded.delete(k);
 
+    // The STATE-DRIVEN derivation (Step B, D-FIL-CONSUMER-SURFACE-ARCHITECTURE):
+    // legs derived by folding the FIL STATE register (NOT by replaying
+    // FilInstrument* for state). The third comparison below proves it reproduces
+    // the golden + event-fold net byte-for-byte BEFORE Step C cuts the trial
+    // balance over to it. DARK: this gate is the only reader of it today.
+    const stateLegs = deriveFxInstanceLegs({
+      eventStore,
+      periodStart: V2_PERIOD_START,
+      periodEnd: V2_PERIOD_END,
+    });
+    const stateDerived = new Map<string, number>();
+    for (const leg of stateLegs.legs) accumulate(stateDerived, leg);
+    for (const [k, v] of [...stateDerived.entries()]) if (v === 0) stateDerived.delete(k);
+
     // (1) Same key set.
     const goldenKeys = [...golden.keys()].sort();
     const foldedKeys = [...folded.keys()].sort();
@@ -216,7 +231,50 @@ export function run(): ReconResult {
       }
     }
 
-    // (3) Surface fail-closed skips as advisory info (no silent deferral — they
+    // (3) STATE-DERIVATION byte-equivalence (Step B). The register-driven
+    // `deriveFxInstanceLegs` net must equal BOTH the golden (lifted-rule reference)
+    // AND the event-fold net, per (accountCode,currency). This is the safety net
+    // proven before the Step C cutover: state-derivation == golden == event-fold.
+    const stateKeys = [...stateDerived.keys()].sort();
+    result.asserted += 1;
+    if (JSON.stringify(stateKeys) !== JSON.stringify(goldenKeys)) {
+      const onlyState = stateKeys.filter((k) => !golden.has(k));
+      const onlyGolden = goldenKeys.filter((k) => !stateDerived.has(k));
+      violations.push({
+        subject: `${PIPELINE}:state-derivation-account-set-divergence`,
+        message: `State-driven FX derivation account/currency set diverges from the golden. Only-in-state: [${onlyState.join(", ")}]; only-in-golden: [${onlyGolden.join(", ")}]. The register-driven derivation (deriveFxInstanceLegs) must reproduce the FX posting rules byte-for-byte. Inspect posting-rules-v2/fx-instance-fold.ts. Authority: D-FIL-CONSUMER-SURFACE-ARCHITECTURE.`,
+        severity: "fail",
+      });
+    }
+    for (const key of goldenKeys) {
+      result.asserted += 1;
+      const g = golden.get(key) ?? 0;
+      const s = stateDerived.get(key) ?? 0;
+      if (g !== s) {
+        violations.push({
+          subject: `${PIPELINE}:state-derivation-amount-mismatch:${key}`,
+          message: `State-driven FX derivation amountMinor for "${key}" = ${s} but the lifted-rule golden = ${g}. The register-driven derivation must byte-match the golden + event fold. Authority: D-FIL-CONSUMER-SURFACE-ARCHITECTURE.`,
+          severity: "fail",
+        });
+      }
+    }
+    // Cross-check directly against the event fold too (state == event-fold), so a
+    // simultaneous drift on both vs the golden cannot mask a state≠event-fold gap.
+    const stateVsFoldKeys = new Set([...stateKeys, ...foldedKeys]);
+    for (const key of [...stateVsFoldKeys].sort()) {
+      result.asserted += 1;
+      const s = stateDerived.get(key) ?? 0;
+      const f = folded.get(key) ?? 0;
+      if (s !== f) {
+        violations.push({
+          subject: `${PIPELINE}:state-vs-event-fold-mismatch:${key}`,
+          message: `State-driven derivation amountMinor for "${key}" = ${s} but the event fold = ${f}. deriveFxInstanceLegs must reproduce foldFxContributionLegs byte-for-byte (Step B safety net). Authority: D-FIL-CONSUMER-SURFACE-ARCHITECTURE.`,
+          severity: "fail",
+        });
+      }
+    }
+
+    // (4) Surface fail-closed skips as advisory info (no silent deferral — they
     // are visible, not swallowed). An unresolved instance is correct fail-closed
     // behaviour, not a divergence, so it does not fail the gate by itself.
     result.asserted += 1;
@@ -230,7 +288,7 @@ export function run(): ReconResult {
       }
     }
 
-    // (4) Cross-check against the projection trial balance: every FX (ACC-2100-*)
+    // (5) Cross-check against the projection trial balance: every FX (ACC-2100-*)
     // row in the full combined TB must equal the fold's FX figure (proves the
     // projection wiring, not just the helper, surfaces the folded FX numbers).
     const tb = computeTrialBalanceV2Uncached({
@@ -253,8 +311,10 @@ export function run(): ReconResult {
       }
     }
 
-    result.asOf = `${PIPELINE}: golden FX accounts=${goldenKeys.length}, folded FX accounts=${foldedKeys.length}, fail-closed skips=${fxLegs.skipped.length}. ${
-      violations.some((v) => v.severity === "fail") ? "DIVERGENCE" : "byte-equivalent"
+    result.asOf = `${PIPELINE}: golden FX accounts=${goldenKeys.length}, folded FX accounts=${foldedKeys.length}, state-derived FX accounts=${stateKeys.length}, fail-closed skips=${fxLegs.skipped.length}. ${
+      violations.some((v) => v.severity === "fail")
+        ? "DIVERGENCE"
+        : "byte-equivalent (state==golden==event-fold)"
     }.`;
   } catch (err) {
     violations.push({
