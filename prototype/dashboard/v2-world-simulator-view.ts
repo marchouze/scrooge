@@ -14,6 +14,14 @@
 //   1. SCENARIO — the active declarative manifest (scenario-manifest.ts shape):
 //      id, seed, baseline instant, EOD hour, day count, counterparties, the
 //      market-observation path. The manifest is the simulator's whole input.
+//      The DISPLAYED market-observation path is GROUNDED in real production marks
+//      (dashboard/v2-world-simulator-grounding.ts): spot from production USD/ZAR,
+//      ZAR OIS from production zaronia-rate, with per-field grounding provenance —
+//      and EVERY ungrounded field (forward points always; spot/OIS outside the
+//      data window) flagged `grounded:false`. Nothing synthetic is shown as real.
+//      The deterministic REPLAY manifest that drives Sections 2-4 is a SEPARATE,
+//      explicitly-labelled closed-form ORACLE scenario (known inputs → known
+//      outputs), not a market presentation — see `buildOracleManifest` below.
 //   2. EOD TIMELINE — the deterministic FiredHookRecord[] log from the run's
 //      EodTriggerBus (eod-bus.ts): which SUT cadence hooks fired at each
 //      end-of-day boundary, in deterministic priority order.
@@ -42,6 +50,7 @@
 // not stored state); Principle 2 (the boundary is a topology invariant surfaced here).
 // Author: Atlas (Core banking platform architect, engineering).
 
+import type { MarketDataStore } from "../platform/market-data/store";
 import { computeCohortVar } from "../platform/market-risk/eod-cohort-var-v2";
 import { provisionCounterparty } from "../platform/markets/counterparty/provision-counterparty";
 import { bookAffirmedFxTrade } from "../platform/markets/products/book-affirmed-fx-trade";
@@ -65,6 +74,10 @@ import { emitSettlementLifecycle } from "../platform/simulation-v2/sim-modules/s
 import { emitCounterpartyConfirmation } from "../platform/simulation-v2/sim-modules/trade-confirmation";
 import { formatInstanceUrn } from "../v2-core/fil-core/urn";
 import { seatTitle } from "./agent-title";
+import {
+  type GroundedMarketPathDto,
+  buildGroundedMarketPath,
+} from "./v2-world-simulator-grounding";
 
 const REPORTING = "ZAR";
 const TENANT = "LE-ZA-HOZ-BANK";
@@ -73,13 +86,22 @@ const SPOT_TRADE_ID = "T-SPOT-USD-001";
 const SETTLEMENT_DATE = "2026-02-04";
 
 // ---------------------------------------------------------------------------
-// The canonical declarative scenario — the SAME deterministic Phase-1 USD/ZAR
-// scenario the enforcing recon:fx-v2-sim-oracle replays. Built as data (no
-// hardcoding in the page — the page reads whatever this builder returns).
+// The deterministic ORACLE scenario — the SAME closed-form Phase-1 USD/ZAR
+// scenario the enforcing recon:fx-v2-sim-oracle replays. This is a TEST FIXTURE
+// with KNOWN inputs (spot 18.50→18.60 zig-zag) so the SUT's outputs (P&L, VaR,
+// SA-CCR in Sections 2-4) can be asserted against closed-form expected figures.
+//
+// IMPORTANT — this manifest is NOT a market presentation. Its synthetic spots are
+// a deterministic validation harness, never "the world's mark". The human-facing
+// market-observation path (Section 1) is the GROUNDED path built from real
+// production marks (buildGroundedMarketPath); the spots here drive the oracle
+// replay only. Keeping the oracle deterministic is required by Charter cmd 3
+// (no green by concealment — the replacement assurance for the retired V1-parity
+// legs must stay closed-form).
 // ---------------------------------------------------------------------------
 
-/** Deterministic 25-day USD/ZAR zig-zag scenario (one risk factor). */
-function buildManifest(): ScenarioManifest {
+/** Deterministic 25-day USD/ZAR zig-zag ORACLE scenario (closed-form fixture). */
+function buildOracleManifest(): ScenarioManifest {
   const days: ScenarioDay[] = [];
   for (let i = 0; i < N_DAYS; i++) {
     const date = `2026-02-${String(i + 2).padStart(2, "0")}`;
@@ -162,7 +184,13 @@ export interface SimScenarioDto {
   readonly eodHourUtc: number;
   readonly dayCount: number;
   readonly counterparties: readonly SimScenarioCounterpartyDto[];
-  /** The full declared market-observation path (one row per pair per day). */
+  /**
+   * The deterministic ORACLE scenario's declared market path (one row per pair
+   * per day) — the closed-form fixture inputs the SUT replay (Sections 2-4) is
+   * asserted against. This is NOT the page's market presentation: the human-
+   * facing path is `V2WorldSimulatorView.groundedMarketPath` (real production
+   * marks + grounding flags). Kept here only as oracle-input provenance.
+   */
   readonly marketPath: readonly SimMarketObservationDto[];
 }
 
@@ -222,6 +250,15 @@ export interface SimRunResultDto {
 
 export interface V2WorldSimulatorView {
   readonly scenario: SimScenarioDto;
+  /**
+   * The GROUNDED market-observation path — the human-facing "what is the world's
+   * mark" surface, sourced from real production marks with per-field grounding
+   * provenance (spot/OIS grounded where real marks exist; forward points always
+   * flagged ungrounded — no feed). This REPLACES the synthetic oracle path as the
+   * page's market-path presentation; nothing synthetic is shown as real.
+   * Authority: D-FX-V2-SIMULATOR-FIRST; Engineering-Charter cmd 4.
+   */
+  readonly groundedMarketPath: GroundedMarketPathDto;
   readonly eodTimeline: SimEodTimelineDto;
   readonly boundaryAttestation: SimBoundaryAttestationDto;
   readonly runResult: SimRunResultDto;
@@ -511,10 +548,19 @@ function buildRunResultDto(
 // four sections. The caller (server route) echoes pageProvenance.
 // ---------------------------------------------------------------------------
 
-export function buildV2WorldSimulatorView(nowIso: string): V2WorldSimulatorView {
-  const manifest = buildManifest();
+export function buildV2WorldSimulatorView(
+  nowIso: string,
+  marketDataStore?: MarketDataStore,
+): V2WorldSimulatorView {
+  const manifest = buildOracleManifest();
   const scenario = buildScenarioDto(manifest);
   const boundaryAttestation = buildBoundaryAttestationDto();
+  // The DISPLAYED market path is grounded in real production marks (spot + ZAR
+  // OIS) with per-field grounding flags — synthetic fallbacks (forward points
+  // always; spot/OIS outside the data window) are flagged ungrounded, never
+  // presented as real. When the store is absent/empty the path falls back to a
+  // labelled synthetic window with every field flagged ungrounded.
+  const groundedMarketPath = buildGroundedMarketPath(marketDataStore);
 
   const { result, figures } = replayScenario(manifest);
   try {
@@ -522,6 +568,7 @@ export function buildV2WorldSimulatorView(nowIso: string): V2WorldSimulatorView 
     const runResult = buildRunResultDto(manifest, result, figures);
     return {
       scenario,
+      groundedMarketPath,
       eodTimeline,
       boundaryAttestation,
       runResult,
@@ -529,9 +576,12 @@ export function buildV2WorldSimulatorView(nowIso: string): V2WorldSimulatorView 
       // persona name can never reach the /api/v2 boundary (name-free policy).
       deskOwnerSeatTitle: seatTitle("Saskia"),
       deferredGap:
-        "Read-only in v1. Control actions — re-run the scenario, advance the simulated clock, " +
-        "or select a different manifest — are a v1.1 deferral (the simulator is driven by the " +
-        "declarative scenario-runner, not by operator buttons). Tracked, not built. " +
+        "Read-only in v1. Control actions (re-run the scenario, advance the simulated clock, " +
+        "select a different manifest) are a v1.1 deferral. GROUNDING gaps, tracked not built: " +
+        "(1) forward points have no production feed — flagged ungrounded; CIP-derivation needs a " +
+        "USD OIS curve that is not ingested; (2) ingesting a forward-points / USD-curve feed is a " +
+        "data-acquisition follow-on; (3) the ZAR OIS leg grounds only where a production " +
+        "zaronia-rate exists at/before the day instant — older window days flag ungrounded. " +
         "Authority: D-FX-V2-SIMULATOR-FIRST.",
       asOf: nowIso,
     };
