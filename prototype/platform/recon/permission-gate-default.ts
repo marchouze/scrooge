@@ -352,6 +352,14 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // net byte-for-byte (incl. the cancelled-parent + cross-lens cases). Not a
   // production access path. T-01 carve-out. F-031.
   "platform/accounting/posting-rules-v2/fx-instance-fold.test.ts",
+  // D-FIL-CONSUMER-SURFACE-ARCHITECTURE (Step C) — FX-cutover byte-stability proof.
+  // Same build-phase fixture pattern as fx-fold.test.ts / fx-instance-fold.test.ts:
+  // raw EventStore(":memory:") seeds a mixed FIL FX book + treatment modules
+  // (production + simulated cohort) and asserts computeTrialBalanceV2Uncached (now
+  // state-driven via deriveFxInstanceLegs) is byte-identical to the event-fold
+  // reference TB under both the production-only and combined lenses. Not a
+  // production access path. T-01 carve-out. F-031.
+  "platform/projections/gl-projection-v2-fx-cutover-byte-stability.test.ts",
   // D-V2-UI-VISIBILITY-REMEDIATION — capital trial-balance fold-through proof
   // (GL ⇿ BA-700 coherence). Same build-phase fixture pattern as fx-fold.test.ts:
   // raw EventStore(":memory:") seeds one simulated capital FIL instrument and
