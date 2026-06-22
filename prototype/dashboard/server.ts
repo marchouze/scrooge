@@ -344,6 +344,7 @@ import {
   buildV2RegulationDetailView,
   buildV2RegulationsView,
 } from "./v2-regulations-view";
+import { buildAlmView, buildLcrView, buildNsfrView } from "./v2-treasury-view";
 import {
   buildDecisionsView,
   buildNpaRegisterView,
@@ -5665,6 +5666,41 @@ const server = Bun.serve({
       const detail = buildClientOnboardingDetail({ eventStore, filter, counterpartyId });
       if (!detail) return jsonResponse({ error: `unknown counterparty: ${counterpartyId}` }, 404);
       return jsonResponse({ ...detail, asOf: nowUtc(), pageProvenance: filter });
+    }
+    // Treasury liquidity (LCR / NSFR / ALM) — slice 3 of D-V2-UI-VISIBILITY-
+    // REMEDIATION. Each reads the operating-book ALM snapshot (Reg 26 / 26A are
+    // bank-licence-bound, scoped to LE-ZA-HOZ-BANK) and the LCR / NSFR engines
+    // directly. In build phase there are no V2 money-market events, so the
+    // honest state is `no-positions` under BOTH lenses (there is no simulated
+    // liquidity injection). pageProvenance is the same filter so the badge
+    // matches the lens. Name-free by construction (numeric folds).
+    // Authority: D-V2-UI-VISIBILITY-REMEDIATION; Reg 26 / 26A; BA-300 / BA-120.
+    if (req.method === "GET" && url.pathname === "/api/v2/treasury/lcr") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const asOf = nowUtc();
+      return jsonResponse({
+        ...buildLcrView({ eventStore, filter, asOf }),
+        asOf,
+        pageProvenance: filter,
+      });
+    }
+    if (req.method === "GET" && url.pathname === "/api/v2/treasury/nsfr") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const asOf = nowUtc();
+      return jsonResponse({
+        ...buildNsfrView({ eventStore, filter, asOf }),
+        asOf,
+        pageProvenance: filter,
+      });
+    }
+    if (req.method === "GET" && url.pathname === "/api/v2/treasury/alm") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const asOf = nowUtc();
+      return jsonResponse({
+        ...buildAlmView({ eventStore, filter, asOf }),
+        asOf,
+        pageProvenance: filter,
+      });
     }
     // New Product Approval register (Governance). NPA products are governance /
     // build-phase records (admitted under production-only in build phase), so

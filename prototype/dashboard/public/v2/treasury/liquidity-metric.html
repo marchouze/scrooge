@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Liquidity Metric — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-source="/api/v2/treasury/lcr">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    const params = new URLSearchParams(location.search);
+    const surface = params.get("surface") === "nsfr" ? "nsfr" : "lcr";
+    const metricKey = params.get("metric");
+
+    const SURFACE = surface === "nsfr"
+      ? { endpoint: "/api/v2/treasury/nsfr", parentLabel: "NSFR", parentHref: "/v2/treasury/nsfr.html" }
+      : { endpoint: "/api/v2/treasury/lcr", parentLabel: "LCR", parentHref: "/v2/treasury/lcr.html" };
+
+    // Point the page provenance source at the surface this metric belongs to so
+    // the badge resolves against the correct endpoint.
+    document.body.setAttribute("data-provenance-source", SURFACE.endpoint);
+
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Treasury", href: "/v2/treasury/index.html" },
+        { label: SURFACE.parentLabel, href: SURFACE.parentHref },
+        { label: metricKey || "Metric" },
+      ],
+      title: "Liquidity metric",
+      seat: "Formula & constituents · how this number is computed",
+    });
+
+    const bodyHost = document.createElement("div"); main.appendChild(bodyHost);
+
+    if (!metricKey) {
+      v2RenderError(bodyHost, `no metric selected — choose a tile on the <a href="${SURFACE.parentHref}">${SURFACE.parentLabel}</a> page.`);
+    } else {
+      v2WireLoader(async () => {
+        bodyHost.replaceChildren();
+        let d;
+        try {
+          d = await v2Fetch(SURFACE.endpoint);
+        } catch (err) {
+          v2RenderError(bodyHost, v2Esc(err.message));
+          return;
+        }
+        document.getElementById("as-of").textContent = `as of ${new Date(d.asOf).toLocaleString()}`;
+
+        const m = (d.metrics || []).find((x) => x.key === metricKey);
+        if (!m) {
+          v2RenderError(bodyHost, `unknown ${SURFACE.parentLabel} metric: ${v2Esc(metricKey)}`);
+          return;
+        }
+
+        const titleEl = document.querySelector(".v2-page-title");
+        if (titleEl) titleEl.textContent = m.label;
+
+        if (d.dataState === "empty") {
+          const banner = document.createElement("div");
+          banner.className = "v2-section";
+          banner.innerHTML = `
+            <div class="v2-empty">
+              <div class="v2-empty-icon">○</div>
+              <div class="v2-empty-msg"><strong>No liquidity positions under this lens.</strong><br>${v2Esc(d.reason)}</div>
+            </div>`;
+          bodyHost.appendChild(banner);
+        }
+
+        renderTileGroup(bodyHost, {
+          tiles: [{ label: m.label, value: m.resultFmt, unit: m.resultLabel }],
+        });
+
+        renderFormula(bodyHost, {
+          name: m.resultLabel,
+          numLabel: m.numLabel,
+          denLabel: m.denLabel || "—",
+          reference: m.reference,
+        });
+        const fvals = bodyHost.querySelectorAll(".v2-formula-value");
+        if (fvals[0]) fvals[0].textContent = m.numFmt;
+        if (fvals[1]) fvals[1].textContent = m.denFmt != null ? m.denFmt : "(none — pure sum)";
+        const fres = bodyHost.querySelector(".v2-formula-result-value");
+        if (fres) fres.textContent = m.resultFmt;
+        if (m.denLabel == null) {
+          const op = bodyHost.querySelector(".v2-formula-op");
+          if (op) op.textContent = "Σ";
+        }
+
+        // Constituent list — columns + rows are pre-formatted by the view.
+        const cs = document.createElement("div"); cs.className = "v2-section"; bodyHost.appendChild(cs);
+        const ch = document.createElement("h2"); ch.className = "v2-section-title"; ch.textContent = "Constituents"; cs.appendChild(ch);
+        const cols = m.constituentColumns || ["Component", "Amount"];
+        renderTable(cs, {
+          columns: cols,
+          emptyMsg: "No constituent positions under this lens — no money-market events booked in the build phase.",
+          rows: (m.constituents || []).map((r) => ({
+            cells: r.cells.map((c, i) => i === r.cells.length - 1 ? `<strong>${v2Esc(c)}</strong>` : v2Esc(c)),
+          })),
+        });
+
+        renderRefs(bodyHost, {
+          refs: [
+            { label: "Regs Relating to Banks — Reg 26 / 26A (liquidity)", href: "/v2/compliance/reader.html?slug=regulations-relating-to-banks" },
+            { label: "BCBS Basel III — LCR / NSFR standards", href: "/v2/compliance/reader.html?slug=bcbs-basel-iii" },
+            { label: `${SURFACE.parentLabel} (back to surface)`, href: SURFACE.parentHref },
+          ],
+        });
+      });
+    }
+  </script>
+</body>
+</html>

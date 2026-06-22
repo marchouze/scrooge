@@ -116,7 +116,7 @@
           { cells: ["Capital headroom", v2Esc(d.headroomFmt)] },
           { cells: ["Total RWA (denominator)", v2Esc(d.totalRwaFmt)] },
           { cells: ["Functional currency", v2Esc(d.functionalCurrency)] },
-          { cells: ["Source posture", d.buildPhase ? "Build-phase baseline (no live capital events)" : "Live capital events"] },
+          { cells: ["Source posture", v2Esc(d.sourcePosture)] },
         ],
       });
       ratioHost.appendChild(ctx);

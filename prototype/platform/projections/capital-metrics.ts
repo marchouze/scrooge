@@ -42,6 +42,12 @@ import { type Money, minor } from "../core/money";
 import { ZAR } from "../core/types";
 import type { EventStore } from "../event-store/store";
 import { readFilInstanceEvents } from "../risk/sa-ccr/fil-instance-positions";
+import {
+  type ProvenanceFilter,
+  defaultProvenanceFilter,
+  eventMatchesProvenanceFilter,
+  provenanceFilterDigest,
+} from "./filter";
 import { readWithOutputSnapshot } from "./output-snapshot-cache";
 import { computeRwaFromPositions } from "./rwa-from-positions";
 
@@ -137,7 +143,10 @@ interface CapitalEventPayload {
  * Returns null when the store contains no CapitalEvent events —
  * the caller falls back to the build-phase baseline in that case.
  */
-function readLiveCapitalPosition(eventStore: EventStore): {
+function readLiveCapitalPosition(
+  eventStore: EventStore,
+  filter: ProvenanceFilter,
+): {
   availableCapitalMinor: number;
   accruedChargesMinor: number;
 } | null {
@@ -146,6 +155,13 @@ function readLiveCapitalPosition(eventStore: EventStore): {
   let hasEvents = false;
 
   for (const e of eventStore.replay({ type: "CapitalEvent" })) {
+    // Provenance lens (D-V2-UI-VISIBILITY-REMEDIATION gap #1): the R300m
+    // demonstration injection is a `provenance:simulated` CapitalEvent. Under
+    // `production-only` it is excluded — so the metrics no longer read green off
+    // the simulated baseline; they reflect the honest empty production state,
+    // consistent with the empty BA-700 composition fold. Under the default
+    // operating-book lens (build phase) the injection is admitted (unchanged).
+    if (!eventMatchesProvenanceFilter(e, filter)) continue;
     const p = (e.payload ?? {}) as CapitalEventPayload;
     const kind = p.capitalEventKind;
     const amount = p.amount ?? 0;
@@ -224,8 +240,18 @@ function formatPct(ratio: number): string {
  *
  * @param eventStore  - the singleton event store from `platform/composition`.
  * @param asOf        - ISO 8601 run timestamp.
+ * @param filter      - provenance lens (default = operating-book, so existing
+ *                      callers are unchanged). Under `production-only` the
+ *                      simulated R300m injection is excluded AND the ICAAP
+ *                      build-phase baseline is suppressed, so the ratios /
+ *                      headroom reflect the honest empty production state
+ *                      (gap #1, D-V2-UI-VISIBILITY-REMEDIATION).
  */
-export function computeCapitalMetrics(eventStore: EventStore, asOf: string): CapitalMetrics {
+export function computeCapitalMetrics(
+  eventStore: EventStore,
+  asOf: string,
+  filter: ProvenanceFilter = defaultProvenanceFilter(),
+): CapitalMetrics {
   // D-PROJECTION-SNAPSHOT-ADOPTION — read through the byte-identical
   // output-snapshot cache. `computeCapitalMetricsUncached` (below) is the
   // unchanged composite (live-capital fold + RWA-from-positions). RWA folds
@@ -240,11 +266,16 @@ export function computeCapitalMetrics(eventStore: EventStore, asOf: string): Cap
     .update(JSON.stringify(filEvents))
     .digest("hex")
     .slice(0, 16);
+  // The provenance filter is part of the result identity (different lenses
+  // produce different available-capital / RWA / status), so its structural
+  // digest rides in the snapshot stream key — a Prod read never serves a
+  // +Sim-cached value and vice-versa.
+  const provDigest = provenanceFilterDigest(filter);
   const { output } = readWithOutputSnapshot<CapitalMetrics>({
     store: eventStore,
-    streamKey: `capital-metrics:fil=${filDigest}`,
+    streamKey: `capital-metrics:fil=${filDigest}:prov=${provDigest}`,
     asOf,
-    compute: () => computeCapitalMetricsUncached(eventStore, asOf, filEvents),
+    compute: () => computeCapitalMetricsUncached(eventStore, asOf, filEvents, filter),
     encode: (o) => JSON.stringify(o),
     decode: (p) => JSON.parse(p) as CapitalMetrics,
   });
@@ -262,8 +293,19 @@ export function computeCapitalMetricsUncached(
   eventStore: EventStore,
   asOf: string,
   filInstanceEvents = readFilInstanceEvents(),
+  filter: ProvenanceFilter = defaultProvenanceFilter(),
 ): CapitalMetrics {
-  const live = readLiveCapitalPosition(eventStore);
+  const live = readLiveCapitalPosition(eventStore, filter);
+
+  // `production-only` is the strict production lens: no real capital exists in
+  // the build phase (the R300m is a simulated demonstration injection, excluded
+  // above). Under this lens the ICAAP build-phase baseline is NOT applied —
+  // applying it would read green off a baseline the production book does not
+  // hold, the exact inconsistency gap #1 names. We instead return the honest
+  // empty production position (R0 available capital), consistent with the empty
+  // BA-700 composition fold. The default operating-book lens keeps the existing
+  // build-phase baseline behaviour (unchanged for every legacy caller).
+  const strictProduction = filter.mode === "production-only";
 
   let availableCapitalMinor: number;
   let accruedChargesMinor: number;
@@ -271,16 +313,28 @@ export function computeCapitalMetricsUncached(
   let buildPhase: boolean;
 
   // Live RWA from booked positions (D-RWA-LIVE-POSITIONS-PROJECTION-V1).
-  // Falls back to the ICAAP v1 constant when the store has no trade events.
-  const rwaResult = computeRwaFromPositions(eventStore, asOf, undefined, filInstanceEvents);
+  // Falls back to the ICAAP v1 constant when the store has no trade events —
+  // EXCEPT under the strict-production lens, where the fallback is suppressed
+  // (an empty production book has no RWA baseline either).
+  const rwaResult = computeRwaFromPositions(eventStore, asOf, filter, filInstanceEvents);
   const liveRwaMinor = rwaResult.buildPhaseFallback
-    ? BUILD_PHASE_TOTAL_RWA_MINOR
+    ? strictProduction
+      ? 0
+      : BUILD_PHASE_TOTAL_RWA_MINOR
     : rwaResult.output.totalRwaMinor;
 
   if (live !== null) {
     // Live mode: capital position from event store
     availableCapitalMinor = live.availableCapitalMinor;
     accruedChargesMinor = live.accruedChargesMinor;
+    totalRwaMinor = liveRwaMinor;
+    buildPhase = false;
+  } else if (strictProduction) {
+    // Strict production, no real capital events: honest empty state (no ICAAP
+    // baseline). Ratios → n/a (0 RWA), headroom → −TICR (red/critical), which
+    // is consistent with the empty composition the capital page shows under Prod.
+    availableCapitalMinor = 0;
+    accruedChargesMinor = 0;
     totalRwaMinor = liveRwaMinor;
     buildPhase = false;
   } else {
@@ -293,8 +347,16 @@ export function computeCapitalMetricsUncached(
 
   const headroomMinor = availableCapitalMinor - TICR_MINOR - accruedChargesMinor;
   const headroomZar = headroomMinor / 100;
+  // Ratio honesty: a zero numerator is a real 0% (no capital), NOT infinity —
+  // infinity is reserved for "capital present, no RWA denominator yet". Under
+  // the strict-production empty state (available = 0, RWA = 0) this yields a
+  // truthful 0% rather than a spurious ∞.
   const cet1Ratio =
-    totalRwaMinor > 0 ? availableCapitalMinor / totalRwaMinor : Number.POSITIVE_INFINITY;
+    totalRwaMinor > 0
+      ? availableCapitalMinor / totalRwaMinor
+      : availableCapitalMinor === 0
+        ? 0
+        : Number.POSITIVE_INFINITY;
   const cet1RatioPct = formatPct(cet1Ratio);
   const { status, critical } = computeStatus(headroomMinor);
 

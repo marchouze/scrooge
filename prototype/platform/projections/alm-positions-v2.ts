@@ -66,7 +66,12 @@ import { platformFunctionalCurrencyLookup } from "../identity/functional-currenc
 import type { FundingPosition, HQLAPosition } from "../liquidity/lcr";
 import type { ASFItem, RSFItem } from "../liquidity/nsfr";
 import { computeCapitalMetrics } from "./capital-metrics";
-import { eventInOperatingBook, operatingBookFilter } from "./filter";
+import {
+  type ProvenanceFilter,
+  eventInOperatingBook,
+  operatingBookFilter,
+  provenanceFilterDigest,
+} from "./filter";
 import { readWithOutputSnapshot } from "./output-snapshot-cache";
 
 // Re-export the V1 snapshot type — the V2 projection produces the IDENTICAL
@@ -144,16 +149,21 @@ export function getALMPositionSnapshotV2(
   asOf: string,
   horizonDays: number,
   entity?: string,
+  capitalFilter?: ProvenanceFilter,
 ): ALMPositionSnapshot {
   // Output-snapshot cache, keyed identically to the V1 projection (entity +
   // horizon + operating-book provenance digest) plus a `:v2` discriminant so the
-  // V1 and V2 cache rows never collide.
+  // V1 and V2 cache rows never collide. The Tier-1-capital ASF read is the only
+  // provenance-sensitive input (the money-market fold is operating-book), so the
+  // capital filter's digest rides in the stream key when it narrows the default.
+  const capFilter = capitalFilter ?? operatingBookFilter();
+  const capDigest = provenanceFilterDigest(capFilter);
   const { output } = readWithOutputSnapshot<ALMPositionSnapshot>({
     store: eventStore,
-    streamKey: `alm-positions-v2:${entity ?? "store-wide"}:h${horizonDays}`,
+    streamKey: `alm-positions-v2:${entity ?? "store-wide"}:h${horizonDays}:cap=${capDigest}`,
     asOf,
     provenanceFilter: operatingBookFilter(),
-    compute: () => computeALMPositionSnapshotV2(eventStore, asOf, horizonDays, entity),
+    compute: () => computeALMPositionSnapshotV2(eventStore, asOf, horizonDays, entity, capFilter),
     encode: (o) => JSON.stringify(o),
     decode: (p) => JSON.parse(p) as ALMPositionSnapshot,
   });
@@ -169,6 +179,7 @@ export function computeALMPositionSnapshotV2(
   asOf: string,
   horizonDays: number,
   entity?: string,
+  capitalFilter?: ProvenanceFilter,
 ): ALMPositionSnapshot {
   const reporting = resolveSnapshotReportingCurrency(entity);
   const store = v2LiveFlowView(eventStore, entity);
@@ -290,7 +301,12 @@ export function computeALMPositionSnapshotV2(
   const asfItems: ASFItem[] = [];
   const asOfDate = new Date(asOf);
 
-  const capitalMetrics = computeCapitalMetrics(eventStore, asOf);
+  // The Tier-1 ASF read honours the supplied capital provenance lens. Under
+  // `production-only` the simulated R300m injection (and the ICAAP build-phase
+  // baseline) are excluded, so a Prod-toggled treasury surface does not show a
+  // simulated capital ASF as production data. Default = operating-book (legacy
+  // callers unchanged). Authority: D-V2-UI-VISIBILITY-REMEDIATION gap #1.
+  const capitalMetrics = computeCapitalMetrics(eventStore, asOf, capitalFilter);
   const tier1 = capitalMetrics.availableCapitalMinor / 100;
   if (tier1 > 0) asfItems.push({ amountZar: tier1, category: "tier1-capital" });
 

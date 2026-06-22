@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/v2/_v2-tile.css">
   <link rel="stylesheet" href="/provenance-badge.css">
 </head>
-<body data-provenance-content="none">
+<body data-provenance-source="/api/v2/treasury/alm">
   <header class="v2-header">
     <div class="v2-header-left">
       <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
@@ -19,6 +19,7 @@
         <button class="v2-prov-btn" data-mode="prod">Prod</button>
         <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
       </div>
+      <span data-provenance-badge="page-top"></span>
       <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
       <span class="v2-as-of" id="as-of">—</span>
     </div>
@@ -30,32 +31,105 @@
   <script src="/v2/_v2-shell.js"></script>
   <script src="/provenance-badge.js"></script>
   <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
   <script>
     const main = document.getElementById("v2-main");
     renderPageHeader(main, {
-      crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Treasury", href: "/v2/treasury/index.html" }, { label: "ALM Positions" }],
-      title: "ALM Positions",
-      seat: "Asset/Liability Management",
-    });
-    renderTileGroup(main, {
-      tiles: [
-        { label: "Total Assets", unit: "ZAR" },
-        { label: "Total Liabilities", unit: "ZAR" },
-        { label: "Net Funding Gap", unit: "Assets − Liabilities (ZAR)" },
-        { label: "Tenor Buckets", unit: "Count of maturity bands" },
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Treasury", href: "/v2/treasury/index.html" },
+        { label: "ALM Positions" },
       ],
+      title: "Asset-Liability Management — Positions",
+      seat: "HQLA / funding / ASF / RSF positions · operating-book ALM snapshot",
     });
-    const s = document.createElement("div"); s.className = "v2-section"; main.appendChild(s);
-    const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "Asset/Liability Ladder"; s.appendChild(h);
-    renderTable(s, { columns: ["Tenor Bucket", "Assets (ZAR)", "Liabilities (ZAR)", "Net Gap (ZAR)", "Cumulative Gap (ZAR)"] });
-    const s2 = document.createElement("div"); s2.className = "v2-section"; main.appendChild(s2);
-    const h2 = document.createElement("h2"); h2.className = "v2-section-title"; h2.textContent = "Positions by Instrument Type"; s2.appendChild(h2);
-    renderTable(s2, { columns: ["Type", "Instrument", "Notional (ZAR)", "Maturity", "Side"] });
-    renderRefs(main, {
-      refs: [
-        { label: "Banks Act Reg 26 — Liquidity Risk Management", href: "#" },
-        { label: "ALM V2 projection (getALMPositionSnapshotV2)", href: "#" },
-      ],
+
+    const stateHost = document.createElement("div"); main.appendChild(stateHost);
+    const tilesHost = document.createElement("div"); main.appendChild(tilesHost);
+    const groupHost = document.createElement("div"); main.appendChild(groupHost);
+    const hqlaHost = document.createElement("div"); main.appendChild(hqlaHost);
+    const fundingHost = document.createElement("div"); main.appendChild(fundingHost);
+    const asfHost = document.createElement("div"); main.appendChild(asfHost);
+    const rsfHost = document.createElement("div"); main.appendChild(rsfHost);
+    const gapsHost = document.createElement("div"); main.appendChild(gapsHost);
+    const refsHost = document.createElement("div"); main.appendChild(refsHost);
+
+    const positionTable = (host, title, columns, rows, emptyMsg) => {
+      const s = document.createElement("div"); s.className = "v2-section"; host.appendChild(s);
+      const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = title; s.appendChild(h);
+      renderTable(s, {
+        columns,
+        emptyMsg,
+        rows: rows.map((r) => ({ cells: r.cells.map((c, i) => i === r.cells.length - 1 ? `<strong>${v2Esc(c)}</strong>` : v2Esc(c)) })),
+      });
+    };
+
+    v2WireLoader(async () => {
+      stateHost.replaceChildren(); tilesHost.replaceChildren(); groupHost.replaceChildren();
+      hqlaHost.replaceChildren(); fundingHost.replaceChildren();
+      asfHost.replaceChildren(); rsfHost.replaceChildren();
+      gapsHost.replaceChildren(); refsHost.replaceChildren();
+      let d;
+      try {
+        d = await v2Fetch("/api/v2/treasury/alm");
+      } catch (err) {
+        v2RenderError(stateHost, v2Esc(err.message));
+        return;
+      }
+      document.getElementById("as-of").textContent = `as of ${new Date(d.asOf).toLocaleString()}`;
+
+      if (d.dataState === "empty") {
+        const banner = document.createElement("div");
+        banner.className = "v2-section";
+        banner.innerHTML = `
+          <div class="v2-empty">
+            <div class="v2-empty-icon">○</div>
+            <div class="v2-empty-msg"><strong>No ALM positions under this lens.</strong><br>${v2Esc(d.reason)}</div>
+          </div>`;
+        stateHost.appendChild(banner);
+      }
+
+      // Position-class tiles (HQLA / funding / ASF / RSF totals + counts).
+      renderTileGroup(tilesHost, {
+        tiles: d.tiles.map((t) => ({ label: t.label, value: t.valueFmt, unit: t.unit })),
+      });
+
+      // Positions-by-type summary table.
+      const gs = document.createElement("div"); gs.className = "v2-section"; groupHost.appendChild(gs);
+      const gh = document.createElement("h2"); gh.className = "v2-section-title"; gh.textContent = "Positions by type"; gs.appendChild(gh);
+      renderTable(gs, {
+        columns: ["Position class", "Count", "Total"],
+        emptyMsg: "No ALM position classes under this lens.",
+        rows: d.groups.map((g) => ({ cells: [v2Esc(g.label), String(g.count), `<strong>${v2Esc(g.totalFmt)}</strong>`] })),
+      });
+
+      positionTable(hqlaHost, "HQLA positions (LCR numerator)", ["HQLA tier", "Amount"], d.hqlaConstituents,
+        "No HQLA positions under this lens — no money-market HQLA events booked in the build phase.");
+      positionTable(fundingHost, "Funding positions (LCR denominator)", ["Category", "Amount"], d.fundingConstituents,
+        "No funding positions under this lens — no money-market funding events booked in the build phase.");
+      positionTable(asfHost, "ASF items (NSFR numerator)", ["ASF category", "Amount"], d.asfConstituents,
+        "No ASF items under this lens — no stable-funding events booked in the build phase.");
+      positionTable(rsfHost, "RSF items (NSFR denominator)", ["RSF category", "Amount"], d.rsfConstituents,
+        "No RSF items under this lens — no required-stable-funding items booked in the build phase.");
+
+      // Substrate gaps — named, never hidden (no silent gaps).
+      if (Array.isArray(d.gaps) && d.gaps.length > 0) {
+        const gp = document.createElement("div"); gp.className = "v2-section"; gapsHost.appendChild(gp);
+        const gph = document.createElement("h2"); gph.className = "v2-section-title"; gph.textContent = "Substrate gaps"; gp.appendChild(gph);
+        renderTable(gp, {
+          columns: ["Gap (event class not yet wired / no events)"],
+          rows: d.gaps.map((g) => ({ cells: [v2Esc(g)] })),
+        });
+      }
+
+      renderRefs(refsHost, {
+        refs: [
+          { label: "LCR (consumes these HQLA / funding positions)", href: "/v2/treasury/lcr.html" },
+          { label: "NSFR (consumes these ASF / RSF items)", href: "/v2/treasury/nsfr.html" },
+          { label: "Regs Relating to Banks — Reg 26 / 26A (liquidity)", href: "/v2/compliance/reader.html?slug=regulations-relating-to-banks" },
+          { label: "ALM position event schema", href: "/v2/operations/schemas.html" },
+        ],
+      });
     });
   </script>
 </body>

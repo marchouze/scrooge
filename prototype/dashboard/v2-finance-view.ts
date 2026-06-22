@@ -21,13 +21,16 @@
 //     are admitted (the +Sim lens) and is correctly absent under Prod.
 //   - Capital-adequacy ratios + headroom + RAS status → `computeCapitalMetrics`
 //     (platform/projections/capital-metrics.ts) — provides the RWA denominator
-//     and the RAS §B3 appetite status. NOTE: that projection has its OWN
-//     build-phase baseline (it returns R300m available capital + build-phase
-//     RWA when no live CapitalEvent/positions exist); it is NOT provenance-
-//     filtered. So this view uses it for the RWA denominator + status context,
-//     but drives the visible OWN-FUNDS numbers (and the ratio numerator) from
-//     the provenance-correct COMPOSITION fold, so the Prod lens shows the honest
-//     empty/zero-with-reason state rather than the metrics baseline.
+//     and the RAS §B3 appetite status. As of slice 3 (D-V2-UI-VISIBILITY-
+//     REMEDIATION gap #1) it is PROVENANCE-AWARE: the SAME `filter` drives it, so
+//     under Prod the simulated R300m injection is excluded AND its ICAAP build-
+//     phase baseline is suppressed (an empty production book has no capital and
+//     no RWA baseline) — the ratios / headroom / status reflect the honest empty
+//     production state, consistent with the empty COMPOSITION fold. Under +Sim
+//     the injection + the build-phase RWA baseline show. This view still drives
+//     the visible OWN-FUNDS numbers (and the ratio numerator) from the
+//     provenance-correct COMPOSITION fold; the metrics give the denominator +
+//     status context under the matching lens.
 //
 // PROVENANCE: the provenance filter mode → `includeSimulated` for the
 // composition fold. `production-only` ⇒ exclude simulated ⇒ empty composition
@@ -145,6 +148,12 @@ export interface CapitalView {
   readonly reason: string;
   /** Whether the capital-metrics projection is on its build-phase baseline. */
   readonly buildPhase: boolean;
+  /**
+   * Honest one-line description of where the served ratio context comes from
+   * under the active lens. Replaces the page's `buildPhase ? … : …` inference,
+   * which mislabels the strict-production empty state as "live" (gap #1).
+   */
+  readonly sourcePosture: string;
   /** Headline metric tiles (each drills to its `CapitalMetricDetail`). */
   readonly tiles: readonly CapitalMetricTile[];
   /** Per-metric decomposition (formula + constituents) keyed by metric key. */
@@ -275,11 +284,29 @@ export function buildCapitalView(args: BuildCapitalViewArgs): CapitalView {
     filter,
   });
 
-  // Capital-adequacy ratios + RWA denominator + RAS status. This projection is
-  // NOT provenance-filtered and falls back to its own build-phase baseline; we
-  // use it ONLY for the RWA denominator + status context. The visible own-funds
-  // figures and the ratio NUMERATOR come from the provenance-correct fold above.
-  const metrics = computeCapitalMetrics(eventStore, asOf);
+  // Capital-adequacy ratios + RWA denominator + RAS status. As of slice 3
+  // (D-V2-UI-VISIBILITY-REMEDIATION gap #1) this projection is PROVENANCE-AWARE:
+  // the SAME `filter` drives it, so under Prod the simulated R300m injection is
+  // excluded AND the ICAAP build-phase baseline is suppressed — the ratios /
+  // headroom / RAS status reflect the honest empty production book, consistent
+  // with the empty composition fold. Under +Sim the injection + baseline RWA
+  // show. We still drive the visible own-funds NUMBERS and the ratio NUMERATOR
+  // from the composition fold above; the metrics give the RWA denominator +
+  // status context under the matching lens.
+  const metrics = computeCapitalMetrics(eventStore, asOf, filter);
+
+  // Honest source-posture line under the active lens (gap #1): the strict-
+  // production empty state is NOT "live capital events" — it is an empty
+  // production book with no ICAAP baseline applied.
+  const sourcePosture = metrics.buildPhase
+    ? "Build-phase baseline (ICAAP v1 — no live capital events)"
+    : includeSimulated
+      ? metrics.availableCapitalMinor > 0
+        ? "+ Sim lens — simulated capital injection + build-phase RWA baseline"
+        : "+ Sim lens — no capital events folded"
+      : metrics.availableCapitalMinor > 0
+        ? "Live capital events (production)"
+        : "Empty production book — no real capital (ICAAP baseline suppressed under Prod)";
 
   const compositionRows = composition.lines.map((l) => toCompositionRow(l, functionalCurrency));
   const dataState: CapitalDataState = composition.legCount > 0 ? "live" : "empty";
@@ -410,6 +437,7 @@ export function buildCapitalView(args: BuildCapitalViewArgs): CapitalView {
     dataState,
     reason,
     buildPhase: metrics.buildPhase,
+    sourcePosture,
     tiles,
     metrics: metricDetails,
     composition: compositionRows,

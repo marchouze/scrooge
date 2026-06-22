@@ -359,3 +359,84 @@ describe("capital-metrics — non-ZAR events ignored", () => {
     expect(m.availableCapitalMinor).toBe(30_000_000_000);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Gap #1 (D-V2-UI-VISIBILITY-REMEDIATION) — provenance-aware capital metrics.
+//
+// The R300m demonstration injection is a `provenance:simulated` CapitalEvent.
+// Under `production-only` it must be excluded AND the ICAAP build-phase baseline
+// suppressed, so the ratios / headroom reflect the honest empty production book
+// (consistent with the empty BA-700 composition fold). Under `combined` (+Sim)
+// the injection is admitted. The default (operating-book in build phase) admits
+// it too, so legacy callers are unchanged.
+// ---------------------------------------------------------------------------
+
+function appendSimulatedCapitalEvent(store: EventStore, amountMinor: number): void {
+  store.append({
+    event_id: newEventId(),
+    type: "CapitalEvent",
+    as_of: AS_OF,
+    entity: "LE-ZA-HOZ-BANK",
+    actor: ACTOR,
+    citations: CITATIONS,
+    provenance: {
+      kind: "simulated",
+      scenario: "capital-injection-test",
+      sourceLineage: "tests/capital-metrics.test.ts",
+    },
+    payload: {
+      eventId: newEventId(),
+      capitalEventKind: "equity-issuance",
+      amount: amountMinor,
+      currency: "ZAR",
+      effectiveDate: AS_OF,
+    },
+  });
+}
+
+describe("capital-metrics — provenance-aware (gap #1)", () => {
+  it("production-only excludes the simulated injection AND suppresses the ICAAP baseline → honest empty (R0)", () => {
+    const store = new EventStore(":memory:");
+    appendSimulatedCapitalEvent(store, 30_000_000_000); // R300m simulated
+
+    const m = computeCapitalMetrics(store, AS_OF, { mode: "production-only" });
+    // No real capital, no ICAAP baseline applied under the strict lens.
+    expect(m.availableCapitalMinor).toBe(0);
+    expect(m.totalRwaMinor).toBe(0);
+    // headroom = 0 − TICR → negative, below TICR → red + critical.
+    expect(m.headroomMinor).toBe(-TICR_MINOR);
+    expect(m.status).toBe("red");
+    expect(m.critical).toBe(true);
+    // Zero numerator → honest 0% ratio, never ∞.
+    expect(m.cet1Ratio).toBe(0);
+  });
+
+  it("combined (+Sim) admits the simulated injection → R300m available + build-phase RWA baseline", () => {
+    const store = new EventStore(":memory:");
+    appendSimulatedCapitalEvent(store, 30_000_000_000);
+
+    const m = computeCapitalMetrics(store, AS_OF, { mode: "combined" });
+    expect(m.availableCapitalMinor).toBe(30_000_000_000);
+    expect(m.totalRwaMinor).toBe(BUILD_PHASE_TOTAL_RWA_MINOR);
+    expect(m.status).toBe("green");
+    expect(m.critical).toBe(false);
+  });
+
+  it("empty store under production-only → honest empty (no ICAAP baseline)", () => {
+    const store = new EventStore(":memory:");
+    const m = computeCapitalMetrics(store, AS_OF, { mode: "production-only" });
+    expect(m.availableCapitalMinor).toBe(0);
+    expect(m.totalRwaMinor).toBe(0);
+    expect(m.status).toBe("red");
+    expect(m.critical).toBe(true);
+  });
+
+  it("default filter is unchanged for legacy callers (build-phase operating-book admits simulated)", () => {
+    const store = new EventStore(":memory:");
+    appendSimulatedCapitalEvent(store, 30_000_000_000);
+    // No explicit filter → operating-book default (override set to combined in
+    // this suite's beforeEach, mirroring legacy build-phase behaviour).
+    const m = computeCapitalMetrics(store, AS_OF);
+    expect(m.availableCapitalMinor).toBe(30_000_000_000);
+  });
+});
