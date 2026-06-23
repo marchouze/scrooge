@@ -13,4 +13,5 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 export * from "./events";
+export * from "./legal-entity";
 export * from "./projection";

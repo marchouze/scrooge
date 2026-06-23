@@ -234,6 +234,7 @@ import { runAgent } from "../runtime/run";
 import { getSeedManifestEntry } from "../seeds/manifest";
 import { buildSeedsView } from "../seeds/seeds-view";
 import { type AppliesToScope, appliesToScopeSchema } from "../v2-core/posture";
+import { CANONICAL_LEGAL_ENTITY_ID } from "../v2-core/reference-data/legal-entity";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { ownerSeatTitle, redactAgentNames } from "./agent-title";
 import {
@@ -2600,7 +2601,7 @@ async function handleSeedDescope(req: Request): Promise<Response> {
   try {
     const evt = makeSeedDescoped({
       asOf: nowUtc(),
-      entity: "LE-BANK-SA",
+      entity: CANONICAL_LEGAL_ENTITY_ID,
       actor: { type: "human", id: actorId },
       citations: ["D-TRUSTED-FIGURES-PROGRAM-V1"],
       payload: { seedId, reason },
@@ -2657,7 +2658,7 @@ async function handleSeedPromote(req: Request): Promise<Response> {
   try {
     const evt = makeSeedPromotedToSimulated({
       asOf: nowUtc(),
-      entity: "LE-BANK-SA",
+      entity: CANONICAL_LEGAL_ENTITY_ID,
       actor: { type: "human", id: actorId },
       citations: ["D-TRUSTED-FIGURES-PROGRAM-V1"],
       payload: { seedId, replacementEventIds, note },

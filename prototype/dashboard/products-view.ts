@@ -29,6 +29,7 @@ import {
 import type { EventStore } from "../platform/event-store/store";
 import type { Product } from "../platform/markets/products";
 import { normaliseDimensionKey } from "../platform/markets/products/dimension-key-alias";
+import { CANONICAL_LEGAL_ENTITY_ID } from "../v2-core/reference-data/legal-entity";
 import {
   M1_JSE_EQUITY_CASH_FIXTURE,
   M2_SAGB_FIXED_COUPON_FIXTURE,
@@ -477,7 +478,7 @@ function synthesiseProductFromProposal(p: ProposalRecord): Product {
     name: p.name,
     description: p.description,
     franchiseScope: "institutional",
-    legalEntityId: "LE-BANK-SA",
+    legalEntityId: CANONICAL_LEGAL_ENTITY_ID,
     currency: p.currency,
     jurisdiction: p.jurisdiction,
     cdmComposition: {

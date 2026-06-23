@@ -19,7 +19,9 @@ import { resolve as resolvePath } from "node:path";
 import {
   POSTING_RULE_REGISTRY,
   type PostingRuleEntry,
+  findEntriesForEventType,
 } from "../platform/accounting/posting-rule-registry";
+import { lookupEventType } from "../platform/event-store/registry";
 import type { EventStore } from "../platform/event-store/store";
 import type { Product } from "../platform/markets/products";
 import {
@@ -432,104 +434,70 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Posting-rule index — static metadata mapping product-lifecycle event types
-// to the implementing posting-rule module + Dr/Cr leg shapes. Mirrors
-// platform/accounting/posting-rules/* without invoking them (which requires
-// runtime trade inputs). "Missing" rows surface as substrate gaps on the page.
+// Posting-rule summary — a per-lifecycle-event view derived from the CANONICAL
+// posting-rule registry (v2-core/posting-rules/registry.ts, re-exported via
+// platform/accounting/posting-rule-registry.ts). The static, hand-maintained
+// POSTING_RULE_INDEX that previously lived here was deleted under
+// D-NPA-PAGE-DE-INVENTION: it invented rule ids + module paths (e.g.
+// EquityTradeBooked → PR-EQ-001) that did not match the registry, so the
+// journal table and the Accounting-treatment section disagreed. Both now read
+// the one registry. A lifecycle event with no registry entry surfaces as a
+// `missing` substrate gap — fail-closed honesty, never a fabricated row.
 // ---------------------------------------------------------------------------
 
 export interface PostingRuleSummary {
-  /** Stable rule ID (e.g. "PR-FX-001"). */
+  /** Stable rule ID (e.g. "PR-FX-001") — registry `postingRuleId`. */
   ruleId: string;
-  /** Module path the rule lives in. */
+  /** Canonical registry module the rule is sourced from. */
   module: string;
-  /** Human-readable legs description — pulled from the rule's docstring. */
+  /** Human-readable legs / treatment description — registry `conditionDetail`. */
   legs: string;
+  /** Where in the lifecycle the trigger sits (registry `lifecycleStage`). */
+  lifecycleStage: PostingRuleEntry["lifecycleStage"];
+  /** When a posting is expected (registry `condition`). */
+  condition: PostingRuleEntry["condition"];
 }
 
-const POSTING_RULE_INDEX: Record<string, PostingRuleSummary> = {
-  // FX
-  FxTradeExecuted: {
-    ruleId: "PR-FX-001",
-    module: "platform/accounting/sla/rules/pr-fx-001.ts",
-    legs: "Dr FX Trading Receivable (bought ccy) · Cr FX Trading Payable (sold ccy). Balances per currency.",
-  },
-  FxPositionRevalued: {
-    ruleId: "PR-FX-002",
-    module: "platform/accounting/sla/rules/pr-fx-002.ts",
-    legs: "Dr/Cr Unrealised FX P&L (FVTPL) · Cr/Dr FX Trading Receivable revaluation. Daily mark.",
-  },
-  TradeMatured: {
-    ruleId: "PR-FX-003",
-    module: "platform/accounting/posting-rules/fx-spot.ts",
-    legs: "DEPRECATED 2026-05-20 — production lifecycle never emitted this event. Superseded by PR-FX-PRIN (per-leg cash) + PR-FX-LIFECYCLE-CLOSE (realised P&L). Kept for back-compat with legacy test fixtures.",
-  },
-  FxSettlementInstructed: {
-    ruleId: "PR-FX-INSTRUCT",
-    module: "platform/accounting/sla/rules/pr-fx-memo.ts",
-    legs: "Memorandum — instruction issued (MT202 / pacs.009); no cash moved, no GL impact.",
-  },
-  PrincipalPayment: {
-    ruleId: "PR-FX-PRIN",
-    module: "platform/accounting/sla/rules/pr-fx-prin.ts",
-    legs: "Dr Nostro / Cr FX Receivable (receive leg); Dr FX Payable / Cr Nostro (deliver leg). Per-leg cash at correspondent confirmation.",
-  },
-  SettlementConfirmed: {
-    ruleId: "PR-FX-LIFECYCLE-CLOSE",
-    module: "platform/accounting/sla/rules/pr-fx-lifecycle-close.ts",
-    legs: "Realised FX P&L residual: Dr Nostro ZAR / Cr Realised FX P&L (gain); Dr Realised FX P&L / Cr Nostro ZAR (loss). Closes the trade.",
-  },
-  TradeReportSubmitted: {
-    ruleId: "PR-FX-REGREPORT",
-    module: "platform/accounting/sla/rules/pr-fx-memo.ts",
-    legs: "Memorandum — regulatory dispatch (SARB FinSurv / DTCC); no GL impact.",
-  },
-  // Equities
-  EquityTradeBooked: {
-    ruleId: "PR-EQ-001",
-    module: "platform/accounting/sla/rules/pr-equity.ts",
-    legs: "Dr Equity Trading Asset (FVTPL) · Cr Equity Trading Settlement Payable. T+3 booking.",
-  },
-  EquitySettlementInstructed: {
-    ruleId: "PR-EQ-003",
-    module: "platform/accounting/sla/rules/pr-equity.ts",
-    legs: "Dr Equity Trading Settlement Payable · Cr Nostro (cash leg). Settlement on T+3.",
-  },
-  EquityCorporateActionApplied: {
-    ruleId: "PR-EQ-CA",
-    module: "platform/accounting/sla/rules/pr-equity.ts",
-    legs: "Varies by action type: dividend (Dr Cash Receivable / Cr P&L), stock split (memo only).",
-  },
-  // Bonds
-  BondTradeBooked: {
-    ruleId: "PR-BOND-001",
-    module: "platform/accounting/sla/rules/pr-bond.ts",
-    legs: "Dr Bond Asset (FVOCI for banking book; FVTPL for trading) · Cr Trading Settlement Payable.",
-  },
-  BondCouponPaid: {
-    ruleId: "PR-BOND-EIR",
-    module: "platform/accounting/sla/rules/pr-bond.ts",
-    legs: "Dr Cash · Cr Interest Income (EIR for amortised cost; coupon for trading).",
-  },
-  BondRedeemed: {
-    ruleId: "PR-BOND-MAT",
-    module: "platform/accounting/sla/rules/pr-bond.ts",
-    legs: "Dr Cash (redemption proceeds) · Cr Bond Asset (carrying amount).",
-  },
-  BondSettlementInstructed: {
-    ruleId: "PR-BOND-SETTLE",
-    module: "platform/accounting/sla/rules/pr-bond.ts",
-    legs: "Dr Trading Settlement Payable · Cr Nostro (cash leg). Settlement on T+3.",
-  },
-  // Lifecycle / lifecycle-shared events with no Bea posting rule today.
-  // Returned as "missing" by the lookup below.
-  // The four FX lifecycle gaps surfaced by Marc on 2026-05-20 (PR #608, Bea):
-  //   - PrincipalPayment            → PR-FX-PRIN          (GL-significant)
-  //   - SettlementConfirmed (CDM)   → PR-FX-LIFECYCLE-CLOSE (GL-significant)
-  //   - FxSettlementInstructed      → PR-FX-INSTRUCT      (memorandum)
-  //   - TradeReportSubmitted        → PR-FX-REGREPORT     (memorandum)
-  // are all registered above. PR-FX-003 is retained but deprecated.
-};
+/** Canonical home of the posting-rule registry — surfaced as each rule's module. */
+const POSTING_RULE_REGISTRY_MODULE = "v2-core/posting-rules/registry.ts";
+
+/**
+ * Names that do NOT resolve to a registered event type
+ * (platform/event-store/event-types/*). The page surfaces these as a flagged
+ * gap rather than asserting them silently. A registered event type returns
+ * metadata from `lookupEventType`; an unregistered name returns `undefined`.
+ */
+function unregisteredEventTypes(names: readonly string[]): string[] {
+  return names.filter((n) => lookupEventType(n) === undefined);
+}
+
+/**
+ * Build a `PostingRuleSummary` for the registry entry that best describes a
+ * lifecycle event. When several entries share a trigger event type (e.g. the
+ * three FX FIL-fold variants on `FilInstrumentTerminated`), the
+ * posting-bearing rules are preferred over `intentional-no-impact` memos, and
+ * their ids/legs are concatenated so the page reflects every real rule.
+ */
+function summariseRegistryEntries(entries: readonly PostingRuleEntry[]): PostingRuleSummary {
+  // Prefer the posting-bearing entries; fall back to memo entries if all are
+  // intentional-no-impact (still real, registered rules).
+  const posting = entries.filter((e) => e.condition !== "intentional-no-impact");
+  const chosen = posting.length > 0 ? posting : entries;
+  const ruleId = chosen.map((e) => e.postingRuleId).join(" · ");
+  const legs = chosen
+    .map((e) => (e.conditionDetail ? `${e.postingRuleId}: ${e.conditionDetail}` : e.postingRuleId))
+    .join("  |  ");
+  // lifecycleStage / condition are reported from the primary (first) chosen
+  // entry — they scope the recon assertion strength on the page.
+  const primary = chosen[0] as PostingRuleEntry;
+  return {
+    ruleId,
+    module: POSTING_RULE_REGISTRY_MODULE,
+    legs,
+    lifecycleStage: primary.lifecycleStage,
+    condition: primary.condition,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Public view types.
@@ -547,6 +515,19 @@ export interface DimensionCard {
   triggeredBy: readonly string[];
   /** Event types this dimension's substrate emits. */
   emits: readonly string[];
+  /**
+   * Names from `triggeredBy` / `emits` that do NOT resolve to a registered
+   * event type (platform/event-store/event-types/*). Surfaced as a flagged gap
+   * on the card rather than silently asserted — invented functionality is
+   * visible, never hidden (D-NPA-PAGE-DE-INVENTION; Engineering-Charter cmd 2,
+   * fail-closed; cmd 5, no silent deferral).
+   */
+  unbacked: {
+    /** Unregistered `triggeredBy` names. */
+    triggeredBy: readonly string[];
+    /** Unregistered `emits` names. */
+    emits: readonly string[];
+  };
   surfacesClientOnboarding: boolean;
   /** Latest ProductDimensionAttested for (productId, dimension). */
   attestation: {
@@ -1230,6 +1211,10 @@ export function buildProductDetailView(
       citationChain: meta.citationChain,
       triggeredBy: meta.triggeredBy,
       emits: meta.emits,
+      unbacked: {
+        triggeredBy: unregisteredEventTypes(meta.triggeredBy),
+        emits: unregisteredEventTypes(meta.emits),
+      },
       surfacesClientOnboarding: meta.surfacesClientOnboarding,
       attestation: att
         ? {
@@ -1255,8 +1240,10 @@ export function buildProductDetailView(
 
   const journalEntries: LifecycleEventJournalRow[] = product.lifecycleEventFamily.map(
     (eventType) => {
-      const rule = POSTING_RULE_INDEX[eventType];
-      if (rule) return { eventType, status: "present", rule };
+      const entries = findEntriesForEventType(eventType);
+      if (entries.length > 0) {
+        return { eventType, status: "present", rule: summariseRegistryEntries(entries) };
+      }
       return { eventType, status: "missing" };
     },
   );
