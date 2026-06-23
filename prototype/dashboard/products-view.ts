@@ -29,7 +29,6 @@ import {
 import type { EventStore } from "../platform/event-store/store";
 import type { Product } from "../platform/markets/products";
 import { normaliseDimensionKey } from "../platform/markets/products/dimension-key-alias";
-import { CANONICAL_LEGAL_ENTITY_ID } from "../v2-core/reference-data/legal-entity";
 import {
   M1_JSE_EQUITY_CASH_FIXTURE,
   M2_SAGB_FIXED_COUPON_FIXTURE,
@@ -44,6 +43,7 @@ import {
   ALL_NPA_DIMENSION_KEYS,
   buildProductRegisterView,
 } from "../platform/projections/products/product-register";
+import { CANONICAL_LEGAL_ENTITY_ID } from "../v2-core/reference-data/legal-entity";
 
 // ---------------------------------------------------------------------------
 // The 14 NPA dimensions — CANONICAL SHORT keys, identical to the
@@ -134,7 +134,7 @@ export interface ProductListView {
 // Baseline fixtures.
 // ---------------------------------------------------------------------------
 
-const BASELINE_FIXTURES: readonly Product[] = [
+export const BASELINE_FIXTURES: readonly Product[] = [
   M1_JSE_EQUITY_CASH_FIXTURE,
   M2_SAGB_FIXED_COUPON_FIXTURE,
   M4_FX_OTC_VANILLA_FIXTURE,

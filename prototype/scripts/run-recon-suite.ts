@@ -643,6 +643,14 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // ProductPostApprovalFinding must have a ProductDimensionRetrospectiveReview
     // within SLA. BLOCKING. No licence-day deferral.
     "recon:npa-post-approval-finding-review",
+    // D-NPA-PAGE-DE-INVENTION (CEO-approved 2026-06-23): the NPA product-detail
+    // page must source all asserted functionality from the real substrate. For
+    // every buildable product, every asserted event type (lifecycleEventFamily,
+    // each dimension triggeredBy/emits, every journal rule mapping) must EITHER
+    // resolve to a real registered event type / real posting-rule entry OR be
+    // surfaced through the page's gap channel (missing/unbacked). A static
+    // assertion with no backing and no gap-surfacing is a FAIL. ENFORCING.
+    "recon:npa-page-no-invented-functionality",
     // D-BA-RETURN-DATA-CONTRACT (CEO-approved 2026-06-19): binds the L3 return-
     // cell data contract into the NPA gate. Every CURRENTLY-EFFECTIVE product
     // (resolveEffectiveApprovals — not dead approvals) must capture, or track as
