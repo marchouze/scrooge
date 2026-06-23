@@ -283,6 +283,13 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   // Authority: D-FIL-FX-SETTLEMENT-EVENTS; D-ACCT-FX-IFRS-POSTING-COMPLETENESS.
   FilFxSettlementConfirmed: "governance",
   FilNdfFixingObserved: "governance",
+  // D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL — the born-V2 generic single-asset
+  // settlement event (the uniform-movement successor model to FilFxSettlementConfirmed).
+  // A materialised settlement movement is a real anchor-book record, never simulated
+  // market activity; class "governance" v1-side, mirrored here (third site of the
+  // three-site-registration gotcha) so the type does not resolve to "simulated".
+  // Authority: D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL; D-CASH-ASSET-CLASS-V1; Principle 1.
+  TradeSettlementExecuted: "governance",
   // WS-V2-BBAAS A1 — FIL attribution kernel. An organisational-dimension
   // assignment (a book/desk/strategy/portfolio re-tag) and a named-slice
   // definition are real governance configuration records (a book/desk/portfolio

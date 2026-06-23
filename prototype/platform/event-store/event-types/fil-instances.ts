@@ -40,6 +40,7 @@ import {
   filInstrumentTerminatedPayloadSchema,
   filNdfFixingObservedPayloadSchema,
 } from "../../../v2-core/fil-instances/events";
+import { tradeSettlementExecutedPayloadSchema } from "../../../v2-core/fil-instances/trade-settlement";
 import { newEventId } from "../../core/types";
 import { type Actor, type Event, eventSchema } from "../types";
 
@@ -49,6 +50,8 @@ export const filInstrumentAmendedPayload = filInstrumentAmendedPayloadSchema;
 export const filInstrumentTerminatedPayload = filInstrumentTerminatedPayloadSchema;
 export const filFxSettlementConfirmedPayload = filFxSettlementConfirmedPayloadSchema;
 export const filNdfFixingObservedPayload = filNdfFixingObservedPayloadSchema;
+// BORN-V2 generic single-asset settlement event (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL).
+export const tradeSettlementExecutedPayload = tradeSettlementExecutedPayloadSchema;
 
 export type FilInstrumentCreatedEventPayload = ReturnType<
   typeof filInstrumentCreatedPayloadSchema.parse
@@ -64,6 +67,9 @@ export type FilFxSettlementConfirmedEventPayload = ReturnType<
 >;
 export type FilNdfFixingObservedEventPayload = ReturnType<
   typeof filNdfFixingObservedPayloadSchema.parse
+>;
+export type TradeSettlementExecutedEventPayload = ReturnType<
+  typeof tradeSettlementExecutedPayloadSchema.parse
 >;
 
 export function makeFilInstrumentCreated(args: {
@@ -161,11 +167,31 @@ export function makeFilNdfFixingObserved(args: {
   });
 }
 
+export function makeTradeSettlementExecuted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: TradeSettlementExecutedEventPayload;
+  eventId?: string;
+}): Event {
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "TradeSettlementExecuted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: tradeSettlementExecutedPayloadSchema.parse(args.payload),
+  });
+}
+
 export const FIL_INSTANCE_TYPED_EVENT_TYPES = [
   "FilInstrumentCreated",
   "FilInstrumentAmended",
   "FilInstrumentTerminated",
   "FilFxSettlementConfirmed",
   "FilNdfFixingObserved",
+  "TradeSettlementExecuted",
 ] as const;
 export type FilInstanceEventType = (typeof FIL_INSTANCE_TYPED_EVENT_TYPES)[number];
