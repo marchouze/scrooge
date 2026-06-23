@@ -49,6 +49,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { inflateRawSync } from "node:zlib";
 
 import { COA_ACCOUNTS } from "../../v2-core/accounting/chart-of-accounts";
 import type { ReturnContract, ReturnForm } from "../../v2-core/regulatory-returns/cell-contract";
@@ -222,6 +223,85 @@ function unzipMember(zipPath: string, member: string): Uint8Array {
 }
 
 /**
+ * Read ONE member out of an in-memory ZIP archive and return its uncompressed
+ * bytes — a pure in-process parse (central-directory walk + `node:zlib`
+ * inflate), with NO temp file and NO `unzip` subprocess.
+ *
+ * This exists because the nested xlsx (a zip inside the schema zip) was
+ * previously materialised to a `.local/recon-ba501-<pid>-<ts>.xlsx` temp file
+ * and re-`unzip`ped. That round-trip raced under parallel `bun test` workers:
+ * the temp was written with the ASYNC, UN-AWAITED `Bun.write` from a SYNC
+ * function, so `unzip` could open the file before the bytes were flushed and
+ * read a 0-byte/partial temp → `unzip` "End-of-central-directory signature not
+ * found". Reading the bytes already in memory removes the temp file, the second
+ * subprocess, and the race entirely (Engineering-Charter #1 root-cause).
+ *
+ * Supports STORED (method 0) and DEFLATE (method 8) — the only methods an xlsx
+ * uses (verified: every BA 501 part is `Defl:S`). Sizes/offsets are read from
+ * the CENTRAL DIRECTORY (always authoritative, even when a local header defers
+ * its sizes to a post-data descriptor); the local header is re-read only for its
+ * own name/extra lengths, which may differ from the central directory's.
+ */
+export function readZipMember(zip: Uint8Array, member: string): Uint8Array {
+  const view = new DataView(zip.buffer, zip.byteOffset, zip.byteLength);
+  const u16 = (o: number): number => view.getUint16(o, true);
+  const u32 = (o: number): number => view.getUint32(o, true);
+
+  // Locate the End-Of-Central-Directory record by scanning backwards for its
+  // signature (PK\x05\x06). The trailing comment is variable-length (max
+  // 0xffff), so the EOCD can sit up to 22 + 0xffff bytes from the end.
+  const EOCD_SIG = 0x06054b50;
+  let eocd = -1;
+  const minPos = Math.max(0, zip.byteLength - 22 - 0xffff);
+  for (let i = zip.byteLength - 22; i >= minPos; i--) {
+    if (u32(i) === EOCD_SIG) {
+      eocd = i;
+      break;
+    }
+  }
+  if (eocd === -1) {
+    throw new Error(
+      `readZipMember: no end-of-central-directory signature in ${zip.byteLength}-byte archive (not a zip?) seeking '${member}'`,
+    );
+  }
+
+  const entryCount = u16(eocd + 10);
+  let cd = u32(eocd + 16); // central-directory start offset
+  const decoder = new TextDecoder();
+  const CDH_SIG = 0x02014b50;
+  const LFH_SIG = 0x04034b50;
+
+  for (let n = 0; n < entryCount; n++) {
+    if (u32(cd) !== CDH_SIG) {
+      throw new Error(`readZipMember: bad central-directory header at offset ${cd}`);
+    }
+    const method = u16(cd + 10);
+    const compSize = u32(cd + 20);
+    const nameLen = u16(cd + 28);
+    const extraLen = u16(cd + 30);
+    const commentLen = u16(cd + 32);
+    const localOff = u32(cd + 42);
+    const name = decoder.decode(zip.subarray(cd + 46, cd + 46 + nameLen));
+    if (name === member) {
+      if (u32(localOff) !== LFH_SIG) {
+        throw new Error(
+          `readZipMember: bad local file header for '${member}' at offset ${localOff}`,
+        );
+      }
+      const lNameLen = u16(localOff + 26);
+      const lExtraLen = u16(localOff + 28);
+      const dataStart = localOff + 30 + lNameLen + lExtraLen;
+      const comp = zip.subarray(dataStart, dataStart + compSize);
+      if (method === 0) return Uint8Array.from(comp); // STORED — copy out of the archive buffer.
+      if (method === 8) return new Uint8Array(inflateRawSync(comp)); // DEFLATE.
+      throw new Error(`readZipMember: unsupported compression method ${method} for '${member}'`);
+    }
+    cd += 46 + nameLen + extraLen + commentLen;
+  }
+  throw new Error(`readZipMember: member '${member}' not found in archive`);
+}
+
+/**
  * COMPLETENESS ORACLE FOR AN xlsx-ONLY FORM (BA 501 — no XSD in the SARB schema
  * package). Independently re-parses the workbook Elements sheet to return the
  * set of BA-code (BAxxxxxxxx) data-cell codes — the cell universe the contract
@@ -231,9 +311,14 @@ function unzipMember(zipPath: string, member: string): Uint8Array {
  *
  * The parse is INDEPENDENT of the Python generator (different language, its own
  * SpreadsheetML walk) so the two cannot agree by construction — completeness is
- * a genuine cross-check, exactly as the XSD oracle is for XSD-backed forms. The
- * xlsx (a nested zip inside the schema zip) is extracted with the system `unzip`
- * (the same tool the XSD path uses); no JS zip dependency is added.
+ * a genuine cross-check, exactly as the XSD oracle is for XSD-backed forms.
+ *
+ * The xlsx is a zip nested inside the (committed, on-disk) schema zip. The outer
+ * extraction uses the system `unzip` against the committed file (race-free); the
+ * inner xl/* parts are then read IN-PROCESS from the in-memory bytes via
+ * `readZipMember` — no temp file, no second `unzip` subprocess, so it is
+ * deterministic under parallel test workers. No JS zip dependency is added
+ * (`node:zlib` is built in).
  *
  * The Elements-sheet column layout (Name in column C / 3) is the SARB-standard
  * workbook shape shared across every BA form; a BA-code in the Name column is a
@@ -245,107 +330,96 @@ export function xlsxCellCodes(entry: ReturnContractRegistryEntry): Set<string> {
     throw new Error(`xlsxCellCodes for ${entry.form}: registry entry has no xlsxName`);
   }
   const zipPath = resolve(REPO_ROOT, entry.schemaZipRelPath);
-  // Extract the xlsx (itself a zip) to a temp file so its internal parts can be
-  // read with a second `unzip` pass — the schema zip → xlsx → xl/* nesting.
+  // Extract the xlsx (itself a zip) from the committed schema zip, then read its
+  // internal parts in-process from the in-memory bytes — the schema zip → xlsx →
+  // xl/* nesting, with no temp-file round-trip.
   const xlsxBytes = unzipMember(zipPath, entry.xlsxName);
-  const tmp = resolve(REPO_ROOT, `.local/recon-ba501-${process.pid}-${Date.now()}.xlsx`);
-  let codes: Set<string>;
-  try {
-    Bun.write(tmp, xlsxBytes);
-    const decoder = new TextDecoder();
-    const sharedStringsXml = decoder.decode(unzipMember(tmp, "xl/sharedStrings.xml"));
-    const workbookXml = decoder.decode(unzipMember(tmp, "xl/workbook.xml"));
-    const relsXml = decoder.decode(unzipMember(tmp, "xl/_rels/workbook.xml.rels"));
+  const decoder = new TextDecoder();
+  const sharedStringsXml = decoder.decode(readZipMember(xlsxBytes, "xl/sharedStrings.xml"));
+  const workbookXml = decoder.decode(readZipMember(xlsxBytes, "xl/workbook.xml"));
+  const relsXml = decoder.decode(readZipMember(xlsxBytes, "xl/_rels/workbook.xml.rels"));
 
-    // shared strings: <si>…<t>…</t>…</si> — concatenate all <t> runs per <si>.
-    const sharedStrings: string[] = [];
-    const siRe = /<si\b[^>]*>([\s\S]*?)<\/si>/g;
-    let siM: RegExpExecArray | null = siRe.exec(sharedStringsXml);
-    while (siM !== null) {
-      const inner = siM[1] ?? "";
+  // shared strings: <si>…<t>…</t>…</si> — concatenate all <t> runs per <si>.
+  const sharedStrings: string[] = [];
+  const siRe = /<si\b[^>]*>([\s\S]*?)<\/si>/g;
+  let siM: RegExpExecArray | null = siRe.exec(sharedStringsXml);
+  while (siM !== null) {
+    const inner = siM[1] ?? "";
+    let text = "";
+    const tRe = /<t\b[^>]*>([\s\S]*?)<\/t>/g;
+    let tM: RegExpExecArray | null = tRe.exec(inner);
+    while (tM !== null) {
+      text += tM[1] ?? "";
+      tM = tRe.exec(inner);
+    }
+    sharedStrings.push(text);
+    siM = siRe.exec(sharedStringsXml);
+  }
+
+  // rels: rId → worksheet target.
+  const relTarget = new Map<string, string>();
+  const relRe = /Id="(rId\d+)"[^>]*Type="[^"]*worksheet"[^>]*Target="(worksheets\/sheet\d+\.xml)"/g;
+  let relM: RegExpExecArray | null = relRe.exec(relsXml);
+  while (relM !== null) {
+    if (relM[1] !== undefined && relM[2] !== undefined) relTarget.set(relM[1], relM[2]);
+    relM = relRe.exec(relsXml);
+  }
+
+  // workbook: find the rId of the sheet named "Elements".
+  const sheetRe = /<sheet\b[^>]*\bname="([^"]+)"[^>]*\br:id="(rId\d+)"/g;
+  let elementsRid: string | undefined;
+  let shM: RegExpExecArray | null = sheetRe.exec(workbookXml);
+  while (shM !== null) {
+    if (shM[1] === "Elements") {
+      elementsRid = shM[2];
+      break;
+    }
+    shM = sheetRe.exec(workbookXml);
+  }
+  if (elementsRid === undefined) {
+    throw new Error(`${entry.form}: no 'Elements' sheet in ${entry.xlsxName}`);
+  }
+  const elementsTarget = relTarget.get(elementsRid);
+  if (elementsTarget === undefined) {
+    throw new Error(`${entry.form}: Elements sheet rId ${elementsRid} has no worksheet target`);
+  }
+  const sheetXml = decoder.decode(readZipMember(xlsxBytes, `xl/${elementsTarget}`));
+
+  // The Name column is column C (3rd). Scan every <c r="C{row}" …> cell and
+  // resolve its value (shared-string index when t="s", inline-string for t="inlineStr",
+  // else the literal). A BA-code value is a data-cell code.
+  const codes = new Set<string>();
+  const cellRe = /<c\b[^>]*\br="C(\d+)"[^>]*?(?:\/>|>([\s\S]*?)<\/c>)/g;
+  let cM: RegExpExecArray | null = cellRe.exec(sheetXml);
+  while (cM !== null) {
+    const whole = cM[0];
+    const body = cM[2] ?? "";
+    const isShared = /\bt="s"/.test(whole);
+    const isInline = /\bt="inlineStr"/.test(whole);
+    let value: string | undefined;
+    if (isInline) {
       let text = "";
       const tRe = /<t\b[^>]*>([\s\S]*?)<\/t>/g;
-      let tM: RegExpExecArray | null = tRe.exec(inner);
+      let tM: RegExpExecArray | null = tRe.exec(body);
       while (tM !== null) {
         text += tM[1] ?? "";
-        tM = tRe.exec(inner);
+        tM = tRe.exec(body);
       }
-      sharedStrings.push(text);
-      siM = siRe.exec(sharedStringsXml);
-    }
-
-    // rels: rId → worksheet target.
-    const relTarget = new Map<string, string>();
-    const relRe =
-      /Id="(rId\d+)"[^>]*Type="[^"]*worksheet"[^>]*Target="(worksheets\/sheet\d+\.xml)"/g;
-    let relM: RegExpExecArray | null = relRe.exec(relsXml);
-    while (relM !== null) {
-      if (relM[1] !== undefined && relM[2] !== undefined) relTarget.set(relM[1], relM[2]);
-      relM = relRe.exec(relsXml);
-    }
-
-    // workbook: find the rId of the sheet named "Elements".
-    const sheetRe = /<sheet\b[^>]*\bname="([^"]+)"[^>]*\br:id="(rId\d+)"/g;
-    let elementsRid: string | undefined;
-    let shM: RegExpExecArray | null = sheetRe.exec(workbookXml);
-    while (shM !== null) {
-      if (shM[1] === "Elements") {
-        elementsRid = shM[2];
-        break;
-      }
-      shM = sheetRe.exec(workbookXml);
-    }
-    if (elementsRid === undefined) {
-      throw new Error(`${entry.form}: no 'Elements' sheet in ${entry.xlsxName}`);
-    }
-    const elementsTarget = relTarget.get(elementsRid);
-    if (elementsTarget === undefined) {
-      throw new Error(`${entry.form}: Elements sheet rId ${elementsRid} has no worksheet target`);
-    }
-    const sheetXml = decoder.decode(unzipMember(tmp, `xl/${elementsTarget}`));
-
-    // The Name column is column C (3rd). Scan every <c r="C{row}" …> cell and
-    // resolve its value (shared-string index when t="s", inline-string for t="inlineStr",
-    // else the literal). A BA-code value is a data-cell code.
-    codes = new Set<string>();
-    const cellRe = /<c\b[^>]*\br="C(\d+)"[^>]*?(?:\/>|>([\s\S]*?)<\/c>)/g;
-    let cM: RegExpExecArray | null = cellRe.exec(sheetXml);
-    while (cM !== null) {
-      const whole = cM[0];
-      const body = cM[2] ?? "";
-      const isShared = /\bt="s"/.test(whole);
-      const isInline = /\bt="inlineStr"/.test(whole);
-      let value: string | undefined;
-      if (isInline) {
-        let text = "";
-        const tRe = /<t\b[^>]*>([\s\S]*?)<\/t>/g;
-        let tM: RegExpExecArray | null = tRe.exec(body);
-        while (tM !== null) {
-          text += tM[1] ?? "";
-          tM = tRe.exec(body);
-        }
-        value = text;
-      } else {
-        const vM = /<v\b[^>]*>([\s\S]*?)<\/v>/.exec(body);
-        const raw = vM?.[1];
-        if (raw !== undefined) {
-          if (isShared) {
-            const idx = Number.parseInt(raw, 10);
-            value = Number.isNaN(idx) ? undefined : sharedStrings[idx];
-          } else {
-            value = raw;
-          }
+      value = text;
+    } else {
+      const vM = /<v\b[^>]*>([\s\S]*?)<\/v>/.exec(body);
+      const raw = vM?.[1];
+      if (raw !== undefined) {
+        if (isShared) {
+          const idx = Number.parseInt(raw, 10);
+          value = Number.isNaN(idx) ? undefined : sharedStrings[idx];
+        } else {
+          value = raw;
         }
       }
-      if (value !== undefined && /^BA\d{8}$/.test(value)) codes.add(value);
-      cM = cellRe.exec(sheetXml);
     }
-  } finally {
-    try {
-      Bun.spawnSync(["rm", "-f", tmp]);
-    } catch {
-      // best-effort temp cleanup; never mask the real error.
-    }
+    if (value !== undefined && /^BA\d{8}$/.test(value)) codes.add(value);
+    cM = cellRe.exec(sheetXml);
   }
   if (codes.size === 0) {
     throw new Error(

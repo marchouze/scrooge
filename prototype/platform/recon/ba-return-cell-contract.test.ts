@@ -10,6 +10,10 @@
 // Authority: D-BA-RETURN-DATA-CONTRACT (CEO-approved 2026-06-19).
 // Author: Bea (Accounting and financial reporting engineer, engineering).
 
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { expect, test } from "bun:test";
 
 import { ba100Contract } from "../../v2-core/regulatory-returns/ba100-contract";
@@ -40,9 +44,18 @@ import {
   assertCitationsResolve,
   assertCompleteness,
   assertSourcedCellsReal,
+  readZipMember,
   run,
+  xlsxCellCodes,
   xsdCellCodes,
 } from "./ba-return-cell-contract";
+
+/** The BA 501 registry entry — the xlsx-only (no-XSD) form. */
+function ba501Entry(): ReturnContractRegistryEntry {
+  const e = RETURN_CONTRACT_REGISTRY.find((x) => x.form === "BA501");
+  if (e === undefined) throw new Error("BA501 not in the return-contract registry");
+  return e;
+}
 
 test("xsdCellCodes extracts the 843 BA 100 leaf cells", () => {
   const codes = xsdCellCodes(ba100Entry());
@@ -112,6 +125,50 @@ test("a sourced cell pointing at a non-existent GL category FAILS", () => {
   const v: ReconViolation[] = [];
   assertSourcedCellsReal(tampered, new Set(["asset-cash"]), new Set(), v);
   expect(v.some((x) => /not present in the chart of accounts/.test(x.message))).toBe(true);
+});
+
+// --- BA 501 xlsx-only oracle: in-process zip read is deterministic ---------
+//
+// Regression guard for the CI flake fixed 2026-06-23: the inner xlsx parts were
+// previously materialised to a `.local/recon-ba501-<pid>-<ts>.xlsx` temp via the
+// async, un-awaited `Bun.write` and re-`unzip`ped, which raced under parallel
+// `bun test` workers (read-before-flush → 0-byte temp → `unzip` "EOCD not
+// found"). The in-process `readZipMember` parse has no temp file and no
+// subprocess, so it is deterministic. These tests assert exactly that.
+
+test("readZipMember round-trips a DEFLATE xlsx part (in-process, no temp/subprocess)", () => {
+  // BA501.zip → inner xlsx → xl/workbook.xml, two levels of nested zip, all read
+  // in memory. A well-formed SpreadsheetML workbook part starts with an XML
+  // declaration and contains the <sheets> collection.
+  const repoRoot = resolve(fileURLToPath(new URL(".", import.meta.url)), "../../..");
+  const entry = ba501Entry();
+  const xlsxName = entry.xlsxName;
+  if (xlsxName === undefined) throw new Error("BA501 entry has no xlsxName");
+  const schemaZip = readFileSync(resolve(repoRoot, entry.schemaZipRelPath));
+  const xlsxBytes = readZipMember(schemaZip, xlsxName);
+  const workbookXml = new TextDecoder().decode(readZipMember(xlsxBytes, "xl/workbook.xml"));
+  expect(workbookXml.startsWith("<?xml")).toBe(true);
+  expect(workbookXml).toContain("<sheets");
+});
+
+test("readZipMember throws loudly on a non-zip buffer (fail-closed)", () => {
+  expect(() => readZipMember(new Uint8Array([1, 2, 3, 4, 5]), "anything")).toThrow(
+    /end-of-central-directory/i,
+  );
+});
+
+test("xlsxCellCodes(BA501) is non-empty and stable across concurrent calls", async () => {
+  // The pre-fix temp-file race only surfaced under concurrency; run the oracle
+  // many times in parallel and assert every call returns the identical cell set.
+  const baseline = xlsxCellCodes(ba501Entry());
+  expect(baseline.size).toBeGreaterThan(0);
+  const runs = await Promise.all(
+    Array.from({ length: 24 }, async () => xlsxCellCodes(ba501Entry())),
+  );
+  for (const codes of runs) {
+    expect(codes.size).toBe(baseline.size);
+    for (const c of baseline) expect(codes.has(c)).toBe(true);
+  }
 });
 
 test("run() is green on the real repository state", async () => {
