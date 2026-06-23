@@ -26,13 +26,14 @@ import {
   M4_FX_SPOT_FIXTURE,
 } from "../platform/markets/products/fixtures";
 import { parseProduct, productSchema } from "../platform/markets/products/types";
+import { CANONICAL_LEGAL_ENTITY_ID } from "../v2-core/reference-data/legal-entity";
 
 describe("D-PRODUCT-CONSTRUCTION-SUBSTRATE Slice 1 — typed Product layer", () => {
   it("M1 listed-equity fixture round-trips through Zod parse", () => {
     const parsed = parseProduct(M1_JSE_EQUITY_CASH_FIXTURE);
     expect(parsed.productId).toBe("prd:bank:equity:jse-equity-cash");
     expect(parsed.family).toBe("listed-equity");
-    expect(parsed.legalEntityId).toBe("LE-BANK-SA");
+    expect(parsed.legalEntityId).toBe(CANONICAL_LEGAL_ENTITY_ID);
     expect(parsed.currency).toBe("ZAR");
     expect(parsed.jurisdiction).toBe("ZA");
   });
@@ -206,10 +207,10 @@ describe("D-PRODUCT-CONSTRUCTION-SUBSTRATE M4 — FX Spot product type", () => {
     }
   });
 
-  it("M4 fixture multi-X discipline: ZAR/ZA/LE-BANK-SA (Principle 5)", () => {
+  it("M4 fixture multi-X discipline: ZAR/ZA/LE-ZA-HOZ-BANK (Principle 5)", () => {
     expect(M4_FX_SPOT_FIXTURE.currency).toBe("ZAR");
     expect(M4_FX_SPOT_FIXTURE.jurisdiction).toBe("ZA");
-    expect(M4_FX_SPOT_FIXTURE.legalEntityId).toBe("LE-BANK-SA");
+    expect(M4_FX_SPOT_FIXTURE.legalEntityId).toBe(CANONICAL_LEGAL_ENTITY_ID);
   });
 
   it("M4 fixture round-trips through productSchema without mutation", () => {

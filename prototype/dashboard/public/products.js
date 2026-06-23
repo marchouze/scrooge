@@ -200,12 +200,25 @@
   // Render the per-section "Events" block: events that trigger action
   // and events the dimension emits. Both lists are rendered as code chips.
   function renderEventsBlock(dim) {
+    const unbacked = dim.unbacked || { triggeredBy: [], emits: [] };
+    const unbackedSet = new Set([...(unbacked.triggeredBy || []), ...(unbacked.emits || [])]);
+    // An unregistered event-type name renders as a flagged "unbacked" chip
+    // (warning) rather than a normal chip — the page never asserts a fabricated
+    // event type silently (D-NPA-PAGE-DE-INVENTION).
+    const chip = (e) =>
+      unbackedSet.has(e)
+        ? `<code class="pp-chip" style="background:var(--color-danger-bg, #fdecea);color:var(--color-danger, #b3261e);border:1px solid var(--color-danger, #b3261e)" title="Not a registered event type — flagged gap">${esc(e)} ⚠</code>`
+        : `<code class="pp-chip">${esc(e)}</code>`;
     const triggeredHtml = (dim.triggeredBy || []).length
-      ? dim.triggeredBy.map((e) => `<code class="pp-chip">${esc(e)}</code>`).join(" ")
+      ? dim.triggeredBy.map(chip).join(" ")
       : '<span class="pp-policy-cite"><em>none</em></span>';
     const emitsHtml = (dim.emits || []).length
-      ? dim.emits.map((e) => `<code class="pp-chip">${esc(e)}</code>`).join(" ")
+      ? dim.emits.map(chip).join(" ")
       : '<span class="pp-policy-cite"><em>none</em></span>';
+    const unbackedNames = [...unbackedSet];
+    const unbackedNote = unbackedNames.length
+      ? `<p class="pp-policy-cite" style="margin:var(--space-1) 0 0;color:var(--color-danger, #b3261e)">⚠ ${unbackedNames.length} event-type name(s) on this dimension are <strong>not registered</strong> in the event-type registry (flagged gap, not an assertion): ${unbackedNames.map((e) => `<code>${esc(e)}</code>`).join(", ")}.</p>`
+      : "";
     return `
       <div style="margin-top:var(--space-2);padding:var(--space-2);background:var(--color-surface-alt, #f7f7f5);border-radius:6px">
         <div class="pp-policy-cite" style="margin-bottom:var(--space-1)"><strong>Events</strong> <span style="opacity:.7">(triggers and emissions for this dimension)</span></div>
@@ -215,6 +228,7 @@
           <dt style="font:var(--text-caption);color:var(--color-text-secondary)">Emits</dt>
           <dd style="margin:0">${emitsHtml}</dd>
         </div>
+        ${unbackedNote}
       </div>`;
   }
 

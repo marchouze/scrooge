@@ -12,6 +12,8 @@
 // Author: Atlas + Kai (trading systems engineer, engineering) +
 //         Saskia (Head of Global Markets, governance) [M4 co-authors].
 
+import { CANONICAL_LEGAL_ENTITY_ID } from "../../../v2-core/reference-data/legal-entity";
+
 import type { Product } from "./types";
 
 /**
@@ -26,7 +28,7 @@ export const M1_JSE_EQUITY_CASH_FIXTURE: Product = {
   description:
     "Cash-settled JSE-listed equity. Trading + settlement covers JSE-listed ordinary shares including ETFs. Strate is the central securities depository; T+3 settlement convention; ZAR-denominated.",
   franchiseScope: "institutional",
-  legalEntityId: "LE-BANK-SA",
+  legalEntityId: CANONICAL_LEGAL_ENTITY_ID,
   currency: "ZAR",
   jurisdiction: "ZA",
   cdmComposition: {
@@ -140,7 +142,7 @@ export const M2_SAGB_FIXED_COUPON_FIXTURE: Product = {
   description:
     "South African government bond, fixed coupon. Semi-annual coupon, ACT/365 day-count (SA convention), Strate-bond settlement. Tradeable across primary auction and secondary market; eligible for repo (M2 repo product references this asset).",
   franchiseScope: "institutional",
-  legalEntityId: "LE-BANK-SA",
+  legalEntityId: CANONICAL_LEGAL_ENTITY_ID,
   currency: "ZAR",
   jurisdiction: "ZA",
   cdmComposition: {
@@ -279,7 +281,7 @@ export const M4_FX_SPOT_FIXTURE: Product = {
   description:
     "Deliverable (physical) ZAR/USD FX Spot for institutional counterparties. The bank sells or buys USD against ZAR at the prevailing spot rate, settling T+2 against the ZA+US holiday-calendar intersection. Settlement routes via the bank's CLS-member correspondent bank (PvP path per D-FX-CLS-MEMBERSHIP), eliminating Herstatt risk on the settled leg. Every cross-border ZAR flow is FinSurv-reportable under the bank's full Authorised Dealer status (D-FX-AD-STATUS); the SARB ZAR Fixing Rate (ORG-MK-08) is the primary observable for mark-to-market. Franchise scope is institutional-only, consistent with the strategic foundation (JSE-listed institutions, corporate treasuries, NBFIs).",
   franchiseScope: "institutional",
-  legalEntityId: "LE-BANK-SA",
+  legalEntityId: CANONICAL_LEGAL_ENTITY_ID,
   currency: "ZAR",
   jurisdiction: "ZA",
   cdmComposition: {
@@ -312,7 +314,7 @@ export const M4_FX_SPOT_FIXTURE: Product = {
       {
         module: "@platform/markets/cdm/primitives",
         symbol: "partySchema",
-        role: "Identification primitive: counterparty LEI, bank legal entity (LE-BANK-SA), ZA jurisdiction, FinSurv category per ORG-EXCON-ODP-001",
+        role: "Identification primitive: counterparty LEI, bank legal entity (LE-ZA-HOZ-BANK), ZA jurisdiction, FinSurv category per ORG-EXCON-ODP-001",
       },
     ],
     extensions: [
@@ -328,7 +330,7 @@ export const M4_FX_SPOT_FIXTURE: Product = {
       },
     ],
     compositionRule:
-      "Asset(currency-pair ZAR/USD) + Cashflow×2(client-pays-ZAR; bank-pays-USD) + Schedule(T+2, ZA+US calendar intersection, JIHCAL) + Settlement(physical, PvP via correspondent per D-FX-CLS-MEMBERSHIP) + Identification(counterparty LEI + bank entity LE-BANK-SA + ZA jurisdiction + FinSurv category ORG-EXCON-ODP-001). Lifecycle: FxTradeExecuted(productTaxonomy='FX-spot') → PrincipalPayment×2 → FxSettlementInstructed×2 → SettlementConfirmed×2 → TradeReportSubmitted{regulator:'SARB-FinSurv'} → TradeMatured.",
+      "Asset(currency-pair ZAR/USD) + Cashflow×2(client-pays-ZAR; bank-pays-USD) + Schedule(T+2, ZA+US calendar intersection, JIHCAL) + Settlement(physical, PvP via correspondent per D-FX-CLS-MEMBERSHIP) + Identification(counterparty LEI + bank entity LE-ZA-HOZ-BANK + ZA jurisdiction + FinSurv category ORG-EXCON-ODP-001). Lifecycle: FxTradeExecuted(productTaxonomy='FX-spot') → PrincipalPayment×2 → FxSettlementInstructed×2 → SettlementConfirmed×2 → TradeReportSubmitted{regulator:'SARB-FinSurv'} → TradeMatured.",
   },
   lifecycleEventFamily: [
     "FxTradeExecuted",
@@ -483,7 +485,7 @@ export const M4_FX_OTC_VANILLA_FIXTURE: Product = {
   description:
     "Umbrella OTC vanilla FX product covering Spot, Forward and FX Swap on any currency pair, for institutional/professional counterparties only, OTC only (no exchange-traded). Retail/non-professional counterparties are OUT of scope (D-FX-COUNTERPARTY-SCOPE-INSTITUTIONAL) — consistent with the institutional franchise; no FAIS retail-appropriateness regime applies. The bank intermediates deliverable and non-deliverable FX against ZAR and cross, settling via its CLS-member correspondent (PvP per D-FX-CLS-MEMBERSHIP) where physical, and cash-settling NDFs. Every cross-border ZAR flow is FinSurv-reportable under full Authorised Dealer status (D-FX-AD-STATUS); the SARB ZAR Fixing Rate (ORG-MK-08) anchors mark-to-market. FX Option is named in the product's target scope but is not attested at v1.0 — it joins at v1.1 once the M5 option-pricing substrate (Garman-Kohlhagen / vol surface) lands. Scope axes (instruments, pair breadth, counterparty eligibility, execution venue) are carried in the typed `scope` field rather than this narrative.",
   franchiseScope: "institutional",
-  legalEntityId: "LE-BANK-SA",
+  legalEntityId: CANONICAL_LEGAL_ENTITY_ID,
   currency: "ZAR",
   jurisdiction: "ZA",
   scope: {
@@ -531,7 +533,7 @@ export const M4_FX_OTC_VANILLA_FIXTURE: Product = {
       {
         module: "@platform/markets/cdm/primitives",
         symbol: "partySchema",
-        role: "Identification primitive: counterparty LEI, bank legal entity (LE-BANK-SA), ZA jurisdiction, FinSurv category per ORG-EXCON-ODP-001.",
+        role: "Identification primitive: counterparty LEI, bank legal entity (LE-ZA-HOZ-BANK), ZA jurisdiction, FinSurv category per ORG-EXCON-ODP-001.",
       },
     ],
     extensions: [
@@ -547,7 +549,7 @@ export const M4_FX_OTC_VANILLA_FIXTURE: Product = {
       },
     ],
     compositionRule:
-      "Asset(any currency pair) + Cashflow×{1 (spot/forward) | 2 (swap)} + Schedule(T+2 to T+N) + Settlement(physical PvP per D-FX-CLS-MEMBERSHIP, or cash for NDF) + Identification(counterparty LEI + bank entity LE-BANK-SA + ZA jurisdiction + FinSurv category ORG-EXCON-ODP-001). Instrument variant parametrised by FxTradeExecuted.productTaxonomy ∈ {FX-spot, FX-forward, FX-swap}; FX-option added at v1.1. Lifecycle: FxTradeExecuted → (FxPositionRevalued)* → PrincipalPayment×legs → FxSettlementInstructed×legs → SettlementConfirmed×legs → TradeReportSubmitted{regulator:'SARB-FinSurv'} → TradeMatured.",
+      "Asset(any currency pair) + Cashflow×{1 (spot/forward) | 2 (swap)} + Schedule(T+2 to T+N) + Settlement(physical PvP per D-FX-CLS-MEMBERSHIP, or cash for NDF) + Identification(counterparty LEI + bank entity LE-ZA-HOZ-BANK + ZA jurisdiction + FinSurv category ORG-EXCON-ODP-001). Instrument variant parametrised by FxTradeExecuted.productTaxonomy ∈ {FX-spot, FX-forward, FX-swap}; FX-option added at v1.1. Lifecycle: FxTradeExecuted → (FxPositionRevalued)* → PrincipalPayment×legs → FxSettlementInstructed×legs → SettlementConfirmed×legs → TradeReportSubmitted{regulator:'SARB-FinSurv'} → TradeMatured.",
   },
   lifecycleEventFamily: [
     "FxTradeExecuted",
@@ -631,7 +633,7 @@ export const M3_VANILLA_IRS_FIXTURE: Product = {
   description:
     "Plain-vanilla OTC interest rate swap: bank receives fixed rate and pays JIBAR floating (or vice versa), denominated in ZAR, under ISDA 2002 master agreement. Notionals are in ZAR; net settlement of coupon differentials on each payment date. JIBAR-3M is the primary floating index; ZARONIA is the alternative SOFR-equivalent benchmark. Institutional counterparties only; ISDA master agreement + Credit Support Annex required before first trade.",
   franchiseScope: "institutional",
-  legalEntityId: "LE-BANK-SA",
+  legalEntityId: CANONICAL_LEGAL_ENTITY_ID,
   currency: "ZAR",
   jurisdiction: "ZA",
   cdmComposition: {
@@ -664,7 +666,7 @@ export const M3_VANILLA_IRS_FIXTURE: Product = {
       {
         module: "@platform/markets/cdm/primitives",
         symbol: "partySchema",
-        role: "Counterparty LEI + bank entity (LE-BANK-SA) — ISDA master agreement parties",
+        role: "Counterparty LEI + bank entity (LE-ZA-HOZ-BANK) — ISDA master agreement parties",
       },
     ],
     extensions: [
@@ -773,7 +775,7 @@ export const M5_REPO_FIXTURE: Product = {
   description:
     "Short-term secured borrowing collateralised by South African Government Bonds. The bank sells SAGB bonds to a counterparty under a repurchase agreement and buys them back at a fixed future date. Tenors up to 3 months; rate is agreed at trade inception (repo rate). Collateral remains on-balance-sheet (IAS 39 §27 — not derecognised). Eligible for use in SARB open-market operations and inter-dealer repo market via GMRA.",
   franchiseScope: "institutional",
-  legalEntityId: "LE-BANK-SA",
+  legalEntityId: CANONICAL_LEGAL_ENTITY_ID,
   currency: "ZAR",
   jurisdiction: "ZA",
   cdmComposition: {
@@ -801,7 +803,7 @@ export const M5_REPO_FIXTURE: Product = {
       {
         module: "@platform/markets/cdm/primitives",
         symbol: "partySchema",
-        role: "counterparty + bank entity (LE-BANK-SA)",
+        role: "counterparty + bank entity (LE-ZA-HOZ-BANK)",
       },
     ],
     extensions: [
@@ -869,7 +871,7 @@ export const M6_MMD_DEPOSIT_FIXTURE: Product = {
   description:
     "Short-term ZAR deposit accepted from institutional counterparties (corporate treasuries, NBFIs, other banks). Fixed-term tenors from overnight to 12 months. The bank pays an agreed fixed or floating rate on the deposit principal. Recognised as a financial liability at amortised cost (IFRS 9 §4.2.1). Contributes to LCR outflow modelling (BA 110) and NSFR required stable funding (BA 120).",
   franchiseScope: "institutional",
-  legalEntityId: "LE-BANK-SA",
+  legalEntityId: CANONICAL_LEGAL_ENTITY_ID,
   currency: "ZAR",
   jurisdiction: "ZA",
   cdmComposition: {
@@ -892,7 +894,7 @@ export const M6_MMD_DEPOSIT_FIXTURE: Product = {
       {
         module: "@platform/markets/cdm/primitives",
         symbol: "partySchema",
-        role: "depositor LEI + bank entity (LE-BANK-SA)",
+        role: "depositor LEI + bank entity (LE-ZA-HOZ-BANK)",
       },
     ],
     extensions: [],
@@ -952,7 +954,7 @@ export const M7_FUNDING_LINE_FIXTURE: Product = {
   description:
     "Bilateral committed credit facility where the bank draws cash from a facility provider (another bank or institutional investor). The bank recognises a financial liability on drawdown (IFRS 9 §4.2.1). Used for contingency liquidity management and to bridge settlement gaps. Classified as 100% LCR outflow (BA 110 Table 2) and required stable funding under NSFR (BA 120).",
   franchiseScope: "institutional",
-  legalEntityId: "LE-BANK-SA",
+  legalEntityId: CANONICAL_LEGAL_ENTITY_ID,
   currency: "ZAR",
   jurisdiction: "ZA",
   cdmComposition: {
@@ -975,7 +977,7 @@ export const M7_FUNDING_LINE_FIXTURE: Product = {
       {
         module: "@platform/markets/cdm/primitives",
         symbol: "partySchema",
-        role: "facility provider LEI + bank entity (LE-BANK-SA)",
+        role: "facility provider LEI + bank entity (LE-ZA-HOZ-BANK)",
       },
     ],
     extensions: [],
@@ -1030,7 +1032,7 @@ export const M8_IBL_FIXTURE: Product = {
   description:
     "Short-term unsecured cash placement by the bank with another licensed bank. The bank is the lender; the counterparty bank is the borrower. Tenors typically overnight to 3 months. Interest accrues daily at the agreed fixed rate (JIBAR-referenced or fixed). Asset classified at amortised cost under IFRS 9 §4.1.2 (SPPI test passes; held-to-collect business model). Contributes to NSFR available stable funding (BA 120).",
   franchiseScope: "institutional",
-  legalEntityId: "LE-BANK-SA",
+  legalEntityId: CANONICAL_LEGAL_ENTITY_ID,
   currency: "ZAR",
   jurisdiction: "ZA",
   cdmComposition: {
@@ -1053,7 +1055,7 @@ export const M8_IBL_FIXTURE: Product = {
       {
         module: "@platform/markets/cdm/primitives",
         symbol: "partySchema",
-        role: "borrowing bank LEI + bank entity as lender (LE-BANK-SA)",
+        role: "borrowing bank LEI + bank entity as lender (LE-ZA-HOZ-BANK)",
       },
     ],
     extensions: [],
