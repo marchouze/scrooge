@@ -554,6 +554,10 @@ export function buildNpaRegisterView(store: EventStore, asOf: string): NpaView {
  * finding discoveredBy / reviewedBy) so no client can render a name.
  */
 export function redactNpaDetailNames(detail: ProductDetailView): ProductDetailView {
+  // The presentation surfaces (overview / variants / componentGraph / lenses)
+  // are name-free by construction — desk seats arrive as Titles from the desk
+  // roster, and every other field is structural/regulatory. They pass through
+  // the spread unchanged. Only the attestation/finding fields carry agent ids.
   return {
     ...detail,
     dimensions: detail.dimensions.map((card) => ({

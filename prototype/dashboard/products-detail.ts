@@ -22,6 +22,26 @@ import {
 } from "../platform/accounting/posting-rule-registry";
 import type { EventStore } from "../platform/event-store/store";
 import type { Product } from "../platform/markets/products";
+import {
+  type FxInstrumentVariant,
+  fxInstrumentVariantSchema,
+} from "../platform/markets/products/types";
+import { CANONICAL_DESKS } from "../v2-core/desk/roster";
+// Risk / valuation model DECLARATIONS — read for `modelId` + `scope` only
+// (the FIL-Models register is folded from events and is empty in the build
+// phase, so the static declarations are the canonical source of "which model
+// is scoped to this asset class"). No hardcoded model ids/scopes — both are
+// read off the imported declaration objects.
+import { CAPITAL_MODEL_DECLARATION } from "../v2-core/fil-models/capital/capital-model";
+import type { FilModelImplementationDeclared } from "../v2-core/fil-models/declaration";
+import { CASH_MODEL_DECLARATION } from "../v2-core/fil-models/fx-valuation/cash-model";
+import { FX_MODEL_DECLARATION } from "../v2-core/fil-models/fx-valuation/fx-model";
+import { BOND_FIXED_RATE_VANILLA_MODEL_DECLARATION } from "../v2-core/fil-models/ir/bond/bond-model";
+import { MM_DEPOSIT_MODEL_DECLARATION } from "../v2-core/fil-models/ir/money-market/deposit/mm-deposit-model";
+import { MM_REPO_MODEL_DECLARATION } from "../v2-core/fil-models/ir/money-market/repo/mm-repo-model";
+import { MM_UNSECURED_MODEL_DECLARATION } from "../v2-core/fil-models/ir/money-market/unsecured/mm-unsecured-model";
+import { VAR_MODEL_DECLARATION } from "../v2-core/fil-models/market-risk-var/model";
+import { SA_CCR_MODEL_DECLARATION } from "../v2-core/fil-models/sa-ccr/model";
 import { activeFxSettlementDeferredGaps } from "../v2-core/posting-rules/fx-settlement";
 
 import { normaliseDimensionKey } from "../platform/markets/products/dimension-key-alias";
@@ -675,9 +695,421 @@ export function buildAccountingTreatmentView(product: Product): AccountingTreatm
   };
 }
 
+// ---------------------------------------------------------------------------
+// Product narrative + visual view-model (NPA detail-page redesign).
+//
+// Name-free, presentation-ready surfaces that describe the PRODUCT (not just
+// its approval state): how it operates, its variants, the components it is
+// composed of + how they interact, and how each part of the bank sees it
+// (Markets book/desk, Finance FRTB book, Risk models, Compliance). Every field
+// is derived from the canonical `Product` record + the desk roster + the FIL
+// model declarations — sourced, not authored. All seat references are Titles.
+// ---------------------------------------------------------------------------
+
+/** §1 — "How it operates" overview. */
+export interface ProductOverview {
+  readonly description: string;
+  readonly compositionRule: string;
+  readonly franchiseScope: string;
+  readonly lifecycle: string;
+  readonly settlementPath: string;
+  readonly reconciliationCadence: string;
+  readonly assetClassLabel: string;
+  readonly currency: string;
+  readonly jurisdiction: string;
+  readonly legalEntityId: string;
+  /** Typed scope axes when declared (venue / variants / pairs / counterparties). */
+  readonly scope?: {
+    readonly executionVenue: string;
+    readonly instrumentVariants: readonly string[];
+    readonly currencyPairs: string;
+    readonly counterpartyEligibility: string;
+  };
+}
+
+/** §2 — a single operating variant of the product. */
+export interface ProductVariant {
+  readonly key: string;
+  readonly label: string;
+  /** `in-scope` = attested at this version; `planned` = named in target scope, not yet attested. */
+  readonly status: "in-scope" | "planned";
+  readonly note: string;
+}
+
+/** §3 — one node in the component-interaction graph (a primitive / asset class). */
+export interface ComponentNode {
+  readonly id: string;
+  readonly label: string;
+  /** Asset-class / primitive grouping for colour-coding: fx/cash/bond/equity/ir/schedule/settlement/party. */
+  readonly group: string;
+  readonly detail: string;
+}
+
+/** §3 — a directed relationship between two component nodes. */
+export interface ComponentEdge {
+  readonly from: string;
+  readonly to: string;
+  /** `composes` = product contains the component; `materialises` = lifecycle interaction (e.g. FX→Cash on settlement). */
+  readonly kind: "composes" | "materialises";
+  readonly label: string;
+}
+
+export interface ComponentGraph {
+  /** Central hub label (the product itself). */
+  readonly hubLabel: string;
+  readonly nodes: readonly ComponentNode[];
+  readonly edges: readonly ComponentEdge[];
+}
+
+/** §4 — Markets lens: which book / desks the product is traded in. */
+export interface MarketsLens {
+  readonly book: "trading" | "banking-treasury";
+  readonly bookLabel: string;
+  readonly desks: readonly { deskName: string; deskKind: string; portfolioRole: string }[];
+  readonly eligibility: string;
+}
+
+/** §4 — Finance lens: FRTB book + IFRS classification + BA-return cells. */
+export interface FinanceLens {
+  readonly frtbBook: "trading" | "banking";
+  readonly frtbRationale: string;
+  readonly ifrs9Family: string;
+  readonly ifrs13FairValueHierarchy: string;
+  readonly ias21FxTreatment: string;
+  readonly baReturnCells: readonly { cell: string; lens: string }[];
+}
+
+/** §4 — Risk lens: risk profile + the models scoped to this asset class. */
+export interface RiskLens {
+  readonly marketRiskDimensions: readonly string[];
+  readonly creditRiskShape: string;
+  readonly liquidityClassification: string;
+  readonly fundingProfile: string;
+  readonly modelRiskTier: string;
+  /** Model ids whose declared FIL-type scope covers this product's asset class. */
+  readonly measuredByModels: readonly string[];
+}
+
+/** §4 — Compliance lens: attestation summary + governing documentation. */
+export interface ComplianceLens {
+  readonly attestedCount: number;
+  readonly totalDimensions: number;
+  readonly lifecycle: string;
+  readonly masterAgreement: string;
+  readonly obligationCitations: readonly string[];
+}
+
+export interface ProductLensView {
+  readonly markets: MarketsLens;
+  readonly finance: FinanceLens;
+  readonly risk: RiskLens;
+  readonly compliance: ComplianceLens;
+}
+
+// --- Builders --------------------------------------------------------------
+
+/** Human asset-class label per family (hero tile + overview). */
+const FAMILY_ASSET_CLASS_LABEL: Readonly<Record<string, string>> = {
+  fx: "Foreign exchange",
+  "listed-bond": "Fixed income",
+  "listed-equity": "Equity",
+  repo: "Securities financing",
+  "otc-ird": "Rates derivative",
+  "money-market": "Money market",
+  "interbank-loan": "Money market",
+  structured: "Structured",
+};
+
+/** Friendly labels for FX instrument variants. */
+const FX_VARIANT_LABEL: Readonly<Record<FxInstrumentVariant, string>> = {
+  spot: "FX Spot",
+  forward: "FX Forward",
+  swap: "FX Swap",
+  option: "FX Option",
+};
+
+export function buildProductOverview(product: Product): ProductOverview {
+  const scope = product.scope
+    ? {
+        executionVenue: product.scope.executionVenue,
+        instrumentVariants: product.scope.fxInstrumentVariants as readonly string[],
+        currencyPairs:
+          product.scope.currencyPairs === "any"
+            ? "Any currency pair"
+            : (product.scope.currencyPairs as readonly string[]).join(", "),
+        counterpartyEligibility: Array.isArray(product.scope.counterpartyEligibility)
+          ? (product.scope.counterpartyEligibility as readonly string[]).join(", ")
+          : String(product.scope.counterpartyEligibility),
+      }
+    : undefined;
+  return {
+    description: product.description,
+    compositionRule: product.cdmComposition.compositionRule,
+    franchiseScope: product.franchiseScope,
+    lifecycle: product.lifecycle,
+    settlementPath: product.operationalReadiness.settlementPath,
+    reconciliationCadence: product.operationalReadiness.reconciliationCadence,
+    assetClassLabel: FAMILY_ASSET_CLASS_LABEL[product.family] ?? product.family,
+    currency: product.currency,
+    jurisdiction: product.jurisdiction,
+    legalEntityId: product.legalEntityId,
+    ...(scope ? { scope } : {}),
+  };
+}
+
+/**
+ * Variants of the product's operation. FX umbrella products carry a typed
+ * `scope.fxInstrumentVariants` (the attested subset); the full variant set is
+ * the schema enum, so variants named in the target scope but not yet attested
+ * render as `planned`. Non-FX families trade as a single instrument form →
+ * empty array (the page renders an honest "no sub-variants" panel).
+ */
+export function buildProductVariants(product: Product): ProductVariant[] {
+  if (product.family !== "fx" || !product.scope) return [];
+  const inScope = new Set<string>(product.scope.fxInstrumentVariants);
+  return fxInstrumentVariantSchema.options.map((v) => {
+    const attested = inScope.has(v);
+    return {
+      key: v,
+      label: FX_VARIANT_LABEL[v],
+      status: attested ? "in-scope" : "planned",
+      note: attested
+        ? "In the approved scope at this version."
+        : "Named in the product's target scope; not attested at this version.",
+    };
+  });
+}
+
+/** Map a CDM asset-primitive module path to its asset-class node group. */
+function moduleGroup(module: string): string {
+  if (module.endsWith("/fx")) return "fx";
+  if (module.endsWith("/bond")) return "bond";
+  if (module.endsWith("/equity")) return "equity";
+  if (module.endsWith("/repo")) return "ir";
+  if (module.endsWith("/ird")) return "ir";
+  return "primitive";
+}
+
+/**
+ * Node group for colour-coding. Asset/instrument primitives carry their
+ * asset-class group (fx/bond/equity/ir); structural primitives are grouped by
+ * the role they play (cash-flow / schedule / settlement / party) so the diagram
+ * reads as "asset + cashflow + schedule + settlement + identification".
+ */
+function componentGroup(role: string, module: string): string {
+  if (/^\s*cashflow/i.test(role)) return "cash-flow";
+  if (/^\s*schedule/i.test(role)) return "schedule";
+  if (/^\s*settlement/i.test(role)) return "settlement";
+  if (/^\s*identification/i.test(role)) return "party";
+  return moduleGroup(module);
+}
+
+/** Derive a short node label from a primitive's role text ("Asset primitive: …" → "Asset primitive"). */
+function primitiveLabel(role: string, symbol: string): string {
+  const m = role.match(/^([A-Za-z/ ]+?)\s+primitive\s*:/i);
+  if (m?.[1]) return `${m[1].trim()} primitive`;
+  // Fallback: humanise the CDM schema symbol — drop the Schema/Payload suffix
+  // and split camelCase ("equitySettlementInstructedPayloadSchema" → "Equity
+  // Settlement Instructed").
+  const human = symbol
+    .replace(/(Payload)?Schema$/i, "")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .trim();
+  return human ? human.charAt(0).toUpperCase() + human.slice(1) : symbol;
+}
+
+/**
+ * Component-interaction graph. Nodes are the product's CDM primitives (each an
+ * asset-class / structural building block); a synthetic node is added for the
+ * asset materialised on settlement (the FX→Cash interaction, declared by
+ * `maturityMaterialisation`). Edges: the product hub `composes` each primitive;
+ * the asset primitive `materialises` the successor asset on settlement.
+ */
+export function buildComponentGraph(product: Product): ComponentGraph {
+  const nodes: ComponentNode[] = product.cdmComposition.primitives.map((p, i) => ({
+    id: `c${i}`,
+    label: primitiveLabel(p.role, p.symbol),
+    group: componentGroup(p.role, p.module),
+    detail: p.role,
+  }));
+  const edges: ComponentEdge[] = nodes.map((n) => ({
+    from: "product",
+    to: n.id,
+    kind: "composes" as const,
+    label: "composes",
+  }));
+
+  const mm = product.maturityMaterialisation;
+  if (mm) {
+    nodes.push({
+      id: "materialised",
+      label: "Cash balance",
+      group: "cash",
+      detail: `Materialised on ${mm.onLifecycleStage}${mm.bothLegs ? " (both legs)" : ""} → ${mm.materialisesTypeUrn}`,
+    });
+    // Source of the interaction = the asset/instrument primitive (role begins
+    // "Asset …"), else the first non-materialised node.
+    const assetNode =
+      nodes.find((n) => /^\s*asset/i.test(n.detail)) ?? nodes.find((n) => n.id !== "materialised");
+    edges.push({
+      from: assetNode ? assetNode.id : "product",
+      to: "materialised",
+      kind: "materialises",
+      label: `settles → ${mm.materialisesAssetClass}`,
+    });
+  }
+
+  return { hubLabel: product.name, nodes, edges };
+}
+
+// Risk / valuation model declarations consulted for the Risk lens. Read for
+// `modelId` + `scope` only.
+const RISK_VALUATION_MODELS: readonly FilModelImplementationDeclared[] = [
+  SA_CCR_MODEL_DECLARATION,
+  VAR_MODEL_DECLARATION,
+  FX_MODEL_DECLARATION,
+  CASH_MODEL_DECLARATION,
+  BOND_FIXED_RATE_VANILLA_MODEL_DECLARATION,
+  MM_DEPOSIT_MODEL_DECLARATION,
+  MM_UNSECURED_MODEL_DECLARATION,
+  MM_REPO_MODEL_DECLARATION,
+  CAPITAL_MODEL_DECLARATION,
+];
+
+/**
+ * The canonical FIL-type root each product family books under. Mirrors the
+ * `FAMILY_LIFECYCLE_IDS` posture: a small family→type map used to match the
+ * product against model scope patterns. Normalised (`.`→`:`) so the segment
+ * comparison aligns with both `money-market.deposit` and `money-market:unsecured`
+ * spellings in the declarations.
+ */
+const FAMILY_FIL_TYPE_ROOT: Readonly<Record<string, string>> = {
+  fx: "fil:type:fx",
+  "listed-bond": "fil:type:ir:bond",
+  "listed-equity": "fil:type:equity",
+  repo: "fil:type:ir:money-market:repo",
+  "otc-ird": "fil:type:ir:swap",
+  "money-market": "fil:type:ir:money-market",
+  "interbank-loan": "fil:type:ir:money-market:unsecured",
+};
+
+/** Normalise a FIL type/scope string to a comparable segment array (drops `@version`). */
+function filSegments(s: string): string[] {
+  return s.replace(/@.*$/, "").replace(/\./g, ":").split(":");
+}
+
+/** True iff a model scope pattern covers the product's FIL-type root (with `*` wildcard). */
+function scopeCoversType(scopePattern: string, typeRoot: string): boolean {
+  const scope = filSegments(scopePattern);
+  const type = filSegments(typeRoot);
+  const n = Math.min(scope.length, type.length);
+  for (let i = 0; i < n; i++) {
+    if (scope[i] === "*") return true; // wildcard matches the remainder
+    if (scope[i] !== type[i]) return false;
+  }
+  // One is a prefix of the other (e.g. generic `…:money-market` covers
+  // `…:money-market:deposit`, and `…:ir:bond` is covered by `…:ir:*`).
+  return true;
+}
+
+/** Model ids whose declared scope covers the product's asset class. */
+function modelsForProduct(product: Product): string[] {
+  const typeRoot = FAMILY_FIL_TYPE_ROOT[product.family];
+  if (!typeRoot) return [];
+  const ids = new Set<string>();
+  for (const model of RISK_VALUATION_MODELS) {
+    if (model.scope.some((s) => scopeCoversType(s, typeRoot))) ids.add(model.modelId);
+  }
+  return [...ids];
+}
+
+/** Classify a BA-return line ref into a human regulatory lens. */
+function baReturnLens(line: string): string {
+  const up = line.toUpperCase();
+  if (up.startsWith("BA320") || up.startsWith("BA325") || up.startsWith("BA310"))
+    return "Market risk — trading book";
+  if (up.startsWith("BA330")) return "IRRBB — banking book";
+  if (up.startsWith("BA700") || up.startsWith("BA701")) return "Capital adequacy";
+  if (up.includes("RWA")) return "Risk-weighted assets";
+  if (up.startsWith("BA100") || up.startsWith("BA110") || up.startsWith("BA120"))
+    return "Balance sheet";
+  if (up.startsWith("BA300")) return "Liquidity";
+  return "Regulatory return";
+}
+
+/**
+ * Cross-bank lens view. Markets desks are filtered from `CANONICAL_DESKS` by
+ * book type (sourced from the roster; seats already Titles). FRTB book is
+ * derived from the IFRS 9 family (FVTPL ⇒ trading book). Risk models are scope-
+ * matched against the FIL model declarations.
+ */
+export function buildProductLenses(
+  product: Product,
+  attestedCount: number,
+  totalDimensions: number,
+): ProductLensView {
+  const frtbBook: "trading" | "banking" =
+    product.accountingClassification.ifrs9Family === "fvtpl" ? "trading" : "banking";
+  const deskBookType = frtbBook === "trading" ? "trading" : "banking-treasury";
+  const desks = CANONICAL_DESKS.filter((d) => d.bookType === deskBookType).map((d) => ({
+    deskName: d.deskName,
+    deskKind: d.deskKind,
+    portfolioRole: d.businessStrategy.split(".")[0]?.trim() ?? d.deskKind,
+  }));
+
+  return {
+    markets: {
+      book: deskBookType,
+      bookLabel: frtbBook === "trading" ? "Trading book" : "Banking / treasury book",
+      desks,
+      eligibility:
+        frtbBook === "trading"
+          ? "Booked into the trading book; warehoused and hedged by the markets desks."
+          : "Held in the banking / treasury book; managed for funding, liquidity and IRRBB.",
+    },
+    finance: {
+      frtbBook,
+      frtbRationale:
+        frtbBook === "trading"
+          ? "Held-for-trading / FVTPL ⇒ FRTB trading book (market-risk capital)."
+          : "Amortised cost / FVOCI ⇒ banking book (IRRBB, not trading-book market risk).",
+      ifrs9Family: product.accountingClassification.ifrs9Family,
+      ifrs13FairValueHierarchy: product.accountingClassification.ifrs13FairValueHierarchy,
+      ias21FxTreatment: product.accountingClassification.ias21FxTreatment,
+      baReturnCells: product.accountingClassification.baReturnLineMapping.map((cell) => ({
+        cell,
+        lens: baReturnLens(cell),
+      })),
+    },
+    risk: {
+      marketRiskDimensions: product.riskProfile.marketRiskDimensions,
+      creditRiskShape: product.riskProfile.creditRiskShape,
+      liquidityClassification: product.riskProfile.liquidityClassification,
+      fundingProfile: product.riskProfile.fundingProfile,
+      modelRiskTier: product.riskProfile.modelRiskTier,
+      measuredByModels: modelsForProduct(product),
+    },
+    compliance: {
+      attestedCount,
+      totalDimensions,
+      lifecycle: product.lifecycle,
+      masterAgreement: product.legalDocumentation.masterAgreement,
+      obligationCitations: product.citations,
+    },
+  };
+}
+
 export interface ProductDetailView {
   product: Product;
   dimensions: DimensionCard[];
+  /** §1 — "How it operates" narrative overview. */
+  overview: ProductOverview;
+  /** §2 — operating variants (FX umbrella products; empty for single-instrument families). */
+  variants: ProductVariant[];
+  /** §3 — component-interaction graph (CDM primitives + the FX→Cash materialisation edge). */
+  componentGraph: ComponentGraph;
+  /** §4 — cross-bank lens view (Markets / Finance / Risk / Compliance). */
+  lenses: ProductLensView;
   journalEntries: LifecycleEventJournalRow[];
   /** Accounting-treatment surface (WS-ACCT-FX-COMPLETENESS Slice 5). */
   accountingTreatment: AccountingTreatmentView;
@@ -917,9 +1349,15 @@ export function buildProductDetailView(
     },
   );
 
+  const attestedCount = dimensions.filter((d) => d.attestation.status !== "pending").length;
+
   return {
     product,
     dimensions,
+    overview: buildProductOverview(product),
+    variants: buildProductVariants(product),
+    componentGraph: buildComponentGraph(product),
+    lenses: buildProductLenses(product, attestedCount, dimensions.length),
     journalEntries,
     accountingTreatment: buildAccountingTreatmentView(product),
     productChain,
