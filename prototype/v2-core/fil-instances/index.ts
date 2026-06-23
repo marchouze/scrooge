@@ -10,4 +10,6 @@
 
 export * from "./cash-cascade";
 export * from "./events";
+export * from "./holding-materialisation";
 export * from "./projection";
+export * from "./trade-settlement";

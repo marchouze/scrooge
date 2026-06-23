@@ -157,6 +157,86 @@ function nostroFor(currency: string): string {
   }
 }
 
+/**
+ * The GENERIC per-MOVEMENT settlement primitive (D-FX-TRADE-SETTLEMENT-PRODUCT-
+ * MODEL, Slice 1). Settles ONE recognised leg — a single uniform asset movement —
+ * into its three GL legs: the cash/nostro movement at the settlement rate, the
+ * receivable/payable extinguished at the booked rate, and the realised-P&L
+ * balancing leg (`settled − booked`). `side` selects the obligation account
+ * (RECEIVE extinguishes a receivable; PAY extinguishes a payable) and the
+ * debit/credit polarity. Amounts are POSITIVE magnitudes (the sign is the `side`).
+ *
+ * This is the single source of the settlement leg math: `postFxSettlementLegs`
+ * (the two-leg FX path) composes TWO of these, and the single-asset
+ * `TradeSettlementExecuted` posting maps one movement onto exactly ONE call — so
+ * N single-asset settlements net BYTE-IDENTICAL to the two-leg FX path by
+ * construction, not by coincidence (Engineering Charter cmd 4 — source, don't
+ * duplicate).
+ */
+export interface SettlementMovementInput {
+  readonly currency: string;
+  /** Cash actually moved at the SETTLEMENT rate (positive magnitude). */
+  readonly settledAmount: string;
+  /** Carrying amount of the obligation leg derecognised at the BOOKED rate (positive). */
+  readonly bookedAmount: string;
+  /** `receive` extinguishes a receivable (Dr cash); `pay` extinguishes a payable (Cr cash). */
+  readonly side: "receive" | "pay";
+}
+
+type SettlementLegBase = Omit<
+  FxPostingLeg,
+  "creditDebit" | "accountCode" | "amount" | "description"
+>;
+
+/** Produce the three GL legs for ONE settlement movement (cash, obligation, P&L). */
+export function postSettlementMovementLegs(
+  base: SettlementLegBase,
+  movement: SettlementMovementInput,
+): FxPostingLeg[] {
+  const accounts = resolveFxAccountSet(movement.currency);
+  const cashLeg: FxPostingLeg =
+    movement.side === "receive"
+      ? {
+          ...base,
+          creditDebit: "debit",
+          accountCode: nostroFor(movement.currency),
+          amount: money(movement.currency, movement.settledAmount),
+          description: `FX Settlement cash received ${movement.currency}`,
+        }
+      : {
+          ...base,
+          creditDebit: "credit",
+          accountCode: nostroFor(movement.currency),
+          amount: money(movement.currency, movement.settledAmount),
+          description: `FX Settlement cash paid ${movement.currency}`,
+        };
+  const obligationLeg: FxPostingLeg =
+    movement.side === "receive"
+      ? {
+          ...base,
+          creditDebit: "credit",
+          accountCode: accounts.receivable,
+          amount: money(movement.currency, movement.bookedAmount),
+          description: `FX Settlement receivable extinguished ${movement.currency}`,
+        }
+      : {
+          ...base,
+          creditDebit: "debit",
+          accountCode: accounts.payable,
+          amount: money(movement.currency, movement.bookedAmount),
+          description: `FX Settlement payable extinguished ${movement.currency}`,
+        };
+  // Net debit on this movement = (cash debit − obligation credit) for a receive,
+  // = (obligation debit − cash credit) for a pay. Either way the P&L balancing leg
+  // is driven by `settled − booked` (receive) / `booked − settled` (pay) — exactly
+  // the two-leg path's per-currency balancing.
+  const netDebit =
+    movement.side === "receive"
+      ? subDecimal(movement.settledAmount, movement.bookedAmount)
+      : subDecimal(movement.bookedAmount, movement.settledAmount);
+  return [cashLeg, obligationLeg, ...balancingPnlLeg(base, movement.currency, netDebit)];
+}
+
 export function postFxSettlementLegs(input: FxSettlementInput): FxPostingLeg[] {
   const base = {
     postingDate: input.postingDate,
