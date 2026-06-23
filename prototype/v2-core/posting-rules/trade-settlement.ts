@@ -40,7 +40,7 @@ import {
   movementIsReceive,
   tradeSettlementExecutedPayloadSchema,
 } from "../fil-instances/trade-settlement";
-import { FX_TYPE_PREFIX, type FxPostingLeg } from "./fx";
+import type { FxPostingLeg } from "./fx";
 import { postSettlementMovementLegs } from "./fx-settlement";
 
 // ---------------------------------------------------------------------------
@@ -191,9 +191,4 @@ export function decomposeFxSettlementToTradeSettlements(
   });
 
   return [received, paid];
-}
-
-/** True iff the FIL taxonomy type URN names an FX instrument (re-export for callers). */
-export function isFxTypeUrn(typeUrn: string): boolean {
-  return typeUrn.startsWith(FX_TYPE_PREFIX);
 }
