@@ -224,5 +224,62 @@ export function renderFxNpaConsolidatedDoc(input: RenderFxNpaConsolidatedDocInpu
   lines.push(`Total tracked deferred gaps: **${gapCount}**.`);
   lines.push("");
 
+  // -------------------------------------------------------------------------
+  // Post-approval findings + retrospective reviews (D-NPA-POST-APPROVAL-FINDING-
+  // REVIEW). Rendered from the register row so the settlement-model refinement
+  // (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL, #1516/#1517) is visible as a governance
+  // fact, not just a code comment. A render of the event log (Principle 1).
+  // -------------------------------------------------------------------------
+  lines.push("## 5. Post-approval findings & retrospective reviews");
+  lines.push("");
+  const findings = Array.from(row.postApprovalFindings.values()).sort((a, b) =>
+    a.findingId.localeCompare(b.findingId),
+  );
+  if (findings.length === 0) {
+    lines.push("None — no post-approval findings recorded for this product.");
+  } else {
+    lines.push(
+      "| Finding | Severity | Title | Missed dimension | Discovered by | Reviewed? | Revised attestation |",
+    );
+    lines.push("|---|---|---|---|---|---|---|");
+    for (const f of findings) {
+      const review = row.retrospectiveReviews.get(f.findingId);
+      const reviewed = review ? `yes (${review.reviewedBy}, ${review.reviewedAt})` : "**open**";
+      lines.push(
+        `| \`${f.findingId}\` | ${f.severity} | ${f.title} | ${f.missedDimension} | ${f.discoveredBy} | ${reviewed} | ${review?.revisedAttestation ?? "—"} |`,
+      );
+    }
+  }
+  lines.push("");
+
+  // -------------------------------------------------------------------------
+  // Settlement model (Trade / Settlement / Product). The lifecycle event family
+  // and CDM composition are carried on the latest ProductConceptualised, which
+  // the register folds — but the register row does not expose them, so the doc
+  // states the model from the canonical Decision. Render text only (no store
+  // access here): the canonical facts are the ProductConceptualised +
+  // ProductPostApprovalFinding events the cycle emits.
+  // -------------------------------------------------------------------------
+  lines.push("## 6. Settlement model (Trade / Settlement / Product)");
+  lines.push("");
+  lines.push(
+    "Under **D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL** (CEO-approved 2026-06-23; landed by #1516/#1517) the FX OTC vanilla product follows three cleanly-separated constructs:",
+  );
+  lines.push("");
+  lines.push(
+    "- **Trade = the agreement** — one `FilInstrumentCreated` records the executory receivable/payable (terms; no holding yet).",
+  );
+  lines.push(
+    "- **Settlement = the execution** — N uniform single-asset `TradeSettlementExecuted` events (the **settlement-of-record**; FX spot = 2: received-cash + paid-cash). Each materialises a holding **at cost** and executes a specific trade; booked-vs-settled drives derecognition + realised P&L (IAS 21 §28). This **replaces** the 2-leg `FilFxSettlementConfirmed` representation, which is retired to oracle/historical only.",
+  );
+  lines.push(
+    "- **Product = the glue** — the type-level rulebook (trade-type → settlement obligations → holdings → accounting) plus the per-trade `tradeFamily` grouping (Create + its Settles + materialised holdings under the trade id).",
+  );
+  lines.push("");
+  lines.push(
+    "This is a representation refinement recorded post-approval; settlement and posting behaviour are unchanged (Slices 1–2 landed and balance-tested the trade-settlement fold). The one genuine follow-on — the FinSurv BoP per-transaction projection must also fold `TradeSettlementExecuted` at licence-day — is tracked as the conduct `fx-bop-projection-trade-settlement-source` deferred gap.",
+  );
+  lines.push("");
+
   return `${lines.join("\n")}\n`;
 }
