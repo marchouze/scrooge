@@ -328,9 +328,7 @@ describe("Slice-3 post-approval settlement-model refinement (D-FX-TRADE-SETTLEME
         (e) => (e.payload as { findingId?: string }).findingId,
       ),
     );
-    const reviewIds = new Set(
-      reviews.map((e) => (e.payload as { findingId?: string }).findingId),
-    );
+    const reviewIds = new Set(reviews.map((e) => (e.payload as { findingId?: string }).findingId));
     for (const id of findingIds) expect(reviewIds.has(id)).toBe(true);
   });
 
