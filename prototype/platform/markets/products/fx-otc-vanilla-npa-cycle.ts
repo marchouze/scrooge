@@ -145,7 +145,9 @@ import {
   makeProductApproved,
   makeProductConceptualised,
   makeProductDimensionAttested,
+  makeProductDimensionRetrospectiveReview,
   makeProductDueDiligenceCompleted,
+  makeProductPostApprovalFinding,
   makeProductProposalRegistered,
   makeProductWithheld,
 } from "../../event-store/event-types/product";
@@ -171,6 +173,19 @@ const ENTITY = "LE-ZA-HOZ-BANK";
  */
 export const FX_NPA_CYCLE_AS_OF = "2026-06-17T18:00:00.000Z";
 
+/**
+ * Logical instant of the Slice-3 post-approval model refinement
+ * (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL, CEO-approved 2026-06-23). The Trade /
+ * Settlement / Product model (settlement-of-record = `TradeSettlementExecuted`)
+ * landed AFTER the FX OTC vanilla internal-test approval, so it is recorded
+ * events-first as a `ProductPostApprovalFinding` (the model-refinement discovered
+ * post-approval) PLUS the responsible dimension's `ProductDimensionRetrospectiveReview`
+ * (so `recon:npa-post-approval-finding-review` stays green: the finding is
+ * reviewed within SLA in the same cycle). Strictly later than FX_NPA_CYCLE_AS_OF
+ * so it is genuinely post-approval and wins latest-wins on the conceptualisation.
+ */
+export const FX_NPA_SETTLEMENT_MODEL_AS_OF = "2026-06-23T09:00:00.000Z";
+
 /** Typed declared scope (Amendment D — exact scope, no silent absorption). */
 export const FX_NPA_SCOPE: ProductScopeForEvent = {
   executionVenue: "otc",
@@ -186,6 +201,7 @@ const PROPOSED_BY = "agent:saskia:head-global-markets";
 
 /** Base authority chain on every event in this cycle (Principle 2). */
 const BASE_CHAIN = [
+  "D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL",
   "D-FX-OTC-CLOSURE-BACKLOG",
   "D-FX-NPA-RESTART",
   "D-NEW-PRODUCT-APPROVAL-POLICY-V2",
@@ -193,6 +209,14 @@ const BASE_CHAIN = [
   "D-FX-OTC-NPA-SCOPE-EXPANSION",
   "D-NEW-PRODUCT-APPROVAL-POLICY",
 ] as const;
+
+/**
+ * The Trade / Settlement / Product settlement-model PRs that landed the code this
+ * post-approval refinement documents (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL Slices
+ * 1–2). Cited on the post-approval finding + retrospective review so the
+ * governance facts trace to the implementing change-sets.
+ */
+const SETTLEMENT_MODEL_PR_CITATIONS = ["#1516", "#1517"] as const;
 
 const CYCLE_ACTOR = {
   type: "service" as const,
@@ -450,6 +474,13 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
     ],
   },
   // -- Dimension 5: operational-readiness (Tomas / Devon) — impl-attested. -----
+  // Trade / Settlement / Product model (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL,
+  // #1516/#1517): the settlement-of-record is now the uniform single-asset
+  // `TradeSettlementExecuted` event (FX spot = 2: received-cash + paid-cash legs),
+  // each materialising a holding AT COST and executing a specific trade. This is
+  // the explicit settlement-of-record that REPLACES the prior 2-leg
+  // `FilFxSettlementConfirmed`; the settlement-continuity structural invariant
+  // (green recon below) is unchanged by Slice 3 (no settlement code change).
   {
     dimension: "operational-readiness",
     owner:
@@ -467,6 +498,11 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       "recon:fx-settlement-continuity",
       "platform/markets/fx/nostro-routing-registry.ts",
       "platform/markets/fx/otc-failure-handlers.ts",
+      // Settlement-of-record under the Trade/Settlement/Product model (#1516/#1517):
+      // uniform single-asset `TradeSettlementExecuted` + the per-trade `tradeFamily`
+      // grouping (Create + Settles + holdings under the trade id).
+      "v2-core/fil-instances/trade-settlement.ts",
+      "v2-core/fil-instances/trade-family.ts",
     ],
     deferredGaps: [
       {
@@ -514,12 +550,26 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       // the Amendment A Item-3 evidence; the capability is genuinely exercised
       // and complete across the supported-currency scope.
       "recon:fx-supported-currency-no-suspense",
+      // Trade / Settlement / Product model (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL,
+      // #1516/#1517): settlement-of-record is now `TradeSettlementExecuted`
+      // (uniform single-asset, holding-at-cost). The posting fold derives
+      // derecognition + realised P&L (IAS 21 §28) from the booked-vs-settled
+      // amounts on each settlement event — see the trade-settlement fold + its
+      // green balance test (no posting-behaviour change in Slice 3).
+      "platform/accounting/posting-rules-v2/fx-instance-fold.ts",
+      "v2-core/posting-rules/trade-settlement.ts",
     ],
     // Accounting REMAINS implementation-attested: the modular product-composed
     // posting fold is built, exercised, and green (no-suspense recon above) over
-    // the v1.0 supported scope. The two deferred sub-items below were previously
-    // UNTRACKED (closure-plan §5 "the gap-tracking itself has a gap") and are now
-    // recorded honestly — neither undermines the impl-attestation:
+    // the v1.0 supported scope. Under the Trade / Settlement / Product model
+    // (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL, #1516/#1517) the settlement-of-record
+    // is the uniform single-asset `TradeSettlementExecuted` (holding-at-cost),
+    // which REPLACES the 2-leg `FilFxSettlementConfirmed` representation; the fold
+    // already derives derecognition + realised P&L from each settlement's
+    // booked-vs-settled amounts (IAS 21 §28). The two deferred sub-items below
+    // were previously UNTRACKED (closure-plan §5 "the gap-tracking itself has a
+    // gap") and are now recorded honestly — neither undermines the
+    // impl-attestation:
     //   - S0d is a booking-time PRODUCT-BINDING enhancement; today the fold
     //     resolves correctly via the FAIL-CLOSED type-scope fallback (path 2 in
     //     fx-fold.ts requires exactly-one match, else `treatment-unresolved`),
@@ -661,6 +711,32 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
         targetTrigger:
           "`Procedures/by-policy/finsurv-reporting.md` authored + BoP-category tagging wired at settlement (closes the build-phase portion of the ORG-FX-FIN orphan set)",
         citations: ["ORG-FX-FIN-01", "Procedures/by-policy/finsurv-reporting.md"],
+      },
+      // Settlement-model follow-on (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL, #1516/#1517).
+      // The FinSurv BoP per-transaction projection
+      // (`platform/markets/regulatory/finsurv-bop-projection.ts`) folds the
+      // settlement-of-record to derive each cross-border BoP-reportable flow. Under
+      // the Trade/Settlement/Product model the settlement-of-record is now
+      // `TradeSettlementExecuted` (the explicit, single-asset settlement event),
+      // but the projection still reads only `FilFxSettlementConfirmed` /
+      // `FilNdfFixingObserved` (the retired/oracle representation). The projection
+      // must ALSO read `TradeSettlementExecuted` when BoP per-transaction reporting
+      // activates at licence-day, else cross-border settlements booked under the new
+      // model would be invisible to FinSurv. No silent deferral — tracked here.
+      {
+        gapId: "fx-bop-projection-trade-settlement-source",
+        title:
+          "The FinSurv BoP per-transaction projection (`platform/markets/regulatory/finsurv-bop-projection.ts`) reads only `FilFxSettlementConfirmed` / `FilNdfFixingObserved` for BoP-reportable settlement flows. Under D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL (#1516/#1517) the settlement-of-record is now `TradeSettlementExecuted`; the projection must also fold `TradeSettlementExecuted` (carrying the optional `bopCategory` tag) when BoP per-transaction reporting activates at licence-day, or cross-border settlements booked under the new model will be invisible to FinSurv.",
+        owner:
+          "Mira (Compliance / RegTech engineer, engineering) / Anya (Data & analytics engineer, engineering)",
+        targetTrigger:
+          "licence-day FinSurv BoP per-transaction reporting activation — `finsurv-bop-projection.ts` extended to fold `TradeSettlementExecuted` alongside the legacy settlement-confirmation/NDF-fixing events",
+        citations: [
+          "D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL",
+          "#1516",
+          "#1517",
+          "platform/markets/regulatory/finsurv-bop-projection.ts",
+        ],
       },
     ],
   },
@@ -1048,6 +1124,66 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Slice-3 post-approval settlement-model refinement
+// (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL, CEO-approved 2026-06-23; #1516/#1517)
+//
+// The Trade / Settlement / Product model landed AFTER the FX OTC vanilla
+// internal-test approval, so it is recorded EVENTS-FIRST as a post-approval
+// model refinement (NOT a re-approval, NOT a scope change):
+//   - a second `ProductConceptualised` carrying the refined lifecycle event
+//     family (settlement-of-record = `TradeSettlementExecuted`), latest-wins;
+//   - a `ProductPostApprovalFinding` recording the model refinement discovered
+//     post-approval (severity `medium` — a representation refinement, postings/
+//     settlement behaviour unchanged; the prior implicit-settlement representation
+//     was not wrong, just superseded by an explicit settlement-of-record);
+//   - a matching `ProductDimensionRetrospectiveReview` on the `accounting`
+//     dimension closing the finding within SLA (`revisedAttestation:
+//     "deferred-gap-added"` — the BoP-projection follow-on is the tracked gap),
+//     so `recon:npa-post-approval-finding-review` stays GREEN.
+// ---------------------------------------------------------------------------
+
+/**
+ * The lifecycle event family under the Trade / Settlement / Product model
+ * (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL). Three cleanly-separated constructs:
+ *   - Trade = the agreement: `FilInstrumentCreated` (executory receivable/payable).
+ *   - Settlement = the execution: `TradeSettlementExecuted` — uniform single-asset
+ *     settlement-OF-RECORD (FX spot = 2 legs: received-cash + paid-cash), each
+ *     materialising a holding AT COST and executing a specific trade; booked-vs-
+ *     settled drives derecognition + realised P&L (IAS 21 §28). REPLACES the
+ *     2-leg `FilFxSettlementConfirmed` representation.
+ *   - Product = the glue: the type-level rulebook + the per-trade `tradeFamily`
+ *     grouping (Create + its Settles + holdings under the trade id).
+ * `FilFxSettlementConfirmed` stays registered as the oracle / historical event
+ * only (retired as settlement-of-record).
+ */
+export const SETTLEMENT_MODEL_LIFECYCLE_FAMILY: readonly string[] = [
+  // Trade = agreement (executory receivable/payable).
+  "FilInstrumentCreated",
+  // Interim mark-to-market between Create and Settle (a Valuable-facet reval, not
+  // a settlement).
+  "FxPositionRevalued",
+  // Settlement = execution: uniform single-asset settlement-of-record.
+  "TradeSettlementExecuted",
+  // Derecognition / maturity of the trade instrument.
+  "FilInstrumentTerminated",
+  // Regulatory trade reporting.
+  "TradeReportSubmitted",
+  // Oracle / historical only — retired as settlement-of-record, superseded by
+  // `TradeSettlementExecuted` (kept registered for replay of historical events).
+  "FilFxSettlementConfirmed (oracle/historical — retired as settlement-of-record)",
+];
+
+/** Stable finding id for the Slice-3 settlement-model post-approval refinement. */
+export const FX_SETTLEMENT_MODEL_FINDING_ID = "PAF-FX-SETTLEMENT-MODEL-001";
+
+/**
+ * The dimension whose attestation the settlement-model refinement most directly
+ * touches (postings now derive derecognition + realised P&L from the explicit
+ * settlement-of-record). The retrospective review is recorded against it.
+ */
+export const FX_SETTLEMENT_MODEL_MISSED_DIMENSION = "accounting";
+
+// ---------------------------------------------------------------------------
 // Run the cycle (idempotent, append-only, gate-determined)
 // ---------------------------------------------------------------------------
 
@@ -1073,6 +1209,111 @@ function provenanceFor(variant: string) {
     variant: `fx-npa-cycle:${FX_NPA_PRODUCT_ID}:${variant}`,
     tags: ["npa-gate", "fx-otc-vanilla-npa-cycle", FX_NPA_PRODUCT_ID],
   });
+}
+
+/**
+ * Author the Slice-3 post-approval settlement-model refinement
+ * (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL, #1516/#1517) into `store`, events-first.
+ *
+ * Emits, all at FX_NPA_SETTLEMENT_MODEL_AS_OF (strictly post-approval → wins
+ * latest-wins on the conceptualisation; genuinely post-approval for the recon):
+ *   1. ProductConceptualised             — refined lifecycle event family
+ *      (settlement-of-record = `TradeSettlementExecuted`), same version (no
+ *      re-approval / version bump).
+ *   2. ProductPostApprovalFinding        — the model refinement discovered
+ *      post-approval (severity `medium`; settlement behaviour unchanged).
+ *   3. ProductDimensionRetrospectiveReview — the `accounting` owner closes the
+ *      finding within SLA (`revisedAttestation: "deferred-gap-added"`, the
+ *      BoP-projection follow-on), keeping `recon:npa-post-approval-finding-review`
+ *      GREEN.
+ *
+ * This is NOT a re-approval and NOT a scope change — the approval result and the
+ * declared scope are untouched (Slice-3 DO-NOT). It documents an already-
+ * implemented representation refinement (Slices 1–2) as a governance fact.
+ */
+function emitSettlementModelRefinement(store: EventStore, eventsEmitted: string[]): void {
+  const refinementChain = [...BASE_CHAIN, ...SETTLEMENT_MODEL_PR_CITATIONS];
+
+  // 1. Refined conceptualisation — latest-wins on the lifecycle event family.
+  store.append({
+    ...makeProductConceptualised({
+      asOf: FX_NPA_SETTLEMENT_MODEL_AS_OF,
+      entity: ENTITY,
+      actor: CYCLE_ACTOR,
+      citations: refinementChain,
+      payload: {
+        productId: FX_NPA_PRODUCT_ID,
+        version: FX_NPA_VERSION,
+        cdmComposition: {
+          name: "OTC Vanilla FX (Spot, Forward, Swap; Option at M5)",
+          family: "fx",
+          composedBy: CYCLE_ACTOR.id,
+          settlementModel: "trade-settlement-product",
+          settlementOfRecord: "TradeSettlementExecuted",
+          retiredSettlementOfRecord: "FilFxSettlementConfirmed",
+          decision: "D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL",
+        },
+        lifecycleEventFamily: [...SETTLEMENT_MODEL_LIFECYCLE_FAMILY],
+      },
+    }),
+    provenance: provenanceFor("conceptualised-settlement-model"),
+  });
+  eventsEmitted.push("ProductConceptualised");
+
+  // 2. Post-approval finding — the model refinement discovered post-approval.
+  store.append({
+    ...makeProductPostApprovalFinding({
+      asOf: FX_NPA_SETTLEMENT_MODEL_AS_OF,
+      entity: ENTITY,
+      actor: CYCLE_ACTOR,
+      citations: refinementChain,
+      payload: {
+        productId: FX_NPA_PRODUCT_ID,
+        findingId: FX_SETTLEMENT_MODEL_FINDING_ID,
+        severity: "medium",
+        title:
+          "FX settlement representation refined to the Trade / Settlement / Product model (settlement-of-record = TradeSettlementExecuted)",
+        description:
+          "Post-approval model refinement (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL, #1516/#1517): the FX OTC vanilla settlement-of-record is now the uniform single-asset `TradeSettlementExecuted` event (FX spot = 2 legs: received-cash + paid-cash), each materialising a holding AT COST and executing a specific trade; booked-vs-settled drives derecognition + realised P&L (IAS 21 §28). This REPLACES the 2-leg `FilFxSettlementConfirmed` representation (retired to oracle/historical only — Slice-2 finding: FX vanilla never actually emitted it in production; settlement was implicit via terminated{settled} + cash). Three cleanly-separated constructs: Trade = agreement (`FilInstrumentCreated`); Settlement = execution (`TradeSettlementExecuted`); Product = glue (type-level rulebook + per-trade `tradeFamily` grouping). Settlement/posting behaviour is unchanged (Slices 1–2 landed the code); this is a representation refinement, hence severity medium. Follow-on tracked as the conduct `fx-bop-projection-trade-settlement-source` deferred gap.",
+        discoveredBy: "Atlas (Core banking platform architect, engineering)",
+        discoveredAt: FX_NPA_SETTLEMENT_MODEL_AS_OF,
+        missedDimension: FX_SETTLEMENT_MODEL_MISSED_DIMENSION,
+        findingTrigger: "D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL settlement-model design (#1516/#1517)",
+        citations: refinementChain,
+      },
+    }),
+    provenance: provenanceFor("post-approval-finding-settlement-model"),
+  });
+  eventsEmitted.push("ProductPostApprovalFinding");
+
+  // 3. Retrospective review — closes the finding within SLA; deferred-gap-added.
+  store.append({
+    ...makeProductDimensionRetrospectiveReview({
+      asOf: FX_NPA_SETTLEMENT_MODEL_AS_OF,
+      entity: ENTITY,
+      actor: CYCLE_ACTOR,
+      citations: refinementChain,
+      payload: {
+        productId: FX_NPA_PRODUCT_ID,
+        findingId: FX_SETTLEMENT_MODEL_FINDING_ID,
+        dimension: FX_SETTLEMENT_MODEL_MISSED_DIMENSION,
+        reviewedBy: "Bea (Financial Accountant, finance)",
+        reviewedAt: FX_NPA_SETTLEMENT_MODEL_AS_OF,
+        rootCause:
+          "The Trade / Settlement / Product model post-dated the FX OTC vanilla internal-test approval: at approval time settlement was represented implicitly (terminated{settled} + materialised cash) and the never-emitted `FilFxSettlementConfirmed` was the nominal carrier. The accounting attestation was honest for the substrate that existed; the explicit single-asset settlement-of-record (`TradeSettlementExecuted`, holding-at-cost) is a later architectural refinement (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL), not a defect missed by the original attestation.",
+        correctiveAction:
+          "Accounting attestation render updated to cite the trade-settlement fold (`platform/accounting/posting-rules-v2/fx-instance-fold.ts`, `v2-core/posting-rules/trade-settlement.ts`); the conceptualisation lifecycle event family is refined to the settlement-of-record `TradeSettlementExecuted` (latest-wins). No posting-behaviour change — Slices 1–2 landed and balance-tested the fold. The one genuine follow-on (the FinSurv BoP per-transaction projection must also read `TradeSettlementExecuted` at licence-day) is recorded as the conduct `fx-bop-projection-trade-settlement-source` tracked deferred gap (no silent deferral).",
+        revisedAttestation: "deferred-gap-added",
+        citations: [
+          ...refinementChain,
+          "platform/accounting/posting-rules-v2/fx-instance-fold.ts",
+          "platform/markets/regulatory/finsurv-bop-projection.ts",
+        ],
+      },
+    }),
+    provenance: provenanceFor("retrospective-review-settlement-model"),
+  });
+  eventsEmitted.push("ProductDimensionRetrospectiveReview");
 }
 
 /**
@@ -1136,6 +1377,14 @@ export function runFxOtcVanillaNpaCycle(store: EventStore): FxNpaCycleResult {
           family: "fx",
           composedBy: CYCLE_ACTOR.id,
         },
+        // Lifecycle event family AS CONCEPTUALISED AT APPROVAL TIME. The Trade /
+        // Settlement / Product model (settlement-of-record = `TradeSettlementExecuted`)
+        // landed AFTER this internal-test approval (D-FX-TRADE-SETTLEMENT-PRODUCT-
+        // MODEL, 2026-06-23) and is recorded as a post-approval refinement: a
+        // second `ProductConceptualised` at FX_NPA_SETTLEMENT_MODEL_AS_OF supersedes
+        // this family latest-wins, and a `ProductPostApprovalFinding` +
+        // `ProductDimensionRetrospectiveReview` carry the governance fact. See
+        // `SETTLEMENT_MODEL_LIFECYCLE_FAMILY` below.
         lifecycleEventFamily: [
           "FxTradeExecuted",
           "FxPositionRevalued",
@@ -1262,6 +1511,12 @@ export function runFxOtcVanillaNpaCycle(store: EventStore): FxNpaCycleResult {
     provenance: provenanceFor("approved-internal-test"),
   });
   eventsEmitted.push("ProductApproved");
+
+  // 6. Post-approval settlement-model refinement (D-FX-TRADE-SETTLEMENT-PRODUCT-
+  //    MODEL, #1516/#1517) — landed AFTER the internal-test approval, recorded
+  //    events-first (refined conceptualisation + post-approval finding + its
+  //    retrospective review so the finding-review recon stays green).
+  emitSettlementModelRefinement(store, eventsEmitted);
 
   return {
     outcome: "approved-internal-test",

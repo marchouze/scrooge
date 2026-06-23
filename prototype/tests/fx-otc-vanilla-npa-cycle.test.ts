@@ -32,6 +32,9 @@ import { EventStore } from "../platform/event-store/store";
 import {
   FX_NPA_DIMENSIONS,
   FX_NPA_PRODUCT_ID,
+  FX_NPA_SETTLEMENT_MODEL_AS_OF,
+  FX_SETTLEMENT_MODEL_FINDING_ID,
+  SETTLEMENT_MODEL_LIFECYCLE_FAMILY,
   runFxOtcVanillaNpaCycle,
 } from "../platform/markets/products/fx-otc-vanilla-npa-cycle";
 import { runOnEvents } from "../platform/recon/product-approval-attestation-integrity";
@@ -161,9 +164,23 @@ describe("clean FX OTC vanilla NPA cycle", () => {
     }
   });
 
-  it("the full reconciled inventory is 36 well-formed deferred gaps (38 − 2 closed gaps dropped in FU2)", () => {
+  it("the full reconciled inventory is 37 well-formed deferred gaps (36 + the Slice-3 BoP follow-on)", () => {
     const total = FX_NPA_DIMENSIONS.reduce((n, d) => n + d.deferredGaps.length, 0);
-    expect(total).toBe(36);
+    expect(total).toBe(37);
+  });
+
+  it("Slice-3 (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL): the BoP-projection follow-on is a well-formed conduct deferred gap, licence-day-gated", () => {
+    const conduct = FX_NPA_DIMENSIONS.find((d) => d.dimension === "conduct");
+    expect(conduct?.result).toBe("design-attested");
+    const gap = conduct?.deferredGaps.find(
+      (g) => g.gapId === "fx-bop-projection-trade-settlement-source",
+    );
+    expect(gap, "conduct must carry the BoP-projection settlement-source gap").toBeDefined();
+    expect(gap?.title).toContain("TradeSettlementExecuted");
+    expect(gap?.title).toContain("finsurv-bop-projection.ts");
+    expect(gap?.targetTrigger).toContain("licence-day");
+    expect(gap?.citations).toContain("D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL");
+    expect(gap?.owner.length ?? 0).toBeGreaterThan(0);
   });
 
   it("every cycle event cites D-FX-OTC-CLOSURE-BACKLOG (the authorising decision is cited, not recorded, by the cycle)", () => {
@@ -244,5 +261,94 @@ describe("clean FX OTC vanilla NPA cycle", () => {
 
     // Still exactly one ProductApproved.
     expect(Array.from(store.replay({ type: "ProductApproved" })).length).toBe(1);
+  });
+});
+
+describe("Slice-3 post-approval settlement-model refinement (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL)", () => {
+  it("emits a refined ProductConceptualised whose lifecycle family is the settlement-of-record family (latest-wins, post-approval as_of)", () => {
+    const store = freshStore();
+    runFxOtcVanillaNpaCycle(store);
+
+    const conceptualisations = Array.from(store.replay({ type: "ProductConceptualised" }));
+    // The clean cycle emits one at approval time + one post-approval refinement.
+    expect(conceptualisations.length).toBe(2);
+
+    const latest = conceptualisations
+      .filter((e) => (e.payload as { productId?: string }).productId === FX_NPA_PRODUCT_ID)
+      .sort((a, b) => b.as_of.localeCompare(a.as_of))[0];
+    expect(latest?.as_of).toBe(FX_NPA_SETTLEMENT_MODEL_AS_OF);
+    const family = (latest?.payload as { lifecycleEventFamily?: string[] }).lifecycleEventFamily;
+    expect(family).toEqual([...SETTLEMENT_MODEL_LIFECYCLE_FAMILY]);
+    expect(family).toContain("TradeSettlementExecuted");
+    expect(family).toContain("FilInstrumentCreated");
+    // FilFxSettlementConfirmed appears only as the oracle/historical marker.
+    expect(family?.some((f) => f.startsWith("TradeSettlementExecuted"))).toBe(true);
+    expect(family).not.toContain("SettlementConfirmed");
+  });
+
+  it("emits a ProductPostApprovalFinding for the settlement-model refinement", () => {
+    const store = freshStore();
+    runFxOtcVanillaNpaCycle(store);
+
+    const findings = Array.from(store.replay({ type: "ProductPostApprovalFinding" }));
+    expect(findings.length).toBe(1);
+    const p = findings[0]?.payload as {
+      findingId?: string;
+      severity?: string;
+      missedDimension?: string;
+      productId?: string;
+    };
+    expect(p.findingId).toBe(FX_SETTLEMENT_MODEL_FINDING_ID);
+    expect(p.productId).toBe(FX_NPA_PRODUCT_ID);
+    expect(p.severity).toBe("medium");
+    expect(p.missedDimension).toBe("accounting");
+    expect(findings[0]?.citations).toContain("D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL");
+  });
+
+  it("emits a matching ProductDimensionRetrospectiveReview within SLA so the finding is closed (recon stays green)", () => {
+    const store = freshStore();
+    runFxOtcVanillaNpaCycle(store);
+
+    const reviews = Array.from(store.replay({ type: "ProductDimensionRetrospectiveReview" }));
+    expect(reviews.length).toBe(1);
+    const r = reviews[0]?.payload as {
+      findingId?: string;
+      dimension?: string;
+      revisedAttestation?: string;
+      reviewedAt?: string;
+    };
+    expect(r.findingId).toBe(FX_SETTLEMENT_MODEL_FINDING_ID);
+    expect(r.dimension).toBe("accounting");
+    expect(r.revisedAttestation).toBe("deferred-gap-added");
+
+    // Every finding has a matching review keyed by (productId, findingId) — the
+    // invariant recon:npa-post-approval-finding-review asserts.
+    const findingIds = new Set(
+      Array.from(store.replay({ type: "ProductPostApprovalFinding" })).map(
+        (e) => (e.payload as { findingId?: string }).findingId,
+      ),
+    );
+    const reviewIds = new Set(reviews.map((e) => (e.payload as { findingId?: string }).findingId));
+    for (const id of findingIds) expect(reviewIds.has(id)).toBe(true);
+  });
+
+  it("every cycle event cites D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL (Slice-3 traceability)", () => {
+    const store = freshStore();
+    runFxOtcVanillaNpaCycle(store);
+    for (const ev of store.replay()) {
+      expect(
+        ev.citations.includes("D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL"),
+        `${ev.type} must cite D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL`,
+      ).toBe(true);
+    }
+  });
+
+  it("does NOT re-approve or change scope — still exactly one ProductApproved (internal-test)", () => {
+    const store = freshStore();
+    runFxOtcVanillaNpaCycle(store);
+    const approvals = Array.from(store.replay({ type: "ProductApproved" }));
+    expect(approvals.length).toBe(1);
+    const approved = approvals[0]?.payload as { approvedBy?: string };
+    expect(approved.approvedBy).toContain("internal-test");
   });
 });
