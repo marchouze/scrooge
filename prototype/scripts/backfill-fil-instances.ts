@@ -542,18 +542,25 @@ function mirrorDescriptorToAnchor(d: FilDescriptor, fxInstance: string): number 
     signedMajor: l.signedMajor,
     side: l.side,
   }));
-  return materialiseSettledCash({
-    tradeId: d.tradeId,
-    fxInstance,
-    fxTypeUrn: d.typeUrn,
-    settledAsOf: d.terminal.asOf,
-    entity: ENTITY,
-    tenant: TENANT,
-    reporting: REPORTING,
-    counterpartyId: d.economicTerms.counterpartyId,
-    nettingSetId: d.economicTerms.nettingSetId,
-    cashLegs: anchorLegs,
-  });
+  return materialiseSettledCash(
+    {
+      tradeId: d.tradeId,
+      fxInstance,
+      fxTypeUrn: d.typeUrn,
+      settledAsOf: d.terminal.asOf,
+      entity: ENTITY,
+      tenant: TENANT,
+      reporting: REPORTING,
+      counterpartyId: d.economicTerms.counterpartyId,
+      nettingSetId: d.economicTerms.nettingSetId,
+      cashLegs: anchorLegs,
+    },
+    // HISTORICAL reconstruction — do NOT back-date the born-V2 TradeSettlementExecuted
+    // settlement-of-record onto the pre-cutover settled fixture (replay-safe &
+    // append-only; the fold keeps deriving those legs from FilInstrumentTerminated).
+    // D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL Slice 2: only the forward runtime emits it.
+    { emitSettlementEvents: false },
+  );
 }
 
 function emitFilInstances(descriptors: readonly FilDescriptor[]): {

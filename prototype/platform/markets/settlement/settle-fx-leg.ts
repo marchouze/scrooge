@@ -33,6 +33,7 @@ import {
   type SettledCashLeg,
   buildFxTerminatedPayload,
   buildSettledCashPayloads,
+  buildTradeSettlementPayloads,
 } from "../../../v2-core/fil-instances/cash-materialisation";
 import type { EventStore } from "../../event-store/store";
 import { type CashSink, EventStoreCashSink } from "./cash-sink";
@@ -44,6 +45,11 @@ const CITATIONS = [
   "D-CASH-ASSET-CLASS-V1",
   "D-FIL-FRAMEWORK-UNIFICATION",
 ];
+const SETTLEMENT_CITATIONS = [
+  "D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL",
+  "D-CASH-ASSET-CLASS-V1",
+  "D-FIL-FRAMEWORK-UNIFICATION",
+];
 
 export interface SettleFxResult {
   /** Whether the trade was settled (a confirmation existed). */
@@ -52,6 +58,11 @@ export interface SettleFxResult {
   readonly cashInstancesMaterialised: number;
   /** Whether the FX instrument was terminated (settled) this call. */
   readonly fxTerminated: boolean;
+  /**
+   * Count of NEW `TradeSettlementExecuted` settlement-of-record events emitted
+   * (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL, Slice 2). FX spot ⇒ 2 (received + paid).
+   */
+  readonly settlementsExecuted: number;
 }
 
 /**
@@ -75,7 +86,12 @@ export function settleFxLeg(args: {
     (e) => (e.payload as { tradeId?: string }).tradeId === tradeId,
   );
   if (!confirmed) {
-    return { settled: false, cashInstancesMaterialised: 0, fxTerminated: false };
+    return {
+      settled: false,
+      cashInstancesMaterialised: 0,
+      fxTerminated: false,
+      settlementsExecuted: 0,
+    };
   }
   const c = confirmed.payload as {
     counterpartyId: string;
@@ -114,7 +130,7 @@ export function settleFxLeg(args: {
     });
   }
 
-  const builtLegs = buildSettledCashPayloads({
+  const materialisationInput = {
     tradeId,
     tenant: TENANT,
     reporting,
@@ -124,7 +140,28 @@ export function settleFxLeg(args: {
     fxInstance,
     legs,
     originatingEvent,
-  });
+  };
+  const builtLegs = buildSettledCashPayloads(materialisationInput);
+
+  // Slice 2 (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL): emit the born-V2 single-asset
+  // `TradeSettlementExecuted` settlement-of-record FIRST (one per settled leg —
+  // spot ⇒ 2), then materialise the holding-at-cost via `buildSettledCashPayloads`.
+  // Both are built from ONE grammar (the shared materialisation input), idempotent
+  // on the deterministic holding URN. The settlement event is the explicit recorded
+  // fact (Principle 1); the GL fold derives its legs from it (dual-read with the
+  // historical FilFxSettlementConfirmed).
+  let settlementsExecuted = 0;
+  for (const settle of buildTradeSettlementPayloads(materialisationInput)) {
+    if (sink.hasSettlement(settle.instance)) continue;
+    sink.appendSettlement({
+      asOf: settledAsOf,
+      entity: ENTITY,
+      citations: SETTLEMENT_CITATIONS,
+      eventId: `${scenarioId}:${tradeId}:settle-${sideOf(settle.instance)}`,
+      payload: settle.payload,
+    });
+    settlementsExecuted += 1;
+  }
 
   let materialised = 0;
   for (const built of builtLegs) {
@@ -163,7 +200,12 @@ export function settleFxLeg(args: {
     fxTerminated = true;
   }
 
-  return { settled: true, cashInstancesMaterialised: materialised, fxTerminated };
+  return {
+    settled: true,
+    cashInstancesMaterialised: materialised,
+    fxTerminated,
+    settlementsExecuted,
+  };
 }
 
 /** Recover the `received`/`paid` side suffix from a cash-instance URN for the

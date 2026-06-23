@@ -36,7 +36,7 @@
 // Cites: IFRS 9 §3.2.3 (per-leg derecognition); IAS 21 §28 (settlement-date FX).
 // Author: Atlas (Core banking platform architect, engineering).
 
-import { roundDecimal, toDecimal } from "../fil-core/decimal";
+import { decimalToString, negD, roundDecimal, toDecimal } from "../fil-core/decimal";
 import { type Money, moneyFromDecimal } from "../fil-core/primitives";
 import { formatInstanceUrn } from "../fil-core/urn";
 import { CASH_BALANCE_TYPE_URN } from "../fil-models/cash/types/cash-type-definitions";
@@ -46,6 +46,10 @@ import {
   filInstrumentCreatedPayloadSchema,
   filInstrumentTerminatedPayloadSchema,
 } from "./events";
+import {
+  type TradeSettlementExecutedPayload,
+  tradeSettlementExecutedPayloadSchema,
+} from "./trade-settlement";
 
 // ---------------------------------------------------------------------------
 // Settled cash leg — one settled cash flow of a settling FX trade. Amounts are
@@ -153,6 +157,74 @@ export function buildSettledCashPayloads(input: CashMaterialisationInput): Built
       },
     });
     out.push({ instance, payload });
+  }
+  return out;
+}
+
+/**
+ * Build the born-V2 single-asset `TradeSettlementExecuted` settlement-of-record
+ * payloads — ONE per settled leg (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL, Slice 2).
+ * An FX spot ⇒ TWO (received + paid). Shares the SAME `CashMaterialisationInput`
+ * as `buildSettledCashPayloads`, so the settlement events + the cash holdings they
+ * recognise are built from ONE grammar (Charter cmd 4 — source, don't fork): the
+ * `holdingInstance` URN is the SAME `<tradeId>-cash-<side>` stem the cash create
+ * uses, the `tradeInstance` is the FX instance (the grouping id), and the movement
+ * sign matches the cash leg's `signedMajor`.
+ *
+ * Settlement-rate: the simulator/production seam settles a spot at the CONTRACTED
+ * rate (no slippage), so the settled cash IS the booked carrying amount — i.e.
+ * `bookedCarrying == cost == |movement|` and the realised P&L is zero. (When a
+ * richer seam carries a distinct booked rate, pass it via `bookedMajorBySide`.)
+ *
+ * Pure — no store. The caller checks idempotency (`sink.hasSettlement`) + routes
+ * to its sink.
+ */
+export function buildTradeSettlementPayloads(
+  input: CashMaterialisationInput & {
+    /** SA-CCR asset class of the holding (cash for an FX cash leg). */
+    readonly holdingAssetClass?: "cash";
+    /**
+     * Optional per-side BOOKED carrying magnitude (positive major units) when the
+     * seam knows a booked rate distinct from the settled one. Absent ⇒ booked ==
+     * settled (spot at contracted rate; zero realised P&L).
+     */
+    readonly bookedMajorBySide?: Partial<Record<"received" | "paid", number>>;
+  },
+): { instance: string; payload: TradeSettlementExecutedPayload }[] {
+  const holdingType = input.cashTypeUrn ?? CASH_BALANCE_TYPE_URN;
+  const out: { instance: string; payload: TradeSettlementExecutedPayload }[] = [];
+  for (const leg of input.legs) {
+    if (leg.signedMajor === 0) continue;
+    const holdingInstance = formatInstanceUrn({
+      tenant: input.tenant,
+      instanceId: `${input.tradeId}-cash-${leg.side}`,
+    });
+    const magnitude = Math.abs(leg.signedMajor);
+    const settledMoney = majorNumberToCashMoney(magnitude, leg.currency);
+    const bookedMajor = input.bookedMajorBySide?.[leg.side] ?? magnitude;
+    const bookedMoney = majorNumberToCashMoney(bookedMajor, leg.currency);
+    // Signed movement: + received (holding ↑), − paid (holding ↓).
+    const signedAmount =
+      leg.signedMajor >= 0
+        ? settledMoney.amount
+        : decimalToString(negD(toDecimal(settledMoney.amount)));
+    const payload = tradeSettlementExecutedPayloadSchema.parse({
+      kind: "TradeSettlementExecuted",
+      tradeInstance: input.fxInstance,
+      holdingInstance,
+      holdingType,
+      holdingAssetClass: input.holdingAssetClass ?? "cash",
+      movement: { currency: leg.currency, amount: signedAmount },
+      bookedCarrying: { currency: leg.currency, amount: bookedMoney.amount },
+      // A cash holding is recognised at its settled cash amount (cost === settled).
+      cost: { currency: leg.currency, amount: settledMoney.amount },
+      tenant: input.tenant,
+      // The settlement payload's `asOf` is an offset datetime (the schema requires
+      // it); a bare settlement DATE → start-of-day UTC (same as the cash builder).
+      asOf: asOfDateTime(input.settledAsOf),
+      originatingEvent: { ...input.originatingEvent },
+    });
+    out.push({ instance: holdingInstance, payload });
   }
   return out;
 }

@@ -61,6 +61,7 @@ import { getBankConfig } from "../../config/loader";
 import {
   type SettledCashLeg as SharedSettledCashLeg,
   buildSettledCashPayloads,
+  buildTradeSettlementPayloads,
 } from "../../../v2-core/fil-instances/cash-materialisation";
 import { newEventId } from "../../core/types";
 import { AnchorDbCashSink } from "../settlement/cash-sink";
@@ -83,6 +84,12 @@ const FIL_CITATIONS = [
   "D-CASH-ASSET-CLASS-V1",
   "D-FIL-FRAMEWORK-UNIFICATION",
   "D-MODEL-BINDING-CONTRACT-V1",
+  "P1-EVENTS-AS-TRUTH",
+];
+const TRADE_SETTLEMENT_CITATIONS = [
+  "D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL",
+  "D-CASH-ASSET-CLASS-V1",
+  "D-FIL-FRAMEWORK-UNIFICATION",
   "P1-EVENTS-AS-TRUTH",
 ];
 
@@ -154,6 +161,17 @@ const ACTOR = { type: "service" as const, id: "agent:settlement:materialise-sett
 export interface MaterialisationOpts {
   /** Override the v2 anchor store path — used by tests. */
   readonly dbPath?: string;
+  /**
+   * Whether to emit the born-V2 `TradeSettlementExecuted` settlement-of-record
+   * alongside the cash holdings (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL, Slice 2).
+   * Defaults to `true` for the LIVE production settlement runtime. The HISTORICAL
+   * backfill (`scripts/backfill-fil-instances.ts`) passes `false`: it reconstructs
+   * the pre-cutover settled fixture from v1 events, and back-dating a NEW settlement
+   * event model onto that history would rewrite the historical record (replay-safe
+   * & append-only — the brief forbids rewriting the settled FX fixture; the fold
+   * keeps deriving those legs from the historical `FilInstrumentTerminated{settled}`).
+   */
+  readonly emitSettlementEvents?: boolean;
 }
 
 /** Append a FIL lifecycle event to the anchor store, idempotent on instance+type. */
@@ -281,7 +299,7 @@ export function materialiseSettledCash(
   // grammar (`v2-core/fil-instances/cash-materialisation.ts`), then route them to
   // the anchor-store sink. The scenario path routes the SAME payloads to an
   // EventStoreCashSink — one grammar, one sink, parameterised by store.
-  const built = buildSettledCashPayloads({
+  const materialisationInput = {
     tradeId: fx.tradeId,
     tenant: fx.tenant,
     reporting: fx.reporting,
@@ -294,12 +312,32 @@ export function materialiseSettledCash(
     // FX instance (carried in economicTerms.originatingInstrument for the graph).
     originatingEvent: { eventType: "SettlementConfirmed", eventId: fx.fxInstance },
     cashTypeUrn: rule.materialisesTypeUrn,
-  });
+  };
+  const built = buildSettledCashPayloads(materialisationInput);
 
   const dbPath = opts.dbPath ?? resolveV2AnchorDb();
+  const emitSettlements = opts.emitSettlementEvents ?? true;
   const sink = new AnchorDbCashSink(dbPath);
   let emitted = 0;
   try {
+    // Slice 2 (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL): emit the born-V2 single-asset
+    // `TradeSettlementExecuted` settlement-of-record (one per settled leg) FIRST,
+    // then the holding-at-cost cash create — both from ONE grammar, idempotent on
+    // the holding URN. The settlement event is the explicit recorded fact
+    // (Principle 1); the GL fold derives its legs from it (dual-read with the
+    // historical FilFxSettlementConfirmed). The historical backfill opts out
+    // (`emitSettlementEvents:false`) so the pre-cutover fixture stays byte-stable.
+    if (emitSettlements) {
+      for (const settle of buildTradeSettlementPayloads(materialisationInput)) {
+        if (sink.hasSettlement(settle.instance)) continue;
+        sink.appendSettlement({
+          asOf: fx.settledAsOf,
+          entity: fx.entity,
+          citations: TRADE_SETTLEMENT_CITATIONS,
+          payload: settle.payload,
+        });
+      }
+    }
     for (const leg of built) {
       if (sink.hasCreated(leg.instance)) continue;
       sink.appendCreated({
