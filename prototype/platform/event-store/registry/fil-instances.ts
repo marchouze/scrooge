@@ -53,7 +53,11 @@ const SETTLEMENT_CITATIONS = [
 
 // The born-V2 generic single-asset settlement event (D-FX-TRADE-SETTLEMENT-
 // PRODUCT-MODEL). It is the uniform-movement successor model to the FX-specific
-// FilFxSettlementConfirmed; in Slice 1 it runs in parallel (dark, not yet emitted).
+// FilFxSettlementConfirmed. Slice 2 makes it LIVE: the FX-vanilla settlement seam
+// (settle-fx-leg.ts / materialise-settled-cash.ts) emits it as the settlement-of-
+// record going forward, and the GL fold (fx-instance-fold.ts) derives its legs
+// from it (dual-read with the historical FilFxSettlementConfirmed, which stays
+// registered for replay + oracle — not removed).
 const TRADE_SETTLEMENT_CITATIONS = [
   "D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL",
   "D-CASH-ASSET-CLASS-V1",

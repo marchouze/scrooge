@@ -17,18 +17,23 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 
 import {
+  type FilFxSettlementConfirmedPayload,
+  filFxSettlementConfirmedPayloadSchema,
   filInstrumentAmendedPayloadSchema,
   filInstrumentCreatedPayloadSchema,
   filInstrumentTerminatedPayloadSchema,
 } from "../../../v2-core/fil-instances/events";
+import { decomposeFxSettlementToTradeSettlements } from "../../../v2-core/posting-rules/trade-settlement";
 import { FX_TREATMENT_MODULES } from "../../../v2-core/reporting-treatments/fx-modules";
 import { filInstanceTreatmentElectedSchema } from "../../../v2-core/reporting-treatments/instance-election";
 import { amountToMinorUnits } from "../../core/decimal-money";
 import { legAmountMoney } from "../../core/money-codec";
 import {
+  makeFilFxSettlementConfirmed,
   makeFilInstrumentAmended,
   makeFilInstrumentCreated,
   makeFilInstrumentTerminated,
+  makeTradeSettlementExecuted,
 } from "../../event-store/event-types/fil-instances";
 import { makeFilInstanceTreatmentElected } from "../../event-store/event-types/instance-election";
 import { makeReportingTreatmentDeclared } from "../../event-store/event-types/reporting-treatments";
@@ -320,6 +325,127 @@ describe("deriveFxInstanceLegs — state-driven net == event-fold net (byte-equi
 
     const { stateNet } = expectStateNetMatchesEventNet(store);
     expect(stateNet.size).toBeGreaterThan(0);
+  });
+});
+
+describe("deriveFxInstanceLegs — DUAL-READ settlement (Slice 2: TradeSettlementExecuted == FilFxSettlementConfirmed)", () => {
+  const SETTLE_CITES = ["D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL"];
+
+  function fxSettlementConfirmed(
+    id: string,
+    asOf: string,
+    terms: {
+      boughtBooked: string;
+      boughtSettled: string;
+      soldBooked: string;
+      soldSettled: string;
+    },
+  ): FilFxSettlementConfirmedPayload {
+    return filFxSettlementConfirmedPayloadSchema.parse({
+      kind: "FilFxSettlementConfirmed",
+      instance: instanceUrn(id),
+      type: FX_TYPE_URN,
+      tenant: TENANT,
+      asOf,
+      originatingEvent: { eventType: "FxSimSettlementConfirmed", eventId: `settle:${id}` },
+      legRole: "spot",
+      boughtBooked: { currency: "USD", amount: terms.boughtBooked },
+      boughtSettled: { currency: "USD", amount: terms.boughtSettled },
+      soldBooked: { currency: "ZAR", amount: terms.soldBooked },
+      soldSettled: { currency: "ZAR", amount: terms.soldSettled },
+    });
+  }
+
+  /** Seed an FX trade create so the register carries the trade row + treatment
+   * resolves, then settle it via the OLD (FilFxSettlementConfirmed) path. */
+  function storeWithOldSettlement(id: string, s: FilFxSettlementConfirmedPayload): EventStore {
+    const store = new EventStore(":memory:");
+    seedTreatmentModules(store);
+    store.append(fxCreated(id, "long", "9260000", "2026-06-01T10:00:00.000Z"));
+    store.append({
+      ...makeFilFxSettlementConfirmed({
+        asOf: s.asOf,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: SETTLE_CITES,
+        payload: s,
+      }),
+      provenance: PROD_TAG,
+    });
+    return store;
+  }
+
+  /** Same trade create, settled via the NEW (N TradeSettlementExecuted) path —
+   * decomposed from the SAME FX settlement terms. */
+  function storeWithNewSettlement(id: string, s: FilFxSettlementConfirmedPayload): EventStore {
+    const store = new EventStore(":memory:");
+    seedTreatmentModules(store);
+    store.append(fxCreated(id, "long", "9260000", "2026-06-01T10:00:00.000Z"));
+    for (const settlement of decomposeFxSettlementToTradeSettlements({ settlement: s })) {
+      store.append({
+        ...makeTradeSettlementExecuted({
+          asOf: settlement.asOf,
+          entity: ENTITY,
+          actor: ACTOR,
+          citations: SETTLE_CITES,
+          payload: settlement,
+        }),
+        provenance: PROD_TAG,
+      });
+    }
+    return store;
+  }
+
+  test("no realised P&L: N TradeSettlementExecuted net == single FilFxSettlementConfirmed (state fold)", () => {
+    const s = fxSettlementConfirmed("FX-SETTLE-A", "2026-06-10T10:00:00.000Z", {
+      boughtBooked: "1000000",
+      boughtSettled: "1000000",
+      soldBooked: "18500000",
+      soldSettled: "18500000",
+    });
+    const oldNet = netByAccountCurrency(
+      deriveFxInstanceLegs(args(storeWithOldSettlement("FX-SETTLE-A", s))).legs,
+    );
+    const newNet = netByAccountCurrency(
+      deriveFxInstanceLegs(args(storeWithNewSettlement("FX-SETTLE-A", s))).legs,
+    );
+    expect([...newNet.keys()].sort()).toEqual([...oldNet.keys()].sort());
+    for (const [k, v] of oldNet) expect(newNet.get(k)).toBe(v);
+    // Non-vacuity: settlement actually moved cash + extinguished the obligation.
+    expect([...oldNet.keys()].some((k) => k.startsWith("ACC-1200-"))).toBe(true);
+  });
+
+  test("realised P&L (settled != booked both legs): N TradeSettlementExecuted net == single FilFxSettlementConfirmed", () => {
+    const s = fxSettlementConfirmed("FX-SETTLE-B", "2026-06-10T10:00:00.000Z", {
+      boughtBooked: "1000000",
+      boughtSettled: "1010000",
+      soldBooked: "18500000",
+      soldSettled: "18400000",
+    });
+    const oldNet = netByAccountCurrency(
+      deriveFxInstanceLegs(args(storeWithOldSettlement("FX-SETTLE-B", s))).legs,
+    );
+    const newNet = netByAccountCurrency(
+      deriveFxInstanceLegs(args(storeWithNewSettlement("FX-SETTLE-B", s))).legs,
+    );
+    expect([...newNet.keys()].sort()).toEqual([...oldNet.keys()].sort());
+    for (const [k, v] of oldNet) expect(newNet.get(k)).toBe(v);
+    // Non-vacuity: realised P&L (ACC-2100-006) is carried by BOTH paths.
+    expect(oldNet.has("ACC-2100-006|USD") || oldNet.has("ACC-2100-006|ZAR")).toBe(true);
+  });
+
+  test("the new-path settlement legs attach to the TRADE instance (grouping id), not the holding", () => {
+    const s = fxSettlementConfirmed("FX-SETTLE-C", "2026-06-10T10:00:00.000Z", {
+      boughtBooked: "1000000",
+      boughtSettled: "1010000",
+      soldBooked: "18500000",
+      soldSettled: "18400000",
+    });
+    const fold = deriveFxInstanceLegs(args(storeWithNewSettlement("FX-SETTLE-C", s)));
+    const settleLegs = fold.legs.filter((l) => l.postingRuleId === "PR-FX-SETTLE-V2");
+    expect(settleLegs.length).toBeGreaterThan(0);
+    // sourceEventId is the trade instance — the settlement is grouped under the trade.
+    expect(settleLegs.every((l) => l.sourceEventId === instanceUrn("FX-SETTLE-C"))).toBe(true);
   });
 });
 

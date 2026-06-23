@@ -35,10 +35,12 @@ import type {
   FilInstrumentCreatedPayload,
   FilInstrumentTerminatedPayload,
 } from "../../../v2-core/fil-instances/events";
+import type { TradeSettlementExecutedPayload } from "../../../v2-core/fil-instances/trade-settlement";
 import { newEventId } from "../../core/types";
 import {
   makeFilInstrumentCreated,
   makeFilInstrumentTerminated,
+  makeTradeSettlementExecuted,
 } from "../../event-store/event-types/fil-instances";
 import type { EventStore } from "../../event-store/store";
 
@@ -51,6 +53,13 @@ export interface CashSink {
   hasCreated(instanceUrn: string): boolean;
   /** Has a FilInstrumentTerminated for this instance URN already been emitted? */
   hasTerminated(instanceUrn: string): boolean;
+  /**
+   * Has a `TradeSettlementExecuted` for this HOLDING instance URN already been
+   * emitted? (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL, Slice 2.) Idempotency keys on the
+   * deterministic holding URN — the same `<tradeId>-cash-<side>` stem the cash
+   * create uses — so a re-run appends nothing (append-only, replay-safe).
+   */
+  hasSettlement(holdingInstanceUrn: string): boolean;
   /** Append a FilInstrumentCreated. The sink owns event-id + envelope. */
   appendCreated(args: {
     readonly asOf: string;
@@ -66,6 +75,18 @@ export interface CashSink {
     readonly entity: string;
     readonly citations: readonly string[];
     readonly payload: FilInstrumentTerminatedPayload;
+    readonly eventId?: string;
+  }): void;
+  /**
+   * Append a `TradeSettlementExecuted` — the born-V2 single-asset settlement-of-
+   * record (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL, Slice 2). The sink owns event-id +
+   * envelope.
+   */
+  appendSettlement(args: {
+    readonly asOf: string;
+    readonly entity: string;
+    readonly citations: readonly string[];
+    readonly payload: TradeSettlementExecutedPayload;
     readonly eventId?: string;
   }): void;
 }
@@ -99,6 +120,12 @@ export class EventStoreCashSink implements CashSink {
     );
   }
 
+  hasSettlement(holdingInstanceUrn: string): boolean {
+    return [...this.store.replay({ type: "TradeSettlementExecuted" })].some(
+      (e) => (e.payload as { holdingInstance?: string }).holdingInstance === holdingInstanceUrn,
+    );
+  }
+
   appendCreated(args: {
     readonly asOf: string;
     readonly entity: string;
@@ -127,6 +154,25 @@ export class EventStoreCashSink implements CashSink {
   }): void {
     this.store.append(
       makeFilInstrumentTerminated({
+        asOf: args.asOf,
+        entity: args.entity,
+        actor: this.actor,
+        citations: [...args.citations],
+        eventId: args.eventId ?? newEventId(),
+        payload: args.payload,
+      }),
+    );
+  }
+
+  appendSettlement(args: {
+    readonly asOf: string;
+    readonly entity: string;
+    readonly citations: readonly string[];
+    readonly payload: TradeSettlementExecutedPayload;
+    readonly eventId?: string;
+  }): void {
+    this.store.append(
+      makeTradeSettlementExecuted({
         asOf: args.asOf,
         entity: args.entity,
         actor: this.actor,
@@ -194,8 +240,19 @@ export class AnchorDbCashSink implements CashSink {
     return this.has("FilInstrumentTerminated", instanceUrn);
   }
 
+  hasSettlement(holdingInstanceUrn: string): boolean {
+    const rows = this.db
+      .query<{ payload: string }, [string]>("SELECT payload FROM v2_events WHERE type = ?")
+      .all("TradeSettlementExecuted");
+    for (const r of rows) {
+      const p = JSON.parse(r.payload) as { holdingInstance?: string };
+      if (p.holdingInstance === holdingInstanceUrn) return true;
+    }
+    return false;
+  }
+
   private insert(
-    evType: "FilInstrumentCreated" | "FilInstrumentTerminated",
+    evType: "FilInstrumentCreated" | "FilInstrumentTerminated" | "TradeSettlementExecuted",
     args: {
       readonly asOf: string;
       readonly entity: string;
@@ -244,6 +301,19 @@ export class AnchorDbCashSink implements CashSink {
     readonly eventId?: string;
   }): void {
     this.insert("FilInstrumentTerminated", {
+      ...args,
+      payload: args.payload as unknown as Record<string, unknown>,
+    });
+  }
+
+  appendSettlement(args: {
+    readonly asOf: string;
+    readonly entity: string;
+    readonly citations: readonly string[];
+    readonly payload: TradeSettlementExecutedPayload;
+    readonly eventId?: string;
+  }): void {
+    this.insert("TradeSettlementExecuted", {
       ...args,
       payload: args.payload as unknown as Record<string, unknown>,
     });

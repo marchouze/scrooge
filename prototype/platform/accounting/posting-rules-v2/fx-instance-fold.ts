@@ -63,6 +63,7 @@ import type {
   FilInstrumentTerminatedPayload,
   FilNdfFixingObservedPayload,
 } from "../../../v2-core/fil-instances/events";
+import type { TradeSettlementExecutedPayload } from "../../../v2-core/fil-instances/trade-settlement";
 import {
   postFxDerecognitionLegs,
   postFxFvociReclassLegs,
@@ -71,6 +72,7 @@ import {
   postFxSwapFarLegLegs,
   postFxSwapNearLegLegs,
 } from "../../../v2-core/posting-rules/fx-settlement";
+import { postTradeSettlementLegs } from "../../../v2-core/posting-rules/trade-settlement";
 import {
   type InstanceElectionRegister,
   findInstanceElection,
@@ -111,6 +113,15 @@ const FX_FIL_EVENT_TYPES = [
   "FilInstrumentCreated",
   "FilInstrumentAmended",
   "FilInstrumentTerminated",
+  // DUAL-READ settlement (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL, Slice 2). The fold
+  // consumes the born-V2 uniform single-asset `TradeSettlementExecuted` (the
+  // production settlement-of-record going forward) AND the historical
+  // `FilFxSettlementConfirmed` (oracle + replay of any pre-cutover settled fixture).
+  // Both route their settlement legs through the SAME per-movement primitive
+  // (`postSettlementMovementLegs`), so N single-asset settlements net byte-identical
+  // to the one two-leg event (proven by `recon:gl-v2-fold-equivalence-fx`). The
+  // historical event is NOT removed — replay-safe & append-only.
+  "TradeSettlementExecuted",
   "FilFxSettlementConfirmed",
   "FilNdfFixingObserved",
 ] as const;
@@ -225,6 +236,19 @@ function ndfFixingObservedLegs(payload: FilNdfFixingObservedPayload): FxPostingL
   });
 }
 
+/**
+ * Single-asset `TradeSettlementExecuted` legs (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL,
+ * Slice 2). Maps ONE uniform movement onto its three GL legs through the SAME
+ * per-movement primitive the two-leg FX settlement composes, so N single-asset
+ * settlements of one trade net byte-identical to its single `FilFxSettlementConfirmed`
+ * spot path (`recon:gl-v2-fold-equivalence-fx`). The leg `sourceEventId` is the
+ * trade instance — identical to the FX settlement path's `instanceId` — so the GL
+ * addressing matches.
+ */
+function tradeSettlementExecutedLegs(payload: TradeSettlementExecutedPayload): FxPostingLeg[] {
+  return postTradeSettlementLegs(payload);
+}
+
 // ---------------------------------------------------------------------------
 // The minimal payload shape the derivation reads off each lifecycle event.
 // ---------------------------------------------------------------------------
@@ -234,13 +258,31 @@ interface FilLifecyclePayloadMinimal {
     | "FilInstrumentCreated"
     | "FilInstrumentAmended"
     | "FilInstrumentTerminated"
+    | "TradeSettlementExecuted"
     | "FilFxSettlementConfirmed"
     | "FilNdfFixingObserved";
   readonly type?: string;
+  /** The instrument URN this event keys on. Absent on `TradeSettlementExecuted`,
+   * which keys on `tradeInstance` (see `groupingKeyOf`). */
   readonly instance?: string;
+  /** Present on `TradeSettlementExecuted` — the trade (grouping id) this settles. */
+  readonly tradeInstance?: string;
   readonly asOf?: string;
   readonly originatingEvent?: { readonly eventType: string; readonly eventId: string };
   readonly economicTerms?: { readonly productId?: string };
+}
+
+/**
+ * The register-instance key an event groups under. Every lifecycle event keys on
+ * `instance` EXCEPT `TradeSettlementExecuted`, whose settlement legs belong to the
+ * TRADE it executes (`tradeInstance`, the grouping / booking id Slice 1 added) —
+ * NOT to the settled holding. Grouping it under the trade attaches its settlement
+ * legs to the FX trade row, exactly where `FilFxSettlementConfirmed{instance:trade}`
+ * sat.
+ */
+function groupingKeyOf(payload: FilLifecyclePayloadMinimal): string {
+  if (payload.kind === "TradeSettlementExecuted") return payload.tradeInstance ?? "";
+  return payload.instance ?? "";
 }
 
 /** One lifecycle event grouped under its instance, in deterministic order. */
@@ -343,7 +385,9 @@ export function deriveFxInstanceLegs(args: FxInstanceFoldArgs): FxFoldResult {
   const eventsByInstance = new Map<string, GroupedFilEvent[]>();
   for (const e of filEvents) {
     const payload = e.payload as unknown as FilLifecyclePayloadMinimal;
-    const instance = payload.instance ?? "";
+    // Group under the register-instance key — the trade for a TradeSettlementExecuted
+    // (it settles a trade), the instrument itself for every other lifecycle event.
+    const instance = groupingKeyOf(payload);
     const acc = eventsByInstance.get(instance) ?? [];
     acc.push({ event: e, payload });
     eventsByInstance.set(instance, acc);
@@ -439,6 +483,13 @@ export function deriveFxInstanceLegs(args: FxInstanceFoldArgs): FxFoldResult {
           break;
         case "FilInstrumentTerminated":
           ruleLegs = terminationLegs(g.event.payload as unknown as FilInstrumentTerminatedPayload);
+          break;
+        case "TradeSettlementExecuted":
+          // DUAL-READ (Slice 2): the born-V2 uniform single-asset settlement. Same
+          // primitive as the two-leg FX path → byte-identical net per (account,ccy).
+          ruleLegs = tradeSettlementExecutedLegs(
+            g.event.payload as unknown as TradeSettlementExecutedPayload,
+          );
           break;
         case "FilFxSettlementConfirmed":
           ruleLegs = settlementConfirmedLegs(

@@ -359,6 +359,40 @@ describe("FX V2 Phase 1 full E2E — simulator-judged", () => {
       // The settled FX instruments were terminated (settled).
       const terminated = [...result.eventStore.replay({ type: "FilInstrumentTerminated" })];
       expect(terminated.length).toBe(2);
+
+      // Slice 2 (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL): each settlement also emits the
+      // born-V2 single-asset `TradeSettlementExecuted` settlement-of-record — spot ⇒
+      // 2 (received + paid), forward ⇒ 2; 4 in total, one per settled cash leg.
+      const settlements = [...result.eventStore.replay({ type: "TradeSettlementExecuted" })];
+      expect(settlements.length).toBe(4);
+      // Each settlement names its TRADE (the grouping id) + its holding, and carries
+      // the (movement, bookedCarrying, cost) pair (never a bare CashFlow).
+      for (const s of settlements) {
+        const p = s.payload as {
+          tradeInstance?: string;
+          holdingInstance?: string;
+          movement?: { amount?: string };
+          bookedCarrying?: { amount?: string };
+          cost?: { amount?: string };
+          holdingAssetClass?: string;
+        };
+        expect(p.tradeInstance?.startsWith("fil:inst:")).toBe(true);
+        expect(p.holdingInstance?.includes("-cash-")).toBe(true);
+        expect(p.movement?.amount).toBeDefined();
+        expect(p.bookedCarrying?.amount).toBeDefined();
+        expect(p.cost?.amount).toBeDefined();
+        expect(p.holdingAssetClass).toBe("cash");
+      }
+      // The settlement holding-instance URN matches the materialised cash URN
+      // (one grammar): every settlement's holding has a corresponding cash create.
+      const cashUrns = new Set(
+        cashInstances.map((c) => (c.payload as { instance?: string }).instance),
+      );
+      for (const s of settlements) {
+        expect(cashUrns.has((s.payload as { holdingInstance?: string }).holdingInstance)).toBe(
+          true,
+        );
+      }
     } finally {
       result.close();
     }
