@@ -44,10 +44,7 @@
 
 import { decimalToString, isNegativeD, negD, toDecimal } from "../fil-core/decimal";
 import type { Money } from "../fil-core/primitives";
-import {
-  type FilInstrumentCreatedPayload,
-  filInstrumentCreatedPayloadSchema,
-} from "./events";
+import { type FilInstrumentCreatedPayload, filInstrumentCreatedPayloadSchema } from "./events";
 import type { TradeSettlementExecutedPayload } from "./trade-settlement";
 
 /**
@@ -113,9 +110,7 @@ export function buildSettledHoldingPayload(
   settlement: TradeSettlementExecutedPayload,
   ctx: HoldingTradeContext,
 ): BuiltHolding {
-  const direction: "long" | "short" = isNonNegative(settlement.movement.amount)
-    ? "long"
-    : "short";
+  const direction: "long" | "short" = isNonNegative(settlement.movement.amount) ? "long" : "short";
   // Recognise at COST (positive). For a cash holding cost === |movement|.
   const recognisedNotional = absMoney(settlement.cost);
   const payload = filInstrumentCreatedPayloadSchema.parse({

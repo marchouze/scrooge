@@ -33,14 +33,14 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { decimalToString, isNegativeD, negD, toDecimal } from "../fil-core/decimal";
-import { formatInstanceUrn } from "../fil-core/urn";
+import { formatInstanceUrn, parseInstanceUrn } from "../fil-core/urn";
 import type { FilFxSettlementConfirmedPayload } from "../fil-instances/events";
 import {
   type TradeSettlementExecutedPayload,
   movementIsReceive,
   tradeSettlementExecutedPayloadSchema,
 } from "../fil-instances/trade-settlement";
-import { type FxPostingLeg, FX_TYPE_PREFIX } from "./fx";
+import { FX_TYPE_PREFIX, type FxPostingLeg } from "./fx";
 import { postSettlementMovementLegs } from "./fx-settlement";
 
 // ---------------------------------------------------------------------------
@@ -101,25 +101,23 @@ export function postTradeSettlementListLegs(
 // FX-settlement decomposition.
 // ---------------------------------------------------------------------------
 
-/** The deterministic holding-instance URN for one decomposed cash leg. */
-function holdingUrnFor(tenant: string, tradeId: string, side: "received" | "paid"): string {
-  return formatInstanceUrn({ tenant, instanceId: `${tradeId}-cash-${side}` });
+/**
+ * The deterministic holding-instance URN for one decomposed cash leg. The tenant
+ * SEGMENT + the trade-id stem are BOTH parsed from the trade instance URN (which
+ * is `fil:inst:<urnTenant>:<tradeId>`), so the holding URN is well-formed
+ * (single-segment tenant) and reuses the same `<tradeId>-cash-<side>` stem the
+ * cash-materialisation grammar uses — NOT the `tenant:`-prefixed control-plane
+ * tenant (which is not a valid URN segment).
+ */
+function holdingUrnFor(tradeInstanceUrn: string, side: "received" | "paid"): string {
+  const { tenant, instanceId } = parseInstanceUrn(tradeInstanceUrn);
+  return formatInstanceUrn({ tenant, instanceId: `${instanceId}-cash-${side}` });
 }
 
 /** The canonical Cash FIL type URN (re-declared to avoid a fil-models import cycle
  * at the posting-rules layer; the single source remains the cash type definition,
  * cross-checked by the cash-materialisation grammar). */
 const CASH_BALANCE_TYPE_URN = "fil:type:cash:balance:vanilla@1.0";
-
-/**
- * Extract the bare trade-id segment from a `fil:inst:<tenant>:<id>` URN (the last
- * colon-delimited segment), so the decomposed cash legs reuse the same
- * `<tradeId>-cash-<side>` stem the cash-materialisation grammar uses.
- */
-function tradeIdSegment(tradeInstanceUrn: string): string {
-  const parts = tradeInstanceUrn.split(":");
-  return parts[parts.length - 1] ?? tradeInstanceUrn;
-}
 
 export interface FxSettlementDecompositionInput {
   /** The FX settlement event payload to decompose. */
@@ -157,7 +155,6 @@ export function decomposeFxSettlementToTradeSettlements(
 ): TradeSettlementExecutedPayload[] {
   const s = input.settlement;
   const tradeInstance = input.tradeInstance ?? s.instance;
-  const tradeId = tradeIdSegment(tradeInstance);
 
   const receivedMovement = decimalToString(toDecimal(s.boughtSettled.amount));
   const paidMovement = decimalToString(negD(toDecimal(s.soldSettled.amount)));
@@ -165,7 +162,7 @@ export function decomposeFxSettlementToTradeSettlements(
   const received = tradeSettlementExecutedPayloadSchema.parse({
     kind: "TradeSettlementExecuted",
     tradeInstance,
-    holdingInstance: holdingUrnFor(s.tenant, tradeId, "received"),
+    holdingInstance: holdingUrnFor(tradeInstance, "received"),
     holdingType: CASH_BALANCE_TYPE_URN,
     holdingAssetClass: "cash",
     movement: { currency: s.boughtSettled.currency, amount: receivedMovement },
@@ -181,7 +178,7 @@ export function decomposeFxSettlementToTradeSettlements(
   const paid = tradeSettlementExecutedPayloadSchema.parse({
     kind: "TradeSettlementExecuted",
     tradeInstance,
-    holdingInstance: holdingUrnFor(s.tenant, tradeId, "paid"),
+    holdingInstance: holdingUrnFor(tradeInstance, "paid"),
     holdingType: CASH_BALANCE_TYPE_URN,
     holdingAssetClass: "cash",
     movement: { currency: s.soldSettled.currency, amount: paidMovement },

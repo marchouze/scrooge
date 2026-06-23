@@ -55,11 +55,10 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { z } from "zod";
-import { filEventRefSchema } from "../fil-core/lifecycle";
 import { instantSchema, moneySchema } from "../fil-core/primitives";
 import { filInstanceUrnSchema, filTypeUrnSchema } from "../fil-core/urn";
 import { bopCategoryTagSchema } from "../finsurv/bop-category";
-import { filSaCcrAssetClassSchema, filOriginatingEventRefSchema } from "./events";
+import { filOriginatingEventRefSchema, filSaCcrAssetClassSchema } from "./events";
 
 // ---------------------------------------------------------------------------
 // The single-asset settlement movement payload. Every field is asset-class-

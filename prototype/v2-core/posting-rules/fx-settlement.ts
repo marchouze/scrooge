@@ -183,7 +183,10 @@ export interface SettlementMovementInput {
   readonly side: "receive" | "pay";
 }
 
-type SettlementLegBase = Omit<FxPostingLeg, "creditDebit" | "accountCode" | "amount" | "description">;
+type SettlementLegBase = Omit<
+  FxPostingLeg,
+  "creditDebit" | "accountCode" | "amount" | "description"
+>;
 
 /** Produce the three GL legs for ONE settlement movement (cash, obligation, P&L). */
 export function postSettlementMovementLegs(
