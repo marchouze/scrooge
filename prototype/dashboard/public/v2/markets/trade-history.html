@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FX Trade History — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+</head>
+<body data-provenance-source="/api/v2/markets/fx/trades">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Markets", href: "/v2/markets/index.html" },
+        { label: "FX Trade History" },
+      ],
+      title: "FX Trade History",
+      seat: "All FX trades (open · settled · cancelled) — FilInstrument* fold",
+    });
+
+    const stateHost = document.createElement("div"); main.appendChild(stateHost);
+    const tilesHost = document.createElement("div"); main.appendChild(tilesHost);
+    const tableHost = document.createElement("div"); main.appendChild(tableHost);
+    const refsHost = document.createElement("div"); main.appendChild(refsHost);
+
+    const instrumentHref = (instance) => `/v2/markets/instrument.html?id=${encodeURIComponent(instance)}`;
+    const statusBadge = (s) => {
+      const cls = s === "open" ? "info" : s === "settled" ? "success" : s === "cancelled" ? "danger" : "warning";
+      return `<span class="v2-badge v2-badge-${cls}">${v2Esc(s)}</span>`;
+    };
+    const leg = (l) => (l ? `${v2Esc(l.amount)} ${v2Esc(l.currency)}` : "—");
+
+    v2WireLoader(async () => {
+      stateHost.replaceChildren(); tilesHost.replaceChildren(); tableHost.replaceChildren();
+      let d;
+      try {
+        d = await v2Fetch("/api/v2/markets/fx/trades");
+      } catch (err) {
+        v2RenderError(stateHost, v2Esc(err.message));
+        return;
+      }
+      document.getElementById("as-of").textContent = d.asOf ? `as of ${new Date(d.asOf).toLocaleString()}` : "—";
+
+      if (d.dataState !== "live") {
+        const banner = document.createElement("div");
+        banner.className = "v2-section";
+        banner.innerHTML = `
+          <div class="v2-empty">
+            <div class="v2-empty-icon">○</div>
+            <div class="v2-empty-msg"><strong>No FX trades under this lens.</strong><br>${v2Esc(d.reason)}<br>
+            <span class="v2-note">Switch to <strong>+ Sim</strong> to view the demonstration FX cohort.</span></div>
+          </div>`;
+        stateHost.appendChild(banner);
+      }
+
+      renderTileGroup(tilesHost, {
+        tiles: [
+          { label: "Total trades", value: String(d.count), unit: "FX trades booked" },
+          { label: "Open", value: String(d.openCount), unit: "Awaiting settlement", variant: d.openCount > 0 ? "info" : "muted" },
+          { label: "Settled", value: String(d.settledCount), unit: "Cash materialised", variant: d.settledCount > 0 ? "success" : "muted" },
+          { label: "Cancelled / other", value: String(d.otherCount), unit: "Cancelled · matured" },
+        ],
+      });
+
+      const s = document.createElement("div"); s.className = "v2-section"; tableHost.appendChild(s);
+      const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = `Trades (${d.count})`; s.appendChild(h);
+      renderTable(s, {
+        columns: ["Trade", "Date", "Pair", "Side", "Bought", "Sold", "Settlement", "Status"],
+        emptyMsg: "No FX trades on this store under the active lens.",
+        rows: (d.rows || []).map((r) => ({
+          href: instrumentHref(r.instance),
+          cells: [
+            `<code>${v2Esc(r.tradeId)}</code><br><span class="v2-muted">${v2Esc(r.counterpartyId)}</span>`,
+            v2Esc((r.tradeDate || "").slice(0, 10)),
+            `<strong>${v2Esc(r.pair)}</strong>`,
+            r.side === "buy"
+              ? '<span class="v2-badge v2-badge-success">buy</span>'
+              : '<span class="v2-badge v2-badge-warning">sell</span>',
+            leg(r.buy),
+            leg(r.sell),
+            v2Esc(r.settlementDate),
+            statusBadge(r.status),
+          ],
+        })),
+      });
+      const note = document.createElement("p");
+      note.className = "v2-note"; note.style.fontSize = "0.78rem"; note.style.marginTop = "var(--space-1)";
+      note.textContent =
+        "All FX trades folded from the FIL register (open + settled + cancelled), newest first. " +
+        "Bought/Sold are the two legs of the FX agreement; each trade drills to its FIL instance.";
+      s.appendChild(note);
+
+      renderRefs(refsHost, {
+        refs: [
+          { label: "Live FX positions (open only)", href: "/v2/markets/positions.html" },
+          { label: "FX Desk (full FX book)", href: "/v2/markets/fx.html" },
+          { label: "FIL instance schema (FilInstrumentCreated)", href: "/v2/operations/schemas.html?type=FilInstrumentCreated" },
+        ],
+      });
+    });
+  </script>
+</body>
+</html>
