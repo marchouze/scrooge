@@ -10,7 +10,12 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { SIMULATOR_EXTERNAL_EVENT_TYPES, emittedEventTypes, run } from "./fx-v2-sim-boundary";
+import {
+  SIMULATOR_DIRS,
+  SIMULATOR_EXTERNAL_EVENT_TYPES,
+  emittedEventTypes,
+  run,
+} from "./fx-v2-sim-boundary";
 
 describe("recon:fx-v2-sim-boundary", () => {
   test("the live tree is clean (no boundary breach)", () => {
@@ -18,6 +23,21 @@ describe("recon:fx-v2-sim-boundary", () => {
     expect(r.ok).toBe(true);
     expect(r.violations).toEqual([]);
     expect(r.asserted).toBeGreaterThan(0);
+  });
+
+  test("the live driver package is covered by Rule A (impersonation) but exempt from Rule C", () => {
+    // The live, dashboard-controllable driver/scheduler package is a SIMULATOR
+    // dir (Rule A — it must never impersonate the bank). It is DELIBERATELY a
+    // sibling of `simulation-v2`, not a child, so Rule C's `simulation-v2`-scoped
+    // replay-safety scan never reaches it (a live loop legitimately reads the
+    // wall clock to schedule ticks; payload determinism lives in `simulation-v2`).
+    const liveDir = SIMULATOR_DIRS.find((d) => d.endsWith("simulation-v2-live"));
+    expect(liveDir).toBeDefined();
+    const v2Dir = SIMULATOR_DIRS.find((d) => d.endsWith("simulation-v2"));
+    expect(v2Dir).toBeDefined();
+    // The live dir is not nested under the v2 dir (so Rule C's recursive scan of
+    // `simulation-v2/` cannot pull it in).
+    expect((liveDir ?? "").startsWith(`${v2Dir ?? ""}/`)).toBe(false);
   });
 
   test("external-party event types are NOT SUT-internal (intent documentation)", () => {
