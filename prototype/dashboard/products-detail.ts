@@ -1198,20 +1198,23 @@ export function buildValuationLenses(product: Product): ValuationDomainLens[] {
     return { backed, unbacked };
   };
 
-  // Status helper. A domain is `planned-with-gap` ONLY when a tracked
-  // ProductDeferredGap backs it (never a bare "planned" — the gate enforces
-  // this). When a domain has a live measure ⇒ `built`. When the measuring
-  // substrate exists at registry/model level but is not yet scoped to this
-  // product's family (no live measure, no tracked gap) ⇒ `partial` — a sourced
-  // truth ("infra exists, not scoped here"), not an invented claim.
+  // Status helper, derived from exactly: measure presence + deferral.
+  //   - has a live measure + a tracked deferred sub-item (gap or `deferred`)
+  //       ⇒ `partial` (the measure exists; one piece is tracked-deferred).
+  //   - has a live measure, no deferral                 ⇒ `built`.
+  //   - NO live measure + a tracked ProductDeferredGap  ⇒ `planned-with-gap`
+  //       (the whole domain is planned; the gate requires the gap to be real).
+  //   - NO live measure + no tracked gap                ⇒ `partial`
+  //       (measuring substrate exists at registry/model level but is not yet
+  //       scoped to this product's family — a sourced "infra exists, not scoped
+  //       here" truth, never a bare "planned").
   const statusFor = (
     hasMeasure: boolean,
     deferred: boolean,
     gap: ValuationLensDeferredGap | undefined,
   ): ValuationDomainLens["status"] => {
-    if (gap) return "planned-with-gap";
-    if (!hasMeasure) return "partial";
-    return deferred ? "partial" : "built";
+    if (hasMeasure) return deferred || gap !== undefined ? "partial" : "built";
+    return gap !== undefined ? "planned-with-gap" : "partial";
   };
 
   const lenses: ValuationDomainLens[] = [];
