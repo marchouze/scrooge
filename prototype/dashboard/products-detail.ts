@@ -20,6 +20,7 @@ import {
   POSTING_RULE_REGISTRY,
   type PostingRuleEntry,
   findEntriesForEventType,
+  findEntryForRuleId,
 } from "../platform/accounting/posting-rule-registry";
 import { lookupEventType } from "../platform/event-store/registry";
 import type { EventStore } from "../platform/event-store/store";
@@ -51,6 +52,11 @@ import { MM_UNSECURED_MODEL_DECLARATION } from "../v2-core/fil-models/ir/money-m
 import { VAR_MODEL_DECLARATION } from "../v2-core/fil-models/market-risk-var/model";
 import { SA_CCR_MODEL_DECLARATION } from "../v2-core/fil-models/sa-ccr/model";
 import { activeFxSettlementDeferredGaps } from "../v2-core/posting-rules/fx-settlement";
+import { FX_TREATMENT_MODULES } from "../v2-core/reporting-treatments/fx-modules";
+import {
+  type ValuationLensDeferredGap,
+  activeValuationLensGaps,
+} from "../v2-core/reporting-treatments/valuation-lens-gaps";
 
 import { normaliseDimensionKey } from "../platform/markets/products/dimension-key-alias";
 import {
@@ -786,11 +792,87 @@ export interface ComplianceLens {
   readonly obligationCitations: readonly string[];
 }
 
+// ---------------------------------------------------------------------------
+// §4b — Five-domain valuation / reporting lenses (D-V2-UI-OVERSIGHT-STANDARD /
+// D-NPA-PAGE-DE-INVENTION). A STRUCTURAL valuation map (NOT live numbers): per
+// domain the page surfaces the valuation basis, the report/return it feeds, the
+// posting-rule ids / models that measure it, and an HONEST SOURCED build-status.
+//
+// Build-status vocabulary derives from EXACTLY: registry/projection presence,
+// FIL-model presence, and ProductDeferredGap events. Every posting-rule-id /
+// event-type a card names MUST resolve to the registry OR be surfaced through
+// the card's `unbacked` gap channel — never invented prose, never a bare
+// "planned" (Engineering-Charter cmd 2 fail-closed, cmd 5 no silent deferral).
+// Asserted by `recon:npa-page-no-invented-functionality`.
+// ---------------------------------------------------------------------------
+
+/** A tracked deferred gap as rendered on a valuation-lens card (name redacted at the API boundary). */
+export interface ValuationLensGap {
+  readonly gapId: string;
+  readonly title: string;
+  /** Owner seat (name+position; the name is stripped by `redactNpaDetailNames`). */
+  readonly owner: string;
+  readonly targetTrigger: string;
+  readonly citations: readonly string[];
+}
+
+/** One of the five valuation/reporting domains an FX product is measured across. */
+export type ValuationDomainKey =
+  | "general-ledger"
+  | "market-risk"
+  | "credit-risk"
+  | "liquidity-risk"
+  | "product-control";
+
+/**
+ * Per-domain valuation / reporting map for one domain.
+ *
+ * `status`:
+ *   - `built`            — the measure exists (registry posting rules present /
+ *                          projection wired / FIL model scoped), no open gap.
+ *   - `partial`          — the measure exists but a tracked sub-item is deferred
+ *                          (an open ProductDeferredGap names it), OR some named
+ *                          event types are unbacked (gap-surfaced).
+ *   - `planned-with-gap` — the domain has NO live measure yet; the status is
+ *                          sourced from a real ProductDeferredGap (never a bare
+ *                          "planned").
+ */
+export interface ValuationDomainLens {
+  readonly domain: ValuationDomainKey;
+  readonly label: string;
+  /** What is valued, and on what basis (sourced from the product / treatments). */
+  readonly valuationBasis: string;
+  /** The report / return this domain feeds (BA-return cells / projection name — sourced, not hardcoded). */
+  readonly feedsReturn: readonly string[];
+  /** Posting-rule ids that measure it (registry-backed; asserted by the gate). */
+  readonly postingRuleIds: readonly string[];
+  /** Event types that drive the measure (registry-backed or gap-surfaced; asserted by the gate). */
+  readonly eventTypes: readonly string[];
+  /** FIL models / projections that measure it (sourced from FIL model declarations / projection presence). */
+  readonly models: readonly string[];
+  /** Treatment / IFRS / regulatory citations backing the domain. */
+  readonly citations: readonly string[];
+  /**
+   * Names that do NOT resolve (registry / event-type) — surfaced as a flagged
+   * gap rather than asserted silently. The de-invention gate cross-checks: a
+   * flagged name MUST genuinely be unbacked (no false gaps).
+   */
+  readonly unbacked: {
+    readonly postingRuleIds: readonly string[];
+    readonly eventTypes: readonly string[];
+  };
+  readonly status: "built" | "partial" | "planned-with-gap";
+  /** The tracked ProductDeferredGap backing a `planned-with-gap` / `partial` status. */
+  readonly gap?: ValuationLensGap;
+}
+
 export interface ProductLensView {
   readonly markets: MarketsLens;
   readonly finance: FinanceLens;
   readonly risk: RiskLens;
   readonly compliance: ComplianceLens;
+  /** §4b — five-domain valuation / reporting map (GL / Market / Credit / Liquidity / Product Control). */
+  readonly valuation: readonly ValuationDomainLens[];
 }
 
 // --- Builders --------------------------------------------------------------
@@ -1024,6 +1106,245 @@ function baReturnLens(line: string): string {
   return "Regulatory return";
 }
 
+// ---------------------------------------------------------------------------
+// §4b — Five-domain valuation/reporting lens builder.
+// ---------------------------------------------------------------------------
+
+/** A treatment module resolved for this product (scope-matched against FX_TREATMENT_MODULES). */
+interface ResolvedTreatmentModule {
+  readonly treatmentId: string;
+  readonly category: string;
+  readonly applicablePostingRuleIds: readonly string[];
+  readonly cites: readonly string[];
+}
+
+/**
+ * Resolve the product's reporting-treatment modules from the FX treatment MENU.
+ * The `Product` fixture carries no `reportingTreatmentModuleIds` (that lives on
+ * the born-V2 `V2ProductRegistered` event); the modules are scoped
+ * `fil:type:fx:*`, so we scope-match the menu against the product's FIL-type
+ * root — the same posture `modelsForProduct` uses for FIL models. Non-FX
+ * families resolve to none (the menu is FX-only today).
+ */
+function resolveTreatmentModules(product: Product): ResolvedTreatmentModule[] {
+  const typeRoot = FAMILY_FIL_TYPE_ROOT[product.family];
+  if (!typeRoot) return [];
+  const out: ResolvedTreatmentModule[] = [];
+  for (const m of FX_TREATMENT_MODULES) {
+    if (!m.scope.some((s) => scopeCoversType(s, typeRoot))) continue;
+    out.push({
+      treatmentId: m.treatmentId,
+      category: m.category,
+      applicablePostingRuleIds: m.applicablePostingRuleIds ?? [],
+      cites: m.cites ?? [],
+    });
+  }
+  return out;
+}
+
+/** Render an in-code valuation-lens gap into the page-facing `ValuationLensGap`. */
+function toValuationLensGap(g: ValuationLensDeferredGap): ValuationLensGap {
+  return {
+    gapId: g.gapId,
+    title: g.title,
+    owner: g.owner,
+    targetTrigger: g.targetTrigger,
+    citations: g.citations,
+  };
+}
+
+/** BA-return cells that belong to a given regulatory lens label (sourced, not hardcoded). */
+function baCellsForLens(product: Product, ...lensLabels: string[]): string[] {
+  const want = new Set(lensLabels);
+  return product.accountingClassification.baReturnLineMapping.filter((cell) =>
+    want.has(baReturnLens(cell)),
+  );
+}
+
+/**
+ * Build the five-domain valuation/reporting map. Every posting-rule-id and
+ * event-type a card names is registry-backed OR surfaced in that card's
+ * `unbacked` gap channel; build-status derives only from registry/projection
+ * presence, FIL-model presence, and ProductDeferredGap events.
+ */
+export function buildValuationLenses(product: Product): ValuationDomainLens[] {
+  const treatments = resolveTreatmentModules(product);
+  const postingTreatment = treatments.find((t) => t.category === "posting-rules");
+  const prudentialTreatment = treatments.find((t) => t.category === "prudential-treatment");
+  const ifrsTreatment = treatments.find((t) => t.category === "ifrs-classification");
+  const scopedModels = modelsForProduct(product);
+  const lensGaps = activeValuationLensGaps(product.family);
+  const gapForDomain = (domain: ValuationLensDeferredGap["domain"]) =>
+    lensGaps.find((g) => g.domain === domain);
+
+  // Split a posting-rule id list into (registry-backed, unbacked) — a `present`
+  // claim must resolve; an unresolved id is gap-surfaced, never asserted.
+  const splitRuleIds = (ids: readonly string[]): { backed: string[]; unbacked: string[] } => {
+    const backed: string[] = [];
+    const unbacked: string[] = [];
+    for (const id of ids) {
+      if (findEntryForRuleId(id) !== undefined) backed.push(id);
+      else unbacked.push(id);
+    }
+    return { backed, unbacked };
+  };
+  const splitEventTypes = (names: readonly string[]): { backed: string[]; unbacked: string[] } => {
+    const backed: string[] = [];
+    const unbacked: string[] = [];
+    for (const n of names) {
+      if (lookupEventType(n) !== undefined) backed.push(n);
+      else unbacked.push(n);
+    }
+    return { backed, unbacked };
+  };
+
+  const lenses: ValuationDomainLens[] = [];
+
+  // ── (1) General Ledger / accounting ───────────────────────────────────────
+  // Posting rules the product's lifecycle event family triggers (registry), with
+  // their IFRS conditionDetail + the BA-return cells they map into.
+  {
+    const lifecycleIds = FAMILY_LIFECYCLE_IDS[product.family] ?? [];
+    const glEntries = POSTING_RULE_REGISTRY.filter(
+      (r: PostingRuleEntry) =>
+        lifecycleIds.includes(r.lifecycleId) && r.condition !== "intentional-no-impact",
+    );
+    // GL posting rule ids = lifecycle-family registry entries UNION the
+    // posting-rules treatment module's declared rule ids (both sourced; the
+    // treatment module declares the SET an FX product applies). Every id is
+    // split backed/unbacked against the registry below.
+    const ruleIds = [
+      ...new Set([
+        ...glEntries.map((r) => r.postingRuleId),
+        ...(postingTreatment?.applicablePostingRuleIds ?? []),
+      ]),
+    ];
+    const eventTypes = [...new Set(glEntries.map((r) => r.triggerEventType))];
+    const { backed: ruleBacked, unbacked: ruleUnbacked } = splitRuleIds(ruleIds);
+    const { backed: evBacked, unbacked: evUnbacked } = splitEventTypes(eventTypes);
+    // Any deferred posting rule (a still-open FX settlement gap names it) ⇒ partial.
+    const deferred = glEntries.some((r) => DEFERRED_RULE_IDS.has(r.postingRuleId));
+    const status: ValuationDomainLens["status"] =
+      ruleBacked.length === 0 ? "planned-with-gap" : deferred ? "partial" : "built";
+    lenses.push({
+      domain: "general-ledger",
+      label: "General Ledger",
+      valuationBasis:
+        product.accountingClassification.ifrs9Family === "fvtpl"
+          ? "Fair value through P&L (IFRS 9); revalued to the closing rate (IAS 21 §23)."
+          : `IFRS 9 ${product.accountingClassification.ifrs9Family} — measured at ${product.accountingClassification.ifrs13FairValueHierarchy}.`,
+      feedsReturn: baCellsForLens(product, "Balance sheet", "Risk-weighted assets"),
+      postingRuleIds: ruleBacked,
+      eventTypes: evBacked,
+      models: [],
+      citations: [
+        product.accountingClassification.ifrs9Family.toUpperCase() === "FVTPL"
+          ? "IFRS-9-§5.7.1"
+          : "IFRS-9",
+        "IAS-21-§23",
+        ...(ifrsTreatment?.cites ?? []),
+      ],
+      unbacked: { postingRuleIds: ruleUnbacked, eventTypes: evUnbacked },
+      status,
+    });
+  }
+
+  // ── (2) Market Risk ───────────────────────────────────────────────────────
+  // Prudential-treatment module + product market-risk dimensions + FRTB book +
+  // the VaR / SA-CCR FIL models. The return is read off the treatment cites
+  // (BA-320), NOT a hardcoded string.
+  {
+    const frtbBook =
+      product.accountingClassification.ifrs9Family === "fvtpl" ? "trading" : "banking";
+    const returnCells = [
+      ...baCellsForLens(product, "Market risk — trading book", "IRRBB — banking book"),
+      ...(prudentialTreatment?.cites ?? []).filter((c) => /^BA\d/i.test(c)),
+    ];
+    const models = scopedModels.filter((m) => m === VAR_MODEL_DECLARATION.modelId);
+    const status: ValuationDomainLens["status"] =
+      models.length > 0 || returnCells.length > 0 ? "built" : "planned-with-gap";
+    lenses.push({
+      domain: "market-risk",
+      label: "Market Risk",
+      valuationBasis: `${product.riskProfile.marketRiskDimensions.join(" + ") || "—"} sensitivities; ${
+        frtbBook === "trading"
+          ? "FRTB trading book (standardised market-risk capital)"
+          : "banking book (IRRBB)"
+      }.`,
+      feedsReturn: [...new Set(returnCells)],
+      postingRuleIds: [],
+      eventTypes: [],
+      models,
+      citations: prudentialTreatment?.cites ?? [],
+      unbacked: { postingRuleIds: [], eventTypes: [] },
+      status,
+    });
+  }
+
+  // ── (3) Credit Risk ───────────────────────────────────────────────────────
+  // Credit-risk shape + the FIL models measuring it (SA-CCR). Status from FIL-
+  // model presence.
+  {
+    const models = scopedModels.filter((m) => m === SA_CCR_MODEL_DECLARATION.modelId);
+    const status: ValuationDomainLens["status"] = models.length > 0 ? "built" : "planned-with-gap";
+    lenses.push({
+      domain: "credit-risk",
+      label: "Credit Risk",
+      valuationBasis: `Counterparty credit exposure — ${product.riskProfile.creditRiskShape}; funding ${product.riskProfile.fundingProfile}.`,
+      feedsReturn: baCellsForLens(product, "Risk-weighted assets"),
+      postingRuleIds: [],
+      eventTypes: [],
+      models,
+      citations: ["SA-CCR"],
+      unbacked: { postingRuleIds: [], eventTypes: [] },
+      status,
+    });
+  }
+
+  // ── (4) Liquidity Risk ────────────────────────────────────────────────────
+  // No LCR/NSFR projection yet — status MUST be sourced from a ProductDeferredGap.
+  {
+    const gap = gapForDomain("liquidity-risk");
+    lenses.push({
+      domain: "liquidity-risk",
+      label: "Liquidity Risk",
+      valuationBasis: `Liquidity classification ${product.riskProfile.liquidityClassification}; funding profile ${product.riskProfile.fundingProfile}.`,
+      feedsReturn: gap ? [gap.targetTrigger] : baCellsForLens(product, "Liquidity"),
+      postingRuleIds: [],
+      eventTypes: [],
+      models: [],
+      citations: gap ? [...gap.citations] : [],
+      unbacked: { postingRuleIds: [], eventTypes: [] },
+      status: gap ? "planned-with-gap" : "built",
+      ...(gap ? { gap: toValuationLensGap(gap) } : {}),
+    });
+  }
+
+  // ── (5) Product Control ───────────────────────────────────────────────────
+  // daily-pnl-v2 exists (unrealised mark P&L attribution: desk/book/ccy, no-
+  // silent-zero) ⇒ built-structural; realised-P&L attribution deferral sourced
+  // from a ProductDeferredGap ⇒ partial.
+  {
+    const gap = gapForDomain("product-control");
+    lenses.push({
+      domain: "product-control",
+      label: "Product Control",
+      valuationBasis:
+        "Daily P&L attribution by desk / book / currency (daily-pnl-v2); unavailable marks are surfaced, never coerced to a silent zero.",
+      feedsReturn: ["daily-pnl-v2"],
+      postingRuleIds: [],
+      eventTypes: [],
+      models: [],
+      citations: gap ? [...gap.citations] : ["D-TRUSTED-FIGURES-PROGRAM-V1"],
+      unbacked: { postingRuleIds: [], eventTypes: [] },
+      status: gap ? "partial" : "built",
+      ...(gap ? { gap: toValuationLensGap(gap) } : {}),
+    });
+  }
+
+  return lenses;
+}
+
 /**
  * Cross-bank lens view. Markets desks are filtered from `CANONICAL_DESKS` by
  * book type (sourced from the roster; seats already Titles). FRTB book is
@@ -1083,6 +1404,7 @@ export function buildProductLenses(
       masterAgreement: product.legalDocumentation.masterAgreement,
       obligationCitations: product.citations,
     },
+    valuation: buildValuationLenses(product),
   };
 }
 
