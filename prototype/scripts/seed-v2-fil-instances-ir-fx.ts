@@ -338,6 +338,31 @@ function materialiseFx(): { created: number; terminated: number; skipped: number
 
     const instance = formatInstanceUrn({ tenant: TENANT, instanceId: tradeId });
 
+    // SYMMETRIC FX AGREEMENT QUAD (D-FX-INSTRUMENT-BUYSELL-QUAD). Source BOTH legs
+    // from the v1 trade: `near.notional` is the base-currency amount,
+    // `near.counterNotional` the quote-currency amount. A `buy` (long) from the
+    // bank's perspective BUYS the base + SELLS the quote; a `sell` reverses it.
+    // Carried so the instrument states both currencies of the agreement, with
+    // `notional` / `direction` deriving from it. Built only when both legs carry a
+    // distinct currency (else the optional field stays absent — replay-safe).
+    const baseMoney =
+      near.notional.currency && near.notional.amountMinor !== undefined
+        ? minorNumberToMajorMoney(Math.abs(near.notional.amountMinor), near.notional.currency)
+        : undefined;
+    const quoteMoney =
+      near.counterNotional.currency && near.counterNotional.amountMinor !== undefined
+        ? minorNumberToMajorMoney(
+            Math.abs(near.counterNotional.amountMinor),
+            near.counterNotional.currency,
+          )
+        : undefined;
+    const fxAgreement =
+      baseMoney && quoteMoney && baseMoney.currency !== quoteMoney.currency
+        ? side === "sell"
+          ? { buy: quoteMoney, sell: baseMoney }
+          : { buy: baseMoney, sell: quoteMoney }
+        : undefined;
+
     const economicTerms: FilEconomicTerms = {
       assetClass: "fx",
       notional: minorNumberToMajorMoney(Math.abs(zarMinor), "ZAR"),
@@ -353,6 +378,8 @@ function materialiseFx(): { created: number; terminated: number; skipped: number
       // (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD). Returns undefined for a type with
       // no approved governing product → no binding key (fold fails closed).
       ...bookingProductIdTerm(typeUrn),
+      // Self-describing FX agreement quad (D-FX-INSTRUMENT-BUYSELL-QUAD).
+      ...(fxAgreement ? { fxAgreement } : {}),
     };
 
     // FilInstrumentCreated — at the trade-execution as_of.

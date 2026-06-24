@@ -227,6 +227,14 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // instance under a cash-materialising NPA has a matching cash instance (the
     // settlement path ran the product rule). Authority: D-CASH-ASSET-CLASS-V1.
     "recon:cash-materialisation-integrity",
+    // Cutover fail-closed gate (D-FX-INSTRUMENT-BUYSELL-QUAD): every `fx`
+    // asset-class FIL instance carries the symmetric buy/sell agreement quad
+    // (economicTerms.fxAgreement) — the instrument states BOTH currencies of the
+    // agreement, not only the single SA-CCR notional + direction — AND the quad is
+    // coherent (notional/direction/hedgingSetTag agree, via the schema superRefine).
+    // Non-vacuous on the anchor store (fixture / backfilled FX positions carry the
+    // quad). Authority: D-FX-INSTRUMENT-BUYSELL-QUAD; D-FIL-CONSUMER-SURFACE-ARCHITECTURE.
+    "recon:fx-agreement-quad-integrity",
     // Reverse-cascade fail-closed gate (D-FIL-CONSUMER-SURFACE-ARCHITECTURE): for
     // every CANCELLED/TERMINATED FX instance, no `cash` it materialised
     // (originatingInstrument back-ref) may stay EFFECTIVELY LIVE — the derived-

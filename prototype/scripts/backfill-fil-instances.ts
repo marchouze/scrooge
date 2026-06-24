@@ -290,32 +290,58 @@ function fixtureCashLegs(ft: FixtureLeg): CashLeg[] {
   ];
 }
 
+// SYMMETRIC FX AGREEMENT QUAD (D-FX-INSTRUMENT-BUYSELL-QUAD). Build the {buy,sell}
+// agreement from the two settled cash legs: the leg the bank RECEIVES is what it
+// BUYS, the leg it PAYS is what it SELLS. Both legs carry their own currency +
+// (signed) MAJOR-unit amount, so the quad is sourced directly from the same data
+// the cash-leg materialisation reads (no recompute). Returns undefined when the
+// two legs are not a clean buy/sell pair (degenerate / cross with no leg pair) so
+// the optional field stays absent and existing events parse unchanged.
+function fxAgreementFromCashLegs(
+  cashLegs: readonly CashLeg[],
+): { buy: Money; sell: Money } | undefined {
+  const received = cashLegs.find((l) => l.side === "received");
+  const paid = cashLegs.find((l) => l.side === "paid");
+  if (!received || !paid) return undefined;
+  if (received.currency === paid.currency) return undefined;
+  return {
+    buy: majorNumberToMoney(Math.abs(received.signedMajor), received.currency),
+    sell: majorNumberToMoney(Math.abs(paid.signedMajor), paid.currency),
+  };
+}
+
 function fixtureDescriptors(): FilDescriptor[] {
-  return FIXTURE_BOOK.map((ft) => ({
-    tradeId: ft.tradeId,
-    typeUrn: FX_SPOT_TYPE_URN,
-    createdAsOf: FIXTURE_TRADE_TS,
-    originatingEventType: "Ws-v2-s1-fixture-book",
-    originatingEventId: `s1-fixture:${ft.tradeId}`,
-    ...(ft.settled ? { terminal: { stage: "settled" as const, asOf: FIXTURE_SETTLE_TS } } : {}),
-    cashLegs: fixtureCashLegs(ft),
-    economicTerms: {
-      assetClass: "fx",
-      notional: majorNumberToMoney(ft.reportingNotionalMajor, REPORTING),
-      direction: ft.direction,
-      counterpartyId: ft.counterpartyId,
-      nettingSetId: `NS-${ft.counterpartyId}-${REPORTING}`,
-      currency: REPORTING,
-      settlementDate: FIXTURE_SETTLE_DATE,
-      hedgingSetTag: `${ft.base}/${REPORTING}`,
-      // S0d — booking-time product binding (NPA-gated). The fixture FX book is FX
-      // spot, governed by the NPA-approved FX OTC Vanilla product; stamp its v2
-      // product id so the accounting fold resolves treatment from the product
-      // (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD). `resolveBookingProductId` returns
-      // undefined for a type with no approved governing product → no binding.
-      ...bookingProductIdTerm(FX_SPOT_TYPE_URN),
-    },
-  }));
+  return FIXTURE_BOOK.map((ft) => {
+    const cashLegs = fixtureCashLegs(ft);
+    const fxAgreement = fxAgreementFromCashLegs(cashLegs);
+    return {
+      tradeId: ft.tradeId,
+      typeUrn: FX_SPOT_TYPE_URN,
+      createdAsOf: FIXTURE_TRADE_TS,
+      originatingEventType: "Ws-v2-s1-fixture-book",
+      originatingEventId: `s1-fixture:${ft.tradeId}`,
+      ...(ft.settled ? { terminal: { stage: "settled" as const, asOf: FIXTURE_SETTLE_TS } } : {}),
+      cashLegs,
+      economicTerms: {
+        assetClass: "fx",
+        notional: majorNumberToMoney(ft.reportingNotionalMajor, REPORTING),
+        direction: ft.direction,
+        counterpartyId: ft.counterpartyId,
+        nettingSetId: `NS-${ft.counterpartyId}-${REPORTING}`,
+        currency: REPORTING,
+        settlementDate: FIXTURE_SETTLE_DATE,
+        hedgingSetTag: `${ft.base}/${REPORTING}`,
+        // S0d — booking-time product binding (NPA-gated). The fixture FX book is FX
+        // spot, governed by the NPA-approved FX OTC Vanilla product; stamp its v2
+        // product id so the accounting fold resolves treatment from the product
+        // (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD). `resolveBookingProductId` returns
+        // undefined for a type with no approved governing product → no binding.
+        ...bookingProductIdTerm(FX_SPOT_TYPE_URN),
+        // Self-describing FX agreement quad (D-FX-INSTRUMENT-BUYSELL-QUAD).
+        ...(fxAgreement ? { fxAgreement } : {}),
+      },
+    };
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -409,6 +435,7 @@ function descriptorsFromExistingTrades(): FilDescriptor[] {
           ]
         : [];
 
+    const fxAgreement = fxAgreementFromCashLegs(cashLegs);
     out.push({
       tradeId,
       typeUrn,
@@ -429,6 +456,9 @@ function descriptorsFromExistingTrades(): FilDescriptor[] {
         // S0d — booking-time product binding (NPA-gated), keyed off the resolved
         // FIL type URN (spot vs forward). See bookingProductIdTerm.
         ...bookingProductIdTerm(typeUrn),
+        // Self-describing FX agreement quad (D-FX-INSTRUMENT-BUYSELL-QUAD), sourced
+        // from the same buy(received)/sell(paid) cash legs.
+        ...(fxAgreement ? { fxAgreement } : {}),
       },
     });
   }
