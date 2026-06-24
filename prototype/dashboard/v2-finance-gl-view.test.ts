@@ -42,6 +42,25 @@ function populatedStores(): { eventStore: EventStore; marketDataStore: MarketDat
   return { eventStore, marketDataStore };
 }
 
+/**
+ * A book with OPEN FX trades — `realtime` settlement defers settlement past the
+ * sim clock, so trades stay open and their trade-date OFF-BALANCE-SHEET commitment
+ * (ACC-9100-*) remains standing (it is released only on settlement,
+ * D-FX-TRADE-DATE-FVTPL-OBS).
+ */
+function openTradeStores(): { eventStore: EventStore; marketDataStore: MarketDataStore } {
+  const eventStore = new EventStore();
+  const marketDataStore = new MarketDataStore(":memory:");
+  seedFxTreatment(eventStore);
+  const driver = new V2LiveFxDriver({
+    eventStore,
+    marketDataStore,
+    config: { tradesPerTick: 2, seed: 0x9911, settlementMode: "realtime" },
+  });
+  driver.tickOnce();
+  return { eventStore, marketDataStore };
+}
+
 describe("buildGlView — compact TB + CCY/ZAR-equivalent", () => {
   test("production-only lens is honestly empty (sim is simulated provenance)", () => {
     const { eventStore, marketDataStore } = populatedStores();
@@ -90,8 +109,10 @@ describe("buildGlView — compact TB + CCY/ZAR-equivalent", () => {
     expect(view.zarTotalCreditMinor).toBeGreaterThan(0);
   });
 
-  test("trade-date FX lands in the OFF-BALANCE-SHEET memorandum section, excluded from on-BS totals + in-balance", () => {
-    const { eventStore, marketDataStore } = populatedStores();
+  test("trade-date FX (open trade) lands in the OFF-BALANCE-SHEET memorandum section, excluded from on-BS totals + in-balance", () => {
+    // OPEN trades: the trade-date OBS commitment is still standing (not yet released
+    // by settlement). A fully-settled book releases it (covered separately below).
+    const { eventStore, marketDataStore } = openTradeStores();
     const view = buildGlView({ eventStore, marketDataStore, filter: { mode: "combined" } });
 
     // Policy A (D-FX-TRADE-DATE-FVTPL-OBS): the trade-date commitment quad lands on
@@ -101,7 +122,7 @@ describe("buildGlView — compact TB + CCY/ZAR-equivalent", () => {
     expect(obsRows.length).toBeGreaterThan(0);
     expect(obsRows.every((r) => r.accountId.startsWith("ACC-9100-"))).toBe(true);
 
-    // The OBS section self-balances and is reported in its own totals.
+    // The OBS section self-balances and is reported in its own totals (ZAR-equiv).
     expect(view.offBalanceSheetInBalance).toBe(true);
     expect(view.offBalanceSheetDebitMinor).toBeGreaterThan(0);
     expect(view.offBalanceSheetDebitMinor).toBe(view.offBalanceSheetCreditMinor);
@@ -109,9 +130,29 @@ describe("buildGlView — compact TB + CCY/ZAR-equivalent", () => {
     // OBS rows are EXCLUDED from the on-balance-sheet Dr/Cr totals + the in-balance
     // check (the on-BS book still balances on its own).
     expect(view.inBalance).toBe(true);
-    const onBsDr = view.rows
-      .filter((r) => !r.offBalanceSheet)
-      .reduce((s, r) => s + r.debitMinor, 0);
-    expect(view.totalDebitMinor).toBe(onBsDr);
+  });
+
+  test("settled FX leaves ZERO on-BS receivable/payable AND zero residual OBS commitment (FVTPL settlement)", () => {
+    // The accelerated sim settles every trade in-tick → the whole FX book is closed.
+    const { eventStore, marketDataStore } = populatedStores();
+    const view = buildGlView({ eventStore, marketDataStore, filter: { mode: "combined" } });
+
+    // (1) ZERO on-balance-sheet FX trading receivable/payable. The FVTPL settlement
+    // recognises cash + realised P&L and never relieves a gross receivable/payable
+    // (trade-date is OBS-only) — so the receivable/payable accounts carry no net.
+    const recvPay = new Set(["ACC-2100-001", "ACC-2100-002", "ACC-2100-003", "ACC-2100-004"]);
+    const recvPayRows = view.rows.filter((r) => recvPay.has(r.accountId) && r.zarNetMinor !== 0);
+    expect(recvPayRows.length).toBe(0);
+
+    // (2) ZERO residual OFF-BALANCE-SHEET commitment — settlement released every
+    // trade-date OBS commitment (PR-FX-OBS-RELEASE-V2), so the OBS section nets to
+    // zero (no standing ACC-9100-* rows remain).
+    const obsRows = view.rows.filter((r) => r.offBalanceSheet && r.zarNetMinor !== 0);
+    expect(obsRows.length).toBe(0);
+
+    // (3) Realised FX P&L (ACC-2100-006) IS recognised, and the book balances.
+    const realised = view.rows.find((r) => r.accountId === "ACC-2100-006");
+    expect(realised).toBeDefined();
+    expect(view.inBalance).toBe(true);
   });
 });

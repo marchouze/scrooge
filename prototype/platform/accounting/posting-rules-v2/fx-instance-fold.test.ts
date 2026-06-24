@@ -255,15 +255,39 @@ describe("deriveFxInstanceLegs — state-driven net == event-fold net (byte-equi
     expect(stateNet.size).toBeGreaterThan(0); // non-vacuous
   });
 
-  test("settled (bare close memo) keeps the standing position — both nets equal", () => {
+  test("settled releases the OBS commitment; an open trade keeps its OBS — both nets equal", () => {
     const store = new EventStore(":memory:");
     seedTreatmentModules(store);
     store.append(fxCreated("FX-1", "long", "9260000", "2026-06-01T10:00:00.000Z"));
     store.append(fxCreated("FX-2", "short", "6045000", "2026-06-02T10:00:00.000Z"));
     store.append(fxTerminated("FX-1", "2026-06-03T10:00:00.000Z", "settled"));
 
-    const { stateNet } = expectStateNetMatchesEventNet(store);
+    const { stateNet, stateFold } = expectStateNetMatchesEventNet(store);
+    // FX-2 is still open → its trade-date OBS commitment stands.
     expect(stateNet.size).toBeGreaterThan(0);
+    // FX-1 settled → its OBS commitment was released (PR-FX-OBS-RELEASE-V2).
+    const release = stateFold.legs.filter((l) => l.postingRuleId === "PR-FX-OBS-RELEASE-V2");
+    expect(release.length).toBe(4); // the four FX-1 trade-date OBS legs reversed once
+    expect(release.every((l) => l.accountCode.startsWith("ACC-9100-"))).toBe(true);
+    expect(release.every((l) => l.filEventId.endsWith("::obs-commitment-release"))).toBe(true);
+  });
+
+  test("FULLY-settled FX trade leaves ZERO net (OBS released, no receivable/payable)", () => {
+    const store = new EventStore(":memory:");
+    seedTreatmentModules(store);
+    // A single FX trade booked then settled (bare terminal, no on-BS reval).
+    store.append(fxCreated("FX-SETTLE-1", "long", "9260000", "2026-06-01T10:00:00.000Z"));
+    store.append(fxTerminated("FX-SETTLE-1", "2026-06-03T10:00:00.000Z", "settled"));
+
+    const { stateNet, stateFold } = expectStateNetMatchesEventNet(store);
+    // The whole (single-trade) book is settled → trade-date OBS released → zero net.
+    expect(stateNet.size).toBe(0);
+    // No leg ever touched an on-BS FX trading receivable/payable account.
+    const recvPay = new Set(["ACC-2100-001", "ACC-2100-002", "ACC-2100-003", "ACC-2100-004"]);
+    expect(stateFold.legs.some((l) => recvPay.has(l.accountCode))).toBe(false);
+    // The release fired (4 OBS legs reversed).
+    const release = stateFold.legs.filter((l) => l.postingRuleId === "PR-FX-OBS-RELEASE-V2");
+    expect(release.length).toBe(4);
   });
 
   test("CANCELLED-PARENT (bare cancellation) nets the opening to ZERO — both folds", () => {

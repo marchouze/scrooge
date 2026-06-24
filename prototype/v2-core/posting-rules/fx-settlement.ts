@@ -61,28 +61,6 @@ function parseDecimal(s: string): { neg: boolean; digits: bigint; scale: number 
   return { neg, digits, scale };
 }
 
-/** Render a scaled BigInt back to a canonical decimal string (no trailing
- * zero-stripping beyond removing a redundant ".0…"). */
-function renderScaled(value: bigint, scale: number): string {
-  const neg = value < 0n;
-  const abs = neg ? -value : value;
-  const str = abs.toString().padStart(scale + 1, "0");
-  const intPart = str.slice(0, str.length - scale) || "0";
-  const fracPart = scale > 0 ? str.slice(str.length - scale) : "";
-  const body = scale > 0 ? `${intPart}.${fracPart}` : intPart;
-  return neg && value !== 0n ? `-${body}` : body;
-}
-
-/** Exact decimal subtraction a − b, preserving the larger operand's scale. */
-function subDecimal(a: string, b: string): string {
-  const pa = parseDecimal(a);
-  const pb = parseDecimal(b);
-  const scale = Math.max(pa.scale, pb.scale);
-  const av = (pa.neg ? -pa.digits : pa.digits) * 10n ** BigInt(scale - pa.scale);
-  const bv = (pb.neg ? -pb.digits : pb.digits) * 10n ** BigInt(scale - pb.scale);
-  return renderScaled(av - bv, scale);
-}
-
 /** True iff the decimal string is exactly zero (any scale / sign). */
 function isZeroDecimal(s: string): boolean {
   const p = parseDecimal(s);
@@ -94,20 +72,39 @@ const FX_REALISED_PNL_ACCOUNT = "ACC-2100-006";
 
 // ---------------------------------------------------------------------------
 // PR-FX-SETTLE-V2 (#5) — Settlement / realised P&L (spot & physical forward).
-// IAS 21 §23, §28.
+// IAS 21 §23, §28. FVTPL TREATMENT (D-FX-TRADE-DATE-FVTPL-OBS, settlement side).
 //
-// At settlement the trading receivable/payable recognised at the booked rate is
-// extinguished against actual cash at the settlement rate; the difference is
-// realised FX P&L.
+// THE FVTPL SHIFT (why this is NOT a gross receivable/payable relief any more)
+// ---------------------------------------------------------------------------
+// Trade-date recognition is now IFRS 9 FVTPL + off-balance-sheet memorandum
+// (PR-FX-001-V2): an at-market FX trade posts NIL on-balance-sheet at inception
+// and records the contractual buy/sell notionals OFF-balance-sheet (ACC-9100-*).
+// There is therefore NO on-balance-sheet FX trading receivable/payable
+// (ACC-2100-002/003/…) for settlement to extinguish. The OLD settlement entry
+// relieved a gross receivable/payable that no longer exists on-balance-sheet, so
+// it left DANGLING inverted ACC-2100 balances after every settled trade — the
+// defect this rule fixes.
 //
-//   Dr Cash (bought ccy) @ settlement rate
-//   Cr FX Trading Receivable (bought ccy) @ booked rate
-//   Dr FX Trading Payable (sold ccy) @ booked rate
-//   Cr Cash (sold ccy) @ settlement rate
-//   balancing diff → FX Realised Gain/Loss (P&L)
+// THE FVTPL SETTLEMENT ENTRY. At settlement the derivative is derecognised and
+// the cash is recognised at the settled amounts. The balancing entry is REALISED
+// FX P&L (ACC-2100-006) — NOT a receivable/payable relief:
 //
-// The balancing P&L leg is computed PER FUNCTIONAL CURRENCY so the entry closes
-// at zero in every currency it touches.
+//   Dr Cash (bought ccy) @ settled amount   ;  Cr Realised FX P&L (bought ccy)
+//   Cr Cash (sold ccy)   @ settled amount   ;  Dr Realised FX P&L (sold ccy)
+//
+// Each cash movement balances IN ITS OWN CURRENCY against the realised-P&L leg —
+// there is NO same-currency gross-up (no opposing receivable in the same ccy).
+// The realised-P&L account accumulates the per-currency legs; its REPORTING-
+// CURRENCY net (Σ received − Σ paid, translated) IS the realised FX result of the
+// trade. The on-BS derivative carrying value accrued by revaluation (unrealised
+// P&L, ACC-2100-005) is reclassified into realised separately on the terminal
+// derecognition event (PR-FX-CLOSE-V2, `postFxDerecognitionLegs`); this rule is
+// the settlement-date cash + realised recognition.
+//
+// `bookedAmount` is RETAINED in the input shape (the OBS commitment carrying at
+// the booked rate) for callers / the deferred swap-leg permutations, but the
+// FVTPL cash leg is recognised at the SETTLED amount and the balancing realised
+// P&L matches it in the same currency — so the per-currency entry closes at zero.
 // ---------------------------------------------------------------------------
 
 export interface FxSettlementInput {
@@ -159,12 +156,13 @@ export function nostroFor(currency: string): string {
 
 /**
  * The GENERIC per-MOVEMENT settlement primitive (D-FX-TRADE-SETTLEMENT-PRODUCT-
- * MODEL, Slice 1). Settles ONE recognised leg — a single uniform asset movement —
- * into its three GL legs: the cash/nostro movement at the settlement rate, the
- * receivable/payable extinguished at the booked rate, and the realised-P&L
- * balancing leg (`settled − booked`). `side` selects the obligation account
- * (RECEIVE extinguishes a receivable; PAY extinguishes a payable) and the
- * debit/credit polarity. Amounts are POSITIVE magnitudes (the sign is the `side`).
+ * MODEL, Slice 1; FVTPL settlement per D-FX-TRADE-DATE-FVTPL-OBS). Settles ONE
+ * recognised leg — a single uniform asset movement — into its TWO GL legs: the
+ * cash/nostro movement at the settled amount and the equal-and-opposite REALISED
+ * FX P&L leg in the SAME currency. `side` selects the cash polarity (RECEIVE = Dr
+ * cash; PAY = Cr cash) and the P&L counter-side. Amounts are POSITIVE magnitudes
+ * (the sign is the `side`). NO on-balance-sheet receivable/payable is touched —
+ * trade-date is OBS-only, so there is none to extinguish.
  *
  * This is the single source of the settlement leg math: `postFxSettlementLegs`
  * (the two-leg FX path) composes TWO of these, and the single-asset
@@ -177,9 +175,14 @@ export interface SettlementMovementInput {
   readonly currency: string;
   /** Cash actually moved at the SETTLEMENT rate (positive magnitude). */
   readonly settledAmount: string;
-  /** Carrying amount of the obligation leg derecognised at the BOOKED rate (positive). */
+  /**
+   * Carrying amount of the OBS commitment leg at the BOOKED rate (positive).
+   * RETAINED for traceability + the deferred swap-leg permutations; the FVTPL
+   * settlement recognises cash at the SETTLED amount and balances it with realised
+   * P&L in the same currency, so this no longer drives an on-BS obligation relief.
+   */
   readonly bookedAmount: string;
-  /** `receive` extinguishes a receivable (Dr cash); `pay` extinguishes a payable (Cr cash). */
+  /** `receive` recognises bought-leg cash (Dr cash); `pay` recognises sold-leg cash (Cr cash). */
   readonly side: "receive" | "pay";
 }
 
@@ -188,53 +191,50 @@ type SettlementLegBase = Omit<
   "creditDebit" | "accountCode" | "amount" | "description"
 >;
 
-/** Produce the three GL legs for ONE settlement movement (cash, obligation, P&L). */
+/**
+ * Produce the TWO GL legs for ONE FVTPL settlement movement: the cash recognition
+ * at the SETTLED amount and the equal-and-opposite REALISED FX P&L leg in the SAME
+ * currency. NO on-balance-sheet receivable/payable is touched — trade-date is now
+ * OBS-only (PR-FX-001-V2), so there is no gross receivable/payable to extinguish.
+ *
+ *   receive → Dr Cash[ccy] (settled) ; Cr Realised P&L[ccy] (settled)
+ *   pay     → Cr Cash[ccy] (settled) ; Dr Realised P&L[ccy] (settled)
+ *
+ * The entry closes at zero in the movement's own currency (no same-currency gross-
+ * up). The realised-P&L account then carries one leg per settled currency; its
+ * REPORTING-CURRENCY net across the trade's two movements is the realised FX result
+ * (D-FX-TRADE-DATE-FVTPL-OBS). A zero settled amount yields no legs (nothing to
+ * recognise).
+ */
 export function postSettlementMovementLegs(
   base: SettlementLegBase,
   movement: SettlementMovementInput,
 ): FxPostingLeg[] {
-  const accounts = resolveFxAccountSet(movement.currency);
-  const cashLeg: FxPostingLeg =
-    movement.side === "receive"
-      ? {
-          ...base,
-          creditDebit: "debit",
-          accountCode: nostroFor(movement.currency),
-          amount: money(movement.currency, movement.settledAmount),
-          description: `FX Settlement cash received ${movement.currency}`,
-        }
-      : {
-          ...base,
-          creditDebit: "credit",
-          accountCode: nostroFor(movement.currency),
-          amount: money(movement.currency, movement.settledAmount),
-          description: `FX Settlement cash paid ${movement.currency}`,
-        };
-  const obligationLeg: FxPostingLeg =
-    movement.side === "receive"
-      ? {
-          ...base,
-          creditDebit: "credit",
-          accountCode: accounts.receivable,
-          amount: money(movement.currency, movement.bookedAmount),
-          description: `FX Settlement receivable extinguished ${movement.currency}`,
-        }
-      : {
-          ...base,
-          creditDebit: "debit",
-          accountCode: accounts.payable,
-          amount: money(movement.currency, movement.bookedAmount),
-          description: `FX Settlement payable extinguished ${movement.currency}`,
-        };
-  // Net debit on this movement = (cash debit − obligation credit) for a receive,
-  // = (obligation debit − cash credit) for a pay. Either way the P&L balancing leg
-  // is driven by `settled − booked` (receive) / `booked − settled` (pay) — exactly
-  // the two-leg path's per-currency balancing.
-  const netDebit =
-    movement.side === "receive"
-      ? subDecimal(movement.settledAmount, movement.bookedAmount)
-      : subDecimal(movement.bookedAmount, movement.settledAmount);
-  return [cashLeg, obligationLeg, ...balancingPnlLeg(base, movement.currency, netDebit)];
+  if (isZeroDecimal(movement.settledAmount)) return [];
+  const cashSide: "debit" | "credit" = movement.side === "receive" ? "debit" : "credit";
+  // The realised-P&L leg is the OPPOSITE side of the cash leg, in the SAME currency,
+  // for the SAME amount — so the movement balances in its own currency with no
+  // receivable/payable. (The trade's reporting-currency realised result is the net
+  // of the per-currency realised-P&L legs the two movements produce.)
+  const pnlSide: "debit" | "credit" = cashSide === "debit" ? "credit" : "debit";
+  const cashLeg: FxPostingLeg = {
+    ...base,
+    creditDebit: cashSide,
+    accountCode: nostroFor(movement.currency),
+    amount: money(movement.currency, movement.settledAmount),
+    description:
+      movement.side === "receive"
+        ? `FX Settlement cash received ${movement.currency}`
+        : `FX Settlement cash paid ${movement.currency}`,
+  };
+  const realisedPnlLeg: FxPostingLeg = {
+    ...base,
+    creditDebit: pnlSide,
+    accountCode: FX_REALISED_PNL_ACCOUNT,
+    amount: money(movement.currency, movement.settledAmount),
+    description: `FX Settlement realised P&L ${movement.currency} (FVTPL, ${movement.side === "receive" ? "bought" : "sold"} leg)`,
+  };
+  return [cashLeg, realisedPnlLeg];
 }
 
 export function postFxSettlementLegs(input: FxSettlementInput): FxPostingLeg[] {
@@ -245,84 +245,27 @@ export function postFxSettlementLegs(input: FxSettlementInput): FxPostingLeg[] {
     iasRule: SETTLE_RULE.ias,
     postingRuleId: SETTLE_RULE.ruleId,
   };
-  const boughtAccounts = resolveFxAccountSet(input.boughtCurrency);
-  const soldAccounts = resolveFxAccountSet(input.soldCurrency);
-
-  const legs: FxPostingLeg[] = [
-    // Bought ccy: Dr cash (settled) ; Cr receivable (booked) ; realised diff in P&L.
-    {
-      ...base,
-      creditDebit: "debit",
-      accountCode: nostroFor(input.boughtCurrency),
-      amount: money(input.boughtCurrency, input.boughtSettledAmount),
-      description: `FX Settlement cash received ${input.boughtCurrency}`,
-    },
-    {
-      ...base,
-      creditDebit: "credit",
-      accountCode: boughtAccounts.receivable,
-      amount: money(input.boughtCurrency, input.boughtBookedAmount),
-      description: `FX Settlement receivable extinguished ${input.boughtCurrency}`,
-    },
-    // Sold ccy: Dr payable (booked) ; Cr cash (settled) ; realised diff in P&L.
-    {
-      ...base,
-      creditDebit: "debit",
-      accountCode: soldAccounts.payable,
-      amount: money(input.soldCurrency, input.soldBookedAmount),
-      description: `FX Settlement payable extinguished ${input.soldCurrency}`,
-    },
-    {
-      ...base,
-      creditDebit: "credit",
-      accountCode: nostroFor(input.soldCurrency),
-      amount: money(input.soldCurrency, input.soldSettledAmount),
-      description: `FX Settlement cash paid ${input.soldCurrency}`,
-    },
-  ];
-
-  // Per-currency realised-P&L balancing legs so the entry closes at zero in every
-  // currency. Bought ccy: cash(debit) − receivable(credit) net = settled − booked.
-  // A net debit must be balanced by a P&L credit; a net credit by a P&L debit.
-  legs.push(
-    ...balancingPnlLeg(
-      base,
-      input.boughtCurrency,
-      subDecimal(input.boughtSettledAmount, input.boughtBookedAmount),
-    ),
-  );
-  // Sold ccy: payable(debit) − cash(credit) net = booked − settled.
-  legs.push(
-    ...balancingPnlLeg(
-      base,
-      input.soldCurrency,
-      subDecimal(input.soldBookedAmount, input.soldSettledAmount),
-    ),
-  );
-  return legs;
-}
-
-/** Build the realised-P&L balancing leg for a currency given the net debit
- * (positive = net debit needing a P&L credit; negative = net credit needing a
- * P&L debit; zero = no leg). */
-function balancingPnlLeg(
-  base: Omit<FxPostingLeg, "creditDebit" | "accountCode" | "amount" | "description">,
-  currency: string,
-  netDebit: string,
-): FxPostingLeg[] {
-  if (isZeroDecimal(netDebit)) return [];
-  const isNetDebit = !netDebit.startsWith("-");
-  const magnitude = isNetDebit ? netDebit : netDebit.slice(1);
+  // FVTPL settlement: the two-leg path is exactly TWO per-movement settlements —
+  // the bought-leg RECEIVE and the sold-leg PAY — composed through the SAME
+  // per-movement primitive (`postSettlementMovementLegs`). Source, don't duplicate
+  // (Engineering Charter cmd 4): one settlement math, so the two-leg FX path and N
+  // single-asset `TradeSettlementExecuted` settlements net byte-identical per
+  // (account, currency) by construction. Each movement recognises cash at the
+  // settled amount and balances it with realised P&L in the SAME currency; no
+  // on-balance-sheet receivable/payable is touched (trade-date is OBS-only).
   return [
-    {
-      ...base,
-      // A net debit on the cash/receivable side is offset by a P&L CREDIT (gain);
-      // a net credit by a P&L DEBIT (loss).
-      creditDebit: isNetDebit ? "credit" : "debit",
-      accountCode: FX_REALISED_PNL_ACCOUNT,
-      amount: money(currency, magnitude),
-      description: `FX Realised P&L ${currency} (${isNetDebit ? "gain" : "loss"})`,
-    },
+    ...postSettlementMovementLegs(base, {
+      currency: input.boughtCurrency,
+      settledAmount: input.boughtSettledAmount,
+      bookedAmount: input.boughtBookedAmount,
+      side: "receive",
+    }),
+    ...postSettlementMovementLegs(base, {
+      currency: input.soldCurrency,
+      settledAmount: input.soldSettledAmount,
+      bookedAmount: input.soldBookedAmount,
+      side: "pay",
+    }),
   ];
 }
 

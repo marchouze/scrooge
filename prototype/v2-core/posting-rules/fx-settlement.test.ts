@@ -91,6 +91,50 @@ describe("PR-FX-SETTLE-V2 — settlement realised P&L (IAS 21 §23, §28)", () =
     });
     expectBalanced(legs);
   });
+
+  // FVTPL settlement shape (D-FX-TRADE-DATE-FVTPL-OBS, settlement side): the
+  // settlement entry NEVER touches an on-balance-sheet FX trading receivable/payable
+  // (trade-date is OBS-only) — it recognises cash + realised FX P&L only.
+  test("touches NO FX trading receivable/payable; only cash (nostro) + realised P&L", () => {
+    const legs = postFxSettlementLegs({
+      ...COMMON,
+      boughtCurrency: "USD",
+      boughtBookedAmount: "1000000.00",
+      boughtSettledAmount: "1000000.00",
+      soldCurrency: "ZAR",
+      soldBookedAmount: "18500000.00",
+      soldSettledAmount: "18500000.00",
+    });
+    // The FX trading receivable/payable account ids the rules address.
+    const recvPay = new Set(["ACC-2100-001", "ACC-2100-002", "ACC-2100-003", "ACC-2100-004"]);
+    for (const leg of legs) expect(recvPay.has(leg.accountCode)).toBe(false);
+    // Every leg is a cash (nostro, ACC-1200-*) or realised-P&L (ACC-2100-006) leg.
+    const allowed = (code: string) => code.startsWith("ACC-1200-") || code === "ACC-2100-006";
+    for (const leg of legs) expect(allowed(leg.accountCode)).toBe(true);
+    // Both currencies recognise cash + realised P&L → four legs, balanced per ccy.
+    expect(legs.length).toBe(4);
+    expectBalanced(legs);
+  });
+
+  test("the realised-P&L account carries one leg per settled currency (FVTPL)", () => {
+    const legs = postFxSettlementLegs({
+      ...COMMON,
+      boughtCurrency: "USD",
+      boughtBookedAmount: "1000000.00",
+      boughtSettledAmount: "1000000.00",
+      soldCurrency: "ZAR",
+      soldBookedAmount: "18500000.00",
+      soldSettledAmount: "18500000.00",
+    });
+    const pnlLegs = legs.filter((l) => l.accountCode === "ACC-2100-006");
+    const pnlCurrencies = new Set(pnlLegs.map((l) => l.amount.currency));
+    expect(pnlCurrencies).toEqual(new Set(["USD", "ZAR"]));
+    // The bought (received) leg credits realised P&L; the sold (paid) leg debits it.
+    const usd = pnlLegs.find((l) => l.amount.currency === "USD");
+    const zar = pnlLegs.find((l) => l.amount.currency === "ZAR");
+    expect(usd?.creditDebit).toBe("credit");
+    expect(zar?.creditDebit).toBe("debit");
+  });
 });
 
 describe("PR-FX-CLOSE-V2 — derecognition reversal (IFRS 9 §3.2.3)", () => {
