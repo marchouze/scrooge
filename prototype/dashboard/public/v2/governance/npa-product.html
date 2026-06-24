@@ -8,31 +8,89 @@
   <link rel="stylesheet" href="/v2/_v2-tile.css">
   <link rel="stylesheet" href="/provenance-badge.css">
   <style>
-    /* NPA product-detail page — product description + visual views. */
-    .np-subnav { position: sticky; top: 0; display: flex; gap: 8px; flex-wrap: wrap; padding: 8px 0; margin-bottom: 8px; background: var(--color-bg); z-index: 5; border-bottom: 1px solid var(--color-border); }
-    .np-subnav a { font: var(--text-caption); color: var(--color-text-secondary); text-decoration: none; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--color-border); }
-    .np-subnav a:hover { color: var(--color-accent); border-color: var(--color-accent); }
+    /* ── NPA product page — perspective-switcher approval dossier ──────────
+       The page is an approval-evidence dossier: it documents how the product
+       behaves / impacts FROM EACH STAKEHOLDER PERSPECTIVE so the basis for
+       sign-off is evidenced. Layout: a pinned at-a-glance approval header +
+       a perspective switcher (audience clusters → stakeholder perspectives),
+       one panel visible at a time, one consistent evidence-panel template. */
+
+    /* At-a-glance approval header. */
+    .np-glance { display: grid; grid-template-columns: 1.4fr repeat(2, minmax(140px, 0.8fr)); gap: 14px; align-items: stretch; margin: 4px 0 14px; }
+    .np-glance-id { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 10px; padding: 14px 16px; }
+    .np-glance-id .np-eyebrow { font: var(--text-caption); color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+    .np-glance-id h1 { font-size: 18px; font-weight: 650; color: var(--color-text-primary); margin: 4px 0 6px; line-height: 1.3; }
+    .np-glance-id .np-id-meta { display: flex; flex-wrap: wrap; gap: 6px; }
+    .np-stat { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; justify-content: center; }
+    .np-stat.is-ok { border-color: color-mix(in srgb, var(--color-success) 45%, var(--color-border)); }
+    .np-stat.is-warn { border-color: color-mix(in srgb, var(--color-warning) 50%, var(--color-border)); }
+    .np-stat.is-danger { border-color: color-mix(in srgb, var(--color-danger) 50%, var(--color-border)); }
+    .np-stat b { font: var(--text-caption); color: var(--color-text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .np-stat .np-stat-value { font-size: 24px; font-weight: 700; color: var(--color-text-primary); line-height: 1.1; margin-top: 4px; }
+    .np-stat .np-stat-unit { font: var(--text-caption); color: var(--color-text-secondary); margin-top: 3px; }
+
+    /* Findings strip (cross-cutting, near the at-a-glance header). */
+    .np-findings-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: 10px; margin-bottom: 14px; background: var(--color-surface); }
+    .np-findings-strip.is-clear { color: var(--color-text-secondary); }
+    .np-findings-strip .np-fs-title { font-weight: 600; color: var(--color-text-primary); font-size: 13px; }
+    .np-finding-item { font-size: 12px; color: var(--color-text-primary); display: inline-flex; align-items: center; gap: 6px; }
+
+    /* Perspective switcher — tab strip. */
+    .np-switch { position: sticky; top: 0; z-index: 6; background: var(--color-bg); border-bottom: 1px solid var(--color-border); padding: 4px 0 0; margin-bottom: 14px; }
+    .np-tabstrip { display: flex; flex-wrap: wrap; gap: 4px; }
+    .np-tab { font: var(--text-caption); font-weight: 600; color: var(--color-text-secondary); background: transparent; border: 1px solid transparent; border-bottom: none; border-radius: 8px 8px 0 0; padding: 8px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+    .np-tab:hover { color: var(--color-accent); background: var(--color-surface); }
+    .np-tab[aria-selected="true"] { color: var(--color-accent); background: var(--color-surface); border-color: var(--color-border); border-bottom: 1px solid var(--color-surface); margin-bottom: -1px; }
+    .np-tab:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+    .np-tab-count { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); background: var(--color-surface-raised); border: 1px solid var(--color-border); border-radius: 999px; padding: 0 6px; line-height: 16px; }
+
+    /* One perspective panel visible at a time. */
+    .np-panel { display: none; }
+    .np-panel.is-active { display: block; animation: np-fade 0.14s ease; }
+    @keyframes np-fade { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
+
+    /* Cluster intro line + the dimensions inside a cluster. */
+    .np-cluster-intro { font: var(--text-caption); color: var(--color-text-secondary); margin: 0 0 14px; max-width: 80ch; line-height: 1.5; }
+
+    /* The consistent stakeholder-perspective evidence panel. */
+    .np-evidence { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; }
+    .np-evidence-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; margin-bottom: 4px; }
+    .np-evidence-head h3 { font-size: 15px; font-weight: 650; color: var(--color-text-primary); margin: 0; }
+    .np-evidence-owner { font: var(--text-caption); color: var(--color-text-secondary); }
+    .np-question { font-size: 13px; font-style: italic; color: var(--color-text-secondary); margin: 2px 0 12px; line-height: 1.45; }
+    .np-evidence-grid { display: grid; grid-template-columns: max-content 1fr; gap: 8px 18px; align-items: start; }
+    .np-evidence-grid > dt { font: var(--text-caption); color: var(--color-text-secondary); font-weight: 600; padding-top: 1px; }
+    .np-evidence-grid > dd { margin: 0; font-size: 13px; color: var(--color-text-primary); line-height: 1.5; }
+    .np-narrative { background: var(--color-surface-raised); border-left: 3px solid var(--color-accent); border-radius: 0 6px 6px 0; padding: 10px 12px; margin: 12px 0 0; font-size: 13px; line-height: 1.55; color: var(--color-text-primary); }
+    .np-narrative .np-narrative-by { display: block; font: var(--text-caption); color: var(--color-text-secondary); margin-top: 6px; }
+
+    /* Shared atoms reused across panels. */
     .np-prose { max-width: 82ch; line-height: 1.55; color: var(--color-text-primary); margin: 8px 0; }
-    .np-rule { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; padding: 10px 12px; white-space: pre-wrap; line-height: 1.5; color: var(--color-text-secondary); margin: 8px 0; }
-    .np-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+    .np-rule { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; background: var(--color-surface-raised); border: 1px solid var(--color-border); border-radius: 6px; padding: 10px 12px; white-space: pre-wrap; line-height: 1.5; color: var(--color-text-secondary); margin: 8px 0; }
+    .np-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
     .np-chip { font: var(--text-caption); background: var(--color-surface-raised); border: 1px solid var(--color-border); border-radius: 999px; padding: 3px 10px; color: var(--color-text-primary); }
+    .np-chip.is-gap { border-color: color-mix(in srgb, var(--color-warning) 55%, var(--color-border)); color: var(--color-warning); }
     .np-facts { display: flex; flex-wrap: wrap; gap: 20px; margin: 10px 0; }
     .np-fact { min-width: 120px; }
     .np-fact b { display: block; font: var(--text-caption); color: var(--color-text-secondary); font-weight: 600; margin-bottom: 2px; }
     .np-fact span { font-size: 14px; color: var(--color-text-primary); }
-    .np-variant-grid, .np-lens-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin: 10px 0; }
-    .np-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 14px; }
-    .np-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; color: var(--color-text-primary); }
+    .np-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin: 10px 0; }
+    .np-card { background: var(--color-surface-raised); border: 1px solid var(--color-border); border-radius: 8px; padding: 14px; }
+    .np-card h4 { font-size: 14px; font-weight: 600; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; color: var(--color-text-primary); }
     .np-kv { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; font-size: 13px; border-bottom: 1px dashed var(--color-border); }
     .np-kv:last-child { border-bottom: 0; }
     .np-kv b { color: var(--color-text-secondary); font-weight: 600; }
     .np-kv span { color: var(--color-text-primary); text-align: right; }
-    .np-svg-wrap { overflow-x: auto; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 12px; margin: 10px 0; }
+    .np-svg-wrap { overflow-x: auto; background: var(--color-surface-raised); border: 1px solid var(--color-border); border-radius: 8px; padding: 12px; margin: 10px 0; }
     .np-legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 6px 2px 0; font: var(--text-caption); color: var(--color-text-secondary); }
     .np-legend span { display: inline-flex; align-items: center; gap: 5px; }
     .np-legend i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
     .np-empty { color: var(--color-text-secondary); font-style: italic; padding: 8px 0; }
-    .np-card-note { font-size: 12px; color: var(--color-text-secondary); margin-top: 6px; line-height: 1.5; }
+    .np-note { font-size: 12px; color: var(--color-text-secondary); margin-top: 6px; line-height: 1.5; }
+    .np-subhead { font-size: 14px; margin: 18px 0 6px; color: var(--color-text-secondary); font-weight: 600; }
+    .np-chain-list { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; }
+    .np-chain-list li { font-size: 12px; color: var(--color-text-primary); display: flex; align-items: center; gap: 8px; }
+    .np-chain-list .np-chain-kind { font: var(--text-caption); color: var(--color-text-secondary); min-width: 72px; }
   </style>
 </head>
 <body data-provenance-source="/api/v2/npa">
@@ -76,28 +134,21 @@
 
     const bodyHost = document.createElement("div"); main.appendChild(bodyHost);
 
-    // ── shared badge + section helpers ────────────────────────────────
+    // ── shared badges ─────────────────────────────────────────────────
     const dimBadge = (s) => {
       const v = s === "implementation-attested" ? "success" : s === "design-attested" ? "info" : s === "failed" ? "danger" : "warning";
-      return `<span class="v2-badge v2-badge-${v}">${esc(s)}</span>`;
+      const label = s === "implementation-attested" ? "implementation-attested" : s === "design-attested" ? "design-attested" : s === "failed" ? "failed" : "pending";
+      return `<span class="v2-badge v2-badge-${v}">${esc(label)}</span>`;
     };
     const sevBadge = (s) => `<span class="v2-badge v2-badge-${s === "critical" ? "danger" : s === "high" ? "warning" : "neutral"}">${esc(s)}</span>`;
-    // Valuation-domain status pill: built (green) / partial (amber) / planned-with-gap (neutral).
     const valBadge = (s) => {
       const label = s === "planned-with-gap" ? "planned" : s;
       const v = s === "built" ? "success" : s === "partial" ? "warning" : "neutral";
       return `<span class="v2-badge v2-badge-${v}">${esc(label)}</span>`;
     };
+    const chips = (arr, cls) => (arr && arr.length ? arr.map((x) => `<span class="np-chip${cls ? " " + cls : ""}">${esc(x)}</span>`).join(" ") : "—");
 
-    function section(host, anchor, title) {
-      const sec = document.createElement("div");
-      sec.className = "v2-section"; sec.id = anchor;
-      const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = title;
-      sec.appendChild(h); host.appendChild(sec);
-      return sec;
-    }
-
-    // ── SVG group palette ─────────────────────────────────────────────
+    // ── SVG palette + helpers (How-it-works visuals) ──────────────────
     const GROUP_COLOR = {
       fx: "var(--color-accent)", cash: "var(--color-success)", "cash-flow": "var(--color-success)",
       bond: "var(--color-info)", ir: "var(--color-info)", equity: "var(--color-warning)",
@@ -121,22 +172,6 @@
       const w = document.createElement("div"); w.className = "np-svg-wrap"; w.innerHTML = svg; host.appendChild(w);
     }
 
-    // ── §1 visual: lifecycle stepper ──────────────────────────────────
-    function renderLifecycleFlow(host, events) {
-      if (!events || !events.length) { host.insertAdjacentHTML("beforeend", `<p class="np-empty">No lifecycle event family declared for this product.</p>`); return; }
-      const W = 168, H = 46, GAP = 30, PAD = 10;
-      const total = events.length * W + (events.length - 1) * GAP + PAD * 2;
-      let x = PAD; const parts = [];
-      events.forEach((ev, i) => {
-        const short = ev.length > 19 ? ev.slice(0, 18) + "…" : ev;
-        parts.push(`<g><rect x="${x}" y="14" width="${W}" height="${H}" rx="8" fill="var(--color-accent-bg)" stroke="var(--color-accent)"/><text x="${x + W / 2}" y="${14 + H / 2 + 4}" text-anchor="middle" font-size="12" fill="var(--color-text-primary)">${esc(short)}</text><title>${esc(ev)}</title></g>`);
-        if (i < events.length - 1) { const ax = x + W; parts.push(`<line x1="${ax}" y1="${14 + H / 2}" x2="${ax + GAP}" y2="${14 + H / 2}" stroke="var(--color-border-strong)" stroke-width="2" marker-end="url(#arrowGrey)"/>`); }
-        x += W + GAP;
-      });
-      svgWrap(host, `<svg width="${total}" height="78" viewBox="0 0 ${total} 78" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arrowGrey" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--color-border-strong)"/></marker></defs>${parts.join("")}</svg>`);
-    }
-
-    // ── §3 visual: component-interaction graph ────────────────────────
     function renderComponentGraph(host, graph) {
       if (!graph || !graph.nodes || !graph.nodes.length) { host.insertAdjacentHTML("beforeend", `<p class="np-empty">Composition not yet attested for this product.</p>`); return; }
       const W = 720, H = 500, cx = 360, cy = 200, R = 150;
@@ -174,29 +209,6 @@
       host.insertAdjacentHTML("beforeend", `<div class="np-legend"><span><i style="background:var(--color-accent)"></i>product</span>${legend}<span style="margin-left:auto">— composes &nbsp; ┄ materialises (lifecycle interaction)</span></div>`);
     }
 
-    // ── §4 visual: cross-bank lens map ────────────────────────────────
-    function renderLensMap(host, lenses, hubLabel) {
-      const W = 760, H = 380, cx = 380, cy = 190;
-      const corners = [[180, 86], [580, 86], [180, 294], [580, 294]];
-      const items = [
-        { key: "Markets", lines: [lenses.markets.bookLabel, lenses.markets.desks.map((d) => d.deskName).join(", ") || "—"] },
-        { key: "Finance", lines: [lenses.finance.frtbBook === "trading" ? "FRTB trading book" : "FRTB banking book", "IFRS 9 " + lenses.finance.ifrs9Family.toUpperCase()] },
-        { key: "Risk", lines: [lenses.risk.marketRiskDimensions.join(" + ") || "—", lenses.risk.measuredByModels.join(", ") || "no scoped model"] },
-        { key: "Compliance", lines: [lenses.compliance.attestedCount + "/" + lenses.compliance.totalDimensions + " dimensions attested", "Master agr: " + lenses.compliance.masterAgreement] },
-      ];
-      const lines = corners.map((c) => `<line x1="${cx}" y1="${cy}" x2="${c[0]}" y2="${c[1]}" stroke="var(--color-border-strong)" stroke-width="1"/>`).join("");
-      const boxes = items.map((it, i) => {
-        const [px, py] = corners[i];
-        const trunc = (s) => (s.length > 34 ? s.slice(0, 33) + "…" : s);
-        const l1 = `<text x="${px}" y="${py + 4}" text-anchor="middle" font-size="12" fill="var(--color-text-primary)">${esc(trunc(it.lines[0]))}</text>`;
-        const l2 = `<text x="${px}" y="${py + 22}" text-anchor="middle" font-size="11" fill="var(--color-text-secondary)">${esc(trunc(it.lines[1]))}</text>`;
-        return `<g><rect x="${px - 112}" y="${py - 42}" width="224" height="86" rx="8" fill="var(--color-surface)" stroke="var(--color-accent)"/><text x="${px}" y="${py - 20}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--color-accent)">${esc(it.key)}</text>${l1}${l2}</g>`;
-      }).join("");
-      const hubName = hubLabel.length > 24 ? hubLabel.slice(0, 23) + "…" : hubLabel;
-      const hub = `<g><circle cx="${cx}" cy="${cy}" r="52" fill="var(--color-accent)"/>${wrapLabel(hubName, cx, cy, "#ffffff")}<title>${esc(hubLabel)}</title></g>`;
-      svgWrap(host, `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${lines}${boxes}${hub}</svg>`);
-    }
-
     if (!id) {
       v2RenderError(bodyHost, `no product selected — choose from the <a href="/v2/governance/npa.html">NPA register</a>.`);
     } else {
@@ -212,292 +224,387 @@
         document.getElementById("as-of").textContent = `as of ${new Date(d.asOf).toLocaleString()}`;
 
         const dims = d.dimensions || [];
-        const attested = dims.filter((x) => x.attestation && x.attestation.status !== "pending").length;
-        const fullyAttested = dims.filter((x) => x.attestation && x.attestation.status === "implementation-attested").length;
-        const openFindings = (d.postApprovalFindings || []).filter((f) => f.status !== "reviewed").length;
         const ov = d.overview || {};
         const lenses = d.lenses;
+        const byDim = new Map(dims.map((x) => [x.dimension, x]));
+        const attested = dims.filter((x) => x.attestation && x.attestation.status !== "pending").length;
+        const fullyAttested = dims.filter((x) => x.attestation && x.attestation.status === "implementation-attested").length;
+        const findings = d.postApprovalFindings || [];
+        const openFindings = findings.filter((f) => f.status !== "reviewed").length;
 
-        // ── in-page nav ──────────────────────────────────────────────
-        const nav = document.createElement("nav"); nav.className = "np-subnav";
-        nav.innerHTML = [
-          ["overview", "How it operates"], ["variants", "Variants"],
-          ...(d.fxContractualTerms ? [["contractual-terms", "Contractual terms"]] : []),
-          ...(d.fxLifecycle ? [["fx-lifecycle", "FX spot lifecycle"]] : []),
-          ["components", "Components"],
-          ["lenses", "Across the bank"], ["governance", "Governance"],
-        ].map(([a, t]) => `<a href="#${a}">${t}</a>`).join("");
-        bodyHost.appendChild(nav);
+        renderGlance(bodyHost, d, ov, dims, attested, fullyAttested);
+        renderFindingsStrip(bodyHost, findings, openFindings);
+        renderSwitcher(bodyHost, d, ov, lenses, byDim);
 
-        // ── hero tiles ───────────────────────────────────────────────
-        renderTileGroup(bodyHost, {
-          tiles: [
-            { label: "Lifecycle", value: esc(ov.lifecycle || "—"), unit: `${esc(ov.assetClassLabel || "")} · ${esc(ov.currency || "")}` },
-            { label: "Asset class", value: esc(ov.assetClassLabel || "—"), unit: esc((d.product && d.product.family) || "") },
-            { label: "Book", value: lenses ? esc(lenses.markets.bookLabel) : "—", unit: lenses ? `FRTB ${esc(lenses.finance.frtbBook)}` : "" },
-            { label: "Dimensions attested", value: `${attested}/${dims.length}`, unit: `${fullyAttested} implementation-attested`, variant: fullyAttested === dims.length && dims.length > 0 ? "success" : "warning" },
+        renderRefs(bodyHost, {
+          refs: [
+            { label: "D-NEW-PRODUCT-APPROVAL-POLICY", href: "#" },
+            { label: "Back to NPA register", href: "/v2/governance/npa.html" },
           ],
         });
+      });
+    }
 
-        // ── §1 Overview — how it operates ────────────────────────────
-        const s1 = section(bodyHost, "overview", "How it operates");
-        s1.insertAdjacentHTML("beforeend", `<p class="np-prose">${esc(ov.description || "")}</p>`);
-        if (ov.scope) {
-          const chips = [
-            `Venue: ${ov.scope.executionVenue}`, `Pairs: ${ov.scope.currencyPairs}`,
-            `Counterparties: ${ov.scope.counterpartyEligibility}`,
-          ].concat((ov.scope.instrumentVariants || []).map((v) => `Variant: ${v}`));
-          s1.insertAdjacentHTML("beforeend", `<div class="np-chips">${chips.map((c) => `<span class="np-chip">${esc(c)}</span>`).join("")}</div>`);
-        }
-        s1.insertAdjacentHTML("beforeend", `<div class="np-facts">` + [
-          ["Franchise", ov.franchiseScope], ["Settlement", ov.settlementPath], ["Reconciliation", ov.reconciliationCadence],
-          ["Legal entity", ov.legalEntityId], ["Currency", ov.currency], ["Jurisdiction", ov.jurisdiction],
-        ].map(([k, v]) => `<div class="np-fact"><b>${esc(k)}</b><span>${esc(v || "—")}</span></div>`).join("") + `</div>`);
-        s1.insertAdjacentHTML("beforeend", `<div class="np-rule"><b>Composition rule</b>\n${esc(ov.compositionRule || "—")}</div>`);
-        s1.insertAdjacentHTML("beforeend", `<h3 style="font-size:14px;margin:14px 0 0;color:var(--color-text-secondary)">Trade lifecycle</h3>`);
-        renderLifecycleFlow(s1, (d.product && d.product.lifecycleEventFamily) || []);
+    // ── At-a-glance approval header (pinned context above the tabs) ────
+    function renderGlance(host, d, ov, dims, attested, fullyAttested) {
+      const full = fullyAttested === dims.length && dims.length > 0;
+      const partial = attested === dims.length && dims.length > 0;
+      const cls = full ? "is-ok" : partial ? "is-warn" : "is-danger";
+      const idMeta = [
+        ov.assetClassLabel, ov.currency, lensBook(d), ov.jurisdiction,
+      ].filter(Boolean).map((x) => `<span class="np-chip">${esc(x)}</span>`).join("");
+      const wrap = document.createElement("div"); wrap.className = "np-glance";
+      wrap.innerHTML =
+        `<div class="np-glance-id">` +
+          `<div class="np-eyebrow">New product approval — evidence dossier</div>` +
+          `<h1>${esc((d.product && d.product.name) || id)}</h1>` +
+          `<div class="np-id-meta">${idMeta}</div>` +
+        `</div>` +
+        `<div class="np-stat ${cls}"><b>Dimensions attested</b>` +
+          `<span class="np-stat-value">${attested}/${dims.length}</span>` +
+          `<span class="np-stat-unit">${fullyAttested} implementation-attested</span></div>` +
+        `<div class="np-stat"><b>Lifecycle</b>` +
+          `<span class="np-stat-value" style="font-size:18px">${esc(ov.lifecycle || "—")}</span>` +
+          `<span class="np-stat-unit">${esc(ov.assetClassLabel || "")}</span></div>`;
+      host.appendChild(wrap);
+    }
+    function lensBook(d) { return d.lenses ? d.lenses.markets.bookLabel : ""; }
 
-        // ── §2 Variants ──────────────────────────────────────────────
-        const s2 = section(bodyHost, "variants", "Variants");
-        const variants = d.variants || [];
-        if (!variants.length) {
-          s2.insertAdjacentHTML("beforeend", `<p class="np-empty">This product trades as a single instrument form — no operating sub-variants are modelled.</p>`);
-        } else {
-          const grid = document.createElement("div"); grid.className = "np-variant-grid";
-          grid.innerHTML = variants.map((v) => {
-            const badge = v.status === "in-scope" ? `<span class="v2-badge v2-badge-success">in scope</span>` : `<span class="v2-badge v2-badge-warning">planned</span>`;
-            return `<div class="np-card"><h3>${esc(v.label)} ${badge}</h3><div class="np-card-note">${esc(v.note)}</div></div>`;
-          }).join("");
-          s2.appendChild(grid);
-        }
+    // ── Cross-cutting findings strip (the old "post-approval findings") ─
+    function renderFindingsStrip(host, findings, openFindings) {
+      const strip = document.createElement("div");
+      strip.className = "np-findings-strip" + (openFindings === 0 ? " is-clear" : "");
+      if (!findings.length) {
+        strip.innerHTML = `<span class="np-fs-title">Post-approval findings</span><span>None recorded — no missed-dimension findings since approval.</span>`;
+      } else {
+        const items = findings.map((f) =>
+          `<span class="np-finding-item">${sevBadge(f.severity)} ${esc(f.title)} ` +
+          `<span class="v2-badge v2-badge-${f.status === "reviewed" ? "success" : f.status === "overdue" ? "danger" : "warning"}">${esc(f.status)}</span></span>`).join("");
+        strip.innerHTML = `<span class="np-fs-title">Post-approval findings (${openFindings} open)</span>${items}`;
+      }
+      host.appendChild(strip);
+    }
 
-        // ── §2b Contractual terms — booked FX buy/sell quad ───────────
-        // Sourced from a real live `fx` FIL instance (D-FX-INSTRUMENT-BUYSELL-QUAD).
-        // Rendered ONLY when the server populated it; never fabricated.
-        if (d.fxContractualTerms) {
-          const ct = d.fxContractualTerms;
-          const s2b = section(bodyHost, "contractual-terms", "Contractual terms");
-          s2b.insertAdjacentHTML("beforeend", `<p class="np-prose">The booked agreement states both sides of the exchange. On settlement the bank receives the buy leg and delivers the sell leg — sourced from a representative booked trade.</p>`);
-          const grid = document.createElement("div"); grid.className = "np-lens-grid";
-          grid.innerHTML = `<div class="np-card"><h3>Agreement (buy / sell quad)</h3>` +
-            `<div class="np-kv"><b>Bank buys</b><span>${esc(ct.buyAmount)} ${esc(ct.buyCurrency)}</span></div>` +
-            `<div class="np-kv"><b>Bank sells</b><span>${esc(ct.sellAmount)} ${esc(ct.sellCurrency)}</span></div>` +
-            `<div class="np-kv"><b>Settlement date</b><span>${esc(ct.settlementDate)}</span></div>` +
-            `<div class="np-card-note">Source: <code>${esc(ct.sourceInstanceUrn)}</code> — representative booked trade, as-of page load.</div></div>`;
-          s2b.appendChild(grid);
-        }
+    // ── Perspective switcher ──────────────────────────────────────────
+    // Audience clusters; each cluster holds one or more stakeholder
+    // perspectives rendered through the consistent evidence panel. The
+    // first cluster — How it works — is the built-this-slice product story.
+    function renderSwitcher(host, d, ov, lenses, byDim) {
+      // Cluster definitions: which dimensions live under which audience tab.
+      const CLUSTERS = [
+        { key: "how", label: "How it works", dims: [] },
+        { key: "finance", label: "Finance", dims: ["accounting", "capital", "tax"] },
+        { key: "risk", label: "Risk", dims: ["market-risk", "credit-risk", "liquidity-funding", "model-risk"] },
+        { key: "compliance", label: "Conduct & Compliance", dims: ["conduct-suitability", "aml-sanctions-pep", "legal-documentation", "privacy"] },
+        { key: "ops", label: "Operations", dims: ["operational-risk", "operational-readiness"] },
+        { key: "security", label: "Security", dims: ["information-security"] },
+      ];
 
-        // ── §2c FX spot settlement lifecycle (model-level) ────────────
-        // The four contractual-settlement stages (D-FX-TRADE-SETTLEMENT-PRODUCT-
-        // MODEL), sourced VERBATIM from the cited fx-spot-lifecycle-model.ts
-        // declaration via the server. TEXT/CARDS, no SVG diagram. Every event
-        // type a stage names resolves to the event-type registry (asserted by
-        // recon:npa-page-no-invented-functionality). FX-only — rendered ONLY
-        // when the server populated `fxLifecycle`.
-        if (d.fxLifecycle) {
-          const fl = d.fxLifecycle;
-          const sFx = section(bodyHost, "fx-lifecycle", "FX spot settlement lifecycle");
-          sFx.insertAdjacentHTML("beforeend", `<p class="np-prose">The model-level contractual settlement lifecycle of an FX spot — distinct from the accounting journal above. The trade is the agreement; each leg settles as a uniform single-asset movement; the instrument then terminates. Every stage names the FIL event type(s) that realise it, the event-ownership level, and the fields that link it to its neighbours — all sourced, never invented.</p>`);
-          const fchips = (arr) => (arr || []).map((x) => `<span class="np-chip">${esc(x)}</span>`).join(" ") || "—";
-          // ── Three ownership levels (the SVG's three vertical tiers) ──
-          // Product-type governance → booking / composite act → FIL-leg fact.
-          if (fl.ownershipLevels && fl.ownershipLevels.length) {
-            sFx.insertAdjacentHTML("beforeend", `<h3 style="font-size:14px;margin:12px 0 6px;color:var(--color-text-secondary)">Three ownership levels</h3>`);
-            sFx.insertAdjacentHTML("beforeend", `<p class="np-prose">Every event sits in one of three ownership tiers, keyed by the atomicity of the act it records. The settlement movements are booking / composite acts; each one materialises a cash holding as a FIL-leg fact (Level 3).</p>`);
-            const olGrid = document.createElement("div"); olGrid.className = "np-lens-grid"; sFx.appendChild(olGrid);
-            for (const t of fl.ownershipLevels) {
-              olGrid.insertAdjacentHTML("beforeend",
-                `<div class="np-card"><h3>${esc(t.label)}</h3>` +
-                `<div class="np-card-note">${esc(t.description)}</div>` +
-                `<div class="np-kv"><b>e.g.</b><span><span class="np-chip">${esc(t.representativeEventType)}</span></span></div></div>`);
-            }
-          }
-          const grid = document.createElement("div"); grid.className = "np-lens-grid"; sFx.appendChild(grid);
-          for (const st of fl.stages) {
-            // Level-3 materialised cash-holding FIL-leg fact (Payment / Receipt):
-            // the holding the settlement movement creates, with the holdingInstance
-            // (settlement → holding) and originatingInstrument (holding → trade)
-            // links visibly connecting settlement → holding → trade.
-            const mat = st.materialises;
-            const matBlock = mat
-              ? `<div class="np-card-note" style="border-top:1px dashed var(--color-border);margin-top:8px;padding-top:8px">` +
-                `<b>Materialises (FIL-leg fact · Level 3):</b> <span class="np-chip">${esc(mat.label)}</span><br>` +
-                `<div class="np-kv" style="margin-top:6px"><b>Event type</b><span><span class="np-chip">${esc(mat.eventType)}</span> · <span class="np-chip">${esc(mat.assetClass)}</span></span></div>` +
-                `<div class="np-kv"><b>Movement</b><span>${esc(mat.sign)} (${mat.sign === "-" ? "paid · holding ↓" : "received · holding ↑"})</span></div>` +
-                `<div class="np-card-note">${esc(mat.description)}</div>` +
-                `<div class="np-kv"><b>Links</b><span><code>${esc(mat.holdingLink)}</code> settlement→holding · <code>${esc(mat.originatingLink)}</code> holding→trade</span></div>` +
-                `<div class="np-card-note" style="margin-top:4px"><b>Cites:</b> ${fchips(mat.citations)}</div></div>`
-              : "";
-            grid.insertAdjacentHTML("beforeend",
-              `<div class="np-card"><h3>${esc(st.id)} · ${esc(st.label)} ` +
-              `<span class="v2-badge v2-badge-neutral">${esc(st.ownershipLabel)}</span></h3>` +
-              `<div class="np-card-note">${esc(st.description)}</div>` +
-              `<div class="np-kv"><b>Event type${st.eventTypes.length > 1 ? "s" : ""}</b><span>${fchips(st.eventTypes)}</span></div>` +
-              `<div class="np-kv"><b>FIL stage</b><span>${fchips(st.filStages)}</span></div>` +
-              `<div class="np-kv"><b>Linking fields</b><span>${fchips(st.linkingFields)}</span></div>` +
-              matBlock +
-              `<div class="np-card-note" style="margin-top:6px"><b>Cites:</b> ${fchips(st.citations)}</div></div>`);
-          }
-          // "How they link" — the de-duplicated linking-field key.
-          if (fl.links && fl.links.length) {
-            sFx.insertAdjacentHTML("beforeend", `<h3 style="font-size:14px;margin:16px 0 6px;color:var(--color-text-secondary)">How the stages link</h3>`);
-            const linkCard = document.createElement("div"); linkCard.className = "np-card"; sFx.appendChild(linkCard);
-            linkCard.innerHTML = fl.links.map((l) =>
-              `<div class="np-kv"><b><code>${esc(l.field)}</code></b><span>${esc(l.connects)}</span></div>`).join("") +
-              `<div class="np-card-note" style="margin-top:6px">Each field is a real schema field on the FIL settlement model. Authority: ${fchips(fl.authority)}.</div>`;
-          }
-        }
+      const switchWrap = document.createElement("div"); switchWrap.className = "np-switch";
+      const strip = document.createElement("div"); strip.className = "np-tabstrip"; strip.setAttribute("role", "tablist");
+      switchWrap.appendChild(strip);
+      host.appendChild(switchWrap);
 
-        // ── §3 Components & how they interact ────────────────────────
-        const s3 = section(bodyHost, "components", "Components & how they interact");
-        s3.insertAdjacentHTML("beforeend", `<p class="np-prose">The product is composed from typed CDM building blocks. The diagram shows each component the product <em>composes</em>; a dashed green edge marks a lifecycle <em>interaction</em> — for FX, the trade settles into a first-class Cash balance.</p>`);
-        renderComponentGraph(s3, d.componentGraph || { nodes: [], edges: [] });
-        renderTable(s3, {
-          columns: ["Component", "Plays role", "Group"],
-          emptyMsg: "No components attested.",
-          rows: ((d.componentGraph && d.componentGraph.nodes) || []).map((n) => ({
-            cells: [`<strong>${esc(n.label)}</strong>`, esc(n.detail), `<span class="np-chip">${esc(n.group)}</span>`],
-          })),
+      const panelHost = document.createElement("div"); host.appendChild(panelHost);
+      const tabs = []; const panels = [];
+
+      CLUSTERS.forEach((cl, idx) => {
+        const present = cl.key === "how" ? [] : cl.dims.map((k) => byDim.get(k)).filter(Boolean);
+        // Skip a cluster entirely if it has no dimensions to show (non-FX
+        // products still carry all 14 dimensions, so this only guards bad keys).
+        if (cl.key !== "how" && present.length === 0) return;
+
+        const tab = document.createElement("button");
+        tab.className = "np-tab"; tab.id = `np-tab-${cl.key}`;
+        tab.setAttribute("role", "tab"); tab.setAttribute("aria-controls", `np-panel-${cl.key}`);
+        tab.setAttribute("aria-selected", idx === 0 ? "true" : "false");
+        tab.tabIndex = idx === 0 ? 0 : -1;
+        tab.innerHTML = cl.key === "how"
+          ? esc(cl.label)
+          : `${esc(cl.label)} <span class="np-tab-count">${present.length}</span>`;
+        strip.appendChild(tab); tabs.push(tab);
+
+        const panel = document.createElement("section");
+        panel.className = "np-panel" + (idx === 0 ? " is-active" : "");
+        panel.id = `np-panel-${cl.key}`;
+        panel.setAttribute("role", "tabpanel"); panel.setAttribute("aria-labelledby", tab.id);
+        if (idx !== 0) panel.hidden = true;
+        panelHost.appendChild(panel); panels.push(panel);
+
+        if (cl.key === "how") renderHowItWorks(panel, d, ov);
+        else renderClusterPanel(panel, cl, present, d, lenses);
+      });
+
+      const select = (i) => {
+        tabs.forEach((t, j) => {
+          const on = i === j;
+          t.setAttribute("aria-selected", on ? "true" : "false");
+          t.tabIndex = on ? 0 : -1;
+          panels[j].classList.toggle("is-active", on);
+          panels[j].hidden = !on;
         });
-
-        // ── §4 Across the bank — cross-lens ──────────────────────────
-        const s4 = section(bodyHost, "lenses", "How the bank sees it");
-        if (!lenses) {
-          s4.insertAdjacentHTML("beforeend", `<p class="np-empty">Cross-bank lens view not available for this product.</p>`);
-        } else {
-          renderLensMap(s4, lenses, ov.assetClassLabel || (d.product && d.product.name) || "Product");
-          const grid = document.createElement("div"); grid.className = "np-lens-grid"; s4.appendChild(grid);
-
-          // Markets
-          const mk = lenses.markets;
-          grid.insertAdjacentHTML("beforeend", `<div class="np-card"><h3>📈 Markets</h3>` +
-            `<div class="np-kv"><b>Book</b><span>${esc(mk.bookLabel)}</span></div>` +
-            mk.desks.map((dk) => `<div class="np-kv"><b>${esc(dk.deskName)}</b><span>${esc(dk.deskKind)}</span></div>`).join("") +
-            `<div class="np-card-note">${esc(mk.eligibility)}</div></div>`);
-
-          // Finance
-          const fi = lenses.finance;
-          grid.insertAdjacentHTML("beforeend", `<div class="np-card"><h3>📊 Finance</h3>` +
-            `<div class="np-kv"><b>FRTB book</b><span>${esc(fi.frtbBook)}</span></div>` +
-            `<div class="np-kv"><b>IFRS 9</b><span>${esc(fi.ifrs9Family)}</span></div>` +
-            `<div class="np-kv"><b>IFRS 13</b><span>${esc(fi.ifrs13FairValueHierarchy)}</span></div>` +
-            `<div class="np-kv"><b>IAS 21</b><span>${esc(fi.ias21FxTreatment)}</span></div>` +
-            fi.baReturnCells.map((c) => `<div class="np-kv"><b>${esc(c.cell)}</b><span>${esc(c.lens)}</span></div>`).join("") +
-            `<div class="np-card-note">${esc(fi.frtbRationale)}</div></div>`);
-
-          // Risk
-          const rk = lenses.risk;
-          grid.insertAdjacentHTML("beforeend", `<div class="np-card"><h3>⚠️ Risk</h3>` +
-            `<div class="np-kv"><b>Market risk</b><span>${esc(rk.marketRiskDimensions.join(", ") || "—")}</span></div>` +
-            `<div class="np-kv"><b>Credit risk</b><span>${esc(rk.creditRiskShape)}</span></div>` +
-            `<div class="np-kv"><b>Liquidity</b><span>${esc(rk.liquidityClassification)}</span></div>` +
-            `<div class="np-kv"><b>Funding</b><span>${esc(rk.fundingProfile)}</span></div>` +
-            `<div class="np-kv"><b>Model tier</b><span>${esc(rk.modelRiskTier)}</span></div>` +
-            `<div class="np-card-note">Models scoped to this asset class: ${rk.measuredByModels.length ? rk.measuredByModels.map((m) => `<span class="np-chip">${esc(m)}</span>`).join(" ") : "none"}</div></div>`);
-
-          // Compliance
-          const cp = lenses.compliance;
-          grid.insertAdjacentHTML("beforeend", `<div class="np-card"><h3>✔️ Compliance</h3>` +
-            `<div class="np-kv"><b>Attested</b><span>${cp.attestedCount}/${cp.totalDimensions}</span></div>` +
-            `<div class="np-kv"><b>Lifecycle</b><span>${esc(cp.lifecycle)}</span></div>` +
-            `<div class="np-kv"><b>Master agreement</b><span>${esc(cp.masterAgreement)}</span></div>` +
-            `<div class="np-card-note">Obligations: ${cp.obligationCitations.slice(0, 8).map((c) => `<span class="np-chip">${esc(c)}</span>`).join(" ")}</div></div>`);
-
-          // ── §4b Valuation / reporting map — five domains ───────────
-          // Per domain: valuation basis, the return/report it feeds, the posting
-          // rules / models that measure it, and an HONEST sourced status pill.
-          // A `planned-with-gap` (or gap-bearing `partial`) carries a tracked
-          // ProductDeferredGap (title + owner-seat + target trigger + citations);
-          // never a bare "planned" (D-NPA-PAGE-DE-INVENTION).
-          const valuation = lenses.valuation || [];
-          if (valuation.length) {
-            s4.insertAdjacentHTML("beforeend", `<h3 style="font-size:14px;margin:18px 0 6px;color:var(--color-text-secondary)">Valuation &amp; reporting map</h3>`);
-            s4.insertAdjacentHTML("beforeend", `<p class="np-prose">How the trade is valued and reported across the five control domains. Each status is sourced — from the posting-rule registry, the FIL models, or a tracked deferred gap — never invented.</p>`);
-            const vgrid = document.createElement("div"); vgrid.className = "np-lens-grid"; s4.appendChild(vgrid);
-            const chips = (arr) => (arr || []).map((x) => `<span class="np-chip">${esc(x)}</span>`).join(" ") || "—";
-            for (const v of valuation) {
-              const gapBlock = v.gap
-                ? `<div class="np-card-note" style="border-top:1px dashed var(--color-border);margin-top:8px;padding-top:8px">` +
-                  `<b>Tracked gap:</b> ${esc(v.gap.title)}<br>` +
-                  `<b>Owner:</b> ${esc(v.gap.owner || "—")} &nbsp;·&nbsp; <b>Trigger:</b> ${esc(v.gap.targetTrigger)}<br>` +
-                  `<b>Citations:</b> ${chips(v.gap.citations)}</div>`
-                : "";
-              const unbacked = ((v.unbacked && (v.unbacked.postingRuleIds.length + v.unbacked.eventTypes.length)) || 0) > 0
-                ? `<div class="np-kv"><b>Unbacked (gap-surfaced)</b><span>${chips([...(v.unbacked.postingRuleIds||[]), ...(v.unbacked.eventTypes||[])])}</span></div>`
-                : "";
-              vgrid.insertAdjacentHTML("beforeend",
-                `<div class="np-card"><h3>${esc(v.label)} ${valBadge(v.status)}</h3>` +
-                `<div class="np-card-note">${esc(v.valuationBasis)}</div>` +
-                `<div class="np-kv"><b>Feeds</b><span>${chips(v.feedsReturn)}</span></div>` +
-                (v.postingRuleIds.length ? `<div class="np-kv"><b>Posting rules</b><span>${chips(v.postingRuleIds)}</span></div>` : "") +
-                (v.models.length ? `<div class="np-kv"><b>Models</b><span>${chips(v.models)}</span></div>` : "") +
-                (v.citations.length ? `<div class="np-kv"><b>Basis cites</b><span>${chips(v.citations.slice(0, 6))}</span></div>` : "") +
-                unbacked +
-                gapBlock +
-                `</div>`);
-            }
-          }
-        }
-
-        // ── §5 Governance deep-dive (retained) ───────────────────────
-        const gov = section(bodyHost, "governance", "Governance deep-dive");
-        renderTileGroup(gov, {
-          tiles: [
-            { label: "Open findings", value: String(openFindings), unit: "post-approval", variant: openFindings > 0 ? "danger" : "success" },
-            { label: "Jurisdiction", value: esc(ov.jurisdiction || "—"), unit: "legal entity scope" },
-          ],
+        tabs[i].focus();
+      };
+      tabs.forEach((t, i) => {
+        t.addEventListener("click", () => select(i));
+        t.addEventListener("keydown", (e) => {
+          if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); select((i + 1) % tabs.length); }
+          else if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); select((i - 1 + tabs.length) % tabs.length); }
+          else if (e.key === "Home") { e.preventDefault(); select(0); }
+          else if (e.key === "End") { e.preventDefault(); select(tabs.length - 1); }
         });
+      });
+    }
 
-        // attestation matrix
-        gov.insertAdjacentHTML("beforeend", `<h3 style="font-size:14px;margin:14px 0 4px;color:var(--color-text-secondary)">Attestation matrix (${dims.length} dimensions)</h3>`);
-        renderTable(gov, {
-          columns: ["Dimension", "Status", "Attested", "Accountable seat"],
-          emptyMsg: "No dimension cards.",
-          rows: dims.map((x) => ({
+    // ── Tab 1 — "How it works" (fully built this slice) ───────────────
+    // One coherent read of the product mechanics, consolidated from existing
+    // data with NO duplication: what it is → scope/facts → composition → how a
+    // trade is struck and settles (FX lifecycle) → contractual terms →
+    // components. The posting-rule JOURNAL is NOT here — it belongs to the
+    // Accounting perspective.
+    function renderHowItWorks(panel, d, ov) {
+      panel.insertAdjacentHTML("beforeend", `<p class="np-cluster-intro">The product as a client or trader understands it — what it is, how a trade is struck, how it settles, and the building blocks it is composed from.</p>`);
+
+      // What it is.
+      panel.insertAdjacentHTML("beforeend", `<h3 class="np-subhead">What it is</h3>`);
+      panel.insertAdjacentHTML("beforeend", `<p class="np-prose">${esc(ov.description || "")}</p>`);
+      if (ov.scope) {
+        const c = [
+          `Venue: ${ov.scope.executionVenue}`, `Pairs: ${ov.scope.currencyPairs}`,
+          `Counterparties: ${ov.scope.counterpartyEligibility}`,
+        ].concat((ov.scope.instrumentVariants || []).map((v) => `Variant: ${v}`));
+        panel.insertAdjacentHTML("beforeend", `<div class="np-chips">${c.map((x) => `<span class="np-chip">${esc(x)}</span>`).join("")}</div>`);
+      }
+      panel.insertAdjacentHTML("beforeend", `<div class="np-facts">` + [
+        ["Franchise", ov.franchiseScope], ["Settlement", ov.settlementPath], ["Reconciliation", ov.reconciliationCadence],
+        ["Legal entity", ov.legalEntityId], ["Currency", ov.currency], ["Jurisdiction", ov.jurisdiction],
+      ].map(([k, v]) => `<div class="np-fact"><b>${esc(k)}</b><span>${esc(v || "—")}</span></div>`).join("") + `</div>`);
+      panel.insertAdjacentHTML("beforeend", `<div class="np-rule"><b>Composition rule</b>\n${esc(ov.compositionRule || "—")}</div>`);
+
+      // Variants.
+      const variants = d.variants || [];
+      if (variants.length) {
+        panel.insertAdjacentHTML("beforeend", `<h3 class="np-subhead">Operating variants</h3>`);
+        const grid = document.createElement("div"); grid.className = "np-grid";
+        grid.innerHTML = variants.map((v) => {
+          const badge = v.status === "in-scope" ? `<span class="v2-badge v2-badge-success">in scope</span>` : `<span class="v2-badge v2-badge-warning">planned</span>`;
+          return `<div class="np-card"><h4>${esc(v.label)} ${badge}</h4><div class="np-note">${esc(v.note)}</div></div>`;
+        }).join("");
+        panel.appendChild(grid);
+      }
+
+      // How a trade settles — the FX spot settlement lifecycle (FX-only).
+      if (d.fxLifecycle) renderFxLifecycle(panel, d.fxLifecycle);
+
+      // Contractual terms — the booked buy/sell quad (rendered only when sourced).
+      if (d.fxContractualTerms) {
+        const ct = d.fxContractualTerms;
+        panel.insertAdjacentHTML("beforeend", `<h3 class="np-subhead">Contractual terms</h3>`);
+        panel.insertAdjacentHTML("beforeend", `<p class="np-prose">The booked agreement states both sides of the exchange. On settlement the bank receives the buy leg and delivers the sell leg — sourced from a representative booked trade.</p>`);
+        const grid = document.createElement("div"); grid.className = "np-grid";
+        grid.innerHTML = `<div class="np-card"><h4>Agreement (buy / sell quad)</h4>` +
+          `<div class="np-kv"><b>Bank buys</b><span>${esc(ct.buyAmount)} ${esc(ct.buyCurrency)}</span></div>` +
+          `<div class="np-kv"><b>Bank sells</b><span>${esc(ct.sellAmount)} ${esc(ct.sellCurrency)}</span></div>` +
+          `<div class="np-kv"><b>Settlement date</b><span>${esc(ct.settlementDate)}</span></div>` +
+          `<div class="np-note">Source: <code>${esc(ct.sourceInstanceUrn)}</code> — representative booked trade, as-of page load.</div></div>`;
+        panel.appendChild(grid);
+      }
+
+      // Components & how they interact.
+      panel.insertAdjacentHTML("beforeend", `<h3 class="np-subhead">Components &amp; how they interact</h3>`);
+      panel.insertAdjacentHTML("beforeend", `<p class="np-prose">The product is composed from typed CDM building blocks. The diagram shows each component the product <em>composes</em>; a dashed green edge marks a lifecycle <em>interaction</em> — for FX, the trade settles into a first-class Cash balance.</p>`);
+      renderComponentGraph(panel, d.componentGraph || { nodes: [], edges: [] });
+      renderTable(panel, {
+        columns: ["Component", "Plays role", "Group"],
+        emptyMsg: "No components attested.",
+        rows: ((d.componentGraph && d.componentGraph.nodes) || []).map((n) => ({
+          cells: [`<strong>${esc(n.label)}</strong>`, esc(n.detail), `<span class="np-chip">${esc(n.group)}</span>`],
+        })),
+      });
+    }
+
+    // FX spot settlement lifecycle — the four-stage settlement story (cards).
+    function renderFxLifecycle(panel, fl) {
+      panel.insertAdjacentHTML("beforeend", `<h3 class="np-subhead">How a trade is struck &amp; settles</h3>`);
+      panel.insertAdjacentHTML("beforeend", `<p class="np-prose">The model-level contractual settlement lifecycle of an FX trade. The trade is the agreement; each leg settles as a uniform single-asset movement (pay −A / receive +A); each settlement materialises a cash holding; the instrument then terminates. Every stage names the FIL event type(s) that realise it — all sourced, never invented.</p>`);
+      if (fl.ownershipLevels && fl.ownershipLevels.length) {
+        panel.insertAdjacentHTML("beforeend", `<h4 class="np-subhead" style="font-size:13px;margin-top:12px">Three ownership levels</h4>`);
+        panel.insertAdjacentHTML("beforeend", `<p class="np-prose">Every event sits in one of three ownership tiers, keyed by the atomicity of the act it records — product-type governance, the booking / composite act, and the per-instrument FIL-leg fact.</p>`);
+        const olGrid = document.createElement("div"); olGrid.className = "np-grid"; panel.appendChild(olGrid);
+        for (const t of fl.ownershipLevels) {
+          olGrid.insertAdjacentHTML("beforeend",
+            `<div class="np-card"><h4>${esc(t.label)}</h4>` +
+            `<div class="np-note">${esc(t.description)}</div>` +
+            `<div class="np-kv"><b>e.g.</b><span><span class="np-chip">${esc(t.representativeEventType)}</span></span></div></div>`);
+        }
+      }
+      const grid = document.createElement("div"); grid.className = "np-grid"; panel.appendChild(grid);
+      for (const st of fl.stages) {
+        const mat = st.materialises;
+        const matBlock = mat
+          ? `<div class="np-note" style="border-top:1px dashed var(--color-border);margin-top:8px;padding-top:8px">` +
+            `<b>Materialises (FIL-leg fact · Level 3):</b> <span class="np-chip">${esc(mat.label)}</span><br>` +
+            `<div class="np-kv" style="margin-top:6px"><b>Event type</b><span><span class="np-chip">${esc(mat.eventType)}</span> · <span class="np-chip">${esc(mat.assetClass)}</span></span></div>` +
+            `<div class="np-kv"><b>Movement</b><span>${esc(mat.sign)} (${mat.sign === "-" ? "paid · holding ↓" : "received · holding ↑"})</span></div>` +
+            `<div class="np-note">${esc(mat.description)}</div>` +
+            `<div class="np-kv"><b>Links</b><span><code>${esc(mat.holdingLink)}</code> settlement→holding · <code>${esc(mat.originatingLink)}</code> holding→trade</span></div>` +
+            `<div class="np-note" style="margin-top:4px"><b>Cites:</b> ${chips(mat.citations)}</div></div>`
+          : "";
+        grid.insertAdjacentHTML("beforeend",
+          `<div class="np-card"><h4>${esc(st.id)} · ${esc(st.label)} ` +
+          `<span class="v2-badge v2-badge-neutral">${esc(st.ownershipLabel)}</span></h4>` +
+          `<div class="np-note">${esc(st.description)}</div>` +
+          `<div class="np-kv"><b>Event type${st.eventTypes.length > 1 ? "s" : ""}</b><span>${chips(st.eventTypes)}</span></div>` +
+          `<div class="np-kv"><b>FIL stage</b><span>${chips(st.filStages)}</span></div>` +
+          `<div class="np-kv"><b>Linking fields</b><span>${chips(st.linkingFields)}</span></div>` +
+          matBlock +
+          `<div class="np-note" style="margin-top:6px"><b>Cites:</b> ${chips(st.citations)}</div></div>`);
+      }
+      if (fl.links && fl.links.length) {
+        panel.insertAdjacentHTML("beforeend", `<h4 class="np-subhead" style="font-size:13px;margin-top:16px">How the stages link</h4>`);
+        const linkCard = document.createElement("div"); linkCard.className = "np-card"; panel.appendChild(linkCard);
+        linkCard.innerHTML = fl.links.map((l) =>
+          `<div class="np-kv"><b><code>${esc(l.field)}</code></b><span>${esc(l.connects)}</span></div>`).join("") +
+          `<div class="np-note" style="margin-top:6px">Each field is a real schema field on the FIL settlement model. Authority: ${chips(fl.authority)}.</div>`;
+      }
+    }
+
+    // ── Stakeholder-perspective cluster panels ────────────────────────
+    // A cluster intro + each dimension's evidence panel + the folded
+    // cross-bank lens / valuation / accounting content for that audience.
+    function renderClusterPanel(panel, cl, present, d, lenses) {
+      panel.insertAdjacentHTML("beforeend", `<p class="np-cluster-intro">${esc(CLUSTER_INTRO[cl.key] || "")}</p>`);
+
+      for (const dim of present) renderDimensionEvidence(panel, dim);
+
+      // Folded lens / treatment content per cluster audience.
+      if (!lenses) return;
+      if (cl.key === "finance") {
+        renderFinanceFold(panel, d, lenses);
+      } else if (cl.key === "risk") {
+        renderRiskFold(panel, lenses);
+      } else if (cl.key === "compliance") {
+        renderComplianceFold(panel, lenses);
+      }
+    }
+
+    const CLUSTER_INTRO = {
+      finance: "How the product is classified, valued, posted to the general ledger, and reported — the accounting, capital and tax basis for sign-off. (Deep posting-rule treatment is the Accounting perspective below.)",
+      risk: "How the product behaves under market, credit and liquidity stress, and which validated models measure it.",
+      compliance: "How the product is governed for client conduct, financial-crime, legal documentation and data privacy.",
+      ops: "Whether the operational substrate — settlement path, reconciliation, lifecycle handlers — is ready to run the product.",
+      security: "The threat-model and key-custody posture for the product's wire and settlement path.",
+    };
+
+    // The consistent stakeholder-perspective EVIDENCE PANEL — same template
+    // for every dimension. Surfaces: the perspective question, owner (seat
+    // title only), attestation, artefact required, fail rule, the agent
+    // NARRATIVE (newly surfaced), the policy→procedure→function chain, and
+    // triggered / emitted events (unbacked visibly flagged).
+    function renderDimensionEvidence(host, dim) {
+      const ev = document.createElement("div"); ev.className = "np-evidence";
+      const att = dim.attestation || { status: "pending" };
+      // Owner seat title only (name is redacted server-side to "").
+      const ownerTitle = dim.owner && dim.owner.position ? dim.owner.position : "—";
+
+      let html =
+        `<div class="np-evidence-head">` +
+          `<h3>${esc(dim.label || dim.dimension)}</h3>` +
+          dimBadge(att.status) +
+          `<span class="np-evidence-owner">Accountable seat: ${esc(ownerTitle)}` +
+            (att.attestedAt ? ` · attested ${esc(new Date(att.attestedAt).toLocaleDateString())}` : "") +
+          `</span>` +
+        `</div>` +
+        `<p class="np-question">How does this product behave &amp; impact, from the ${esc((dim.label || dim.dimension).toLowerCase())} view?</p>`;
+
+      // The agent narrative — the perspective's authored evidence. Newly
+      // surfaced on V2; author rendered as seat title only (name redacted).
+      if (dim.narrative && dim.narrative.text) {
+        html += `<div class="np-narrative">${esc(dim.narrative.text)}` +
+          `<span class="np-narrative-by">— ${esc(dim.narrative.authorAgentPosition || "accountable seat")}` +
+          (dim.narrative.recordedAt ? `, ${esc(new Date(dim.narrative.recordedAt).toLocaleDateString())}` : "") +
+          `</span></div>`;
+      } else if (dim.narrativeRequested) {
+        html += `<div class="np-narrative" style="border-left-color:var(--color-warning)">Perspective narrative requested — not yet recorded by the accountable seat.</div>`;
+      }
+
+      // Evidence definition list.
+      const triggeredBy = renderEventNames(dim.triggeredBy, (dim.unbacked && dim.unbacked.triggeredBy) || []);
+      const emits = renderEventNames(dim.emits, (dim.unbacked && dim.unbacked.emits) || []);
+      html += `<dl class="np-evidence-grid">` +
+        `<dt>Artefact required</dt><dd>${esc(dim.artefactRequired || "—")}</dd>` +
+        `<dt>Fail rule</dt><dd>${esc(dim.failRule || "—")}</dd>` +
+        `<dt>Triggered by</dt><dd>${triggeredBy}</dd>` +
+        `<dt>Emits</dt><dd>${emits}</dd>` +
+        `<dt>Citation chain</dt><dd>${chips((att.citationChain && att.citationChain.length ? att.citationChain : dim.citationChain) || [])}</dd>` +
+        `</dl>`;
+      ev.innerHTML = html;
+
+      // Policy → procedure → function chain (rendered name-free: title +
+      // status + capability; the chain's free-text owner fields are NOT
+      // surfaced to avoid leaking agent names that the API does not redact).
+      renderChain(ev, dim.chain);
+      host.appendChild(ev);
+    }
+
+    function renderEventNames(names, unbacked) {
+      if (!names || !names.length) return "—";
+      const gapSet = new Set(unbacked || []);
+      return names.map((n) => gapSet.has(n)
+        ? `<span class="np-chip is-gap" title="No registered event type — surfaced as a gap, not asserted">${esc(n)} ⚠</span>`
+        : `<span class="np-chip">${esc(n)}</span>`).join(" ");
+    }
+
+    function renderChain(host, chain) {
+      if (!chain) return;
+      const policies = chain.policies || [];
+      const procedures = chain.procedures || [];
+      const events = chain.events || [];
+      if (!policies.length && !procedures.length && !events.length) return;
+      host.insertAdjacentHTML("beforeend", `<h4 class="np-subhead" style="font-size:13px">Policy → procedure → function chain</h4>`);
+      const list = document.createElement("ul"); list.className = "np-chain-list";
+      const statusBadge = (s) => `<span class="v2-badge v2-badge-${s === "in-force" || s === "active" || s === "populated" ? "success" : s === "draft" || s === "planned" ? "neutral" : "info"}">${esc(s)}</span>`;
+      for (const p of policies) list.insertAdjacentHTML("beforeend", `<li><span class="np-chain-kind">Policy</span><span>${esc(p.title)}</span> ${statusBadge(p.status)}</li>`);
+      for (const pr of procedures) list.insertAdjacentHTML("beforeend", `<li><span class="np-chain-kind">Procedure</span><span>${esc(pr.title)}</span> ${statusBadge(pr.status)}</li>`);
+      for (const evt of events) list.insertAdjacentHTML("beforeend", `<li><span class="np-chain-kind">Function</span><span><code>${esc(evt.eventType)}</code> ${chips((evt.enabledBy || []).slice(0, 1))}</span></li>`);
+      host.appendChild(list);
+    }
+
+    // ── Cross-bank lens folds (per audience) ──────────────────────────
+    function renderFinanceFold(panel, d, lenses) {
+      panel.insertAdjacentHTML("beforeend", `<h3 class="np-subhead">Finance lens</h3>`);
+      const fi = lenses.finance; const grid = document.createElement("div"); grid.className = "np-grid"; panel.appendChild(grid);
+      grid.insertAdjacentHTML("beforeend", `<div class="np-card"><h4>Classification &amp; FRTB book</h4>` +
+        `<div class="np-kv"><b>FRTB book</b><span>${esc(fi.frtbBook)}</span></div>` +
+        `<div class="np-kv"><b>IFRS 9</b><span>${esc(fi.ifrs9Family)}</span></div>` +
+        `<div class="np-kv"><b>IFRS 13</b><span>${esc(fi.ifrs13FairValueHierarchy)}</span></div>` +
+        `<div class="np-kv"><b>IAS 21</b><span>${esc(fi.ias21FxTreatment)}</span></div>` +
+        fi.baReturnCells.map((c) => `<div class="np-kv"><b>${esc(c.cell)}</b><span>${esc(c.lens)}</span></div>`).join("") +
+        `<div class="np-note">${esc(fi.frtbRationale)}</div></div>`);
+
+      // Valuation domains relevant to Finance (GL + product control).
+      renderValuationCards(grid, lenses.valuation, ["general-ledger", "product-control"]);
+
+      // Accounting treatment summary + the lifecycle posting-rule journal —
+      // folded here (the old governance "Accounting treatment" + "Lifecycle
+      // event journal" tables). Deep posting-rule treatment is Slice 2.
+      const at = d.accountingTreatment;
+      if (at) {
+        panel.insertAdjacentHTML("beforeend", `<h3 class="np-subhead">Accounting treatment</h3>`);
+        panel.insertAdjacentHTML("beforeend",
+          `<p class="np-prose"><strong>IFRS 9:</strong> ${esc(at.ifrs9Family)} &nbsp;·&nbsp; <strong>IFRS 13:</strong> ${esc(at.ifrs13FairValueHierarchy)} &nbsp;·&nbsp; <strong>IAS 21:</strong> ${esc(at.ias21FxTreatment)} &nbsp;·&nbsp; <strong>BA-return lines:</strong> ${esc((at.baReturnLineMapping || []).join(", ") || "—")}</p>`);
+        renderTable(panel, {
+          columns: ["Posting rule", "Trigger event", "Stage", "IFRS citation", "Status"],
+          emptyMsg: "No posting rules mapped for this asset class.",
+          rows: (at.postingRules || []).map((r) => ({
             cells: [
-              `<strong>${esc(x.label || x.dimension)}</strong>`,
-              dimBadge(x.attestation ? x.attestation.status : "pending"),
-              esc(x.attestation && x.attestation.attestedAt ? x.attestation.attestedAt : "—"),
-              esc(x.owner ? x.owner.position : "—"),
+              `<strong>${esc(r.postingRuleId)}</strong>`, esc(r.triggerEventType), esc(r.lifecycleStage), esc(r.ifrs),
+              r.deferred ? `<span class="v2-badge v2-badge-warning">deferred: ${esc(r.deferredTargetTrigger || "tracked gap")}</span>` : `<span class="v2-badge v2-badge-success">active</span>`,
             ],
           })),
         });
-
-        // accounting treatment
-        const at = d.accountingTreatment;
-        if (at) {
-          gov.insertAdjacentHTML("beforeend", `<h3 style="font-size:14px;margin:14px 0 4px;color:var(--color-text-secondary)">Accounting treatment</h3>`);
-          gov.insertAdjacentHTML("beforeend",
-            `<p class="np-prose"><strong>IFRS 9:</strong> ${esc(at.ifrs9Family)} &nbsp;·&nbsp; <strong>IFRS 13:</strong> ${esc(at.ifrs13FairValueHierarchy)} &nbsp;·&nbsp; <strong>IAS 21:</strong> ${esc(at.ias21FxTreatment)} &nbsp;·&nbsp; <strong>BA-return lines:</strong> ${esc((at.baReturnLineMapping || []).join(", ") || "—")}</p>`);
-          renderTable(gov, {
-            columns: ["Posting rule", "Trigger event", "Stage", "IFRS citation", "Status"],
-            emptyMsg: "No posting rules mapped for this asset class.",
-            rows: (at.postingRules || []).map((r) => ({
-              cells: [
-                `<strong>${esc(r.postingRuleId)}</strong>`, esc(r.triggerEventType), esc(r.lifecycleStage), esc(r.ifrs),
-                r.deferred ? `<span class="v2-badge v2-badge-warning">deferred: ${esc(r.deferredTargetTrigger || "tracked gap")}</span>` : `<span class="v2-badge v2-badge-success">active</span>`,
-              ],
-            })),
-          });
-        }
-
-        // post-approval findings
-        gov.insertAdjacentHTML("beforeend", `<h3 style="font-size:14px;margin:14px 0 4px;color:var(--color-text-secondary)">Post-approval findings</h3>`);
-        renderTable(gov, {
-          columns: ["Finding", "Severity", "Missed dimension", "Status", "Discovered"],
-          emptyMsg: "No post-approval findings.",
-          rows: (d.postApprovalFindings || []).map((f) => ({
-            cells: [
-              esc(f.title), sevBadge(f.severity), esc(f.missedDimension),
-              `<span class="v2-badge v2-badge-${f.status === "reviewed" ? "success" : f.status === "overdue" ? "danger" : "warning"}">${esc(f.status)}</span>`,
-              esc(f.discoveredAt),
-            ],
-          })),
-        });
-
-        // lifecycle event journal
-        gov.insertAdjacentHTML("beforeend", `<h3 style="font-size:14px;margin:14px 0 4px;color:var(--color-text-secondary)">Lifecycle event journal</h3>`);
-        renderTable(gov, {
+        panel.insertAdjacentHTML("beforeend", `<h4 class="np-subhead" style="font-size:13px">Lifecycle event journal</h4>`);
+        renderTable(panel, {
           columns: ["Event type", "Posting rule"],
           emptyMsg: "No lifecycle events mapped.",
           rows: (d.journalEntries || []).map((j) => ({
@@ -507,14 +614,61 @@
             ],
           })),
         });
+      }
+    }
 
-        renderRefs(bodyHost, {
-          refs: [
-            { label: "D-NEW-PRODUCT-APPROVAL-POLICY", href: "#" },
-            { label: "Back to NPA register", href: "/v2/governance/npa.html" },
-          ],
-        });
-      });
+    function renderRiskFold(panel, lenses) {
+      panel.insertAdjacentHTML("beforeend", `<h3 class="np-subhead">Risk &amp; Markets lens</h3>`);
+      const grid = document.createElement("div"); grid.className = "np-grid"; panel.appendChild(grid);
+      const rk = lenses.risk;
+      grid.insertAdjacentHTML("beforeend", `<div class="np-card"><h4>Risk profile</h4>` +
+        `<div class="np-kv"><b>Market risk</b><span>${esc(rk.marketRiskDimensions.join(", ") || "—")}</span></div>` +
+        `<div class="np-kv"><b>Credit risk</b><span>${esc(rk.creditRiskShape)}</span></div>` +
+        `<div class="np-kv"><b>Liquidity</b><span>${esc(rk.liquidityClassification)}</span></div>` +
+        `<div class="np-kv"><b>Funding</b><span>${esc(rk.fundingProfile)}</span></div>` +
+        `<div class="np-kv"><b>Model tier</b><span>${esc(rk.modelRiskTier)}</span></div>` +
+        `<div class="np-note">Models scoped to this asset class: ${rk.measuredByModels.length ? rk.measuredByModels.map((m) => `<span class="np-chip">${esc(m)}</span>`).join(" ") : "none"}</div></div>`);
+      const mk = lenses.markets;
+      grid.insertAdjacentHTML("beforeend", `<div class="np-card"><h4>Markets book &amp; desks</h4>` +
+        `<div class="np-kv"><b>Book</b><span>${esc(mk.bookLabel)}</span></div>` +
+        mk.desks.map((dk) => `<div class="np-kv"><b>${esc(dk.deskName)}</b><span>${esc(dk.deskKind)}</span></div>`).join("") +
+        `<div class="np-note">${esc(mk.eligibility)}</div></div>`);
+      // Valuation domains relevant to Risk (market / credit / liquidity).
+      renderValuationCards(grid, lenses.valuation, ["market-risk", "credit-risk", "liquidity-risk"]);
+    }
+
+    function renderComplianceFold(panel, lenses) {
+      panel.insertAdjacentHTML("beforeend", `<h3 class="np-subhead">Compliance lens</h3>`);
+      const cp = lenses.compliance; const grid = document.createElement("div"); grid.className = "np-grid"; panel.appendChild(grid);
+      grid.insertAdjacentHTML("beforeend", `<div class="np-card"><h4>Conduct &amp; documentation posture</h4>` +
+        `<div class="np-kv"><b>Attested</b><span>${cp.attestedCount}/${cp.totalDimensions}</span></div>` +
+        `<div class="np-kv"><b>Lifecycle</b><span>${esc(cp.lifecycle)}</span></div>` +
+        `<div class="np-kv"><b>Master agreement</b><span>${esc(cp.masterAgreement)}</span></div>` +
+        `<div class="np-note">Obligations: ${cp.obligationCitations.slice(0, 8).map((c) => `<span class="np-chip">${esc(c)}</span>`).join(" ")}</div></div>`);
+    }
+
+    // Render the valuation/reporting cards for a given set of domains, into a grid.
+    function renderValuationCards(grid, valuation, domains) {
+      const want = new Set(domains);
+      for (const v of (valuation || []).filter((x) => want.has(x.domain))) {
+        const gapBlock = v.gap
+          ? `<div class="np-note" style="border-top:1px dashed var(--color-border);margin-top:8px;padding-top:8px">` +
+            `<b>Tracked gap:</b> ${esc(v.gap.title)}<br>` +
+            `<b>Owner:</b> ${esc(v.gap.owner || "—")} &nbsp;·&nbsp; <b>Trigger:</b> ${esc(v.gap.targetTrigger)}<br>` +
+            `<b>Citations:</b> ${chips(v.gap.citations)}</div>`
+          : "";
+        const unbacked = ((v.unbacked && (v.unbacked.postingRuleIds.length + v.unbacked.eventTypes.length)) || 0) > 0
+          ? `<div class="np-kv"><b>Unbacked (gap-surfaced)</b><span>${chips([...(v.unbacked.postingRuleIds || []), ...(v.unbacked.eventTypes || [])], "is-gap")}</span></div>`
+          : "";
+        grid.insertAdjacentHTML("beforeend",
+          `<div class="np-card"><h4>${esc(v.label)} ${valBadge(v.status)}</h4>` +
+          `<div class="np-note">${esc(v.valuationBasis)}</div>` +
+          `<div class="np-kv"><b>Feeds</b><span>${chips(v.feedsReturn)}</span></div>` +
+          (v.postingRuleIds.length ? `<div class="np-kv"><b>Posting rules</b><span>${chips(v.postingRuleIds)}</span></div>` : "") +
+          (v.models.length ? `<div class="np-kv"><b>Models</b><span>${chips(v.models)}</span></div>` : "") +
+          (v.citations.length ? `<div class="np-kv"><b>Basis cites</b><span>${chips(v.citations.slice(0, 6))}</span></div>` : "") +
+          unbacked + gapBlock + `</div>`);
+      }
     }
   </script>
 </body>
