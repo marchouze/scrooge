@@ -134,6 +134,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // D-FX-V2-SIMULATOR-FIRST, P4-SECURITY-DESIGNED-IN.
   "platform/markets/settlement/cash-sink.test.ts",
   "platform/markets/counterparty/assign-basel-class.test.ts",
+  // WS-FX-V2-SIMULATOR — the LIVE generative FX simulator (simulation-v2-live/)
+  // unit tests build in-memory throwaway EventStore fixtures to exercise the
+  // driver + hub module in isolation. Same carve-out rationale as the other
+  // simulation-v2 tests: no production access path (the test stores are :memory:).
+  // Citation: D-FX-V2-SIMULATOR-FIRST, P4-SECURITY-DESIGNED-IN.
+  "platform/simulation-v2-live/live-driver.test.ts",
+  "platform/simulation-v2-live/hub-module.test.ts",
   // WS-FX-V2-SIMULATOR-FIRST — the FX-sim onboarded-counterparty resolver test
   // builds in-memory throwaway EventStore fixtures to exercise the onboarding →
   // FX-eligible resolution + the EnvSimEngine wiring (a client must be onboarded

@@ -165,6 +165,12 @@ export const EXPLICIT_PROVENANCE_ALLOWLIST: Readonly<Record<string, string>> = {
     "FX V2 margin-call-response simulator (M8) — the counterparty's external margin-call response " +
     "(post/dispute/fail) is simulated + scenario-bound by construction; the kind is fixed by the simulator, " +
     "never derivable from bank mode. Authority: D-FX-V2-SIMULATOR-FIRST.",
+  "platform/simulation-v2-live/live-driver.ts":
+    "Live FX V2 third-party simulator — constructs the `simulated` tag it hands to the SUT booking/" +
+    "settlement entry points so its generated trades are provenance-segregated in the shared store " +
+    "(V1 provenanceMode parity). Simulated + scenario-bound by construction (everything the simulator " +
+    "emits IS simulated); the kind is fixed by the simulator, never derivable from bank mode. " +
+    "Authority: D-FX-V2-SIMULATOR-FIRST (WS-FX-V2-SIMULATOR).",
   "platform/projections/filter.ts":
     "read-side filter default for legacy untagged events (UNTAGGED_AS_SIMULATED mirrors " +
     "PRE_SUBSTRATE_BACKFILL_TAG without the import cycle) — not an emit site.",

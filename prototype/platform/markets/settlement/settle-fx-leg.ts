@@ -35,6 +35,7 @@ import {
   buildSettledCashPayloads,
   buildTradeSettlementPayloads,
 } from "../../../v2-core/fil-instances/cash-materialisation";
+import type { ProvenanceTag } from "../../event-store/provenance";
 import type { EventStore } from "../../event-store/store";
 import { type CashSink, EventStoreCashSink } from "./cash-sink";
 
@@ -78,8 +79,15 @@ export function settleFxLeg(args: {
   readonly scenarioId: string;
   readonly reporting: string;
   readonly tradeId: string;
+  /**
+   * OPTIONAL explicit provenance for the materialised cash legs + FX termination.
+   * Defaults to the active category policy (the normal SUT/production path). The
+   * LIVE simulator passes a `simulated` tag so the cash it materialises is
+   * provenance-segregated in the shared store (V1 `provenanceMode` parity).
+   */
+  readonly provenance?: ProvenanceTag;
 }): SettleFxResult {
-  const { store, scenarioId, reporting, tradeId } = args;
+  const { store, scenarioId, reporting, tradeId, provenance } = args;
 
   // Gate: the trade must have a confirmed settlement (external fact).
   const confirmed = [...store.replay({ type: "FxSimSettlementConfirmed" })].find(
@@ -112,7 +120,7 @@ export function settleFxLeg(args: {
 
   // The scenario routes the SHARED grammar's payloads to an EventStore sink. The
   // production path routes the SAME payloads to an AnchorDbCashSink (Slice 0).
-  const sink: CashSink = new EventStoreCashSink(store);
+  const sink: CashSink = new EventStoreCashSink(store, undefined, provenance);
 
   const legs: SettledCashLeg[] = [];
   if (c.receiveCurrency && c.receiveAmountMajor !== 0) {

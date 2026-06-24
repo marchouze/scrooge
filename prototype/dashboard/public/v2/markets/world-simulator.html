@@ -70,6 +70,47 @@
     // Section hosts (stable nodes so refreshes repaint in place).
     const tileHost = document.createElement("div"); main.appendChild(tileHost);
 
+    // Live, controllable third-party simulator (born-V2 generative FX-spot).
+    const SIM_ID = "fx-v2-generative";
+    const secControl = section("Live Simulator Control");
+    const controlMeta = document.createElement("div"); controlMeta.className = "v2-note"; secControl.appendChild(controlMeta);
+    const controlBar = document.createElement("div");
+    controlBar.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0";
+    controlBar.innerHTML =
+      '<button class="v2-prov-btn" id="sim-start">▶ Start</button>' +
+      '<button class="v2-prov-btn" id="sim-stop">■ Stop</button>' +
+      '<button class="v2-prov-btn" id="sim-tick">⊕ Fire one tick</button>' +
+      '<label class="v2-note" style="margin-left:8px">Trades/tick ' +
+      '<input id="sim-tpt" type="number" min="1" max="20" value="1" style="width:54px"></label>' +
+      '<label class="v2-note">Settlement ' +
+      '<select id="sim-mode"><option value="accelerated">accelerated</option>' +
+      '<option value="realtime">realtime</option></select></label>';
+    secControl.appendChild(controlBar);
+    const controlStatusHost = document.createElement("div"); secControl.appendChild(controlStatusHost);
+
+    async function simAction(action, body) {
+      try {
+        const res = await fetch(`/api/v2/sim/${SIM_ID}/${action}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body || {}),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      } catch (e) {
+        v2RenderError(secControl, String((e && e.message) || e));
+        return;
+      }
+      load();
+    }
+    function wireControls() {
+      const tpt = () => Math.max(1, Math.min(20, Number(document.getElementById("sim-tpt").value) || 1));
+      const mode = () => document.getElementById("sim-mode").value;
+      document.getElementById("sim-start").onclick = () =>
+        simAction("start", { tradesPerTick: tpt(), settlementMode: mode() });
+      document.getElementById("sim-stop").onclick = () => simAction("stop", {});
+      document.getElementById("sim-tick").onclick = () => simAction("fire", { actionId: "tick" });
+    }
+
     const secScenario = section("The Simulated Outside World");
     const scenarioMeta = document.createElement("div"); scenarioMeta.className = "v2-note"; secScenario.appendChild(scenarioMeta);
     const cpHost = document.createElement("div"); secScenario.appendChild(cpHost);
@@ -97,9 +138,50 @@
       return n === null || n === undefined ? "—" : Number(n).toLocaleString("en-ZA", { maximumFractionDigits: 2 });
     }
 
+    function liveStatusOf(data) {
+      const groups = data.liveHub || [];
+      for (const g of groups) {
+        for (const s of (g.statuses || [])) {
+          if (s.id === SIM_ID) return s;
+        }
+      }
+      return null;
+    }
+
+    function renderControl(data) {
+      const s = liveStatusOf(data);
+      controlMeta.innerHTML =
+        "Drive the born-V2 generative FX-spot simulator. It streams trades into the shared " +
+        "store tagged <strong>simulated</strong> (provenance-segregated — toggle <em>+ Sim</em> to view).";
+      controlStatusHost.innerHTML = "";
+      if (!s) { controlStatusHost.innerHTML = "<div class='v2-note'>Simulator idle — not yet started.</div>"; return; }
+      const x = s.extra || {};
+      const chip = `<span class="v2-chip v2-chip--${s.running ? "green" : "red"}">${s.running ? "● RUNNING" : "■ STOPPED"}</span>`;
+      controlStatusHost.innerHTML = `<div style="margin-bottom:6px">${chip} <span class="v2-note">sim clock <code>${v2Esc(x.simClock || "—")}</code> · ${s.eventsEmitted} sim events</span></div>`;
+      renderTable(controlStatusHost, {
+        columns: ["Ticks", "Generated", "Booked", "Settled", "Cash legs", "EOD fired", "Last P&L", "Last VaR"],
+        rows: [{ cells: [
+          String(x.ticks ?? 0), String(x.tradesGenerated ?? 0), String(x.tradesBooked ?? 0),
+          String(x.settlementsConfirmed ?? 0), String(x.cashInstancesMaterialised ?? 0),
+          String(x.boundariesFired ?? 0), fmt(x.lastPnLTotalReporting), fmt(x.lastVarReporting),
+        ]}],
+      });
+      if (x.lastTrade) {
+        const t = x.lastTrade;
+        const note = document.createElement("div"); note.className = "v2-note"; note.style.marginTop = "6px";
+        note.innerHTML = `Last trade: <code>${v2Esc(t.tradeId)}</code> — ${v2Esc(t.side)} ${fmt(t.baseNotionalMajor)} ${v2Esc(t.pair)} @ ${fmt(t.rate)} vs ${v2Esc(t.counterpartyId)}.`;
+        controlStatusHost.appendChild(note);
+      }
+      if (s.lastError) {
+        const err = document.createElement("div"); err.className = "v2-note"; err.style.color = "var(--color-danger,#b42318)";
+        err.textContent = "Last error: " + s.lastError; controlStatusHost.appendChild(err);
+      }
+    }
+
     function render(data) {
       const sc = data.scenario, tl = data.eodTimeline, at = data.boundaryAttestation, rr = data.runResult;
       const asOfEl = document.getElementById("as-of"); if (asOfEl) asOfEl.textContent = data.asOf || "—";
+      renderControl(data);
 
       // Headline tiles.
       const gsum = data.groundedMarketPath ? data.groundedMarketPath.summary : null;
@@ -242,7 +324,8 @@
       render(data);
     }
 
-    // Wire the provenance toggle + initial load.
+    // Wire the provenance toggle + simulator controls + initial load.
+    wireControls();
     v2WireLoader(load);
     // The page shows live run state — refresh periodically and on tab focus so the
     // operator view never goes stale (golden-source-stale-pages idiom).

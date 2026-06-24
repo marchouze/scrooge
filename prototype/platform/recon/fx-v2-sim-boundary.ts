@@ -20,6 +20,19 @@
 //   (C) any file in the simulation-v2 package uses Math.random() or Date.now()
 //       (replay-safety — Principle 1; scenario time + randomness are injected).
 //
+// LIVE DRIVER CARVE-OUT (D-FX-V2-SIMULATOR-FIRST — the live, dashboard-controllable
+// simulator). The live driver package `platform/simulation-v2-live/` is the
+// real-time SCHEDULER that advances a SimulatedClock on a wall-clock tick (its
+// single annotated `setInterval` is the only wall-clock read, covered by
+// recon:wall-clock-callsite-coverage). It is bound by Rule A (it must never
+// impersonate the bank — every event-bearing value it produces flows through the
+// `simulation-v2/` modules + SUT entry points) but is DELIBERATELY OUT of Rule C:
+// a live loop needs a wall-clock timer to decide WHEN to fire, while the clock it
+// advances and the SeededRng it threads keep every EMITTED payload deterministic
+// (a recorded run replays from seed + clock-start + tick-count). Rule C therefore
+// stays scoped to `simulation-v2/` (payload determinism), Rule A widens to cover
+// the live package too.
+//
 // Static source-scan (mirrors recon:v2-no-v1-import). A regression test
 // (fx-v2-sim-boundary.test.ts) feeds violating snippets and asserts each rule
 // flags them.
@@ -35,9 +48,14 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PROTOTYPE_DIR = resolve(import.meta.dir, "..", "..");
 
-/** Directories that hold SIMULATOR code (external-party only). */
-const SIMULATOR_DIRS = [
+/**
+ * Directories that hold SIMULATOR code (external-party only) — scanned by Rule A
+ * (impersonation). `simulation-v2-live` is the live driver/scheduler package; it
+ * is covered by Rule A but NOT Rule C (see the LIVE DRIVER CARVE-OUT above).
+ */
+export const SIMULATOR_DIRS = [
   resolve(PROTOTYPE_DIR, "platform", "simulation-v2"),
+  resolve(PROTOTYPE_DIR, "platform", "simulation-v2-live"),
   resolve(PROTOTYPE_DIR, "platform", "simulation"),
 ] as const;
 

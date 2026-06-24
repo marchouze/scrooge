@@ -23,7 +23,7 @@ import { moneyFromDecimal } from "../../../v2-core/fil-core/primitives";
 import { formatInstanceUrn, formatTypeUrn } from "../../../v2-core/fil-core/urn";
 import { filInstrumentCreatedPayloadSchema } from "../../../v2-core/fil-instances/events";
 import { makeFilInstrumentCreated } from "../../event-store/event-types/fil-instances";
-import { provenanceForEmit } from "../../event-store/provenance";
+import { type ProvenanceTag, provenanceForEmit } from "../../event-store/provenance";
 import type { EventStore } from "../../event-store/store";
 
 /** Major-unit number → v2 decimal-native Money (2dp HALF_UP), mirroring the FX materialiser. */
@@ -80,8 +80,16 @@ export function bookAffirmedFxTrade(args: {
   readonly asOf: string;
   readonly reporting: string;
   readonly trade: AffirmedFxTrade;
+  /**
+   * OPTIONAL explicit provenance. Defaults to the active category policy via
+   * `provenanceForEmit` (governance→production) — the normal SUT path. The LIVE
+   * third-party simulator (platform/simulation-v2-live/) passes a `simulated` tag
+   * so its generated trades are provenance-segregated in the shared event store
+   * (V1 `provenanceMode` parity) and never leak into production reads.
+   */
+  readonly provenance?: ProvenanceTag;
 }): boolean {
-  const { store, scenarioId, asOf, reporting, trade } = args;
+  const { store, scenarioId, asOf, reporting, trade, provenance } = args;
 
   // Gate: only book if the counterparty affirmed (settlement gated on affirmation).
   const affirmed = [...store.replay({ type: "TradeAffirmed" })].some(
@@ -137,9 +145,11 @@ export function bookAffirmedFxTrade(args: {
       // the active category policy (governance→production), NOT the call-site;
       // we only supply the concrete originating-system lineage so the event
       // never relies on the `category:*` soft-default (which fails OPEN).
-      provenance: provenanceForEmit("FilInstrumentCreated", {
-        sourceLineage: "sut:fx-booking-engine",
-      }),
+      provenance:
+        provenance ??
+        provenanceForEmit("FilInstrumentCreated", {
+          sourceLineage: "sut:fx-booking-engine",
+        }),
       eventId: `${scenarioId}:${trade.tradeId}:fil-created`,
       payload: filInstrumentCreatedPayloadSchema.parse({
         kind: "FilInstrumentCreated",

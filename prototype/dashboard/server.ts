@@ -210,6 +210,7 @@ import {
   loadNormalizedDocBySlug,
   loadStructuredDocBySlug,
 } from "../platform/regulatory/structured-doc-loader";
+import { buildV2Hub } from "../platform/simulation-v2-live/register-v2-defaults";
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 import { buildDefaultHub } from "../platform/simulation/hub/register-defaults";
 import { settleMaturedTrades } from "../platform/simulation/settle-matured-trades";
@@ -509,6 +510,13 @@ const { hub: simHub } = buildDefaultHub({
   custodianSim,
   bondSimEngine,
 });
+
+// V2 simulator hub — the live, born-V2 generative FX-spot third-party simulator
+// (platform/simulation-v2-live/). Reuses ThirdPartySimHub; registers only born-V2
+// modules; emits `simulated`-tagged events into the SAME shared store (V1 parity),
+// provenance-segregated from production reads. Driven by /api/v2/sim/*.
+// Authority: D-FX-V2-SIMULATOR-FIRST.
+const { hub: simHubV2 } = buildV2Hub({ eventStore, marketDataStore });
 
 function buildSlice5Projections(): void {
   // Slice 5 — rebuild LimitUtilisation + CorrespondentRouting projections
@@ -5850,8 +5858,24 @@ const server = Bun.serve({
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       return jsonResponse({
         ...buildV2WorldSimulatorView(nowUtc(), marketDataStore),
+        liveHub: simHubV2.statusAll(),
         pageProvenance: filter,
       });
+    }
+    // ----- V2 live third-party simulator hub control surface -----
+    // The live, dashboard-controllable born-V2 generative FX-spot simulator
+    // (start/stop/fire), mirroring the V1 /api/sim/* control routes via the SAME
+    // generic handler under the /api/v2/sim/ prefix. Authority: D-FX-V2-SIMULATOR-FIRST.
+    if (url.pathname.startsWith("/api/v2/sim/")) {
+      const hubResponse = await registerSimHubRoutes(
+        url.pathname,
+        req.method,
+        url.searchParams,
+        req,
+        simHubV2,
+        "/api/v2/sim/",
+      );
+      if (hubResponse) return hubResponse;
     }
     if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/summary") {
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));

@@ -576,8 +576,11 @@ export function buildV2WorldSimulatorView(
       // persona name can never reach the /api/v2 boundary (name-free policy).
       deskOwnerSeatTitle: seatTitle("Saskia"),
       deferredGap:
-        "Read-only in v1. Control actions (re-run the scenario, advance the simulated clock, " +
-        "select a different manifest) are a v1.1 deferral. GROUNDING gaps, tracked not built: " +
+        "LIVE CONTROL SHIPPED: the born-V2 generative FX-spot simulator is now " +
+        "start/stop/fire-controllable via /api/v2/sim/* (live status under `liveHub`); it " +
+        "streams trades into the shared store tagged `simulated` (provenance-segregated). The " +
+        "section below is the deterministic ORACLE replay (a closed-form known-input scenario), " +
+        "distinct from the live generative run. GROUNDING gaps, tracked not built: " +
         "(1) forward points have no production feed — flagged ungrounded; CIP-derivation needs a " +
         "USD OIS curve that is not ingested; (2) ingesting a forward-points / USD-curve feed is a " +
         "data-acquisition follow-on; (3) the ZAR OIS leg grounds only where a production " +

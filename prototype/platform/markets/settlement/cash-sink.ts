@@ -42,7 +42,7 @@ import {
   makeFilInstrumentTerminated,
   makeTradeSettlementExecuted,
 } from "../../event-store/event-types/fil-instances";
-import { provenanceForEmit } from "../../event-store/provenance";
+import { type ProvenanceTag, provenanceForEmit } from "../../event-store/provenance";
 import type { EventStore } from "../../event-store/store";
 
 // ---------------------------------------------------------------------------
@@ -103,10 +103,23 @@ const SINK_ACTOR = { type: "service" as const, id: "agent:settlement:cash-sink" 
 export class EventStoreCashSink implements CashSink {
   private readonly store: EventStore;
   private readonly actor: { readonly type: "service"; readonly id: string };
+  /**
+   * OPTIONAL explicit provenance applied to every emitted FIL lifecycle event.
+   * Defaults to the active category policy via `provenanceForEmit` (the normal
+   * SUT/production path). The LIVE simulator (simulation-v2-live/) passes a
+   * `simulated` tag so the cash legs it materialises are provenance-segregated in
+   * the shared event store and never leak into production reads.
+   */
+  private readonly provenance: ProvenanceTag | undefined;
 
-  constructor(store: EventStore, actor?: { readonly type: "service"; readonly id: string }) {
+  constructor(
+    store: EventStore,
+    actor?: { readonly type: "service"; readonly id: string },
+    provenance?: ProvenanceTag,
+  ) {
     this.store = store;
     this.actor = actor ?? SINK_ACTOR;
+    this.provenance = provenance;
   }
 
   hasCreated(instanceUrn: string): boolean {
@@ -142,9 +155,11 @@ export class EventStoreCashSink implements CashSink {
         citations: [...args.citations],
         // EXPLICIT provenance (D-FX-FIXTURE-PROVENANCE-CANCEL-AND-HARDEN): the
         // settlement cash-sink is the originating system; kind via category policy.
-        provenance: provenanceForEmit("FilInstrumentCreated", {
-          sourceLineage: "settlement:cash-sink",
-        }),
+        provenance:
+          this.provenance ??
+          provenanceForEmit("FilInstrumentCreated", {
+            sourceLineage: "settlement:cash-sink",
+          }),
         eventId: args.eventId ?? newEventId(),
         payload: args.payload,
       }),
@@ -164,9 +179,11 @@ export class EventStoreCashSink implements CashSink {
         entity: args.entity,
         actor: this.actor,
         citations: [...args.citations],
-        provenance: provenanceForEmit("FilInstrumentTerminated", {
-          sourceLineage: "settlement:cash-sink",
-        }),
+        provenance:
+          this.provenance ??
+          provenanceForEmit("FilInstrumentTerminated", {
+            sourceLineage: "settlement:cash-sink",
+          }),
         eventId: args.eventId ?? newEventId(),
         payload: args.payload,
       }),
@@ -186,9 +203,11 @@ export class EventStoreCashSink implements CashSink {
         entity: args.entity,
         actor: this.actor,
         citations: [...args.citations],
-        provenance: provenanceForEmit("TradeSettlementExecuted", {
-          sourceLineage: "settlement:cash-sink",
-        }),
+        provenance:
+          this.provenance ??
+          provenanceForEmit("TradeSettlementExecuted", {
+            sourceLineage: "settlement:cash-sink",
+          }),
         eventId: args.eventId ?? newEventId(),
         payload: args.payload,
       }),
