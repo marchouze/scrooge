@@ -75,8 +75,10 @@ import { readFilInstanceEvents } from "../risk/sa-ccr/fil-instance-positions";
 import {
   type FxPostingLeg,
   isFxInstance,
+  isFxObsCommitmentLeg,
   postFxCloseLegs,
   postFxInitialRecognitionLegs,
+  postFxObsCommitmentReleaseLegs,
   postFxRevaluationLegs,
 } from "./posting-rules-v2/fx";
 
@@ -115,17 +117,6 @@ function materialiseLeg(
     },
     eventId: newEventId(),
   });
-}
-
-function postFxInitialRecognition(
-  payload: FilInstrumentCreatedPayload,
-  actor: Actor,
-  entity: string,
-  citations: string[],
-): Event[] {
-  return postFxInitialRecognitionLegs(payload).map((l) =>
-    materialiseLeg(l, actor, entity, citations),
-  );
 }
 
 function postFxRevaluation(
@@ -207,6 +198,13 @@ export function runGlV2Engine(args: GlV2EngineArgs): GlV2EngineResult {
   let emitted = 0;
   const processed = { created: 0, amended: 0, terminated: 0, skipped: 0 };
 
+  // OBS commitment opening legs per instance (the trade-date ACC-9100-* legs).
+  // Captured at creation so a SETTLED / MATURED termination can RELEASE the
+  // commitment by reversing them (PR-FX-OBS-RELEASE-V2, D-FX-TRADE-DATE-FVTPL-OBS)
+  // — the engine processes the stream in order, so the created legs precede the
+  // termination for any one instance.
+  const obsOpeningByInstance = new Map<string, FxPostingLeg[]>();
+
   for (const event of events) {
     // As-of gate: skip events after the cutoff.
     if (cutoff && event.asOf > cutoff) continue;
@@ -218,12 +216,12 @@ export function runGlV2Engine(args: GlV2EngineArgs): GlV2EngineResult {
         processed.skipped++;
         continue;
       }
-      legs = postFxInitialRecognition(
-        event as FilInstrumentCreatedPayload,
-        args.actor,
-        args.entity,
-        CITATIONS,
-      );
+      const created = event as FilInstrumentCreatedPayload;
+      const ruleLegs = postFxInitialRecognitionLegs(created);
+      // Capture the OBS commitment opening legs for the eventual settlement release.
+      const obsLegs = ruleLegs.filter(isFxObsCommitmentLeg);
+      if (obsLegs.length > 0) obsOpeningByInstance.set(created.instance, obsLegs);
+      legs = ruleLegs.map((l) => materialiseLeg(l, args.actor, args.entity, CITATIONS));
       processed.created++;
     } else if (event.kind === "FilInstrumentAmended") {
       if (!isFxInstance(event.type)) {
@@ -244,12 +242,26 @@ export function runGlV2Engine(args: GlV2EngineArgs): GlV2EngineResult {
       // we only posted Created for FX instances, so we only need to close those.
       // Since Terminated doesn't carry the type URN independently, we emit the
       // advisory zero-amount close for all terminations at Phase 3A scope.
-      legs = postFxClose(
-        event as FilInstrumentTerminatedPayload,
-        args.actor,
-        args.entity,
-        CITATIONS,
-      );
+      const terminated = event as FilInstrumentTerminatedPayload;
+      legs = postFxClose(terminated, args.actor, args.entity, CITATIONS);
+      // SETTLEMENT / MATURITY: release the trade-date OBS commitment by reversing
+      // the captured OBS opening legs (D-FX-TRADE-DATE-FVTPL-OBS). A cancellation
+      // is handled by the read-path reversal (the engine posts no opening-leg
+      // reversal for cancellations either — byte-equivalence is on the fold side).
+      if (terminated.terminalStage === "settled" || terminated.terminalStage === "matured") {
+        const obsOpening = obsOpeningByInstance.get(terminated.instance);
+        if (obsOpening !== undefined && obsOpening.length > 0) {
+          const releaseLegs = postFxObsCommitmentReleaseLegs(obsOpening, {
+            instance: terminated.instance,
+            ...(terminated.tenant !== undefined ? { tenant: terminated.tenant } : {}),
+            asOf: terminated.asOf,
+          });
+          legs = [
+            ...legs,
+            ...releaseLegs.map((l) => materialiseLeg(l, args.actor, args.entity, CITATIONS)),
+          ];
+        }
+      }
       processed.terminated++;
     }
 

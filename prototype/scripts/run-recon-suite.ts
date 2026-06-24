@@ -326,6 +326,14 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // equivalence gate cannot. Vacuous-pass on a clean store (no FX FilInstrumentCreated).
     // Authority: D-FX-TRADE-DATE-FVTPL-OBS.
     "recon:fx-trade-date-obs-memorandum",
+    // D-FX-TRADE-DATE-FVTPL-OBS (settlement side, ENFORCING) — the settlement-side
+    // counterpart to the trade-date shape gate. Asserts a FULLY-SETTLED FX trade
+    // leaves ZERO on-balance-sheet FX trading receivable/payable AND zero residual
+    // off-balance-sheet commitment (the trade-date OBS is released on settlement,
+    // PR-FX-OBS-RELEASE-V2; an open trade keeps its commitment). Catches the
+    // dangling-gross receivable/payable defect the old gross settlement left behind.
+    // Vacuous-pass on a clean store (no settled FX). Authority: D-FX-TRADE-DATE-FVTPL-OBS.
+    "recon:fx-settlement-fvtpl-integrity",
     // D-FIL-CONSUMER-SURFACE-ARCHITECTURE (Step D, ENFORCING) — FIL consumer-surface
     // isolation gate. Static scan: the accounting / GL surface (platform/accounting/**
     // + gl-projection-v2.ts) may replay FilInstrument* FOR STATE only through the
