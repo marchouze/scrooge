@@ -24,6 +24,7 @@ import {
   makeFilFxSettlementConfirmed,
   makeFilNdfFixingObserved,
 } from "../../event-store/event-types/fil-instances";
+import { buildPhaseFixtureTag } from "../../event-store/provenance";
 import { EventStore } from "../../event-store/store";
 import type { Event } from "../../event-store/types";
 import { foldFinsurvBopReporting, readFinsurvBopReporting } from "./finsurv-bop-projection";
@@ -189,6 +190,7 @@ function settlement(id: string, asOf: string, tagCrossBorder: boolean | null): E
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance: buildPhaseFixtureTag({ sourceLineage: "test" }),
     payload: filFxSettlementConfirmedPayloadSchema.parse({
       kind: "FilFxSettlementConfirmed",
       instance: instanceUrn(id),
@@ -217,6 +219,7 @@ function ndf(id: string, asOf: string): Event {
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance: buildPhaseFixtureTag({ sourceLineage: "test" }),
     payload: filNdfFixingObservedPayloadSchema.parse({
       kind: "FilNdfFixingObserved",
       instance: instanceUrn(id),

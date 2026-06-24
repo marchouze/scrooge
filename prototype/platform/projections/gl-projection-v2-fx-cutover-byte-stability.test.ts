@@ -96,6 +96,7 @@ function fxCreated(
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance,
     payload: filInstrumentCreatedPayloadSchema.parse({
       kind: "FilInstrumentCreated",
       instance: instanceUrn(id),
@@ -130,6 +131,7 @@ function fxTerminated(
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance,
     payload: filInstrumentTerminatedPayloadSchema.parse({
       kind: "FilInstrumentTerminated",
       instance: instanceUrn(id),

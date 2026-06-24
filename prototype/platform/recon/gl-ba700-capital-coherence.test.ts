@@ -68,11 +68,11 @@ function seedCapitalInjection(store: EventStore, amount = "300000000"): void {
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance: SIM_PROVENANCE,
     payload: payload as unknown as FilInstrumentCreatedPayload as Parameters<
       typeof makeFilInstrumentCreated
     >[0]["payload"],
   });
-  event.provenance = SIM_PROVENANCE;
   store.append(event);
 }
 

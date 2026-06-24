@@ -91,11 +91,11 @@ function seedCapitalCreated(
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance: SIM_PROVENANCE,
     payload: payload as unknown as FilInstrumentCreatedPayload as Parameters<
       typeof makeFilInstrumentCreated
     >[0]["payload"],
   });
-  event.provenance = SIM_PROVENANCE;
   store.append(event);
   return instance;
 }
@@ -125,11 +125,11 @@ function seedCapitalTerminated(
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance: SIM_PROVENANCE,
     payload: payload as unknown as FilInstrumentTerminatedPayload as Parameters<
       typeof makeFilInstrumentTerminated
     >[0]["payload"],
   });
-  event.provenance = SIM_PROVENANCE;
   store.append(event);
 }
 

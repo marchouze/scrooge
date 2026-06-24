@@ -42,6 +42,7 @@ import {
 } from "../../../v2-core/fil-instances/events";
 import { tradeSettlementExecutedPayloadSchema } from "../../../v2-core/fil-instances/trade-settlement";
 import { newEventId } from "../../core/types";
+import { type ProvenanceTag, assertExplicitFilProvenance } from "../provenance";
 import { type Actor, type Event, eventSchema } from "../types";
 
 // Re-export the v2-core schemas as the canonical payload grammar (single source).
@@ -78,8 +79,18 @@ export function makeFilInstrumentCreated(args: {
   actor: Actor;
   citations: string[];
   payload: FilInstrumentCreatedEventPayload;
+  /**
+   * EXPLICIT provenance tag (D-FX-FIXTURE-PROVENANCE-CANCEL-AND-HARDEN harden
+   * tail). REQUIRED — a FIL emit may NEVER rely on the store's category soft-
+   * default (FIL types map to `governance`→`production`, which fails OPEN for a
+   * polymorphic carrier). Resolve via `provenanceForEmit("FilInstrumentCreated",…)`
+   * at the call-site (SUT path) or an explicit fixture/simulated tag (scripts /
+   * scenarios). `assertExplicitFilProvenance` fail-closes on a soft-default tag.
+   */
+  provenance: ProvenanceTag;
   eventId?: string;
 }): Event {
+  assertExplicitFilProvenance("FilInstrumentCreated", args.provenance);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "FilInstrumentCreated",
@@ -88,6 +99,7 @@ export function makeFilInstrumentCreated(args: {
     actor: args.actor,
     citations: args.citations,
     payload: filInstrumentCreatedPayloadSchema.parse(args.payload),
+    provenance: args.provenance,
   });
 }
 
@@ -97,8 +109,11 @@ export function makeFilInstrumentAmended(args: {
   actor: Actor;
   citations: string[];
   payload: FilInstrumentAmendedEventPayload;
+  /** EXPLICIT provenance tag — REQUIRED (see makeFilInstrumentCreated). */
+  provenance: ProvenanceTag;
   eventId?: string;
 }): Event {
+  assertExplicitFilProvenance("FilInstrumentAmended", args.provenance);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "FilInstrumentAmended",
@@ -107,6 +122,7 @@ export function makeFilInstrumentAmended(args: {
     actor: args.actor,
     citations: args.citations,
     payload: filInstrumentAmendedPayloadSchema.parse(args.payload),
+    provenance: args.provenance,
   });
 }
 
@@ -116,8 +132,11 @@ export function makeFilInstrumentTerminated(args: {
   actor: Actor;
   citations: string[];
   payload: FilInstrumentTerminatedEventPayload;
+  /** EXPLICIT provenance tag — REQUIRED (see makeFilInstrumentCreated). */
+  provenance: ProvenanceTag;
   eventId?: string;
 }): Event {
+  assertExplicitFilProvenance("FilInstrumentTerminated", args.provenance);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "FilInstrumentTerminated",
@@ -126,6 +145,7 @@ export function makeFilInstrumentTerminated(args: {
     actor: args.actor,
     citations: args.citations,
     payload: filInstrumentTerminatedPayloadSchema.parse(args.payload),
+    provenance: args.provenance,
   });
 }
 
@@ -135,8 +155,11 @@ export function makeFilFxSettlementConfirmed(args: {
   actor: Actor;
   citations: string[];
   payload: FilFxSettlementConfirmedEventPayload;
+  /** EXPLICIT provenance tag — REQUIRED (see makeFilInstrumentCreated). */
+  provenance: ProvenanceTag;
   eventId?: string;
 }): Event {
+  assertExplicitFilProvenance("FilFxSettlementConfirmed", args.provenance);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "FilFxSettlementConfirmed",
@@ -145,6 +168,7 @@ export function makeFilFxSettlementConfirmed(args: {
     actor: args.actor,
     citations: args.citations,
     payload: filFxSettlementConfirmedPayloadSchema.parse(args.payload),
+    provenance: args.provenance,
   });
 }
 
@@ -154,8 +178,11 @@ export function makeFilNdfFixingObserved(args: {
   actor: Actor;
   citations: string[];
   payload: FilNdfFixingObservedEventPayload;
+  /** EXPLICIT provenance tag — REQUIRED (see makeFilInstrumentCreated). */
+  provenance: ProvenanceTag;
   eventId?: string;
 }): Event {
+  assertExplicitFilProvenance("FilNdfFixingObserved", args.provenance);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "FilNdfFixingObserved",
@@ -164,6 +191,7 @@ export function makeFilNdfFixingObserved(args: {
     actor: args.actor,
     citations: args.citations,
     payload: filNdfFixingObservedPayloadSchema.parse(args.payload),
+    provenance: args.provenance,
   });
 }
 
@@ -173,8 +201,11 @@ export function makeTradeSettlementExecuted(args: {
   actor: Actor;
   citations: string[];
   payload: TradeSettlementExecutedEventPayload;
+  /** EXPLICIT provenance tag — REQUIRED (see makeFilInstrumentCreated). */
+  provenance: ProvenanceTag;
   eventId?: string;
 }): Event {
+  assertExplicitFilProvenance("TradeSettlementExecuted", args.provenance);
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
     type: "TradeSettlementExecuted",
@@ -183,6 +214,7 @@ export function makeTradeSettlementExecuted(args: {
     actor: args.actor,
     citations: args.citations,
     payload: tradeSettlementExecutedPayloadSchema.parse(args.payload),
+    provenance: args.provenance,
   });
 }
 

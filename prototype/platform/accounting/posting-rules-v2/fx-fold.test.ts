@@ -103,6 +103,7 @@ function fxCreated(
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance,
     payload: filInstrumentCreatedPayloadSchema.parse({
       kind: "FilInstrumentCreated",
       instance: instanceUrn(id),
@@ -139,6 +140,7 @@ function fxAmended(
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance,
     payload: filInstrumentAmendedPayloadSchema.parse({
       kind: "FilInstrumentAmended",
       instance: instanceUrn(id),
@@ -192,6 +194,7 @@ function fxTerminated(
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance,
     payload: filInstrumentTerminatedPayloadSchema.parse({
       kind: "FilInstrumentTerminated",
       instance: instanceUrn(id),
@@ -398,6 +401,7 @@ function fxCreatedBound(
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance: PROD_TAG,
     payload: filInstrumentCreatedPayloadSchema.parse({
       kind: "FilInstrumentCreated",
       instance: instanceUrn(id),
@@ -717,6 +721,7 @@ function settlementConfirmed(
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance: PROD_TAG,
     payload: filFxSettlementConfirmedPayloadSchema.parse({
       kind: "FilFxSettlementConfirmed",
       instance: instanceUrn(id),
@@ -740,6 +745,7 @@ function ndfFixing(id: string, asOf: string, netCashDifference: string): Event {
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance: PROD_TAG,
     payload: filNdfFixingObservedPayloadSchema.parse({
       kind: "FilNdfFixingObserved",
       instance: instanceUrn(id),
@@ -770,6 +776,7 @@ function terminatedWith(
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance: PROD_TAG,
     payload: filInstrumentTerminatedPayloadSchema.parse({
       kind: "FilInstrumentTerminated",
       instance: instanceUrn(id),
@@ -908,6 +915,7 @@ function fxCancelled(id: string, asOf: string, provenance: ProvenanceTag): Event
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance,
     payload: filInstrumentTerminatedPayloadSchema.parse({
       kind: "FilInstrumentTerminated",
       instance: instanceUrn(id),

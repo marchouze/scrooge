@@ -406,6 +406,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:operating-book-selector-coverage",
     "recon:category-policy-coverage",
     "recon:provenance-emit-discipline",
+    // D-FX-FIXTURE-PROVENANCE-CANCEL-AND-HARDEN — FIL provenance fail-closed
+    // backstop. Fails closed on any FIL instrument/settlement event resting on
+    // the category soft-default (fail-open) instead of an explicit tag. FIL-
+    // scoped; bites NOW, independent of the global substrate-active gate.
+    "recon:fil-provenance-explicit",
     "recon:ras-b2-calibration-coverage",
     "recon:ras-cluster-feeder-coverage",
     "recon:ras-b7-model-tier-discipline-coverage",

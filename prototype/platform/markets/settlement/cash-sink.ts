@@ -42,6 +42,7 @@ import {
   makeFilInstrumentTerminated,
   makeTradeSettlementExecuted,
 } from "../../event-store/event-types/fil-instances";
+import { provenanceForEmit } from "../../event-store/provenance";
 import type { EventStore } from "../../event-store/store";
 
 // ---------------------------------------------------------------------------
@@ -139,6 +140,11 @@ export class EventStoreCashSink implements CashSink {
         entity: args.entity,
         actor: this.actor,
         citations: [...args.citations],
+        // EXPLICIT provenance (D-FX-FIXTURE-PROVENANCE-CANCEL-AND-HARDEN): the
+        // settlement cash-sink is the originating system; kind via category policy.
+        provenance: provenanceForEmit("FilInstrumentCreated", {
+          sourceLineage: "settlement:cash-sink",
+        }),
         eventId: args.eventId ?? newEventId(),
         payload: args.payload,
       }),
@@ -158,6 +164,9 @@ export class EventStoreCashSink implements CashSink {
         entity: args.entity,
         actor: this.actor,
         citations: [...args.citations],
+        provenance: provenanceForEmit("FilInstrumentTerminated", {
+          sourceLineage: "settlement:cash-sink",
+        }),
         eventId: args.eventId ?? newEventId(),
         payload: args.payload,
       }),
@@ -177,6 +186,9 @@ export class EventStoreCashSink implements CashSink {
         entity: args.entity,
         actor: this.actor,
         citations: [...args.citations],
+        provenance: provenanceForEmit("TradeSettlementExecuted", {
+          sourceLineage: "settlement:cash-sink",
+        }),
         eventId: args.eventId ?? newEventId(),
         payload: args.payload,
       }),

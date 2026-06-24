@@ -87,6 +87,7 @@ function fxCreated(
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance,
     payload: filInstrumentCreatedPayloadSchema.parse({
       kind: "FilInstrumentCreated",
       instance: instanceUrn(id),
@@ -116,6 +117,7 @@ function fxAmended(id: string, notional: string, asOf: string): Event {
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance: PROD_TAG,
     payload: filInstrumentAmendedPayloadSchema.parse({
       kind: "FilInstrumentAmended",
       instance: instanceUrn(id),
@@ -150,6 +152,7 @@ function fxTerminated(
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance,
     payload: filInstrumentTerminatedPayloadSchema.parse({
       kind: "FilInstrumentTerminated",
       instance: instanceUrn(id),
@@ -368,6 +371,7 @@ describe("deriveFxInstanceLegs — DUAL-READ settlement (Slice 2: TradeSettlemen
         entity: ENTITY,
         actor: ACTOR,
         citations: SETTLE_CITES,
+        provenance: PROD_TAG,
         payload: s,
       }),
       provenance: PROD_TAG,
@@ -388,6 +392,7 @@ describe("deriveFxInstanceLegs — DUAL-READ settlement (Slice 2: TradeSettlemen
           entity: ENTITY,
           actor: ACTOR,
           citations: SETTLE_CITES,
+          provenance: PROD_TAG,
           payload: settlement,
         }),
         provenance: PROD_TAG,

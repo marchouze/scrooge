@@ -99,6 +99,7 @@ function capCreated(
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance,
     payload: payload as unknown as FilInstrumentCreatedPayload as Parameters<
       typeof makeFilInstrumentCreated
     >[0]["payload"],
@@ -127,6 +128,7 @@ function capTerminated(
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance,
     payload: payload as unknown as FilInstrumentTerminatedPayload as Parameters<
       typeof makeFilInstrumentTerminated
     >[0]["payload"],
