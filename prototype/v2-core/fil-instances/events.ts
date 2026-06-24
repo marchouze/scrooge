@@ -141,6 +141,49 @@ export const filQualifyingCapitalSchema = z.object({
 
 export type FilQualifyingCapital = z.infer<typeof filQualifyingCapitalSchema>;
 
+// ---------------------------------------------------------------------------
+// FX AGREEMENT QUAD (D-FX-INSTRUMENT-BUYSELL-QUAD, CEO-approved 2026-06-24).
+//
+// MODEL TRUTH: an FX spot/forward IS an agreement to BUY one currency and SELL
+// another on a settlement date. The durable FIL instrument historically reduced
+// this to a single positive `notional` + `direction` (the SA-CCR risk shape),
+// DROPPING the counter leg at the booking site — the two sides survived only on
+// the capture event (`FxTradeExecuted` legs) and the settlement events
+// (boughtSettled/soldSettled). This block makes the instrument SELF-DESCRIBING:
+// it carries both sides of the agreement from the bank's perspective.
+//
+//   - `buy`  — the leg the bank BUYS / RECEIVES on settlement (positive Money;
+//              currency inside the Money — decimal-native MAJOR units,
+//              D-V2-CORE-MONEY-DECIMAL-NATIVE).
+//   - `sell` — the leg the bank SELLS / PAYS on settlement (positive Money).
+//
+// `settlementDate` already lives on `economicTerms` (the static maturity anchor),
+// so it is NOT re-stated here. `notional` / `direction` become DERIVED from the
+// quad: `notional` is the magnitude of whichever quad leg is denominated in the
+// instrument's `currency`, and `direction` follows the bought side relative to
+// the pair (long = the bank bought the base currency of the `hedgingSetTag`).
+//
+// OPTIONAL + additive: only quad-carrying FX instances populate it; every
+// existing event (which carries none) parses unchanged (replay-safe — Charter
+// cmd 9). The `recon:fx-agreement-quad-integrity` gate fails closed on a
+// fx-asset-class instance that lacks it at cutover (no silent default — cmd 2).
+// ---------------------------------------------------------------------------
+
+export const fxAgreementSchema = z.object({
+  /** The leg the BANK buys / receives on settlement (positive Money; ccy inside). */
+  buy: moneySchema,
+  /** The leg the BANK sells / pays on settlement (positive Money; ccy inside). */
+  sell: moneySchema,
+});
+
+export type FxAgreement = z.infer<typeof fxAgreementSchema>;
+
+/** Strip a leading `-` from a canonical decimal string (magnitude compare). */
+function decimalMagnitude(amount: string): string {
+  const t = amount.trim();
+  return t.startsWith("-") ? t.slice(1) : t;
+}
+
 /**
  * Tier↔sub-category coherence — `true` iff `subCategory` belongs to `tier` (the
  * sub-category string is prefixed with the tier). Pure, fail-closed-friendly:
@@ -177,7 +220,7 @@ export type FilOriginatingEventRef = z.infer<typeof filOriginatingEventRefSchema
 // holds without storing a stale maturity on the event.
 // ---------------------------------------------------------------------------
 
-export const filEconomicTermsSchema = z.object({
+const filEconomicTermsObjectSchema = z.object({
   /** SA-CCR asset class (`ir` | `fx` | …). */
   assetClass: filSaCcrAssetClassSchema,
   /** Notional, always positive — direction encoded separately. v2-native Money. */
@@ -234,9 +277,116 @@ export const filEconomicTermsSchema = z.object({
    * lacks this block (no silent default — Charter cmd 2).
    */
   qualifyingCapital: filQualifyingCapitalSchema.optional(),
+  /**
+   * The symmetric BUY/SELL agreement quad (D-FX-INSTRUMENT-BUYSELL-QUAD). Carried
+   * on an `fx` asset-class instance so the instrument is self-describing: it
+   * states BOTH currencies of the agreement (what the bank buys, what it sells) on
+   * the settlement date, rather than only the single SA-CCR `notional` +
+   * `direction`. OPTIONAL + additive: only quad-carrying FX instances populate it;
+   * every existing event parses unchanged (replay-safe — Charter cmd 9). The
+   * `.superRefine` below cross-checks the quad against `notional` / `direction` /
+   * `hedgingSetTag` WHEN present; the `recon:fx-agreement-quad-integrity` gate
+   * fails closed on any `fx` instance lacking it at cutover.
+   */
+  fxAgreement: fxAgreementSchema.optional(),
 });
 
-export type FilEconomicTerms = z.infer<typeof filEconomicTermsSchema>;
+/**
+ * `FilEconomicTerms` is the z.infer of the BARE object schema (the `.superRefine`
+ * below drops required-field narrowing — per the brief, coherence is swept by
+ * tests, not tsc). Consumers type against this; the refined schema does the
+ * runtime check.
+ */
+export type FilEconomicTerms = z.infer<typeof filEconomicTermsObjectSchema>;
+
+// ---------------------------------------------------------------------------
+// COHERENCE — when `fxAgreement` is present, it must AGREE with the derived SA-CCR
+// shape (`notional` / `direction`) and the pair (`hedgingSetTag`). `notional` /
+// `direction` are DERIVED from the quad, so a mismatch is a construction defect,
+// not a legitimate state — fail at parse (fail-closed; no silent acceptance).
+//
+// Three asserted invariants, all fail-closed:
+//   (1) PAIR — both `buy.currency` and `sell.currency` are the two currencies of
+//       `hedgingSetTag` (`<base>/<quote>`), when the tag is present.
+//   (2) DIRECTION — `direction === "long"`  ⇒ the bank BOUGHT the pair's BASE
+//       currency (buy.currency === base); `"short"` ⇒ it bought the QUOTE
+//       (buy.currency === quote). The bought side IS the direction.
+//   (3) NOTIONAL — the stored `notional` magnitude equals the magnitude of
+//       whichever quad leg is denominated in the instrument's `currency` (the
+//       SA-CCR notional is one of the two legs; the anchor book denominates it in
+//       the reporting leg, so the check resolves the matching leg rather than
+//       hardcoding bought/sold).
+// ---------------------------------------------------------------------------
+
+export const filEconomicTermsSchema = filEconomicTermsObjectSchema.superRefine((terms, ctx) => {
+  const agreement = terms.fxAgreement;
+  if (agreement === undefined) return; // optional ⇒ replay-safe; nothing to cross-check.
+
+  const buyCcy = agreement.buy.currency;
+  const sellCcy = agreement.sell.currency;
+
+  // The two legs must be different currencies — an FX agreement exchanges two
+  // distinct currencies (fail-closed on a degenerate same-ccy quad).
+  if (buyCcy === sellCcy) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["fxAgreement"],
+      message: `fxAgreement coherence: buy and sell legs must be DIFFERENT currencies (both ${buyCcy})`,
+    });
+    return;
+  }
+
+  // (1) + (2) — pair + direction, anchored on hedgingSetTag when present.
+  if (terms.hedgingSetTag !== undefined) {
+    const slash = terms.hedgingSetTag.indexOf("/");
+    const base = slash > 0 ? terms.hedgingSetTag.slice(0, slash) : terms.hedgingSetTag;
+    const quote = slash > 0 ? terms.hedgingSetTag.slice(slash + 1) : "";
+    if (base.length > 0 && quote.length > 0) {
+      const pairCcys = new Set([base, quote]);
+      if (!pairCcys.has(buyCcy) || !pairCcys.has(sellCcy)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["fxAgreement"],
+          message: `fxAgreement coherence: buy/sell currencies (${buyCcy}/${sellCcy}) must be the two currencies of hedgingSetTag ${terms.hedgingSetTag}`,
+        });
+      }
+      // DIRECTION: long ⇒ bought the base; short ⇒ bought the quote.
+      const boughtBase = buyCcy === base;
+      const expectedDirection = boughtBase ? "long" : "short";
+      if (terms.direction !== expectedDirection) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["fxAgreement"],
+          message: `fxAgreement coherence: direction ${terms.direction} disagrees with the bought side — the bank bought ${buyCcy} (pair ${terms.hedgingSetTag}), which implies direction ${expectedDirection}`,
+        });
+      }
+    }
+  }
+
+  // (3) NOTIONAL — the stored notional magnitude equals the quad leg denominated
+  // in the instrument's currency. The SA-CCR notional IS one of the two legs.
+  const legInInstrumentCcy =
+    terms.currency === buyCcy
+      ? agreement.buy
+      : terms.currency === sellCcy
+        ? agreement.sell
+        : undefined;
+  if (legInInstrumentCcy === undefined) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["fxAgreement"],
+      message: `fxAgreement coherence: instrument currency ${terms.currency} is neither the buy (${buyCcy}) nor sell (${sellCcy}) leg — notional cannot be tied to a quad leg`,
+    });
+  } else if (
+    decimalMagnitude(legInInstrumentCcy.amount) !== decimalMagnitude(terms.notional.amount)
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["fxAgreement"],
+      message: `fxAgreement coherence: notional ${terms.notional.amount} ${terms.currency} != the ${terms.currency} quad leg magnitude ${legInInstrumentCcy.amount} — notional must derive from the quad`,
+    });
+  }
+});
 
 // ---------------------------------------------------------------------------
 // The three registered lifecycle event payloads. Each composes the kernel base

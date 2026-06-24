@@ -18,7 +18,7 @@
 //   D-FIL-FRAMEWORK-UNIFICATION (FIL instance lifecycle).
 // Author: Atlas (Core banking platform architect, engineering).
 
-import { roundDecimal, toDecimal } from "../../../v2-core/fil-core/decimal";
+import { mulD, roundDecimal, toDecimal } from "../../../v2-core/fil-core/decimal";
 import { moneyFromDecimal } from "../../../v2-core/fil-core/primitives";
 import { formatInstanceUrn, formatTypeUrn } from "../../../v2-core/fil-core/urn";
 import { filInstrumentCreatedPayloadSchema } from "../../../v2-core/fil-instances/events";
@@ -55,6 +55,15 @@ export interface AffirmedFxTrade {
   readonly pair: string;
   readonly side: "buy" | "sell";
   readonly baseNotionalMajor: number;
+  /**
+   * Agreed all-in rate (quote per 1 base). REQUIRED so the booking site can carry
+   * the SYMMETRIC FX agreement quad (D-FX-INSTRUMENT-BUYSELL-QUAD) — the counter
+   * (quote-currency) leg is `baseNotionalMajor × rate`. Previously the booking site
+   * computed only the base notional and DROPPED this counter amount; sourcing it
+   * from the upstream trade (the `rate` on `FxTradeExecuted` / `ScenarioTradeAction`)
+   * makes the instrument self-describing rather than recomputing from thin air.
+   */
+  readonly rate: number;
   readonly settlementDate: string;
 }
 
@@ -89,8 +98,33 @@ export function bookAffirmedFxTrade(args: {
   const isForward = trade.productTaxonomy === "FX-forward";
   const fxTypeUrn = isForward ? FX_FORWARD_TYPE_URN : FX_SPOT_TYPE_URN;
   const base = splitBase(trade.pair, reporting);
+  const quote = splitQuote(trade.pair, reporting);
   const direction: "long" | "short" = trade.side === "buy" ? "long" : "short";
   const nettingSetId = `NS-${trade.counterpartyId}-${reporting}`;
+
+  // SYMMETRIC FX AGREEMENT QUAD (D-FX-INSTRUMENT-BUYSELL-QUAD). An FX trade IS an
+  // agreement to BUY one currency and SELL another on the settlement date. Source
+  // BOTH legs from the trade: the base-currency amount is `baseNotionalMajor`; the
+  // counter (quote) amount is `baseNotionalMajor × rate` (the previously-DROPPED
+  // leg, now threaded through `AffirmedFxTrade.rate`). A `buy` from the bank's
+  // perspective RECEIVES the base and PAYS the quote; a `sell` does the reverse.
+  // `notional` / `direction` above DERIVE from this quad (notional = the base-leg
+  // magnitude, in the instrument currency `base`; direction long = bought base).
+  // Decimal-native multiply (no float `*` — the no-float-money gate forbids it).
+  const baseAmountMajor = Math.abs(trade.baseNotionalMajor);
+  const quoteAmount = moneyFromDecimal(
+    quote,
+    roundDecimal(
+      mulD(toDecimal(String(baseAmountMajor)), toDecimal(String(trade.rate))),
+      2,
+      "HALF_UP",
+    ),
+  );
+  const baseMoney = majorNumberToMoney(baseAmountMajor, base);
+  const fxAgreement =
+    trade.side === "buy"
+      ? { buy: baseMoney, sell: quoteAmount }
+      : { buy: quoteAmount, sell: baseMoney };
 
   store.append(
     makeFilInstrumentCreated({
@@ -127,6 +161,7 @@ export function bookAffirmedFxTrade(args: {
           currency: base,
           settlementDate: trade.settlementDate,
           hedgingSetTag: trade.pair,
+          fxAgreement,
         },
       }),
     }),
@@ -139,4 +174,12 @@ function splitBase(pair: string, reporting: string): string {
   if (slash <= 0) return pair;
   const base = pair.slice(0, slash);
   return base || reporting;
+}
+
+/** The QUOTE currency of a `<base>/<quote>` pair, falling back to reporting. */
+function splitQuote(pair: string, reporting: string): string {
+  const slash = pair.indexOf("/");
+  if (slash <= 0) return reporting;
+  const quote = pair.slice(slash + 1);
+  return quote || reporting;
 }

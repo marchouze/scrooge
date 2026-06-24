@@ -322,6 +322,7 @@
     "rehearse:v2-onboarding": "bun run scripts/v2-onboarding-rehearsal.ts",
     "recon:fx-settlement-continuity": "bun run platform/recon/fx-settlement-continuity.ts",
     "recon:cash-materialisation-integrity": "bun run platform/recon/cash-materialisation-integrity.ts",
+    "recon:fx-agreement-quad-integrity": "bun run platform/recon/fx-agreement-quad-integrity.ts",
     "recon:fx-cash-reverse-coherence": "bun run platform/recon/fx-cash-reverse-coherence.ts",
     "recon:capital-materialisation-integrity": "bun run platform/recon/capital-materialisation-integrity.ts",
     "recon:gl-ba700-capital-coherence": "bun run platform/recon/gl-ba700-capital-coherence.ts",
