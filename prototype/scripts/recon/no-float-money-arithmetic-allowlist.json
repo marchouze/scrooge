@@ -507,7 +507,7 @@
     },
     {
       "file": "platform/reporting/ba-100-balance-sheet.ts",
-      "line": 638,
+      "line": 667,
       "pattern": "money-multiply/divide"
     },
     {
