@@ -89,6 +89,21 @@ function instanceUrn(id: string): string {
 
 const FX_TYPE_URN = "fil:type:fx:spot:otc-vanilla@1.0";
 
+/**
+ * Build the coherent `fxAgreement` quad for a USD/ZAR trade with a ZAR notional
+ * (D-FX-INSTRUMENT-BUYSELL-QUAD). hedgingSetTag "USD/ZAR" ⇒ base=USD, quote=ZAR.
+ * `long` ⇒ the bank bought the base (USD), sold ZAR; `short` ⇒ bought ZAR, sold
+ * USD. The ZAR leg magnitude == `notional` (the instrument-currency leg). The USD
+ * counter-leg magnitude is arbitrary for the coherence check; we echo `notional`.
+ */
+function usdZarQuad(direction: "long" | "short", notional: string) {
+  const zarLeg = { currency: "ZAR", amount: notional };
+  const usdLeg = { currency: "USD", amount: notional };
+  return direction === "long"
+    ? { buy: usdLeg, sell: zarLeg } // bought USD (base) ⇒ long
+    : { buy: zarLeg, sell: usdLeg }; // bought ZAR (quote) ⇒ short
+}
+
 /** A production FX FIL created event for a long/short trade, `notional` ZAR. */
 function fxCreated(
   id: string,
@@ -121,6 +136,7 @@ function fxCreated(
         currency: "ZAR",
         settlementDate: asOf.slice(0, 10),
         hedgingSetTag: "USD/ZAR",
+        fxAgreement: usdZarQuad(direction, notional),
       },
     }),
   });
@@ -134,6 +150,8 @@ function fxAmended(
   asOf: string,
   provenance: ProvenanceTag,
   originating: { eventType: string; eventId: string },
+  /** Signed fair-value delta the revaluation posts (D-FX-TRADE-DATE-FVTPL-OBS). */
+  fairValueDelta?: string,
 ): Event {
   const base = makeFilInstrumentAmended({
     asOf,
@@ -158,6 +176,10 @@ function fxAmended(
         currency: "ZAR",
         settlementDate: asOf.slice(0, 10),
         hedgingSetTag: "USD/ZAR",
+        fxAgreement: usdZarQuad("long", notional),
+        ...(fairValueDelta !== undefined
+          ? { fairValueDeltaSinceLastMeasurement: { currency: "ZAR", amount: fairValueDelta } }
+          : {}),
       },
     }),
   });
@@ -328,9 +350,13 @@ describe("FX trial balance — pure fold over FIL events == engine GlPostingEmit
     expect([...store.replay({ type: "GlPostingEmitted" })]).toHaveLength(0);
 
     const tb = computeTrialBalanceV2Uncached(args(store));
-    // FX accounts are still present — derived purely from the FIL event.
+    // FX trade-date legs are still present — derived purely from the FIL event.
+    // Under Policy A (D-FX-TRADE-DATE-FVTPL-OBS) they land on the OFF-BALANCE-SHEET
+    // commitment memorandum block (ACC-9100-*), NOT the on-balance-sheet FX block
+    // (ACC-2100-*): an at-market trade has FV ≈ 0 at inception (no on-BS gross-up).
     expect(tb.rows.length).toBeGreaterThan(0);
-    expect(tb.rows.some((r) => r.leafAccountId.startsWith("ACC-2100-"))).toBe(true);
+    expect(tb.rows.some((r) => r.leafAccountId.startsWith("ACC-9100-"))).toBe(true);
+    expect(tb.rows.some((r) => r.leafAccountId.startsWith("ACC-2100-"))).toBe(false);
   });
 
   test("entries + accounts views also fold from FIL with no GlPostingEmitted", () => {
@@ -343,8 +369,11 @@ describe("FX trial balance — pure fold over FIL events == engine GlPostingEmit
       }),
     );
     const entries = computeGlEntriesV2Uncached(args(store));
-    expect(entries.length).toBe(2); // Dr + Cr
+    // Four trade-date OBS legs: a commitment + contra leg in EACH of the two trade
+    // currencies (self-balancing per currency). (D-FX-TRADE-DATE-FVTPL-OBS.)
+    expect(entries.length).toBe(4);
     expect(entries.every((e) => e.postingRuleId === "PR-FX-001-V2")).toBe(true);
+    expect(entries.every((e) => e.accountId.startsWith("ACC-9100-"))).toBe(true);
     const accounts = computeGlAccountsV2Uncached(args(store));
     expect(accounts.length).toBeGreaterThan(0);
   });
@@ -420,6 +449,7 @@ function fxCreatedBound(
         currency: "ZAR",
         settlementDate: asOf.slice(0, 10),
         hedgingSetTag: "USD/ZAR",
+        fxAgreement: usdZarQuad(direction, notional),
         productId: S0D_PRODUCT_ID, // ← the S0d booking-time binding.
       },
     }),
@@ -592,10 +622,17 @@ describe("FX3 — per-instance elections override the product-default treatment"
       }),
     );
     store.append(
-      fxAmended("FX-OCI", "5200000", "2026-06-02T10:00:00.000Z", PROD_TAG, {
-        eventType: "Ws-v2-s1-fixture-book",
-        eventId: "s1:FX-OCI",
-      }),
+      fxAmended(
+        "FX-OCI",
+        "5200000",
+        "2026-06-02T10:00:00.000Z",
+        PROD_TAG,
+        {
+          eventType: "Ws-v2-s1-fixture-book",
+          eventId: "s1:FX-OCI",
+        },
+        "200000", // measured fair-value gain → posts a real position movement
+      ),
     );
     store.append(fvociElection("FX-OCI", "2026-06-02T09:00:00.000Z", PROD_TAG));
 
@@ -626,10 +663,17 @@ describe("FX3 — per-instance elections override the product-default treatment"
       }),
     );
     store.append(
-      fxAmended("FX-DEF", "5200000", "2026-06-02T10:00:00.000Z", PROD_TAG, {
-        eventType: "Ws-v2-s1-fixture-book",
-        eventId: "s1:FX-DEF",
-      }),
+      fxAmended(
+        "FX-DEF",
+        "5200000",
+        "2026-06-02T10:00:00.000Z",
+        PROD_TAG,
+        {
+          eventType: "Ws-v2-s1-fixture-book",
+          eventId: "s1:FX-DEF",
+        },
+        "200000", // measured fair-value gain → posts a real position movement
+      ),
     );
     // NO election appended.
 
@@ -929,12 +973,19 @@ function fxCancelled(id: string, asOf: string, provenance: ProvenanceTag): Event
   return { ...base, provenance };
 }
 
-/** Sum the FX (ACC-2100-*) rows in the trial balance under `mode`. */
+/**
+ * Sum the FX footprint rows in the trial balance under `mode` — both the on-
+ * balance-sheet FX block (ACC-2100-*) and the trade-date OFF-BALANCE-SHEET
+ * commitment memorandum block (ACC-9100-*, D-FX-TRADE-DATE-FVTPL-OBS). A
+ * cancelled FX trade must net BOTH to zero.
+ */
 function fxRows(store: EventStore, mode: "production-only" | "combined"): Map<string, number> {
   const tb = computeTrialBalanceV2Uncached({ ...args(store), filter: { mode } });
   const out = new Map<string, number>();
   for (const r of tb.rows) {
-    if (!r.leafAccountId.startsWith("ACC-2100-")) continue;
+    if (!r.leafAccountId.startsWith("ACC-2100-") && !r.leafAccountId.startsWith("ACC-9100-")) {
+      continue;
+    }
     out.set(`${r.leafAccountId}|${r.currency}`, r.amountMinor);
   }
   return out;
@@ -1007,8 +1058,10 @@ describe("FX cancellation reversal — a cancelled instance nets to ZERO (gap fi
     expect([...fxRows(store, "production-only").entries()]).toEqual([]);
     const fold = foldFxContributionLegs(args(store));
     const reversalLegs = fold.legs.filter((l) => l.postingRuleId === "PR-FX-CANCEL-REVERSAL-V2");
-    // Exactly the opening pair reversed once (2 legs), not 4.
-    expect(reversalLegs.length).toBe(2);
+    // The opening is FOUR trade-date OBS legs (commitment + contra in each of the
+    // two trade currencies, D-FX-TRADE-DATE-FVTPL-OBS). The reversal flips them
+    // exactly once — 4 legs, not 8 (idempotent despite two cancellation events).
+    expect(reversalLegs.length).toBe(4);
   });
 
   test("a settled-with-reval (derecognition terms) trade is NOT cancellation-reversed", () => {

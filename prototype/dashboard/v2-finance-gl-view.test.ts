@@ -89,4 +89,29 @@ describe("buildGlView — compact TB + CCY/ZAR-equivalent", () => {
     expect(view.zarTotalDebitMinor).toBeGreaterThan(0);
     expect(view.zarTotalCreditMinor).toBeGreaterThan(0);
   });
+
+  test("trade-date FX lands in the OFF-BALANCE-SHEET memorandum section, excluded from on-BS totals + in-balance", () => {
+    const { eventStore, marketDataStore } = populatedStores();
+    const view = buildGlView({ eventStore, marketDataStore, filter: { mode: "combined" } });
+
+    // Policy A (D-FX-TRADE-DATE-FVTPL-OBS): the trade-date commitment quad lands on
+    // the OBS memorandum block (ACC-9100-*), flagged off-balance-sheet, NOT the
+    // on-balance-sheet FX block (ACC-2100-*).
+    const obsRows = view.rows.filter((r) => r.offBalanceSheet);
+    expect(obsRows.length).toBeGreaterThan(0);
+    expect(obsRows.every((r) => r.accountId.startsWith("ACC-9100-"))).toBe(true);
+
+    // The OBS section self-balances and is reported in its own totals.
+    expect(view.offBalanceSheetInBalance).toBe(true);
+    expect(view.offBalanceSheetDebitMinor).toBeGreaterThan(0);
+    expect(view.offBalanceSheetDebitMinor).toBe(view.offBalanceSheetCreditMinor);
+
+    // OBS rows are EXCLUDED from the on-balance-sheet Dr/Cr totals + the in-balance
+    // check (the on-BS book still balances on its own).
+    expect(view.inBalance).toBe(true);
+    const onBsDr = view.rows
+      .filter((r) => !r.offBalanceSheet)
+      .reduce((s, r) => s + r.debitMinor, 0);
+    expect(view.totalDebitMinor).toBe(onBsDr);
+  });
 });

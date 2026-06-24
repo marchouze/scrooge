@@ -412,7 +412,10 @@ export function postFxRevaluationLegs(
     ];
   }
 
-  const magnitude = toMoneyWire({ currency: delta.currency, amount: decimalMagnitude(delta.amount) });
+  const magnitude = toMoneyWire({
+    currency: delta.currency,
+    amount: decimalMagnitude(delta.amount),
+  });
   const isGain = !delta.amount.trim().startsWith("-");
   // Gain: Dr position / Cr P&L (or OCI). Loss: Cr position / Dr P&L (or OCI).
   const positionSide: "debit" | "credit" = isGain ? "debit" : "credit";

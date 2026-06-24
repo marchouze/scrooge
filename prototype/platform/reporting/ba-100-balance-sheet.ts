@@ -73,6 +73,7 @@
 import Decimal from "decimal.js";
 import { returnContractCitation } from "../../v2-core/regulatory-returns/return-contracts";
 import {
+  COA_BY_ID,
   COUNTERPARTY_SECTORS,
   type CounterpartySector,
   sectorForAccountId,
@@ -92,6 +93,20 @@ import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
  * silently ignored and surfaced in the `classificationGaps` output field.
  */
 export type Ba600Section = "assets" | "liabilities" | "equity";
+
+/**
+ * True iff a GL account is an OFF-BALANCE-SHEET memorandum account (FX trade-date
+ * commitment quad, regulatory NOP, …), resolved from the COA registry category.
+ * OBS memorandum accounts are EXCLUDED from BA-100 on-balance-sheet lines — they
+ * are not assets, liabilities or equity (D-FX-TRADE-DATE-FVTPL-OBS). An account
+ * id not in the registry is treated as on-balance-sheet (false) — the registry is
+ * the source of truth and unknown ids surface as classification gaps elsewhere.
+ */
+export function isOffBalanceSheetAccountId(accountId: string): boolean {
+  const cat = COA_BY_ID.get(accountId)?.category;
+  if (cat === undefined) return false;
+  return cat.startsWith("memorandum") || cat.startsWith("off-balance-sheet");
+}
 
 /**
  * Per-leaf-account BA 600 line classification. An account belongs to one
@@ -390,6 +405,15 @@ export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600Bala
         `BA 600 generator: duplicate classification for account '${c.leafAccountId}'`,
       );
     }
+    // Fail-closed: an OFF-BALANCE-SHEET memorandum account can never be classified
+    // onto an on-balance-sheet section (assets / liabilities / equity). A map that
+    // tries to is a construction defect, not a legitimate state
+    // (D-FX-TRADE-DATE-FVTPL-OBS; Engineering Charter cmd 2 — no silent acceptance).
+    if (isOffBalanceSheetAccountId(c.leafAccountId)) {
+      throw new Ba600GeneratorError(
+        `BA 600 generator: off-balance-sheet memorandum account '${c.leafAccountId}' classified onto on-balance-sheet section '${c.section}'. OBS memorandum accounts are excluded from BA-100 on-balance-sheet lines.`,
+      );
+    }
     classMap.set(c.leafAccountId, c);
   }
 
@@ -412,6 +436,10 @@ export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600Bala
   );
 
   for (const row of sorted) {
+    // OFF-BALANCE-SHEET memorandum accounts are excluded from BA-100 on-balance-
+    // sheet lines entirely — not assets/liabilities/equity, and NOT a gap to chase
+    // (D-FX-TRADE-DATE-FVTPL-OBS).
+    if (isOffBalanceSheetAccountId(row.leafAccountId)) continue;
     const c = classMap.get(row.leafAccountId);
     if (!c) {
       classificationGaps.push({
@@ -452,6 +480,7 @@ export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600Bala
   // classification — these are gaps even if not in `tbInCurrency`.
   for (const row of input.trialBalance) {
     if (row.currency === ccy) continue;
+    if (isOffBalanceSheetAccountId(row.leafAccountId)) continue; // OBS — excluded.
     if (!classMap.has(row.leafAccountId)) {
       classificationGaps.push({
         leafAccountId: row.leafAccountId,

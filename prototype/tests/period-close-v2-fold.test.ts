@@ -72,6 +72,18 @@ function fxCreated(id: string, direction: "long" | "short", notional: string, as
         currency: "ZAR",
         settlementDate: asOf.slice(0, 10),
         hedgingSetTag: "USD/ZAR",
+        // D-FX-INSTRUMENT-BUYSELL-QUAD: USD/ZAR ⇒ base=USD, quote=ZAR. long ⇒
+        // bought USD (base), sold ZAR; short ⇒ bought ZAR, sold USD.
+        fxAgreement:
+          direction === "long"
+            ? {
+                buy: { currency: "USD", amount: notional },
+                sell: { currency: "ZAR", amount: notional },
+              }
+            : {
+                buy: { currency: "ZAR", amount: notional },
+                sell: { currency: "USD", amount: notional },
+              },
       },
     }),
   });
@@ -161,7 +173,10 @@ describe("FX4 — closePeriodV2 snapshot is a byte-faithful cache of the fold", 
       result.trialBalanceSnapshotEvent.payload as unknown as TrialBalanceSnapshottedPayload
     ).rows;
     expect(snapRows.length).toBeGreaterThan(0);
-    expect(snapRows.some((r) => r.leafAccountId.startsWith("ACC-2100-"))).toBe(true);
+    // Trade-date FX lands on the OFF-BALANCE-SHEET commitment memorandum block
+    // (ACC-9100-*) under Policy A — no on-balance-sheet gross-up at inception
+    // (D-FX-TRADE-DATE-FVTPL-OBS).
+    expect(snapRows.some((r) => r.leafAccountId.startsWith("ACC-9100-"))).toBe(true);
 
     // Re-fold the primaries at the SAME period window the snapshot was taken at.
     const refold = computeTrialBalanceV2({
