@@ -5677,7 +5677,7 @@ const server = Bun.serve({
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       const asOf = nowUtc();
       return jsonResponse({
-        ...buildGlView({ eventStore, filter }),
+        ...buildGlView({ eventStore, marketDataStore, filter }),
         asOf,
         pageProvenance: filter,
       });

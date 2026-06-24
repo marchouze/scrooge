@@ -83,17 +83,21 @@
       // Trial-balance table — EVERY row drills to its account ledger.
       const s = document.createElement("div"); s.className = "v2-section"; tbHost.appendChild(s);
       const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "Trial balance"; s.appendChild(h);
+      // Compact: ONE row per account. Native Dr/Cr in the account's own currency,
+      // plus the ZAR-equivalent (indicative, translated at the latest production spot).
       const tbRows = d.rows.map((r) => ({
         href: accountHref(r.accountId),
         cells: [
-          `<strong>${v2Esc(r.accountName)}</strong><br><span class="v2-muted">${v2Esc(r.accountId)} · ${v2Esc(r.currency)}</span>`,
+          `<strong>${v2Esc(r.accountName)}</strong><br><span class="v2-muted">${v2Esc(r.accountId)}</span>`,
           `<span class="v2-badge v2-badge-info">${v2Esc(r.categoryLabel)}</span>`,
+          v2Esc(r.currency),
           v2Esc(r.debitFmt),
           v2Esc(r.creditFmt),
-          `<strong>${v2Esc(r.netFmt)}</strong>`,
+          v2Esc(r.zarDebitFmt),
+          v2Esc(r.zarCreditFmt),
         ],
       }));
-      // Totals row (non-clickable) carrying the ΣDr = ΣCr in-balance check.
+      // Totals row (non-clickable): native ΣDr=ΣCr in-balance check + ZAR-equiv totals.
       if (d.rows.length > 0) {
         tbRows.push({
           cells: [
@@ -101,17 +105,23 @@
               ? '<span class="v2-badge v2-badge-success">in balance</span>'
               : '<span class="v2-badge v2-badge-danger">OUT OF BALANCE</span>'}`,
             "",
+            "",
             `<strong>${v2Esc(d.totalDebitFmt)}</strong>`,
             `<strong>${v2Esc(d.totalCreditFmt)}</strong>`,
-            "",
+            `<strong>${v2Esc(d.zarTotalDebitFmt)}</strong>`,
+            `<strong>${v2Esc(d.zarTotalCreditFmt)}</strong>`,
           ],
         });
       }
       renderTable(s, {
-        columns: ["Account", "Category", "Debit", "Credit", "Net"],
+        columns: ["Account", "Category", "CCY", "Debit (CCY)", "Credit (CCY)", "Debit (ZAR)", "Credit (ZAR)"],
         emptyMsg: "No accounts with a balance under this lens. Switch to + Sim to view the demonstration book (incl. the R300m capital injection).",
         rows: tbRows,
       });
+      const tbNote = document.createElement("p");
+      tbNote.className = "v2-muted"; tbNote.style.fontSize = "0.78rem"; tbNote.style.marginTop = "var(--space-1)";
+      tbNote.textContent = "One row per account. CCY columns are each account's native currency; ZAR columns translate at the latest production spot (indicative). The in-balance check is on the native booking.";
+      s.appendChild(tbNote);
 
       renderRefs(refsHost, {
         refs: [
