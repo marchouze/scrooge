@@ -44,24 +44,30 @@ export async function registerSimHubRoutes(
   searchParams: URLSearchParams,
   req: Request,
   hub: ThirdPartySimHub,
+  /**
+   * Route prefix (default "/api/sim/" — the V1 hub). The V2 hub mounts the SAME
+   * generic handler under "/api/v2/sim/" by passing this — one handler, two
+   * hubs (no duplicated start/stop/fire/status logic).
+   */
+  prefix = "/api/sim/",
 ): Promise<Response | null> {
-  if (!pathname.startsWith("/api/sim/")) return null;
+  if (!pathname.startsWith(prefix)) return null;
 
   // Collection routes.
-  if (pathname === "/api/sim/registry" && method === "GET") {
+  if (pathname === `${prefix}registry` && method === "GET") {
     return jsonResponse({ domains: hub.list() });
   }
-  if (pathname === "/api/sim/status" && method === "GET") {
+  if (pathname === `${prefix}status` && method === "GET") {
     return jsonResponse({ domains: hub.statusAll() });
   }
-  if (pathname === "/api/sim/events" && method === "GET") {
+  if (pathname === `${prefix}events` && method === "GET") {
     const limitRaw = Number(searchParams.get("limit") ?? "50");
     const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(500, limitRaw)) : 50;
     return jsonResponse({ events: hub.recentSimulatedEvents(limit) });
   }
 
-  // Per-simulator routes: /api/sim/:id/<action>
-  const rest = pathname.slice("/api/sim/".length);
+  // Per-simulator routes: <prefix>:id/<action>
+  const rest = pathname.slice(prefix.length);
   const slash = rest.lastIndexOf("/");
   if (slash <= 0) return null;
   const id = rest.slice(0, slash);
