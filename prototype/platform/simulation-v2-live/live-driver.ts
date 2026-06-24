@@ -45,6 +45,8 @@ import type {
   ScenarioTradeAction,
 } from "../simulation-v2/scenario-manifest";
 import { emitCounterpartyProvisioning } from "../simulation-v2/sim-modules/counterparty-provisioning";
+import { FxRateWalkV2 } from "../simulation-v2/sim-modules/fx-rate-walk-v2";
+import { generateScenarioTrade } from "../simulation-v2/sim-modules/fx-trade-generator-v2";
 import {
   emitSimulatedMarketFeed,
   ingestMarketFeed,
@@ -53,8 +55,6 @@ import { emitPostSettlementAdvice } from "../simulation-v2/sim-modules/post-sett
 import { emitSettlementLifecycle } from "../simulation-v2/sim-modules/settlement-lifecycle";
 import { emitCounterpartyConfirmation } from "../simulation-v2/sim-modules/trade-confirmation";
 import { buildFxCadenceHooks } from "./cadence-hooks";
-import { FxRateWalkV2 } from "../simulation-v2/sim-modules/fx-rate-walk-v2";
-import { generateScenarioTrade } from "../simulation-v2/sim-modules/fx-trade-generator-v2";
 
 const REPORTING = "ZAR";
 const SCENARIO_ID = "fx-v2-live";

@@ -210,9 +210,9 @@ import {
   loadNormalizedDocBySlug,
   loadStructuredDocBySlug,
 } from "../platform/regulatory/structured-doc-loader";
+import { buildV2Hub } from "../platform/simulation-v2-live/register-v2-defaults";
 import { FxSimEngine } from "../platform/simulation/fx-sim-engine";
 import { buildDefaultHub } from "../platform/simulation/hub/register-defaults";
-import { buildV2Hub } from "../platform/simulation-v2-live/register-v2-defaults";
 import { settleMaturedTrades } from "../platform/simulation/settle-matured-trades";
 import { StdbankCustodianSim } from "../platform/simulation/stdbank-custodian-sim/index";
 import { isPresent } from "../platform/types/financial-input";

@@ -22,7 +22,7 @@
 import { T_PLUS_TWO_MS } from "../../scenario-clock";
 import type { SeededRng } from "../prng";
 import type { ScenarioCounterparty, ScenarioTradeAction } from "../scenario-manifest";
-import { FxRateWalkV2 } from "./fx-rate-walk-v2";
+import type { FxRateWalkV2 } from "./fx-rate-walk-v2";
 
 export interface GenerateScenarioTradeArgs {
   /** Seeded RNG — the single source of stochastic choices (replay-safe). */

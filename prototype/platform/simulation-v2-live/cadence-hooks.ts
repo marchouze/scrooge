@@ -21,12 +21,12 @@
 //
 // Authority: D-FX-V2-SIMULATOR-FIRST (CEO-approved 2026-06-20).
 
-import { computeCohortVar } from "../market-risk/eod-cohort-var-v2";
-import { computeAndEmitCohortSaCcrEad } from "../risk/sa-ccr/eod-saccr-ead-v2";
-import type { EodHook } from "../simulation-v2/eod-bus";
-import { computeCohortPnL } from "../product-control/eod-cohort-pnl-v2";
 import type { EventStore } from "../event-store/store";
 import type { MarketDataStore } from "../market-data/store";
+import { computeCohortVar } from "../market-risk/eod-cohort-var-v2";
+import { computeCohortPnL } from "../product-control/eod-cohort-pnl-v2";
+import { computeAndEmitCohortSaCcrEad } from "../risk/sa-ccr/eod-saccr-ead-v2";
+import type { EodHook } from "../simulation-v2/eod-bus";
 
 /** The substrate the hooks read/compute over (one run's stores). */
 export interface FxCadenceEnv {
