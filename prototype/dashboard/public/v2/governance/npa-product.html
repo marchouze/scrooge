@@ -215,7 +215,9 @@
         // ── in-page nav ──────────────────────────────────────────────
         const nav = document.createElement("nav"); nav.className = "np-subnav";
         nav.innerHTML = [
-          ["overview", "How it operates"], ["variants", "Variants"], ["components", "Components"],
+          ["overview", "How it operates"], ["variants", "Variants"],
+          ...(d.fxContractualTerms ? [["contractual-terms", "Contractual terms"]] : []),
+          ["components", "Components"],
           ["lenses", "Across the bank"], ["governance", "Governance"],
         ].map(([a, t]) => `<a href="#${a}">${t}</a>`).join("");
         bodyHost.appendChild(nav);
@@ -260,6 +262,22 @@
             return `<div class="np-card"><h3>${esc(v.label)} ${badge}</h3><div class="np-card-note">${esc(v.note)}</div></div>`;
           }).join("");
           s2.appendChild(grid);
+        }
+
+        // ── §2b Contractual terms — booked FX buy/sell quad ───────────
+        // Sourced from a real live `fx` FIL instance (D-FX-INSTRUMENT-BUYSELL-QUAD).
+        // Rendered ONLY when the server populated it; never fabricated.
+        if (d.fxContractualTerms) {
+          const ct = d.fxContractualTerms;
+          const s2b = section(bodyHost, "contractual-terms", "Contractual terms");
+          s2b.insertAdjacentHTML("beforeend", `<p class="np-prose">The booked agreement states both sides of the exchange. On settlement the bank receives the buy leg and delivers the sell leg — sourced from a representative booked trade.</p>`);
+          const grid = document.createElement("div"); grid.className = "np-lens-grid";
+          grid.innerHTML = `<div class="np-card"><h3>Agreement (buy / sell quad)</h3>` +
+            `<div class="np-kv"><b>Bank buys</b><span>${esc(ct.buyAmount)} ${esc(ct.buyCurrency)}</span></div>` +
+            `<div class="np-kv"><b>Bank sells</b><span>${esc(ct.sellAmount)} ${esc(ct.sellCurrency)}</span></div>` +
+            `<div class="np-kv"><b>Settlement date</b><span>${esc(ct.settlementDate)}</span></div>` +
+            `<div class="np-card-note">Source: <code>${esc(ct.sourceInstanceUrn)}</code> — representative booked trade, as-of page load.</div></div>`;
+          s2b.appendChild(grid);
         }
 
         // ── §3 Components & how they interact ────────────────────────

@@ -170,6 +170,7 @@ import { runObligationPolicyCoverageRecon } from "../platform/recon/obligation-p
 import { runObligationReviewStatusRecon } from "../platform/recon/obligation-review-status";
 import { seatForBcbsObligationId } from "../platform/regulatory/basel-family-seat";
 import { tracePolicyBackToRegulation } from "../platform/regulatory/graph/query";
+import { readFilInstanceEvents } from "../platform/risk/sa-ccr/fil-instance-positions";
 import { getActiveBondCounterparties } from "../platform/simulation/bond-counterparty-registry";
 import { BondSimEngine } from "../platform/simulation/bond-sim-engine";
 import { getActiveFxCounterparties } from "../platform/simulation/fx-counterparty-registry";
@@ -4659,7 +4660,12 @@ const server = Bun.serve({
       const detailMatch = url.pathname.match(/^\/api\/products\/([^/]+)$/);
       if (detailMatch?.[1] && req.method === "GET") {
         const productId = decodeURIComponent(detailMatch[1]);
-        const view = buildProductDetailView(productId, eventStore, nowUtc());
+        const view = buildProductDetailView(
+          productId,
+          eventStore,
+          nowUtc(),
+          readFilInstanceEvents(),
+        );
         if (!view) return jsonResponse({ error: `Product not found: ${productId}` }, 404);
         return jsonResponse(view);
       }
@@ -5756,7 +5762,12 @@ const server = Bun.serve({
       const productId = decodeURIComponent(url.pathname.slice("/api/v2/npa/".length));
       if (!productId) return jsonResponse({ error: "missing productId" }, 400);
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
-      const detail = buildProductDetailView(productId, eventStore, nowUtc());
+      const detail = buildProductDetailView(
+        productId,
+        eventStore,
+        nowUtc(),
+        readFilInstanceEvents(),
+      );
       if (!detail) return jsonResponse({ error: `unknown product: ${productId}` }, 404);
       return jsonResponse({ ...redactNpaDetailNames(detail), pageProvenance: filter });
     }

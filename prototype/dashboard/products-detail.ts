@@ -28,6 +28,12 @@ import {
   type FxInstrumentVariant,
   fxInstrumentVariantSchema,
 } from "../platform/markets/products/types";
+import {
+  type FilInstanceLifecycleEvent,
+  type FilInstanceRow,
+  foldFilInstances,
+  isLiveStage,
+} from "../v2-core";
 import { CANONICAL_DESKS } from "../v2-core/desk/roster";
 // Risk / valuation model DECLARATIONS — read for `modelId` + `scope` only
 // (the FIL-Models register is folded from events and is empty in the build
@@ -1087,6 +1093,23 @@ export interface ProductDetailView {
   overview: ProductOverview;
   /** §2 — operating variants (FX umbrella products; empty for single-instrument families). */
   variants: ProductVariant[];
+  /**
+   * §2b — the actual booked contractual quad of a representative LIVE `fx` FIL
+   * instance (D-FX-INSTRUMENT-BUYSELL-QUAD). Populated ONLY for FX products that
+   * have at least one live, quad-bearing instance booked into the v2 anchor store;
+   * `undefined` otherwise (non-FX products, or an FX product with no booked
+   * quad-bearing instance). NEVER an invented exemplar — sourced from a real
+   * instance, omitted when none exists (recon:npa-page-no-invented-functionality).
+   * Money amounts are decimal-native major-unit strings, rendered verbatim.
+   */
+  fxContractualTerms?: {
+    buyAmount: string;
+    buyCurrency: string;
+    sellAmount: string;
+    sellCurrency: string;
+    settlementDate: string;
+    sourceInstanceUrn: string;
+  };
   /** §3 — component-interaction graph (CDM primitives + the FX→Cash materialisation edge). */
   componentGraph: ComponentGraph;
   /** §4 — cross-bank lens view (Markets / Finance / Risk / Compliance). */
@@ -1108,6 +1131,84 @@ export interface ProductDetailView {
 }
 
 // ---------------------------------------------------------------------------
+// FX contractual-terms — the booked buy/sell quad of a representative live
+// `fx` FIL instance (D-FX-INSTRUMENT-BUYSELL-QUAD).
+// ---------------------------------------------------------------------------
+
+/**
+ * Pick a representative LIVE, quad-bearing `fx` FIL instance for this product and
+ * return its symmetric agreement quad + settlement date.
+ *
+ * JOIN RULE (per the brief): match by FIL TYPE SCOPE / asset-class `fx`, NOT by
+ * `economicTerms.productId` — that S0d booking binding is usually unset on
+ * existing instances. We PREFER a `productId` match when one is present (the
+ * precise binding), and otherwise fall back to the product's FIL-type root
+ * (`fil:type:fx…`) / `assetClass === "fx"` scope. Only live (active/proposed)
+ * instances carrying `fxAgreement` are eligible.
+ *
+ * SOURCE-DON'T-INVENT: returns `undefined` when no booked quad-bearing instance
+ * exists — the section is then omitted, never fabricated
+ * (recon:npa-page-no-invented-functionality).
+ */
+function buildFxContractualTerms(
+  product: Product,
+  filEvents: readonly FilInstanceLifecycleEvent[],
+): ProductDetailView["fxContractualTerms"] {
+  if (product.family !== "fx") return undefined;
+
+  const typeRoot = FAMILY_FIL_TYPE_ROOT[product.family]; // "fil:type:fx"
+  const register = foldFilInstances(filEvents);
+
+  // Eligible = live, fx asset class, carries the quad, and is type-scope relevant
+  // to this product (asset-class fx + type-root prefix). productId-bound matches
+  // are preferred over type-scope fallbacks.
+  const productBound: FilInstanceRow[] = [];
+  const typeScoped: FilInstanceRow[] = [];
+  for (const row of register.values()) {
+    const t = row.economicTerms;
+    if (t.assetClass !== "fx") continue;
+    if (t.fxAgreement === undefined) continue;
+    if (!isLiveStage(row.stage)) continue;
+    if (typeRoot !== undefined && !filTypeMatchesRoot(row.type, typeRoot)) continue;
+    if (t.productId !== undefined && t.productId === product.productId) {
+      productBound.push(row);
+    } else if (t.productId === undefined) {
+      typeScoped.push(row);
+    }
+  }
+
+  // Deterministic representative pick: prefer a productId-bound instance, else a
+  // type-scoped one; within each, the lexicographically-first instance URN (the
+  // page is "representative booked trade, as-of page load", not a live feed).
+  const pool = productBound.length > 0 ? productBound : typeScoped;
+  if (pool.length === 0) return undefined;
+  const chosen = pool.reduce((a, b) => (a.instance <= b.instance ? a : b));
+
+  // Non-null: filtered above (`fxAgreement === undefined` skipped).
+  const quad = chosen.economicTerms.fxAgreement;
+  if (quad === undefined) return undefined;
+  return {
+    buyAmount: quad.buy.amount,
+    buyCurrency: quad.buy.currency,
+    sellAmount: quad.sell.amount,
+    sellCurrency: quad.sell.currency,
+    settlementDate: chosen.economicTerms.settlementDate,
+    sourceInstanceUrn: chosen.instance,
+  };
+}
+
+/** True iff a FIL instance `type` URN sits under the family's FIL-type root. */
+function filTypeMatchesRoot(typeUrn: string, typeRoot: string): boolean {
+  const type = filSegments(typeUrn);
+  const root = filSegments(typeRoot);
+  if (type.length < root.length) return false;
+  for (let i = 0; i < root.length; i++) {
+    if (type[i] !== root[i]) return false;
+  }
+  return true;
+}
+
+// ---------------------------------------------------------------------------
 // Detail builder.
 // ---------------------------------------------------------------------------
 
@@ -1115,6 +1216,7 @@ export function buildProductDetailView(
   productId: string,
   store: Pick<EventStore, "replay">,
   nowIso: string,
+  filEvents: readonly FilInstanceLifecycleEvent[] = [],
 ): ProductDetailView | null {
   const product = resolveProduct(productId, store);
   if (!product) return null;
@@ -1338,11 +1440,14 @@ export function buildProductDetailView(
 
   const attestedCount = dimensions.filter((d) => d.attestation.status !== "pending").length;
 
+  const fxContractualTerms = buildFxContractualTerms(product, filEvents);
+
   return {
     product,
     dimensions,
     overview: buildProductOverview(product),
     variants: buildProductVariants(product),
+    ...(fxContractualTerms ? { fxContractualTerms } : {}),
     componentGraph: buildComponentGraph(product),
     lenses: buildProductLenses(product, attestedCount, dimensions.length),
     journalEntries,
