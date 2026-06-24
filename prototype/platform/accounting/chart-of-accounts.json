@@ -673,6 +673,24 @@
       "name": "Net Open Position Memorandum — Short",
       "category": "memorandum-regulatory-nop",
       "side": "credit"
+    },
+    {
+      "id": "ACC-9100-001",
+      "name": "FX Forward Bought Commitment (memorandum)",
+      "category": "memorandum-off-balance-sheet-fx-commitment",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-9100-002",
+      "name": "FX Forward Sold Commitment (memorandum)",
+      "category": "memorandum-off-balance-sheet-fx-commitment",
+      "side": "credit"
+    },
+    {
+      "id": "ACC-9100-003",
+      "name": "FX Forward Commitment Contra (memorandum)",
+      "category": "memorandum-off-balance-sheet-fx-commitment",
+      "side": "credit"
     }
   ]
 }
