@@ -146,6 +146,10 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // + ZAR-equivalent fold. No production access path. Citation: D-FX-V2-SIMULATOR-FIRST,
   // D-V2-UI-VISIBILITY-REMEDIATION, P4-SECURITY-DESIGNED-IN.
   "dashboard/v2-finance-gl-view.test.ts",
+  // FX trade-history view test — builds an in-memory throwaway EventStore +
+  // MarketDataStore and populates via the live FX simulator. No production access
+  // path. Citation: D-FX-V2-SIMULATOR-FIRST, P4-SECURITY-DESIGNED-IN.
+  "dashboard/v2-markets-fx-trades-view.test.ts",
   // WS-FX-V2-SIMULATOR-FIRST — the FX-sim onboarded-counterparty resolver test
   // builds in-memory throwaway EventStore fixtures to exercise the onboarding →
   // FX-eligible resolution + the EnvSimEngine wiring (a client must be onboarded

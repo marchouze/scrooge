@@ -332,6 +332,7 @@ import {
 } from "./v2-client-onboarding-view";
 import { buildGlAccountLedger, buildGlView } from "./v2-finance-gl-view";
 import { buildCapitalView } from "./v2-finance-view";
+import { buildV2FxTradeHistoryView } from "./v2-markets-fx-trades-view";
 import {
   buildV2FxBlotterView,
   buildV2FxCounterpartiesView,
@@ -5898,6 +5899,16 @@ const server = Bun.serve({
     if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/blotter") {
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       return jsonResponse({ ...buildV2FxBlotterView(eventStore), pageProvenance: filter });
+    }
+    // FX trade history — all FX trades (open / settled / cancelled) folded from the
+    // FIL register, provenance-filtered. Distinct from the live-only blotter above.
+    if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/trades") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildV2FxTradeHistoryView({ eventStore, filter }),
+        asOf: nowUtc(),
+        pageProvenance: filter,
+      });
     }
     if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/counterparties") {
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
