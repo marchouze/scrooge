@@ -156,12 +156,13 @@ export function nostroFor(currency: string): string {
 
 /**
  * The GENERIC per-MOVEMENT settlement primitive (D-FX-TRADE-SETTLEMENT-PRODUCT-
- * MODEL, Slice 1). Settles ONE recognised leg — a single uniform asset movement —
- * into its three GL legs: the cash/nostro movement at the settlement rate, the
- * receivable/payable extinguished at the booked rate, and the realised-P&L
- * balancing leg (`settled − booked`). `side` selects the obligation account
- * (RECEIVE extinguishes a receivable; PAY extinguishes a payable) and the
- * debit/credit polarity. Amounts are POSITIVE magnitudes (the sign is the `side`).
+ * MODEL, Slice 1; FVTPL settlement per D-FX-TRADE-DATE-FVTPL-OBS). Settles ONE
+ * recognised leg — a single uniform asset movement — into its TWO GL legs: the
+ * cash/nostro movement at the settled amount and the equal-and-opposite REALISED
+ * FX P&L leg in the SAME currency. `side` selects the cash polarity (RECEIVE = Dr
+ * cash; PAY = Cr cash) and the P&L counter-side. Amounts are POSITIVE magnitudes
+ * (the sign is the `side`). NO on-balance-sheet receivable/payable is touched —
+ * trade-date is OBS-only, so there is none to extinguish.
  *
  * This is the single source of the settlement leg math: `postFxSettlementLegs`
  * (the two-leg FX path) composes TWO of these, and the single-asset
