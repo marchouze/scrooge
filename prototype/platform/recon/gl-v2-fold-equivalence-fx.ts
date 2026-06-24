@@ -212,8 +212,14 @@ function goldenFxBalances(): Map<string, number> {
   // Settlement / maturity terminations (D-FX-TRADE-DATE-FVTPL-OBS) — release the
   // trade-date OBS commitment. Scanned PROVENANCE-DECOUPLED, mirroring the fold's
   // `findSettledTerminations`.
-  const settledTerminations = new Map<string, { instance: string; tenant?: string; asOf: string }>();
-  for (const e of eventStore.replay({ entity: V2_ANCHOR_ENTITY, type: "FilInstrumentTerminated" })) {
+  const settledTerminations = new Map<
+    string,
+    { instance: string; tenant?: string; asOf: string }
+  >();
+  for (const e of eventStore.replay({
+    entity: V2_ANCHOR_ENTITY,
+    type: "FilInstrumentTerminated",
+  })) {
     const p = e.payload as unknown as FilInstrumentTerminatedPayload;
     if (p.terminalStage !== "settled" && p.terminalStage !== "matured") continue;
     if (p.instance === undefined || p.instance.length === 0) continue;

@@ -621,17 +621,15 @@ export function postFxObsCommitmentReleaseLegs(
   const postingRuleId = FX_OBS_RELEASE_RULE_ID;
   const description = "FX OBS commitment release — settlement/maturity (V2)";
 
-  return openingLegs
-    .filter(isFxObsCommitmentLeg)
-    .map((leg) => ({
-      creditDebit: leg.creditDebit === "debit" ? ("credit" as const) : ("debit" as const),
-      accountCode: leg.accountCode,
-      amount: leg.amount,
-      postingDate,
-      tenantId,
-      sourceEventId,
-      iasRule,
-      postingRuleId,
-      description,
-    }));
+  return openingLegs.filter(isFxObsCommitmentLeg).map((leg) => ({
+    creditDebit: leg.creditDebit === "debit" ? ("credit" as const) : ("debit" as const),
+    accountCode: leg.accountCode,
+    amount: leg.amount,
+    postingDate,
+    tenantId,
+    sourceEventId,
+    iasRule,
+    postingRuleId,
+    description,
+  }));
 }

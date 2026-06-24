@@ -210,7 +210,10 @@ function hasOpenFxInstance(settledInstances: ReadonlySet<string>): boolean {
     if (p.instance !== undefined && p.instance.length > 0) created.add(p.instance);
   }
   const terminal = new Set<string>(settledInstances);
-  for (const e of eventStore.replay({ entity: V2_ANCHOR_ENTITY, type: "FilInstrumentTerminated" })) {
+  for (const e of eventStore.replay({
+    entity: V2_ANCHOR_ENTITY,
+    type: "FilInstrumentTerminated",
+  })) {
     const p = e.payload as { instance?: string };
     if (p.instance !== undefined && p.instance.length > 0) terminal.add(p.instance);
   }

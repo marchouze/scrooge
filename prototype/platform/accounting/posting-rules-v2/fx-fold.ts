@@ -756,9 +756,7 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
       case "TradeSettlementExecuted":
         // DUAL-READ (Slice 2): the born-V2 uniform single-asset settlement. Same
         // per-movement primitive as the two-leg FX path → byte-identical net.
-        ruleLegs = postTradeSettlementLegs(
-          e.payload as unknown as TradeSettlementExecutedPayload,
-        );
+        ruleLegs = postTradeSettlementLegs(e.payload as unknown as TradeSettlementExecutedPayload);
         break;
       case "FilFxSettlementConfirmed":
         ruleLegs = postFxSettlementConfirmedLegs(
