@@ -93,6 +93,20 @@ describe("V2LiveFxDriver", () => {
     expect([...eventStore.replay({ type: "TradeSettlementExecuted" })].length).toBe(10);
   });
 
+  test("settlement emits born-V2 external post-settlement advices (correspondent + nostro)", () => {
+    const { driver, eventStore } = freshDriver({ tradesPerTick: 1 });
+    for (let i = 0; i < 3; i++) driver.tickOnce();
+    const corr = [...eventStore.replay({ type: "CorrespondentSettlementStatusReceived" })];
+    const nostro = [...eventStore.replay({ type: "NostroStatementReceived" })];
+    // One of each per settled trade (3 settled in accelerated mode).
+    expect(corr.length).toBe(3);
+    expect(nostro.length).toBe(3);
+    expect((corr[0]?.payload as { txStatus?: string }).txStatus).toBe("ACSC");
+    const np = nostro[0]?.payload as { currency?: string; entryCount?: number };
+    expect(np.currency).toMatch(/^[A-Z]{3}$/);
+    expect(np.entryCount).toBe(1);
+  });
+
   test("realtime mode defers settlement until the sim clock reaches T+2", () => {
     const { driver } = freshDriver({ tradesPerTick: 1, settlementMode: "realtime" });
     // Tick 1 books a trade settling T+2 — it must NOT settle on the booking day.

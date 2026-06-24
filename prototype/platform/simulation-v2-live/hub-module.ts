@@ -28,6 +28,8 @@ const SIM_ACTOR_IDS: readonly string[] = [
   "agent:env:counterparty-provisioning-sim",
   "agent:env:fx-trade-confirmation-sim",
   "agent:env:fx-settlement-sim",
+  "agent:env:correspondent-advice-sim",
+  "agent:env:nostro-statement-sim",
 ];
 
 const CONFIG_SCHEMA: readonly SimConfigField[] = [

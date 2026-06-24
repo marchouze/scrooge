@@ -49,6 +49,7 @@ import {
   emitSimulatedMarketFeed,
   ingestMarketFeed,
 } from "../simulation-v2/sim-modules/market-data-feed-v2";
+import { emitPostSettlementAdvice } from "../simulation-v2/sim-modules/post-settlement-advice-v2";
 import { emitSettlementLifecycle } from "../simulation-v2/sim-modules/settlement-lifecycle";
 import { emitCounterpartyConfirmation } from "../simulation-v2/sim-modules/trade-confirmation";
 import { buildFxCadenceHooks } from "./cadence-hooks";
@@ -268,6 +269,14 @@ export class V2LiveFxDriver {
       open.settled = true;
       this.settlementsConfirmed += 1;
       this.cashInstancesMaterialised += result.cashInstancesMaterialised;
+      // External post-settlement advices (correspondent pacs.002 + camt.053 nostro
+      // statement) — the outside world confirming the funds movement.
+      emitPostSettlementAdvice({
+        store: this.eventStore,
+        scenarioId: SCENARIO_ID,
+        asOf,
+        trade: open.trade,
+      });
     }
   }
 

@@ -57,3 +57,18 @@ scheduler, the cadence-hook factory, and the `SimulatorModule` hub wrapper.
 | `cadence-hooks.ts` | Shared SUT `EodHook` factory (reval / daily P&L / VaR) used by both the live driver and the read-only `v2-world-simulator-view`. |
 | `hub-module.ts` | `makeV2FxGenerativeModule` — wraps the live driver as a `SimulatorModule` (mode `loop+fire`) for the hub. |
 | `register-v2-defaults.ts` | `buildV2Hub(...)` — constructs a `ThirdPartySimHub` and registers the born-V2 modules. |
+
+The post-settlement external advices (correspondent pacs.002 + camt.053 nostro
+statement) are emitted by `simulation-v2/sim-modules/post-settlement-advice-v2.ts`,
+folded into the driver's settlement step.
+
+## Tracked gap — born-V2 regulatory-ack sub-sim (not silent)
+
+The V1 hub has a SARB regulatory-acknowledgement sub-simulator
+(`platform/simulation/env-sim/regulatory-ack-sim.ts`) that emits the generic V1
+`InboundMessageReceived`. A born-V2 equivalent is DEFERRED: it needs a NEW born-V2
+external event type (e.g. `RegulatoryAcknowledgementReceived`) with full 3-site
+registration, which is its own slice. Nostro + correspondent-advice already had
+born-V2 factories, so they shipped here; reg-ack does not yet. This is the one
+piece of V1 sub-sim surface not yet at V2 parity. (Charter cmd 5 — surfaced, not
+silently dropped.)
