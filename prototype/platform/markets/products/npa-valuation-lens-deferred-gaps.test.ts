@@ -7,10 +7,7 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { beforeEach, describe, expect, it } from "bun:test";
 
 import { activeValuationLensGaps } from "../../../v2-core/reporting-treatments/valuation-lens-gaps";
 import {
@@ -64,15 +61,12 @@ function latestGaps(store: EventStore, dimension: string): string[] {
 }
 
 describe("npa-valuation-lens-deferred-gaps recorder", () => {
-  let dir: string;
   let store: EventStore;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "val-lens-gaps-"));
-    store = new EventStore(join(dir, "event.db"));
-  });
-  afterEach(() => {
-    rmSync(dir, { recursive: true, force: true });
+    // In-memory store (the permission-gate recon carves out `:memory:` test
+    // constructions; same posture as npa-fx-accounting-deferred-gaps.test.ts).
+    store = new EventStore(":memory:");
   });
 
   it("records each gap onto its dimension when the attestation exists", () => {
