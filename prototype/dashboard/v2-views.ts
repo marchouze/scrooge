@@ -553,13 +553,30 @@ export function buildNpaRegisterView(store: EventStore, asOf: string): NpaView {
  * name-bearing fields (owner.name, attestedBy, narrative author name,
  * finding discoveredBy / reviewedBy) so no client can render a name.
  */
+/**
+ * Strip the leading agent name from a gap-owner seat string. Owners are authored
+ * as "Name (Position, domain)"; the no-agent-names rule keeps only the seat —
+ * "(Position, domain)". A bare position passes through unchanged.
+ */
+function redactGapOwner(owner: string): string {
+  const m = owner.match(/^[^(]+\(([^)]+)\)\s*$/);
+  return m ? m[1].trim() : owner;
+}
+
 export function redactNpaDetailNames(detail: ProductDetailView): ProductDetailView {
   // The presentation surfaces (overview / variants / componentGraph / lenses)
   // are name-free by construction — desk seats arrive as Titles from the desk
-  // roster, and every other field is structural/regulatory. They pass through
-  // the spread unchanged. Only the attestation/finding fields carry agent ids.
+  // roster, and every other field is structural/regulatory. The ONE exception is
+  // the valuation-lens gap owner, which is authored name+position → stripped to
+  // the seat here. Only the attestation/finding fields carry agent ids besides.
   return {
     ...detail,
+    lenses: {
+      ...detail.lenses,
+      valuation: detail.lenses.valuation.map((dom) =>
+        dom.gap ? { ...dom, gap: { ...dom.gap, owner: redactGapOwner(dom.gap.owner) } } : dom,
+      ),
+    },
     dimensions: detail.dimensions.map((card) => ({
       ...card,
       owner: { ...card.owner, name: "" },

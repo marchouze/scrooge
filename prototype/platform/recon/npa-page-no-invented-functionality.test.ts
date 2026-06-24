@@ -15,8 +15,29 @@
 
 import { describe, expect, it } from "bun:test";
 
-import type { DimensionCard, ProductDetailView } from "../../dashboard/products-detail";
+import type {
+  DimensionCard,
+  ProductDetailView,
+  ValuationDomainLens,
+} from "../../dashboard/products-detail";
 import { assertNoInvention, run } from "./npa-page-no-invented-functionality";
+
+// A minimal ValuationDomainLens with overridable rule/event/gap fields.
+function valLens(over: Partial<ValuationDomainLens> = {}): ValuationDomainLens {
+  return {
+    domain: "general-ledger",
+    label: "General Ledger",
+    valuationBasis: "",
+    feedsReturn: [],
+    postingRuleIds: [],
+    eventTypes: [],
+    models: [],
+    citations: [],
+    unbacked: { postingRuleIds: [], eventTypes: [] },
+    status: "built",
+    ...over,
+  };
+}
 
 // A minimal DimensionCard with overridable trigger/emit + unbacked fields.
 function dimCard(over: Partial<DimensionCard> = {}): DimensionCard {
@@ -48,10 +69,12 @@ function dimCard(over: Partial<DimensionCard> = {}): DimensionCard {
 function detailView(over: {
   journalEntries?: ProductDetailView["journalEntries"];
   dimensions?: DimensionCard[];
+  valuation?: ValuationDomainLens[];
 }): ProductDetailView {
   return {
     journalEntries: over.journalEntries ?? [],
     dimensions: over.dimensions ?? [],
+    ...(over.valuation ? { lenses: { valuation: over.valuation } } : {}),
     // The remaining fields are not inspected by the gate; cast through unknown.
   } as unknown as ProductDetailView;
 }
@@ -124,5 +147,94 @@ describe("recon:npa-page-no-invented-functionality", () => {
     });
     const violations = assertNoInvention("prd:test", [], view);
     expect(violations.some((v) => v.message.includes("false gap"))).toBe(true);
+  });
+
+  // ── (D) Five-domain valuation/reporting lenses ──────────────────────────
+
+  it("PASSES a valuation domain whose rule ids / event types all resolve", () => {
+    const view = detailView({
+      valuation: [
+        valLens({
+          domain: "general-ledger",
+          // PR-FX-001 is a real registry rule id; FxTradeExecuted a real event.
+          postingRuleIds: ["PR-FX-001"],
+          eventTypes: ["FxTradeExecuted"],
+          status: "built",
+        }),
+      ],
+    });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations).toHaveLength(0);
+  });
+
+  it("FAILS on a fabricated valuation posting-rule id not gap-surfaced", () => {
+    const view = detailView({
+      valuation: [valLens({ postingRuleIds: ["PR-FAKE-999"] })],
+    });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations.some((v) => v.message.includes("fabricated rule id"))).toBe(true);
+  });
+
+  it("PASSES when a fabricated valuation rule id IS surfaced as unbacked", () => {
+    const view = detailView({
+      valuation: [
+        valLens({
+          postingRuleIds: ["PR-FAKE-999"],
+          unbacked: { postingRuleIds: ["PR-FAKE-999"], eventTypes: [] },
+        }),
+      ],
+    });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations).toHaveLength(0);
+  });
+
+  it("FAILS on a FALSE valuation gap (a real registry rule id flagged unbacked)", () => {
+    const view = detailView({
+      valuation: [
+        valLens({
+          unbacked: { postingRuleIds: ["PR-FX-001"], eventTypes: [] },
+        }),
+      ],
+    });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations.some((v) => v.message.includes("false gap"))).toBe(true);
+  });
+
+  it("FAILS on a fabricated valuation event type not gap-surfaced", () => {
+    const view = detailView({
+      valuation: [valLens({ eventTypes: ["NotARealEventType123"] })],
+    });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations.some((v) => v.message.includes("silent invented assertion"))).toBe(true);
+  });
+
+  it("FAILS on a planned-with-gap domain carrying no tracked gap (bare planned)", () => {
+    const view = detailView({
+      valuation: [valLens({ domain: "liquidity-risk", status: "planned-with-gap" })],
+    });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations.some((v) => v.message.includes("no backing gap is a silent deferral"))).toBe(
+      true,
+    );
+  });
+
+  it("PASSES a planned-with-gap domain carrying a well-formed tracked gap", () => {
+    const view = detailView({
+      valuation: [
+        valLens({
+          domain: "liquidity-risk",
+          status: "planned-with-gap",
+          gap: {
+            gapId: "fx-liquidity-lcr-nsfr-measure",
+            title: "No LCR/NSFR projection yet",
+            owner: "Treasury / ALM engineer, engineering",
+            targetTrigger: "LCR (BA-300) / NSFR projection",
+            citations: ["BA-300"],
+          },
+        }),
+      ],
+    });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations).toHaveLength(0);
   });
 });

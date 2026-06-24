@@ -30,6 +30,16 @@
 //       entry — so the gap channel cannot be used to hide a real, backed fact
 //       (which would mask drift the other direction).
 //
+//   (D) Five-domain valuation/reporting lenses (`lenses.valuation[]`,
+//       D-V2-UI-OVERSIGHT-STANDARD). Each `ValuationDomainLens` names
+//       `postingRuleIds` (must each resolve to a real posting-rule registry id
+//       via `findEntryForRuleId`, OR appear in the card's `unbacked.postingRuleIds`)
+//       and `eventTypes` (must each resolve to a registered event type, OR appear
+//       in `unbacked.eventTypes`). A `planned-with-gap` (or gap-bearing `partial`)
+//       status MUST carry a tracked `gap` (gapId + title + owner + targetTrigger
+//       + ≥1 citation) — a bare "planned" with no backing gap is a FAIL. And no
+//       false gaps: a flagged-unbacked name that IS backed is a FAIL.
+//
 // Severity: FAIL (ENFORCING). Wired into `bun run ci` (domain suite).
 //
 // Store-independent: the assertion is over the page builder's output for the
@@ -44,6 +54,7 @@
 import {
   type PostingRuleEntry,
   findEntriesForEventType,
+  findEntryForRuleId,
 } from "../accounting/posting-rule-registry";
 import { lookupEventType } from "../event-store/registry";
 import type { Event } from "../event-store/types";
@@ -163,6 +174,82 @@ export function assertNoInvention(
     checkNames(dim.emits, dim.unbacked.emits, "emits");
   }
 
+  // ── (D) Five-domain valuation/reporting lenses ──────────────────────────
+  // The lens block is optional on the cast-through test views; assert it when
+  // present (the real builder always populates it).
+  const valuation = view.lenses?.valuation;
+  if (valuation) {
+    for (const dom of valuation) {
+      const subj = `${productId}:valuation:${dom.domain}`;
+
+      // Posting-rule ids: each must resolve to a real registry rule id OR be
+      // surfaced unbacked. A backed id flagged unbacked is a false gap.
+      const ruleUnbacked = new Set(dom.unbacked.postingRuleIds);
+      for (const id of dom.postingRuleIds) {
+        const backed = findEntryForRuleId(id) !== undefined;
+        if (!backed && !ruleUnbacked.has(id)) {
+          violations.push({
+            subject: `${subj}:rule:${id}`,
+            severity: "fail",
+            message: `valuation domain "${dom.domain}" asserts posting-rule id "${id}", which is NOT a real registry entry and is NOT surfaced in the domain's unbacked gap channel — fabricated rule id.`,
+          });
+        }
+      }
+      for (const id of dom.unbacked.postingRuleIds) {
+        if (findEntryForRuleId(id) !== undefined) {
+          violations.push({
+            subject: `${subj}:rule:${id}:false-unbacked`,
+            severity: "fail",
+            message: `valuation domain "${dom.domain}" flags posting-rule id "${id}" as unbacked, but it IS a real registry entry — false gap.`,
+          });
+        }
+      }
+
+      // Event types: each must resolve to a registered event type OR be
+      // surfaced unbacked. A registered name flagged unbacked is a false gap.
+      const evUnbacked = new Set(dom.unbacked.eventTypes);
+      for (const name of dom.eventTypes) {
+        const registered = isRegisteredEventType(name);
+        if (!registered && !evUnbacked.has(name)) {
+          violations.push({
+            subject: `${subj}:event:${name}`,
+            severity: "fail",
+            message: `valuation domain "${dom.domain}" asserts event type "${name}", which is NOT a registered event type and is NOT surfaced in the domain's unbacked gap channel — silent invented assertion.`,
+          });
+        }
+      }
+      for (const name of dom.unbacked.eventTypes) {
+        if (isRegisteredEventType(name)) {
+          violations.push({
+            subject: `${subj}:event:${name}:false-unbacked`,
+            severity: "fail",
+            message: `valuation domain "${dom.domain}" flags event type "${name}" as unbacked, but it IS a registered event type — false gap.`,
+          });
+        }
+      }
+
+      // A `planned-with-gap` status MUST carry a well-formed tracked gap — a
+      // bare "planned" with no backing gap is the no-silent-deferral breach.
+      if (dom.status === "planned-with-gap") {
+        const g = dom.gap;
+        const wellFormed =
+          g !== undefined &&
+          g.gapId.trim().length > 0 &&
+          g.title.trim().length > 0 &&
+          g.owner.trim().length > 0 &&
+          g.targetTrigger.trim().length > 0 &&
+          g.citations.some((c) => c.trim().length > 0);
+        if (!wellFormed) {
+          violations.push({
+            subject: `${subj}:planned-no-gap`,
+            severity: "fail",
+            message: `valuation domain "${dom.domain}" renders status "planned-with-gap" but carries no well-formed tracked ProductDeferredGap (gapId + title + owner + targetTrigger + ≥1 citation) — a bare "planned" with no backing gap is a silent deferral.`,
+          });
+        }
+      }
+    }
+  }
+
   return violations;
 }
 
@@ -190,10 +277,15 @@ export function run(opts: RunOpts = {}): ReconResult {
       });
       continue;
     }
-    // Each journal row + each dimension trigger/emit name is one assertion.
+    // Each journal row + each dimension trigger/emit name + each valuation-lens
+    // posting-rule-id / event-type / domain is one assertion.
     asserted +=
       view.journalEntries.length +
-      view.dimensions.reduce((n, d) => n + d.triggeredBy.length + d.emits.length, 0);
+      view.dimensions.reduce((n, d) => n + d.triggeredBy.length + d.emits.length, 0) +
+      (view.lenses?.valuation ?? []).reduce(
+        (n, d) => n + d.postingRuleIds.length + d.eventTypes.length + 1,
+        0,
+      );
     violations.push(...assertNoInvention(product.productId, product.lifecycleEventFamily, view));
   }
 

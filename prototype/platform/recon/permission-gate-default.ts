@@ -253,6 +253,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // No production access path. Citation: D-ACCT-FX-IFRS-POSTING-COMPLETENESS,
   // P4-SECURITY-DESIGNED-IN, F-031.
   "platform/markets/products/npa-fx-accounting-deferred-gaps.test.ts",
+  // Valuation-lens deferred-gap recorder unit test (D-V2-UI-OVERSIGHT-STANDARD /
+  // D-NPA-PAGE-DE-INVENTION) — builds `new EventStore(":memory:")` throwaway
+  // stores to assert the liquidity-risk + market-risk valuation-lens gap merge +
+  // idempotency in isolation (same carve-out rationale as the FX accounting
+  // recorder test above). No production access path. Citation:
+  // D-V2-UI-OVERSIGHT-STANDARD, P4-SECURITY-DESIGNED-IN, F-031.
+  "platform/markets/products/npa-valuation-lens-deferred-gaps.test.ts",
   // ras-register-parity — read-only replay of RiskAppetiteSnapshot events +
   // read-only scan of runtime handler source files; no appends; gate is a
   // no-op on the read path. Citation: D-RAS-STRUCTURED-REGISTER,

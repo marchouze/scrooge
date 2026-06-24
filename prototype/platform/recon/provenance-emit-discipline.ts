@@ -102,6 +102,11 @@ export const EXPLICIT_PROVENANCE_ALLOWLIST: Readonly<Record<string, string>> = {
     "build-phase-fixture tag on the FX accounting-dimension deferred-gap re-attestation (same basis as " +
     "npa-fx-conduct-attestation.ts; WS-ACCT-FX-COMPLETENESS Slice 3) — the third provenance kind is " +
     "deliberately not expressible in the category policy (real build-phase bank state, not mode-dependent).",
+  "platform/markets/products/npa-valuation-lens-deferred-gaps.ts":
+    "build-phase-fixture tag on the FX liquidity-risk + market-risk dimension valuation-lens deferred-gap " +
+    "re-attestation (same basis as npa-fx-accounting-deferred-gaps.ts; D-V2-UI-OVERSIGHT-STANDARD / " +
+    "D-NPA-PAGE-DE-INVENTION) — the third provenance kind is deliberately not expressible in the category " +
+    "policy (real build-phase bank state, not mode-dependent).",
   "platform/markets/products/npa-fx-infosec-attestation.ts":
     "build-phase-fixture tag on the FX infosec-dimension CISO ratification + attestation (same basis as " +
     "npa-fx-conduct-attestation.ts) — the third provenance kind is deliberately not expressible in the " +
