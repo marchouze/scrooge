@@ -21,7 +21,11 @@ function freshDriver(config?: V2LiveFxDriverConfig): {
 } {
   const eventStore = new EventStore();
   const marketDataStore = new MarketDataStore(":memory:");
-  const driver = new V2LiveFxDriver({ eventStore, marketDataStore, config });
+  const driver = new V2LiveFxDriver({
+    eventStore,
+    marketDataStore,
+    ...(config ? { config } : {}),
+  });
   return { driver, eventStore };
 }
 
