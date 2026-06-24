@@ -16,6 +16,7 @@
 import { describe, expect, it } from "bun:test";
 
 import type {
+  AccountingPerspectiveView,
   DimensionCard,
   FxLifecycleView,
   ProductDetailView,
@@ -162,6 +163,55 @@ function fxLifecycleBlock(): FxLifecycleView {
   };
 }
 
+// A representative valid Accounting/CFO perspective — every posting-rule id +
+// trigger resolves to the registry; every leg account code resolves to the CoA.
+function accountingPerspectiveBlock(): AccountingPerspectiveView {
+  return {
+    classification: [{ axis: "IFRS 9 classification", value: "fvtpl", meaning: "FVTPL" }],
+    currency: "ZAR",
+    stages: [
+      {
+        id: "a",
+        label: "Initiation",
+        summary: "trade-date recognition",
+        postingRules: [
+          {
+            postingRuleId: "PR-FX-001-V2",
+            triggerEventType: "FilInstrumentCreated",
+            condition: "always",
+            ifrs: "IFRS 9 §3.1.1",
+            legs: [
+              {
+                accountRole: "receivable",
+                accountRoleLabel: "FX trading receivable",
+                accountCode: "ACC-2100-001",
+                accountName: "FX Trading Receivable",
+                drCr: "debit",
+                iasCite: "IFRS 9 §3.1.1",
+                note: "recognise receivable",
+              },
+              {
+                accountRole: "payable",
+                accountRoleLabel: "FX trading payable",
+                accountCode: "ACC-2100-003",
+                accountName: "FX Trading Payable",
+                drCr: "credit",
+                iasCite: "IFRS 9 §3.1.1",
+                note: "recognise payable",
+              },
+            ],
+            derivedFrom: "v2-core/posting-rules/fx.ts · postFxInitialRecognitionLegs",
+            deferred: false,
+          },
+        ],
+      },
+    ],
+    returnCells: [{ cell: "BA100.line.rwa-fx", lens: "Balance sheet" }],
+    unbackedAccountCodes: [],
+    authority: ["D-V2-UI-OVERSIGHT-STANDARD"],
+  };
+}
+
 // A minimal ProductDetailView carrying only the fields the gate inspects.
 function detailView(over: {
   journalEntries?: ProductDetailView["journalEntries"];
@@ -169,6 +219,7 @@ function detailView(over: {
   valuation?: ValuationDomainLens[];
   family?: string;
   fxLifecycle?: FxLifecycleView;
+  accountingPerspective?: AccountingPerspectiveView;
 }): ProductDetailView {
   return {
     journalEntries: over.journalEntries ?? [],
@@ -176,6 +227,7 @@ function detailView(over: {
     ...(over.valuation ? { lenses: { valuation: over.valuation } } : {}),
     ...(over.family ? { product: { family: over.family } } : {}),
     ...(over.fxLifecycle ? { fxLifecycle: over.fxLifecycle } : {}),
+    ...(over.accountingPerspective ? { accountingPerspective: over.accountingPerspective } : {}),
     // The remaining fields are not inspected by the gate; cast through unknown.
   } as unknown as ProductDetailView;
 }
@@ -426,5 +478,111 @@ describe("recon:npa-page-no-invented-functionality", () => {
     const view = detailView({ family: "listed-bond" });
     const violations = assertNoInvention("prd:test", [], view);
     expect(violations).toHaveLength(0);
+  });
+
+  // ── (F) Accounting / CFO perspective ────────────────────────────────────
+
+  // Build an accountingPerspective with the single rule's fields overridden, and
+  // optionally a different `unbackedAccountCodes` — no mutation of readonly data.
+  type ApRule = AccountingPerspectiveView["stages"][number]["postingRules"][number];
+  type ApLeg = ApRule["legs"][number];
+  const apWith = (
+    ruleOver: Partial<ApRule>,
+    legOver: Partial<ApLeg> = {},
+    unbackedAccountCodes: readonly string[] = [],
+  ): AccountingPerspectiveView => {
+    const base = accountingPerspectiveBlock();
+    const stage0 = base.stages[0];
+    if (!stage0) throw new Error("test fixture must have a stage");
+    const rule = stage0.postingRules[0];
+    const leg1 = rule?.legs[1];
+    if (!rule || !rule.legs[0] || !leg1) throw new Error("test fixture must have two legs");
+    const leg0: ApLeg = { ...rule.legs[0], ...legOver };
+    return {
+      ...base,
+      unbackedAccountCodes,
+      stages: [
+        {
+          ...stage0,
+          postingRules: [{ ...rule, ...ruleOver, legs: [leg0, leg1] }],
+        },
+      ],
+    };
+  };
+
+  it("PASSES an accountingPerspective whose rule ids / triggers / account codes all resolve", () => {
+    const view = detailView({
+      family: "fx",
+      fxLifecycle: fxLifecycleBlock(),
+      accountingPerspective: accountingPerspectiveBlock(),
+    });
+    expect(assertNoInvention("prd:test", [], view)).toHaveLength(0);
+  });
+
+  it("FAILS on a fabricated accountingPerspective posting-rule id", () => {
+    const view = detailView({
+      family: "fx",
+      accountingPerspective: apWith({ postingRuleId: "PR-FAKE-999" }),
+    });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations.some((v) => v.message.includes("fabricated rule id"))).toBe(true);
+  });
+
+  it("FAILS on a fabricated accountingPerspective trigger event type", () => {
+    const view = detailView({
+      family: "fx",
+      accountingPerspective: apWith({ triggerEventType: "NotARealEvent999" }),
+    });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations.some((v) => v.message.includes("invented trigger"))).toBe(true);
+  });
+
+  it("FAILS on a leg posting to an account code NOT in the CoA (not gap-surfaced)", () => {
+    const view = detailView({
+      family: "fx",
+      accountingPerspective: apWith({}, { accountCode: "ACC-9999-999" }),
+    });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations.some((v) => v.message.includes("invented GL account"))).toBe(true);
+  });
+
+  it("PASSES when an unbacked account code IS surfaced in unbackedAccountCodes", () => {
+    const view = detailView({
+      family: "fx",
+      fxLifecycle: fxLifecycleBlock(),
+      accountingPerspective: apWith({}, { accountCode: "ACC-9999-999", accountName: "" }, [
+        "ACC-9999-999",
+      ]),
+    });
+    expect(assertNoInvention("prd:test", [], view)).toHaveLength(0);
+  });
+
+  it("FAILS on a FALSE account-code gap (a real CoA code flagged unbacked)", () => {
+    const view = detailView({
+      family: "fx",
+      accountingPerspective: apWith({}, {}, ["ACC-2100-001"]),
+    });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations.some((v) => v.message.includes("false gap"))).toBe(true);
+  });
+
+  it("FAILS on a deferred posting rule carrying no tracked gap", () => {
+    const view = detailView({
+      family: "fx",
+      accountingPerspective: apWith({ deferred: true }),
+    });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations.some((v) => v.message.includes("no backing gap is a silent deferral"))).toBe(
+      true,
+    );
+  });
+
+  it("FAILS when a non-FX product carries an accountingPerspective block", () => {
+    const view = detailView({
+      family: "listed-bond",
+      accountingPerspective: accountingPerspectiveBlock(),
+    });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations.some((v) => v.subject.endsWith(":accounting-perspective:non-fx"))).toBe(true);
   });
 });

@@ -38,6 +38,15 @@
 //       block is FX-only: a non-FX product MUST NOT carry it (FAIL if present);
 //       an FX product MUST carry exactly the four ordered stages.
 //
+//   (F) Accounting / CFO perspective (`accountingPerspective`, WS-NPA-
+//       PERSPECTIVE-IA Slice 2). FX-only. Each per-stage posting rule names a
+//       posting-rule id (must resolve to the registry), a trigger event type
+//       (must resolve to the event-type registry), and per-leg account codes
+//       (each must resolve to the canonical CoA via COA_BY_ID, OR appear in
+//       `unbackedAccountCodes`). A deferred rule MUST carry a well-formed
+//       tracked gap. No false gap: a flagged code that IS a real CoA account is
+//       a FAIL. A non-FX product MUST NOT carry the block.
+//
 //   (D) Five-domain valuation/reporting lenses (`lenses.valuation[]`,
 //       D-V2-UI-OVERSIGHT-STANDARD). Each `ValuationDomainLens` names
 //       `postingRuleIds` (must each resolve to a real posting-rule registry id
@@ -66,6 +75,8 @@ import {
 } from "../accounting/posting-rule-registry";
 import { lookupEventType } from "../event-store/registry";
 import type { Event } from "../event-store/types";
+
+import { COA_BY_ID } from "../../v2-core/accounting/chart-of-accounts";
 
 import { type ProductDetailView, buildProductDetailView } from "../../dashboard/products-detail";
 import { BASELINE_FIXTURES } from "../../dashboard/products-view";
@@ -96,6 +107,11 @@ function isRegisteredEventType(name: string): boolean {
 /** True iff the event type has ≥1 posting-rule registry entry. */
 function hasRegistryEntry(name: string): boolean {
   return findEntriesForEventType(name).length > 0;
+}
+
+/** True iff the account code resolves to a real canonical CoA account. */
+function isRealCoaAccount(code: string): boolean {
+  return COA_BY_ID.get(code) !== undefined;
 }
 
 /**
@@ -322,6 +338,81 @@ export function assertNoInvention(
     }
   }
 
+  // ── (F) Accounting / CFO perspective ────────────────────────────────────
+  // FX-only block (WS-NPA-PERSPECTIVE-IA Slice 2). Present iff family `fx`. For
+  // every posting rule it names: the posting-rule id MUST resolve to the
+  // registry, the trigger event type MUST resolve to the event-type registry,
+  // and EVERY leg's account code MUST resolve to the canonical CoA OR be flagged
+  // in `unbackedAccountCodes` (no fabricated CoA name). No false gap: a flagged
+  // code that IS a real CoA account is a FAIL. A deferred rule MUST carry a
+  // well-formed tracked gap (gapId + title + owner + targetTrigger + ≥1 cite).
+  const perspective = view.accountingPerspective;
+  if (perspective) {
+    if (!isFxFamily) {
+      violations.push({
+        subject: `${productId}:accounting-perspective:non-fx`,
+        severity: "fail",
+        message:
+          "non-FX product carries an accountingPerspective block — the FX GL-impact-per-stage walkthrough is FX-only and must be omitted for other families.",
+      });
+    }
+    const flaggedCodes = new Set(perspective.unbackedAccountCodes);
+    // No false gap on flagged account codes.
+    for (const code of perspective.unbackedAccountCodes) {
+      if (isRealCoaAccount(code)) {
+        violations.push({
+          subject: `${productId}:accounting-perspective:code:${code}:false-unbacked`,
+          severity: "fail",
+          message: `accountingPerspective flags account code "${code}" as unbacked, but it IS a real CoA account — false gap.`,
+        });
+      }
+    }
+    for (const stage of perspective.stages) {
+      for (const pr of stage.postingRules) {
+        if (findEntryForRuleId(pr.postingRuleId) === undefined) {
+          violations.push({
+            subject: `${productId}:accounting-perspective:${stage.id}:rule:${pr.postingRuleId}`,
+            severity: "fail",
+            message: `accountingPerspective stage "${stage.id}" names posting-rule id "${pr.postingRuleId}", which is NOT a real registry entry — fabricated rule id.`,
+          });
+        }
+        if (pr.triggerEventType && !isRegisteredEventType(pr.triggerEventType)) {
+          violations.push({
+            subject: `${productId}:accounting-perspective:${stage.id}:trigger:${pr.triggerEventType}`,
+            severity: "fail",
+            message: `accountingPerspective rule "${pr.postingRuleId}" names trigger event type "${pr.triggerEventType}", which is NOT a registered event type — invented trigger.`,
+          });
+        }
+        for (const leg of pr.legs) {
+          if (!isRealCoaAccount(leg.accountCode) && !flaggedCodes.has(leg.accountCode)) {
+            violations.push({
+              subject: `${productId}:accounting-perspective:${stage.id}:${pr.postingRuleId}:leg:${leg.accountCode}`,
+              severity: "fail",
+              message: `accountingPerspective rule "${pr.postingRuleId}" posts to account code "${leg.accountCode}", which is NOT a real CoA account and is NOT surfaced in unbackedAccountCodes — invented GL account.`,
+            });
+          }
+        }
+        if (pr.deferred) {
+          const g = pr.gap;
+          const wellFormed =
+            g !== undefined &&
+            g.gapId.trim().length > 0 &&
+            g.title.trim().length > 0 &&
+            g.owner.trim().length > 0 &&
+            g.targetTrigger.trim().length > 0 &&
+            g.citations.some((c) => c.trim().length > 0);
+          if (!wellFormed) {
+            violations.push({
+              subject: `${productId}:accounting-perspective:${stage.id}:${pr.postingRuleId}:deferred-no-gap`,
+              severity: "fail",
+              message: `accountingPerspective rule "${pr.postingRuleId}" renders deferred but carries no well-formed tracked ProductDeferredGap (gapId + title + owner + targetTrigger + ≥1 citation) — a bare "deferred" with no backing gap is a silent deferral.`,
+            });
+          }
+        }
+      }
+    }
+  }
+
   return violations;
 }
 
@@ -362,7 +453,12 @@ export function run(opts: RunOpts = {}): ReconResult {
         (n, s) => n + s.eventTypes.length + (s.materialises ? 1 : 0),
         0,
       ) +
-      (view.fxLifecycle?.ownershipLevels ?? []).length;
+      (view.fxLifecycle?.ownershipLevels ?? []).length +
+      // Each accounting-perspective leg's account code + each rule's id/trigger.
+      (view.accountingPerspective?.stages ?? []).reduce(
+        (n, s) => n + s.postingRules.reduce((m, pr) => m + pr.legs.length + 2, 0),
+        0,
+      );
     violations.push(...assertNoInvention(product.productId, product.lifecycleEventFamily, view));
   }
 
