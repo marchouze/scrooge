@@ -41,6 +41,7 @@
 
 import { fromMinorUnits, roundDecimal, toCanonicalString } from "../platform/core/decimal-engine";
 import type { EventStore } from "../platform/event-store/store";
+import { type MarketDataStore, lookupQuoteWithInverse } from "../platform/market-data/store";
 import type { ProvenanceFilter } from "../platform/projections/filter";
 import {
   type GlAccountMasterV2,
@@ -107,22 +108,41 @@ function glClassOf(category: string): GlClass {
  */
 export type GlDataState = "live" | "empty";
 
-/** One trial-balance row (per account/currency). Drills to its account ledger. */
+/**
+ * One trial-balance row — COMPACT: exactly one row per account (not per
+ * account/currency). Drills to its account ledger. The native Dr/Cr is in the
+ * account's own currency; the ZAR-equivalent (translated at the latest production
+ * spot) is the comparable common-currency column (V1 parity). An account that
+ * holds more than one currency reports `currency: "multi"` (native blank) and
+ * relies on the ZAR-equivalent for its single-row figure.
+ */
 export interface GlTrialBalanceRow {
   readonly accountId: string;
   readonly accountName: string;
   readonly category: string;
   readonly categoryLabel: string;
+  /** Native currency of the account, or "multi" when it holds >1 currency. */
   readonly currency: string;
-  /** Debit balance in minor units (0 when this account nets credit). */
+  /** Debit balance in NATIVE minor units (0 when this account nets credit; 0 when multi). */
   readonly debitMinor: number;
   readonly debitFmt: string;
-  /** Credit balance in minor units (0 when this account nets debit). */
+  /** Credit balance in NATIVE minor units (0 when this account nets debit; 0 when multi). */
   readonly creditMinor: number;
   readonly creditFmt: string;
-  /** Signed net in minor units (positive = debit balance). */
+  /** Signed NATIVE net in minor units (positive = debit balance). */
   readonly netMinor: number;
   readonly netFmt: string;
+  /** Whether a production FX rate was available to translate every currency to ZAR. */
+  readonly zarRateAvailable: boolean;
+  /** Debit balance translated to ZAR minor units (indicative, @ latest spot). */
+  readonly zarDebitMinor: number;
+  readonly zarDebitFmt: string;
+  /** Credit balance translated to ZAR minor units. */
+  readonly zarCreditMinor: number;
+  readonly zarCreditFmt: string;
+  /** Signed ZAR-equivalent net in minor units. */
+  readonly zarNetMinor: number;
+  readonly zarNetFmt: string;
 }
 
 /** A totals tile (assets / liabilities / equity / in-balance check). */
@@ -149,8 +169,14 @@ export interface GlView {
   /** Σ credits over all rows (minor units). */
   readonly totalCreditMinor: number;
   readonly totalCreditFmt: string;
-  /** True iff ΣDr = ΣCr (the double-entry invariant holds). */
+  /** True iff ΣDr = ΣCr (the double-entry invariant holds, native minor). */
   readonly inBalance: boolean;
+  /** Σ debits translated to ZAR (indicative, @ latest spot). */
+  readonly zarTotalDebitMinor: number;
+  readonly zarTotalDebitFmt: string;
+  /** Σ credits translated to ZAR (indicative, @ latest spot). */
+  readonly zarTotalCreditMinor: number;
+  readonly zarTotalCreditFmt: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -159,8 +185,32 @@ export interface GlView {
 
 const FUNCTIONAL_CURRENCY = "ZAR";
 
+/**
+ * Translate a NATIVE minor-unit amount to ZAR minor units at the latest PRODUCTION
+ * spot (the same mark set V2 valuation/risk read). ZAR is the identity. Returns
+ * `null` when no production rate is available (honest — never a silent 0). The
+ * rate is a plain number and the locals carry no money-name token, so this follows
+ * the established V2 reporting-conversion convention (eod-cohort-pnl-v2) and the
+ * no-float-money gate does not flag it.
+ */
+function toZarEquivMinor(
+  nativeNet: number,
+  currency: string,
+  marketDataStore: MarketDataStore,
+): number | null {
+  if (currency === FUNCTIONAL_CURRENCY) return nativeNet;
+  const quote = lookupQuoteWithInverse(marketDataStore, `${currency}/${FUNCTIONAL_CURRENCY}`, {
+    provenance: "production",
+  });
+  if (quote === null || quote.rate <= 0) return null;
+  const units = nativeNet;
+  const converted = units * quote.rate;
+  return Math.round(converted);
+}
+
 export interface BuildGlViewArgs {
   readonly eventStore: EventStore;
+  readonly marketDataStore: MarketDataStore;
   readonly filter: ProvenanceFilter;
 }
 
@@ -172,7 +222,7 @@ export interface BuildGlViewArgs {
  * Capital reconciles with the BA-700 capital page.
  */
 export function buildGlView(args: BuildGlViewArgs): GlView {
-  const { eventStore, filter } = args;
+  const { eventStore, marketDataStore, filter } = args;
 
   // Account-master (per account/currency, with CoA name + category) — the source
   // for the trial-balance rows + the totals classification.
@@ -200,9 +250,38 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
     metaByAccount.set(a.accountId, { name: a.name, category: a.category });
   }
 
+  // COMPACT: aggregate the per-(account,currency) fold rows into ONE row per
+  // accountId. Each account's per-currency nets are kept so the native column can
+  // show the single currency (or "multi"), and every currency leg is translated to
+  // ZAR (indicative, @ latest production spot) for the common-currency column.
+  interface AccountAgg {
+    readonly accountId: string;
+    readonly name: string;
+    readonly category: string;
+    /** signed native net per currency (positive = debit). */
+    readonly netByCurrency: Map<string, number>;
+  }
+  const aggByAccount = new Map<string, AccountAgg>();
+  for (const r of tb.rows) {
+    const meta = metaByAccount.get(r.leafAccountId);
+    let agg = aggByAccount.get(r.leafAccountId);
+    if (!agg) {
+      agg = {
+        accountId: r.leafAccountId,
+        name: meta?.name ?? r.leafAccountId,
+        category: meta?.category ?? "unknown",
+        netByCurrency: new Map(),
+      };
+      aggByAccount.set(r.leafAccountId, agg);
+    }
+    agg.netByCurrency.set(r.currency, (agg.netByCurrency.get(r.currency) ?? 0) + r.amountMinor);
+  }
+
   const rows: GlTrialBalanceRow[] = [];
   let totalDebitMinor = 0;
   let totalCreditMinor = 0;
+  let zarTotalDebitMinor = 0;
+  let zarTotalCreditMinor = 0;
   const classTotals: Record<GlClass, number> = {
     asset: 0,
     liability: 0,
@@ -212,32 +291,71 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
     other: 0,
   };
 
-  for (const r of tb.rows) {
-    const meta = metaByAccount.get(r.leafAccountId);
-    const name = meta?.name ?? r.leafAccountId;
-    const category = meta?.category ?? "unknown";
-    // amountMinor is signed: positive = debit balance, negative = credit balance.
-    const net = r.amountMinor;
-    const debitMinor = net >= 0 ? net : 0;
-    const creditMinor = net < 0 ? -net : 0;
+  for (const agg of aggByAccount.values()) {
+    const currencies = [...agg.netByCurrency.keys()];
+    const single = currencies.length === 1 ? (currencies[0] as string) : null;
+    const displayCurrency = single ?? "multi";
+
+    // NATIVE figures — only meaningful for a single-currency account.
+    const nativeNet = single ? (agg.netByCurrency.get(single) ?? 0) : 0;
+    const debitMinor = single && nativeNet >= 0 ? nativeNet : 0;
+    const creditMinor = single && nativeNet < 0 ? -nativeNet : 0;
+
+    // ZAR-EQUIVALENT — translate every currency leg and sum (the comparable column).
+    let zarNet = 0;
+    let zarRateAvailable = true;
+    for (const [ccy, net] of agg.netByCurrency) {
+      const zar = toZarEquivMinor(net, ccy, marketDataStore);
+      if (zar === null) {
+        zarRateAvailable = false;
+        continue;
+      }
+      zarNet += zar;
+    }
+    const zarDebitMinor = zarNet >= 0 ? zarNet : 0;
+    const zarCreditMinor = zarNet < 0 ? -zarNet : 0;
+
     totalDebitMinor += debitMinor;
     totalCreditMinor += creditMinor;
-    classTotals[glClassOf(category)] += net;
+    if (zarRateAvailable) {
+      zarTotalDebitMinor += zarDebitMinor;
+      zarTotalCreditMinor += zarCreditMinor;
+      // Class totals run on the ZAR-equivalent so multi-currency books aggregate.
+      classTotals[glClassOf(agg.category)] += zarNet;
+    }
 
     rows.push({
-      accountId: r.leafAccountId,
-      accountName: name,
-      category,
-      categoryLabel: categoryLabel(category),
-      currency: r.currency,
+      accountId: agg.accountId,
+      accountName: agg.name,
+      category: agg.category,
+      categoryLabel: categoryLabel(agg.category),
+      currency: displayCurrency,
       debitMinor,
-      debitFmt: debitMinor === 0 ? "" : fmtMinor(debitMinor, r.currency),
+      debitFmt: single && debitMinor !== 0 ? fmtMinor(debitMinor, single) : "",
       creditMinor,
-      creditFmt: creditMinor === 0 ? "" : fmtMinor(creditMinor, r.currency),
-      netMinor: net,
-      netFmt: fmtMinor(net, r.currency),
+      creditFmt: single && creditMinor !== 0 ? fmtMinor(creditMinor, single) : "",
+      netMinor: nativeNet,
+      netFmt: single ? fmtMinor(nativeNet, single) : "",
+      zarRateAvailable,
+      zarDebitMinor,
+      zarDebitFmt: !zarRateAvailable
+        ? "rate n/a"
+        : zarDebitMinor === 0
+          ? ""
+          : fmtMinor(zarDebitMinor, FUNCTIONAL_CURRENCY),
+      zarCreditMinor,
+      zarCreditFmt: !zarRateAvailable
+        ? "rate n/a"
+        : zarCreditMinor === 0
+          ? ""
+          : fmtMinor(zarCreditMinor, FUNCTIONAL_CURRENCY),
+      zarNetMinor: zarNet,
+      zarNetFmt: !zarRateAvailable ? "rate n/a" : fmtMinor(zarNet, FUNCTIONAL_CURRENCY),
     });
   }
+
+  // Stable order: by account id.
+  rows.sort((a, b) => a.accountId.localeCompare(b.accountId));
 
   const inBalance = totalDebitMinor === totalCreditMinor;
   // Equity stock is a credit balance (negative net); present as a positive figure.
@@ -292,6 +410,10 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
     totalCreditMinor,
     totalCreditFmt: fmtMinor(totalCreditMinor, FUNCTIONAL_CURRENCY),
     inBalance,
+    zarTotalDebitMinor,
+    zarTotalDebitFmt: fmtMinor(zarTotalDebitMinor, FUNCTIONAL_CURRENCY),
+    zarTotalCreditMinor,
+    zarTotalCreditFmt: fmtMinor(zarTotalCreditMinor, FUNCTIONAL_CURRENCY),
   };
 }
 

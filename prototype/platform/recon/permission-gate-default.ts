@@ -141,6 +141,11 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Citation: D-FX-V2-SIMULATOR-FIRST, P4-SECURITY-DESIGNED-IN.
   "platform/simulation-v2-live/live-driver.test.ts",
   "platform/simulation-v2-live/hub-module.test.ts",
+  // GL view test — builds in-memory throwaway EventStore + MarketDataStore and
+  // populates them via the live FX simulator to exercise the compact trial-balance
+  // + ZAR-equivalent fold. No production access path. Citation: D-FX-V2-SIMULATOR-FIRST,
+  // D-V2-UI-VISIBILITY-REMEDIATION, P4-SECURITY-DESIGNED-IN.
+  "dashboard/v2-finance-gl-view.test.ts",
   // WS-FX-V2-SIMULATOR-FIRST — the FX-sim onboarded-counterparty resolver test
   // builds in-memory throwaway EventStore fixtures to exercise the onboarding →
   // FX-eligible resolution + the EnvSimEngine wiring (a client must be onboarded

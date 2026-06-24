@@ -1,0 +1,92 @@
+// dashboard/v2-finance-gl-view.test.ts
+//
+// Tests for the compact (1-row-per-account) GL trial-balance view with native-CCY
+// + ZAR-equivalent columns. Populates a store via the live FX V2 simulator (which
+// books simulated FX trades and ingests production marks), then asserts the view.
+
+import { describe, expect, test } from "bun:test";
+
+import { makeReportingTreatmentDeclared } from "../platform/event-store/event-types/reporting-treatments";
+import { EventStore } from "../platform/event-store/store";
+import { MarketDataStore } from "../platform/market-data/store";
+import { V2LiveFxDriver } from "../platform/simulation-v2-live/live-driver";
+import { FX_TREATMENT_MODULES } from "../v2-core/reporting-treatments/fx-modules";
+import { buildGlView } from "./v2-finance-gl-view";
+
+const PROD_TAG = { kind: "production" as const, sourceLineage: "gl-view-test" };
+
+/** Seed the FX reporting-treatment standing data the GL fold needs to scope FX. */
+function seedFxTreatment(store: EventStore): void {
+  for (const m of FX_TREATMENT_MODULES) {
+    const ev = makeReportingTreatmentDeclared({
+      asOf: "2026-01-01T00:00:00.000Z",
+      entity: "LE-ZA-HOZ-BANK",
+      actor: { type: "system", id: "gl-view-test" },
+      citations: ["D-V2-UI-VISIBILITY-REMEDIATION"],
+      payload: m as Parameters<typeof makeReportingTreatmentDeclared>[0]["payload"],
+    });
+    store.append({ ...ev, provenance: PROD_TAG });
+  }
+}
+
+function populatedStores(): { eventStore: EventStore; marketDataStore: MarketDataStore } {
+  const eventStore = new EventStore();
+  const marketDataStore = new MarketDataStore(":memory:");
+  seedFxTreatment(eventStore);
+  const driver = new V2LiveFxDriver({
+    eventStore,
+    marketDataStore,
+    config: { tradesPerTick: 2, seed: 0x9911 },
+  });
+  for (let i = 0; i < 5; i++) driver.tickOnce();
+  return { eventStore, marketDataStore };
+}
+
+describe("buildGlView — compact TB + CCY/ZAR-equivalent", () => {
+  test("production-only lens is honestly empty (sim is simulated provenance)", () => {
+    const { eventStore, marketDataStore } = populatedStores();
+    const view = buildGlView({ eventStore, marketDataStore, filter: { mode: "production-only" } });
+    expect(view.dataState).toBe("empty");
+    expect(view.rows.length).toBe(0);
+  });
+
+  test("+Sim lens: exactly one row per account (compact)", () => {
+    const { eventStore, marketDataStore } = populatedStores();
+    const view = buildGlView({ eventStore, marketDataStore, filter: { mode: "combined" } });
+    expect(view.dataState).toBe("live");
+    expect(view.rows.length).toBeGreaterThan(0);
+    const accountIds = view.rows.map((r) => r.accountId);
+    // No accountId appears twice — the per-(account,currency) fold rows are collapsed.
+    expect(new Set(accountIds).size).toBe(accountIds.length);
+  });
+
+  test("non-ZAR accounts carry a ZAR-equivalent; ZAR accounts are the identity", () => {
+    const { eventStore, marketDataStore } = populatedStores();
+    const view = buildGlView({ eventStore, marketDataStore, filter: { mode: "combined" } });
+
+    const usd = view.rows.find((r) => r.currency === "USD");
+    expect(usd).toBeDefined();
+    if (usd) {
+      // A production USD/ZAR mark was ingested by the sim → rate available + translated.
+      expect(usd.zarRateAvailable).toBe(true);
+      expect(usd.zarNetFmt).toContain("R");
+      // ZAR equivalent is materially larger than the USD figure (rate ≈ 18.5).
+      expect(Math.abs(usd.zarNetMinor)).toBeGreaterThan(Math.abs(usd.netMinor));
+    }
+
+    const zar = view.rows.find((r) => r.currency === "ZAR");
+    expect(zar).toBeDefined();
+    if (zar) {
+      // ZAR account: the ZAR-equivalent equals the native net (identity translation).
+      expect(zar.zarNetMinor).toBe(zar.netMinor);
+    }
+  });
+
+  test("native in-balance check holds; ZAR-equivalent totals are populated", () => {
+    const { eventStore, marketDataStore } = populatedStores();
+    const view = buildGlView({ eventStore, marketDataStore, filter: { mode: "combined" } });
+    expect(view.inBalance).toBe(true);
+    expect(view.zarTotalDebitMinor).toBeGreaterThan(0);
+    expect(view.zarTotalCreditMinor).toBeGreaterThan(0);
+  });
+});
