@@ -223,6 +223,7 @@
         nav.innerHTML = [
           ["overview", "How it operates"], ["variants", "Variants"],
           ...(d.fxContractualTerms ? [["contractual-terms", "Contractual terms"]] : []),
+          ...(d.fxLifecycle ? [["fx-lifecycle", "FX spot lifecycle"]] : []),
           ["components", "Components"],
           ["lenses", "Across the bank"], ["governance", "Governance"],
         ].map(([a, t]) => `<a href="#${a}">${t}</a>`).join("");
@@ -284,6 +285,39 @@
             `<div class="np-kv"><b>Settlement date</b><span>${esc(ct.settlementDate)}</span></div>` +
             `<div class="np-card-note">Source: <code>${esc(ct.sourceInstanceUrn)}</code> — representative booked trade, as-of page load.</div></div>`;
           s2b.appendChild(grid);
+        }
+
+        // ── §2c FX spot settlement lifecycle (model-level) ────────────
+        // The four contractual-settlement stages (D-FX-TRADE-SETTLEMENT-PRODUCT-
+        // MODEL), sourced VERBATIM from the cited fx-spot-lifecycle-model.ts
+        // declaration via the server. TEXT/CARDS, no SVG diagram. Every event
+        // type a stage names resolves to the event-type registry (asserted by
+        // recon:npa-page-no-invented-functionality). FX-only — rendered ONLY
+        // when the server populated `fxLifecycle`.
+        if (d.fxLifecycle) {
+          const fl = d.fxLifecycle;
+          const sFx = section(bodyHost, "fx-lifecycle", "FX spot settlement lifecycle");
+          sFx.insertAdjacentHTML("beforeend", `<p class="np-prose">The model-level contractual settlement lifecycle of an FX spot — distinct from the accounting journal above. The trade is the agreement; each leg settles as a uniform single-asset movement; the instrument then terminates. Every stage names the FIL event type(s) that realise it, the event-ownership level, and the fields that link it to its neighbours — all sourced, never invented.</p>`);
+          const fchips = (arr) => (arr || []).map((x) => `<span class="np-chip">${esc(x)}</span>`).join(" ") || "—";
+          const grid = document.createElement("div"); grid.className = "np-lens-grid"; sFx.appendChild(grid);
+          for (const st of fl.stages) {
+            grid.insertAdjacentHTML("beforeend",
+              `<div class="np-card"><h3>${esc(st.id)} · ${esc(st.label)} ` +
+              `<span class="v2-badge v2-badge-neutral">${esc(st.ownershipLabel)}</span></h3>` +
+              `<div class="np-card-note">${esc(st.description)}</div>` +
+              `<div class="np-kv"><b>Event type${st.eventTypes.length > 1 ? "s" : ""}</b><span>${fchips(st.eventTypes)}</span></div>` +
+              `<div class="np-kv"><b>FIL stage</b><span>${fchips(st.filStages)}</span></div>` +
+              `<div class="np-kv"><b>Linking fields</b><span>${fchips(st.linkingFields)}</span></div>` +
+              `<div class="np-card-note" style="margin-top:6px"><b>Cites:</b> ${fchips(st.citations)}</div></div>`);
+          }
+          // "How they link" — the de-duplicated linking-field key.
+          if (fl.links && fl.links.length) {
+            sFx.insertAdjacentHTML("beforeend", `<h3 style="font-size:14px;margin:16px 0 6px;color:var(--color-text-secondary)">How the stages link</h3>`);
+            const linkCard = document.createElement("div"); linkCard.className = "np-card"; sFx.appendChild(linkCard);
+            linkCard.innerHTML = fl.links.map((l) =>
+              `<div class="np-kv"><b><code>${esc(l.field)}</code></b><span>${esc(l.connects)}</span></div>`).join("") +
+              `<div class="np-card-note" style="margin-top:6px">Each field is a real schema field on the FIL settlement model. Authority: ${fchips(fl.authority)}.</div>`;
+          }
         }
 
         // ── §3 Components & how they interact ────────────────────────

@@ -17,6 +17,7 @@ import { describe, expect, it } from "bun:test";
 
 import type {
   DimensionCard,
+  FxLifecycleView,
   ProductDetailView,
   ValuationDomainLens,
 } from "../../dashboard/products-detail";
@@ -65,16 +66,76 @@ function dimCard(over: Partial<DimensionCard> = {}): DimensionCard {
   };
 }
 
+// A representative valid FX spot settlement lifecycle block — every event type
+// resolves to the registry. Stages a→b→c→d, FX-only.
+function fxLifecycleBlock(): FxLifecycleView {
+  const link = (field: string) => ({ field, connects: `${field} link`, source: "x.ts" });
+  return {
+    stages: [
+      {
+        id: "a",
+        label: "Initiation",
+        description: "x",
+        filStages: ["proposed", "active"],
+        eventTypes: ["FxTradeExecuted", "FilInstrumentCreated"],
+        ownership: "booking-composite-act",
+        ownershipLabel: "Booking / composite act",
+        linkingFields: ["originatingEvent", "productId"],
+        citations: ["D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL"],
+      },
+      {
+        id: "b",
+        label: "Payment",
+        description: "x",
+        filStages: ["active"],
+        eventTypes: ["TradeSettlementExecuted"],
+        ownership: "booking-composite-act",
+        ownershipLabel: "Booking / composite act",
+        linkingFields: ["tradeInstance", "holdingInstance"],
+        citations: ["D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL"],
+      },
+      {
+        id: "c",
+        label: "Receipt",
+        description: "x",
+        filStages: ["active", "settled"],
+        eventTypes: ["TradeSettlementExecuted"],
+        ownership: "booking-composite-act",
+        ownershipLabel: "Booking / composite act",
+        linkingFields: ["tradeInstance", "holdingInstance"],
+        citations: ["D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL"],
+      },
+      {
+        id: "d",
+        label: "Termination",
+        description: "x",
+        filStages: ["settled", "cancelled"],
+        eventTypes: ["FilInstrumentTerminated"],
+        ownership: "fil-leg-fact",
+        ownershipLabel: "FIL-leg fact",
+        linkingFields: ["originatingInstrument", "tradeFamily"],
+        citations: ["D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL"],
+      },
+    ],
+    links: ["originatingEvent", "productId", "tradeInstance"].map(link),
+    authority: ["D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL"],
+  };
+}
+
 // A minimal ProductDetailView carrying only the fields the gate inspects.
 function detailView(over: {
   journalEntries?: ProductDetailView["journalEntries"];
   dimensions?: DimensionCard[];
   valuation?: ValuationDomainLens[];
+  family?: string;
+  fxLifecycle?: FxLifecycleView;
 }): ProductDetailView {
   return {
     journalEntries: over.journalEntries ?? [],
     dimensions: over.dimensions ?? [],
     ...(over.valuation ? { lenses: { valuation: over.valuation } } : {}),
+    ...(over.family ? { product: { family: over.family } } : {}),
+    ...(over.fxLifecycle ? { fxLifecycle: over.fxLifecycle } : {}),
     // The remaining fields are not inspected by the gate; cast through unknown.
   } as unknown as ProductDetailView;
 }
@@ -234,6 +295,53 @@ describe("recon:npa-page-no-invented-functionality", () => {
         }),
       ],
     });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations).toHaveLength(0);
+  });
+
+  // ── (E) FX spot settlement lifecycle ────────────────────────────────────
+
+  it("PASSES an FX product whose fxLifecycle event types all resolve", () => {
+    const view = detailView({ family: "fx", fxLifecycle: fxLifecycleBlock() });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations).toHaveLength(0);
+  });
+
+  it("FAILS on a fabricated fxLifecycle event type (no gap channel)", () => {
+    const block = fxLifecycleBlock();
+    const broken: FxLifecycleView = {
+      ...block,
+      stages: block.stages.map((s) =>
+        s.id === "b" ? { ...s, eventTypes: ["NotARealSettlementEvent999"] } : s,
+      ),
+    };
+    const view = detailView({ family: "fx", fxLifecycle: broken });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations.some((v) => v.message.includes("invented lifecycle event"))).toBe(true);
+  });
+
+  it("FAILS when the fxLifecycle stages are not the four ordered stages", () => {
+    const block = fxLifecycleBlock();
+    const broken: FxLifecycleView = { ...block, stages: block.stages.slice(0, 3) };
+    const view = detailView({ family: "fx", fxLifecycle: broken });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations.some((v) => v.subject.endsWith(":fx-lifecycle:stages"))).toBe(true);
+  });
+
+  it("FAILS when an FX product carries NO fxLifecycle block", () => {
+    const view = detailView({ family: "fx" });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations.some((v) => v.subject.endsWith(":fx-lifecycle:missing"))).toBe(true);
+  });
+
+  it("FAILS when a non-FX product carries an fxLifecycle block", () => {
+    const view = detailView({ family: "listed-bond", fxLifecycle: fxLifecycleBlock() });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations.some((v) => v.subject.endsWith(":fx-lifecycle:non-fx"))).toBe(true);
+  });
+
+  it("does NOT require fxLifecycle on a non-FX product", () => {
+    const view = detailView({ family: "listed-bond" });
     const violations = assertNoInvention("prd:test", [], view);
     expect(violations).toHaveLength(0);
   });

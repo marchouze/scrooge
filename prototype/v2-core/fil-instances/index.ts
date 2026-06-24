@@ -10,6 +10,7 @@
 
 export * from "./cash-cascade";
 export * from "./events";
+export * from "./fx-spot-lifecycle-model";
 export * from "./holding-materialisation";
 export * from "./projection";
 export * from "./trade-family";

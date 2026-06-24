@@ -36,6 +36,13 @@ import {
   isLiveStage,
 } from "../v2-core";
 import { CANONICAL_DESKS } from "../v2-core/desk/roster";
+import {
+  FX_LIFECYCLE_OWNERSHIP_LABEL,
+  FX_SPOT_LIFECYCLE_LINKS,
+  FX_SPOT_LIFECYCLE_STAGES,
+  type FxSpotLifecycleStage,
+  familyHasFxSpotLifecycle,
+} from "../v2-core/fil-instances/fx-spot-lifecycle-model";
 // Risk / valuation model DECLARATIONS — read for `modelId` + `scope` only
 // (the FIL-Models register is folded from events and is empty in the build
 // phase, so the static declarations are the canonical source of "which model
@@ -1430,6 +1437,87 @@ export function buildProductLenses(
   };
 }
 
+// ---------------------------------------------------------------------------
+// FX spot settlement lifecycle (model-level) — D-FX-TRADE-SETTLEMENT-PRODUCT-
+// MODEL. A SOURCED, TEXT/CARDS description of the four contractual-settlement
+// stages an FX spot moves through (Initiation → Payment / Receipt →
+// Termination), each naming its FIL event type(s), its event-ownership level,
+// and the linking fields that connect it to its neighbours. DISTINCT from the
+// accounting "lifecycle journal" (the trade-capture vocabulary): this is the
+// FIL settlement layer. Populated ONLY for FX products; omitted otherwise.
+//
+// Every event type a stage names resolves to EVENT_TYPE_REGISTRY (asserted by
+// `recon:npa-page-no-invented-functionality`, fx-lifecycle family). The block
+// is read VERBATIM from the cited `fx-spot-lifecycle-model.ts` declaration — no
+// authoring here, no DB. Name-free by construction (survives redactNpaDetailNames).
+// ---------------------------------------------------------------------------
+
+/** One stage of the FX spot settlement lifecycle, page-facing. */
+export interface FxLifecycleStageView {
+  readonly id: "a" | "b" | "c" | "d";
+  readonly label: string;
+  readonly description: string;
+  /** FIL lifecycle stage(s) this maps onto (FIL_LIFECYCLE_STAGES vocabulary). */
+  readonly filStages: readonly string[];
+  /** Event type(s) that realise the stage — each registry-backed (gate-asserted). */
+  readonly eventTypes: readonly string[];
+  /** Event-ownership tier id. */
+  readonly ownership: string;
+  /** Human label for the ownership tier (small tag). */
+  readonly ownershipLabel: string;
+  /** Linking field names that connect this stage to its neighbours. */
+  readonly linkingFields: readonly string[];
+  /** Decision / schema citations backing the stage. */
+  readonly citations: readonly string[];
+}
+
+/** The "how they link" key/value entry — a real schema field → what it connects. */
+export interface FxLifecycleLinkView {
+  readonly field: string;
+  readonly connects: string;
+  readonly source: string;
+}
+
+export interface FxLifecycleView {
+  /** The ordered four stages (a → b/c → d). */
+  readonly stages: readonly FxLifecycleStageView[];
+  /** The de-duplicated linking-field key (the 6 fields → what they connect). */
+  readonly links: readonly FxLifecycleLinkView[];
+  /** The authority chain for the whole model. */
+  readonly authority: readonly string[];
+}
+
+/**
+ * Build the model-level FX spot settlement lifecycle block from the cited
+ * `FX_SPOT_LIFECYCLE_STAGES` declaration. FX-family only; `undefined` for
+ * non-FX products (graceful omit). Pure standing data — no store read.
+ */
+export function buildFxLifecycleView(product: Product): FxLifecycleView | undefined {
+  if (!familyHasFxSpotLifecycle(product.family)) return undefined;
+  const stages: FxLifecycleStageView[] = FX_SPOT_LIFECYCLE_STAGES.map(
+    (s: FxSpotLifecycleStage) => ({
+      id: s.id,
+      label: s.label,
+      description: s.description,
+      filStages: s.filStages,
+      eventTypes: s.eventTypes,
+      ownership: s.ownership,
+      ownershipLabel: FX_LIFECYCLE_OWNERSHIP_LABEL[s.ownership],
+      linkingFields: s.linkingFields.map((lf) => lf.field),
+      citations: s.citations,
+    }),
+  );
+  return {
+    stages,
+    links: FX_SPOT_LIFECYCLE_LINKS.map((l) => ({
+      field: l.field,
+      connects: l.connects,
+      source: l.source,
+    })),
+    authority: ["D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL", "D-FX-INSTRUMENT-BUYSELL-QUAD"],
+  };
+}
+
 export interface ProductDetailView {
   product: Product;
   dimensions: DimensionCard[];
@@ -1454,6 +1542,13 @@ export interface ProductDetailView {
     settlementDate: string;
     sourceInstanceUrn: string;
   };
+  /**
+   * §2c — model-level FX spot settlement lifecycle (D-FX-TRADE-SETTLEMENT-
+   * PRODUCT-MODEL). The four contractual-settlement stages with event types +
+   * ownership levels + linking fields, sourced from the cited declaration.
+   * Populated ONLY for FX products; `undefined` otherwise.
+   */
+  fxLifecycle?: FxLifecycleView;
   /** §3 — component-interaction graph (CDM primitives + the FX→Cash materialisation edge). */
   componentGraph: ComponentGraph;
   /** §4 — cross-bank lens view (Markets / Finance / Risk / Compliance). */
@@ -1785,6 +1880,7 @@ export function buildProductDetailView(
   const attestedCount = dimensions.filter((d) => d.attestation.status !== "pending").length;
 
   const fxContractualTerms = buildFxContractualTerms(product, filEvents);
+  const fxLifecycle = buildFxLifecycleView(product);
 
   return {
     product,
@@ -1792,6 +1888,7 @@ export function buildProductDetailView(
     overview: buildProductOverview(product),
     variants: buildProductVariants(product),
     ...(fxContractualTerms ? { fxContractualTerms } : {}),
+    ...(fxLifecycle ? { fxLifecycle } : {}),
     componentGraph: buildComponentGraph(product),
     lenses: buildProductLenses(product, attestedCount, dimensions.length),
     journalEntries,

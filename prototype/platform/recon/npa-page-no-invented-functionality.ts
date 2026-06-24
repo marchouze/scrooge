@@ -30,6 +30,14 @@
 //       entry — so the gap channel cannot be used to hide a real, backed fact
 //       (which would mask drift the other direction).
 //
+//   (E) FX spot settlement lifecycle (`fxLifecycle`, D-FX-TRADE-SETTLEMENT-
+//       PRODUCT-MODEL). Each of the four stages names `eventTypes` that realise
+//       it. EVERY name MUST resolve to a registered event type (EVENT_TYPE_
+//       REGISTRY via lookupEventType) — the lifecycle block has no per-stage gap
+//       channel, so an unregistered name is an invented assertion (FAIL). The
+//       block is FX-only: a non-FX product MUST NOT carry it (FAIL if present);
+//       an FX product MUST carry exactly the four ordered stages.
+//
 //   (D) Five-domain valuation/reporting lenses (`lenses.valuation[]`,
 //       D-V2-UI-OVERSIGHT-STANDARD). Each `ValuationDomainLens` names
 //       `postingRuleIds` (must each resolve to a real posting-rule registry id
@@ -174,6 +182,49 @@ export function assertNoInvention(
     checkNames(dim.emits, dim.unbacked.emits, "emits");
   }
 
+  // ── (E) FX spot settlement lifecycle ────────────────────────────────────
+  // FX-only block: present iff the product family is `fx`. Every stage event
+  // type must resolve to the event-type registry (no per-stage gap channel).
+  const isFxFamily = view.product?.family === "fx";
+  const fxLifecycle = view.fxLifecycle;
+  if (isFxFamily) {
+    if (!fxLifecycle) {
+      violations.push({
+        subject: `${productId}:fx-lifecycle:missing`,
+        severity: "fail",
+        message:
+          "FX product carries no fxLifecycle block — the model-level FX spot settlement lifecycle (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL) must be populated for FX products.",
+      });
+    } else {
+      const ids = fxLifecycle.stages.map((s) => s.id);
+      if (ids.join(",") !== "a,b,c,d") {
+        violations.push({
+          subject: `${productId}:fx-lifecycle:stages`,
+          severity: "fail",
+          message: `fxLifecycle stages must be exactly the four ordered stages a,b,c,d — got "${ids.join(",")}".`,
+        });
+      }
+      for (const stage of fxLifecycle.stages) {
+        for (const name of stage.eventTypes) {
+          if (!isRegisteredEventType(name)) {
+            violations.push({
+              subject: `${productId}:fx-lifecycle:${stage.id}:${name}`,
+              severity: "fail",
+              message: `fxLifecycle stage "${stage.id}" (${stage.label}) names event type "${name}", which is NOT a registered event type — invented lifecycle event (the lifecycle block has no gap channel; every named event type must resolve).`,
+            });
+          }
+        }
+      }
+    }
+  } else if (fxLifecycle) {
+    violations.push({
+      subject: `${productId}:fx-lifecycle:non-fx`,
+      severity: "fail",
+      message:
+        "non-FX product carries an fxLifecycle block — the FX spot settlement lifecycle is FX-only and must be omitted for other families.",
+    });
+  }
+
   // ── (D) Five-domain valuation/reporting lenses ──────────────────────────
   // The lens block is optional on the cast-through test views; assert it when
   // present (the real builder always populates it).
@@ -285,7 +336,8 @@ export function run(opts: RunOpts = {}): ReconResult {
       (view.lenses?.valuation ?? []).reduce(
         (n, d) => n + d.postingRuleIds.length + d.eventTypes.length + 1,
         0,
-      );
+      ) +
+      (view.fxLifecycle?.stages ?? []).reduce((n, s) => n + s.eventTypes.length, 0);
     violations.push(...assertNoInvention(product.productId, product.lifecycleEventFamily, view));
   }
 
