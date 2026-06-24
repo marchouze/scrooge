@@ -1198,6 +1198,22 @@ export function buildValuationLenses(product: Product): ValuationDomainLens[] {
     return { backed, unbacked };
   };
 
+  // Status helper. A domain is `planned-with-gap` ONLY when a tracked
+  // ProductDeferredGap backs it (never a bare "planned" — the gate enforces
+  // this). When a domain has a live measure ⇒ `built`. When the measuring
+  // substrate exists at registry/model level but is not yet scoped to this
+  // product's family (no live measure, no tracked gap) ⇒ `partial` — a sourced
+  // truth ("infra exists, not scoped here"), not an invented claim.
+  const statusFor = (
+    hasMeasure: boolean,
+    deferred: boolean,
+    gap: ValuationLensDeferredGap | undefined,
+  ): ValuationDomainLens["status"] => {
+    if (gap) return "planned-with-gap";
+    if (!hasMeasure) return "partial";
+    return deferred ? "partial" : "built";
+  };
+
   const lenses: ValuationDomainLens[] = [];
 
   // ── (1) General Ledger / accounting ───────────────────────────────────────
@@ -1224,8 +1240,7 @@ export function buildValuationLenses(product: Product): ValuationDomainLens[] {
     const { backed: evBacked, unbacked: evUnbacked } = splitEventTypes(eventTypes);
     // Any deferred posting rule (a still-open FX settlement gap names it) ⇒ partial.
     const deferred = glEntries.some((r) => DEFERRED_RULE_IDS.has(r.postingRuleId));
-    const status: ValuationDomainLens["status"] =
-      ruleBacked.length === 0 ? "planned-with-gap" : deferred ? "partial" : "built";
+    const status = statusFor(ruleBacked.length > 0, deferred, undefined);
     lenses.push({
       domain: "general-ledger",
       label: "General Ledger",
@@ -1261,8 +1276,7 @@ export function buildValuationLenses(product: Product): ValuationDomainLens[] {
       ...(prudentialTreatment?.cites ?? []).filter((c) => /^BA\d/i.test(c)),
     ];
     const models = scopedModels.filter((m) => m === VAR_MODEL_DECLARATION.modelId);
-    const status: ValuationDomainLens["status"] =
-      models.length > 0 || returnCells.length > 0 ? "built" : "planned-with-gap";
+    const status = statusFor(models.length > 0 || returnCells.length > 0, false, undefined);
     lenses.push({
       domain: "market-risk",
       label: "Market Risk",
@@ -1286,7 +1300,7 @@ export function buildValuationLenses(product: Product): ValuationDomainLens[] {
   // model presence.
   {
     const models = scopedModels.filter((m) => m === SA_CCR_MODEL_DECLARATION.modelId);
-    const status: ValuationDomainLens["status"] = models.length > 0 ? "built" : "planned-with-gap";
+    const status = statusFor(models.length > 0, false, undefined);
     lenses.push({
       domain: "credit-risk",
       label: "Credit Risk",
@@ -1315,7 +1329,10 @@ export function buildValuationLenses(product: Product): ValuationDomainLens[] {
       models: [],
       citations: gap ? [...gap.citations] : [],
       unbacked: { postingRuleIds: [], eventTypes: [] },
-      status: gap ? "planned-with-gap" : "built",
+      // No LCR/NSFR projection exists for ANY family. FX carries the tracked gap
+      // ⇒ planned-with-gap; other families have no live measure + no tracked gap
+      // ⇒ partial (classification declared, projection not built).
+      status: statusFor(false, false, gap),
       ...(gap ? { gap: toValuationLensGap(gap) } : {}),
     });
   }
@@ -1337,7 +1354,9 @@ export function buildValuationLenses(product: Product): ValuationDomainLens[] {
       models: [],
       citations: gap ? [...gap.citations] : ["D-TRUSTED-FIGURES-PROGRAM-V1"],
       unbacked: { postingRuleIds: [], eventTypes: [] },
-      status: gap ? "partial" : "built",
+      // daily-pnl-v2 (unrealised mark attribution) exists for all families ⇒ a
+      // live measure; FX carries the realised-P&L deferral ⇒ partial, else built.
+      status: statusFor(true, gap !== undefined, gap),
       ...(gap ? { gap: toValuationLensGap(gap) } : {}),
     });
   }

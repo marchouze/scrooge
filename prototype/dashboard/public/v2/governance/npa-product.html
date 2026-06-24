@@ -82,6 +82,12 @@
       return `<span class="v2-badge v2-badge-${v}">${esc(s)}</span>`;
     };
     const sevBadge = (s) => `<span class="v2-badge v2-badge-${s === "critical" ? "danger" : s === "high" ? "warning" : "neutral"}">${esc(s)}</span>`;
+    // Valuation-domain status pill: built (green) / partial (amber) / planned-with-gap (neutral).
+    const valBadge = (s) => {
+      const label = s === "planned-with-gap" ? "planned" : s;
+      const v = s === "built" ? "success" : s === "partial" ? "warning" : "neutral";
+      return `<span class="v2-badge v2-badge-${v}">${esc(label)}</span>`;
+    };
 
     function section(host, anchor, title) {
       const sec = document.createElement("div");
@@ -334,6 +340,41 @@
             `<div class="np-kv"><b>Lifecycle</b><span>${esc(cp.lifecycle)}</span></div>` +
             `<div class="np-kv"><b>Master agreement</b><span>${esc(cp.masterAgreement)}</span></div>` +
             `<div class="np-card-note">Obligations: ${cp.obligationCitations.slice(0, 8).map((c) => `<span class="np-chip">${esc(c)}</span>`).join(" ")}</div></div>`);
+
+          // ── §4b Valuation / reporting map — five domains ───────────
+          // Per domain: valuation basis, the return/report it feeds, the posting
+          // rules / models that measure it, and an HONEST sourced status pill.
+          // A `planned-with-gap` (or gap-bearing `partial`) carries a tracked
+          // ProductDeferredGap (title + owner-seat + target trigger + citations);
+          // never a bare "planned" (D-NPA-PAGE-DE-INVENTION).
+          const valuation = lenses.valuation || [];
+          if (valuation.length) {
+            s4.insertAdjacentHTML("beforeend", `<h3 style="font-size:14px;margin:18px 0 6px;color:var(--color-text-secondary)">Valuation &amp; reporting map</h3>`);
+            s4.insertAdjacentHTML("beforeend", `<p class="np-prose">How the trade is valued and reported across the five control domains. Each status is sourced — from the posting-rule registry, the FIL models, or a tracked deferred gap — never invented.</p>`);
+            const vgrid = document.createElement("div"); vgrid.className = "np-lens-grid"; s4.appendChild(vgrid);
+            const chips = (arr) => (arr || []).map((x) => `<span class="np-chip">${esc(x)}</span>`).join(" ") || "—";
+            for (const v of valuation) {
+              const gapBlock = v.gap
+                ? `<div class="np-card-note" style="border-top:1px dashed var(--color-border);margin-top:8px;padding-top:8px">` +
+                  `<b>Tracked gap:</b> ${esc(v.gap.title)}<br>` +
+                  `<b>Owner:</b> ${esc(v.gap.owner || "—")} &nbsp;·&nbsp; <b>Trigger:</b> ${esc(v.gap.targetTrigger)}<br>` +
+                  `<b>Citations:</b> ${chips(v.gap.citations)}</div>`
+                : "";
+              const unbacked = ((v.unbacked && (v.unbacked.postingRuleIds.length + v.unbacked.eventTypes.length)) || 0) > 0
+                ? `<div class="np-kv"><b>Unbacked (gap-surfaced)</b><span>${chips([...(v.unbacked.postingRuleIds||[]), ...(v.unbacked.eventTypes||[])])}</span></div>`
+                : "";
+              vgrid.insertAdjacentHTML("beforeend",
+                `<div class="np-card"><h3>${esc(v.label)} ${valBadge(v.status)}</h3>` +
+                `<div class="np-card-note">${esc(v.valuationBasis)}</div>` +
+                `<div class="np-kv"><b>Feeds</b><span>${chips(v.feedsReturn)}</span></div>` +
+                (v.postingRuleIds.length ? `<div class="np-kv"><b>Posting rules</b><span>${chips(v.postingRuleIds)}</span></div>` : "") +
+                (v.models.length ? `<div class="np-kv"><b>Models</b><span>${chips(v.models)}</span></div>` : "") +
+                (v.citations.length ? `<div class="np-kv"><b>Basis cites</b><span>${chips(v.citations.slice(0, 6))}</span></div>` : "") +
+                unbacked +
+                gapBlock +
+                `</div>`);
+            }
+          }
         }
 
         // ── §5 Governance deep-dive (retained) ───────────────────────
