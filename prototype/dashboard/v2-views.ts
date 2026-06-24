@@ -623,9 +623,7 @@ export function redactNpaDetailNames(detail: ProductDetailView): ProductDetailVi
             stages: detail.accountingPerspective.stages.map((st) => ({
               ...st,
               postingRules: st.postingRules.map((pr) =>
-                pr.gap
-                  ? { ...pr, gap: { ...pr.gap, owner: redactGapOwner(pr.gap.owner) } }
-                  : pr,
+                pr.gap ? { ...pr, gap: { ...pr.gap, owner: redactGapOwner(pr.gap.owner) } } : pr,
               ),
             })),
           },

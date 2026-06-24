@@ -412,22 +412,26 @@ export const FX_GL_LIFECYCLE_STAGES: readonly FxLifecycleStageMeta[] = [
   {
     id: "revaluation",
     label: "Daily revaluation",
-    summary: "FVTPL mark-to-market — the fair-value change hits P&L (or OCI under an FVOCI election).",
+    summary:
+      "FVTPL mark-to-market — the fair-value change hits P&L (or OCI under an FVOCI election).",
   },
   {
     id: "b",
     label: "Payment",
-    summary: "Sold leg settles — cash leaves the nostro, the payable is extinguished, realised P&L is struck.",
+    summary:
+      "Sold leg settles — cash leaves the nostro, the payable is extinguished, realised P&L is struck.",
   },
   {
     id: "c",
     label: "Receipt",
-    summary: "Bought leg settles — cash enters the nostro, the receivable is extinguished, realised P&L is struck.",
+    summary:
+      "Bought leg settles — cash enters the nostro, the receivable is extinguished, realised P&L is struck.",
   },
   {
     id: "d",
     label: "Termination",
-    summary: "Derecognition — accumulated unrealised reval (or OCI reserve) is recycled into realised P&L.",
+    summary:
+      "Derecognition — accumulated unrealised reval (or OCI reserve) is recycled into realised P&L.",
   },
 ];
 

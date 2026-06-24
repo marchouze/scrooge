@@ -456,9 +456,7 @@ export function run(opts: RunOpts = {}): ReconResult {
       (view.fxLifecycle?.ownershipLevels ?? []).length +
       // Each accounting-perspective leg's account code + each rule's id/trigger.
       (view.accountingPerspective?.stages ?? []).reduce(
-        (n, s) =>
-          n +
-          s.postingRules.reduce((m, pr) => m + pr.legs.length + 2, 0),
+        (n, s) => n + s.postingRules.reduce((m, pr) => m + pr.legs.length + 2, 0),
         0,
       );
     violations.push(...assertNoInvention(product.productId, product.lifecycleEventFamily, view));

@@ -35,6 +35,7 @@ import {
   foldFilInstances,
   isLiveStage,
 } from "../v2-core";
+import { COA_BY_ID } from "../v2-core/accounting/chart-of-accounts";
 import { CANONICAL_DESKS } from "../v2-core/desk/roster";
 import {
   FX_LIFECYCLE_OWNERSHIP_LABEL,
@@ -59,7 +60,6 @@ import { MM_REPO_MODEL_DECLARATION } from "../v2-core/fil-models/ir/money-market
 import { MM_UNSECURED_MODEL_DECLARATION } from "../v2-core/fil-models/ir/money-market/unsecured/mm-unsecured-model";
 import { VAR_MODEL_DECLARATION } from "../v2-core/fil-models/market-risk-var/model";
 import { SA_CCR_MODEL_DECLARATION } from "../v2-core/fil-models/sa-ccr/model";
-import { COA_BY_ID } from "../v2-core/accounting/chart-of-accounts";
 import {
   FX_ACCOUNT_ROLE_LABEL,
   FX_GL_LIFECYCLE_STAGES,
@@ -892,7 +892,9 @@ function deferredGapByRuleId(): ReadonlyMap<string, AccountingPerspectiveDeferre
  * `unbackedAccountCodes` (never asserted with a fabricated name) — the
  * de-invention gate cross-checks both directions.
  */
-export function buildAccountingPerspective(product: Product): AccountingPerspectiveView | undefined {
+export function buildAccountingPerspective(
+  product: Product,
+): AccountingPerspectiveView | undefined {
   if (!familyHasFxGlLifecycle(product.family)) return undefined;
 
   const cls = product.accountingClassification;
