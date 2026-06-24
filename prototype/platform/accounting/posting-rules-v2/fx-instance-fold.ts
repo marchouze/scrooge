@@ -89,9 +89,11 @@ import {
   type FxElectionOverride,
   type FxPostingLeg,
   isFxInstance,
+  isFxObsCommitmentLeg,
   postFxCancellationReversalLegs,
   postFxCloseLegs,
   postFxInitialRecognitionLegs,
+  postFxObsCommitmentReleaseLegs,
   postFxRevaluationLegs,
 } from "./fx";
 import {
@@ -380,6 +382,33 @@ export function deriveFxInstanceLegs(args: FxInstanceFoldArgs): FxFoldResult {
     }
   }
 
+  // Settlement / maturity termination metadata (D-FX-TRADE-DATE-FVTPL-OBS), sourced
+  // PROVENANCE-DECOUPLED from the full terminated stream — byte-identical to
+  // `fx-fold.findSettledTerminations`. The register `stage` ("settled" | "matured")
+  // is the trigger; this map supplies the deterministic OBS-release posting date /
+  // tenant (the EARLIEST settlement per instance), which the collapsed register row
+  // alone cannot carry. On settlement the trade-date OBS commitment (ACC-9100-*) is
+  // released; the on-BS reval is reversed separately by PR-FX-CLOSE-V2.
+  const settledTerminations = new Map<string, { tenant?: string; asOf: string; eventId: string }>();
+  for (const e of args.eventStore.replay({ type: "FilInstrumentTerminated" })) {
+    const p = e.payload as unknown as FilInstrumentTerminatedPayload;
+    if (p.terminalStage !== "settled" && p.terminalStage !== "matured") continue;
+    const inst = p.instance;
+    if (inst === undefined || inst.length === 0) continue;
+    const existing = settledTerminations.get(inst);
+    const isEarlier =
+      existing === undefined ||
+      p.asOf < existing.asOf ||
+      (p.asOf === existing.asOf && e.event_id < existing.eventId);
+    if (isEarlier) {
+      settledTerminations.set(inst, {
+        ...(p.tenant !== undefined ? { tenant: p.tenant } : {}),
+        asOf: p.asOf,
+        eventId: e.event_id,
+      });
+    }
+  }
+
   // Group every lens-admitted lifecycle event by instance, preserving the global
   // sort order. The FLOW legs are sourced from these grouped payloads.
   const eventsByInstance = new Map<string, GroupedFilEvent[]>();
@@ -508,6 +537,29 @@ export function deriveFxInstanceLegs(args: FxInstanceFoldArgs): FxFoldResult {
         if (leg.postingDate < args.periodStart || leg.postingDate > args.periodEnd) continue;
         legs.push({ ...leg, filEventId: g.event.event_id });
         if (isOpening) openingLegs.push(leg);
+      }
+    }
+
+    // (3a) STATE-DRIVEN OBS-commitment release. When the register row reached a
+    // SETTLED / MATURED terminal stage, release the trade-date OBS commitment by
+    // reversing the OBS subset (ACC-9100-*) of the opening legs that folded under
+    // THIS lens (D-FX-TRADE-DATE-FVTPL-OBS). A cancelled instance's OBS is released
+    // by the cancellation reversal in (3) below, not here.
+    const settled = settledTerminations.get(instanceUrn);
+    if (
+      (row.stage === "settled" || row.stage === "matured") &&
+      settled !== undefined &&
+      openingLegs.some(isFxObsCommitmentLeg)
+    ) {
+      const termination = {
+        instance: instanceUrn,
+        ...(settled.tenant !== undefined ? { tenant: settled.tenant } : {}),
+        asOf: settled.asOf,
+      };
+      for (const leg of postFxObsCommitmentReleaseLegs(openingLegs, termination)) {
+        if (!leg.postingDate) continue;
+        if (leg.postingDate < args.periodStart || leg.postingDate > args.periodEnd) continue;
+        legs.push({ ...leg, filEventId: `${instanceUrn}::obs-commitment-release` });
       }
     }
 

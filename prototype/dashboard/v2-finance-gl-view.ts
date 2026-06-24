@@ -372,8 +372,18 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
         obsCreditMinor += zarCreditMinor;
       }
     } else {
-      totalDebitMinor += debitMinor;
-      totalCreditMinor += creditMinor;
+      // The native on-balance-sheet in-balance check runs PER CURRENCY across every
+      // account/currency leg — NOT only single-currency accounts. A multi-currency
+      // account (e.g. Realised FX P&L, which carries one leg per settled currency
+      // under FVTPL settlement, D-FX-TRADE-DATE-FVTPL-OBS) contributes each currency
+      // leg here. Because every currency self-balances (ΣDr_ccy == ΣCr_ccy), the
+      // native cross-currency totals are equal iff the book balances in every
+      // currency. The collapsed per-row `debitMinor`/`creditMinor` above remain the
+      // single-currency DISPLAY figures (blank for a multi-currency row).
+      for (const net of agg.netByCurrency.values()) {
+        if (net >= 0) totalDebitMinor += net;
+        else totalCreditMinor += -net;
+      }
     }
     if (zarRateAvailable) {
       if (!isObs) {

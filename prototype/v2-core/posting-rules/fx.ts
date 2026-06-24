@@ -561,3 +561,77 @@ export function postFxCancellationReversalLegs(
     description,
   }));
 }
+
+// ---------------------------------------------------------------------------
+// PR-FX-OBS-RELEASE-V2 — Release the trade-date OBS commitment on settlement /
+// maturity (D-FX-TRADE-DATE-FVTPL-OBS, settlement side).
+//
+// Trade-date recognition (PR-FX-001-V2) records the contractual buy/sell notionals
+// in OFF-BALANCE-SHEET memorandum accounts (ACC-9100-*) — the standing commitment
+// to exchange the two currencies. When the trade SETTLES (cash exchanged) or
+// MATURES, that commitment is discharged, so the OBS memorandum legs must be
+// reversed — symmetric to how a CANCELLATION reverses the opening legs
+// (`postFxCancellationReversalLegs`). Without this release a settled/matured trade
+// leaves its full OBS notional standing in ACC-9100-* indefinitely.
+//
+// SCOPE: the OBS memorandum block ONLY. The reversal is applied to the OBS subset
+// of the instance's accumulated opening legs — the on-balance-sheet FVTPL carrying
+// value accrued by revaluation (ACC-2100-005) is reclassified into realised P&L by
+// the terminal derecognition rule (PR-FX-CLOSE-V2, `postFxDerecognitionLegs`),
+// NOT here, so the two never double-reverse.
+//
+// IDEMPOTENT BY CONTRACT: the caller invokes this AT MOST ONCE per instance,
+// passing the FULL accumulated OBS opening legs — replaying additional terminal
+// events for the same instance produces no extra release (Charter cmd 9). Empty
+// input yields no legs (no commitment to release).
+// ---------------------------------------------------------------------------
+
+export const FX_OBS_RELEASE_RULE_ID = "PR-FX-OBS-RELEASE-V2";
+
+/** The OFF-BALANCE-SHEET FX commitment memorandum accounts (the 9100 block). A leg
+ * on one of these is part of the trade-date OBS commitment released at settlement. */
+const FX_OBS_ACCOUNTS: ReadonlySet<string> = new Set([
+  FX_OBS_BOUGHT_COMMITMENT_ACCOUNT,
+  FX_OBS_SOLD_COMMITMENT_ACCOUNT,
+  FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
+]);
+
+/** True iff a posting leg lands on the OBS FX-commitment memorandum block. */
+export function isFxObsCommitmentLeg(leg: FxPostingLeg): boolean {
+  return FX_OBS_ACCOUNTS.has(leg.accountCode);
+}
+
+/**
+ * Produce the legs that RELEASE a settled/matured FX instance's trade-date OBS
+ * commitment — the equal-and-opposite of the OBS subset of its accumulated opening
+ * legs, re-stamped with the termination's posting date / tenant / source event.
+ * Because the trade-date OBS legs self-balance per currency, the release is
+ * balanced too. Only OBS legs (ACC-9100-*) are released; any non-OBS leg in the
+ * input is ignored (the on-BS reval is reversed by PR-FX-CLOSE-V2). Empty / no-OBS
+ * input yields no legs.
+ */
+export function postFxObsCommitmentReleaseLegs(
+  openingLegs: readonly FxPostingLeg[],
+  termination: { instance: string; tenant?: string; asOf: string },
+): FxPostingLeg[] {
+  const postingDate = termination.asOf.substring(0, 10);
+  const tenantId = (termination.tenant ?? ANCHOR_TENANT_ID) as TenantId;
+  const sourceEventId = termination.instance;
+  const iasRule = FX_IAS_RULES.close;
+  const postingRuleId = FX_OBS_RELEASE_RULE_ID;
+  const description = "FX OBS commitment release — settlement/maturity (V2)";
+
+  return openingLegs
+    .filter(isFxObsCommitmentLeg)
+    .map((leg) => ({
+      creditDebit: leg.creditDebit === "debit" ? ("credit" as const) : ("debit" as const),
+      accountCode: leg.accountCode,
+      amount: leg.amount,
+      postingDate,
+      tenantId,
+      sourceEventId,
+      iasRule,
+      postingRuleId,
+      description,
+    }));
+}

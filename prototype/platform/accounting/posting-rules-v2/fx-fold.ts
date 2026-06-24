@@ -51,6 +51,7 @@ import type {
   FilInstrumentTerminatedPayload,
   FilNdfFixingObservedPayload,
 } from "../../../v2-core/fil-instances/events";
+import type { TradeSettlementExecutedPayload } from "../../../v2-core/fil-instances/trade-settlement";
 import {
   postFxDerecognitionLegs,
   postFxFvociReclassLegs,
@@ -59,6 +60,7 @@ import {
   postFxSwapFarLegLegs,
   postFxSwapNearLegLegs,
 } from "../../../v2-core/posting-rules/fx-settlement";
+import { postTradeSettlementLegs } from "../../../v2-core/posting-rules/trade-settlement";
 import {
   type InstanceElectionRegister,
   findInstanceElection,
@@ -84,9 +86,11 @@ import {
   type FxElectionOverride,
   type FxPostingLeg,
   isFxInstance,
+  isFxObsCommitmentLeg,
   postFxCancellationReversalLegs,
   postFxCloseLegs,
   postFxInitialRecognitionLegs,
+  postFxObsCommitmentReleaseLegs,
   postFxRevaluationLegs,
 } from "./fx";
 
@@ -98,6 +102,12 @@ const FX_FIL_EVENT_TYPES = [
   "FilInstrumentCreated",
   "FilInstrumentAmended",
   "FilInstrumentTerminated",
+  // DUAL-READ settlement (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL, Slice 2). The event
+  // fold consumes the born-V2 uniform single-asset `TradeSettlementExecuted` (the
+  // production settlement-of-record) AND the historical `FilFxSettlementConfirmed`;
+  // both route through the SAME per-movement settlement primitive, so they net
+  // byte-identical (and identical to the state fold, which already dual-reads).
+  "TradeSettlementExecuted",
   "FilFxSettlementConfirmed",
   "FilNdfFixingObserved",
 ] as const;
@@ -108,10 +118,15 @@ interface FilLifecyclePayloadMinimal {
     | "FilInstrumentCreated"
     | "FilInstrumentAmended"
     | "FilInstrumentTerminated"
+    | "TradeSettlementExecuted"
     | "FilFxSettlementConfirmed"
     | "FilNdfFixingObserved";
   readonly type?: string;
   readonly instance?: string;
+  /** Present on `TradeSettlementExecuted` — the trade (grouping id) this settles. */
+  readonly tradeInstance?: string;
+  /** Present on `TradeSettlementExecuted` — the holding's asset class (e.g. "cash"). */
+  readonly holdingAssetClass?: string;
   readonly originatingEvent?: { readonly eventType: string; readonly eventId: string };
   /**
    * The instance's booking-time product binding (S0d). Lives on
@@ -204,6 +219,70 @@ function findBareCancellations(eventStore: EventStore): Map<string, BareCancella
   }
   const result = new Map<string, BareCancellation>();
   for (const [k, v] of byInstance) result.set(k, v.cancel);
+  return result;
+}
+
+// ---------------------------------------------------------------------------
+// Settlement / maturity termination detection (D-FX-TRADE-DATE-FVTPL-OBS).
+//
+// On settlement/maturity the trade-date OFF-BALANCE-SHEET commitment (ACC-9100-*)
+// is discharged, so the OBS memorandum legs must be released (reversed). This is
+// symmetric to the bare-cancellation reversal but scoped to the OBS block only:
+// it reverses ONLY the OBS subset of the opening legs (the on-BS reval is reversed
+// by PR-FX-CLOSE-V2's derecognition path). Scanned PROVENANCE-DECOUPLED, exactly
+// like the cancellation scan, so a production opening whose OBS legs folded under
+// the production lens is released even when its termination is fixture-tagged.
+//
+// A CANCELLED termination is EXCLUDED here — its OBS release is already handled by
+// the bare-cancellation reversal (which reverses ALL opening legs, OBS included).
+// ---------------------------------------------------------------------------
+
+/** Termination metadata captured for the OBS release: the earliest settlement /
+ * maturity termination per instance (replay-stable, deterministic posting date). */
+interface SettledTermination {
+  readonly instance: string;
+  readonly tenant?: string;
+  readonly asOf: string;
+}
+
+/**
+ * Scan the FULL FIL terminated stream (NO provenance filter) for instances that
+ * SETTLED or MATURED (terminalStage "settled" | "matured"). Returns the EARLIEST
+ * (asOf, then event_id) such termination per instance, so the OBS release posting
+ * date is deterministic and the release is idempotent regardless of how many
+ * terminal events the instance carries. Cancelled terminations are excluded (the
+ * bare-cancellation reversal releases their OBS).
+ */
+function findSettledTerminations(eventStore: EventStore): Map<string, SettledTermination> {
+  const byInstance = new Map<
+    string,
+    { asOf: string; eventId: string; settle: SettledTermination }
+  >();
+  for (const e of eventStore.replay({ type: "FilInstrumentTerminated" })) {
+    const p = e.payload as unknown as FilInstrumentTerminatedPayload;
+    if (p.terminalStage !== "settled" && p.terminalStage !== "matured") continue;
+    const instance = p.instance;
+    if (instance === undefined || instance.length === 0) continue;
+    const candidate = { asOf: p.asOf, eventId: e.event_id };
+    const existing = byInstance.get(instance);
+    const isEarlier =
+      existing === undefined ||
+      candidate.asOf < existing.asOf ||
+      (candidate.asOf === existing.asOf && candidate.eventId < existing.eventId);
+    if (isEarlier) {
+      byInstance.set(instance, {
+        asOf: candidate.asOf,
+        eventId: candidate.eventId,
+        settle: {
+          instance,
+          ...(p.tenant !== undefined ? { tenant: p.tenant } : {}),
+          asOf: p.asOf,
+        },
+      });
+    }
+  }
+  const result = new Map<string, SettledTermination>();
+  for (const [k, v] of byInstance) result.set(k, v.settle);
   return result;
 }
 
@@ -534,7 +613,12 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
   // ONCE per instance (idempotent). The window-passing opening legs are collected
   // per instance below.
   const bareCancellations = findBareCancellations(args.eventStore);
+  const settledTerminations = findSettledTerminations(args.eventStore);
   const openingLegsByInstance = new Map<string, FxPostingLeg[]>();
+  // OBS commitment opening legs per instance — collected for EVERY instance with a
+  // settlement/maturity termination, so the trade-date OBS commitment (ACC-9100-*)
+  // is released on settlement (D-FX-TRADE-DATE-FVTPL-OBS).
+  const obsOpeningLegsByInstance = new Map<string, FxPostingLeg[]>();
 
   // Read the FIL FX lifecycle events from the store in sequence order (stable,
   // matching the engine's iteration). Iterate each registered type stream and
@@ -565,26 +649,38 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
   // binding (latest-wins) supersedes the created event's, consistent with the
   // full-snapshot re-stamp semantics of `FilInstrumentAmended.economicTerms`.
   const boundProductIdByInstance = new Map<string, string>();
+  // The instrument TYPE URN per instance, sourced from the created event — used to
+  // resolve the FX type of a `TradeSettlementExecuted` event via its `tradeInstance`
+  // (the settlement event itself carries no FX type URN, only the holding's).
+  const typeByInstance = new Map<string, string>();
   for (const e of filEvents) {
     const p = e.payload as unknown as FilLifecyclePayloadMinimal;
     const pid = p.economicTerms?.productId;
     if (p.instance !== undefined && typeof pid === "string" && pid.length > 0) {
       boundProductIdByInstance.set(p.instance, pid);
     }
+    if (p.instance !== undefined && typeof p.type === "string" && p.type.length > 0) {
+      typeByInstance.set(p.instance, p.type);
+    }
   }
 
   for (const e of filEvents) {
     const p = e.payload as unknown as FilLifecyclePayloadMinimal;
-    const type = p.type;
-    const instance = p.instance ?? "";
+    // The register-instance key the event groups under: a settlement keys on its
+    // TRADE (`tradeInstance`); every other event keys on `instance`. This mirrors
+    // `fx-instance-fold.groupingKeyOf` so the two folds attach legs to the same row.
+    const instance =
+      p.kind === "TradeSettlementExecuted" ? (p.tradeInstance ?? "") : (p.instance ?? "");
+    // The FX type for the guard / treatment: a settlement inherits its trade's type
+    // (looked up via the trade instance); every other event carries its own type.
+    const type = p.kind === "TradeSettlementExecuted" ? typeByInstance.get(instance) : p.type;
 
     // Terminated events do not carry the taxonomy type in the same FX-guarded
     // way; the engine treats every termination as an FX close at this scope.
-    // Mirror that: a created/amended (and the new settlement / NDF-fixing events,
-    // which carry the type URN) must be an FX instance; a terminated is always
-    // processed (the engine's documented Phase-3A behaviour). The settlement /
-    // NDF events are FX-only by construction but still pass through the same
-    // isFxInstance guard so a mis-typed event fails closed (no non-FX leakage).
+    // Mirror that: a created/amended (and the settlement / NDF-fixing events) must
+    // resolve to an FX instance; a terminated is always processed (the engine's
+    // documented Phase-3A behaviour). A `TradeSettlementExecuted` whose trade type
+    // is unknown / non-FX is skipped here (it belongs to no FX trade row).
     if (p.kind !== "FilInstrumentTerminated") {
       if (type === undefined || !isFxInstance(type)) continue; // non-FX → not this fold's concern
     }
@@ -657,6 +753,13 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
       case "FilInstrumentTerminated":
         ruleLegs = postFxTerminationLegs(e.payload as unknown as FilInstrumentTerminatedPayload);
         break;
+      case "TradeSettlementExecuted":
+        // DUAL-READ (Slice 2): the born-V2 uniform single-asset settlement. Same
+        // per-movement primitive as the two-leg FX path → byte-identical net.
+        ruleLegs = postTradeSettlementLegs(
+          e.payload as unknown as TradeSettlementExecutedPayload,
+        );
+        break;
       case "FilFxSettlementConfirmed":
         ruleLegs = postFxSettlementConfirmedLegs(
           e.payload as unknown as FilFxSettlementConfirmedPayload,
@@ -676,13 +779,20 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
       // revaluation) so a bare cancellation can reverse exactly the position that
       // actually folded under THIS lens. Close / settlement / NDF legs are not part
       // of the standing position and are excluded.
-      if (
-        bareCancellations.has(instance) &&
-        (p.kind === "FilInstrumentCreated" || p.kind === "FilInstrumentAmended")
-      ) {
+      const isOpening = p.kind === "FilInstrumentCreated" || p.kind === "FilInstrumentAmended";
+      if (bareCancellations.has(instance) && isOpening) {
         const acc = openingLegsByInstance.get(instance) ?? [];
         acc.push(leg);
         openingLegsByInstance.set(instance, acc);
+      }
+      // Collect the OBS commitment opening legs (ACC-9100-*) for instances that
+      // SETTLE / MATURE, so the trade-date OBS commitment is released on settlement
+      // (the on-BS reval is reversed separately by PR-FX-CLOSE-V2). A cancelled
+      // instance's OBS is released by the cancellation reversal above, not here.
+      if (settledTerminations.has(instance) && isOpening && isFxObsCommitmentLeg(leg)) {
+        const acc = obsOpeningLegsByInstance.get(instance) ?? [];
+        acc.push(leg);
+        obsOpeningLegsByInstance.set(instance, acc);
       }
     }
   }
@@ -705,6 +815,22 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
       if (!leg.postingDate) continue;
       if (leg.postingDate < args.periodStart || leg.postingDate > args.periodEnd) continue;
       legs.push({ ...leg, filEventId: `${instance}::cancellation-reversal` });
+    }
+  }
+
+  // OBS-commitment release pass (D-FX-TRADE-DATE-FVTPL-OBS). For each instance that
+  // SETTLED / MATURED, release the trade-date OBS commitment by reversing the OBS
+  // subset of its accumulated opening legs that folded under THIS lens. ONCE per
+  // instance (idempotent — one entry per instance in the map). The release posting
+  // date is the settlement's own date; gate it on the window like every other leg.
+  for (const [instance, settle] of settledTerminations) {
+    const obsOpening = obsOpeningLegsByInstance.get(instance);
+    if (obsOpening === undefined || obsOpening.length === 0) continue;
+    const releaseLegs = postFxObsCommitmentReleaseLegs(obsOpening, settle);
+    for (const leg of releaseLegs) {
+      if (!leg.postingDate) continue;
+      if (leg.postingDate < args.periodStart || leg.postingDate > args.periodEnd) continue;
+      legs.push({ ...leg, filEventId: `${instance}::obs-commitment-release` });
     }
   }
 

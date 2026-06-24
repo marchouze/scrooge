@@ -28,4 +28,7 @@ export {
   FX_OBS_BOUGHT_COMMITMENT_ACCOUNT,
   FX_OBS_SOLD_COMMITMENT_ACCOUNT,
   FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
+  FX_OBS_RELEASE_RULE_ID,
+  isFxObsCommitmentLeg,
+  postFxObsCommitmentReleaseLegs,
 } from "../../../v2-core/posting-rules/fx";

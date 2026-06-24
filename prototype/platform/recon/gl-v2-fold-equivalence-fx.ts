@@ -41,15 +41,29 @@
 // Author: Atlas (Substrate Architect, engineering).
 
 import type {
+  FilFxSettlementConfirmedPayload,
   FilInstrumentAmendedPayload,
   FilInstrumentCreatedPayload,
   FilInstrumentTerminatedPayload,
+  FilNdfFixingObservedPayload,
 } from "../../v2-core/fil-instances/events";
+import type { TradeSettlementExecutedPayload } from "../../v2-core/fil-instances/trade-settlement";
+import {
+  postFxDerecognitionLegs,
+  postFxFvociReclassLegs,
+  postFxNdfFixingLegs,
+  postFxSettlementLegs,
+  postFxSwapFarLegLegs,
+  postFxSwapNearLegLegs,
+} from "../../v2-core/posting-rules/fx-settlement";
+import { postTradeSettlementLegs } from "../../v2-core/posting-rules/trade-settlement";
 import {
   type FxPostingLeg,
+  isFxObsCommitmentLeg,
   postFxCancellationReversalLegs,
   postFxCloseLegs,
   postFxInitialRecognitionLegs,
+  postFxObsCommitmentReleaseLegs,
   postFxRevaluationLegs,
 } from "../accounting/posting-rules-v2/fx";
 import {
@@ -72,6 +86,13 @@ const FX_FIL_EVENT_TYPES = [
   "FilInstrumentCreated",
   "FilInstrumentAmended",
   "FilInstrumentTerminated",
+  // DUAL-READ settlement (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL) + FVTPL settlement
+  // (D-FX-TRADE-DATE-FVTPL-OBS): the golden must model the settlement legs the
+  // fold produces, else a settled FX diverges golden vs fold. Both settlement
+  // carriers route through the SAME lifted rules the fold uses.
+  "TradeSettlementExecuted",
+  "FilFxSettlementConfirmed",
+  "FilNdfFixingObserved",
 ] as const;
 
 /** Accumulate one signed-minor leg into the per-(accountCode|currency) map. */
@@ -82,6 +103,62 @@ function accumulate(map: Map<string, number>, leg: FxPostingLeg | FxFoldLeg): vo
   const legMinor = Number(amountToMinorUnits(legMoney));
   const key = `${leg.accountCode}|${leg.amount.currency}`;
   map.set(key, (map.get(key) ?? 0) + (leg.creditDebit === "debit" ? legMinor : -legMinor));
+}
+
+/** Golden terminal-event legs — mirrors `fx-fold.postFxTerminationLegs`. */
+function goldenTerminationLegs(payload: FilInstrumentTerminatedPayload): FxPostingLeg[] {
+  const { derecognitionTerms, fvociReclassTerms } = payload;
+  if (derecognitionTerms === undefined && fvociReclassTerms === undefined) {
+    return postFxCloseLegs(payload);
+  }
+  const postingDate = payload.asOf.substring(0, 10);
+  const legs: FxPostingLeg[] = [];
+  if (derecognitionTerms !== undefined) {
+    legs.push(
+      ...postFxDerecognitionLegs({
+        instanceId: payload.instance,
+        tenantId: payload.tenant,
+        postingDate,
+        currency: derecognitionTerms.accumulatedUnrealised.currency,
+        accumulatedUnrealised: derecognitionTerms.accumulatedUnrealised.amount,
+      }),
+    );
+  }
+  if (fvociReclassTerms !== undefined) {
+    legs.push(
+      ...postFxFvociReclassLegs({
+        instanceId: payload.instance,
+        tenantId: payload.tenant,
+        postingDate,
+        currency: fvociReclassTerms.accumulatedOci.currency,
+        accumulatedOci: fvociReclassTerms.accumulatedOci.amount,
+      }),
+    );
+  }
+  return legs;
+}
+
+/** Golden settlement-event legs — mirrors `fx-fold.postFxSettlementConfirmedLegs`. */
+function goldenSettlementConfirmedLegs(payload: FilFxSettlementConfirmedPayload): FxPostingLeg[] {
+  const settlementInput = {
+    instanceId: payload.instance,
+    tenantId: payload.tenant,
+    postingDate: payload.asOf.substring(0, 10),
+    boughtCurrency: payload.boughtBooked.currency,
+    boughtBookedAmount: payload.boughtBooked.amount,
+    boughtSettledAmount: payload.boughtSettled.amount,
+    soldCurrency: payload.soldBooked.currency,
+    soldBookedAmount: payload.soldBooked.amount,
+    soldSettledAmount: payload.soldSettled.amount,
+  };
+  switch (payload.legRole) {
+    case "spot":
+      return postFxSettlementLegs(settlementInput);
+    case "swap-near":
+      return postFxSwapNearLegLegs(settlementInput);
+    case "swap-far":
+      return postFxSwapFarLegLegs(settlementInput);
+  }
 }
 
 /**
@@ -132,7 +209,25 @@ function goldenFxBalances(): Map<string, number> {
       });
     }
   }
+  // Settlement / maturity terminations (D-FX-TRADE-DATE-FVTPL-OBS) — release the
+  // trade-date OBS commitment. Scanned PROVENANCE-DECOUPLED, mirroring the fold's
+  // `findSettledTerminations`.
+  const settledTerminations = new Map<string, { instance: string; tenant?: string; asOf: string }>();
+  for (const e of eventStore.replay({ entity: V2_ANCHOR_ENTITY, type: "FilInstrumentTerminated" })) {
+    const p = e.payload as unknown as FilInstrumentTerminatedPayload;
+    if (p.terminalStage !== "settled" && p.terminalStage !== "matured") continue;
+    if (p.instance === undefined || p.instance.length === 0) continue;
+    const existing = settledTerminations.get(p.instance);
+    if (existing === undefined || p.asOf < existing.asOf) {
+      settledTerminations.set(p.instance, {
+        instance: p.instance,
+        ...(p.tenant !== undefined ? { tenant: p.tenant } : {}),
+        asOf: p.asOf,
+      });
+    }
+  }
   const openingByInstance = new Map<string, FxPostingLeg[]>();
+  const obsOpeningByInstance = new Map<string, FxPostingLeg[]>();
 
   for (const t of FX_FIL_EVENT_TYPES) {
     for (const e of eventStore.replay({ entity: V2_ANCHOR_ENTITY, type: t })) {
@@ -150,30 +245,68 @@ function goldenFxBalances(): Map<string, number> {
           isOpening = true;
           break;
         case "FilInstrumentTerminated":
-          legs = postFxCloseLegs(e.payload as unknown as FilInstrumentTerminatedPayload);
+          legs = goldenTerminationLegs(e.payload as unknown as FilInstrumentTerminatedPayload);
           break;
+        case "TradeSettlementExecuted":
+          legs = postTradeSettlementLegs(e.payload as unknown as TradeSettlementExecutedPayload);
+          break;
+        case "FilFxSettlementConfirmed":
+          legs = goldenSettlementConfirmedLegs(
+            e.payload as unknown as FilFxSettlementConfirmedPayload,
+          );
+          break;
+        case "FilNdfFixingObserved": {
+          const p = e.payload as unknown as FilNdfFixingObservedPayload;
+          legs = postFxNdfFixingLegs({
+            instanceId: p.instance,
+            tenantId: p.tenant,
+            postingDate: p.asOf.substring(0, 10),
+            settlementCurrency: p.settlementCurrency,
+            netCashDifference: p.netCashDifference.amount,
+          });
+          break;
+        }
       }
-      const instance = (e.payload as { instance?: string }).instance ?? "";
+      // The settlement event keys on the TRADE (`tradeInstance`); every other
+      // event keys on `instance` (mirrors fx-instance-fold.groupingKeyOf).
+      const payloadAny = e.payload as { instance?: string; tradeInstance?: string };
+      const instance =
+        t === "TradeSettlementExecuted"
+          ? (payloadAny.tradeInstance ?? "")
+          : (payloadAny.instance ?? "");
       for (const leg of legs) {
         accumulate(map, leg);
+        if (!leg.postingDate) continue;
+        if (leg.postingDate < V2_PERIOD_START || leg.postingDate > V2_PERIOD_END) continue;
         // Window-passing opening legs for a bare-cancelled instance are captured to
         // reverse below (mirrors the fold's per-lens capture).
         if (isOpening && bareCancellations.has(instance)) {
-          if (!leg.postingDate) continue;
-          if (leg.postingDate < V2_PERIOD_START || leg.postingDate > V2_PERIOD_END) continue;
           const acc = openingByInstance.get(instance) ?? [];
           acc.push(leg);
           openingByInstance.set(instance, acc);
+        }
+        // OBS opening legs for a settled/matured instance — released below.
+        if (isOpening && settledTerminations.has(instance) && isFxObsCommitmentLeg(leg)) {
+          const acc = obsOpeningByInstance.get(instance) ?? [];
+          acc.push(leg);
+          obsOpeningByInstance.set(instance, acc);
         }
       }
     }
   }
 
-  // Apply the reversal once per bare-cancelled instance.
+  // Apply the bare-cancellation reversal once per cancelled instance.
   for (const [instance, cancel] of bareCancellations) {
     const opening = openingByInstance.get(instance);
     if (opening === undefined || opening.length === 0) continue;
     for (const leg of postFxCancellationReversalLegs(opening, cancel)) accumulate(map, leg);
+  }
+
+  // Apply the OBS-commitment release once per settled/matured instance.
+  for (const [instance, settle] of settledTerminations) {
+    const obsOpening = obsOpeningByInstance.get(instance);
+    if (obsOpening === undefined || obsOpening.length === 0) continue;
+    for (const leg of postFxObsCommitmentReleaseLegs(obsOpening, settle)) accumulate(map, leg);
   }
 
   for (const [k, v] of [...map.entries()]) if (v === 0) map.delete(k);
