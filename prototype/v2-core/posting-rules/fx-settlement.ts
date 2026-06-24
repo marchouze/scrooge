@@ -134,7 +134,7 @@ const SETTLE_RULE = {
 };
 
 /** Cash account for a settlement leg — the correspondent nostro for the ccy. */
-function nostroFor(currency: string): string {
+export function nostroFor(currency: string): string {
   switch (currency) {
     case "ZAR":
       return "ACC-1200-001";

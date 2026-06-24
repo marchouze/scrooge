@@ -613,6 +613,24 @@ export function redactNpaDetailNames(detail: ProductDetailView): ProductDetailVi
         dom.gap ? { ...dom, gap: { ...dom.gap, owner: redactGapOwner(dom.gap.owner) } } : dom,
       ),
     },
+    // The Accounting/CFO perspective is name-free by construction (legs / codes /
+    // CoA names / IAS cites are all structural); the ONE authored name is a
+    // deferred posting rule's tracked-gap owner → stripped to the seat.
+    ...(detail.accountingPerspective
+      ? {
+          accountingPerspective: {
+            ...detail.accountingPerspective,
+            stages: detail.accountingPerspective.stages.map((st) => ({
+              ...st,
+              postingRules: st.postingRules.map((pr) =>
+                pr.gap
+                  ? { ...pr, gap: { ...pr.gap, owner: redactGapOwner(pr.gap.owner) } }
+                  : pr,
+              ),
+            })),
+          },
+        }
+      : {}),
     dimensions: detail.dimensions.map((card) => ({
       ...card,
       owner: { ...card.owner, name: "" },

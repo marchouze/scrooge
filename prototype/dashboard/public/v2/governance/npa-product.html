@@ -619,6 +619,75 @@
           })),
         });
       }
+
+      // ── Accounting / CFO perspective — deep per-lifecycle-stage GL impact ──
+      if (d.accountingPerspective) renderAccountingPerspective(panel, d.accountingPerspective);
+    }
+
+    // The Accounting / CFO perspective: how the CFO expects it to work —
+    // classification (with plain-English meaning) → per-lifecycle-stage GL
+    // impact (the actual Dr/Cr legs by account role → CoA code → CoA name with
+    // IAS/IFRS cite + active/deferred) → BA-return cells. All sourced.
+    function renderAccountingPerspective(panel, ap) {
+      panel.insertAdjacentHTML("beforeend", `<h3 class="np-subhead">Accounting perspective — how the CFO expects it to work</h3>`);
+      panel.insertAdjacentHTML("beforeend", `<p class="np-prose">What classification applies, and what GL postings fire at each lifecycle stage — the actual ledger legs (account → debit/credit) with their IFRS / IAS basis and the regulatory returns they feed. Account codes resolve to the canonical chart of accounts; no amounts are shown (structure only).</p>`);
+
+      // Classification block.
+      panel.insertAdjacentHTML("beforeend", `<h4 class="np-subhead" style="font-size:13px">Classification</h4>`);
+      const clsGrid = document.createElement("div"); clsGrid.className = "np-grid"; panel.appendChild(clsGrid);
+      for (const c of (ap.classification || [])) {
+        clsGrid.insertAdjacentHTML("beforeend",
+          `<div class="np-card"><h4>${esc(c.axis)} <span class="np-chip">${esc(c.value)}</span></h4>` +
+          `<div class="np-note">${esc(c.meaning)}</div></div>`);
+      }
+
+      // GL impact per lifecycle stage.
+      panel.insertAdjacentHTML("beforeend", `<h4 class="np-subhead" style="font-size:13px">GL impact per lifecycle stage</h4>`);
+      panel.insertAdjacentHTML("beforeend", `<p class="np-prose">The same four contractual stages the “How it works” tab shows (Initiation · Payment · Receipt · Termination), plus daily revaluation. Each card shows the posting rule(s) that fire and the ledger legs they post — base/presentation currency <span class="np-chip">${esc(ap.currency || "")}</span>.</p>`);
+      const drCrBadge = (s) => `<span class="v2-badge v2-badge-${s === "debit" ? "info" : "neutral"}">${esc(s === "debit" ? "Dr" : "Cr")}</span>`;
+      for (const st of (ap.stages || [])) {
+        panel.insertAdjacentHTML("beforeend", `<h5 style="margin:14px 0 4px;font-size:13px;font-weight:650;color:var(--color-text-primary)">${esc(st.label)}</h5>`);
+        panel.insertAdjacentHTML("beforeend", `<p class="np-note" style="margin:0 0 8px">${esc(st.summary)}</p>`);
+        if (!st.postingRules || !st.postingRules.length) {
+          panel.insertAdjacentHTML("beforeend", `<p class="np-empty">No posting rule fires at this stage for this product.</p>`);
+          continue;
+        }
+        const grid = document.createElement("div"); grid.className = "np-grid"; panel.appendChild(grid);
+        for (const pr of st.postingRules) {
+          const statusBadge = pr.deferred
+            ? `<span class="v2-badge v2-badge-warning">deferred</span>`
+            : `<span class="v2-badge v2-badge-success">active</span>`;
+          const legRows = (pr.legs || []).map((l) =>
+            `<div class="np-kv"><b>${drCrBadge(l.drCr)} ${esc(l.accountRoleLabel)}</b>` +
+            `<span><code>${esc(l.accountCode)}</code> ${l.accountName ? "· " + esc(l.accountName) : `<span class="np-chip is-gap">unbacked ⚠</span>`} <span class="np-chip">${esc(l.iasCite)}</span></span></div>` +
+            `<div class="np-note" style="margin:0 0 6px">${esc(l.note)}</div>`).join("");
+          const gapBlock = pr.deferred && pr.gap
+            ? `<div class="np-note" style="border-top:1px dashed var(--color-border);margin-top:8px;padding-top:8px">` +
+              `<b>Tracked gap:</b> ${esc(pr.gap.title)}<br>` +
+              `<b>Gap id:</b> <code>${esc(pr.gap.gapId)}</code> &nbsp;·&nbsp; <b>Owner:</b> ${esc(pr.gap.owner || "—")} &nbsp;·&nbsp; <b>Resolves on:</b> ${esc(pr.gap.targetTrigger)}<br>` +
+              `<b>Citations:</b> ${chips(pr.gap.citations)}</div>`
+            : "";
+          grid.insertAdjacentHTML("beforeend",
+            `<div class="np-card"><h4><code>${esc(pr.postingRuleId)}</code> ${statusBadge}</h4>` +
+            `<div class="np-kv"><b>Trigger</b><span><span class="np-chip">${esc(pr.triggerEventType || "—")}</span></span></div>` +
+            `<div class="np-kv"><b>Condition</b><span>${esc(pr.condition)}</span></div>` +
+            `<div class="np-note" style="margin:4px 0 8px">${esc(pr.ifrs)}</div>` +
+            legRows +
+            `<div class="np-note" style="margin-top:6px">Source: <code>${esc(pr.derivedFrom)}</code></div>` +
+            gapBlock + `</div>`);
+        }
+      }
+
+      // BA-return cells the postings feed.
+      panel.insertAdjacentHTML("beforeend", `<h4 class="np-subhead" style="font-size:13px">Regulatory returns the postings feed</h4>`);
+      if (!ap.returnCells || !ap.returnCells.length) {
+        panel.insertAdjacentHTML("beforeend", `<p class="np-empty">No BA-return cells mapped for this product.</p>`);
+      } else {
+        const rcCard = document.createElement("div"); rcCard.className = "np-card"; panel.appendChild(rcCard);
+        rcCard.innerHTML = ap.returnCells.map((c) =>
+          `<div class="np-kv"><b><code>${esc(c.cell)}</code></b><span>${esc(c.lens)}</span></div>`).join("") +
+          `<div class="np-note" style="margin-top:6px">The GL postings above surface in these regulator-side return cells. Authority: ${chips(ap.authority)}.</div>`;
+      }
     }
 
     function renderRiskFold(panel, lenses) {

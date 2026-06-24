@@ -59,6 +59,15 @@ import { MM_REPO_MODEL_DECLARATION } from "../v2-core/fil-models/ir/money-market
 import { MM_UNSECURED_MODEL_DECLARATION } from "../v2-core/fil-models/ir/money-market/unsecured/mm-unsecured-model";
 import { VAR_MODEL_DECLARATION } from "../v2-core/fil-models/market-risk-var/model";
 import { SA_CCR_MODEL_DECLARATION } from "../v2-core/fil-models/sa-ccr/model";
+import { COA_BY_ID } from "../v2-core/accounting/chart-of-accounts";
+import {
+  FX_ACCOUNT_ROLE_LABEL,
+  FX_GL_LIFECYCLE_STAGES,
+  FX_RULE_STAGE_LEG_STRUCTURES,
+  type FxLifecycleStageId,
+  familyHasFxGlLifecycle,
+  resolveFxAccountRole,
+} from "../v2-core/posting-rules/fx-lifecycle-leg-structure";
 import { activeFxSettlementDeferredGaps } from "../v2-core/posting-rules/fx-settlement";
 import { FX_TREATMENT_MODULES } from "../v2-core/reporting-treatments/fx-modules";
 import {
@@ -642,6 +651,113 @@ export interface AccountingTreatmentView {
   readonly postingRules: readonly AccountingTreatmentPostingRule[];
 }
 
+// ---------------------------------------------------------------------------
+// Accounting / CFO perspective (WS-NPA-PERSPECTIVE-IA Slice 2). The deep
+// "how the CFO expects it to work" assessment: classification (with plain-
+// English meaning) → per-lifecycle-stage GL impact (the ACTUAL Dr/Cr legs by
+// account role → real CoA code → CoA name, with IAS/IFRS cite + active/deferred
+// status) → the BA-return cells the postings feed. Sourced, NOT invented:
+//   - classification from product.accountingClassification.*,
+//   - posting-rule set + IFRS cites + stage + condition from POSTING_RULE_REGISTRY,
+//   - leg STRUCTURE from the cited FX_RULE_STAGE_LEG_STRUCTURES declaration,
+//   - account ROLE→CODE from resolveFxAccountRole(currency),
+//   - account CODE→NAME from the canonical CoA (COA_BY_ID),
+//   - deferred status + tracked gap from the FX-settlement ProductDeferredGaps.
+// NO amounts. Name-free by construction (the deferred-gap owner is the one
+// authored name, redacted at the /api boundary). Asserted by
+// `recon:npa-page-no-invented-functionality` (account-code resolution family).
+// ---------------------------------------------------------------------------
+
+/** One resolved Dr/Cr leg of a posting rule — role → real CoA code → CoA name. */
+export interface AccountingPerspectiveLeg {
+  /** Symbolic account role (receivable / payable / unrealised-pnl / …). */
+  readonly accountRole: string;
+  /** Human label for the role. */
+  readonly accountRoleLabel: string;
+  /** The concrete CoA account code the role resolves to (asserted real by the gate). */
+  readonly accountCode: string;
+  /** The CoA account NAME for that code (from COA_BY_ID; "" iff the code is unbacked). */
+  readonly accountName: string;
+  /** Debit or credit. */
+  readonly drCr: "debit" | "credit";
+  /** IAS / IFRS citation for this leg. */
+  readonly iasCite: string;
+  /** Plain-English note of what the leg is (no amount). */
+  readonly note: string;
+}
+
+/** The tracked deferred gap a deferred posting rule carries (owner redacted at /api). */
+export interface AccountingPerspectiveDeferredGap {
+  readonly gapId: string;
+  readonly title: string;
+  readonly owner: string;
+  readonly targetTrigger: string;
+  readonly citations: readonly string[];
+}
+
+/** One posting rule's GL impact at a lifecycle stage, with resolved legs + status. */
+export interface AccountingPerspectivePostingRule {
+  /** Registry posting-rule id (asserted real by the gate). */
+  readonly postingRuleId: string;
+  /** The lifecycle event that triggers it (registry triggerEventType). */
+  readonly triggerEventType: string;
+  /** When a posting is expected (registry condition). */
+  readonly condition: string;
+  /** IFRS / IAS citation + rationale (registry conditionDetail). */
+  readonly ifrs: string;
+  /** The resolved Dr/Cr legs by account role. */
+  readonly legs: readonly AccountingPerspectiveLeg[];
+  /** The rule function(s) the leg structure mirrors — traceability. */
+  readonly derivedFrom: string;
+  /** True iff this rule's trigger-wiring is a tracked ProductDeferredGap. */
+  readonly deferred: boolean;
+  /** The tracked gap (present iff deferred). */
+  readonly gap?: AccountingPerspectiveDeferredGap;
+}
+
+/** One lifecycle stage of the GL-impact walkthrough. */
+export interface AccountingPerspectiveStage {
+  readonly id: string;
+  readonly label: string;
+  readonly summary: string;
+  /** The posting rules that fire at this stage (each with its resolved legs). */
+  readonly postingRules: readonly AccountingPerspectivePostingRule[];
+}
+
+/** One classification axis with its plain-English meaning. */
+export interface AccountingPerspectiveClassification {
+  readonly axis: string;
+  readonly value: string;
+  readonly meaning: string;
+}
+
+/** A BA-return cell the postings feed, with its regulatory lens. */
+export interface AccountingPerspectiveReturnCell {
+  readonly cell: string;
+  readonly lens: string;
+}
+
+export interface AccountingPerspectiveView {
+  /** IFRS 9 / 13 / IAS 21 classification, each with a one-line meaning. */
+  readonly classification: readonly AccountingPerspectiveClassification[];
+  /** The currency whose CoA account set the legs resolve against (base / presentation ccy). */
+  readonly currency: string;
+  /** Per-lifecycle-stage GL impact walkthrough (the core). */
+  readonly stages: readonly AccountingPerspectiveStage[];
+  /** The BA-return cells the postings surface in, named with their lens. */
+  readonly returnCells: readonly AccountingPerspectiveReturnCell[];
+  /**
+   * Any account code a leg names that does NOT resolve to the canonical CoA —
+   * surfaced as a flagged gap rather than asserted silently. EMPTY by
+   * construction (the roles resolve to real CoA codes); the gate fails if a
+   * named code is non-empty here yet IS in the CoA (false gap) or a named code
+   * is absent from CoA yet NOT flagged here (silent invention).
+   */
+  readonly unbackedAccountCodes: readonly string[];
+  /** Authority chain for the whole perspective. */
+  readonly authority: readonly string[];
+}
+
 /** Product family → posting-rule registry lifecycleId set. */
 const FAMILY_LIFECYCLE_IDS: Readonly<Record<string, readonly string[]>> = {
   fx: ["fx-spot-trade", "fx-fil-instance"],
@@ -693,6 +809,171 @@ export function buildAccountingTreatmentView(product: Product): AccountingTreatm
     ias21FxTreatment: product.accountingClassification.ias21FxTreatment,
     baReturnLineMapping: product.accountingClassification.baReturnLineMapping,
     postingRules: rules,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Accounting / CFO perspective builder (WS-NPA-PERSPECTIVE-IA Slice 2).
+// ---------------------------------------------------------------------------
+
+/** Plain-English meaning of an IFRS 9 family value (CFO-facing). */
+function ifrs9Meaning(family: string): string {
+  switch (family.toLowerCase()) {
+    case "fvtpl":
+      return "Fair value through P&L — fair-value changes hit the income statement each day; no separate impairment.";
+    case "fvoci":
+      return "Fair value through OCI — fair-value changes accumulate in an OCI reserve and recycle to P&L on derecognition.";
+    case "amortised-cost":
+      return "Amortised cost — carried at the effective-interest-rate amount; only ECL impairment and realised disposals hit P&L.";
+    default:
+      return `IFRS 9 ${family} — measured per the classification's measurement basis.`;
+  }
+}
+
+/** Plain-English meaning of an IFRS 13 fair-value-hierarchy level. */
+function ifrs13Meaning(level: string): string {
+  switch (level.toLowerCase()) {
+    case "level-1":
+      return "Level 1 — quoted prices in active markets; the mark is observable directly.";
+    case "level-2":
+      return "Level 2 — valued off observable market inputs (rates / curves), not a single quoted price.";
+    case "level-3":
+      return "Level 3 — significant unobservable inputs; the mark relies on model assumptions.";
+    default:
+      return `IFRS 13 ${level} fair-value hierarchy.`;
+  }
+}
+
+/** Plain-English meaning of an IAS 21 FX treatment. */
+function ias21Meaning(treatment: string): string {
+  switch (treatment.toLowerCase()) {
+    case "monetary":
+      return "Monetary item — retranslated at the closing spot rate each reporting date; FX differences go to P&L.";
+    case "non-monetary":
+      return "Non-monetary item — held at the historical rate; not retranslated for FX movements.";
+    default:
+      return `IAS 21 ${treatment} FX treatment.`;
+  }
+}
+
+/**
+ * Resolve, for the still-OPEN FX settlement gaps, a map postingRuleId → gap. A
+ * rule is deferred iff a still-open gap's title NAMES it (the gap titles lead
+ * with the rule id(s) they cover) — the same join `DEFERRED_RULE_IDS` uses,
+ * here returning the full gap (not just the target trigger). Empty after
+ * WS-FIL-FX-SETTLEMENT-EVENTS resolved all five.
+ */
+function deferredGapByRuleId(): ReadonlyMap<string, AccountingPerspectiveDeferredGap> {
+  const out = new Map<string, AccountingPerspectiveDeferredGap>();
+  for (const g of activeFxSettlementDeferredGaps()) {
+    for (const r of FX_RULE_STAGE_LEG_STRUCTURES) {
+      if (g.title.includes(r.postingRuleId)) {
+        out.set(r.postingRuleId, {
+          gapId: g.gapId,
+          title: g.title,
+          owner: g.owner,
+          targetTrigger: g.targetTrigger,
+          citations: g.citations,
+        });
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Build the Accounting / CFO perspective for a product. FX-family only (the
+ * leg-structure declaration is the FX GL lifecycle); `undefined` for other
+ * families — the page then renders the existing summary treatment only.
+ *
+ * SOURCE-DON'T-INVENT: every leg's account code resolves through
+ * `resolveFxAccountRole(currency)` to a real CoA code; the name comes from
+ * `COA_BY_ID`. A role that resolved to a code NOT in the CoA is surfaced in
+ * `unbackedAccountCodes` (never asserted with a fabricated name) — the
+ * de-invention gate cross-checks both directions.
+ */
+export function buildAccountingPerspective(product: Product): AccountingPerspectiveView | undefined {
+  if (!familyHasFxGlLifecycle(product.family)) return undefined;
+
+  const cls = product.accountingClassification;
+  const currency = product.currency;
+  const gapByRule = deferredGapByRuleId();
+  const unbacked = new Set<string>();
+
+  const resolveLeg = (
+    role: Parameters<typeof resolveFxAccountRole>[0],
+    drCr: "debit" | "credit",
+    iasCite: string,
+    note: string,
+  ): AccountingPerspectiveLeg => {
+    const accountCode = resolveFxAccountRole(role, currency);
+    const coa = COA_BY_ID.get(accountCode);
+    if (coa === undefined) unbacked.add(accountCode);
+    return {
+      accountRole: role,
+      accountRoleLabel: FX_ACCOUNT_ROLE_LABEL[role],
+      accountCode,
+      accountName: coa?.name ?? "",
+      drCr,
+      iasCite,
+      note,
+    };
+  };
+
+  // Trigger event type per rule id, sourced from the registry (not re-typed).
+  const triggerByRuleId = new Map<string, string>(
+    POSTING_RULE_REGISTRY.map((r) => [r.postingRuleId, r.triggerEventType]),
+  );
+
+  const stages: AccountingPerspectiveStage[] = FX_GL_LIFECYCLE_STAGES.map((meta) => {
+    const stageRules = FX_RULE_STAGE_LEG_STRUCTURES.filter(
+      (s) => s.stage === (meta.id as FxLifecycleStageId),
+    );
+    const postingRules: AccountingPerspectivePostingRule[] = stageRules.map((s) => {
+      const registry = POSTING_RULE_REGISTRY.find((r) => r.postingRuleId === s.postingRuleId);
+      const gap = gapByRule.get(s.postingRuleId);
+      return {
+        postingRuleId: s.postingRuleId,
+        triggerEventType: triggerByRuleId.get(s.postingRuleId) ?? "",
+        condition: registry?.condition ?? s.condition,
+        ifrs: registry?.conditionDetail ?? s.citations.join("; "),
+        legs: s.legs.map((l) => resolveLeg(l.accountRole, l.drCr, l.iasCite, l.note)),
+        derivedFrom: s.derivedFrom,
+        deferred: gap !== undefined,
+        ...(gap !== undefined ? { gap } : {}),
+      };
+    });
+    return { id: meta.id, label: meta.label, summary: meta.summary, postingRules };
+  });
+
+  return {
+    classification: [
+      {
+        axis: "IFRS 9 classification",
+        value: cls.ifrs9Family,
+        meaning: ifrs9Meaning(cls.ifrs9Family),
+      },
+      {
+        axis: "IFRS 13 fair-value hierarchy",
+        value: cls.ifrs13FairValueHierarchy,
+        meaning: ifrs13Meaning(cls.ifrs13FairValueHierarchy),
+      },
+      {
+        axis: "IAS 21 FX treatment",
+        value: cls.ias21FxTreatment,
+        meaning: ias21Meaning(cls.ias21FxTreatment),
+      },
+    ],
+    currency,
+    stages,
+    returnCells: cls.baReturnLineMapping.map((cell) => ({ cell, lens: baReturnLens(cell) })),
+    unbackedAccountCodes: [...unbacked],
+    authority: [
+      "D-V2-UI-OVERSIGHT-STANDARD",
+      "D-NPA-PAGE-DE-INVENTION",
+      "D-ACCT-FX-IFRS-POSTING-COMPLETENESS",
+      "D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL",
+    ],
   };
 }
 
@@ -1626,6 +1907,15 @@ export interface ProductDetailView {
   /** Accounting-treatment surface (WS-ACCT-FX-COMPLETENESS Slice 5). */
   accountingTreatment: AccountingTreatmentView;
   /**
+   * §Accounting/CFO perspective (WS-NPA-PERSPECTIVE-IA Slice 2). The deep
+   * per-lifecycle-stage GL-impact walkthrough — classification meanings, the
+   * actual Dr/Cr legs by account role → CoA code → CoA name with IAS/IFRS cite
+   * + active/deferred status, and the BA-return cells the postings feed.
+   * Populated ONLY for FX products (the leg-structure declaration is FX);
+   * `undefined` otherwise.
+   */
+  accountingPerspective?: AccountingPerspectiveView;
+  /**
    * Single product-scoped Policy → Procedure → Function chain. Replaces
    * the per-dimension `chain` blocks on the page: shows only the policies
    * relevant to this product, the procedures that touch it, and the
@@ -1950,6 +2240,7 @@ export function buildProductDetailView(
 
   const fxContractualTerms = buildFxContractualTerms(product, filEvents);
   const fxLifecycle = buildFxLifecycleView(product);
+  const accountingPerspective = buildAccountingPerspective(product);
 
   return {
     product,
@@ -1962,6 +2253,7 @@ export function buildProductDetailView(
     lenses: buildProductLenses(product, attestedCount, dimensions.length),
     journalEntries,
     accountingTreatment: buildAccountingTreatmentView(product),
+    ...(accountingPerspective ? { accountingPerspective } : {}),
     productChain,
     postApprovalFindings,
     asOf: nowIso,
