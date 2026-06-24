@@ -186,12 +186,46 @@ function toMoneyWire(money: { currency: string; amount: string }): MoneyWire {
   return { __money: "v1" as const, currency: money.currency, amount: money.amount };
 }
 
+/** Strip a leading `-` from a canonical decimal string (magnitude). */
+function decimalMagnitude(amount: string): string {
+  const t = amount.trim();
+  return t.startsWith("-") ? t.slice(1) : t;
+}
+
+/** True iff a canonical decimal-string amount is exactly zero (any sign / scale). */
+function isZeroDecimal(amount: string): boolean {
+  return /^-?0*(?:\.0+)?$/.test(amount.trim());
+}
+
 const FX_IAS_RULES = {
-  initialRecognition: "IFRS 9 §3.1.1 — recognition on trade date",
-  revaluation: "IFRS 9 §5.7.1 — FVTPL revaluation",
+  initialRecognition:
+    "IFRS 9 §3.1.1, §5.1.1, B3.1.2 — trade-date FVTPL recognition (at-market FV≈0 on-BS; notionals off-balance-sheet)",
+  revaluation: "IFRS 9 §5.7.1 — FVTPL revaluation (fair-value delta to P&L)",
   revaluationFvoci: "IFRS 9 §5.7.5 — FVOCI election: fair-value movement to OCI",
   close: "IFRS 9 §3.2.3 — derecognition on settlement/cancellation",
 } as const;
+
+// ---------------------------------------------------------------------------
+// OFF-BALANCE-SHEET MEMORANDUM accounts (D-FX-TRADE-DATE-FVTPL-OBS).
+//
+// A trading-book FX spot/forward is an IFRS 9 derivative. At trade date an
+// at-market trade has fair value ≈ 0 → NO on-balance-sheet gross-up at inception
+// (Policy A). The contractual buy/sell notionals are recorded in OFF-BALANCE-
+// SHEET memorandum accounts, self-balancing PER CURRENCY (a commitment leg + a
+// contra leg in EACH of the two trade currencies), so every currency balances and
+// the trial balance stays balanced. These accounts carry an off-balance-sheet COA
+// category and are EXCLUDED from on-balance-sheet asset/liability/equity totals,
+// the GL in-balance check, and BA-100 on-balance-sheet lines.
+//
+// SOURCED, NOT HARDCODED-IN-RULE: the ids/category live in the canonical chart of
+// accounts (`v2-core/accounting/chart-of-accounts.ts`, category
+// `memorandum-off-balance-sheet-fx-commitment`); these constants are the rule's
+// reference to that block, not a redefinition of it.
+// ---------------------------------------------------------------------------
+
+export const FX_OBS_BOUGHT_COMMITMENT_ACCOUNT = "ACC-9100-001";
+export const FX_OBS_SOLD_COMMITMENT_ACCOUNT = "ACC-9100-002";
+export const FX_OBS_COMMITMENT_CONTRA_ACCOUNT = "ACC-9100-003";
 
 /** OCI reserve account a per-instrument FVOCI election (IFRS 9 §5.7.5) routes the
  * fair-value movement to, INSTEAD of the FVTPL unrealised-P&L account. */
@@ -210,28 +244,61 @@ export interface FxElectionOverride {
 
 // ---------------------------------------------------------------------------
 // PR-FX-001-V2 — Initial recognition at trade date (FilInstrumentCreated, FX).
-// IFRS 9 §3.1.1.
+//
+// POLICY A (IFRS 9 FVTPL) + off-balance-sheet memorandum
+// (D-FX-TRADE-DATE-FVTPL-OBS, CEO-approved 2026-06-24).
+//
+// A trading-book FX spot/forward is an IFRS 9 derivative recognised at FAIR
+// VALUE on trade date. For an at-market trade FV ≈ 0 → NO on-balance-sheet
+// gross-up at inception (the old same-currency Dr-receivable/Cr-payable pair is
+// REMOVED — it was self-cancelling, dropped the counter-currency and inflated
+// BA-100 gross assets/liabilities). The on-balance-sheet position is carried by
+// subsequent revaluation (PR-FX-REVAL-V2, IFRS 9 §5.7.1).
+//
+// The contractual buy/sell notionals — the two real legs in their two
+// currencies — are recorded OFF-BALANCE-SHEET from the instrument's `fxAgreement`
+// quad `{ buy: Money, sell: Money }` (D-FX-INSTRUMENT-BUYSELL-QUAD), self-
+// balancing PER CURRENCY:
+//   BUY  leg (ccy Cb, amount Ab): Dr bought-commitment[Cb] Ab ; Cr contra[Cb] Ab
+//   SELL leg (ccy Cs, amount As): Dr contra[Cs] As           ; Cr sold-commitment[Cs] As
+// Cb balances (Dr Ab == Cr Ab); Cs balances (Dr As == Cr As); the trial balance
+// stays in balance and EACH currency self-balances.
+//
+// FAIL-CLOSED on a missing quad: the `recon:fx-agreement-quad-integrity` gate
+// guarantees every LIVE fx-asset-class instance carries `fxAgreement`. If a quad
+// is nonetheless absent (an un-migrated / malformed instance) the rule posts NO
+// legs — it NEVER falls back to the old self-cancelling on-balance-sheet pair (no
+// silent wrong gross-up — Charter cmd 2). Such an instance contributes to neither
+// the fold nor the golden; the fold surfaces it via its fail-closed skip channel.
 // ---------------------------------------------------------------------------
 
 export function postFxInitialRecognitionLegs(payload: FilInstrumentCreatedPayload): FxPostingLeg[] {
   const t = payload.economicTerms;
-  const accounts = resolveFxAccountSet(t.currency);
-  const amount = toMoneyWire(t.notional);
   const postingDate = payload.asOf.substring(0, 10);
   const tenantId = (payload.tenant ?? ANCHOR_TENANT_ID) as TenantId;
   const sourceEventId = payload.instance;
   const iasRule = FX_IAS_RULES.initialRecognition;
   const postingRuleId = FX_POSTING_RULE_IDS.initialRecognition;
-  const description = `FX Initial Recognition ${t.currency} ${t.direction} (V2)`;
 
-  const debitAccount = t.direction === "long" ? accounts.receivable : accounts.payable;
-  const creditAccount = t.direction === "long" ? accounts.payable : accounts.receivable;
+  const agreement = t.fxAgreement;
+  // Fail-closed: no quad ⇒ cannot record the two contractual legs; post nothing
+  // rather than the old self-cancelling same-currency pair.
+  if (agreement === undefined) return [];
 
+  const buyMag = decimalMagnitude(agreement.buy.amount);
+  const sellMag = decimalMagnitude(agreement.sell.amount);
+  const buyAmount = toMoneyWire({ currency: agreement.buy.currency, amount: buyMag });
+  const sellAmount = toMoneyWire({ currency: agreement.sell.currency, amount: sellMag });
+  const description = `FX Trade-date OBS commitment ${agreement.buy.currency}/${agreement.sell.currency} ${t.direction} (V2 FVTPL)`;
+
+  // Off-balance-sheet memorandum, self-balancing per currency. No on-balance-sheet
+  // gross-up: an at-market trade has FV ≈ 0 at inception (IFRS 9 §5.1.1, B3.1.2).
   return [
+    // BUY leg — what the bank will RECEIVE on settlement.
     {
       creditDebit: "debit",
-      accountCode: debitAccount,
-      amount,
+      accountCode: FX_OBS_BOUGHT_COMMITMENT_ACCOUNT,
+      amount: buyAmount,
       postingDate,
       tenantId,
       sourceEventId,
@@ -241,8 +308,31 @@ export function postFxInitialRecognitionLegs(payload: FilInstrumentCreatedPayloa
     },
     {
       creditDebit: "credit",
-      accountCode: creditAccount,
-      amount,
+      accountCode: FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
+      amount: buyAmount,
+      postingDate,
+      tenantId,
+      sourceEventId,
+      iasRule,
+      postingRuleId,
+      description,
+    },
+    // SELL leg — what the bank will DELIVER on settlement.
+    {
+      creditDebit: "debit",
+      accountCode: FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
+      amount: sellAmount,
+      postingDate,
+      tenantId,
+      sourceEventId,
+      iasRule,
+      postingRuleId,
+      description,
+    },
+    {
+      creditDebit: "credit",
+      accountCode: FX_OBS_SOLD_COMMITMENT_ACCOUNT,
+      amount: sellAmount,
       postingDate,
       tenantId,
       sourceEventId,
@@ -255,7 +345,24 @@ export function postFxInitialRecognitionLegs(payload: FilInstrumentCreatedPayloa
 
 // ---------------------------------------------------------------------------
 // PR-FX-REVAL-V2 — FVTPL revaluation (FilInstrumentAmended, FX). IFRS 9 §5.7.1.
-// FVOCI election (IFRS 9 §5.7.5) routes the credit leg to the OCI reserve.
+//
+// Posts the fair-value DELTA since the last measurement — NOT the full notional
+// (the corrected behaviour, D-FX-TRADE-DATE-FVTPL-OBS). This is the
+// ON-BALANCE-SHEET FVTPL position carrier: an at-market trade recognised nothing
+// on-BS at inception (PR-FX-001-V2 is OBS-only), so the position and exposure
+// accrue here as MtM moves.
+//
+// The signed delta is read from `economicTerms.fairValueDeltaSinceLastMeasurement`
+// (born-V2, additive). A positive delta is a GAIN: Dr derivative asset / Cr
+// unrealised P&L. A negative delta is a LOSS: the sign flips the Dr/Cr so the
+// position falls and the loss hits P&L. FVOCI election (IFRS 9 §5.7.5) routes the
+// movement to the OCI reserve instead of P&L.
+//
+// FAIL-CLOSED on a missing/zero delta (the current DARK state — no
+// FilInstrumentAmended is emitted in production): post a ZERO-AMOUNT memo rather
+// than a spurious notional-sized posting. This keeps byte-equivalence with the
+// engine (which delegates to this same function) and never invents a position
+// movement that was not measured (Charter cmd 2).
 // ---------------------------------------------------------------------------
 
 export function postFxRevaluationLegs(
@@ -264,24 +371,64 @@ export function postFxRevaluationLegs(
 ): FxPostingLeg[] {
   const t = payload.economicTerms;
   const accounts = resolveFxAccountSet(t.currency);
-  const amount = toMoneyWire(t.notional);
   const postingDate = payload.asOf.substring(0, 10);
   const tenantId = (payload.tenant ?? ANCHOR_TENANT_ID) as TenantId;
   const sourceEventId = payload.instance;
   const postingRuleId = FX_POSTING_RULE_IDS.revaluation;
 
   const isFvoci = election?.ifrsCategory === "fvoci";
-  const creditAccount = isFvoci ? FX_FVOCI_OCI_RESERVE_ACCOUNT : accounts.unrealisedPnl;
+  const positionAccount = accounts.receivable;
+  const counterAccount = isFvoci ? FX_FVOCI_OCI_RESERVE_ACCOUNT : accounts.unrealisedPnl;
   const iasRule = isFvoci ? FX_IAS_RULES.revaluationFvoci : FX_IAS_RULES.revaluation;
+
+  const delta = t.fairValueDeltaSinceLastMeasurement;
+  // Un-measured / absent delta ⇒ zero-amount memo (no spurious notional posting).
+  if (delta === undefined || isZeroDecimal(delta.amount)) {
+    const zeroAmount = toMoneyWire({ currency: t.currency, amount: "0" });
+    const description = `FX Revaluation ${t.currency} (V2 — no measured fair-value delta)`;
+    return [
+      {
+        creditDebit: "debit",
+        accountCode: positionAccount,
+        amount: zeroAmount,
+        postingDate,
+        tenantId,
+        sourceEventId,
+        iasRule,
+        postingRuleId,
+        description,
+      },
+      {
+        creditDebit: "credit",
+        accountCode: counterAccount,
+        amount: zeroAmount,
+        postingDate,
+        tenantId,
+        sourceEventId,
+        iasRule,
+        postingRuleId,
+        description,
+      },
+    ];
+  }
+
+  const magnitude = toMoneyWire({
+    currency: delta.currency,
+    amount: decimalMagnitude(delta.amount),
+  });
+  const isGain = !delta.amount.trim().startsWith("-");
+  // Gain: Dr position / Cr P&L (or OCI). Loss: Cr position / Dr P&L (or OCI).
+  const positionSide: "debit" | "credit" = isGain ? "debit" : "credit";
+  const counterSide: "debit" | "credit" = isGain ? "credit" : "debit";
   const description = isFvoci
-    ? `FX Revaluation ${t.currency} (V2 FVOCI election, OCI)`
-    : `FX Revaluation ${t.currency} (V2 advisory)`;
+    ? `FX Revaluation ${delta.currency} ${isGain ? "gain" : "loss"} (V2 FVOCI election, OCI)`
+    : `FX Revaluation ${delta.currency} ${isGain ? "gain" : "loss"} (V2 FVTPL delta)`;
 
   return [
     {
-      creditDebit: "debit",
-      accountCode: accounts.receivable,
-      amount,
+      creditDebit: positionSide,
+      accountCode: positionAccount,
+      amount: magnitude,
       postingDate,
       tenantId,
       sourceEventId,
@@ -290,9 +437,9 @@ export function postFxRevaluationLegs(
       description,
     },
     {
-      creditDebit: "credit",
-      accountCode: creditAccount,
-      amount,
+      creditDebit: counterSide,
+      accountCode: counterAccount,
+      amount: magnitude,
       postingDate,
       tenantId,
       sourceEventId,

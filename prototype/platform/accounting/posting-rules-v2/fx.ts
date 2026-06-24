@@ -25,4 +25,7 @@ export {
   postFxCloseLegs,
   FX_CANCEL_REVERSAL_RULE_ID,
   postFxCancellationReversalLegs,
+  FX_OBS_BOUGHT_COMMITMENT_ACCOUNT,
+  FX_OBS_SOLD_COMMITMENT_ACCOUNT,
+  FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
 } from "../../../v2-core/posting-rules/fx";

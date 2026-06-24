@@ -85,15 +85,34 @@ function categoryLabel(category: string): string {
 }
 
 /** Top-level accounting class of a CoA category (drives the totals tiles). */
-type GlClass = "asset" | "liability" | "equity" | "income" | "expense" | "other";
+type GlClass =
+  | "asset"
+  | "liability"
+  | "equity"
+  | "income"
+  | "expense"
+  | "off-balance-sheet"
+  | "other";
 
 function glClassOf(category: string): GlClass {
+  // Off-balance-sheet memorandum accounts (FX trade-date commitment quad,
+  // regulatory NOP, …) are EXCLUDED from the on-balance-sheet asset/liability/
+  // equity tiles AND from the native in-balance check — they self-balance in
+  // their own segregated section. (D-FX-TRADE-DATE-FVTPL-OBS.)
+  if (category.startsWith("memorandum") || category.startsWith("off-balance-sheet")) {
+    return "off-balance-sheet";
+  }
   if (category.startsWith("asset")) return "asset";
   if (category.startsWith("liability")) return "liability";
   if (category === "equity" || category.startsWith("equity")) return "equity";
   if (category.startsWith("income")) return "income";
   if (category.startsWith("expense")) return "expense";
   return "other";
+}
+
+/** True iff a CoA category is an off-balance-sheet memorandum class. */
+function isOffBalanceSheetCategory(category: string): boolean {
+  return glClassOf(category) === "off-balance-sheet";
 }
 
 // ---------------------------------------------------------------------------
@@ -143,6 +162,13 @@ export interface GlTrialBalanceRow {
   /** Signed ZAR-equivalent net in minor units. */
   readonly zarNetMinor: number;
   readonly zarNetFmt: string;
+  /**
+   * True iff this row is an OFF-BALANCE-SHEET memorandum account (FX trade-date
+   * commitment quad, regulatory NOP, …) — rendered in a segregated section and
+   * EXCLUDED from on-balance-sheet asset/liability/equity totals + the in-balance
+   * check. (D-FX-TRADE-DATE-FVTPL-OBS.)
+   */
+  readonly offBalanceSheet: boolean;
 }
 
 /** A totals tile (assets / liabilities / equity / in-balance check). */
@@ -177,6 +203,18 @@ export interface GlView {
   /** Σ credits translated to ZAR (indicative, @ latest spot). */
   readonly zarTotalCreditMinor: number;
   readonly zarTotalCreditFmt: string;
+  /**
+   * Off-balance-sheet memorandum Σ debits (native minor) — the segregated OBS
+   * section total, EXCLUDED from `totalDebitMinor` / the on-BS in-balance check.
+   * (D-FX-TRADE-DATE-FVTPL-OBS.)
+   */
+  readonly offBalanceSheetDebitMinor: number;
+  readonly offBalanceSheetDebitFmt: string;
+  /** Off-balance-sheet memorandum Σ credits (native minor). */
+  readonly offBalanceSheetCreditMinor: number;
+  readonly offBalanceSheetCreditFmt: string;
+  /** True iff the OBS section self-balances (ΣDr == ΣCr over memorandum rows). */
+  readonly offBalanceSheetInBalance: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -288,8 +326,14 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
     equity: 0,
     income: 0,
     expense: 0,
+    "off-balance-sheet": 0,
     other: 0,
   };
+  // On-balance-sheet Dr/Cr running totals — the native in-balance check runs on
+  // these ONLY; off-balance-sheet memorandum rows are excluded (they self-balance
+  // in their own segregated section). (D-FX-TRADE-DATE-FVTPL-OBS.)
+  let obsDebitMinor = 0;
+  let obsCreditMinor = 0;
 
   for (const agg of aggByAccount.values()) {
     const currencies = [...agg.netByCurrency.keys()];
@@ -315,11 +359,27 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
     const zarDebitMinor = zarNet >= 0 ? zarNet : 0;
     const zarCreditMinor = zarNet < 0 ? -zarNet : 0;
 
-    totalDebitMinor += debitMinor;
-    totalCreditMinor += creditMinor;
+    const isObs = isOffBalanceSheetCategory(agg.category);
+    if (isObs) {
+      // Off-balance-sheet memorandum rows are tracked separately and EXCLUDED from
+      // the on-balance-sheet Dr/Cr in-balance check + the on-BS totals. OBS
+      // memorandum accounts (the FX commitment contra in particular) are inherently
+      // multi-currency, so the section total runs on the ZAR-EQUIVALENT (the native
+      // per-row Dr/Cr is blank for a multi-currency row). The per-currency self-
+      // balancing is the real invariant the recon gate asserts.
+      if (zarRateAvailable) {
+        obsDebitMinor += zarDebitMinor;
+        obsCreditMinor += zarCreditMinor;
+      }
+    } else {
+      totalDebitMinor += debitMinor;
+      totalCreditMinor += creditMinor;
+    }
     if (zarRateAvailable) {
-      zarTotalDebitMinor += zarDebitMinor;
-      zarTotalCreditMinor += zarCreditMinor;
+      if (!isObs) {
+        zarTotalDebitMinor += zarDebitMinor;
+        zarTotalCreditMinor += zarCreditMinor;
+      }
       // Class totals run on the ZAR-equivalent so multi-currency books aggregate.
       classTotals[glClassOf(agg.category)] += zarNet;
     }
@@ -351,13 +411,16 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
           : fmtMinor(zarCreditMinor, FUNCTIONAL_CURRENCY),
       zarNetMinor: zarNet,
       zarNetFmt: !zarRateAvailable ? "rate n/a" : fmtMinor(zarNet, FUNCTIONAL_CURRENCY),
+      offBalanceSheet: isObs,
     });
   }
 
   // Stable order: by account id.
   rows.sort((a, b) => a.accountId.localeCompare(b.accountId));
 
+  // The on-balance-sheet in-balance check runs on the on-BS Dr/Cr totals ONLY.
   const inBalance = totalDebitMinor === totalCreditMinor;
+  const offBalanceSheetInBalance = obsDebitMinor === obsCreditMinor;
   // Equity stock is a credit balance (negative net); present as a positive figure.
   const assetsMinor = classTotals.asset;
   const liabilitiesMinor = -classTotals.liability;
@@ -414,6 +477,11 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
     zarTotalDebitFmt: fmtMinor(zarTotalDebitMinor, FUNCTIONAL_CURRENCY),
     zarTotalCreditMinor,
     zarTotalCreditFmt: fmtMinor(zarTotalCreditMinor, FUNCTIONAL_CURRENCY),
+    offBalanceSheetDebitMinor: obsDebitMinor,
+    offBalanceSheetDebitFmt: fmtMinor(obsDebitMinor, FUNCTIONAL_CURRENCY),
+    offBalanceSheetCreditMinor: obsCreditMinor,
+    offBalanceSheetCreditFmt: fmtMinor(obsCreditMinor, FUNCTIONAL_CURRENCY),
+    offBalanceSheetInBalance,
   };
 }
 

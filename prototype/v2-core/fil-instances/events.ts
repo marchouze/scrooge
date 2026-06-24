@@ -289,6 +289,21 @@ const filEconomicTermsObjectSchema = z.object({
    * fails closed on any `fx` instance lacking it at cutover.
    */
   fxAgreement: fxAgreementSchema.optional(),
+  /**
+   * Fair-value MOVEMENT since the last measurement (D-FX-TRADE-DATE-FVTPL-OBS).
+   * Carried on a `FilInstrumentAmended` (revaluation) event so the FVTPL
+   * revaluation rule (`PR-FX-REVAL-V2`, IFRS 9 §5.7.1) posts the fair-value DELTA
+   * to the on-balance-sheet FX-derivative position vs P&L — NOT the full notional
+   * (the corrected behaviour). SIGNED Money: a positive `amount` is a gain (Dr
+   * derivative asset / Cr unrealised P&L); a negative is a loss. The currency is
+   * the leg currency the position is carried in (typically the instrument
+   * `currency`). OPTIONAL + additive: only revaluation amendments that carry a
+   * measured delta populate it; every existing event (which carries none) parses
+   * unchanged (replay-safe — Charter cmd 9). When ABSENT (the dark / un-measured
+   * state) the reval rule posts a zero-amount memo — never a spurious
+   * notional-sized posting (fail-closed; no silent default — Charter cmd 2).
+   */
+  fairValueDeltaSinceLastMeasurement: moneySchema.optional(),
 });
 
 /**

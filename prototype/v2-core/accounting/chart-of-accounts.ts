@@ -851,6 +851,34 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     category: "memorandum-regulatory-nop",
     side: "credit",
   },
+
+  // 9100 — FX forward / spot trade-date OFF-BALANCE-SHEET commitment memorandum
+  // accounts (D-FX-TRADE-DATE-FVTPL-OBS, CEO-approved 2026-06-24). A trading-book
+  // FX trade is an IFRS 9 derivative (at-market FV≈0 at inception → no on-BS
+  // gross-up); the contractual buy/sell notionals from the `fxAgreement` quad are
+  // recorded here off-balance-sheet, self-balancing per currency (bought/sold
+  // commitment + contra). EXCLUDED from on-balance-sheet asset/liability/equity
+  // totals, the GL in-balance check, and BA-100 on-balance-sheet lines. No fixed
+  // `currency` — the contra holds both trade currencies (per-leg currency
+  // authoritative). Citations: IFRS 9 §3.1.1/§5.1.1/B3.1.2; D-FX-INSTRUMENT-BUYSELL-QUAD.
+  {
+    id: "ACC-9100-001",
+    name: "FX Forward Bought Commitment (memorandum)",
+    category: "memorandum-off-balance-sheet-fx-commitment",
+    side: "debit",
+  },
+  {
+    id: "ACC-9100-002",
+    name: "FX Forward Sold Commitment (memorandum)",
+    category: "memorandum-off-balance-sheet-fx-commitment",
+    side: "credit",
+  },
+  {
+    id: "ACC-9100-003",
+    name: "FX Forward Commitment Contra (memorandum)",
+    category: "memorandum-off-balance-sheet-fx-commitment",
+    side: "credit",
+  },
 ];
 
 // ---------------------------------------------------------------------------

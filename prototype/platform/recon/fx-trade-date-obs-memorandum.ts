@@ -1,0 +1,197 @@
+// platform/recon/fx-trade-date-obs-memorandum.ts
+//
+// recon:fx-trade-date-obs-memorandum — ENFORCING trade-date FX shape gate.
+//
+// THE INVARIANT (D-FX-TRADE-DATE-FVTPL-OBS, CEO-approved 2026-06-24, Policy A):
+// a trading-book FX spot/forward is an IFRS 9 derivative recognised at FAIR VALUE
+// on trade date. For an at-market trade FV ≈ 0 → the trade-date recognition rule
+// (PR-FX-001-V2) produces:
+//   (1) NO same-currency on-balance-sheet gross-up — it MUST NOT post the old
+//       self-cancelling Dr-receivable[ccy] / Cr-payable[ccy] pair on the FX
+//       on-balance-sheet account block (ACC-2100-*). That pair netted to zero,
+//       dropped the counter-currency and inflated BA-100 gross assets/liabilities.
+//   (2) the contractual buy/sell notionals from the instrument's `fxAgreement`
+//       quad land in OFF-BALANCE-SHEET memorandum accounts (ACC-9100-*) spanning
+//       the TWO trade currencies, self-balancing per currency.
+//
+// METHOD. Re-applies the lifted `postFxInitialRecognitionLegs` to the production
+// FX FilInstrumentCreated events (the SAME events the FX fold + the golden read),
+// exactly as `recon:gl-v2-fold-equivalence-fx` does, and asserts the leg SHAPE:
+//   - zero legs on the FX on-balance-sheet block (ACC-2100-*) at trade date;
+//   - every leg on an OBS memorandum account (ACC-9100-*);
+//   - the OBS legs span the two distinct quad currencies and self-balance per
+//     currency (ΣDr == ΣCr in each currency).
+//
+// This is the assertion `recon:gl-v2-fold-equivalence-fx` cannot make: that gate
+// proves the fold reproduces the rule byte-for-byte, but a consistent-but-wrong
+// rule (the old self-cancelling pair) would pass it. This gate fails closed on the
+// WRONG SHAPE.
+//
+// CLEAN-STORE BEHAVIOUR: on a store with no FX FilInstrumentCreated events the
+// gate passes vacuously (0 asserted trade-date legs) — same posture as the
+// fold-equivalence gate.
+//
+// READ-ONLY: applies the pure rule to the v2 FIL-instance event stream; values
+// nothing, touches no v1 number.
+//
+// Authority: D-FX-TRADE-DATE-FVTPL-OBS (CEO-approved 2026-06-24); citing
+//   D-FX-INSTRUMENT-BUYSELL-QUAD; D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD; Engineering
+//   Charter (fail-closed, no-green-by-concealment). Principle 1; Principle 2.
+// Author: Bea (Accounting & financial reporting engineer, engineering).
+
+import type { FilInstrumentCreatedPayload } from "../../v2-core/fil-instances/events";
+import {
+  FX_OBS_BOUGHT_COMMITMENT_ACCOUNT,
+  FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
+  FX_OBS_SOLD_COMMITMENT_ACCOUNT,
+  type FxPostingLeg,
+  postFxInitialRecognitionLegs,
+} from "../accounting/posting-rules-v2/fx";
+import { foldFxContributionLegs } from "../accounting/posting-rules-v2/fx-fold";
+import { eventStore } from "../composition";
+import { amountToMinorUnits } from "../core/decimal-money";
+import { legAmountMoney } from "../core/money-codec";
+import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
+import { V2_ANCHOR_ENTITY, V2_PERIOD_END, V2_PERIOD_START } from "../projections/v2-read-window";
+import { type ReconResult, type ReconViolation, emptyResult } from "./types";
+
+const PIPELINE = "fx-trade-date-obs-memorandum";
+
+const FX_ONBS_ACCOUNT_PREFIX = "ACC-2100-";
+const OBS_ACCOUNTS = new Set([
+  FX_OBS_BOUGHT_COMMITMENT_ACCOUNT,
+  FX_OBS_SOLD_COMMITMENT_ACCOUNT,
+  FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
+]);
+
+function legMinor(leg: FxPostingLeg): number {
+  const money = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
+  return Number(amountToMinorUnits(money));
+}
+
+export function run(): ReconResult {
+  const result = emptyResult(PIPELINE);
+  const violations: ReconViolation[] = [];
+
+  try {
+    const filter = defaultProvenanceFilter();
+
+    // Reuse the fold's treatment decision: only instances the fold ADMITS are in
+    // scope (a fail-closed-skipped instance contributes to neither side).
+    const admitted = new Set(
+      foldFxContributionLegs({
+        eventStore,
+        periodStart: V2_PERIOD_START,
+        periodEnd: V2_PERIOD_END,
+      }).legs.map((l) => l.filEventId),
+    );
+
+    let tradeDateInstances = 0;
+
+    for (const e of eventStore.replay({ entity: V2_ANCHOR_ENTITY, type: "FilInstrumentCreated" })) {
+      if (!eventMatchesProvenanceFilter(e, filter)) continue;
+      if (!admitted.has(e.event_id)) continue;
+      const payload = e.payload as unknown as FilInstrumentCreatedPayload;
+      if (payload.economicTerms.assetClass !== "fx") continue;
+
+      // Window-scope on the posting date (mirrors the fold's accumulation window).
+      const postingDate = payload.asOf.substring(0, 10);
+      if (postingDate < V2_PERIOD_START || postingDate > V2_PERIOD_END) continue;
+
+      const legs = postFxInitialRecognitionLegs(payload);
+      // A fail-closed skip (no fxAgreement) yields no legs — not a shape violation
+      // here (the fold surfaces it). Only assert shape when legs exist.
+      if (legs.length === 0) continue;
+      tradeDateInstances += 1;
+      const instance = payload.instance;
+
+      // (1) NO on-balance-sheet FX gross-up.
+      result.asserted += 1;
+      const onBsLegs = legs.filter((l) => l.accountCode.startsWith(FX_ONBS_ACCOUNT_PREFIX));
+      if (onBsLegs.length > 0) {
+        violations.push({
+          subject: `${PIPELINE}:on-bs-gross-up:${instance}`,
+          message: `Trade-date FX instance ${instance} posted ${onBsLegs.length} on-balance-sheet FX leg(s) on accounts [${onBsLegs.map((l) => l.accountCode).join(", ")}]. Policy A (IFRS 9 FVTPL) recognises NO on-balance-sheet gross-up at inception for an at-market trade — the contractual notionals belong off-balance-sheet. Authority: D-FX-TRADE-DATE-FVTPL-OBS.`,
+          severity: "fail",
+        });
+      }
+
+      // (2) Every leg lands on an OBS memorandum account.
+      result.asserted += 1;
+      const nonObsLegs = legs.filter((l) => !OBS_ACCOUNTS.has(l.accountCode));
+      if (nonObsLegs.length > 0) {
+        violations.push({
+          subject: `${PIPELINE}:non-obs-leg:${instance}`,
+          message: `Trade-date FX instance ${instance} posted leg(s) outside the OBS memorandum block on accounts [${nonObsLegs.map((l) => l.accountCode).join(", ")}]. Every trade-date leg must land on an off-balance-sheet memorandum account (${[...OBS_ACCOUNTS].join(", ")}). Authority: D-FX-TRADE-DATE-FVTPL-OBS.`,
+          severity: "fail",
+        });
+      }
+
+      // (3) OBS legs span the two distinct quad currencies and self-balance per ccy.
+      result.asserted += 1;
+      const netByCcy = new Map<string, number>();
+      for (const leg of legs) {
+        const m = legMinor(leg);
+        netByCcy.set(
+          leg.amount.currency,
+          (netByCcy.get(leg.amount.currency) ?? 0) + (leg.creditDebit === "debit" ? m : -m),
+        );
+      }
+      const currencies = [...netByCcy.keys()];
+      if (currencies.length !== 2) {
+        violations.push({
+          subject: `${PIPELINE}:currency-span:${instance}`,
+          message: `Trade-date FX instance ${instance} OBS legs span ${currencies.length} currenc(ies) [${currencies.join(", ")}], expected exactly 2 (the buy + sell legs of the fxAgreement quad in their two distinct currencies). Authority: D-FX-TRADE-DATE-FVTPL-OBS; D-FX-INSTRUMENT-BUYSELL-QUAD.`,
+          severity: "fail",
+        });
+      }
+      for (const [ccy, net] of netByCcy) {
+        if (net !== 0) {
+          violations.push({
+            subject: `${PIPELINE}:currency-imbalance:${instance}:${ccy}`,
+            message: `Trade-date FX instance ${instance} OBS memorandum legs do not self-balance in ${ccy} (net ${net} minor, expected 0). Each currency must balance (a commitment leg + a contra leg of equal magnitude). Authority: D-FX-TRADE-DATE-FVTPL-OBS.`,
+            severity: "fail",
+          });
+        }
+      }
+    }
+
+    result.asOf = `${PIPELINE}: trade-date FX instances asserted=${tradeDateInstances}. ${
+      violations.some((v) => v.severity === "fail")
+        ? "WRONG-SHAPE"
+        : "Policy A — no on-BS gross-up; notionals in OBS memorandum spanning two currencies"
+    }.`;
+  } catch (err) {
+    violations.push({
+      subject: `${PIPELINE}:error`,
+      message: `FX trade-date OBS assertion threw: ${err instanceof Error ? err.message : String(err)}.`,
+      severity: "fail",
+    });
+    result.asserted += 1;
+  }
+
+  result.violations = violations;
+  result.ok = violations.every((v) => v.severity !== "fail");
+  return result;
+}
+
+if (import.meta.main) {
+  const r = run();
+  for (const v of r.violations) {
+    process.stderr.write(`[${v.severity}] ${v.subject}: ${v.message}\n`);
+  }
+  process.stdout.write(`\nrecon:${PIPELINE} ${r.ok ? "OK" : "FAIL"}\n${r.asOf}\n`);
+  console.log(
+    JSON.stringify({
+      level: r.ok ? "info" : "error",
+      time: r.asOf,
+      service: "bank-prototype",
+      pipeline: r.pipeline,
+      asserted: r.asserted,
+      violations: r.violations.length,
+      ok: r.ok,
+      msg: r.asOf,
+    }),
+  );
+  process.exit(r.ok ? 0 : 1);
+}

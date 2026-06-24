@@ -114,6 +114,19 @@ function fxCreated(
         currency: "ZAR",
         settlementDate: asOf.slice(0, 10),
         hedgingSetTag: "USD/ZAR",
+        // D-FX-INSTRUMENT-BUYSELL-QUAD: USD/ZAR ⇒ base=USD, quote=ZAR. long ⇒
+        // bought USD (base), sold ZAR; short ⇒ bought ZAR, sold USD. The ZAR leg
+        // magnitude == notional (the instrument-currency leg).
+        fxAgreement:
+          direction === "long"
+            ? {
+                buy: { currency: "USD", amount: notional },
+                sell: { currency: "ZAR", amount: notional },
+              }
+            : {
+                buy: { currency: "ZAR", amount: notional },
+                sell: { currency: "USD", amount: notional },
+              },
       },
     }),
   });

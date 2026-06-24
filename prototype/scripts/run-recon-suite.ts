@@ -318,6 +318,14 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // rules byte-for-byte (the legs the dual-run engine emits). Vacuous-pass on a
     // clean store (no FIL FX events). Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD.
     "recon:gl-v2-fold-equivalence-fx",
+    // D-FX-TRADE-DATE-FVTPL-OBS — trade-date FX shape gate (ENFORCING). Asserts the
+    // trade-date recognition rule (PR-FX-001-V2) produces NO same-currency on-balance-
+    // sheet gross-up and that the contractual buy/sell notionals land in OFF-BALANCE-
+    // SHEET memorandum accounts (ACC-9100-*) spanning the two trade currencies, self-
+    // balancing per currency. Catches the consistent-but-wrong shape the fold-
+    // equivalence gate cannot. Vacuous-pass on a clean store (no FX FilInstrumentCreated).
+    // Authority: D-FX-TRADE-DATE-FVTPL-OBS.
+    "recon:fx-trade-date-obs-memorandum",
     // D-FIL-CONSUMER-SURFACE-ARCHITECTURE (Step D, ENFORCING) — FIL consumer-surface
     // isolation gate. Static scan: the accounting / GL surface (platform/accounting/**
     // + gl-projection-v2.ts) may replay FilInstrument* FOR STATE only through the

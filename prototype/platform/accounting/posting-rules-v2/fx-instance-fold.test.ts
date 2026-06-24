@@ -105,6 +105,18 @@ function fxCreated(
         currency: "ZAR",
         settlementDate: asOf.slice(0, 10),
         hedgingSetTag: "USD/ZAR",
+        // D-FX-INSTRUMENT-BUYSELL-QUAD: USD/ZAR ⇒ base=USD, quote=ZAR. long ⇒
+        // bought USD (base), sold ZAR; short ⇒ bought ZAR, sold USD.
+        fxAgreement:
+          direction === "long"
+            ? {
+                buy: { currency: "USD", amount: notional },
+                sell: { currency: "ZAR", amount: notional },
+              }
+            : {
+                buy: { currency: "ZAR", amount: notional },
+                sell: { currency: "USD", amount: notional },
+              },
       },
     }),
   });
@@ -135,6 +147,13 @@ function fxAmended(id: string, notional: string, asOf: string): Event {
         currency: "ZAR",
         settlementDate: asOf.slice(0, 10),
         hedgingSetTag: "USD/ZAR",
+        fxAgreement: {
+          buy: { currency: "USD", amount: notional },
+          sell: { currency: "ZAR", amount: notional },
+        },
+        // D-FX-TRADE-DATE-FVTPL-OBS: the revaluation posts the measured fair-value
+        // DELTA (not the notional). A non-zero delta produces a real on-BS position.
+        fairValueDeltaSinceLastMeasurement: { currency: "ZAR", amount: notional },
       },
     }),
   });
@@ -258,7 +277,7 @@ describe("deriveFxInstanceLegs — state-driven net == event-fold net (byte-equi
     expect(stateNet.size).toBe(0);
     // And the state derivation produced its reversal via the dedicated rule id.
     const reversal = stateFold.legs.filter((l) => l.postingRuleId === "PR-FX-CANCEL-REVERSAL-V2");
-    expect(reversal.length).toBe(2); // the opening pair reversed once
+    expect(reversal.length).toBe(4); // the four trade-date OBS opening legs reversed once
     expect(reversal.every((l) => l.filEventId.endsWith("::cancellation-reversal"))).toBe(true);
   });
 
@@ -272,8 +291,8 @@ describe("deriveFxInstanceLegs — state-driven net == event-fold net (byte-equi
     const { stateNet, stateFold } = expectStateNetMatchesEventNet(store);
     expect(stateNet.size).toBe(0);
     const reversal = stateFold.legs.filter((l) => l.postingRuleId === "PR-FX-CANCEL-REVERSAL-V2");
-    // Reversed exactly once (2 legs), not over-reversed.
-    expect(reversal.length).toBe(2);
+    // Reversed exactly once (4 trade-date OBS legs), not over-reversed.
+    expect(reversal.length).toBe(4);
   });
 
   test("amended (revaluation) — full-pair accumulation reproduced from FLOW", () => {
