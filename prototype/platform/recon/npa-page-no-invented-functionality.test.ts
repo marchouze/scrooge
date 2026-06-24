@@ -380,7 +380,9 @@ describe("recon:npa-page-no-invented-functionality", () => {
     const broken: FxLifecycleView = {
       ...block,
       ownershipLevels: block.ownershipLevels.map((t) =>
-        t.level === "fil-leg-fact" ? { ...t, representativeEventType: "NotARealOwnershipEvt999" } : t,
+        t.level === "fil-leg-fact"
+          ? { ...t, representativeEventType: "NotARealOwnershipEvt999" }
+          : t,
       ),
     };
     const view = detailView({ family: "fx", fxLifecycle: broken });

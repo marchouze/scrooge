@@ -1579,7 +1579,11 @@ export function buildFxLifecycleView(product: Product): FxLifecycleView | undefi
       connects: l.connects,
       source: l.source,
     })),
-    authority: ["D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL", "D-FX-INSTRUMENT-BUYSELL-QUAD", "D-CASH-ASSET-CLASS-V1"],
+    authority: [
+      "D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL",
+      "D-FX-INSTRUMENT-BUYSELL-QUAD",
+      "D-CASH-ASSET-CLASS-V1",
+    ],
   };
 }
 
