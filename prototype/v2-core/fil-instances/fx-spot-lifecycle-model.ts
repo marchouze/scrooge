@@ -76,6 +76,84 @@ export const FX_LIFECYCLE_OWNERSHIP_LABEL: Readonly<Record<FxLifecycleOwnershipL
   "fil-leg-fact": "FIL-leg fact",
 };
 
+/**
+ * The THREE event-ownership levels, declared explicitly + ordered (governance →
+ * booking-act → FIL-leg fact). The reference SVG draws these as three vertical
+ * ownership tiers; the page renders them as an explicit grouping so a reader can
+ * see WHICH tier each event sits in. Each entry names the level, its label, a
+ * one-line description of the atomicity-of-act it captures, and a representative
+ * event type that lives at that tier (registry-backed — asserted by the
+ * de-invention gate via the stage `eventTypes`/`materialises` it appears in).
+ */
+export interface FxLifecycleOwnershipTier {
+  readonly level: FxLifecycleOwnershipLevel;
+  readonly label: string;
+  /** What the tier IS — the atomicity-of-act it captures. */
+  readonly description: string;
+  /** A representative event type at this tier (each resolves to the registry). */
+  readonly representativeEventType: string;
+}
+
+export const FX_LIFECYCLE_OWNERSHIP_TIERS: readonly FxLifecycleOwnershipTier[] = [
+  {
+    level: "product-type-governance",
+    label: FX_LIFECYCLE_OWNERSHIP_LABEL["product-type-governance"],
+    description:
+      "The product TYPE rulebook — the governance act that registers the kind of instrument (its posting rules, lifecycle, eligibility). One per product type, not per trade.",
+    representativeEventType: "V2ProductRegistered",
+  },
+  {
+    level: "booking-composite-act",
+    label: FX_LIFECYCLE_OWNERSHIP_LABEL["booking-composite-act"],
+    description:
+      "An atomic multi-leg ACT — a trade and the single-asset settlement movements that execute its obligation. One booking act spans the trade + its N settlement movements.",
+    representativeEventType: "TradeSettlementExecuted",
+  },
+  {
+    level: "fil-leg-fact",
+    label: FX_LIFECYCLE_OWNERSHIP_LABEL["fil-leg-fact"],
+    description:
+      "A per-instrument fact — one FIL instance's own life: it is created (e.g. the materialised cash holding), valued, and terminated. Each settlement movement materialises a cash holding as a FIL-leg fact.",
+    representativeEventType: "FilInstrumentCreated",
+  },
+];
+
+/**
+ * The materialised cash-holding FIL-leg fact a settlement movement creates — the
+ * SVG's Level 3. On value date each settlement movement (Payment / Receipt)
+ * MATERIALISES a cash holding: a `FilInstrumentCreated` of asset class `cash`
+ * (`fil:type:cash:balance:vanilla@1.0`, D-CASH-ASSET-CLASS-V1), recognised at
+ * cost. Payment (−A) materialises the PAID-leg holding; Receipt (+A) the
+ * RECEIVED-leg holding. The settlement's `holdingInstance` points at it; the
+ * holding's `economicTerms.originatingInstrument` points back to the trade.
+ *
+ * SOURCED, NOT INVENTED — the grammar is `buildSettledCashPayloads`
+ * (cash-materialisation.ts); the event type resolves to the registry (asserted
+ * by the de-invention gate, same surface as the stage `eventTypes`).
+ */
+export interface FxLifecycleMaterialisedHolding {
+  /** The event type that materialises the holding (registry-backed). */
+  readonly eventType: string;
+  /** Asset class of the materialised holding — `cash` for an FX cash leg. */
+  readonly assetClass: string;
+  /** The FIL TYPE URN of the cash holding (D-CASH-ASSET-CLASS-V1). */
+  readonly typeUrn: string;
+  /** Movement sign on the holding: `-` paid (holding ↓) / `+` received (holding ↑). */
+  readonly sign: "-" | "+";
+  /** Display label for the holding node (e.g. "Cash holding −"). */
+  readonly label: string;
+  /** Short description of what the holding IS. */
+  readonly description: string;
+  /** The link field on the SETTLEMENT that points at this holding. */
+  readonly holdingLink: string;
+  /** The link field on the HOLDING that points back at the trade. */
+  readonly originatingLink: string;
+  /** Where the materialisation grammar lives (module path) — traceability. */
+  readonly source: string;
+  /** Citations backing the materialisation. */
+  readonly citations: readonly string[];
+}
+
 /** One linking field that connects a stage to its neighbours (real schema field). */
 export interface FxLifecycleLinkingField {
   /** The schema field name (verbatim — a real field, never invented). */
@@ -105,16 +183,52 @@ export interface FxSpotLifecycleStage {
   readonly ownership: FxLifecycleOwnershipLevel;
   /** The linking field names that connect this stage to its neighbours. */
   readonly linkingFields: readonly FxLifecycleLinkingField[];
+  /**
+   * The materialised cash-holding FIL-leg fact this stage creates (the SVG's
+   * Level 3). Present on the settlement stages (Payment / Receipt) — each
+   * settlement movement materialises one cash holding; `undefined` on stages
+   * that materialise no holding (Initiation, Termination).
+   */
+  readonly materialises?: FxLifecycleMaterialisedHolding;
   /** Decision / schema citations backing the stage. */
   readonly citations: readonly string[];
 }
 
 const D_FX_MODEL = "D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL";
 const D_FX_QUAD = "D-FX-INSTRUMENT-BUYSELL-QUAD";
+const D_CASH = "D-CASH-ASSET-CLASS-V1";
 
 const EVENTS_TS = "v2-core/fil-instances/events.ts";
 const SETTLEMENT_TS = "v2-core/fil-instances/trade-settlement.ts";
 const TRADE_FAMILY_TS = "v2-core/fil-instances/trade-family.ts";
+const CASH_MATERIALISATION_TS = "v2-core/fil-instances/cash-materialisation.ts";
+
+/** The canonical Cash FIL TYPE URN (D-CASH-ASSET-CLASS-V1). */
+const CASH_TYPE_URN = "fil:type:cash:balance:vanilla@1.0";
+
+/**
+ * The materialised cash-holding FIL-leg fact a settlement movement creates. One
+ * `FilInstrumentCreated` of asset class `cash`, recognised at cost; the sign on
+ * the movement (− paid / + received) is the only difference between Payment and
+ * Receipt. SOURCED from `buildSettledCashPayloads` (cash-materialisation.ts).
+ */
+function materialisedCashHolding(sign: "-" | "+"): FxLifecycleMaterialisedHolding {
+  const paid = sign === "-";
+  return {
+    eventType: "FilInstrumentCreated",
+    assetClass: "cash",
+    typeUrn: CASH_TYPE_URN,
+    sign,
+    label: `Cash holding ${sign}`,
+    description: paid
+      ? "The paid-leg cash holding the settlement materialises: a FIL-leg fact created (FilInstrumentCreated, asset class cash) at the settled cash amount, recognised at cost. The paying holding decreases (−A)."
+      : "The received-leg cash holding the settlement materialises: a FIL-leg fact created (FilInstrumentCreated, asset class cash) at the settled cash amount, recognised at cost. The receiving holding increases (+A).",
+    holdingLink: "holdingInstance",
+    originatingLink: "originatingInstrument",
+    source: CASH_MATERIALISATION_TS,
+    citations: [D_CASH, D_FX_MODEL, CASH_MATERIALISATION_TS],
+  };
+}
 
 /**
  * The four-stage model. Pure standing data — empty-store-safe. Event types are
@@ -163,7 +277,8 @@ export const FX_SPOT_LIFECYCLE_STAGES: readonly FxSpotLifecycleStage[] = [
         source: SETTLEMENT_TS,
       },
     ],
-    citations: [D_FX_MODEL, SETTLEMENT_TS],
+    materialises: materialisedCashHolding("-"),
+    citations: [D_FX_MODEL, D_CASH, SETTLEMENT_TS, CASH_MATERIALISATION_TS],
   },
   {
     id: "c",
@@ -185,7 +300,8 @@ export const FX_SPOT_LIFECYCLE_STAGES: readonly FxSpotLifecycleStage[] = [
         source: SETTLEMENT_TS,
       },
     ],
-    citations: [D_FX_MODEL, SETTLEMENT_TS],
+    materialises: materialisedCashHolding("+"),
+    citations: [D_FX_MODEL, D_CASH, SETTLEMENT_TS, CASH_MATERIALISATION_TS],
   },
   {
     id: "d",
@@ -213,11 +329,19 @@ export const FX_SPOT_LIFECYCLE_STAGES: readonly FxSpotLifecycleStage[] = [
 ];
 
 /**
- * The distinct event types named across the four stages — the set the
- * de-invention gate and this module's test resolve against the registry.
+ * The distinct event types named across the four stages — including the
+ * materialised cash-holding FIL-leg fact (`materialises.eventType`) each
+ * settlement stage creates. This is the set the de-invention gate and this
+ * module's test resolve against the registry (no event type the page names may
+ * escape registry resolution).
  */
 export const FX_SPOT_LIFECYCLE_EVENT_TYPES: readonly string[] = [
-  ...new Set(FX_SPOT_LIFECYCLE_STAGES.flatMap((s) => s.eventTypes)),
+  ...new Set(
+    FX_SPOT_LIFECYCLE_STAGES.flatMap((s) => [
+      ...s.eventTypes,
+      ...(s.materialises ? [s.materialises.eventType] : []),
+    ]),
+  ),
 ];
 
 /**

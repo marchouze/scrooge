@@ -299,8 +299,35 @@
           const sFx = section(bodyHost, "fx-lifecycle", "FX spot settlement lifecycle");
           sFx.insertAdjacentHTML("beforeend", `<p class="np-prose">The model-level contractual settlement lifecycle of an FX spot — distinct from the accounting journal above. The trade is the agreement; each leg settles as a uniform single-asset movement; the instrument then terminates. Every stage names the FIL event type(s) that realise it, the event-ownership level, and the fields that link it to its neighbours — all sourced, never invented.</p>`);
           const fchips = (arr) => (arr || []).map((x) => `<span class="np-chip">${esc(x)}</span>`).join(" ") || "—";
+          // ── Three ownership levels (the SVG's three vertical tiers) ──
+          // Product-type governance → booking / composite act → FIL-leg fact.
+          if (fl.ownershipLevels && fl.ownershipLevels.length) {
+            sFx.insertAdjacentHTML("beforeend", `<h3 style="font-size:14px;margin:12px 0 6px;color:var(--color-text-secondary)">Three ownership levels</h3>`);
+            sFx.insertAdjacentHTML("beforeend", `<p class="np-prose">Every event sits in one of three ownership tiers, keyed by the atomicity of the act it records. The settlement movements are booking / composite acts; each one materialises a cash holding as a FIL-leg fact (Level 3).</p>`);
+            const olGrid = document.createElement("div"); olGrid.className = "np-lens-grid"; sFx.appendChild(olGrid);
+            for (const t of fl.ownershipLevels) {
+              olGrid.insertAdjacentHTML("beforeend",
+                `<div class="np-card"><h3>${esc(t.label)}</h3>` +
+                `<div class="np-card-note">${esc(t.description)}</div>` +
+                `<div class="np-kv"><b>e.g.</b><span><span class="np-chip">${esc(t.representativeEventType)}</span></span></div></div>`);
+            }
+          }
           const grid = document.createElement("div"); grid.className = "np-lens-grid"; sFx.appendChild(grid);
           for (const st of fl.stages) {
+            // Level-3 materialised cash-holding FIL-leg fact (Payment / Receipt):
+            // the holding the settlement movement creates, with the holdingInstance
+            // (settlement → holding) and originatingInstrument (holding → trade)
+            // links visibly connecting settlement → holding → trade.
+            const mat = st.materialises;
+            const matBlock = mat
+              ? `<div class="np-card-note" style="border-top:1px dashed var(--color-border);margin-top:8px;padding-top:8px">` +
+                `<b>Materialises (FIL-leg fact · Level 3):</b> <span class="np-chip">${esc(mat.label)}</span><br>` +
+                `<div class="np-kv" style="margin-top:6px"><b>Event type</b><span><span class="np-chip">${esc(mat.eventType)}</span> · <span class="np-chip">${esc(mat.assetClass)}</span></span></div>` +
+                `<div class="np-kv"><b>Movement</b><span>${esc(mat.sign)} (${mat.sign === "-" ? "paid · holding ↓" : "received · holding ↑"})</span></div>` +
+                `<div class="np-card-note">${esc(mat.description)}</div>` +
+                `<div class="np-kv"><b>Links</b><span><code>${esc(mat.holdingLink)}</code> settlement→holding · <code>${esc(mat.originatingLink)}</code> holding→trade</span></div>` +
+                `<div class="np-card-note" style="margin-top:4px"><b>Cites:</b> ${fchips(mat.citations)}</div></div>`
+              : "";
             grid.insertAdjacentHTML("beforeend",
               `<div class="np-card"><h3>${esc(st.id)} · ${esc(st.label)} ` +
               `<span class="v2-badge v2-badge-neutral">${esc(st.ownershipLabel)}</span></h3>` +
@@ -308,6 +335,7 @@
               `<div class="np-kv"><b>Event type${st.eventTypes.length > 1 ? "s" : ""}</b><span>${fchips(st.eventTypes)}</span></div>` +
               `<div class="np-kv"><b>FIL stage</b><span>${fchips(st.filStages)}</span></div>` +
               `<div class="np-kv"><b>Linking fields</b><span>${fchips(st.linkingFields)}</span></div>` +
+              matBlock +
               `<div class="np-card-note" style="margin-top:6px"><b>Cites:</b> ${fchips(st.citations)}</div></div>`);
           }
           // "How they link" — the de-duplicated linking-field key.

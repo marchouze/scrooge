@@ -214,6 +214,27 @@ export function assertNoInvention(
             });
           }
         }
+        // The materialised cash-holding FIL-leg fact (Level 3) names its OWN
+        // event type — it too must resolve to the registry (no gap channel).
+        const mat = stage.materialises;
+        if (mat && !isRegisteredEventType(mat.eventType)) {
+          violations.push({
+            subject: `${productId}:fx-lifecycle:${stage.id}:materialises:${mat.eventType}`,
+            severity: "fail",
+            message: `fxLifecycle stage "${stage.id}" (${stage.label}) materialises a holding via event type "${mat.eventType}", which is NOT a registered event type — invented Level-3 FIL-leg fact (every materialised holding event type must resolve to the registry).`,
+          });
+        }
+      }
+      // The three explicit ownership levels each name a representative event type
+      // — each must resolve to the registry (no gap channel on the lifecycle).
+      for (const tier of fxLifecycle.ownershipLevels ?? []) {
+        if (!isRegisteredEventType(tier.representativeEventType)) {
+          violations.push({
+            subject: `${productId}:fx-lifecycle:ownership:${tier.level}:${tier.representativeEventType}`,
+            severity: "fail",
+            message: `fxLifecycle ownership level "${tier.level}" names representative event type "${tier.representativeEventType}", which is NOT a registered event type — invented ownership-tier event.`,
+          });
+        }
       }
     }
   } else if (fxLifecycle) {
@@ -337,7 +358,11 @@ export function run(opts: RunOpts = {}): ReconResult {
         (n, d) => n + d.postingRuleIds.length + d.eventTypes.length + 1,
         0,
       ) +
-      (view.fxLifecycle?.stages ?? []).reduce((n, s) => n + s.eventTypes.length, 0);
+      (view.fxLifecycle?.stages ?? []).reduce(
+        (n, s) => n + s.eventTypes.length + (s.materialises ? 1 : 0),
+        0,
+      ) +
+      (view.fxLifecycle?.ownershipLevels ?? []).length;
     violations.push(...assertNoInvention(product.productId, product.lifecycleEventFamily, view));
   }
 

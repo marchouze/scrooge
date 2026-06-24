@@ -92,6 +92,16 @@ function fxLifecycleBlock(): FxLifecycleView {
         ownership: "booking-composite-act",
         ownershipLabel: "Booking / composite act",
         linkingFields: ["tradeInstance", "holdingInstance"],
+        materialises: {
+          eventType: "FilInstrumentCreated",
+          assetClass: "cash",
+          sign: "-",
+          label: "Cash holding −",
+          description: "x",
+          holdingLink: "holdingInstance",
+          originatingLink: "originatingInstrument",
+          citations: ["D-CASH-ASSET-CLASS-V1"],
+        },
         citations: ["D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL"],
       },
       {
@@ -103,6 +113,16 @@ function fxLifecycleBlock(): FxLifecycleView {
         ownership: "booking-composite-act",
         ownershipLabel: "Booking / composite act",
         linkingFields: ["tradeInstance", "holdingInstance"],
+        materialises: {
+          eventType: "FilInstrumentCreated",
+          assetClass: "cash",
+          sign: "+",
+          label: "Cash holding +",
+          description: "x",
+          holdingLink: "holdingInstance",
+          originatingLink: "originatingInstrument",
+          citations: ["D-CASH-ASSET-CLASS-V1"],
+        },
         citations: ["D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL"],
       },
       {
@@ -115,6 +135,26 @@ function fxLifecycleBlock(): FxLifecycleView {
         ownershipLabel: "FIL-leg fact",
         linkingFields: ["originatingInstrument", "tradeFamily"],
         citations: ["D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL"],
+      },
+    ],
+    ownershipLevels: [
+      {
+        level: "product-type-governance",
+        label: "Product-type governance",
+        description: "x",
+        representativeEventType: "V2ProductRegistered",
+      },
+      {
+        level: "booking-composite-act",
+        label: "Booking / composite act",
+        description: "x",
+        representativeEventType: "TradeSettlementExecuted",
+      },
+      {
+        level: "fil-leg-fact",
+        label: "FIL-leg fact",
+        description: "x",
+        representativeEventType: "FilInstrumentCreated",
       },
     ],
     links: ["originatingEvent", "productId", "tradeInstance"].map(link),
@@ -318,6 +358,48 @@ describe("recon:npa-page-no-invented-functionality", () => {
     const view = detailView({ family: "fx", fxLifecycle: broken });
     const violations = assertNoInvention("prd:test", [], view);
     expect(violations.some((v) => v.message.includes("invented lifecycle event"))).toBe(true);
+  });
+
+  it("FAILS on a fabricated materialised cash-holding event type (Level 3, no gap channel)", () => {
+    const block = fxLifecycleBlock();
+    const broken: FxLifecycleView = {
+      ...block,
+      stages: block.stages.map((s) =>
+        s.id === "b" && s.materialises
+          ? { ...s, materialises: { ...s.materialises, eventType: "NotARealCashCreate999" } }
+          : s,
+      ),
+    };
+    const view = detailView({ family: "fx", fxLifecycle: broken });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations.some((v) => v.message.includes("invented Level-3 FIL-leg fact"))).toBe(true);
+  });
+
+  it("FAILS on a fabricated ownership-level representative event type", () => {
+    const block = fxLifecycleBlock();
+    const broken: FxLifecycleView = {
+      ...block,
+      ownershipLevels: block.ownershipLevels.map((t) =>
+        t.level === "fil-leg-fact"
+          ? { ...t, representativeEventType: "NotARealOwnershipEvt999" }
+          : t,
+      ),
+    };
+    const view = detailView({ family: "fx", fxLifecycle: broken });
+    const violations = assertNoInvention("prd:test", [], view);
+    expect(violations.some((v) => v.message.includes("invented ownership-tier event"))).toBe(true);
+  });
+
+  it("PASSES with materialised cash holdings on Payment + Receipt (FilInstrumentCreated · cash, −/+)", () => {
+    const block = fxLifecycleBlock();
+    const payment = block.stages.find((s) => s.id === "b");
+    const receipt = block.stages.find((s) => s.id === "c");
+    expect(payment?.materialises?.eventType).toBe("FilInstrumentCreated");
+    expect(payment?.materialises?.assetClass).toBe("cash");
+    expect(payment?.materialises?.sign).toBe("-");
+    expect(receipt?.materialises?.sign).toBe("+");
+    const view = detailView({ family: "fx", fxLifecycle: block });
+    expect(assertNoInvention("prd:test", [], view)).toHaveLength(0);
   });
 
   it("FAILS when the fxLifecycle stages are not the four ordered stages", () => {

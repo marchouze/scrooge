@@ -15,6 +15,7 @@ import { describe, expect, test } from "bun:test";
 
 import { FIL_LIFECYCLE_STAGES } from "../fil-core/lifecycle";
 import {
+  FX_LIFECYCLE_OWNERSHIP_TIERS,
   FX_SPOT_LIFECYCLE_EVENT_TYPES,
   FX_SPOT_LIFECYCLE_LINKS,
   FX_SPOT_LIFECYCLE_STAGES,
@@ -96,6 +97,56 @@ describe("fx-spot-lifecycle-model", () => {
         "tradeFamily",
       ]),
     );
+  });
+
+  test("Payment and Receipt materialise a cash holding (FilInstrumentCreated · cash, −/+)", () => {
+    const payment = FX_SPOT_LIFECYCLE_STAGES.find((s) => s.id === "b");
+    const receipt = FX_SPOT_LIFECYCLE_STAGES.find((s) => s.id === "c");
+    // Both settlement stages carry the Level-3 materialised cash holding.
+    expect(payment?.materialises).toBeDefined();
+    expect(receipt?.materialises).toBeDefined();
+    expect(payment?.materialises?.eventType).toBe("FilInstrumentCreated");
+    expect(receipt?.materialises?.eventType).toBe("FilInstrumentCreated");
+    expect(payment?.materialises?.assetClass).toBe("cash");
+    expect(receipt?.materialises?.assetClass).toBe("cash");
+    expect(payment?.materialises?.typeUrn).toBe("fil:type:cash:balance:vanilla@1.0");
+    // Payment is the paid leg (−); Receipt the received leg (+).
+    expect(payment?.materialises?.sign).toBe("-");
+    expect(receipt?.materialises?.sign).toBe("+");
+    expect(payment?.materialises?.label).toBe("Cash holding -");
+    expect(receipt?.materialises?.label).toBe("Cash holding +");
+    // The settlement → holding → trade link fields are the real schema fields.
+    expect(payment?.materialises?.holdingLink).toBe("holdingInstance");
+    expect(payment?.materialises?.originatingLink).toBe("originatingInstrument");
+    // Sourced — cites the cash-asset-class decision + the materialisation module.
+    expect(payment?.materialises?.citations).toContain("D-CASH-ASSET-CLASS-V1");
+    expect(payment?.materialises?.source).toContain("cash-materialisation");
+  });
+
+  test("Initiation and Termination materialise NO cash holding", () => {
+    const init = FX_SPOT_LIFECYCLE_STAGES.find((s) => s.id === "a");
+    const term = FX_SPOT_LIFECYCLE_STAGES.find((s) => s.id === "d");
+    expect(init?.materialises).toBeUndefined();
+    expect(term?.materialises).toBeUndefined();
+  });
+
+  test("the materialised cash-holding event type is included in the registry-resolved set", () => {
+    // FilInstrumentCreated appears in stage a AND as the materialised holding —
+    // the de-duplicated set must contain it so the de-invention gate resolves it.
+    expect(FX_SPOT_LIFECYCLE_EVENT_TYPES).toContain("FilInstrumentCreated");
+  });
+
+  test("declares the three explicit ownership levels in order", () => {
+    expect(FX_LIFECYCLE_OWNERSHIP_TIERS.map((t) => t.level)).toEqual([
+      "product-type-governance",
+      "booking-composite-act",
+      "fil-leg-fact",
+    ]);
+    for (const t of FX_LIFECYCLE_OWNERSHIP_TIERS) {
+      expect(t.label.trim().length).toBeGreaterThan(0);
+      expect(t.description.trim().length).toBeGreaterThan(0);
+      expect(t.representativeEventType.trim().length).toBeGreaterThan(0);
+    }
   });
 
   test("the lifecycle is scoped to the FX family only", () => {

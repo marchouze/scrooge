@@ -38,6 +38,7 @@ import {
 import { CANONICAL_DESKS } from "../v2-core/desk/roster";
 import {
   FX_LIFECYCLE_OWNERSHIP_LABEL,
+  FX_LIFECYCLE_OWNERSHIP_TIERS,
   FX_SPOT_LIFECYCLE_LINKS,
   FX_SPOT_LIFECYCLE_STAGES,
   type FxSpotLifecycleStage,
@@ -1452,6 +1453,29 @@ export function buildProductLenses(
 // authoring here, no DB. Name-free by construction (survives redactNpaDetailNames).
 // ---------------------------------------------------------------------------
 
+/**
+ * The materialised cash-holding FIL-leg fact a settlement stage creates (the
+ * SVG's Level 3) — page-facing. Present on Payment / Receipt; absent otherwise.
+ */
+export interface FxLifecycleMaterialisedHoldingView {
+  /** Event type that materialises the holding — registry-backed (gate-asserted). */
+  readonly eventType: string;
+  /** Asset class of the holding — `cash` for an FX cash leg. */
+  readonly assetClass: string;
+  /** Movement sign on the holding: `-` paid / `+` received. */
+  readonly sign: "-" | "+";
+  /** Display label for the holding node (e.g. "Cash holding −"). */
+  readonly label: string;
+  /** Short description of what the holding IS. */
+  readonly description: string;
+  /** Link field on the settlement that points at this holding (`holdingInstance`). */
+  readonly holdingLink: string;
+  /** Link field on the holding that points back at the trade (`originatingInstrument`). */
+  readonly originatingLink: string;
+  /** Citations backing the materialisation. */
+  readonly citations: readonly string[];
+}
+
 /** One stage of the FX spot settlement lifecycle, page-facing. */
 export interface FxLifecycleStageView {
   readonly id: "a" | "b" | "c" | "d";
@@ -1467,8 +1491,23 @@ export interface FxLifecycleStageView {
   readonly ownershipLabel: string;
   /** Linking field names that connect this stage to its neighbours. */
   readonly linkingFields: readonly string[];
+  /**
+   * The materialised cash-holding FIL-leg fact this stage creates (Level 3 of
+   * the SVG). Present on the settlement stages (Payment / Receipt); `undefined`
+   * on Initiation / Termination.
+   */
+  readonly materialises?: FxLifecycleMaterialisedHoldingView;
   /** Decision / schema citations backing the stage. */
   readonly citations: readonly string[];
+}
+
+/** One of the three event-ownership levels, page-facing (the SVG's three tiers). */
+export interface FxLifecycleOwnershipLevelView {
+  readonly level: string;
+  readonly label: string;
+  readonly description: string;
+  /** A representative event type at this tier — registry-backed (gate-asserted). */
+  readonly representativeEventType: string;
 }
 
 /** The "how they link" key/value entry — a real schema field → what it connects. */
@@ -1481,6 +1520,12 @@ export interface FxLifecycleLinkView {
 export interface FxLifecycleView {
   /** The ordered four stages (a → b/c → d). */
   readonly stages: readonly FxLifecycleStageView[];
+  /**
+   * The three explicit event-ownership levels (product-type governance →
+   * booking / composite act → FIL-leg fact) — the SVG's three vertical tiers,
+   * surfaced so the page can show which tier each event sits in.
+   */
+  readonly ownershipLevels: readonly FxLifecycleOwnershipLevelView[];
   /** The de-duplicated linking-field key (the 6 fields → what they connect). */
   readonly links: readonly FxLifecycleLinkView[];
   /** The authority chain for the whole model. */
@@ -1504,17 +1549,41 @@ export function buildFxLifecycleView(product: Product): FxLifecycleView | undefi
       ownership: s.ownership,
       ownershipLabel: FX_LIFECYCLE_OWNERSHIP_LABEL[s.ownership],
       linkingFields: s.linkingFields.map((lf) => lf.field),
+      ...(s.materialises
+        ? {
+            materialises: {
+              eventType: s.materialises.eventType,
+              assetClass: s.materialises.assetClass,
+              sign: s.materialises.sign,
+              label: s.materialises.label,
+              description: s.materialises.description,
+              holdingLink: s.materialises.holdingLink,
+              originatingLink: s.materialises.originatingLink,
+              citations: s.materialises.citations,
+            },
+          }
+        : {}),
       citations: s.citations,
     }),
   );
   return {
     stages,
+    ownershipLevels: FX_LIFECYCLE_OWNERSHIP_TIERS.map((t) => ({
+      level: t.level,
+      label: t.label,
+      description: t.description,
+      representativeEventType: t.representativeEventType,
+    })),
     links: FX_SPOT_LIFECYCLE_LINKS.map((l) => ({
       field: l.field,
       connects: l.connects,
       source: l.source,
     })),
-    authority: ["D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL", "D-FX-INSTRUMENT-BUYSELL-QUAD"],
+    authority: [
+      "D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL",
+      "D-FX-INSTRUMENT-BUYSELL-QUAD",
+      "D-CASH-ASSET-CLASS-V1",
+    ],
   };
 }
 
