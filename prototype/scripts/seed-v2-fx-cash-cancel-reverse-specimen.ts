@@ -102,6 +102,14 @@ function main(): void {
       currency: REPORTING,
       settlementDate: SETTLED_TS,
       hedgingSetTag: `USD/${REPORTING}`,
+      // Symmetric FX agreement quad (D-FX-INSTRUMENT-BUYSELL-QUAD): a `long` USD
+      // position BUYS USD (the received leg) and SELLS the reporting ccy (the paid
+      // leg). notional/direction derive from this; the instrument ccy (REPORTING)
+      // is the sold leg, so its magnitude equals the stored notional.
+      fxAgreement: {
+        buy: { currency: "USD", amount: String(USD_MAJOR) },
+        sell: { currency: REPORTING, amount: String(ZAR_MAJOR) },
+      },
     },
     originatingEvent: { eventType: "Ws-v2-s1-fixture-book", eventId: `s1-fixture:${TRADE_ID}` },
     terminal: { stage: "cancelled", asOf: CANCELLED_TS },

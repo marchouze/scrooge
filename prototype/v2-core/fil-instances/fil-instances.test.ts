@@ -103,3 +103,127 @@ describe("FIL instance projection", () => {
     expect(remainingYears("2026-06-12", "2026-06-13T00:00:00.000Z")).toBe(0);
   });
 });
+
+// ---------------------------------------------------------------------------
+// FX agreement quad (D-FX-INSTRUMENT-BUYSELL-QUAD) — the .superRefine drops the
+// required-field z.infer, so coherence is swept by TESTS, not tsc (per the brief).
+// ---------------------------------------------------------------------------
+
+describe("fxAgreement coherence (D-FX-INSTRUMENT-BUYSELL-QUAD)", () => {
+  // A long USD vs ZAR position whose instrument currency is the BASE (USD).
+  const longUsdBase = {
+    assetClass: "fx" as const,
+    notional: { currency: "USD", amount: "1000.00" },
+    direction: "long" as const,
+    counterpartyId: "CP1",
+    nettingSetId: "NS-CP1-USD",
+    currency: "USD",
+    settlementDate: "2026-06-03",
+    hedgingSetTag: "USD/ZAR",
+  };
+
+  it("optional — terms WITHOUT a quad parse unchanged (replay-safe)", () => {
+    expect(() => filInstrumentCreatedPayloadSchema.parse(createdWith(longUsdBase))).not.toThrow();
+  });
+
+  it("accepts a coherent quad — long bought base, notional = bought-leg magnitude", () => {
+    expect(() =>
+      filInstrumentCreatedPayloadSchema.parse(
+        createdWith({
+          ...longUsdBase,
+          fxAgreement: {
+            buy: { currency: "USD", amount: "1000.00" },
+            sell: { currency: "ZAR", amount: "18520.00" },
+          },
+        }),
+      ),
+    ).not.toThrow();
+  });
+
+  it("accepts a coherent quad on the ZAR-denominated leg (short bought quote)", () => {
+    // short EUR/ZAR: bought ZAR (the quote), sold EUR. Instrument ccy = ZAR (buy leg).
+    expect(() =>
+      filInstanceLifecycleEventSchema.parse(
+        createdWith({
+          ...TERMS,
+          fxAgreement: {
+            buy: { currency: "ZAR", amount: "86792786.03" },
+            sell: { currency: "EUR", amount: "4300000.00" },
+          },
+        }),
+      ),
+    ).not.toThrow();
+  });
+
+  it("rejects an incoherent NOTIONAL (notional != the instrument-ccy quad leg)", () => {
+    expect(() =>
+      filInstrumentCreatedPayloadSchema.parse(
+        createdWith({
+          ...longUsdBase,
+          notional: { currency: "USD", amount: "9999.00" },
+          fxAgreement: {
+            buy: { currency: "USD", amount: "1000.00" },
+            sell: { currency: "ZAR", amount: "18520.00" },
+          },
+        }),
+      ),
+    ).toThrow(/notional/);
+  });
+
+  it("rejects an incoherent DIRECTION (long but bought the quote, not the base)", () => {
+    expect(() =>
+      filInstrumentCreatedPayloadSchema.parse(
+        createdWith({
+          ...longUsdBase,
+          // direction long but buy leg is ZAR (the quote) — disagrees with bought side.
+          notional: { currency: "USD", amount: "1000.00" },
+          fxAgreement: {
+            buy: { currency: "ZAR", amount: "18520.00" },
+            sell: { currency: "USD", amount: "1000.00" },
+          },
+        }),
+      ),
+    ).toThrow(/direction/);
+  });
+
+  it("rejects a quad whose currencies are not the pair (hedgingSetTag mismatch)", () => {
+    expect(() =>
+      filInstrumentCreatedPayloadSchema.parse(
+        createdWith({
+          ...longUsdBase,
+          fxAgreement: {
+            buy: { currency: "USD", amount: "1000.00" },
+            sell: { currency: "GBP", amount: "780.00" },
+          },
+        }),
+      ),
+    ).toThrow(/hedgingSetTag|currencies/);
+  });
+
+  it("rejects a degenerate same-currency quad", () => {
+    expect(() =>
+      filInstrumentCreatedPayloadSchema.parse(
+        createdWith({
+          ...longUsdBase,
+          fxAgreement: {
+            buy: { currency: "USD", amount: "1000.00" },
+            sell: { currency: "USD", amount: "1000.00" },
+          },
+        }),
+      ),
+    ).toThrow(/DIFFERENT currencies/);
+  });
+});
+
+function createdWith(economicTerms: unknown): unknown {
+  return {
+    kind: "FilInstrumentCreated",
+    instance: INST,
+    type: FX_TYPE,
+    tenant: TENANT,
+    asOf: "2026-06-01T00:00:00.000Z",
+    originatingEvent: { eventType: "FxTradeExecuted", eventId: "ev-quad" },
+    initialStage: "active",
+    economicTerms,
+  };
+}
