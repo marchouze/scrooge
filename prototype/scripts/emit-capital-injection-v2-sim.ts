@@ -136,6 +136,10 @@ function emitToMainStore(): boolean {
     actor: ACTOR,
     citations: CITATIONS,
     eventId: MAIN_EVENT_ID,
+    // EXPLICIT simulated provenance (D-FX-FIXTURE-PROVENANCE-CANCEL-AND-HARDEN):
+    // the maker now requires an explicit tag; this sim seed authors a simulated
+    // capital injection, so the kind is fixed by construction (script carve-out).
+    provenance: SIM_PROVENANCE,
     payload: {
       kind: "FilInstrumentCreated",
       instance,
@@ -150,7 +154,6 @@ function emitToMainStore(): boolean {
       economicTerms,
     },
   });
-  event.provenance = SIM_PROVENANCE;
   eventStore.append(event);
   console.log(`[emit-capital-injection-v2-sim] main store: emitted ${instance} (simulated)`);
   return true;

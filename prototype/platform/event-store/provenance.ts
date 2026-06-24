@@ -385,6 +385,94 @@ export function provenanceForEmit(
 }
 
 // ---------------------------------------------------------------------------
+// FIL-instance explicit-provenance fail-closed boundary
+// (D-FX-FIXTURE-PROVENANCE-CANCEL-AND-HARDEN harden tail; sequenced under
+// D-FX-INSTRUMENT-BUYSELL-QUAD, WS-FX-FIL-INTEGRITY Slice B).
+//
+// THE PROBLEM (root cause). FIL-instance lifecycle / settlement event types
+// (FilInstrumentCreated/Amended/Terminated, FilFxSettlementConfirmed,
+// FilNdfFixingObserved, TradeSettlementExecuted) are POLYMORPHIC carriers: the
+// SAME type carries real anchor-book capital, real fixtures, and scenario
+// stimuli. They map to category `governance` → `production` under the default
+// policy, so an UNTAGGED FIL append soft-defaults to `production` —
+// fail-OPEN. A throwaway fixture silently becomes production state (the
+// 2026-06-22 mis-tagged-FX-fixture incident).
+//
+// THE FIX (this module's boundary). A FIL emit must carry an EXPLICIT
+// provenance tag — never the category soft-default. We make the soft-default
+// distinguishable from a real explicit tag by its `sourceLineage`: the
+// soft-tagger / `defaultProvenanceFor` produce either the
+// `pre-substrate-backfill` sentinel OR the bare `category:<category>` /
+// `category:uncategorised` fallback (when `provenanceForEmit` is called with no
+// explicit `sourceLineage`). A real emitter ALWAYS supplies a concrete
+// originating-system lineage. `isSoftDefaultLineage` is the single predicate
+// both the emit-boundary assertion and the `recon:fil-provenance-explicit`
+// gate key on, so they cannot drift.
+//
+// This is FIL-SCOPED and bites NOW, WITHOUT flipping the global
+// `BANK_PROVENANCE_SUBSTRATE_ACTIVE` gate (that global flip is a separate later
+// follow-on — the build-phase soft-tag default stays the default for every
+// non-FIL event).
+// ---------------------------------------------------------------------------
+
+/** The FIL instrument/settlement event types that must carry explicit provenance. */
+export const FIL_PROVENANCE_REQUIRED_EVENT_TYPES = [
+  "FilInstrumentCreated",
+  "FilInstrumentAmended",
+  "FilInstrumentTerminated",
+  "FilFxSettlementConfirmed",
+  "FilNdfFixingObserved",
+  "TradeSettlementExecuted",
+] as const;
+
+export type FilProvenanceRequiredEventType = (typeof FIL_PROVENANCE_REQUIRED_EVENT_TYPES)[number];
+
+const FIL_PROVENANCE_REQUIRED_SET: ReadonlySet<string> = new Set(
+  FIL_PROVENANCE_REQUIRED_EVENT_TYPES,
+);
+
+/** True iff `eventType` is a FIL instrument/settlement carrier requiring explicit provenance. */
+export function isFilProvenanceRequiredType(eventType: string): boolean {
+  return FIL_PROVENANCE_REQUIRED_SET.has(eventType);
+}
+
+/**
+ * True iff `sourceLineage` is one of the substrate's soft-default fallbacks —
+ * NOT a concrete originating-system lineage. These are the lineages a FIL event
+ * acquires when it relies on the category soft-default instead of an explicit
+ * emit:
+ *   - `pre-substrate-backfill`        — the `PRE_SUBSTRATE_BACKFILL_TAG` sentinel.
+ *   - `category:<category>` / `category:uncategorised` — `defaultProvenanceFor`
+ *     and `provenanceForEmit`'s no-explicit-lineage production fallback.
+ *
+ * A real FIL emitter always supplies a concrete lineage (the originating
+ * system: the booking engine, the settlement sink, the named seed/backfill
+ * script). Both the emit-time assertion and the recon gate fail closed on a
+ * soft-default lineage, so they cannot disagree.
+ */
+export function isSoftDefaultLineage(sourceLineage: string): boolean {
+  return (
+    sourceLineage === PRE_SUBSTRATE_BACKFILL_TAG.sourceLineage ||
+    sourceLineage.startsWith("category:")
+  );
+}
+
+/**
+ * Fail-closed at the FIL emit boundary: a FIL instrument/settlement event MUST
+ * carry an EXPLICIT provenance tag with a concrete originating-system lineage.
+ * Throws (Engineering Charter cmd 2 — fail-closed, never a silent default) if
+ * the resolved tag is a substrate soft-default. Called by the FIL `make*`
+ * helpers; never relies on the global substrate-active gate.
+ */
+export function assertExplicitFilProvenance(eventType: string, tag: ProvenanceTag): void {
+  if (isSoftDefaultLineage(tag.sourceLineage)) {
+    throw new Error(
+      `D-FX-FIXTURE-PROVENANCE-CANCEL-AND-HARDEN: FIL event "${eventType}" must carry an EXPLICIT provenance tag — its sourceLineage "${tag.sourceLineage}" is a substrate soft-default (category fallback / pre-substrate-backfill), which fails OPEN for a polymorphic FIL carrier. Resolve via provenanceForEmit("${eventType}", { sourceLineage: "<originating-system>", … }) at the SUT call-site, or supply an explicit fixture/simulated tag (scripts / scenarios). See platform/event-store/provenance.ts (FIL explicit-provenance boundary).`,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Substrate-active flag (§7 ordering note + dispatch brief).
 //
 // Slice 1's hard-rejection of untagged events would brick the local event

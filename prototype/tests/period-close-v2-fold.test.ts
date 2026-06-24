@@ -54,6 +54,7 @@ function fxCreated(id: string, direction: "long" | "short", notional: string, as
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance: PROD_TAG,
     payload: filInstrumentCreatedPayloadSchema.parse({
       kind: "FilInstrumentCreated",
       instance: instanceUrn(id),
@@ -83,6 +84,7 @@ function fxTerminated(id: string, asOf: string): Event {
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance: PROD_TAG,
     payload: filInstrumentTerminatedPayloadSchema.parse({
       kind: "FilInstrumentTerminated",
       instance: instanceUrn(id),

@@ -131,6 +131,9 @@ function main(): void {
       entity: facts.tenant,
       actor: ACTOR,
       citations: CITES,
+      // EXPLICIT provenance (D-FX-FIXTURE-PROVENANCE-CANCEL-AND-HARDEN): the maker
+      // now requires an explicit tag — the prior post-append spread is redundant.
+      provenance: PROVENANCE,
       payload: filInstrumentTerminatedPayloadSchema.parse({
         kind: "FilInstrumentTerminated",
         instance,
@@ -144,7 +147,7 @@ function main(): void {
         terminalStage: "cancelled",
       }),
     });
-    eventStore.append({ ...event, provenance: PROVENANCE });
+    eventStore.append(event);
     emitted.push(instance);
   }
 

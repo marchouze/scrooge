@@ -23,6 +23,7 @@ import { moneyFromDecimal } from "../../../v2-core/fil-core/primitives";
 import { formatInstanceUrn, formatTypeUrn } from "../../../v2-core/fil-core/urn";
 import { filInstrumentCreatedPayloadSchema } from "../../../v2-core/fil-instances/events";
 import { makeFilInstrumentCreated } from "../../event-store/event-types/fil-instances";
+import { provenanceForEmit } from "../../event-store/provenance";
 import type { EventStore } from "../../event-store/store";
 
 /** Major-unit number → v2 decimal-native Money (2dp HALF_UP), mirroring the FX materialiser. */
@@ -97,6 +98,14 @@ export function bookAffirmedFxTrade(args: {
       entity: ENTITY,
       actor: { type: "service", id: "agent:sut:fx-booking-engine" },
       citations: ["D-FX-V2-SIMULATOR-FIRST", "D-FIL-FRAMEWORK-UNIFICATION"],
+      // EXPLICIT provenance (D-FX-FIXTURE-PROVENANCE-CANCEL-AND-HARDEN): the
+      // SUT booking engine is the originating system. The kind is decided by
+      // the active category policy (governance→production), NOT the call-site;
+      // we only supply the concrete originating-system lineage so the event
+      // never relies on the `category:*` soft-default (which fails OPEN).
+      provenance: provenanceForEmit("FilInstrumentCreated", {
+        sourceLineage: "sut:fx-booking-engine",
+      }),
       eventId: `${scenarioId}:${trade.tradeId}:fil-created`,
       payload: filInstrumentCreatedPayloadSchema.parse({
         kind: "FilInstrumentCreated",

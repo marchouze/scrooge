@@ -76,6 +76,7 @@ import {
   makeFilInstrumentCreated,
   makeFilInstrumentTerminated,
 } from "../platform/event-store/event-types/fil-instances";
+import { buildPhaseFixtureTag } from "../platform/event-store/provenance";
 import { anchorFunctionalCurrency } from "../platform/identity/functional-currency";
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../platform/market-data/store";
@@ -109,6 +110,20 @@ const FIL_CITATIONS = [
   "D-MODEL-BINDING-CONTRACT-V1",
   "P1-EVENTS-AS-TRUTH",
 ];
+
+// EXPLICIT provenance for the reconstructed FIL instances
+// (D-FX-FIXTURE-PROVENANCE-CANCEL-AND-HARDEN harden tail). These rows reconstruct
+// the bank's OWN build-phase FX/cash fixture book — real pre-commencement bank
+// state, NOT a scenario and NOT live production. They previously relied on the
+// category soft-default, which fails OPEN to `production` for a polymorphic FIL
+// carrier (the exact root cause the decision identified). `build-phase-fixture`
+// is the correct, explicit kind; the lineage names this backfill as the
+// originating system. Scripts are a legitimate explicit-tag carve-out (out of the
+// `recon:provenance-emit-discipline` scan scope — the source is a fixture
+// regardless of bank mode).
+const BACKFILL_PROVENANCE = buildPhaseFixtureTag({
+  sourceLineage: "scripts/backfill-fil-instances.ts",
+});
 
 const FX_SPOT_TYPE_URN = formatTypeUrn({
   assetClass: "fx",
@@ -483,6 +498,7 @@ function emitCashLegsForSettled(
         entity: ENTITY,
         actor: BACKFILL_ACTOR,
         citations: [...FIL_CITATIONS, "D-CASH-ASSET-CLASS-V1"],
+        provenance: BACKFILL_PROVENANCE,
         payload: {
           kind: "FilInstrumentCreated",
           instance: cashInstance,
@@ -586,6 +602,7 @@ function emitFilInstances(descriptors: readonly FilDescriptor[]): {
           entity: ENTITY,
           actor: BACKFILL_ACTOR,
           citations: [...FIL_CITATIONS],
+          provenance: BACKFILL_PROVENANCE,
           payload: {
             kind: "FilInstrumentCreated",
             instance,
@@ -609,6 +626,7 @@ function emitFilInstances(descriptors: readonly FilDescriptor[]): {
           entity: ENTITY,
           actor: BACKFILL_ACTOR,
           citations: [...FIL_CITATIONS],
+          provenance: BACKFILL_PROVENANCE,
           payload: {
             kind: "FilInstrumentTerminated",
             instance,

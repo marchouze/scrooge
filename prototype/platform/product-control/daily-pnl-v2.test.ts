@@ -51,6 +51,7 @@ function appendFxInstrument(store: EventStore, s: Seed): void {
     entity: ENTITY,
     actor: ACTOR,
     citations: CITES,
+    provenance: PROD_TAG,
     payload: filInstrumentCreatedPayloadSchema.parse({
       kind: "FilInstrumentCreated",
       instance: `fil:inst:${ENTITY}:${s.id}`,
