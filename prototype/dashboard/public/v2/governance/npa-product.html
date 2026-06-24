@@ -223,6 +223,7 @@
         }
         document.getElementById("as-of").textContent = `as of ${new Date(d.asOf).toLocaleString()}`;
 
+        try {
         const dims = d.dimensions || [];
         const ov = d.overview || {};
         const lenses = d.lenses;
@@ -242,6 +243,9 @@
             { label: "Back to NPA register", href: "/v2/governance/npa.html" },
           ],
         });
+        } catch (renderErr) {
+          v2RenderError(bodyHost, `render: ${esc(renderErr && (renderErr.stack || renderErr.message) || String(renderErr))}`);
+        }
       });
     }
 

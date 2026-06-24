@@ -35,7 +35,7 @@ import { eventMatchesProvenanceFilter } from "../platform/projections/filter";
 import type { ProvenanceFilter } from "../platform/projections/filter";
 import { ownerSeatTitle, seatTitle, seatTitles } from "./agent-title";
 import { getProceduresIndex } from "./procedures-index";
-import type { ProductDetailView } from "./products-detail";
+import { DIMENSION_METADATA, type ProductDetailView } from "./products-detail";
 import { listPolicies } from "./products-policy-chain";
 import { NPA_DIMENSIONS, buildProductListView } from "./products-view";
 import type { DashboardState, DecisionDrillDown } from "./types";
@@ -563,6 +563,42 @@ function redactGapOwner(owner: string): string {
   return m ? m[1].trim() : owner;
 }
 
+/**
+ * Agent personal-name → seat-role map, derived from the NPA dimension owners.
+ * The first word of each `owner.name` is the agent's personal name; the bare
+ * role (the part of `owner.position` before the parenthetical domain) is the
+ * seat it redacts to. Used to scrub agent names that are baked into the
+ * dimension `artefactRequired` / `failRule` PROSE — those free-text fields are
+ * surfaced per-dimension on the V2 NPA page (perspective-switcher dossier), so
+ * any name in them would cross the /api/v2 boundary unless stripped here
+ * (no-agent-names rule; the structured name fields are blanked separately).
+ */
+const AGENT_NAME_TO_SEAT: ReadonlyMap<string, string> = new Map(
+  DIMENSION_METADATA.flatMap((m) => {
+    const personal = m.owner.name.trim().split(/\s+/)[0];
+    const role = m.owner.position.replace(/\s*\([^)]*\)\s*$/, "").trim();
+    return personal.length > 0 && role.length > 0 ? ([[personal, role]] as [string, string][]) : [];
+  }),
+);
+
+/**
+ * Replace any baked-in agent personal name in a free-text dimension field with
+ * its seat role (e.g. "per Nadia methodology" → "per the Model risk engineer
+ * methodology"; "Helena's Model Risk Policy" → "the Chief Risk Officer's Model
+ * Risk Policy"). Word-boundary match; possessive `'s` preserved. A field with
+ * no agent name passes through unchanged.
+ */
+function redactNamesInProse(text: string): string {
+  let out = text;
+  for (const [name, seat] of AGENT_NAME_TO_SEAT) {
+    // Absorb an optional preceding "the " so "the Nadia methodology" collapses
+    // to "the Model risk engineer methodology" (not "the the …"). Case-insensitive
+    // on the article only; the name match stays word-bounded.
+    out = out.replace(new RegExp(`\\b(?:[Tt]he\\s+)?${name}\\b`, "g"), `the ${seat}`);
+  }
+  return out;
+}
+
 export function redactNpaDetailNames(detail: ProductDetailView): ProductDetailView {
   // The presentation surfaces (overview / variants / componentGraph / lenses)
   // are name-free by construction — desk seats arrive as Titles from the desk
@@ -580,6 +616,11 @@ export function redactNpaDetailNames(detail: ProductDetailView): ProductDetailVi
     dimensions: detail.dimensions.map((card) => ({
       ...card,
       owner: { ...card.owner, name: "" },
+      // The dimension's free-text artefact / fail-rule prose can name an agent
+      // (e.g. "per Nadia methodology"); strip those to the seat role so no name
+      // crosses the boundary now that these fields are surfaced per-dimension.
+      artefactRequired: redactNamesInProse(card.artefactRequired),
+      failRule: redactNamesInProse(card.failRule),
       attestation: { ...card.attestation, attestedBy: undefined },
       narrative: card.narrative ? { ...card.narrative, authorAgentName: "" } : null,
     })),
