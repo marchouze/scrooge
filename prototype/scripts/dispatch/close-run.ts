@@ -253,7 +253,10 @@ function parseMemoryFile(path: string): MemoryEntry[] {
       }
       return (c as string).trim();
     });
-    if (e.supersedes !== undefined && (typeof e.supersedes !== "string" || e.supersedes.trim() === "")) {
+    if (
+      e.supersedes !== undefined &&
+      (typeof e.supersedes !== "string" || e.supersedes.trim() === "")
+    ) {
       die(`--memory[${i}].supersedes, when present, must be a non-empty string`);
     }
     entries.push({

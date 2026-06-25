@@ -64,10 +64,7 @@ function isAgentMemoryEvent(event: { type: string }): boolean {
   return event.type === AGENT_MEMORY_COMMITTED;
 }
 
-function applyCommitted(
-  state: AgentMemoryRegisterState,
-  event: Event,
-): AgentMemoryRegisterState {
+function applyCommitted(state: AgentMemoryRegisterState, event: Event): AgentMemoryRegisterState {
   const p = event.payload as AgentMemoryCommittedPayload;
   const id = p.memoryId;
   if (!id) return state;
@@ -159,9 +156,7 @@ export const agentMemoryRegisterProjection: Projection<AgentMemoryRegisterState,
 // ---------------------------------------------------------------------------
 
 /** All rows (live heads + retained superseded rows), newest-first. */
-export function agentMemoryRegisterRows(
-  state: AgentMemoryRegisterState,
-): AgentMemoryRegisterRow[] {
+export function agentMemoryRegisterRows(state: AgentMemoryRegisterState): AgentMemoryRegisterRow[] {
   return Array.from(state.rows.values()).sort((a, b) =>
     a.committedAt < b.committedAt ? 1 : a.committedAt > b.committedAt ? -1 : 0,
   );

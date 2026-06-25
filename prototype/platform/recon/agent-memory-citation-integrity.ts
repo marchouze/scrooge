@@ -53,8 +53,7 @@ export function assertCitationIntegrity(
     if (e.type !== AGENT_MEMORY_COMMITTED) continue;
     asserted++;
     const payload = e.payload as Record<string, unknown>;
-    const memoryId =
-      typeof payload.memoryId === "string" ? payload.memoryId : "(no memoryId)";
+    const memoryId = typeof payload.memoryId === "string" ? payload.memoryId : "(no memoryId)";
 
     const envelopeOk = Array.isArray(e.citations) && e.citations.length > 0;
     const payloadCitations = payload.citations;

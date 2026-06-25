@@ -38,9 +38,9 @@
 
 import { LocalAgentWorldStateReader } from "../agent-runtime/world-state";
 import type { DocumentHash } from "../document-store/types";
-import { EventStore } from "../event-store/store";
 import { AGENT_MEMORY_COMMITTED, makeAgentMemoryCommitted } from "../event-store/event-types";
 import { EVENT_TYPE_REGISTRY } from "../event-store/registry";
+import { EventStore } from "../event-store/store";
 import type { Event } from "../event-store/types";
 import { agentMemoryRegisterProjection, liveHeads } from "../rms-registers/agent-memory";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
@@ -59,7 +59,11 @@ function probeEvent(): Event {
     payload: {
       memoryId: "memory:probe:0",
       domains: ["engineering"],
-      producedByAgent: { name: "Atlas", position: "Core banking platform architect", agentId: "agent:atlas" },
+      producedByAgent: {
+        name: "Atlas",
+        position: "Core banking platform architect",
+        agentId: "agent:atlas",
+      },
       producedByRunId: "run:probe",
       title: "dual-vocabulary probe",
       bodyDocumentHash: `blake3:${"0".repeat(64)}` as DocumentHash,
@@ -115,10 +119,7 @@ function probeRmsRegister(ev: Event): { accepts: boolean; folds: boolean } {
   const accepts = agentMemoryRegisterProjection.accepts(ev);
   let folds = false;
   if (accepts) {
-    const state = agentMemoryRegisterProjection.reduce(
-      agentMemoryRegisterProjection.initial,
-      ev,
-    );
+    const state = agentMemoryRegisterProjection.reduce(agentMemoryRegisterProjection.initial, ev);
     folds = liveHeads(state).some((r) => r.memoryId === "memory:probe:0");
   }
   return { accepts, folds };

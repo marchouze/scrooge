@@ -78,11 +78,9 @@ export function assertDocResolves(
   for (const e of events) {
     if (e.type !== AGENT_MEMORY_COMMITTED) continue;
     const payload = e.payload as Record<string, unknown>;
-    const hash =
-      typeof payload.bodyDocumentHash === "string" ? payload.bodyDocumentHash : null;
+    const hash = typeof payload.bodyDocumentHash === "string" ? payload.bodyDocumentHash : null;
     if (!hash) continue; // schema requires it; defensive against legacy rows
-    const memoryId =
-      typeof payload.memoryId === "string" ? payload.memoryId : "(no memoryId)";
+    const memoryId = typeof payload.memoryId === "string" ? payload.memoryId : "(no memoryId)";
 
     asserted++;
 

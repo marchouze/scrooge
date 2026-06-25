@@ -83,8 +83,7 @@ function loadRosterAgentIds(): ReadonlyMap<string, string> {
     if (typeof p.agentId !== "string" || p.agentId.length === 0) {
       // Fail-closed: a roster persona missing `agentId` is a Slice-0 regression.
       throw new Error(
-        `agent-identity/roster: persona "${p.name}" is missing a stable \`agentId\` ` +
-          "in Team/_team-roster.json (Slice 0 requires every persona to carry one)",
+        `agent-identity/roster: persona "${p.name}" is missing a stable \`agentId\` in Team/_team-roster.json (Slice 0 requires every persona to carry one)`,
       );
     }
     map.set(p.name.toLowerCase(), p.agentId);
@@ -111,8 +110,7 @@ export function agentIdForName(name: string): string {
   const id = tryAgentIdForName(name);
   if (!id) {
     throw new Error(
-      `agent-identity/roster: no roster persona named "${name}" in ` +
-        "Team/_team-roster.json — cannot resolve a stable agentId (Charter cmd 2: fail-closed)",
+      `agent-identity/roster: no roster persona named "${name}" in Team/_team-roster.json — cannot resolve a stable agentId (Charter cmd 2: fail-closed)`,
     );
   }
   return id;
