@@ -320,6 +320,6 @@
   "rules": {
     "engineeringVsGovernance": "Engineering roles BUILD coded controls, projections, and platform components. Governance roles hold NAMED REGULATORY ACCOUNTABILITY and oversee the engineers' outputs. The two seat types are distinct; do not conflate them.",
     "newHires": "Added by Nolan to this file and to the /Team/ folder after PAX completes the role research.",
-    "personaFiles": "Each /Team/<name>.md is the operating spec for a standing autonomous agent (Principle 7). Canonical structure: 17 sections (1–5 legacy character data; 6–17 operating spec proper). Template at Team/_agent-spec-template.md. Files lacking sections 6–17 are findings until upgraded (Vera Wave-4 #10)."
+    "personaFiles": "Each /Team/<name>.md is the operating spec for a standing autonomous agent (Principle 7). Canonical structure: 20 sections (1–5 legacy character data; 6–17 operating spec proper; 18–20 domain-competence — Authoritative knowledge base & sources, Domain-truth validation, Premise-challenge duty, per D-AGENT-DOMAIN-COMPETENCE 2026-06-25). Template at Team/_agent-spec-template.md. Files lacking sections 6–17 are findings until upgraded (Vera Wave-4 #10); §18–20 presence is enforced at warn severity (lifting to fail post-grooming) by recon:agent-spec-domain-competence."
   }
 }

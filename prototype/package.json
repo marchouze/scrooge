@@ -241,6 +241,7 @@
     "recon:runtime-handler-sync": "bun run platform/recon/runtime-handler-sync.ts",
     "recon:agent-spec": "bun run platform/recon/agent-spec.ts",
     "recon:agent-spec-cross-link": "bun run platform/recon/agent-spec-cross-link.ts",
+    "recon:agent-spec-domain-competence": "bun run platform/recon/agent-spec-domain-competence.ts",
     "recon:cron-map-drift": "bun run platform/recon/cron-map-drift.ts",
     "recon:decision-recommendation": "bun run platform/recon/decision-recommendation-recon.ts",
     "recon:parallel-dispatch-divergence": "bun run platform/recon/parallel-dispatch-divergence.ts",
