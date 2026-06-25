@@ -189,6 +189,23 @@ interface CashLeg {
   readonly side: "received" | "paid";
 }
 
+/**
+ * ZAR (reporting-ccy) COST BASIS magnitude of one settled cash leg
+ * (D-FX-PNL-FCY-EXPOSURE-REVALUATION) — positive major units in the reporting
+ * currency. A reporting-currency leg's cost basis is its own magnitude (rate 1);
+ * an FCY leg's is the reporting-ccy magnitude of the COUNTER leg of the spot.
+ * `undefined` when no reporting-ccy counter leg exists (mirrors
+ * cash-materialisation.ts `costBasisMajorFor`).
+ */
+function costBasisMajorForCashLeg(leg: CashLeg, legs: readonly CashLeg[]): number | undefined {
+  if (leg.currency === REPORTING) return Math.abs(leg.signedMajor);
+  const reportingCounter = legs.find(
+    (l) => l.side !== leg.side && l.currency === REPORTING && l.signedMajor !== 0,
+  );
+  if (reportingCounter === undefined) return undefined;
+  return Math.abs(reportingCounter.signedMajor);
+}
+
 interface FilDescriptor {
   readonly tradeId: string;
   readonly economicTerms: FilEconomicTerms;
@@ -522,6 +539,15 @@ function emitCashLegsForSettled(
     // (the schema requires it); the sign lives in `direction`.
     const direction: "long" | "short" = leg.signedMajor >= 0 ? "long" : "short";
 
+    // ZAR (reporting-ccy) COST BASIS (D-FX-PNL-FCY-EXPOSURE-REVALUATION): the
+    // booked ZAR value given up / received to acquire this leg = the reporting-ccy
+    // magnitude of the COUNTER leg of the settled spot. A reporting-ccy leg's own
+    // cost basis is its own magnitude (rate 1). Resolved from d.cashLegs — the same
+    // legs the cash instances are built from. `undefined` ⇒ no reporting-ccy counter
+    // (a cross with no reporting leg): the field is omitted and the reval engine
+    // falls back to full retranslation (fail-soft, never a wrong basis).
+    const zarCostBasisMajor = costBasisMajorForCashLeg(leg, d.cashLegs);
+
     eventStore.append(
       makeFilInstrumentCreated({
         asOf: d.terminal.asOf,
@@ -551,6 +577,9 @@ function emitCashLegsForSettled(
             settlementDate: d.terminal.asOf,
             hedgingSetTag: `${leg.currency}/${REPORTING}`,
             originatingInstrument: fxInstance,
+            ...(zarCostBasisMajor !== undefined
+              ? { zarCostBasis: majorNumberToMoney(zarCostBasisMajor, REPORTING) }
+              : {}),
           },
         },
       }),

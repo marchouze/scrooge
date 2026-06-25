@@ -463,7 +463,7 @@ describe("deriveFxInstanceLegs — DUAL-READ settlement (Slice 2: TradeSettlemen
     expect([...oldNet.keys()].some((k) => k.startsWith("ACC-1200-"))).toBe(true);
   });
 
-  test("realised P&L (settled != booked both legs): N TradeSettlementExecuted net == single FilFxSettlementConfirmed", () => {
+  test("P&L-neutral clearing (settled != booked both legs): N TradeSettlementExecuted net == single FilFxSettlementConfirmed", () => {
     const s = fxSettlementConfirmed("FX-SETTLE-B", "2026-06-10T10:00:00.000Z", {
       boughtBooked: "1000000",
       boughtSettled: "1010000",
@@ -478,8 +478,10 @@ describe("deriveFxInstanceLegs — DUAL-READ settlement (Slice 2: TradeSettlemen
     );
     expect([...newNet.keys()].sort()).toEqual([...oldNet.keys()].sort());
     for (const [k, v] of oldNet) expect(newNet.get(k)).toBe(v);
-    // Non-vacuity: realised P&L (ACC-2100-006) is carried by BOTH paths.
-    expect(oldNet.has("ACC-2100-006|USD") || oldNet.has("ACC-2100-006|ZAR")).toBe(true);
+    // P&L-NEUTRAL settlement (D-FX-PNL-FCY-EXPOSURE-REVALUATION): both paths carry
+    // the FX settlement clearing leg (ACC-2100-027) and NO realised P&L (ACC-2100-006).
+    expect(oldNet.has("ACC-2100-027|USD") || oldNet.has("ACC-2100-027|ZAR")).toBe(true);
+    expect(oldNet.has("ACC-2100-006|USD") || oldNet.has("ACC-2100-006|ZAR")).toBe(false);
   });
 
   test("the new-path settlement legs attach to the TRADE instance (grouping id), not the holding", () => {

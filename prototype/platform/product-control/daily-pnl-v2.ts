@@ -102,6 +102,13 @@ interface FilFxInstrument {
   readonly counterpartyId: string;
   /** Netting set id used as book proxy. */
   readonly bookId: string;
+  /**
+   * Whether this is a SETTLED FCY cash position (D-FX-PNL-FCY-EXPOSURE-REVALUATION)
+   * rather than an open FX contract. Both are revalued via the SAME cash Valuable
+   * (`signedNotional × spot`); the flag is carried for observability + so the
+   * settled-cash position is recognisably distinct in the per-instrument breakdown.
+   */
+  readonly isSettledCash: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -276,6 +283,9 @@ export function computeDailyPnLV2(
         signedNotional: signedNotional(notionalAmount, direction),
         counterpartyId,
         bookId: nettingSetId,
+        // OPEN FX contracts are not dropped on settlement below; cash positions
+        // (added in the cash pass) ARE kept across settlement.
+        isSettledCash: false,
       });
     }
   } catch {
@@ -284,7 +294,60 @@ export function computeDailyPnLV2(
   }
 
   // -------------------------------------------------------------------------
+  // 1b. Settled FCY CASH positions (D-FX-PNL-FCY-EXPOSURE-REVALUATION). The FCY
+  //     exposure stays OPEN across settlement — settlement is a change of FORM
+  //     (the receivable becomes FCY cash), not of exposure — so the settled FCY
+  //     cash MUST stay in the revalued set, revalued exactly like an open FX
+  //     position (the cash Valuable is the SAME lifecycle-free arithmetic). A
+  //     reporting-currency cash leg carries no FX exposure and forms no bucket; a
+  //     cash leg without a `zarCostBasis` (no reporting-ccy counter, pre-correction
+  //     fixture) is skipped (no silent wrong basis). Cash instances carry their own
+  //     URNs (`<tradeId>-cash-<side>`), so the FX trade's termination (step 2) does
+  //     NOT drop them.
+  try {
+    for (const e of store.replay({ type: "FilInstrumentCreated" })) {
+      const p = e.payload as Record<string, unknown>;
+      const economicTerms = p.economicTerms as Record<string, unknown> | undefined;
+      if (!economicTerms || economicTerms.assetClass !== "cash") continue;
+
+      const instance = p.instance as string | undefined;
+      if (!instance) continue;
+      const currency = economicTerms.currency as string | undefined;
+      if (!currency || currency === reporting) continue; // domestic cash: no FX P&L
+      const costBasis = economicTerms.zarCostBasis as Record<string, unknown> | undefined;
+      if (!costBasis?.amount) continue; // no cost basis to revalue against — skip
+
+      const notionalRaw = economicTerms.notional as Record<string, unknown> | undefined;
+      const notionalAmount = notionalRaw?.amount as string | undefined;
+      if (!notionalAmount) continue;
+      const direction = economicTerms.direction as "long" | "short" | undefined;
+      if (!direction) continue;
+      const counterpartyId = (economicTerms.counterpartyId as string | undefined) ?? "fx-cash";
+      const nettingSetId = (economicTerms.nettingSetId as string | undefined) ?? "fx-cash";
+
+      const hedgingSetTag = economicTerms.hedgingSetTag as string | undefined;
+      const pair = hedgingSetTag ?? spotObservableId(currency, reporting);
+
+      instrumentsById.set(instance, {
+        instanceUrn: instance,
+        currency,
+        pair,
+        foreignCurrency: foreignCurrencyOf(pair, reporting),
+        notionalCurrency: currency,
+        signedNotional: signedNotional(notionalAmount, direction),
+        counterpartyId,
+        bookId: nettingSetId,
+        isSettledCash: true,
+      });
+    }
+  } catch {
+    // FilInstrumentCreated not registered — the FX pass already returned; ignore.
+  }
+
+  // -------------------------------------------------------------------------
   // 2. Replay FilInstrumentTerminated → remove terminated instances
+  //    (FX trades + their derecognised contracts; settled FCY cash keeps its own
+  //    URN and is NOT terminated, so it survives — D-FX-PNL-FCY-EXPOSURE-REVAL.)
   // -------------------------------------------------------------------------
   try {
     for (const e of store.replay({ type: "FilInstrumentTerminated" })) {

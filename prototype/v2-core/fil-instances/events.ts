@@ -304,6 +304,22 @@ const filEconomicTermsObjectSchema = z.object({
    * notional-sized posting (fail-closed; no silent default — Charter cmd 2).
    */
   fairValueDeltaSinceLastMeasurement: moneySchema.optional(),
+  /**
+   * ZAR (reporting-currency) COST BASIS of the position
+   * (D-FX-PNL-FCY-EXPOSURE-REVALUATION). Carried on a settled `cash` asset-class
+   * FIL instance — the booked ZAR value GIVEN UP / RECEIVED to acquire the FCY
+   * balance (NOT the settled-spot value). FX trading-book P&L is the change in the
+   * ZAR value of the FCY exposure carried at THIS cost basis: unrealised =
+   * `ZAR market value − zarCostBasis`. A settled FCY cash position therefore
+   * revalues IDENTICALLY to the open FX contract for the same spot move (the
+   * exposure stays open across settlement — settlement is a change of FORM). For a
+   * domestic (reporting-currency) cash leg this equals the leg's own amount (rate
+   * 1). OPTIONAL + additive: only settled FX cash legs carry it; every existing
+   * event parses unchanged (replay-safe — Charter cmd 9). When ABSENT the
+   * revaluation engine falls back to full retranslation (the pre-correction read)
+   * — never a silent wrong cost basis.
+   */
+  zarCostBasis: moneySchema.optional(),
 });
 
 /**

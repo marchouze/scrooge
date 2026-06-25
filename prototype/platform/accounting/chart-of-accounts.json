@@ -272,6 +272,12 @@
       "side": "debit"
     },
     {
+      "id": "ACC-2100-027",
+      "name": "FX Settlement Clearing",
+      "category": "asset-trading",
+      "side": "debit"
+    },
+    {
       "id": "ACC-2105-001",
       "name": "FX Sub-Ledger Build-Phase Write-Off",
       "category": "income-trading",

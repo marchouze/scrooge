@@ -44,7 +44,7 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { FX_FVOCI_OCI_RESERVE_ACCOUNT, type FxAccountSet, resolveFxAccountSet } from "./fx";
-import { nostroFor } from "./fx-settlement";
+import { FX_SETTLEMENT_CLEARING_ACCOUNT, nostroFor } from "./fx-settlement";
 
 // ---------------------------------------------------------------------------
 // Account roles — the symbolic role each leg posts to. Resolved to a concrete
@@ -58,7 +58,8 @@ export type FxAccountRole =
   | "unrealised-pnl"
   | "realised-pnl"
   | "oci-reserve"
-  | "nostro";
+  | "nostro"
+  | "settlement-clearing";
 
 /** Human label per account role (small tag on the page). */
 export const FX_ACCOUNT_ROLE_LABEL: Readonly<Record<FxAccountRole, string>> = {
@@ -68,14 +69,15 @@ export const FX_ACCOUNT_ROLE_LABEL: Readonly<Record<FxAccountRole, string>> = {
   "realised-pnl": "Realised FX P&L",
   "oci-reserve": "OCI reserve (FVOCI election)",
   nostro: "Cash / nostro",
+  "settlement-clearing": "FX settlement clearing (P&L-neutral)",
 };
 
 /**
  * Resolve an account role to its concrete CoA account code for a currency.
  * Mirrors EXACTLY how the pure rule functions pick accounts: the receivable /
  * payable / unrealised-pnl / realised-pnl come from `resolveFxAccountSet`; the
- * OCI reserve is the FVOCI named constant; the nostro is `nostroFor`. Source,
- * don't duplicate (Charter cmd 4).
+ * OCI reserve + the settlement clearing are named constants; the nostro is
+ * `nostroFor`. Source, don't duplicate (Charter cmd 4).
  */
 export function resolveFxAccountRole(role: FxAccountRole, currency: string): string {
   const set: FxAccountSet = resolveFxAccountSet(currency);
@@ -92,6 +94,8 @@ export function resolveFxAccountRole(role: FxAccountRole, currency: string): str
       return FX_FVOCI_OCI_RESERVE_ACCOUNT;
     case "nostro":
       return nostroFor(currency);
+    case "settlement-clearing":
+      return FX_SETTLEMENT_CLEARING_ACCOUNT;
   }
 }
 
@@ -143,6 +147,7 @@ const IAS = {
 } as const;
 
 const D_COMPLETE = "D-ACCT-FX-IFRS-POSTING-COMPLETENESS";
+const D_PNL_FCY = "D-FX-PNL-FCY-EXPOSURE-REVALUATION";
 
 // ---------------------------------------------------------------------------
 // The declaration. Each entry mirrors a pure `postFx*Legs` function leg-for-leg.
@@ -200,12 +205,13 @@ export const FX_RULE_STAGE_LEG_STRUCTURES: readonly FxRuleStageLegStructure[] = 
   },
 
   // ── b · Payment — PR-FX-SETTLE-V2 (pay movement) ──────────────────────────
-  // The sold-leg cash is delivered: Cr nostro (cash paid) / Dr payable
-  // (extinguished) / realised-P&L balancing leg for booked-vs-settled diff.
+  // P&L-NEUTRAL settlement (D-FX-PNL-FCY-EXPOSURE-REVALUATION): the sold-leg cash is
+  // delivered — Cr nostro (cash paid) / Dr settlement clearing. NO realised P&L
+  // (settlement is a change of form, not a realisation) and NO payable touched.
   {
     postingRuleId: "PR-FX-SETTLE-V2",
     stage: "b",
-    condition: "non-zero-pnl",
+    condition: "always",
     legs: [
       {
         accountRole: "nostro",
@@ -214,27 +220,21 @@ export const FX_RULE_STAGE_LEG_STRUCTURES: readonly FxRuleStageLegStructure[] = 
         note: "Cash paid at the settlement rate (sold-leg cash leaves the nostro).",
       },
       {
-        accountRole: "payable",
+        accountRole: "settlement-clearing",
         drCr: "debit",
         iasCite: IAS.settleCash,
-        note: "Extinguish the sold-leg payable carried at the booked rate.",
-      },
-      {
-        accountRole: "realised-pnl",
-        drCr: "debit",
-        iasCite: IAS.settlePnl,
-        note: "Realised FX P&L — the booked-vs-settled difference on the paid leg (sign per gain/loss).",
+        note: "FX settlement clearing — the P&L-neutral contra to the paid cash (no realised P&L; settlement is a change of form).",
       },
     ],
     derivedFrom: `${FX_SETTLEMENT_TS} · postFxSettlementLegs (pay movement)`,
-    citations: [IAS.settleCash, IAS.settlePnl, D_COMPLETE],
+    citations: [IAS.settleCash, D_PNL_FCY, D_COMPLETE],
   },
 
   // ── b · Payment — PR-FX-SWAP-NEAR-V2 (near-leg settlement) ────────────────
   {
     postingRuleId: "PR-FX-SWAP-NEAR-V2",
     stage: "b",
-    condition: "non-zero-pnl",
+    condition: "always",
     legs: [
       {
         accountRole: "nostro",
@@ -243,29 +243,25 @@ export const FX_RULE_STAGE_LEG_STRUCTURES: readonly FxRuleStageLegStructure[] = 
         note: "FX swap near-leg cash movement at the settlement rate.",
       },
       {
-        accountRole: "payable",
+        accountRole: "settlement-clearing",
         drCr: "debit",
         iasCite: IAS.settleCash,
-        note: "Extinguish the near-leg obligation at the booked rate.",
-      },
-      {
-        accountRole: "realised-pnl",
-        drCr: "debit",
-        iasCite: IAS.settleCash,
-        note: "Realised P&L on the near leg (booked-vs-settled).",
+        note: "FX settlement clearing — P&L-neutral contra to the near-leg cash.",
       },
     ],
     derivedFrom: `${FX_SETTLEMENT_TS} · postFxSwapNearLegLegs`,
-    citations: [IAS.settleCash, D_COMPLETE],
+    citations: [IAS.settleCash, D_PNL_FCY, D_COMPLETE],
   },
 
   // ── c · Receipt — PR-FX-SETTLE-V2 (receive movement) ──────────────────────
-  // The bought-leg cash is received: Dr nostro (cash in) / Cr receivable
-  // (extinguished) / realised-P&L balancing leg.
+  // P&L-NEUTRAL settlement (D-FX-PNL-FCY-EXPOSURE-REVALUATION): the bought-leg cash
+  // is received — Dr nostro (cash in) / Cr settlement clearing. NO realised P&L and
+  // NO receivable touched; the FCY cash is then carried at its ZAR cost basis and
+  // revalued daily exactly like the open contract.
   {
     postingRuleId: "PR-FX-SETTLE-V2",
     stage: "c",
-    condition: "non-zero-pnl",
+    condition: "always",
     legs: [
       {
         accountRole: "nostro",
@@ -274,27 +270,21 @@ export const FX_RULE_STAGE_LEG_STRUCTURES: readonly FxRuleStageLegStructure[] = 
         note: "Cash received at the settlement rate (bought-leg cash enters the nostro).",
       },
       {
-        accountRole: "receivable",
+        accountRole: "settlement-clearing",
         drCr: "credit",
         iasCite: IAS.settleCash,
-        note: "Extinguish the bought-leg receivable carried at the booked rate.",
-      },
-      {
-        accountRole: "realised-pnl",
-        drCr: "credit",
-        iasCite: IAS.settlePnl,
-        note: "Realised FX P&L — the booked-vs-settled difference on the received leg (sign per gain/loss).",
+        note: "FX settlement clearing — the P&L-neutral contra to the received cash (no realised P&L; the exposure stays open as FCY cash).",
       },
     ],
     derivedFrom: `${FX_SETTLEMENT_TS} · postFxSettlementLegs (receive movement)`,
-    citations: [IAS.settleCash, IAS.settlePnl, D_COMPLETE],
+    citations: [IAS.settleCash, D_PNL_FCY, D_COMPLETE],
   },
 
   // ── c · Receipt — PR-FX-SWAP-FAR-V2 (far-leg settlement; closes composite) ─
   {
     postingRuleId: "PR-FX-SWAP-FAR-V2",
     stage: "c",
-    condition: "non-zero-pnl",
+    condition: "always",
     legs: [
       {
         accountRole: "nostro",
@@ -303,20 +293,14 @@ export const FX_RULE_STAGE_LEG_STRUCTURES: readonly FxRuleStageLegStructure[] = 
         note: "FX swap far-leg cash movement at the settlement rate; closes the composite.",
       },
       {
-        accountRole: "receivable",
+        accountRole: "settlement-clearing",
         drCr: "credit",
         iasCite: IAS.settleCash,
-        note: "Extinguish the far-leg obligation at the booked rate.",
-      },
-      {
-        accountRole: "realised-pnl",
-        drCr: "credit",
-        iasCite: IAS.settleCash,
-        note: "Realised P&L on the far leg (booked-vs-settled).",
+        note: "FX settlement clearing — P&L-neutral contra to the far-leg cash; closes the composite.",
       },
     ],
     derivedFrom: `${FX_SETTLEMENT_TS} · postFxSwapFarLegLegs`,
-    citations: [IAS.settleCash, D_COMPLETE],
+    citations: [IAS.settleCash, D_PNL_FCY, D_COMPLETE],
   },
 
   // ── c · Receipt — PR-FX-NDF-FIX-V2 (cash-settled fixing; no principal) ─────
@@ -419,13 +403,13 @@ export const FX_GL_LIFECYCLE_STAGES: readonly FxLifecycleStageMeta[] = [
     id: "b",
     label: "Payment",
     summary:
-      "Sold leg settles — cash leaves the nostro, the payable is extinguished, realised P&L is struck.",
+      "Sold leg settles — cash leaves the nostro against FX settlement clearing. P&L-neutral: no realised P&L (settlement is a change of form).",
   },
   {
     id: "c",
     label: "Receipt",
     summary:
-      "Bought leg settles — cash enters the nostro, the receivable is extinguished, realised P&L is struck.",
+      "Bought leg settles — cash enters the nostro against FX settlement clearing. P&L-neutral: the FCY cash is carried at ZAR cost basis and revalued like the open contract.",
   },
   {
     id: "d",

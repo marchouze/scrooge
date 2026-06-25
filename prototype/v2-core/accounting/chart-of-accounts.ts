@@ -387,6 +387,22 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     side: "debit",
   },
 
+  // 2100-027 — FX settlement clearing (P&L-NEUTRAL settlement contra).
+  // D-FX-PNL-FCY-EXPOSURE-REVALUATION (CEO 2026-06-25): settlement is a change of
+  // FORM (the FCY receivable/derivative becomes FCY cash), NOT a realisation. The
+  // settled cash legs (nostro) are recognised against THIS clearing account in
+  // their OWN currency — never realised P&L (ACC-2100-006). Multi-currency by
+  // design (each leg self-balances in its own currency vs the nostro); the
+  // account carries the in-flight FX-settlement position the cash legs convert.
+  // On-balance-sheet (asset-trading) so the nostro cash leg's contra stays on-BS
+  // and the trial balance balances per currency without a P&L footprint.
+  {
+    id: "ACC-2100-027",
+    name: "FX Settlement Clearing",
+    category: "asset-trading",
+    side: "debit",
+  },
+
   // 2105 — FX sub-ledger build-phase write-off P&L (multi-currency by design)
   {
     id: "ACC-2105-001",
