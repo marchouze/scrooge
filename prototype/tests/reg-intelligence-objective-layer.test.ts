@@ -39,9 +39,29 @@ import {
 } from "../platform/regulatory/graph/query";
 import { runSeed } from "../platform/regulatory/graph/seed-projection";
 
+// `runSeed()` is a full regulatory-objective graph seed (truncate-and-reproject
+// over ~hundreds of nodes/edges). Measured ~0.9–1.1s on an idle machine, but it
+// is CPU- + SQLite-bound, so on a contended CI runner (the whole `bun test`
+// battery shares one process + core under `--isolate`) it can balloon to ~7s —
+// observed 6804.8ms in the failed Core job for run 28152842254. Bun's default
+// per-test/hook timeout is 5000ms, so any one of the SIX runSeed-bearing
+// hooks/tests in this file (this beforeAll, the three recon-gate run()s — each
+// of which re-seeds a fresh graph by design — the idempotency re-fold, and the
+// advisory-residual gate) could non-deterministically trip it. That is the
+// root cause of the intermittent `(unnamed) [~6s]` / named-test [~6.8s] Core
+// flake. We right-size the timeout for these legitimately-heavy deterministic
+// seeds rather than mask a real hang: a genuine infinite loop or broken seed
+// still fails well inside 60s. 60_000ms matches the proven value the sibling
+// `obligation-policy-fold.integration.test.ts` already uses for this exact
+// `runSeed()` (the equivalence-fold integration test uses 120_000) — this file
+// was the lone runSeed-bearing outlier that never carried an explicit timeout.
+// Authority: Engineering Charter cmd 1 (root-cause before remedy), cmd 3 (no
+// green by concealment), cmd 7 (whole-tree integrity).
+const SEED_TIMEOUT_MS = 60_000;
+
 beforeAll(async () => {
   await runSeed();
-});
+}, SEED_TIMEOUT_MS);
 
 describe("objective layer — graph ingestion", () => {
   test("seeds the SARB-PA pilot + FSCA + FIC + BCBS RegulatoryObjective nodes with correct levels", () => {
@@ -233,90 +253,102 @@ describe("objective layer — queries", () => {
 });
 
 describe("objective layer — recon gates", () => {
-  test("regulator-mandate-coverage (ENFORCING): ok=true, all six in-scope regulators covered", async () => {
-    const { run } = await import("../platform/recon/regulator-mandate-coverage");
-    const result = await run();
-    // Promoted to enforcing on the 2026-06-10 tail-fill: ok is now derived
-    // from the violation count, so any uncovered in-scope regulator blocks CI.
-    expect(result.ok).toBe(true);
-    expect(result.asserted).toBeGreaterThanOrEqual(1);
-    // SARB-PA is covered → it must NOT appear in the violations.
-    expect(result.violations.map((v) => v.subject)).not.toContain("REG-SARB-PA");
-    // The Information Regulator was the sixth and last regulator to be backfilled
-    // (D-INFOREG-REGULATORY-INTELLIGENCE-INGESTION) → it must NOT appear either.
-    expect(result.violations.map((v) => v.subject)).not.toContain("REG-INFO-REG");
-    // With all six in-scope regulators mandate-covered there are no findings.
-    expect(result.violations.length).toBe(0);
-  });
+  test(
+    "regulator-mandate-coverage (ENFORCING): ok=true, all six in-scope regulators covered",
+    async () => {
+      const { run } = await import("../platform/recon/regulator-mandate-coverage");
+      const result = await run();
+      // Promoted to enforcing on the 2026-06-10 tail-fill: ok is now derived
+      // from the violation count, so any uncovered in-scope regulator blocks CI.
+      expect(result.ok).toBe(true);
+      expect(result.asserted).toBeGreaterThanOrEqual(1);
+      // SARB-PA is covered → it must NOT appear in the violations.
+      expect(result.violations.map((v) => v.subject)).not.toContain("REG-SARB-PA");
+      // The Information Regulator was the sixth and last regulator to be backfilled
+      // (D-INFOREG-REGULATORY-INTELLIGENCE-INGESTION) → it must NOT appear either.
+      expect(result.violations.map((v) => v.subject)).not.toContain("REG-INFO-REG");
+      // With all six in-scope regulators mandate-covered there are no findings.
+      expect(result.violations.length).toBe(0);
+    },
+    SEED_TIMEOUT_MS,
+  );
 
-  test("requirement-objective-linkage: ok=true, PA obligations covered, rest advisory", async () => {
-    const { run } = await import("../platform/recon/requirement-objective-linkage");
-    const result = await run();
-    expect(result.ok).toBe(true);
-    // The PA prudential obligations carry SERVES → not in the violation set.
-    const subjects = result.violations.map((v) => v.subject);
-    expect(subjects).not.toContain("OBL-ORG-PR-01");
-    expect(subjects).not.toContain("OBL-ORG-PR-06");
-    // Other adopted obligations are not yet linked → advisory findings exist.
-    expect(result.violations.length).toBeGreaterThanOrEqual(1);
-    expect(result.violations.every((v) => v.severity !== "fail")).toBe(true);
-  });
+  test(
+    "requirement-objective-linkage: ok=true, PA obligations covered, rest advisory",
+    async () => {
+      const { run } = await import("../platform/recon/requirement-objective-linkage");
+      const result = await run();
+      expect(result.ok).toBe(true);
+      // The PA prudential obligations carry SERVES → not in the violation set.
+      const subjects = result.violations.map((v) => v.subject);
+      expect(subjects).not.toContain("OBL-ORG-PR-01");
+      expect(subjects).not.toContain("OBL-ORG-PR-06");
+      // Other adopted obligations are not yet linked → advisory findings exist.
+      expect(result.violations.length).toBeGreaterThanOrEqual(1);
+      expect(result.violations.every((v) => v.severity !== "fail")).toBe(true);
+    },
+    SEED_TIMEOUT_MS,
+  );
 
-  test("objective-policy-alignment: ok=true, aligned objectives green, gaps advisory", async () => {
-    const { run } = await import("../platform/recon/objective-policy-alignment");
-    const result = await run();
-    expect(result.ok).toBe(true);
-    // 5 SARB-PA pilot + 5 FSCA + 5 FIC + 6 BCBS + 4 IASB + 4 INFOREG objectives
-    // asserted.
-    expect(result.asserted).toBe(29);
-    const subjects = result.violations.map((v) => v.subject);
-    // The aligned objectives are NOT flagged.
-    expect(subjects).not.toContain("OBJ-SARB-PA-SAFETY-SOUNDNESS");
-    expect(subjects).not.toContain("OBJ-SARB-PA-FINANCIAL-STABILITY");
-    // FSCA fair-treatment + market-integrity are aligned (conduct + markets policies).
-    expect(subjects).not.toContain("OBJ-FSCA-FAIR-TREATMENT");
-    expect(subjects).not.toContain("OBJ-FSCA-MARKET-INTEGRITY");
-    // FIC cdd-integrity + targeted-sanctions + aml-supervision are aligned (AML/sanctions policies).
-    expect(subjects).not.toContain("OBJ-FIC-CDD-INTEGRITY");
-    expect(subjects).not.toContain("OBJ-FIC-TARGETED-SANCTIONS");
-    expect(subjects).not.toContain("OBJ-FIC-AML-SUPERVISION");
-    // BCBS objectives carrying ALIGNS_TO from SA prudential policies are aligned.
-    expect(subjects).not.toContain("OBJ-BCBS-CAPITAL-ADEQUACY");
-    expect(subjects).not.toContain("OBJ-BCBS-LIQUIDITY-RESILIENCE");
-    expect(subjects).not.toContain("OBJ-BCBS-RISK-CAPTURE");
-    expect(subjects).not.toContain("OBJ-BCBS-MARKET-DISCIPLINE");
-    expect(subjects).not.toContain("OBJ-BCBS-SUPERVISORY-REVIEW");
-    // IASB objectives carrying ALIGNS_TO from IFRS accounting/disclosure/tax policies are aligned.
-    expect(subjects).not.toContain("OBJ-IASB-TRANSPARENCY");
-    expect(subjects).not.toContain("OBJ-IASB-MARKET-EFFICIENCY");
-    // INFOREG objectives carrying ALIGNS_TO from privacy/infosec/PAIA policies are aligned.
-    expect(subjects).not.toContain("OBJ-INFOREG-DATA-PROTECTION");
-    expect(subjects).not.toContain("OBJ-INFOREG-ACCESS-TO-INFORMATION");
-    // Tail-fill 2026-06-10: the previously-gapped objectives are now aligned
-    // (FIC financial-intelligence via aml-cft-policy; IASB accountability via
-    // financial-reporting + external-audit policies; INFOREG monitoring-
-    // enforcement via popia-privacy + incident-response policies; SARB-PA
-    // customer-protection via RRP policy and MI-soundness via payments-
-    // settlement policy), and every mandate is covered transitively via the
-    // REFINES roll-up.
-    expect(subjects).not.toContain("OBJ-FIC-FINANCIAL-INTELLIGENCE");
-    expect(subjects).not.toContain("OBJ-IASB-ACCOUNTABILITY");
-    expect(subjects).not.toContain("OBJ-INFOREG-MONITORING-ENFORCEMENT");
-    expect(subjects).not.toContain("OBJ-SARB-PA-CUSTOMER-PROTECTION");
-    expect(subjects).not.toContain("OBJ-SARB-PA-MI-SOUNDNESS");
-    expect(subjects).not.toContain("OBJ-SARB-PA-MANDATE");
-    expect(subjects).not.toContain("OBJ-BCBS-MANDATE");
-    expect(subjects).not.toContain("OBJ-FIC-MANDATE");
-    expect(subjects).not.toContain("OBJ-FSCA-MANDATE");
-    expect(subjects).not.toContain("OBJ-IASB-MANDATE");
-    expect(subjects).not.toContain("OBJ-INFOREG-MANDATE");
-    // The two genuine residuals stay flagged (advisory): FSCA-directed
-    // statutory functions no build-phase bank policy serves.
-    expect(subjects).toContain("OBJ-FSCA-FINANCIAL-INCLUSION");
-    expect(subjects).toContain("OBJ-FSCA-FINANCIAL-EDUCATION");
-    expect(result.violations.length).toBe(2);
-    expect(result.violations.every((v) => v.severity !== "fail")).toBe(true);
-  });
+  test(
+    "objective-policy-alignment: ok=true, aligned objectives green, gaps advisory",
+    async () => {
+      const { run } = await import("../platform/recon/objective-policy-alignment");
+      const result = await run();
+      expect(result.ok).toBe(true);
+      // 5 SARB-PA pilot + 5 FSCA + 5 FIC + 6 BCBS + 4 IASB + 4 INFOREG objectives
+      // asserted.
+      expect(result.asserted).toBe(29);
+      const subjects = result.violations.map((v) => v.subject);
+      // The aligned objectives are NOT flagged.
+      expect(subjects).not.toContain("OBJ-SARB-PA-SAFETY-SOUNDNESS");
+      expect(subjects).not.toContain("OBJ-SARB-PA-FINANCIAL-STABILITY");
+      // FSCA fair-treatment + market-integrity are aligned (conduct + markets policies).
+      expect(subjects).not.toContain("OBJ-FSCA-FAIR-TREATMENT");
+      expect(subjects).not.toContain("OBJ-FSCA-MARKET-INTEGRITY");
+      // FIC cdd-integrity + targeted-sanctions + aml-supervision are aligned (AML/sanctions policies).
+      expect(subjects).not.toContain("OBJ-FIC-CDD-INTEGRITY");
+      expect(subjects).not.toContain("OBJ-FIC-TARGETED-SANCTIONS");
+      expect(subjects).not.toContain("OBJ-FIC-AML-SUPERVISION");
+      // BCBS objectives carrying ALIGNS_TO from SA prudential policies are aligned.
+      expect(subjects).not.toContain("OBJ-BCBS-CAPITAL-ADEQUACY");
+      expect(subjects).not.toContain("OBJ-BCBS-LIQUIDITY-RESILIENCE");
+      expect(subjects).not.toContain("OBJ-BCBS-RISK-CAPTURE");
+      expect(subjects).not.toContain("OBJ-BCBS-MARKET-DISCIPLINE");
+      expect(subjects).not.toContain("OBJ-BCBS-SUPERVISORY-REVIEW");
+      // IASB objectives carrying ALIGNS_TO from IFRS accounting/disclosure/tax policies are aligned.
+      expect(subjects).not.toContain("OBJ-IASB-TRANSPARENCY");
+      expect(subjects).not.toContain("OBJ-IASB-MARKET-EFFICIENCY");
+      // INFOREG objectives carrying ALIGNS_TO from privacy/infosec/PAIA policies are aligned.
+      expect(subjects).not.toContain("OBJ-INFOREG-DATA-PROTECTION");
+      expect(subjects).not.toContain("OBJ-INFOREG-ACCESS-TO-INFORMATION");
+      // Tail-fill 2026-06-10: the previously-gapped objectives are now aligned
+      // (FIC financial-intelligence via aml-cft-policy; IASB accountability via
+      // financial-reporting + external-audit policies; INFOREG monitoring-
+      // enforcement via popia-privacy + incident-response policies; SARB-PA
+      // customer-protection via RRP policy and MI-soundness via payments-
+      // settlement policy), and every mandate is covered transitively via the
+      // REFINES roll-up.
+      expect(subjects).not.toContain("OBJ-FIC-FINANCIAL-INTELLIGENCE");
+      expect(subjects).not.toContain("OBJ-IASB-ACCOUNTABILITY");
+      expect(subjects).not.toContain("OBJ-INFOREG-MONITORING-ENFORCEMENT");
+      expect(subjects).not.toContain("OBJ-SARB-PA-CUSTOMER-PROTECTION");
+      expect(subjects).not.toContain("OBJ-SARB-PA-MI-SOUNDNESS");
+      expect(subjects).not.toContain("OBJ-SARB-PA-MANDATE");
+      expect(subjects).not.toContain("OBJ-BCBS-MANDATE");
+      expect(subjects).not.toContain("OBJ-FIC-MANDATE");
+      expect(subjects).not.toContain("OBJ-FSCA-MANDATE");
+      expect(subjects).not.toContain("OBJ-IASB-MANDATE");
+      expect(subjects).not.toContain("OBJ-INFOREG-MANDATE");
+      // The two genuine residuals stay flagged (advisory): FSCA-directed
+      // statutory functions no build-phase bank policy serves.
+      expect(subjects).toContain("OBJ-FSCA-FINANCIAL-INCLUSION");
+      expect(subjects).toContain("OBJ-FSCA-FINANCIAL-EDUCATION");
+      expect(result.violations.length).toBe(2);
+      expect(result.violations.every((v) => v.severity !== "fail")).toBe(true);
+    },
+    SEED_TIMEOUT_MS,
+  );
 });
 
 describe("objective layer — adopted SERVES backfill (rule-based, 2026-06-10)", () => {
@@ -360,24 +392,32 @@ describe("objective layer — adopted SERVES backfill (rule-based, 2026-06-10)",
     expect(bad.length).toBe(0);
   });
 
-  test("re-fold is idempotent — re-running the seed neither duplicates nor drops backfill edges", async () => {
-    const before = countBackfill();
-    await runSeed();
-    expect(countBackfill()).toBe(before);
-  });
+  test(
+    "re-fold is idempotent — re-running the seed neither duplicates nor drops backfill edges",
+    async () => {
+      const before = countBackfill();
+      await runSeed();
+      expect(countBackfill()).toBe(before);
+    },
+    SEED_TIMEOUT_MS,
+  );
 
-  test("requirement-objective-linkage advisory residual shrinks to the documented unmappable set", async () => {
-    const { run } = await import("../platform/recon/requirement-objective-linkage");
-    const result = await run();
-    expect(result.ok).toBe(true);
-    const artefact = JSON.parse(readFileSync(artefactPath, "utf-8")) as {
-      residuals: Array<{ obligationId: string }>;
-    };
-    // The remaining advisory findings are EXACTLY the artefact's residuals —
-    // obligations whose source has no objective graph yet (FinSurv, SARS,
-    // DoEL, CIPC/King IV, JSE, …) or is an internal/contractual handle.
-    const expected = new Set(artefact.residuals.map((r) => r.obligationId));
-    const flagged = new Set(result.violations.map((v) => v.subject));
-    expect(flagged).toEqual(expected);
-  });
+  test(
+    "requirement-objective-linkage advisory residual shrinks to the documented unmappable set",
+    async () => {
+      const { run } = await import("../platform/recon/requirement-objective-linkage");
+      const result = await run();
+      expect(result.ok).toBe(true);
+      const artefact = JSON.parse(readFileSync(artefactPath, "utf-8")) as {
+        residuals: Array<{ obligationId: string }>;
+      };
+      // The remaining advisory findings are EXACTLY the artefact's residuals —
+      // obligations whose source has no objective graph yet (FinSurv, SARS,
+      // DoEL, CIPC/King IV, JSE, …) or is an internal/contractual handle.
+      const expected = new Set(artefact.residuals.map((r) => r.obligationId));
+      const flagged = new Set(result.violations.map((v) => v.subject));
+      expect(flagged).toEqual(expected);
+    },
+    SEED_TIMEOUT_MS,
+  );
 });
