@@ -39,9 +39,10 @@ import { type AgentMemoryRow, readMyMemory } from "../../platform/agent-runtime/
 import { eventStore } from "../../platform/composition";
 import { defaultDocumentStore } from "../../platform/document-store";
 import { AGENT_MEMORY_COMMITTED } from "../../platform/event-store/event-types";
-import { die, optionalString, parseArgs } from "./args";
+import { die, optionalBoolean, optionalString, parseArgs } from "./args";
 
 const REPEATABLE = new Set<string>([]);
+const BOOLEAN = new Set<string>(["json"]);
 
 function parseDomains(raw: string | undefined): readonly string[] | undefined {
   if (raw === undefined) return undefined;
@@ -90,7 +91,7 @@ function printHuman(agentName: string, agentId: string, rows: readonly AgentMemo
 }
 
 function main(): void {
-  const args = parseArgs(process.argv.slice(2), REPEATABLE);
+  const args = parseArgs(process.argv.slice(2), REPEATABLE, BOOLEAN);
   const agentName = optionalString(args, "agent");
   if (!agentName) die("Missing required flag --agent <name>");
 
@@ -102,7 +103,7 @@ function main(): void {
   }
 
   const domains = parseDomains(optionalString(args, "domains"));
-  const asJson = optionalString(args, "json") !== undefined || process.argv.includes("--json");
+  const asJson = optionalBoolean(args, "json");
 
   const events = [...eventStore.replay({ type: AGENT_MEMORY_COMMITTED })];
 
