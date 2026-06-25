@@ -34,7 +34,13 @@ class StubStore implements DocumentStore {
     return this.bodies.has(hash);
   }
   metadata(hash: DocumentHash): DocumentMetadata {
-    return { hash, path: `mem://${hash}`, size: 0, algo: "blake3", firstSeenAt: "2026-06-25T00:00:00.000Z" };
+    return {
+      hash,
+      path: `mem://${hash}`,
+      size: 0,
+      algo: "blake3",
+      firstSeenAt: "2026-06-25T00:00:00.000Z",
+    };
   }
 }
 
@@ -47,7 +53,11 @@ function ev(memoryId: string, domains: string[], hash: string, asOf: string): Ev
     payload: {
       memoryId,
       domains,
-      producedByAgent: { name: "Atlas", position: "Core banking platform architect", agentId: "agent:atlas" },
+      producedByAgent: {
+        name: "Atlas",
+        position: "Core banking platform architect",
+        agentId: "agent:atlas",
+      },
       producedByRunId: "run:x",
       title: memoryId,
       bodyDocumentHash: hash as DocumentHash,
@@ -81,14 +91,21 @@ describe("readMyMemory — mandate∪shared filter", () => {
       ev("m:platform", ["platform"], H1, "2026-06-25T00:00:01.000Z"),
       ev("m:shared", ["shared"], H2, "2026-06-25T00:00:02.000Z"),
     ];
-    const rows = readMyMemory("agent:atlas", { events, documentStore: store }, { domains: ["platform"] });
+    const rows = readMyMemory(
+      "agent:atlas",
+      { events, documentStore: store },
+      { domains: ["platform"] },
+    );
     const ids = rows.map((r) => r.memoryId);
     expect(ids).toEqual(["m:platform"]); // shared NOT auto-added in override mode
   });
 
   it("deterministic sort — same rows regardless of event order", () => {
     const store = new StubStore().seed(H1, "a").seed(H2, "b");
-    const a = [ev("m:a", ["platform"], H1, "2026-06-25T00:00:01.000Z"), ev("m:b", ["shared"], H2, "2026-06-25T00:00:02.000Z")];
+    const a = [
+      ev("m:a", ["platform"], H1, "2026-06-25T00:00:01.000Z"),
+      ev("m:b", ["shared"], H2, "2026-06-25T00:00:02.000Z"),
+    ];
     const r1 = readMyMemory("agent:atlas", { events: a, documentStore: store });
     const r2 = readMyMemory("agent:atlas", { events: [...a].reverse(), documentStore: store });
     expect(JSON.stringify(r1)).toBe(JSON.stringify(r2));
@@ -100,8 +117,32 @@ describe("readMyMemory — mandate∪shared filter", () => {
       ["platform", "shared"],
       [
         // synthetic heads
-        { memoryId: "m:ok", title: "t", domains: ["platform"], citations: ["c"], producedByAgent: { name: "Atlas", position: "p", agentId: "agent:atlas" }, producedByRunId: "r", bodyDocumentHash: H1, supersedes: null, supersededBy: null, committedAt: "2026-06-25T00:00:01.000Z", committedEventId: "e1" },
-        { memoryId: "m:gone", title: "t", domains: ["shared"], citations: ["c"], producedByAgent: { name: "Atlas", position: "p", agentId: "agent:atlas" }, producedByRunId: "r", bodyDocumentHash: H2, supersedes: null, supersededBy: null, committedAt: "2026-06-25T00:00:02.000Z", committedEventId: "e2" },
+        {
+          memoryId: "m:ok",
+          title: "t",
+          domains: ["platform"],
+          citations: ["c"],
+          producedByAgent: { name: "Atlas", position: "p", agentId: "agent:atlas" },
+          producedByRunId: "r",
+          bodyDocumentHash: H1,
+          supersedes: null,
+          supersededBy: null,
+          committedAt: "2026-06-25T00:00:01.000Z",
+          committedEventId: "e1",
+        },
+        {
+          memoryId: "m:gone",
+          title: "t",
+          domains: ["shared"],
+          citations: ["c"],
+          producedByAgent: { name: "Atlas", position: "p", agentId: "agent:atlas" },
+          producedByRunId: "r",
+          bodyDocumentHash: H2,
+          supersedes: null,
+          supersededBy: null,
+          committedAt: "2026-06-25T00:00:02.000Z",
+          committedEventId: "e2",
+        },
       ],
       store,
     );
@@ -115,13 +156,19 @@ describe("readMyMemory — mandate∪shared filter", () => {
 
   it("fail-closed — unknown agent with no opts.domains throws", () => {
     const store = new StubStore();
-    expect(() => readMyMemory("agent:does-not-exist", { events: [], documentStore: store })).toThrow();
+    expect(() =>
+      readMyMemory("agent:does-not-exist", { events: [], documentStore: store }),
+    ).toThrow();
   });
 
   it("unknown agent WITH opts.domains does NOT throw (off-roster lens)", () => {
     const store = new StubStore().seed(H1, "x");
     const events = [ev("m:x", ["platform"], H1, "2026-06-25T00:00:01.000Z")];
-    const rows = readMyMemory("agent:does-not-exist", { events, documentStore: store }, { domains: ["platform"] });
+    const rows = readMyMemory(
+      "agent:does-not-exist",
+      { events, documentStore: store },
+      { domains: ["platform"] },
+    );
     expect(rows.map((r) => r.memoryId)).toEqual(["m:x"]);
   });
 });

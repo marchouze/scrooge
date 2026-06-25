@@ -99,7 +99,11 @@ function memoryEvent(args: {
   const payload: AgentMemoryCommittedPayload = {
     memoryId: args.memoryId,
     domains: args.domains,
-    producedByAgent: { name: "Atlas", position: "Core banking platform architect", agentId: "agent:atlas" },
+    producedByAgent: {
+      name: "Atlas",
+      position: "Core banking platform architect",
+      agentId: "agent:atlas",
+    },
     producedByRunId: "run:recall-determinism-probe",
     title: `probe ${args.memoryId}`,
     bodyDocumentHash: args.hash as DocumentHash,
@@ -131,7 +135,8 @@ export function assertRecallDeterminism(
   if (JSON.stringify(first) !== JSON.stringify(second)) {
     violations.push({
       subject: "readMyMemory:determinism",
-      message: `readMyMemory returned different results across two calls (or a shuffled event order) — the read is non-deterministic, which makes WorldStateSnapshot.myMemory and its snapshotHash unstable. D-AGENT-MEMORY-PERSISTENCE.`,
+      message:
+        "readMyMemory returned different results across two calls (or a shuffled event order) — the read is non-deterministic, which makes WorldStateSnapshot.myMemory and its snapshotHash unstable. D-AGENT-MEMORY-PERSISTENCE.",
       severity,
     });
   }
@@ -178,10 +183,14 @@ export function run(): ReconResult {
   const inMandateDomain = "platform";
   const unrelatedDomain = "credit-risk";
 
+  const hashInMandate = `blake3:${"1".repeat(64)}`;
+  const hashShared = `blake3:${"2".repeat(64)}`;
+  const hashUnrelated = `blake3:${"3".repeat(64)}`;
+
   const docStore = new InMemoryDocStore();
-  docStore.putBody("blake3:" + "1".repeat(64), "in-mandate body");
-  docStore.putBody("blake3:" + "2".repeat(64), "shared-only body");
-  docStore.putBody("blake3:" + "3".repeat(64), "unrelated body");
+  docStore.putBody(hashInMandate, "in-mandate body");
+  docStore.putBody(hashShared, "shared-only body");
+  docStore.putBody(hashUnrelated, "unrelated body");
 
   const ids = {
     inMandate: "memory:recall-probe:in-mandate",
@@ -190,16 +199,34 @@ export function run(): ReconResult {
   };
 
   const events: Event[] = [
-    memoryEvent({ memoryId: ids.inMandate, domains: [inMandateDomain], hash: "blake3:" + "1".repeat(64), asOf: "2026-06-25T00:00:01.000Z" }),
-    memoryEvent({ memoryId: ids.sharedOnly, domains: ["shared"], hash: "blake3:" + "2".repeat(64), asOf: "2026-06-25T00:00:02.000Z" }),
-    memoryEvent({ memoryId: ids.unrelated, domains: [unrelatedDomain], hash: "blake3:" + "3".repeat(64), asOf: "2026-06-25T00:00:03.000Z" }),
+    memoryEvent({
+      memoryId: ids.inMandate,
+      domains: [inMandateDomain],
+      hash: hashInMandate,
+      asOf: "2026-06-25T00:00:01.000Z",
+    }),
+    memoryEvent({
+      memoryId: ids.sharedOnly,
+      domains: ["shared"],
+      hash: hashShared,
+      asOf: "2026-06-25T00:00:02.000Z",
+    }),
+    memoryEvent({
+      memoryId: ids.unrelated,
+      domains: [unrelatedDomain],
+      hash: hashUnrelated,
+      asOf: "2026-06-25T00:00:03.000Z",
+    }),
   ];
 
   const deps = { events, documentStore: docStore };
   // Same store, called twice — and the second time over a REVERSED event order to
   // prove the deterministic sort is independent of input order.
   const first = readMyMemory("agent:atlas", deps);
-  const second = readMyMemory("agent:atlas", { events: [...events].reverse(), documentStore: docStore });
+  const second = readMyMemory("agent:atlas", {
+    events: [...events].reverse(),
+    documentStore: docStore,
+  });
 
   // Defensive: the family literal is referenced so this gate trips if the type
   // string drifts under it (it folds only AGENT_MEMORY_COMMITTED events).

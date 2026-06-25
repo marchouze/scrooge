@@ -9,11 +9,18 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { type RosterForCoverage, assertMandateDomainsCoverage, run } from "./agent-mandate-domains-coverage";
+import {
+  type RosterForCoverage,
+  assertMandateDomainsCoverage,
+  run,
+} from "./agent-mandate-domains-coverage";
 
 function roster(
   personas: Array<{ name?: string; mandateDomains?: unknown }>,
-  vocab: { tags?: unknown; shared?: unknown } = { tags: ["shared", "platform", "accounting"], shared: "shared" },
+  vocab: { tags?: unknown; shared?: unknown } = {
+    tags: ["shared", "platform", "accounting"],
+    shared: "shared",
+  },
 ): RosterForCoverage {
   return { personas, vocabulary: vocab };
 }
@@ -33,16 +40,17 @@ describe("assertMandateDomainsCoverage", () => {
   });
 
   it("NEGATIVE — a persona with EMPTY mandateDomains FAILS", () => {
-    const r = assertMandateDomainsCoverage(
-      roster([{ name: "Atlas", mandateDomains: [] }]),
-      "fail",
+    const r = assertMandateDomainsCoverage(roster([{ name: "Atlas", mandateDomains: [] }]), "fail");
+    expect(r.violations.some((v) => v.severity === "fail" && v.subject.includes("Atlas"))).toBe(
+      true,
     );
-    expect(r.violations.some((v) => v.severity === "fail" && v.subject.includes("Atlas"))).toBe(true);
   });
 
   it("NEGATIVE — a persona with ABSENT mandateDomains FAILS", () => {
     const r = assertMandateDomainsCoverage(roster([{ name: "Atlas" }]), "fail");
-    expect(r.violations.some((v) => v.severity === "fail" && v.subject.includes("Atlas"))).toBe(true);
+    expect(r.violations.some((v) => v.severity === "fail" && v.subject.includes("Atlas"))).toBe(
+      true,
+    );
   });
 
   it("NEGATIVE — an off-vocabulary tag FAILS", () => {
@@ -57,7 +65,10 @@ describe("assertMandateDomainsCoverage", () => {
 
   it("NEGATIVE — vocabulary missing the reserved `shared` tag FAILS", () => {
     const r = assertMandateDomainsCoverage(
-      roster([{ name: "Atlas", mandateDomains: ["platform"] }], { tags: ["platform"], shared: "shared" }),
+      roster([{ name: "Atlas", mandateDomains: ["platform"] }], {
+        tags: ["platform"],
+        shared: "shared",
+      }),
       "fail",
     );
     expect(

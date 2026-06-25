@@ -35,10 +35,10 @@
 import "./resolve-event-db-boot";
 
 import { tryAgentIdForName } from "../../platform/agent-identity";
+import { type AgentMemoryRow, readMyMemory } from "../../platform/agent-runtime/read-my-memory";
 import { eventStore } from "../../platform/composition";
 import { defaultDocumentStore } from "../../platform/document-store";
 import { AGENT_MEMORY_COMMITTED } from "../../platform/event-store/event-types";
-import { type AgentMemoryRow, readMyMemory } from "../../platform/agent-runtime/read-my-memory";
 import { die, optionalString, parseArgs } from "./args";
 
 const REPEATABLE = new Set<string>([]);
@@ -50,7 +50,9 @@ function parseDomains(raw: string | undefined): readonly string[] | undefined {
     .map((d) => d.trim())
     .filter((d) => d.length > 0);
   if (domains.length === 0) {
-    die("--domains was supplied but parsed to no tags (expected comma-separated, e.g. accounting,shared)");
+    die(
+      "--domains was supplied but parsed to no tags (expected comma-separated, e.g. accounting,shared)",
+    );
   }
   return domains;
 }
@@ -69,7 +71,9 @@ function printHuman(agentName: string, agentId: string, rows: readonly AgentMemo
     console.log(`  id:        ${r.memoryId}`);
     console.log(`  domains:   ${r.domains.join(", ")}`);
     console.log(`  citations: ${r.citations.join(", ")}`);
-    console.log(`  by:        ${r.producedByAgent.name} (${r.producedByAgent.agentId}) — run ${r.producedByRunId}`);
+    console.log(
+      `  by:        ${r.producedByAgent.name} (${r.producedByAgent.agentId}) — run ${r.producedByRunId}`,
+    );
     if (r.bodyResolved && r.body !== null) {
       const indented = r.body
         .split("\n")
@@ -78,7 +82,9 @@ function printHuman(agentName: string, agentId: string, rows: readonly AgentMemo
       console.log("  body:");
       console.log(indented);
     } else {
-      console.log(`  body:      (UNRESOLVED — bodyDocumentHash ${r.bodyDocumentHash} did not resolve in the doc store)`);
+      console.log(
+        `  body:      (UNRESOLVED — bodyDocumentHash ${r.bodyDocumentHash} did not resolve in the doc store)`,
+      );
     }
   }
 }
@@ -112,7 +118,13 @@ function main(): void {
   }
 
   if (asJson) {
-    console.log(JSON.stringify({ ok: true, agent: agentName, agentId, count: rows.length, memories: rows }, null, 2));
+    console.log(
+      JSON.stringify(
+        { ok: true, agent: agentName, agentId, count: rows.length, memories: rows },
+        null,
+        2,
+      ),
+    );
     return;
   }
   printHuman(agentName, agentId, rows);

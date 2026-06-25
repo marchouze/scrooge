@@ -24,7 +24,11 @@ function row(memoryId: string, domains: string[]): AgentMemoryRow {
     title: memoryId,
     domains,
     citations: ["D-AGENT-MEMORY-PERSISTENCE"],
-    producedByAgent: { name: "Atlas", position: "Core banking platform architect", agentId: "agent:atlas" },
+    producedByAgent: {
+      name: "Atlas",
+      position: "Core banking platform architect",
+      agentId: "agent:atlas",
+    },
     producedByRunId: "run:x",
     bodyDocumentHash: `blake3:${"0".repeat(64)}`,
     committedAt: "2026-06-25T00:00:00.000Z",
@@ -48,7 +52,9 @@ describe("assertRecallDeterminism", () => {
       row(IDS.unrelated, ["credit-risk"]),
     ];
     const r = assertRecallDeterminism(slice, slice, IDS, "fail");
-    expect(r.violations.some((v) => v.subject === "readMyMemory:no-leak" && v.severity === "fail")).toBe(true);
+    expect(
+      r.violations.some((v) => v.subject === "readMyMemory:no-leak" && v.severity === "fail"),
+    ).toBe(true);
   });
 
   it("NEGATIVE — dropping the in-mandate memory FAILS", () => {
