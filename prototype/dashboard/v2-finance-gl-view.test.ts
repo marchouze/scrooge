@@ -132,14 +132,14 @@ describe("buildGlView — compact TB + CCY/ZAR-equivalent", () => {
     expect(view.inBalance).toBe(true);
   });
 
-  test("settled FX leaves ZERO on-BS receivable/payable AND zero residual OBS commitment (FVTPL settlement)", () => {
+  test("settled FX leaves ZERO on-BS receivable/payable AND zero residual OBS commitment (P&L-neutral settlement)", () => {
     // The accelerated sim settles every trade in-tick → the whole FX book is closed.
     const { eventStore, marketDataStore } = populatedStores();
     const view = buildGlView({ eventStore, marketDataStore, filter: { mode: "combined" } });
 
-    // (1) ZERO on-balance-sheet FX trading receivable/payable. The FVTPL settlement
-    // recognises cash + realised P&L and never relieves a gross receivable/payable
-    // (trade-date is OBS-only) — so the receivable/payable accounts carry no net.
+    // (1) ZERO on-balance-sheet FX trading receivable/payable. The P&L-neutral
+    // settlement recognises cash + clearing and never relieves a gross
+    // receivable/payable (trade-date is OBS-only) — so those accounts carry no net.
     const recvPay = new Set(["ACC-2100-001", "ACC-2100-002", "ACC-2100-003", "ACC-2100-004"]);
     const recvPayRows = view.rows.filter((r) => recvPay.has(r.accountId) && r.zarNetMinor !== 0);
     expect(recvPayRows.length).toBe(0);
@@ -150,9 +150,13 @@ describe("buildGlView — compact TB + CCY/ZAR-equivalent", () => {
     const obsRows = view.rows.filter((r) => r.offBalanceSheet && r.zarNetMinor !== 0);
     expect(obsRows.length).toBe(0);
 
-    // (3) Realised FX P&L (ACC-2100-006) IS recognised, and the book balances.
-    const realised = view.rows.find((r) => r.accountId === "ACC-2100-006");
-    expect(realised).toBeDefined();
+    // (3) P&L-NEUTRAL settlement (D-FX-PNL-FCY-EXPOSURE-REVALUATION): settlement
+    // strikes NO realised FX P&L — the realised-P&L account (ACC-2100-006) carries
+    // no net from settlement (realisation is reserved to a FCY→ZAR conversion). The
+    // book balances. (A settled trade's cash is recognised against the FX settlement
+    // clearing account, ACC-2100-027.)
+    const realisedRow = view.rows.find((r) => r.accountId === "ACC-2100-006");
+    expect(realisedRow === undefined || realisedRow.zarNetMinor === 0).toBe(true);
     expect(view.inBalance).toBe(true);
   });
 });
