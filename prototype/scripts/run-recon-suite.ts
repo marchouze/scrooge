@@ -736,6 +736,18 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:accounting-schema-home",
     "recon:fx-supported-currency-no-suspense",
     "recon:account-designated-currency",
+    // CEO finding (2026-06-25) — GL/finance-view currency-dimension gate
+    // (ENFORCING, fail-closed). Institutionalizes the #1540 trial-balance
+    // near-miss: a shared multi-currency account collapsed to one row with a
+    // "multi" currency, summing incommensurable native minor units. Drives
+    // buildGlView over a multi-currency fixture and asserts no sentinel
+    // currency on any row + the in-balance invariant is asserted in the
+    // FUNCTIONAL (ZAR-equivalent) currency, never a native cross-currency sum;
+    // plus a source-level ban on "multi"/"mixed"/"various" currency literals in
+    // the GL/finance view layer. #1540 fixed the instance; this hardens the
+    // CLASS. Authority: D-V2-UI-VISIBILITY-REMEDIATION; Principle 5;
+    // D-ENGINEERING-INTEGRITY-CHARTER.
+    "recon:gl-currency-dimension-integrity",
     "recon:valuation-adjustment-additive",
     "recon:orphan-open-runs",
     "recon:orphan-run-deliverable-state",
