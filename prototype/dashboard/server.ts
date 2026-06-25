@@ -331,6 +331,7 @@ import {
   buildClientOnboardingView,
 } from "./v2-client-onboarding-view";
 import { buildGlAccountLedger, buildGlView } from "./v2-finance-gl-view";
+import { buildFinanceReturnsView } from "./v2-finance-returns-view";
 import { buildCapitalView } from "./v2-finance-view";
 import { buildV2FxTradeHistoryView } from "./v2-markets-fx-trades-view";
 import {
@@ -5840,6 +5841,20 @@ const server = Bun.serve({
     // surface does NOT read V1 for those; the legacy route remains authoritative.
     // Authority: D-FX-OTC-CLOSURE-BACKLOG (CEO-approved 2026-06-19);
     //            D-BANK-WIDE-V2-MIGRATION; feedback_no_agent_names_in_ui.
+    if (req.method === "GET" && url.pathname === "/api/v2/finance/returns") {
+      // Finance → Regulatory Returns: the full SARB BA-return register with
+      // build/data status, plus live figures for BA 700 / BA 320 (reusing
+      // selectRegulatoryReturn). The register + verbatim form names are derived
+      // from the typed RETURN_CONTRACT_REGISTRY (no hand-keyed names); the
+      // filing-lifecycle gap (no ReportFiled event) is surfaced honestly.
+      // Name-free DTO. Authority: D-BANK-WIDE-V2-MIGRATION;
+      // D-BA-RETURN-NUMBERING-EXCEL-CANONICAL.
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildFinanceReturnsView(eventStore, marketDataStore),
+        pageProvenance: filter,
+      });
+    }
     if (req.method === "GET" && url.pathname === "/api/v2/markets/fx") {
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       return jsonResponse({
