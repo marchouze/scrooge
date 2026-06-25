@@ -421,6 +421,14 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // foreign leg and reconciles those sums to the headline total. Not a production
   // access path. T-01 carve-out. F-031.
   "platform/product-control/daily-pnl-v2.test.ts",
+  // D-FX-PNL-FCY-EXPOSURE-REVALUATION — widened-revaluation proof: a settled FCY
+  // cash position revalues IDENTICALLY to the open FX contract for the same spot
+  // move. Same build-phase fixture pattern: raw EventStore(":memory:") seeds a
+  // production open FX + a settled cash leg (via buildSettledCashPayloads) + a
+  // MarketDataStore(":memory:") quote, then asserts computeCohortPnL marks both
+  // and produces the same unrealised P&L. Not a production access path. T-01
+  // carve-out. F-031.
+  "platform/product-control/eod-cohort-pnl-v2.test.ts",
   // D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING — GAP-3E-002 closure proof:
   // computeBA700V2 wires market RWA = 12.5 × the BA-320 V2 FX charge. Same
   // build-phase fixture pattern as daily-pnl-v2 above: raw EventStore(":memory:")

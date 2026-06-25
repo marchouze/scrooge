@@ -163,7 +163,10 @@ export function run(): ReconResult {
       if (OBS_ACCOUNTS.has(leg.accountCode)) {
         obsNet.set(key, (obsNet.get(key) ?? 0) + signed);
       }
-      if (leg.accountCode === FX_REALISED_PNL_ACCOUNT && SETTLEMENT_RULE_IDS.has(leg.postingRuleId)) {
+      if (
+        leg.accountCode === FX_REALISED_PNL_ACCOUNT &&
+        SETTLEMENT_RULE_IDS.has(leg.postingRuleId)
+      ) {
         const rk = `${leg.postingRuleId}|${leg.amount.currency}`;
         settlementRealisedNet.set(rk, (settlementRealisedNet.get(rk) ?? 0) + signed);
       }
