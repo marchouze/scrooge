@@ -334,6 +334,14 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // dangling-gross receivable/payable defect the old gross settlement left behind.
     // Vacuous-pass on a clean store (no settled FX). Authority: D-FX-TRADE-DATE-FVTPL-OBS.
     "recon:fx-settlement-fvtpl-integrity",
+    // D-FX-PNL-FCY-EXPOSURE-REVALUATION (ENFORCING) — the FX trading-book P&L
+    // FCY-exposure model. Asserts: (a) settlement posts no realised P&L (it is
+    // P&L-neutral); (b) a settled FOREIGN cash position carries a ZAR cost basis so
+    // it stays in the revalued set (revalued identically to the open contract); (c)
+    // realised P&L (ACC-2100-006) is reached ONLY by a FCY→ZAR conversion
+    // (PR-FX-CONVERT-V2) or a terminal derecognition / FVOCI reclass. Vacuous-pass
+    // on a clean store. Authority: D-FX-PNL-FCY-EXPOSURE-REVALUATION.
+    "recon:fx-pnl-fcy-exposure-integrity",
     // D-FIL-CONSUMER-SURFACE-ARCHITECTURE (Step D, ENFORCING) — FIL consumer-surface
     // isolation gate. Static scan: the accounting / GL surface (platform/accounting/**
     // + gl-projection-v2.ts) may replay FilInstrument* FOR STATE only through the

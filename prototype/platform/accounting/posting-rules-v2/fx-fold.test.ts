@@ -841,7 +841,7 @@ function terminatedWith(
 }
 
 describe("WS-FIL-FX-SETTLEMENT-EVENTS — the five rules fire at fold time + balance", () => {
-  test("PR-FX-SETTLE-V2: spot settlement realised P&L fires + balances per currency", () => {
+  test("PR-FX-SETTLE-V2: P&L-neutral spot settlement fires (cash vs clearing) + balances per currency", () => {
     const store = new EventStore(":memory:");
     seedTreatmentModules(store);
     // Bought USD: booked 1,000,000 / settled 1,010,000 (gain 10k USD).

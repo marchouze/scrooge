@@ -12,8 +12,12 @@ import { describe, expect, test } from "bun:test";
 
 import type { FxPostingLeg } from "./fx";
 import {
+  FX_REALISED_PNL_ACCOUNT,
+  FX_SETTLEMENT_CLEARING_ACCOUNT,
   FX_SETTLEMENT_DEFERRED_GAPS,
+  FX_UNREALISED_PNL_ACCOUNT,
   activeFxSettlementDeferredGaps,
+  postFxConversionLegs,
   postFxDerecognitionLegs,
   postFxFvociReclassLegs,
   postFxNdfFixingLegs,
@@ -64,13 +68,13 @@ const COMMON = {
   postingDate: "2026-06-18",
 };
 
-describe("PR-FX-SETTLE-V2 — settlement realised P&L (IAS 21 §23, §28)", () => {
-  test("balances per currency with a realised gain on the bought leg", () => {
+describe("PR-FX-SETTLE-V2 — P&L-neutral settlement (IAS 21 §23; D-FX-PNL-FCY-EXPOSURE-REVALUATION)", () => {
+  test("balances per currency even when the settled amount differs from booked", () => {
     const legs = postFxSettlementLegs({
       ...COMMON,
       boughtCurrency: "USD",
       boughtBookedAmount: "1000000.00",
-      boughtSettledAmount: "1005000.00", // received more than booked → gain
+      boughtSettledAmount: "1005000.00", // received more than booked
       soldCurrency: "ZAR",
       soldBookedAmount: "18000000.00",
       soldSettledAmount: "18000000.00",
@@ -79,7 +83,7 @@ describe("PR-FX-SETTLE-V2 — settlement realised P&L (IAS 21 §23, §28)", () =
     expectBalanced(legs);
   });
 
-  test("balances when both legs settle exactly at the booked rate (no P&L)", () => {
+  test("balances when both legs settle exactly at the booked rate", () => {
     const legs = postFxSettlementLegs({
       ...COMMON,
       boughtCurrency: "EUR",
@@ -92,10 +96,12 @@ describe("PR-FX-SETTLE-V2 — settlement realised P&L (IAS 21 §23, §28)", () =
     expectBalanced(legs);
   });
 
-  // FVTPL settlement shape (D-FX-TRADE-DATE-FVTPL-OBS, settlement side): the
-  // settlement entry NEVER touches an on-balance-sheet FX trading receivable/payable
-  // (trade-date is OBS-only) — it recognises cash + realised FX P&L only.
-  test("touches NO FX trading receivable/payable; only cash (nostro) + realised P&L", () => {
+  // P&L-NEUTRAL settlement (D-FX-PNL-FCY-EXPOSURE-REVALUATION): settlement is a
+  // change of FORM, not a realisation. It NEVER touches an on-balance-sheet FX
+  // trading receivable/payable (trade-date is OBS-only) and NEVER posts realised
+  // P&L (ACC-2100-006) — it recognises cash (nostro) against the FX settlement
+  // clearing account (ACC-2100-027).
+  test("touches NO receivable/payable and NO realised P&L; cash vs settlement clearing only", () => {
     const legs = postFxSettlementLegs({
       ...COMMON,
       boughtCurrency: "USD",
@@ -105,18 +111,20 @@ describe("PR-FX-SETTLE-V2 — settlement realised P&L (IAS 21 §23, §28)", () =
       soldBookedAmount: "18500000.00",
       soldSettledAmount: "18500000.00",
     });
-    // The FX trading receivable/payable account ids the rules address.
     const recvPay = new Set(["ACC-2100-001", "ACC-2100-002", "ACC-2100-003", "ACC-2100-004"]);
     for (const leg of legs) expect(recvPay.has(leg.accountCode)).toBe(false);
-    // Every leg is a cash (nostro, ACC-1200-*) or realised-P&L (ACC-2100-006) leg.
-    const allowed = (code: string) => code.startsWith("ACC-1200-") || code === "ACC-2100-006";
+    // NO realised-P&L leg — settlement is P&L-neutral.
+    for (const leg of legs) expect(leg.accountCode).not.toBe(FX_REALISED_PNL_ACCOUNT);
+    // Every leg is a cash (nostro, ACC-1200-*) or settlement-clearing leg.
+    const allowed = (code: string) =>
+      code.startsWith("ACC-1200-") || code === FX_SETTLEMENT_CLEARING_ACCOUNT;
     for (const leg of legs) expect(allowed(leg.accountCode)).toBe(true);
-    // Both currencies recognise cash + realised P&L → four legs, balanced per ccy.
+    // Both currencies recognise cash + clearing → four legs, balanced per ccy.
     expect(legs.length).toBe(4);
     expectBalanced(legs);
   });
 
-  test("the realised-P&L account carries one leg per settled currency (FVTPL)", () => {
+  test("the settlement clearing account carries one leg per settled currency", () => {
     const legs = postFxSettlementLegs({
       ...COMMON,
       boughtCurrency: "USD",
@@ -126,14 +134,74 @@ describe("PR-FX-SETTLE-V2 — settlement realised P&L (IAS 21 §23, §28)", () =
       soldBookedAmount: "18500000.00",
       soldSettledAmount: "18500000.00",
     });
-    const pnlLegs = legs.filter((l) => l.accountCode === "ACC-2100-006");
-    const pnlCurrencies = new Set(pnlLegs.map((l) => l.amount.currency));
-    expect(pnlCurrencies).toEqual(new Set(["USD", "ZAR"]));
-    // The bought (received) leg credits realised P&L; the sold (paid) leg debits it.
-    const usd = pnlLegs.find((l) => l.amount.currency === "USD");
-    const zar = pnlLegs.find((l) => l.amount.currency === "ZAR");
+    const clearingLegs = legs.filter((l) => l.accountCode === FX_SETTLEMENT_CLEARING_ACCOUNT);
+    const clearingCurrencies = new Set(clearingLegs.map((l) => l.amount.currency));
+    expect(clearingCurrencies).toEqual(new Set(["USD", "ZAR"]));
+    // The bought (received) leg credits clearing (Dr cash); the sold (paid) leg debits it.
+    const usd = clearingLegs.find((l) => l.amount.currency === "USD");
+    const zar = clearingLegs.find((l) => l.amount.currency === "ZAR");
     expect(usd?.creditDebit).toBe("credit");
     expect(zar?.creditDebit).toBe("debit");
+  });
+});
+
+describe("PR-FX-CONVERT-V2 — FCY→ZAR conversion / realisation (D-FX-PNL-FCY-EXPOSURE-REVALUATION)", () => {
+  // Worked example from the decision: convert USD 7m (ZAR cost basis R129.95m) →
+  // ZAR @ 19.00. ZAR proceeds = 133,000,000; realised = +R3,050,000.
+  test("realises proceeds − cost basis and reclassifies cumulative unrealised", () => {
+    const legs = postFxConversionLegs({
+      instanceId: "fil:inst:LE-ZA-HOZ-BANK:t1",
+      tenantId: "LE-ZA-HOZ-BANK",
+      postingDate: "2026-06-25",
+      fcyCurrency: "USD",
+      reportingCurrency: "ZAR",
+      fcyAmount: "7000000.00",
+      zarProceeds: "133000000.00",
+      zarCostBasis: "129950000.00",
+      // The cumulative unrealised that accrued as spot moved 18.565 → 19.00 (same
+      // +3,050,000) is reclassified into realised — total P&L unchanged.
+      accumulatedUnrealised: "3050000.00",
+    });
+    expectBalanced(legs);
+    // Realised P&L (ACC-2100-006) net = realisation (+3.05m) + reclassified
+    // unrealised (+3.05m) = +6.1m credit; the unrealised account is reversed by 3.05m.
+    const realised = legs.filter((l) => l.accountCode === FX_REALISED_PNL_ACCOUNT);
+    expect(realised.length).toBeGreaterThan(0);
+    // Cumulative unrealised is reversed (a debit to ACC-2100-005).
+    const unrealised = legs.filter((l) => l.accountCode === FX_UNREALISED_PNL_ACCOUNT);
+    expect(unrealised.length).toBe(1);
+    expect(unrealised[0]?.creditDebit).toBe("debit");
+  });
+
+  test("a realised LOSS (proceeds < cost basis) balances and reverses correctly", () => {
+    const legs = postFxConversionLegs({
+      instanceId: "fil:inst:LE-ZA-HOZ-BANK:t2",
+      tenantId: "LE-ZA-HOZ-BANK",
+      postingDate: "2026-06-25",
+      fcyCurrency: "USD",
+      reportingCurrency: "ZAR",
+      fcyAmount: "7000000.00",
+      zarProceeds: "127000000.00",
+      zarCostBasis: "129950000.00",
+      accumulatedUnrealised: "-2950000.00",
+    });
+    expectBalanced(legs);
+  });
+
+  test("no legs when the converted amount is zero", () => {
+    expect(
+      postFxConversionLegs({
+        instanceId: "fil:inst:LE-ZA-HOZ-BANK:t3",
+        tenantId: "LE-ZA-HOZ-BANK",
+        postingDate: "2026-06-25",
+        fcyCurrency: "USD",
+        reportingCurrency: "ZAR",
+        fcyAmount: "0",
+        zarProceeds: "0",
+        zarCostBasis: "0",
+        accumulatedUnrealised: "0",
+      }),
+    ).toEqual([]);
   });
 });
 

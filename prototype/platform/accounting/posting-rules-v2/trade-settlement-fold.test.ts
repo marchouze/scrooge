@@ -148,9 +148,9 @@ describe("D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL Slice 1 — decomposition byte-equ
     expectByteIdenticalNet(golden, decomposed);
   });
 
-  test("realised P&L (settled != booked on BOTH legs): N settlements net == single FX settlement", () => {
-    // Bought USD: booked 1,000,000 / settled 1,010,000 (10k USD gain).
-    // Sold  ZAR: booked 18,500,000 / settled 18,400,000 (100k ZAR gain).
+  test("P&L-neutral clearing (settled != booked on BOTH legs): N settlements net == single FX settlement", () => {
+    // Bought USD: booked 1,000,000 / settled 1,010,000.
+    // Sold  ZAR: booked 18,500,000 / settled 18,400,000.
     const s = fxSpotSettlement({
       boughtBooked: "1000000",
       boughtSettled: "1010000",
@@ -161,14 +161,17 @@ describe("D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL Slice 1 — decomposition byte-equ
     const decomposed = postTradeSettlementListLegs(
       decomposeFxSettlementToTradeSettlements({ settlement: s }),
     );
-    // Non-vacuity: the golden actually carries a realised-P&L (ACC-2100-006) leg.
-    expect(golden.some((l) => l.accountCode === "ACC-2100-006")).toBe(true);
+    // P&L-NEUTRAL (D-FX-PNL-FCY-EXPOSURE-REVALUATION): settlement posts NO realised
+    // P&L (ACC-2100-006); the cash legs balance against the FX settlement clearing
+    // account (ACC-2100-027). Non-vacuity asserts the clearing leg exists.
+    expect(golden.some((l) => l.accountCode === "ACC-2100-006")).toBe(false);
+    expect(golden.some((l) => l.accountCode === "ACC-2100-027")).toBe(true);
     expectByteIdenticalNet(golden, decomposed);
   });
 
-  test("realised loss case (settled < booked): N settlements net == single FX settlement", () => {
-    // Bought USD: booked 1,000,000 / settled 990,000 (10k USD loss).
-    // Sold  ZAR: booked 18,500,000 / settled 18,600,000 (100k ZAR loss).
+  test("P&L-neutral clearing (settled < booked): N settlements net == single FX settlement", () => {
+    // Bought USD: booked 1,000,000 / settled 990,000.
+    // Sold  ZAR: booked 18,500,000 / settled 18,600,000.
     const s = fxSpotSettlement({
       boughtBooked: "1000000",
       boughtSettled: "990000",
@@ -179,7 +182,8 @@ describe("D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL Slice 1 — decomposition byte-equ
     const decomposed = postTradeSettlementListLegs(
       decomposeFxSettlementToTradeSettlements({ settlement: s }),
     );
-    expect(golden.some((l) => l.accountCode === "ACC-2100-006")).toBe(true);
+    expect(golden.some((l) => l.accountCode === "ACC-2100-006")).toBe(false);
+    expect(golden.some((l) => l.accountCode === "ACC-2100-027")).toBe(true);
     expectByteIdenticalNet(golden, decomposed);
   });
 });
