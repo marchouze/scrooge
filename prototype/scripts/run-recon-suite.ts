@@ -70,6 +70,12 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:cron-map-drift",
     "recon:agent-spec",
     "recon:agent-spec-cross-link",
+    // D-AGENT-DOMAIN-COMPETENCE (CEO-approved 2026-06-25) — asserts §18–§20
+    // (Authoritative knowledge base & sources; Domain-truth validation;
+    // Premise-challenge duty) are present + substantively filled on every
+    // persona. WARN severity during the corpus-grooming window (mirrors the
+    // cross-link recon's launch posture); lifts to FAIL at the closure step.
+    "recon:agent-spec-domain-competence",
     "recon:trigger-spec-handler-symmetry",
     "recon:event-store-append-only",
     "recon:event-store-no-delete-callsite",

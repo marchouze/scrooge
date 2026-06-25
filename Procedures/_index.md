@@ -12,6 +12,7 @@
 | Risk Management Framework | [`procedures-rmf-governance.md`](by-policy/procedures-rmf-governance.md) (PROC-GOV-RMF-01 — annual RMF review; BCBS alignment check; RAS re-approval; CEO attestation; PA notification assessment) | Helena (Chief Risk Officer, governance) | **POPULATED** |
 | Governance Framework | [`procedures-board-papers.md`](by-policy/procedures-board-papers.md) (PROC-GOV-BP-01 — 5-business-day paper submission; Owen review; confidentiality classification; minutes approval cycle) | Owen (Company Secretary, governance) | **POPULATED** |
 | Delegation of Authority | [`delegation-of-authority.md`](by-policy/delegation-of-authority.md) (PROC-GV-DOA-01 — four authority levels; Board-reserved matters; agent Level 4 limits; `EscalationRequired` path) | Owen + Devon | **POPULATED** |
+| Governance Framework | [`agent-domain-competence-framework.md`](by-policy/agent-domain-competence-framework.md) (PROC-GOV-ADC-01 — six-layer agent domain-competence framework: knowledge bases, domain-truth oracles, model-before-code, adversarial domain review + premise-challenge duty, lessons-to-gates, calibration; golden-oracle + domain-invariant-gate harness pattern; dispatch-premise rule; `recon:agent-spec-domain-competence`) | Owen (Company Secretary, governance) | **POPULATED** |
 
 ## Risk
 
