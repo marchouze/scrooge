@@ -57,11 +57,21 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
 import {
+  filInstrumentAmendedPayloadSchema,
+  filInstrumentCreatedPayloadSchema,
+} from "../../v2-core/fil-instances/events";
+import {
   type FxPostingLeg,
   postFxInitialRecognitionLegs,
   postFxObsCommitmentReleaseLegs,
   postFxRevaluationLegs,
 } from "../../v2-core/posting-rules/fx";
+import {
+  FX_RULE_STAGE_LEG_STRUCTURES,
+  type FxAccountRole,
+  type FxLifecycleStageId,
+  resolveFxAccountRole,
+} from "../../v2-core/posting-rules/fx-lifecycle-leg-structure";
 import {
   type FxConversionInput,
   type FxSettlementInput,
@@ -73,16 +83,6 @@ import {
   postFxSwapFarLegLegs,
   postFxSwapNearLegLegs,
 } from "../../v2-core/posting-rules/fx-settlement";
-import {
-  type FxAccountRole,
-  type FxLifecycleStageId,
-  FX_RULE_STAGE_LEG_STRUCTURES,
-  resolveFxAccountRole,
-} from "../../v2-core/posting-rules/fx-lifecycle-leg-structure";
-import {
-  filInstrumentAmendedPayloadSchema,
-  filInstrumentCreatedPayloadSchema,
-} from "../../v2-core/fil-instances/events";
 
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 

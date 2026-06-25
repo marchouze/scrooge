@@ -11,7 +11,10 @@
 
 import { describe, expect, it } from "bun:test";
 
-import type { FxAccountRole, FxLifecycleStageId } from "../../v2-core/posting-rules/fx-lifecycle-leg-structure";
+import type {
+  FxAccountRole,
+  FxLifecycleStageId,
+} from "../../v2-core/posting-rules/fx-lifecycle-leg-structure";
 import {
   actualLegsForTest,
   assertDeclarationMatchesRules,
