@@ -4,10 +4,20 @@
 //
 // This is a SUT cadence job (Product Control): at each EOD boundary the Phase-0
 // bus fires it; it reads the bank's own booked FIL FX instruments
-// (`FilInstrumentCreated`, assetClass "fx") and the adopted PRODUCTION market
+// (`FilInstrumentCreated`, assetClass "fx") AND the settled FCY CASH positions
+// (assetClass "cash", carrying a `zarCostBasis`) and the adopted PRODUCTION market
 // marks, and computes the unrealised P&L of the cohort. Correctness is judged
 // AGAINST THE SIMULATOR: known inputs (booked rate, simulated spot/forward path,
 // OIS curve) → expected outputs, NOT a V1 parity gate.
+//
+// WIDENED REVALUATION (D-FX-PNL-FCY-EXPOSURE-REVALUATION, CEO-approved 2026-06-25).
+// The exposure stays OPEN across settlement — a forward/spot receivable becoming
+// cash is a change of FORM, not of exposure. So the revalued set is EVERY open FCY
+// monetary position: open FX contracts AND settled FCY cash (Nostro) balances. A
+// settled FCY cash position is revalued IDENTICALLY to the open contract —
+// `signedNotional × (spot − bookedRate)`, with the cash leg's `bookedRate =
+// zarCostBasis / |notional|` (so the figure is `ZAR market value − ZAR cost
+// basis`). A position is NOT dropped when its originating trade settles.
 //
 // Forwards are valued with the M1 PRESENT-VALUED path (`forwardMtmValue`):
 // MtM = signedNotionalBase × (F_t − K) × DF(0,T). Spot positions value at the
@@ -40,6 +50,9 @@ export interface CohortPnLRow {
   readonly unrealisedReporting: number;
   /** "live" if a usable production mark was found, else "unavailable" (fail-closed). */
   readonly markStatus: "live" | "unavailable";
+  /** Whether the revalued position is an OPEN FX contract or a SETTLED FCY cash
+   *  balance (D-FX-PNL-FCY-EXPOSURE-REVALUATION) — both revalued identically. */
+  readonly positionKind: "fx" | "cash";
 }
 
 export interface CohortPnLResult {
@@ -60,6 +73,15 @@ interface BookedFxInstrument {
   readonly signedNotionalBase: number;
   readonly bookedRate: number;
   readonly settlementDate: string;
+  /**
+   * Whether this is an OPEN FX contract or a SETTLED FCY cash position
+   * (D-FX-PNL-FCY-EXPOSURE-REVALUATION). A settled FCY cash balance is revalued
+   * IDENTICALLY to an open spot contract — `signedNotional × (spot − bookedRate)`,
+   * with `bookedRate = zarCostBasis / |notional|` — because the exposure stays open
+   * across settlement (settlement is a change of FORM, not of exposure). Cash is
+   * always spot-valued (`isForward: false`).
+   */
+  readonly positionKind: "fx" | "cash";
 }
 
 /**
@@ -77,7 +99,7 @@ export function computeCohortPnL(args: {
 }): CohortPnLResult {
   const { eventStore, marketDataStore, reporting, reportDate, bookedRateByInstance } = args;
 
-  const instruments = collectFxInstruments(eventStore, bookedRateByInstance);
+  const instruments = collectFxInstruments(eventStore, bookedRateByInstance, reporting);
   const rows: CohortPnLRow[] = [];
   let total = 0;
   let unavailable = 0;
@@ -93,6 +115,7 @@ export function computeCohortPnL(args: {
         isForward: inst.isForward,
         unrealisedReporting: 0,
         markStatus: "unavailable",
+        positionKind: inst.positionKind,
       });
       unavailable += 1;
       continue;
@@ -126,6 +149,7 @@ export function computeCohortPnL(args: {
       isForward: inst.isForward,
       unrealisedReporting: unrealised,
       markStatus: "live",
+      positionKind: inst.positionKind,
     });
   }
 
@@ -145,6 +169,7 @@ export function computeCohortPnL(args: {
 function collectFxInstruments(
   store: EventStore,
   bookedRateByInstance: ReadonlyMap<string, number>,
+  reporting: string,
 ): BookedFxInstrument[] {
   const terminated = new Set<string>();
   for (const e of store.replay({ type: "FilInstrumentTerminated" })) {
@@ -156,32 +181,74 @@ function collectFxInstruments(
   for (const e of store.replay({ type: "FilInstrumentCreated" })) {
     const p = e.payload as Record<string, unknown>;
     const economic = p.economicTerms as Record<string, unknown> | undefined;
-    if (!economic || economic.assetClass !== "fx") continue;
     const instance = p.instance as string | undefined;
-    if (!instance || terminated.has(instance)) continue;
+    if (!economic || !instance || terminated.has(instance)) continue;
 
-    const pair = (economic.hedgingSetTag as string | undefined) ?? "";
-    const base = (economic.currency as string | undefined) ?? "";
-    const direction = economic.direction as "long" | "short" | undefined;
-    const notional = economic.notional as { amount?: string } | undefined;
-    const settlementDate = (economic.settlementDate as string | undefined) ?? "";
-    if (!pair || !base || !direction || !notional?.amount) continue;
+    // ── OPEN FX contract ────────────────────────────────────────────────────
+    if (economic.assetClass === "fx") {
+      const pair = (economic.hedgingSetTag as string | undefined) ?? "";
+      const base = (economic.currency as string | undefined) ?? "";
+      const direction = economic.direction as "long" | "short" | undefined;
+      const notional = economic.notional as { amount?: string } | undefined;
+      const settlementDate = (economic.settlementDate as string | undefined) ?? "";
+      if (!pair || !base || !direction || !notional?.amount) continue;
 
-    const typeUrn = p.type as string | undefined;
-    const isForward = typeof typeUrn === "string" && typeUrn.includes(":forward:");
-    const magnitude = Number(notional.amount);
-    const signed = direction === "long" ? magnitude : -magnitude;
-    const bookedRate = bookedRateByInstance.get(instance) ?? 0;
+      const typeUrn = p.type as string | undefined;
+      const isForward = typeof typeUrn === "string" && typeUrn.includes(":forward:");
+      const magnitude = Number(notional.amount);
+      const signed = direction === "long" ? magnitude : -magnitude;
+      const bookedRate = bookedRateByInstance.get(instance) ?? 0;
 
-    out.push({
-      instance,
-      base,
-      pair,
-      isForward,
-      signedNotionalBase: signed,
-      bookedRate,
-      settlementDate,
-    });
+      out.push({
+        instance,
+        base,
+        pair,
+        isForward,
+        signedNotionalBase: signed,
+        bookedRate,
+        settlementDate,
+        positionKind: "fx",
+      });
+      continue;
+    }
+
+    // ── SETTLED FCY cash position (D-FX-PNL-FCY-EXPOSURE-REVALUATION) ─────────
+    // The exposure stays open across settlement: a settled FCY cash balance is
+    // revalued IDENTICALLY to the open contract — `signedNotional × (spot −
+    // bookedRate)` with `bookedRate = zarCostBasis / |notional|`. A
+    // reporting-currency cash leg carries no FX exposure (rate 1) — skipped. A cash
+    // leg WITHOUT a `zarCostBasis` (no reporting-ccy counter leg, or pre-correction
+    // fixture) carries no cost basis to revalue against — skipped (no silent wrong
+    // basis; the position is reported with markStatus via the FX path only).
+    if (economic.assetClass === "cash") {
+      const base = (economic.currency as string | undefined) ?? "";
+      if (!base || base === reporting) continue;
+      const direction = economic.direction as "long" | "short" | undefined;
+      const notional = economic.notional as { amount?: string } | undefined;
+      const costBasis = economic.zarCostBasis as { amount?: string } | undefined;
+      if (!direction || !notional?.amount || !costBasis?.amount) continue;
+      const magnitude = Number(notional.amount);
+      if (!Number.isFinite(magnitude) || magnitude === 0) continue;
+      const signed = direction === "long" ? magnitude : -magnitude;
+      // bookedRate = ZAR cost basis / |FCY notional| (the rate the exposure was
+      // struck at). `signedNotional × (spot − bookedRate)` then equals
+      // `ZAR market value − ZAR cost basis` — the change in the ZAR value of the
+      // exposure, exactly as for the open contract.
+      const bookedRate = Number(costBasis.amount) / magnitude;
+      const pair = (economic.hedgingSetTag as string | undefined) ?? `${base}/${reporting}`;
+      const settlementDate = (economic.settlementDate as string | undefined) ?? "";
+
+      out.push({
+        instance,
+        base,
+        pair,
+        isForward: false,
+        signedNotionalBase: signed,
+        bookedRate,
+        settlementDate,
+        positionKind: "cash",
+      });
+    }
   }
   return out;
 }

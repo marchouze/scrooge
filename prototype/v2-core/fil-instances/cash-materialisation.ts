@@ -136,6 +136,15 @@ export function buildSettledCashPayloads(input: CashMaterialisationInput): Built
       instanceId: `${input.tradeId}-cash-${leg.side}`,
     });
     const direction: "long" | "short" = leg.signedMajor >= 0 ? "long" : "short";
+    // ZAR (reporting-ccy) COST BASIS of this FCY cash leg
+    // (D-FX-PNL-FCY-EXPOSURE-REVALUATION): the booked ZAR value GIVEN UP / RECEIVED
+    // to acquire it = the reporting-currency magnitude of the COUNTER leg of the
+    // spot. A reporting-currency leg's own cost basis is its own magnitude (rate 1).
+    // Resolved from the settled legs (no rate lookup — the counter leg's reporting
+    // amount IS the cost basis); `undefined` when no reporting-ccy counter leg
+    // exists (a cross with no reporting leg) so the field is simply omitted (the
+    // reval engine then falls back to full retranslation — fail-soft, never wrong).
+    const zarCostBasisMajor = costBasisMajorFor(leg, input.legs, input.reporting);
     const payload = filInstrumentCreatedPayloadSchema.parse({
       kind: "FilInstrumentCreated",
       instance,
@@ -154,11 +163,36 @@ export function buildSettledCashPayloads(input: CashMaterialisationInput): Built
         settlementDate: input.settledAsOf,
         hedgingSetTag: `${leg.currency}/${input.reporting}`,
         originatingInstrument: input.fxInstance,
+        ...(zarCostBasisMajor !== undefined
+          ? { zarCostBasis: majorNumberToCashMoney(zarCostBasisMajor, input.reporting) }
+          : {}),
       },
     });
     out.push({ instance, payload });
   }
   return out;
+}
+
+/**
+ * The ZAR (reporting-currency) COST BASIS magnitude of one settled cash leg
+ * (D-FX-PNL-FCY-EXPOSURE-REVALUATION) — positive major units in the reporting
+ * currency. A reporting-currency leg's cost basis is its own magnitude (rate 1).
+ * An FCY leg's cost basis is the reporting-currency magnitude of the COUNTER leg of
+ * the spot (the ZAR given up / received). Returns `undefined` when no
+ * reporting-currency counter leg exists (a cross with no reporting leg), so the
+ * caller omits the field and the reval engine falls back to full retranslation.
+ */
+function costBasisMajorFor(
+  leg: SettledCashLeg,
+  legs: readonly SettledCashLeg[],
+  reporting: string,
+): number | undefined {
+  if (leg.currency === reporting) return Math.abs(leg.signedMajor);
+  const reportingCounter = legs.find(
+    (l) => l.side !== leg.side && l.currency === reporting && l.signedMajor !== 0,
+  );
+  if (reportingCounter === undefined) return undefined;
+  return Math.abs(reportingCounter.signedMajor);
 }
 
 /**

@@ -67,44 +67,83 @@ function isZeroDecimal(s: string): boolean {
   return p.digits === 0n;
 }
 
-/** Realised-P&L account for FX (currency-agnostic functional-currency P&L). */
-const FX_REALISED_PNL_ACCOUNT = "ACC-2100-006";
+/** Exact decimal subtract `a − b` via common-scale BigInt — never IEEE-754. */
+function subtractDecimal(a: string, b: string): string {
+  const pa = parseDecimal(a);
+  const pb = parseDecimal(b);
+  const scale = Math.max(pa.scale, pb.scale);
+  const av = (pa.neg ? -pa.digits : pa.digits) * 10n ** BigInt(scale - pa.scale);
+  const bv = (pb.neg ? -pb.digits : pb.digits) * 10n ** BigInt(scale - pb.scale);
+  const diff = av - bv;
+  if (scale === 0) return diff.toString();
+  const neg = diff < 0n;
+  const mag = (neg ? -diff : diff).toString().padStart(scale + 1, "0");
+  const intPart = mag.slice(0, mag.length - scale);
+  const fracPart = mag.slice(mag.length - scale);
+  return `${neg ? "-" : ""}${intPart}.${fracPart}`;
+}
+
+/** Realised-P&L account for FX (currency-agnostic functional-currency P&L).
+ *  Reached ONLY by the FCY→ZAR conversion (realisation) rule below — NEVER by
+ *  settlement (D-FX-PNL-FCY-EXPOSURE-REVALUATION: settlement is P&L-neutral). */
+export const FX_REALISED_PNL_ACCOUNT = "ACC-2100-006";
+
+/** Unrealised-P&L account for FX (FVTPL) — the reval position carrier the FCY→ZAR
+ *  realisation rule reclassifies cumulative unrealised OUT of, into realised. */
+export const FX_UNREALISED_PNL_ACCOUNT = "ACC-2100-005";
+
+/**
+ * FX SETTLEMENT CLEARING account (D-FX-PNL-FCY-EXPOSURE-REVALUATION).
+ * The P&L-NEUTRAL contra to the settled-cash nostro legs. Settlement is a change
+ * of FORM — the FCY receivable/derivative becomes FCY cash — NOT a realisation,
+ * so the settled cash is recognised against THIS clearing account in its own
+ * currency, never the realised-P&L account. Each leg self-balances in its own
+ * currency vs the nostro; the clearing account carries the in-flight settlement
+ * position the cash legs convert. Sourced from the canonical chart of accounts
+ * (`v2-core/accounting/chart-of-accounts.ts`, id `ACC-2100-027`) — this constant
+ * is the rule's reference to that account, not a redefinition.
+ */
+export const FX_SETTLEMENT_CLEARING_ACCOUNT = "ACC-2100-027";
 
 // ---------------------------------------------------------------------------
-// PR-FX-SETTLE-V2 (#5) — Settlement / realised P&L (spot & physical forward).
-// IAS 21 §23, §28. FVTPL TREATMENT (D-FX-TRADE-DATE-FVTPL-OBS, settlement side).
+// PR-FX-SETTLE-V2 (#5) — Settlement (spot & physical forward). IAS 21 §23.
+// P&L-NEUTRAL TREATMENT (D-FX-PNL-FCY-EXPOSURE-REVALUATION, REFINES
+// D-FX-TRADE-DATE-FVTPL-OBS, settlement side).
 //
-// THE FVTPL SHIFT (why this is NOT a gross receivable/payable relief any more)
-// ---------------------------------------------------------------------------
-// Trade-date recognition is now IFRS 9 FVTPL + off-balance-sheet memorandum
+// SETTLEMENT IS NOT REALISATION (the correction)
+// ----------------------------------------------
+// Settlement is a change of FORM, NOT a change of exposure: the FCY
+// receivable/derivative becomes FCY CASH, carried at the SAME ZAR cost basis. The
+// exposure stays OPEN across settlement, so settlement recognises NO realised P&L
+// (D-FX-PNL-FCY-EXPOSURE-REVALUATION). Realised P&L arises ONLY when the FCY is
+// later converted back to ZAR (the FCY→ZAR conversion rule below squares the
+// position). The OLD entry that posted "realised FX P&L" (ACC-2100-006) on
+// settlement is REMOVED — that was the defect this refinement fixes.
+//
+// Trade-date recognition is IFRS 9 FVTPL + off-balance-sheet memorandum
 // (PR-FX-001-V2): an at-market FX trade posts NIL on-balance-sheet at inception
 // and records the contractual buy/sell notionals OFF-balance-sheet (ACC-9100-*).
-// There is therefore NO on-balance-sheet FX trading receivable/payable
-// (ACC-2100-002/003/…) for settlement to extinguish. The OLD settlement entry
-// relieved a gross receivable/payable that no longer exists on-balance-sheet, so
-// it left DANGLING inverted ACC-2100 balances after every settled trade — the
-// defect this rule fixes.
+// There is therefore NO on-balance-sheet FX trading receivable/payable for
+// settlement to extinguish — settlement NEVER touches that block.
 //
-// THE FVTPL SETTLEMENT ENTRY. At settlement the derivative is derecognised and
-// the cash is recognised at the settled amounts. The balancing entry is REALISED
-// FX P&L (ACC-2100-006) — NOT a receivable/payable relief:
+// THE P&L-NEUTRAL SETTLEMENT ENTRY. At settlement the settled cash is recognised
+// against the FX SETTLEMENT CLEARING account (ACC-2100-027) — NOT realised P&L:
 //
-//   Dr Cash (bought ccy) @ settled amount   ;  Cr Realised FX P&L (bought ccy)
-//   Cr Cash (sold ccy)   @ settled amount   ;  Dr Realised FX P&L (sold ccy)
+//   Dr Cash (bought ccy) @ settled amount   ;  Cr FX Settlement Clearing (bought ccy)
+//   Cr Cash (sold ccy)   @ settled amount   ;  Dr FX Settlement Clearing (sold ccy)
 //
-// Each cash movement balances IN ITS OWN CURRENCY against the realised-P&L leg —
-// there is NO same-currency gross-up (no opposing receivable in the same ccy).
-// The realised-P&L account accumulates the per-currency legs; its REPORTING-
-// CURRENCY net (Σ received − Σ paid, translated) IS the realised FX result of the
-// trade. The on-BS derivative carrying value accrued by revaluation (unrealised
-// P&L, ACC-2100-005) is reclassified into realised separately on the terminal
-// derecognition event (PR-FX-CLOSE-V2, `postFxDerecognitionLegs`); this rule is
-// the settlement-date cash + realised recognition.
+// Each cash movement balances IN ITS OWN CURRENCY against the clearing leg — no
+// same-currency gross-up, no P&L footprint, and the receivable/payable block is
+// untouched. The clearing account carries the in-flight FX-settlement position the
+// cash legs convert (the FCY cash is then carried at its ZAR cost basis on the
+// cash FIL instance + revalued daily exactly like the open contract). The OBS
+// trade-date commitment is released separately (PR-FX-OBS-RELEASE-V2).
 //
 // `bookedAmount` is RETAINED in the input shape (the OBS commitment carrying at
-// the booked rate) for callers / the deferred swap-leg permutations, but the
-// FVTPL cash leg is recognised at the SETTLED amount and the balancing realised
-// P&L matches it in the same currency — so the per-currency entry closes at zero.
+// the booked rate) for the deferred swap-leg permutations + traceability; the
+// settlement leg recognises cash at the SETTLED amount and the balancing clearing
+// leg matches it in the same currency — so the per-currency entry closes at zero
+// with NO realised P&L.
 // ---------------------------------------------------------------------------
 
 export interface FxSettlementInput {
@@ -156,13 +195,14 @@ export function nostroFor(currency: string): string {
 
 /**
  * The GENERIC per-MOVEMENT settlement primitive (D-FX-TRADE-SETTLEMENT-PRODUCT-
- * MODEL, Slice 1; FVTPL settlement per D-FX-TRADE-DATE-FVTPL-OBS). Settles ONE
- * recognised leg — a single uniform asset movement — into its TWO GL legs: the
- * cash/nostro movement at the settled amount and the equal-and-opposite REALISED
- * FX P&L leg in the SAME currency. `side` selects the cash polarity (RECEIVE = Dr
- * cash; PAY = Cr cash) and the P&L counter-side. Amounts are POSITIVE magnitudes
- * (the sign is the `side`). NO on-balance-sheet receivable/payable is touched —
- * trade-date is OBS-only, so there is none to extinguish.
+ * MODEL, Slice 1; P&L-NEUTRAL settlement per D-FX-PNL-FCY-EXPOSURE-REVALUATION).
+ * Settles ONE recognised leg — a single uniform asset movement — into its TWO GL
+ * legs: the cash/nostro movement at the settled amount and the equal-and-opposite
+ * FX SETTLEMENT CLEARING leg in the SAME currency. `side` selects the cash polarity
+ * (RECEIVE = Dr cash; PAY = Cr cash) and the clearing counter-side. Amounts are
+ * POSITIVE magnitudes (the sign is the `side`). NO realised P&L is struck
+ * (settlement is a change of FORM, not a realisation) and NO on-balance-sheet
+ * receivable/payable is touched (trade-date is OBS-only, so there is none).
  *
  * This is the single source of the settlement leg math: `postFxSettlementLegs`
  * (the two-leg FX path) composes TWO of these, and the single-asset
@@ -177,9 +217,10 @@ export interface SettlementMovementInput {
   readonly settledAmount: string;
   /**
    * Carrying amount of the OBS commitment leg at the BOOKED rate (positive).
-   * RETAINED for traceability + the deferred swap-leg permutations; the FVTPL
-   * settlement recognises cash at the SETTLED amount and balances it with realised
-   * P&L in the same currency, so this no longer drives an on-BS obligation relief.
+   * RETAINED for traceability + the deferred swap-leg permutations; the P&L-neutral
+   * settlement recognises cash at the SETTLED amount and balances it with the
+   * clearing leg in the same currency, so this no longer drives an obligation
+   * relief.
    */
   readonly bookedAmount: string;
   /** `receive` recognises bought-leg cash (Dr cash); `pay` recognises sold-leg cash (Cr cash). */
@@ -192,19 +233,21 @@ type SettlementLegBase = Omit<
 >;
 
 /**
- * Produce the TWO GL legs for ONE FVTPL settlement movement: the cash recognition
- * at the SETTLED amount and the equal-and-opposite REALISED FX P&L leg in the SAME
- * currency. NO on-balance-sheet receivable/payable is touched — trade-date is now
- * OBS-only (PR-FX-001-V2), so there is no gross receivable/payable to extinguish.
+ * Produce the TWO GL legs for ONE P&L-NEUTRAL settlement movement: the cash
+ * recognition at the SETTLED amount and the equal-and-opposite FX SETTLEMENT
+ * CLEARING leg in the SAME currency. NO realised P&L is struck and NO
+ * on-balance-sheet receivable/payable is touched — trade-date is OBS-only
+ * (PR-FX-001-V2) and settlement is a change of FORM, not a realisation
+ * (D-FX-PNL-FCY-EXPOSURE-REVALUATION).
  *
- *   receive → Dr Cash[ccy] (settled) ; Cr Realised P&L[ccy] (settled)
- *   pay     → Cr Cash[ccy] (settled) ; Dr Realised P&L[ccy] (settled)
+ *   receive → Dr Cash[ccy] (settled) ; Cr FX Settlement Clearing[ccy] (settled)
+ *   pay     → Cr Cash[ccy] (settled) ; Dr FX Settlement Clearing[ccy] (settled)
  *
- * The entry closes at zero in the movement's own currency (no same-currency gross-
- * up). The realised-P&L account then carries one leg per settled currency; its
- * REPORTING-CURRENCY net across the trade's two movements is the realised FX result
- * (D-FX-TRADE-DATE-FVTPL-OBS). A zero settled amount yields no legs (nothing to
- * recognise).
+ * The entry closes at zero in the movement's own currency (no same-currency
+ * gross-up, no P&L footprint). The clearing account carries the in-flight
+ * FX-settlement position the cash legs convert; the FCY cash is then carried at its
+ * ZAR cost basis on the cash FIL instance and revalued daily exactly like the open
+ * contract. A zero settled amount yields no legs (nothing to recognise).
  */
 export function postSettlementMovementLegs(
   base: SettlementLegBase,
@@ -212,11 +255,11 @@ export function postSettlementMovementLegs(
 ): FxPostingLeg[] {
   if (isZeroDecimal(movement.settledAmount)) return [];
   const cashSide: "debit" | "credit" = movement.side === "receive" ? "debit" : "credit";
-  // The realised-P&L leg is the OPPOSITE side of the cash leg, in the SAME currency,
+  // The clearing leg is the OPPOSITE side of the cash leg, in the SAME currency,
   // for the SAME amount — so the movement balances in its own currency with no
-  // receivable/payable. (The trade's reporting-currency realised result is the net
-  // of the per-currency realised-P&L legs the two movements produce.)
-  const pnlSide: "debit" | "credit" = cashSide === "debit" ? "credit" : "debit";
+  // receivable/payable and NO realised P&L (settlement is a change of form, not a
+  // realisation; D-FX-PNL-FCY-EXPOSURE-REVALUATION).
+  const clearingSide: "debit" | "credit" = cashSide === "debit" ? "credit" : "debit";
   const cashLeg: FxPostingLeg = {
     ...base,
     creditDebit: cashSide,
@@ -227,14 +270,14 @@ export function postSettlementMovementLegs(
         ? `FX Settlement cash received ${movement.currency}`
         : `FX Settlement cash paid ${movement.currency}`,
   };
-  const realisedPnlLeg: FxPostingLeg = {
+  const clearingLeg: FxPostingLeg = {
     ...base,
-    creditDebit: pnlSide,
-    accountCode: FX_REALISED_PNL_ACCOUNT,
+    creditDebit: clearingSide,
+    accountCode: FX_SETTLEMENT_CLEARING_ACCOUNT,
     amount: money(movement.currency, movement.settledAmount),
-    description: `FX Settlement realised P&L ${movement.currency} (FVTPL, ${movement.side === "receive" ? "bought" : "sold"} leg)`,
+    description: `FX Settlement clearing ${movement.currency} (P&L-neutral, ${movement.side === "receive" ? "bought" : "sold"} leg)`,
   };
-  return [cashLeg, realisedPnlLeg];
+  return [cashLeg, clearingLeg];
 }
 
 export function postFxSettlementLegs(input: FxSettlementInput): FxPostingLeg[] {
@@ -245,14 +288,15 @@ export function postFxSettlementLegs(input: FxSettlementInput): FxPostingLeg[] {
     iasRule: SETTLE_RULE.ias,
     postingRuleId: SETTLE_RULE.ruleId,
   };
-  // FVTPL settlement: the two-leg path is exactly TWO per-movement settlements —
-  // the bought-leg RECEIVE and the sold-leg PAY — composed through the SAME
-  // per-movement primitive (`postSettlementMovementLegs`). Source, don't duplicate
-  // (Engineering Charter cmd 4): one settlement math, so the two-leg FX path and N
-  // single-asset `TradeSettlementExecuted` settlements net byte-identical per
-  // (account, currency) by construction. Each movement recognises cash at the
-  // settled amount and balances it with realised P&L in the SAME currency; no
-  // on-balance-sheet receivable/payable is touched (trade-date is OBS-only).
+  // P&L-NEUTRAL settlement: the two-leg path is exactly TWO per-movement
+  // settlements — the bought-leg RECEIVE and the sold-leg PAY — composed through
+  // the SAME per-movement primitive (`postSettlementMovementLegs`). Source, don't
+  // duplicate (Engineering Charter cmd 4): one settlement math, so the two-leg FX
+  // path and N single-asset `TradeSettlementExecuted` settlements net byte-identical
+  // per (account, currency) by construction. Each movement recognises cash at the
+  // settled amount and balances it with the FX settlement clearing leg in the SAME
+  // currency — NO realised P&L (settlement is a change of form); no on-balance-sheet
+  // receivable/payable is touched (trade-date is OBS-only).
   return [
     ...postSettlementMovementLegs(base, {
       currency: input.boughtCurrency,
@@ -267,6 +311,136 @@ export function postFxSettlementLegs(input: FxSettlementInput): FxPostingLeg[] {
       side: "pay",
     }),
   ];
+}
+
+// ---------------------------------------------------------------------------
+// PR-FX-CONVERT-V2 — FCY→ZAR CONVERSION (realisation). IAS 21 §28; IFRS 9 §5.7.1.
+// Authority: D-FX-PNL-FCY-EXPOSURE-REVALUATION (CEO-approved 2026-06-25).
+//
+// REALISATION HAPPENS ONLY HERE. Settlement (PR-FX-SETTLE-V2) is P&L-neutral — the
+// FCY exposure stays OPEN, carried as FCY cash at its ZAR cost basis. Realised P&L
+// arises ONLY when the FCY is converted BACK to ZAR (the position is squared):
+//
+//   realised P&L = ZAR proceeds − ZAR cost basis of the FCY sold
+//
+// The conversion (a) recognises the ZAR proceeds received + draws down the FCY cash
+// sold at its ZAR cost basis, the difference being realised P&L (ACC-2100-006); and
+// (b) RECLASSIFIES the cumulative UNREALISED P&L accrued on that exposure (sitting
+// in ACC-2100-005) INTO realised — total P&L unchanged, only its split moves from
+// unrealised to realised (IFRS 9 §5.7.1). The position is reduced by the converted
+// FCY notional.
+//
+// Worked example — convert USD 7m (ZAR cost basis R129.95m) → ZAR @ 19.00:
+//   ZAR proceeds = 133,000,000; cost basis = 129,950,000 → realised = +R3,050,000.
+//   Reclassify the cumulative unrealised (the same +R3,050,000 that accrued as the
+//   spot moved 18.565 → 19.00) from ACC-2100-005 into ACC-2100-006: net P&L is
+//   unchanged, it simply ceases to be "unrealised".
+//
+// PURE + balanced. A zero converted amount yields no legs.
+// ---------------------------------------------------------------------------
+
+export interface FxConversionInput {
+  readonly instanceId: string;
+  readonly tenantId: string;
+  readonly postingDate: string;
+  /** The FCY (the currency being SOLD back to ZAR). */
+  readonly fcyCurrency: string;
+  /** The reporting currency the proceeds are received in (typically ZAR). */
+  readonly reportingCurrency: string;
+  /** FCY amount converted, positive magnitude in the FCY (its OWN currency). */
+  readonly fcyAmount: string;
+  /** ZAR proceeds received for the FCY (reporting ccy, positive magnitude). */
+  readonly zarProceeds: string;
+  /** ZAR COST BASIS of the FCY sold (the booked ZAR given up to acquire it). */
+  readonly zarCostBasis: string;
+  /**
+   * Cumulative UNREALISED P&L accrued on this exposure to date (signed: + gain
+   * sat as a credit in ACC-2100-005). Reclassified into realised on conversion so
+   * total P&L is unchanged. Pass "0" when none has accrued (or is un-measured).
+   */
+  readonly accumulatedUnrealised: string;
+}
+
+const CONVERT_RULE = {
+  ruleId: "PR-FX-CONVERT-V2",
+  ias: "IAS 21 §28 / IFRS 9 §5.7.1 — FCY→ZAR conversion: realise (proceeds − cost basis); reclassify unrealised → realised",
+};
+
+/**
+ * Produce the legs for an FCY→ZAR conversion (realisation). The realised result is
+ * `zarProceeds − zarCostBasis` (signed); the cash legs draw down the FCY cash at
+ * its ZAR cost basis and recognise the ZAR proceeds, the difference being realised
+ * P&L. A second pair reclassifies the cumulative unrealised (ACC-2100-005) into
+ * realised (ACC-2100-006) so total P&L is unchanged. Both pairs balance in ZAR.
+ */
+export function postFxConversionLegs(input: FxConversionInput): FxPostingLeg[] {
+  if (isZeroDecimal(input.fcyAmount)) return [];
+  const base = {
+    postingDate: input.postingDate,
+    tenantId: input.tenantId as FxPostingLeg["tenantId"],
+    sourceEventId: input.instanceId,
+    iasRule: CONVERT_RULE.ias,
+    postingRuleId: CONVERT_RULE.ruleId,
+  };
+  const reporting = input.reportingCurrency;
+  const legs: FxPostingLeg[] = [];
+
+  // (a) Cash exchange: receive ZAR proceeds (Dr ZAR nostro), draw down the FCY cash
+  // sold at its ZAR COST BASIS (Cr FCY nostro, carried in ZAR cost), and recognise
+  // the difference as REALISED P&L. All three legs are in the reporting currency so
+  // the realisation result is the functional-currency figure directly.
+  legs.push({
+    ...base,
+    creditDebit: "debit",
+    accountCode: nostroFor(reporting),
+    amount: money(reporting, input.zarProceeds),
+    description: `FX Conversion ZAR proceeds received (sell ${input.fcyAmount} ${input.fcyCurrency})`,
+  });
+  legs.push({
+    ...base,
+    creditDebit: "credit",
+    accountCode: nostroFor(input.fcyCurrency),
+    amount: money(reporting, input.zarCostBasis),
+    description: `FX Conversion ${input.fcyCurrency} cash drawn down at ZAR cost basis`,
+  });
+  const realised = subtractDecimal(input.zarProceeds, input.zarCostBasis);
+  if (!isZeroDecimal(realised)) {
+    const isGain = !realised.startsWith("-");
+    const magnitude = isGain ? realised : realised.slice(1);
+    // Gain: the cash pair above is Dr-heavy (proceeds > cost) → balance with a
+    // Cr to realised P&L. Loss flips both.
+    legs.push({
+      ...base,
+      creditDebit: isGain ? "credit" : "debit",
+      accountCode: FX_REALISED_PNL_ACCOUNT,
+      amount: money(reporting, magnitude),
+      description: `FX Conversion realised P&L ${reporting} (proceeds − cost basis, ${isGain ? "gain" : "loss"})`,
+    });
+  }
+
+  // (b) Reclassify cumulative UNREALISED → realised (total P&L unchanged). The
+  // unrealised sat as a credit gain in ACC-2100-005; Dr it to reverse, Cr realised.
+  const unrealised = input.accumulatedUnrealised;
+  if (!isZeroDecimal(unrealised)) {
+    const isGain = !unrealised.trim().startsWith("-");
+    const magnitude = isGain ? unrealised.trim() : unrealised.trim().slice(1);
+    legs.push({
+      ...base,
+      creditDebit: isGain ? "debit" : "credit",
+      accountCode: FX_UNREALISED_PNL_ACCOUNT,
+      amount: money(reporting, magnitude),
+      description: `FX Conversion reverse cumulative unrealised ${reporting}`,
+    });
+    legs.push({
+      ...base,
+      creditDebit: isGain ? "credit" : "debit",
+      accountCode: FX_REALISED_PNL_ACCOUNT,
+      amount: money(reporting, magnitude),
+      description: `FX Conversion reclassify unrealised → realised ${reporting}`,
+    });
+  }
+
+  return legs;
 }
 
 // ---------------------------------------------------------------------------
