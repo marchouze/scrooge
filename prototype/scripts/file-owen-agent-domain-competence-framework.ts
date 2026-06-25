@@ -40,7 +40,9 @@ function findRepoRoot(start: string): string {
     if (parent === dir) break;
     dir = parent;
   }
-  throw new Error("file-agent-domain-competence-framework: cannot locate repo root (CLAUDE.md not found)");
+  throw new Error(
+    "file-agent-domain-competence-framework: cannot locate repo root (CLAUDE.md not found)",
+  );
 }
 
 const DOC_PATH = "Procedures/by-policy/agent-domain-competence-framework.md";
