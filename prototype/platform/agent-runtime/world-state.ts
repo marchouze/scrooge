@@ -23,6 +23,7 @@
 // Author: Atlas (Core banking platform architect)
 
 import { createHash } from "node:crypto";
+import { AGENT_MEMORY_COMMITTED as AGENT_MEMORY_COMMITTED_TYPE } from "../event-store/event-types/agent-memory";
 import type { EventStore } from "../event-store/store";
 import type { Event } from "../event-store/types";
 import { type ScenarioClock, WallClock } from "../scenario-clock";
@@ -287,6 +288,14 @@ export class LocalAgentWorldStateReader implements AgentWorldStateReader {
           "AgentGoalSelected",
           "AgentGoalDeferred",
           "AuditFinding",
+          // WS-AGENT-MEMORY Slice 1 — federated agent-memory commits are a
+          // substrate-lifecycle observation: the world-state read surface must
+          // see them so the Slice-2 read-at-dispatch path (myMemory /
+          // readMyMemory — next dispatch) can project them. Wiring it here makes
+          // AgentMemoryCommitted visible in the `Substrate*` (world-state) read
+          // vocabulary, the counterpart to the un-prefixed agent-runs register
+          // surface. Authority: D-AGENT-MEMORY-PERSISTENCE.
+          AGENT_MEMORY_COMMITTED_TYPE,
         ].includes(e.type)
       ) {
         return true;

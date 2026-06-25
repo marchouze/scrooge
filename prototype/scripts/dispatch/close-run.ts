@@ -25,7 +25,16 @@
 //     [--register-key <decisions|correspondence|agent-runs|documents|feedback|briefs|workstreams>]... \
 //     [--cite <urn>]... \
 //     [--gap <substrate-gap-string>]... \
-//     [--follow-on <kind:target:directive>]...
+//     [--follow-on <kind:target:directive>]... \
+//     [--memory <memory.json>]
+//
+// `--memory <memory.json>` (WS-AGENT-MEMORY Slice 1) takes a JSON array of
+// `{ domains: string[], title, body, citations: string[], supersedes? }`. Each
+// entry's body is put into the doc store and an `AgentMemoryCommitted` event is
+// emitted with `producedByRunId` = this closing run and `producedByAgent` = the
+// run's agent (carrying the Slice-0 roster agentId). Memory is federated by the
+// `domains[]` mandate tags (≥1); citations are fail-closed (≥1, P2). Authority:
+// D-AGENT-MEMORY-PERSISTENCE.
 //
 // `--pr` accepts a GitHub PR URL (https://github.com/org/repo/pull/NNN) or a
 // short ref (pr:#NNN or #NNN). A synthetic markdown stub is stored in the
@@ -61,6 +70,7 @@ import "./resolve-event-db-boot";
 
 import { existsSync, readFileSync } from "node:fs";
 import { basename } from "node:path";
+import { tryAgentIdForName } from "../../platform/agent-identity";
 import { clock, eventStore } from "../../platform/composition";
 import { HOZ_BANK_ENTITY } from "../../platform/core/types";
 import { checkDeciderMayClose } from "../../platform/dispatch";
@@ -76,6 +86,7 @@ import {
   defaultRetentionForRegister,
   recordAgentRunCompleted,
   recordFiled,
+  recordMemoryCommitted,
 } from "../../platform/records";
 import { die, emitOk, optionalRepeatable, optionalString, parseArgs, requireString } from "./args";
 
@@ -175,6 +186,87 @@ function slugify(s: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+// ---------------------------------------------------------------------------
+// --memory <memory.json> — WS-AGENT-MEMORY Slice 1.
+//
+// The JSON is an ARRAY of memory entries, each:
+//   { domains: string[] (≥1), title: string, body: string, citations: string[]
+//     (≥1, P2 fail-closed), supersedes?: string }
+//
+// Each entry is committed in the SAME code path that puts deliverables to the
+// doc store: documentStore.put(body) → bodyDocumentHash; emit
+// AgentMemoryCommitted with producedByRunId = this closing run and
+// producedByAgent = the run's agent (carrying the Slice-0 agentId).
+// ---------------------------------------------------------------------------
+
+interface MemoryEntry {
+  readonly domains: readonly string[];
+  readonly title: string;
+  readonly body: string;
+  readonly citations: readonly string[];
+  readonly supersedes?: string;
+}
+
+function parseMemoryFile(path: string): MemoryEntry[] {
+  if (!existsSync(path)) die(`--memory path not found: ${path}`);
+  const raw = readFileSync(path, "utf8");
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (e) {
+    die(`--memory file is not valid JSON: ${path} (${(e as Error).message})`);
+    throw e; // unreachable — die() exits; satisfies control-flow analysis
+  }
+  if (!Array.isArray(parsed)) {
+    die(`--memory file must be a JSON array of memory entries, got: ${typeof parsed}`);
+  }
+  const entries: MemoryEntry[] = [];
+  (parsed as unknown[]).forEach((rawEntry, i) => {
+    if (typeof rawEntry !== "object" || rawEntry === null) {
+      die(`--memory[${i}] must be an object`);
+    }
+    const e = rawEntry as Record<string, unknown>;
+    const domains = e.domains;
+    if (!Array.isArray(domains) || domains.length === 0) {
+      die(`--memory[${i}].domains must be a non-empty string array (the mandate tags)`);
+    }
+    const domainStrs = (domains as unknown[]).map((d, j) => {
+      if (typeof d !== "string" || d.trim() === "") {
+        die(`--memory[${i}].domains[${j}] must be a non-empty string`);
+      }
+      return (d as string).trim();
+    });
+    if (typeof e.title !== "string" || e.title.trim() === "") {
+      die(`--memory[${i}].title must be a non-empty string`);
+    }
+    if (typeof e.body !== "string" || e.body.trim() === "") {
+      die(`--memory[${i}].body must be a non-empty string`);
+    }
+    const citations = e.citations;
+    // P2 fail-closed: every memory carries ≥1 citation.
+    if (!Array.isArray(citations) || citations.length === 0) {
+      die(`--memory[${i}].citations must be a non-empty string array (P2: ≥1 citation)`);
+    }
+    const citationStrs = (citations as unknown[]).map((c, j) => {
+      if (typeof c !== "string" || c.trim() === "") {
+        die(`--memory[${i}].citations[${j}] must be a non-empty string`);
+      }
+      return (c as string).trim();
+    });
+    if (e.supersedes !== undefined && (typeof e.supersedes !== "string" || e.supersedes.trim() === "")) {
+      die(`--memory[${i}].supersedes, when present, must be a non-empty string`);
+    }
+    entries.push({
+      domains: domainStrs,
+      title: e.title.trim(),
+      body: e.body,
+      citations: citationStrs,
+      ...(typeof e.supersedes === "string" ? { supersedes: e.supersedes.trim() } : {}),
+    });
+  });
+  return entries;
+}
+
 function main(): void {
   const args = parseArgs(process.argv.slice(2), REPEATABLE);
 
@@ -186,6 +278,7 @@ function main(): void {
 
   const deliverablePaths = optionalRepeatable(args, "deliverable");
   const prRefs = optionalRepeatable(args, "pr");
+  const memoryPath = optionalString(args, "memory");
   const classificationsRaw = optionalRepeatable(args, "classification");
   const registerKeysRaw = optionalRepeatable(args, "register-key");
   const cites = optionalRepeatable(args, "cite");
@@ -324,10 +417,14 @@ function main(): void {
   // distinguish — keeps Principle 2 satisfied at both layers.
   const deliverableCitations = citations;
 
+  // Slice 0 (WS-AGENT-MEMORY): source the stable agentId from the roster
+  // (Team/_team-roster.json — Charter cmd 4). Off-roster names fall back to the
+  // long-standing `agent:<slug>` form; on-roster names always use the roster id.
+  const agentId = tryAgentIdForName(agentName) ?? `agent:${slugify(agentName)}`;
   const agent: RmsAgentRef = {
     name: agentName,
     position: agentPosition,
-    agentId: `agent:${slugify(agentName)}`,
+    agentId,
   };
 
   const asOf = clock.now();
@@ -421,6 +518,59 @@ function main(): void {
     });
   }
 
+  // -----------------------------------------------------------------
+  // WS-AGENT-MEMORY Slice 1 — federated agent-memory at close.
+  //
+  // For each --memory entry: put the body into the SAME content-addressed
+  // doc store the deliverables used, then emit AgentMemoryCommitted with
+  // producedByRunId = this closing run and producedByAgent = the run's agent
+  // (carrying the Slice-0 roster agentId). Bodies are classified
+  // agent-internal by being AgentMemoryCommitted events (the family's
+  // provenance category is governance — never simulated; the body is an
+  // agent-internal record, not a public-disclosure deliverable). Citations
+  // are fail-closed (≥1) at the parser and again in the schema. memoryId is
+  // derived as `memory:<runId>:<index>` — stable per run + position.
+  // -----------------------------------------------------------------
+  const memoryEvents: Array<{
+    memoryId: string;
+    domains: readonly string[];
+    bodyDocumentHash: string;
+    eventId: string;
+    supersedes?: string;
+  }> = [];
+
+  if (memoryPath) {
+    const memoryEntries = parseMemoryFile(memoryPath);
+    memoryEntries.forEach((entry, i) => {
+      const memoryId = `memory:${runId}:${i}`;
+      const committed = recordMemoryCommitted(
+        {
+          memoryId,
+          domains: entry.domains,
+          producedByAgent: agent,
+          producedByRunId: runId,
+          title: entry.title,
+          body: entry.body,
+          citations: entry.citations,
+          ...(entry.supersedes ? { supersedes: entry.supersedes } : {}),
+          actor: { type: "service", id: agent.agentId ?? `agent:${slugify(agentName)}` },
+        },
+        asOf,
+      );
+
+      // D-DISPATCH-MULTI-HOST-POSTGRES-MIRROR-AUTO-INVOKE — mirror each memory event.
+      mirrorEventToPostgres(committed.event).catch(() => {});
+
+      memoryEvents.push({
+        memoryId,
+        domains: entry.domains,
+        bodyDocumentHash: committed.documentHash,
+        eventId: committed.eventId,
+        ...(entry.supersedes ? { supersedes: entry.supersedes } : {}),
+      });
+    });
+  }
+
   emitOk({
     runId,
     briefId,
@@ -430,6 +580,7 @@ function main(): void {
     newDeliverableCount: result.newDeliverableCount,
     completedAt: asOf,
     recordEvents,
+    memoryEvents,
   });
 }
 

@@ -13,6 +13,14 @@ export {
 } from "./issuer";
 
 export {
+  agentIdForName,
+  rosterAgentIds,
+  slugifyAgentId,
+  tryAgentIdForName,
+  __resetRosterAgentIdMemo,
+} from "./roster";
+
+export {
   type PermissionPolicy,
   type PermissionPolicyPublisher,
   type PermissionPolicyPublisherConfig,

@@ -25,6 +25,7 @@
 // `platform/composition` resolves its dbPath at module-load time.
 import "./resolve-event-db-boot";
 
+import { tryAgentIdForName } from "../../platform/agent-identity";
 import { clock } from "../../platform/composition";
 import type { RmsAgentRef } from "../../platform/event-store/event-types";
 import { mirrorEventToPostgres } from "../../platform/event-store/postgres-mirror";
@@ -64,10 +65,14 @@ function main(): void {
   const asOf = clock.now();
   const runId = runIdOverride ?? `run:${slugify(agentName)}:${asOf.replace(/[:.]/g, "-")}`;
 
+  // Slice 0 (WS-AGENT-MEMORY): source the stable agentId from the roster
+  // (Team/_team-roster.json — Charter cmd 4). Off-roster names fall back to the
+  // long-standing `agent:<slug>` form; on-roster names always use the roster id.
+  const agentId = tryAgentIdForName(agentName) ?? `agent:${slugify(agentName)}`;
   const agent: RmsAgentRef = {
     name: agentName,
     position: agentPosition,
-    agentId: `agent:${slugify(agentName)}`,
+    agentId,
   };
 
   const result = recordAgentRunStarted(

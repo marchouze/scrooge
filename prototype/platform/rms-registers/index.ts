@@ -58,6 +58,21 @@ export {
   agentRunsRegisterRows,
 } from "./agent-runs";
 
+// WS-AGENT-MEMORY Slice 1 — federated agent-memory register projection.
+// Folds AgentMemoryCommitted to current heads per memoryId (latest supersedes
+// wins); queryable by domains[] + producedByAgent. Authority:
+// D-AGENT-MEMORY-PERSISTENCE (CEO-approved 2026-06-25).
+export {
+  agentMemoryRegisterProjection,
+  type AgentMemoryRegisterRow,
+  type AgentMemoryRegisterState,
+  agentMemoryRegisterRows,
+  agentMemoryRegisterInitial,
+  liveHeads,
+  headsByDomain,
+  headsByAgent,
+} from "./agent-memory";
+
 export {
   documentRegisterProjection,
   type DocumentRegisterRow,

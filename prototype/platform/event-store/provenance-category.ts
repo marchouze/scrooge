@@ -169,6 +169,10 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   AuditFindingClosed: "governance",
   AgentRunStarted: "governance",
   AgentRunCompleted: "governance",
+  // WS-AGENT-MEMORY Slice 1 — federated agent-memory record. An agent-internal
+  // governance record (the experiential layer of the agent-knowledge graph),
+  // never simulated. Authority: D-AGENT-MEMORY-PERSISTENCE (2026-06-25).
+  AgentMemoryCommitted: "governance",
   AgentEscalation: "governance",
   AgentEscalationDecided: "governance",
   ProductApproved: "governance",
