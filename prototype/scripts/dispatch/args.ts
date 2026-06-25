@@ -15,17 +15,24 @@ export type ParsedArgs = Readonly<Record<string, string | string[]>>;
 /**
  * Parse `--flag value` style argv. Repeatable flags (declared in
  * `repeatableFlags`) collect into a string[]. Single-value flags overwrite.
- * Bare flags without a value are rejected (no boolean flags in this CLI).
+ * Boolean flags (declared in `booleanFlags`) are presence-only: `--flag` sets
+ * `"true"` without consuming the next token, and never requires a value. Any
+ * other bare flag without a value is rejected.
  */
 export function parseArgs(
   argv: readonly string[],
   repeatableFlags: ReadonlySet<string>,
+  booleanFlags: ReadonlySet<string> = new Set<string>(),
 ): ParsedArgs {
   const out: Record<string, string | string[]> = {};
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (!arg || !arg.startsWith("--")) continue;
     const key = arg.slice(2);
+    if (booleanFlags.has(key)) {
+      out[key] = "true";
+      continue;
+    }
     const value = argv[i + 1] ?? "";
     if (!value || value.startsWith("--")) {
       die(`Flag --${key} requires a value`);
@@ -57,6 +64,11 @@ export function optionalString(args: ParsedArgs, key: string): string | undefine
   const v = args[key];
   if (typeof v !== "string" || v.trim() === "") return undefined;
   return v.trim();
+}
+
+/** True iff a boolean flag (declared in `parseArgs` `booleanFlags`) was present. */
+export function optionalBoolean(args: ParsedArgs, key: string): boolean {
+  return args[key] === "true";
 }
 
 export function requireRepeatable(args: ParsedArgs, key: string): string[] {
