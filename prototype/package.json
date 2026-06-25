@@ -139,6 +139,7 @@
     "recon:accounting-schema-home": "bun run platform/recon/accounting-schema-home.ts",
     "recon:fx-supported-currency-no-suspense": "bun run platform/recon/fx-supported-currency-no-suspense.ts",
     "recon:account-designated-currency": "bun run platform/recon/account-designated-currency.ts",
+    "recon:gl-currency-dimension-integrity": "bun run platform/recon/gl-currency-dimension-integrity.ts",
     "recon:provision-tick-drift": "bun run platform/recon/provision-tick-drift.ts",
     "recon:decision-distillation-coverage": "bun run platform/recon/decision-distillation-coverage.ts",
     "recon:valuation-adjustment-additive": "bun run platform/recon/valuation-adjustment-additive.ts",
