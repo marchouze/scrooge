@@ -14,7 +14,13 @@ export {
 
 export {
   agentIdForName,
+  loadDomainsForAgent,
+  mandateDomainsForAgent,
+  mandateDomainVocabulary,
   rosterAgentIds,
+  rosterMandateDomainsByAgentId,
+  sharedDomainTag,
+  SHARED_DOMAIN_TAG,
   slugifyAgentId,
   tryAgentIdForName,
   __resetRosterAgentIdMemo,

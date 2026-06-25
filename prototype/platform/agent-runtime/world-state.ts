@@ -23,10 +23,12 @@
 // Author: Atlas (Core banking platform architect)
 
 import { createHash } from "node:crypto";
+import type { DocumentStore } from "../document-store/types";
 import { AGENT_MEMORY_COMMITTED as AGENT_MEMORY_COMMITTED_TYPE } from "../event-store/event-types/agent-memory";
 import type { EventStore } from "../event-store/store";
 import type { Event } from "../event-store/types";
 import { type ScenarioClock, WallClock } from "../scenario-clock";
+import { type AgentMemoryRow, readMyMemory } from "./read-my-memory";
 import type { AgentUrn } from "./registry";
 
 // ---------------------------------------------------------------------------
@@ -110,6 +112,16 @@ export interface WorldStateSnapshot {
   readonly openEscalationsAddressedToMe: readonly AgentEscalationView[];
   readonly auditFindingsForMe: readonly AuditFinding[];
   readonly myRecentRuns: readonly AgentRunSummary[];
+  /**
+   * WS-AGENT-MEMORY Slice 2 — the federated agent-memory slice THIS agent loads
+   * at dispatch: live memory heads whose mandate tags intersect the agent's
+   * `mandateDomains` ∪ `{shared}` (roster-sourced, NOT derived). Populated ONCE
+   * per iteration when the snapshot is assembled (no fan-out at read time), and
+   * its memoryIds feed the single `snapshotHash` so the determinism contract is
+   * preserved. Empty when no doc store is wired (read-at-dispatch is off) or the
+   * agent is off-roster — never throws inside snapshot assembly.
+   */
+  readonly myMemory: readonly AgentMemoryRow[];
 }
 
 // ---------------------------------------------------------------------------
@@ -200,11 +212,24 @@ export class LocalAgentWorldStateReader implements AgentWorldStateReader {
   private readonly eventStore: EventStore;
   private readonly entity: string;
   private readonly clock: ScenarioClock;
+  /**
+   * WS-AGENT-MEMORY Slice 2 — optional doc store for resolving memory bodies. When
+   * absent, `myMemory` is empty (read-at-dispatch is off) — the rest of the
+   * snapshot is unaffected, so existing callers that never wired a doc store keep
+   * their exact prior behaviour AND their exact prior snapshotHash.
+   */
+  private readonly documentStore: DocumentStore | undefined;
 
-  constructor(opts: { eventStore: EventStore; entity?: string; clock?: ScenarioClock }) {
+  constructor(opts: {
+    eventStore: EventStore;
+    entity?: string;
+    clock?: ScenarioClock;
+    documentStore?: DocumentStore;
+  }) {
     this.eventStore = opts.eventStore;
     this.entity = opts.entity ?? "LE-ZA-HOZ-BANK";
     this.clock = opts.clock ?? new WallClock();
+    this.documentStore = opts.documentStore;
   }
 
   // -------------------------------------------------------------------------
@@ -218,6 +243,8 @@ export class LocalAgentWorldStateReader implements AgentWorldStateReader {
     const openEscalationsAddressedToMe = this.readOpenEscalationsAddressedToMe(agentUrn);
     const auditFindingsForMe = this.readReconFindingsForMe(agentUrn);
     const myRecentRuns = this.readMyRecentRuns(agentUrn, 10);
+    // WS-AGENT-MEMORY Slice 2 — populate ONCE here (no fan-out at read time).
+    const myMemory = this.buildMyMemory(agentUrn);
 
     // Build snapshotHash over the canonicalised content (excluding the hash itself).
     const snapshotContent = {
@@ -230,6 +257,11 @@ export class LocalAgentWorldStateReader implements AgentWorldStateReader {
       openEscalationIds: openEscalationsAddressedToMe.map((e) => e.escalationId),
       auditFindingIds: auditFindingsForMe.map((f) => f.findingId),
       recentRunIds: myRecentRuns.map((r) => r.runId),
+      // The mandate-filtered memory slice is part of the materialised iteration
+      // state — its ids feed the SINGLE snapshotHash. Omitted from the hash when
+      // the slice is empty so a snapshot with no doc store wired hashes IDENTICALLY
+      // to the pre-Slice-2 snapshot (no churn for existing callers).
+      ...(myMemory.length > 0 ? { myMemoryIds: myMemory.map((m) => m.memoryId) } : {}),
     };
     const snapshotHash = sha256(canonicaliseSnapshot(snapshotContent));
 
@@ -242,8 +274,33 @@ export class LocalAgentWorldStateReader implements AgentWorldStateReader {
       openEscalationsAddressedToMe: Object.freeze(openEscalationsAddressedToMe),
       auditFindingsForMe: Object.freeze(auditFindingsForMe),
       myRecentRuns: Object.freeze(myRecentRuns),
+      myMemory: Object.freeze(myMemory),
     });
     return snapshot;
+  }
+
+  // -------------------------------------------------------------------------
+  // buildMyMemory — WS-AGENT-MEMORY Slice 2 read-at-dispatch
+  //
+  // The mandate-filtered memory slice this agent loads. Resolved ONCE per
+  // snapshot from the agent's relevant events (`readEventsSince` already surfaces
+  // AgentMemoryCommitted to every agent via the substrate-lifecycle allow-list)
+  // and the wired doc store. No doc store / off-roster agent → empty slice (never
+  // throws inside snapshot assembly — read-at-dispatch is simply off).
+  // -------------------------------------------------------------------------
+
+  private buildMyMemory(agentUrn: AgentUrn): readonly AgentMemoryRow[] {
+    if (!this.documentStore) return [];
+    const events = [...this.eventStore.replay({ entity: this.entity })].filter(
+      (e) => e.type === AGENT_MEMORY_COMMITTED_TYPE,
+    );
+    try {
+      return readMyMemory(agentUrn, { events, documentStore: this.documentStore });
+    } catch {
+      // Off-roster agent (no mandate-domain filter): read-at-dispatch is off for
+      // this caller — surface as an empty slice, not a snapshot-assembly throw.
+      return [];
+    }
   }
 
   // -------------------------------------------------------------------------

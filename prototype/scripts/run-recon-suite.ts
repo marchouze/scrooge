@@ -525,6 +525,16 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:agent-memory-dual-vocabulary",
     "recon:agent-memory-citation-integrity",
     "recon:agent-memory-doc-resolves",
+    // WS-AGENT-MEMORY Slice 2 — read-at-dispatch gates. ENFORCING from the start
+    // (the roster ships complete + the read path ships this slice).
+    // agent-mandate-domains-coverage asserts every persona carries an explicit,
+    // in-vocabulary mandateDomains[] + the reserved `shared` tag (the read filter
+    // would silently return nothing for an un-tagged persona);
+    // agent-memory-recall-determinism asserts readMyMemory is deterministic AND
+    // respects the mandate∪shared filter (in-mandate + shared returned, an
+    // unrelated domain NOT — no federation leak). Authority: D-AGENT-MEMORY-PERSISTENCE.
+    "recon:agent-mandate-domains-coverage",
+    "recon:agent-memory-recall-determinism",
     // WS-FX-V2-SIMULATOR-FIRST — the FX simulator's counterparty-source coherence
     // gate. ENFORCING: every simulator-authored FX trade (venue OTC-SIM) must name
     // a counterparty that is an IN-SIM ONBOARDED, active, FX-eligible client

@@ -39,11 +39,27 @@ import { resolve } from "node:path";
 interface RosterPersonaShape {
   readonly name: string;
   readonly agentId?: string;
+  readonly mandateDomains?: readonly string[];
+}
+
+interface RosterVocabularyShape {
+  readonly tags?: readonly string[];
+  readonly shared?: string;
 }
 
 interface RosterFileShape {
   readonly personas?: readonly RosterPersonaShape[];
+  readonly mandateDomainVocabulary?: RosterVocabularyShape;
 }
+
+/**
+ * WS-AGENT-MEMORY Slice 2 — the RESERVED tag whose memory EVERY agent loads in
+ * addition to its own mandate domains (the bank-wide common-core). `readMyMemory`
+ * unions `{SHARED_DOMAIN_TAG}` into every agent's filter. Sourced from the roster
+ * vocabulary's `shared` field; this constant is the fallback only if the roster
+ * omits it (it never should — recon:agent-mandate-domains-coverage asserts it).
+ */
+export const SHARED_DOMAIN_TAG = "shared" as const;
 
 function findRepoRoot(start: string): string {
   let dir = start;
@@ -69,15 +85,35 @@ export function slugifyAgentId(name: string): string {
   return `agent:${slug}`;
 }
 
-let memo: ReadonlyMap<string, string> | undefined;
+/**
+ * The roster, parsed ONCE and indexed for the resolvers below.
+ *   - `agentIds`         name(lower) → agentId
+ *   - `mandateByAgentId` agentId → readonly mandate-domain tags
+ *   - `mandateByName`    name(lower) → readonly mandate-domain tags
+ *   - `vocabulary`       the closed set of known mandate-domain tags (incl `shared`)
+ *   - `sharedTag`        the reserved bank-wide common-core tag
+ */
+interface LoadedRoster {
+  readonly agentIds: ReadonlyMap<string, string>;
+  readonly mandateByAgentId: ReadonlyMap<string, readonly string[]>;
+  readonly mandateByName: ReadonlyMap<string, readonly string[]>;
+  readonly vocabulary: ReadonlySet<string>;
+  readonly sharedTag: string;
+}
 
-function loadRosterAgentIds(): ReadonlyMap<string, string> {
+let memo: LoadedRoster | undefined;
+
+function loadRoster(): LoadedRoster {
   if (memo) return memo;
   const repoRoot = findRepoRoot(import.meta.dir);
   const path = resolve(repoRoot, "Team/_team-roster.json");
   const raw = readFileSync(path, "utf-8");
   const file = JSON.parse(raw) as RosterFileShape;
-  const map = new Map<string, string>();
+
+  const agentIds = new Map<string, string>();
+  const mandateByAgentId = new Map<string, readonly string[]>();
+  const mandateByName = new Map<string, readonly string[]>();
+
   for (const p of file.personas ?? []) {
     if (typeof p.name !== "string" || p.name.length === 0) continue;
     if (typeof p.agentId !== "string" || p.agentId.length === 0) {
@@ -86,10 +122,37 @@ function loadRosterAgentIds(): ReadonlyMap<string, string> {
         `agent-identity/roster: persona "${p.name}" is missing a stable \`agentId\` in Team/_team-roster.json (Slice 0 requires every persona to carry one)`,
       );
     }
-    map.set(p.name.toLowerCase(), p.agentId);
+    agentIds.set(p.name.toLowerCase(), p.agentId);
+
+    // WS-AGENT-MEMORY Slice 2 — mandateDomains is read here but NOT fail-closed
+    // at load time: an empty/missing value is surfaced as a recon FINDING
+    // (recon:agent-mandate-domains-coverage), not a hard module-load throw, so a
+    // grooming gap does not brick every dispatch CLI that resolves an agentId.
+    const domains = Array.isArray(p.mandateDomains)
+      ? p.mandateDomains.filter((d): d is string => typeof d === "string" && d.length > 0)
+      : [];
+    mandateByAgentId.set(p.agentId, domains);
+    mandateByName.set(p.name.toLowerCase(), domains);
   }
-  memo = map;
-  return map;
+
+  const vocab = file.mandateDomainVocabulary;
+  const sharedTag =
+    typeof vocab?.shared === "string" && vocab.shared.length > 0 ? vocab.shared : SHARED_DOMAIN_TAG;
+  const vocabulary = new Set<string>(
+    Array.isArray(vocab?.tags)
+      ? vocab.tags.filter((t): t is string => typeof t === "string" && t.length > 0)
+      : [],
+  );
+  // Defence-in-depth: the shared tag is always part of the vocabulary even if the
+  // roster's `tags` list forgot to include it.
+  vocabulary.add(sharedTag);
+
+  memo = { agentIds, mandateByAgentId, mandateByName, vocabulary, sharedTag };
+  return memo;
+}
+
+function loadRosterAgentIds(): ReadonlyMap<string, string> {
+  return loadRoster().agentIds;
 }
 
 /**
@@ -121,7 +184,56 @@ export function rosterAgentIds(): ReadonlyMap<string, string> {
   return loadRosterAgentIds();
 }
 
-/** Test seam — clear the memoised map. */
+// ---------------------------------------------------------------------------
+// WS-AGENT-MEMORY Slice 2 — mandate-domain resolution
+// ---------------------------------------------------------------------------
+
+/** The reserved bank-wide common-core tag, sourced from the roster vocabulary. */
+export function sharedDomainTag(): string {
+  return loadRoster().sharedTag;
+}
+
+/** The closed vocabulary of known mandate-domain tags (incl. `shared`). For recon. */
+export function mandateDomainVocabulary(): ReadonlySet<string> {
+  return loadRoster().vocabulary;
+}
+
+/** The full agentId → mandate-domain tags map. For recon + tests. */
+export function rosterMandateDomainsByAgentId(): ReadonlyMap<string, readonly string[]> {
+  return loadRoster().mandateByAgentId;
+}
+
+/**
+ * Roster-sourced mandate-domain tags for an `agent:<slug>` agentId OR a bare
+ * persona name (case-insensitive on the name). Returns `undefined` when the
+ * agent is not a known roster persona; returns `[]` (empty) when the persona is
+ * known but carries no mandateDomains (a grooming gap — surfaced by recon, not a
+ * throw here).
+ */
+export function mandateDomainsForAgent(agentIdOrName: string): readonly string[] | undefined {
+  const roster = loadRoster();
+  const byId = roster.mandateByAgentId.get(agentIdOrName);
+  if (byId !== undefined) return byId;
+  return roster.mandateByName.get(agentIdOrName.toLowerCase());
+}
+
+/**
+ * The effective load-filter for an agent: its explicit mandate domains UNIONED
+ * with the reserved `shared` tag (the bank-wide common-core every agent loads).
+ * Returns `undefined` when the agent is unknown to the roster — fail-closed: a
+ * dispatch for a non-roster agent must not silently fall through to "shared only"
+ * (the caller decides how to surface the unknown).
+ */
+export function loadDomainsForAgent(agentIdOrName: string): readonly string[] | undefined {
+  const mandate = mandateDomainsForAgent(agentIdOrName);
+  if (mandate === undefined) return undefined;
+  const shared = loadRoster().sharedTag;
+  const set = new Set<string>(mandate);
+  set.add(shared);
+  return [...set].sort();
+}
+
+/** Test seam — clear the memoised roster (agentIds + mandate domains + vocab). */
 export function __resetRosterAgentIdMemo(): void {
   memo = undefined;
 }

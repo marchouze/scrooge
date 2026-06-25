@@ -6,6 +6,7 @@
     {
       "name": "PAX",
       "agentId": "agent:pax",
+      "mandateDomains": ["role-research", "recruiting"],
       "role": "Role researcher",
       "type": "engineering",
       "expertise": "Role definition, regulatory scans, talent-market intelligence, structured role briefs",
@@ -16,6 +17,7 @@
     {
       "name": "Nolan",
       "agentId": "agent:nolan",
+      "mandateDomains": ["recruiting", "role-research"],
       "role": "Recruiter",
       "type": "engineering",
       "expertise": "Translating role briefs into hires, persona drafting, maintaining the team roster",
@@ -26,6 +28,7 @@
     {
       "name": "Atlas",
       "agentId": "agent:atlas",
+      "mandateDomains": ["platform", "data", "security"],
       "role": "Core banking platform architect",
       "type": "engineering",
       "expertise": "Event-sourced platform, projections, identity, IaC, cloud-native foundations",
@@ -42,6 +45,7 @@
     {
       "name": "Bea",
       "agentId": "agent:bea",
+      "mandateDomains": ["accounting", "tax"],
       "role": "Accounting & financial reporting engineer",
       "type": "engineering",
       "expertise": "IFRS, SARB BA returns, automated close, sub-ledger architecture",
@@ -58,6 +62,7 @@
     {
       "name": "Mira",
       "agentId": "agent:mira",
+      "mandateDomains": ["compliance", "legal"],
       "role": "Compliance / RegTech engineer",
       "type": "engineering",
       "expertise": "FIC Act, FAIS, Twin Peaks, sanctions, transaction monitoring, obligations-register curator",
@@ -74,6 +79,7 @@
     {
       "name": "Kai",
       "agentId": "agent:kai",
+      "mandateDomains": ["trading", "settlement-ops"],
       "role": "Trading systems engineer",
       "type": "engineering",
       "expertise": "OMS/EMS, FIX, multi-asset booking, exchange connectivity, surveillance feeds",
@@ -84,6 +90,7 @@
     {
       "name": "Rohan",
       "agentId": "agent:rohan",
+      "mandateDomains": ["risk", "market-risk", "credit-risk", "liquidity"],
       "role": "Risk engineer",
       "type": "engineering",
       "expertise": "Market/credit/liquidity/op risk, IFRS 9 ECL, ICAAP/ILAAP, BCBS standards",
@@ -100,6 +107,7 @@
     {
       "name": "Nadia",
       "agentId": "agent:nadia",
+      "mandateDomains": ["validation", "risk", "market-risk", "credit-risk"],
       "role": "Independent-validation engineer (second line)",
       "type": "engineering",
       "expertise": "Independent model validation, SR 11-7 / SS 1/23, BCBS CG-Principles, validation testing & backtesting, model-registry co-curatorship, RAS § B7 tier discipline",
@@ -111,6 +119,7 @@
     {
       "name": "Tomas",
       "agentId": "agent:tomas",
+      "mandateDomains": ["settlement-ops", "platform"],
       "role": "Operations & payments engineer",
       "type": "engineering",
       "expertise": "Correspondent bank channel, BankservAfrica, SWIFT, ISO 20022, reconciliation, cut-off engineering",
@@ -127,6 +136,7 @@
     {
       "name": "Imani",
       "agentId": "agent:imani",
+      "mandateDomains": ["legal", "compliance"],
       "role": "Legal-as-code engineer",
       "type": "engineering",
       "expertise": "Master agreements, clause libraries, ECTA execution, legal-entity hierarchy",
@@ -139,6 +149,7 @@
     {
       "name": "Sade",
       "agentId": "agent:sade",
+      "mandateDomains": ["agent-ops", "platform"],
       "role": "AgentOps & Token Efficiency Engineer",
       "type": "engineering",
       "expertise": "Agent fleet operations; token usage monitoring; efficiency advisory and autonomous prompt/mandate optimisation; agent fit-and-proper analogue; HR systems (licence-day)",
@@ -152,6 +163,7 @@
     {
       "name": "Niko",
       "agentId": "agent:niko",
+      "mandateDomains": ["sales", "compliance"],
       "role": "Sales / CRM engineer",
       "type": "engineering",
       "expertise": "Lead-to-client lifecycle, FAIS-compliant advice records, onboarding hand-off",
@@ -163,6 +175,7 @@
     {
       "name": "Yael",
       "agentId": "agent:yael",
+      "mandateDomains": ["tax", "accounting"],
       "role": "Tax engineer",
       "type": "engineering",
       "expertise": "SARS submissions, VAT FS apportionment, FATCA/CRS, IAS 12, transfer pricing",
@@ -174,6 +187,7 @@
     {
       "name": "Vera",
       "agentId": "agent:vera",
+      "mandateDomains": ["audit", "platform"],
       "role": "Internal audit / continuous-assurance engineer",
       "type": "engineering",
       "expertise": "Continuous controls monitoring, evidence engineering, IIA IPPF, audit-committee reporting",
@@ -191,6 +205,7 @@
     {
       "name": "Senna",
       "agentId": "agent:senna",
+      "mandateDomains": ["security", "privacy"],
       "role": "Security engineer",
       "type": "engineering",
       "expertise": "Threat modelling, zero-trust, HSM key management, secure SDLC, IR, POPIA breach workflow, Joint Standard 2 of 2024",
@@ -201,6 +216,7 @@
     {
       "name": "Ravi",
       "agentId": "agent:ravi",
+      "mandateDomains": ["treasury", "liquidity"],
       "role": "Treasury / ALM engineer",
       "type": "engineering",
       "expertise": "Funding, liquidity (LCR/NSFR), IRRBB, FX position, FTP, collateral, correspondent settlement-account (nostro) funding",
@@ -211,6 +227,7 @@
     {
       "name": "Anya",
       "agentId": "agent:anya",
+      "mandateDomains": ["data", "platform"],
       "role": "Data / analytics engineer",
       "type": "engineering",
       "expertise": "Projection runtime, master data, semantic layer, regulatory/MI marts, data contracts, ML platform",
@@ -221,6 +238,7 @@
     {
       "name": "Env",
       "agentId": "agent:env",
+      "mandateDomains": ["simulation", "data"],
       "role": "External environment simulator",
       "type": "engineering",
       "expertise": [
@@ -238,6 +256,7 @@
       "id": "noa",
       "name": "Noa",
       "agentId": "agent:noa",
+      "mandateDomains": ["ui", "platform"],
       "title": "Intranet Product Owner & UI Architect",
       "role": "Intranet Product Owner & UI Architect",
       "type": "engineering",
@@ -253,6 +272,7 @@
     {
       "name": "Linnea",
       "agentId": "agent:linnea",
+      "mandateDomains": ["brand", "ui"],
       "role": "Brand & design lead",
       "type": "engineering",
       "expertise": "Visual identity, brand strategy, institutional design systems, regulatory-compliant communications, voice-and-tone, asset library",
@@ -264,6 +284,7 @@
     {
       "name": "Scrooge",
       "agentId": "agent:scrooge",
+      "mandateDomains": ["orchestration", "governance"],
       "role": "Chief of Staff / Orchestrator",
       "type": "engineering",
       "expertise": "Task routing, agent dispatch, session delegation, coordination",
@@ -274,6 +295,7 @@
     {
       "name": "Helena",
       "agentId": "agent:helena",
+      "mandateDomains": ["risk", "market-risk", "credit-risk", "liquidity", "governance"],
       "role": "Chief Risk Officer",
       "type": "governance",
       "expertise": "Risk Appetite Statement & Framework, risk taxonomy, three lines of defence, ICAAP/ILAAP, BRC, model-risk governance, regulator engagement on risk",
@@ -284,6 +306,7 @@
     {
       "name": "Owen",
       "agentId": "agent:owen",
+      "mandateDomains": ["governance", "legal"],
       "role": "Company Secretary",
       "type": "governance",
       "expertise": "Board & committee secretariat, governance framework custodianship, director duties, Companies Act compliance, conflicts & related-party registers, whistleblowing",
@@ -300,6 +323,7 @@
     {
       "name": "Zara",
       "agentId": "agent:zara",
+      "mandateDomains": ["compliance", "governance"],
       "role": "Chief Compliance Officer",
       "type": "governance",
       "expertise": "RMCP under FIC, MLRO, FIC Compliance Officer, FAIS conduct, sanctions & PEP policy, TCF, regulator engagement on conduct & AML/CFT",
@@ -310,6 +334,7 @@
     {
       "name": "Iris",
       "agentId": "agent:iris",
+      "mandateDomains": ["privacy", "governance"],
       "role": "Information Officer",
       "type": "governance",
       "expertise": "POPIA Information Officer (s.56), lawful-processing register, data-subject rights, breach notification, PAIA manual, cross-border transfer governance",
@@ -320,6 +345,7 @@
     {
       "name": "Devon",
       "agentId": "agent:devon",
+      "mandateDomains": ["governance", "platform", "settlement-ops", "data"],
       "role": "Chief Operating Officer",
       "type": "governance",
       "expertise": "Operating model, operational resilience, technology & platform governance, change governance; engineering reports for ops/platform/data/customer-facing seats",
@@ -330,6 +356,7 @@
     {
       "name": "Camille",
       "agentId": "agent:camille",
+      "mandateDomains": ["accounting", "tax", "governance"],
       "role": "Chief Financial Officer",
       "type": "governance",
       "expertise": "Financial reporting (IFRS, BA returns), capital management, accounting, tax, FP&A, external-audit relationship",
@@ -340,6 +367,7 @@
     {
       "name": "Eitan",
       "agentId": "agent:eitan",
+      "mandateDomains": ["treasury", "liquidity", "governance"],
       "role": "Treasurer",
       "type": "governance",
       "expertise": "Funding, liquidity (LCR/NSFR), IRRBB, FX position, FTP, collateral, correspondent settlement-account (nostro) funding, capital actions (operational), ALCO chair",
@@ -350,6 +378,7 @@
     {
       "name": "Saskia",
       "agentId": "agent:saskia",
+      "mandateDomains": ["trading", "market-risk", "governance"],
       "role": "Head of Global Markets",
       "type": "governance",
       "expertise": "Sales & trading franchise; market-making and institutional sales; market-risk warehouse within CRO appetite; trading conduct & surveillance",
@@ -360,6 +389,7 @@
     {
       "name": "Thandiwe",
       "agentId": "agent:thandiwe",
+      "mandateDomains": ["audit", "governance"],
       "role": "Chief Audit Executive",
       "type": "governance",
       "expertise": "Internal audit charter, risk-based audit plan, continuous-controls assurance programme, AC secretariat (third-line); IIA IPPF, BCBS 223, King IV; investigations; combined assurance",
@@ -371,6 +401,7 @@
     {
       "name": "Rashida",
       "agentId": "agent:rashida",
+      "mandateDomains": ["security", "privacy", "governance"],
       "role": "Chief Information Security Officer",
       "type": "governance",
       "expertise": "InfoSec / Cyber Resilience / IR policy ownership, Joint Standard 2 of 2024 programme, POPIA s.19–22 operational security, threat-model gate, cyber-resilience scenario testing, HSM key governance, supply-chain security, incident command",
@@ -398,8 +429,42 @@
       "CHRO"
     ]
   },
+  "mandateDomainVocabulary": {
+    "note": "WS-AGENT-MEMORY Slice 2 (D-AGENT-MEMORY-PERSISTENCE) — the closed, deduplicated mandate-domain vocabulary. Every persona's `mandateDomains` tag MUST appear here, and every AgentMemoryCommitted `domains[]` tag SHOULD draw from it. `shared` is RESERVED: it is the bank-wide common-core every agent loads in addition to its own mandate domains (readMyMemory unions {shared} into every agent's filter) — no persona lists it explicitly. Sourced (Charter cmd 4: source-don't-hardcode) by recon:agent-mandate-domains-coverage.",
+    "shared": "shared",
+    "tags": [
+      "shared",
+      "accounting",
+      "agent-ops",
+      "audit",
+      "brand",
+      "compliance",
+      "credit-risk",
+      "data",
+      "governance",
+      "legal",
+      "liquidity",
+      "market-risk",
+      "orchestration",
+      "platform",
+      "privacy",
+      "recruiting",
+      "risk",
+      "role-research",
+      "sales",
+      "security",
+      "settlement-ops",
+      "simulation",
+      "tax",
+      "trading",
+      "treasury",
+      "ui",
+      "validation"
+    ]
+  },
   "rules": {
     "engineeringVsGovernance": "Engineering roles BUILD coded controls, projections, and platform components. Governance roles hold NAMED REGULATORY ACCOUNTABILITY and oversee the engineers' outputs. The two seat types are distinct; do not conflate them.",
+    "mandateDomains": "WS-AGENT-MEMORY Slice 2 (D-AGENT-MEMORY-PERSISTENCE) — every persona carries an EXPLICIT, non-empty `mandateDomains` (NOT derived from reportsTo or the domain-ownership map; governance seats own statutory domains with no engineering builder, so derivation breaks). It is the set of domain tags whose agent-memory that persona loads at dispatch. The reserved `shared` tag is the common-core every agent loads in addition; readMyMemory(agentId) returns memories whose domains intersect (the agent's mandateDomains ∪ {shared}). Enforced by recon:agent-mandate-domains-coverage + recon:agent-memory-recall-determinism.",
     "newHires": "Added by Nolan to this file and to the /Team/ folder after PAX completes the role research.",
     "personaFiles": "Each /Team/<name>.md is the operating spec for a standing autonomous agent (Principle 7). Canonical structure: 20 sections (1–5 legacy character data; 6–17 operating spec proper; 18–20 domain-competence — Authoritative knowledge base & sources, Domain-truth validation, Premise-challenge duty, per D-AGENT-DOMAIN-COMPETENCE 2026-06-25). Template at Team/_agent-spec-template.md. Files lacking sections 6–17 are findings until upgraded (Vera Wave-4 #10); §18–20 presence is enforced at warn severity (lifting to fail post-grooming) by recon:agent-spec-domain-competence."
   }
