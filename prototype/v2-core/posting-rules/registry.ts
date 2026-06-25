@@ -224,7 +224,7 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "fx-fil-initial-recognition",
     condition: "always",
     conditionDetail:
-      "IFRS 9 §3.1.1 — FX initial recognition at trade date (FIL fold). Long: Dr receivable / Cr payable; short: reversed. Forward/swap/NDF: derivative fair value ≈ 0 at inception.",
+      "IFRS 9 §3.1.1, §5.1.1, B3.1.2 — FX trade-date FVTPL recognition (FIL fold). An at-market FX derivative has fair value ≈ 0 at inception → NIL on-balance-sheet gross-up (the old self-cancelling Dr-receivable/Cr-payable pair is REMOVED). The contractual buy/sell notionals are recorded OFF-balance-sheet in the FX-commitment memorandum block (ACC-9100-*), self-balancing per currency from the fxAgreement quad. The on-balance-sheet position is carried by daily revaluation (PR-FX-REVAL-V2). Authority: D-FX-TRADE-DATE-FVTPL-OBS.",
   },
   {
     triggerEventType: "FilInstrumentAmended",
@@ -314,6 +314,38 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     condition: "non-zero-pnl",
     conditionDetail:
       "IFRS 9 §5.7.10–11 — FVOCI → P&L reclassification on derecognition. Fires at fold time on FilInstrumentTerminated.fvociReclassTerms via fx-settlement.postFxFvociReclassLegs (resolved gap fx-fvoci-reclass-trigger).",
+  },
+  // ── FX trade-date OBS commitment release + FCY→ZAR realisation
+  //    (D-FX-TRADE-DATE-FVTPL-OBS settlement side; D-FX-PNL-FCY-EXPOSURE-
+  //    REVALUATION realisation). Two posting rules the trade-date OBS-memorandum
+  //    model adds to the FX lifecycle: the OBS commitment recorded at trade date
+  //    (PR-FX-001-V2) is RELEASED on settlement/maturity, and realised P&L arises
+  //    ONLY on FCY→ZAR conversion (settlement itself is P&L-neutral). Both are pure
+  //    leg functions in fx.ts / fx-settlement.ts; these rows make the rule ids
+  //    first-class so they resolve in the NPA accounting perspective + the
+  //    leg-structure drift gate. lifecycleId "fx-fil-instance" is NOT a
+  //    TRADE_LIFECYCLE_REGISTRY lifecycle, so no gl-ledger-coverage mandate.
+  {
+    triggerEventType: "FilFxSettlementConfirmed",
+    triggerDomain: "trade",
+    lifecycleId: "fx-fil-instance",
+    lifecycleStage: "terminal",
+    postingRuleId: "PR-FX-OBS-RELEASE-V2",
+    postingType: "fx-fil-obs-commitment-release",
+    condition: "always",
+    conditionDetail:
+      "IAS 21 §23 — release the trade-date OFF-balance-sheet FX-commitment memorandum (ACC-9100-*) on settlement/maturity. The standing commitment to exchange the two currencies is discharged when the trade settles, so the OBS memorandum legs PR-FX-001-V2 booked are reversed (equal-and-opposite, self-balancing per currency). The on-balance-sheet reval is reclassified to realised P&L by PR-FX-CLOSE-V2 separately, so the two never double-reverse. Fires at fold time via fx.postFxObsCommitmentReleaseLegs. Authority: D-FX-TRADE-DATE-FVTPL-OBS.",
+  },
+  {
+    triggerEventType: "FilFxSettlementConfirmed",
+    triggerDomain: "trade",
+    lifecycleId: "fx-fil-instance",
+    lifecycleStage: "terminal",
+    postingRuleId: "PR-FX-CONVERT-V2",
+    postingType: "fx-fil-fcy-zar-conversion",
+    condition: "non-zero-pnl",
+    conditionDetail:
+      "IAS 21 §28 / IFRS 9 §5.7.1 — FCY→ZAR conversion (realisation). Settlement is P&L-NEUTRAL: the FCY exposure stays OPEN, carried as FCY cash at its ZAR cost basis. Realised P&L = ZAR proceeds − ZAR cost basis, struck ONLY when the FCY is converted back to ZAR (the position is squared); a second pair reclassifies the cumulative unrealised (ACC-2100-005) into realised (ACC-2100-006), total P&L unchanged. Fires at fold time via fx-settlement.postFxConversionLegs. Authority: D-FX-PNL-FCY-EXPOSURE-REVALUATION.",
   },
 
   // ══════════════════════════════════════════════════════════════════════════

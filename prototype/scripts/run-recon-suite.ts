@@ -694,6 +694,17 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // surfaced through the page's gap channel (missing/unbacked). A static
     // assertion with no backing and no gap-surfacing is a FAIL. ENFORCING.
     "recon:npa-page-no-invented-functionality",
+    // D-FX-TRADE-DATE-FVTPL-OBS + D-FX-PNL-FCY-EXPOSURE-REVALUATION +
+    // D-AGENT-DOMAIN-COMPETENCE (lessons-to-gates): the FX lifecycle leg-structure
+    // declaration (fx-lifecycle-leg-structure.ts) that the NPA Accounting tab
+    // renders is a HAND-MIRROR of the pure FX posting rules. This gate DRIVES the
+    // actual postFx*Legs functions over a representative payload and asserts the
+    // declaration's (role, drCr) leg sequence MATCHES the function's, exactly, per
+    // (rule id, stage). It exists because the mirror DRIFTED when #1534 replaced
+    // the trade-date gross-up with the OBS-memorandum model and nothing caught it.
+    // ENFORCING, fail-closed on any missing rule / wrong account role / wrong
+    // direction / wrong order.
+    "recon:fx-leg-structure-matches-rules",
     // D-BA-RETURN-DATA-CONTRACT (CEO-approved 2026-06-19): binds the L3 return-
     // cell data contract into the NPA gate. Every CURRENTLY-EFFECTIVE product
     // (resolveEffectiveApprovals — not dead approvals) must capture, or track as

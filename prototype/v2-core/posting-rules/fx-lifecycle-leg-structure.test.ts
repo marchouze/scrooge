@@ -61,8 +61,9 @@ describe("fx-lifecycle-leg-structure", () => {
         `stage ${r.stage} for ${r.postingRuleId} must be declared`,
       ).toBe(true);
     }
-    // The five expected stage groups are present.
-    expect([...stageIds].sort()).toEqual(["a", "b", "c", "d", "revaluation"]);
+    // The six expected stage groups are present (Initiation, daily revaluation,
+    // Payment, Receipt, Termination, Realisation — the FCY→ZAR conversion stage).
+    expect([...stageIds].sort()).toEqual(["a", "b", "c", "d", "realisation", "revaluation"]);
   });
 
   it("every leg carries an IAS/IFRS citation and a non-empty note", () => {
