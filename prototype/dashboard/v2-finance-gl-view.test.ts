@@ -1,15 +1,36 @@
 // dashboard/v2-finance-gl-view.test.ts
 //
-// Tests for the compact (1-row-per-account) GL trial-balance view with native-CCY
-// + ZAR-equivalent columns. Populates a store via the live FX V2 simulator (which
-// books simulated FX trades and ingests production marks), then asserts the view.
+// Tests for the GL trial-balance view: ONE row per (account, currency) with a
+// native-CCY Dr/Cr + a ZAR-equivalent column. The in-balance check is on the
+// ZAR-equivalent (functional) totals — native minor units across currencies are
+// not summable (Principle 5). A shared account holding two currencies yields TWO
+// per-currency rows, NEVER a single `currency: "multi"` row.
+//
+// Two store fixtures:
+//   - The live FX V2 simulator (books simulated FX trades + ingests production
+//     marks) for the end-to-end FX book under the +Sim lens.
+//   - A deterministic GlPostingEmitted fixture (production provenance) that posts
+//     a shared account (realised-FX-P&L, ACC-2100-006) in BOTH USD and ZAR, to
+//     prove the two-per-currency-rows / no-"multi" invariant directly.
+//
+// Author: Atlas (Core banking platform architect, engineering).
 
 import { describe, expect, test } from "bun:test";
 
+import { money } from "../platform/core/decimal-money";
+import { encodeMoney } from "../platform/core/money-codec";
+import type { Currency } from "../platform/core/types";
+import {
+  type GlPostingEmittedPayload,
+  makeGlPostingEmitted,
+} from "../platform/event-store/event-types/fx-accounting";
 import { makeReportingTreatmentDeclared } from "../platform/event-store/event-types/reporting-treatments";
+import { productionTag } from "../platform/event-store/provenance";
 import { EventStore } from "../platform/event-store/store";
+import type { Actor, Event } from "../platform/event-store/types";
 import { MarketDataStore } from "../platform/market-data/store";
 import { V2LiveFxDriver } from "../platform/simulation-v2-live/live-driver";
+import { tenantIdSchema } from "../v2-core/control-plane/tenant";
 import { FX_TREATMENT_MODULES } from "../v2-core/reporting-treatments/fx-modules";
 import { buildGlView } from "./v2-finance-gl-view";
 
@@ -61,7 +82,116 @@ function openTradeStores(): { eventStore: EventStore; marketDataStore: MarketDat
   return { eventStore, marketDataStore };
 }
 
-describe("buildGlView — compact TB + CCY/ZAR-equivalent", () => {
+// ---------------------------------------------------------------------------
+// Deterministic GlPostingEmitted fixture — a SHARED account (realised-FX-P&L,
+// ACC-2100-006) posted in BOTH USD and ZAR, with a balancing counter-leg in each
+// currency so every currency self-balances (and therefore the ZAR-equivalent
+// functional totals balance). A USD/ZAR production mark is ingested so the ZAR
+// equivalent is available (honest, not a silent zero).
+// ---------------------------------------------------------------------------
+
+const ACTOR: Actor = { type: "system", id: "atlas:gl-view-multi-ccy-test" };
+const ENTITY = "LE-ZA-HOZ-BANK";
+const CITES = ["Principle-5"];
+const PROD = productionTag({ sourceLineage: "atlas:gl-view-multi-ccy-test" });
+const TENANT = tenantIdSchema.parse("tenant:za-bank");
+
+function wire(amount: string, currency: string) {
+  return encodeMoney(money(amount, currency as Currency));
+}
+
+function appendLeg(
+  store: EventStore,
+  leg: {
+    accountCode: string;
+    creditDebit: "debit" | "credit";
+    amount: ReturnType<typeof wire>;
+    postingDate: string;
+    postingRuleId?: string;
+  },
+): void {
+  const payload: GlPostingEmittedPayload = {
+    creditDebit: leg.creditDebit,
+    accountCode: leg.accountCode,
+    amount: leg.amount,
+    postingDate: leg.postingDate,
+    tenantId: TENANT,
+    sourceEventId: "src:gl-view-multi-ccy-test",
+    iasRule: "IFRS 9 §3.1.1",
+    // Non-FX (capital) rule id: the GlPostingEmitted read path serves NON-FX
+    // accounts (FX is a pure fold over FIL events). A capital rule id exercises the
+    // generic GlPostingEmitted projection mechanics for this fixture.
+    postingRuleId: leg.postingRuleId ?? "PR-CAP-001-V2",
+    description: "multi-currency shared-account fixture",
+  };
+  const ev = makeGlPostingEmitted({
+    asOf: `${leg.postingDate}T00:00:00.000Z`,
+    entity: ENTITY,
+    actor: ACTOR,
+    citations: CITES,
+    payload,
+  });
+  const tagged: Event = { ...ev, provenance: PROD };
+  store.append(tagged);
+}
+
+/**
+ * Build a store where the shared realised-FX-P&L account (ACC-2100-006) carries a
+ * USD leg AND a ZAR leg, each balanced by a counter-leg in the same currency. A
+ * USD/ZAR production mark is ingested so the ZAR equivalent is available.
+ */
+function sharedAccountTwoCurrencyStores(): {
+  eventStore: EventStore;
+  marketDataStore: MarketDataStore;
+} {
+  const eventStore = new EventStore();
+  const marketDataStore = new MarketDataStore(":memory:");
+
+  // USD/ZAR production mark so the USD leg has an honest ZAR equivalent. The view
+  // reads it via lookupQuoteWithInverse(store, "USD/ZAR", { provenance: "production" }),
+  // which queries { instrument: "USD/ZAR", dataType: "fx-quote" } and derives the mid.
+  marketDataStore.append({
+    id: "tick:usdzar:gl-view-test",
+    source: "gl-view-test",
+    instrument: "USD/ZAR",
+    dataType: "fx-quote",
+    provenance: "production",
+    asOf: "2026-06-10T00:00:00.000Z",
+    payload: { mid: 18.5 },
+  });
+
+  // Shared account (realised FX P&L) — USD credit, balanced by a USD debit counter.
+  appendLeg(eventStore, {
+    accountCode: "ACC-2100-006",
+    creditDebit: "credit",
+    amount: wire("1000.00", "USD"),
+    postingDate: "2026-06-10",
+  });
+  appendLeg(eventStore, {
+    accountCode: "ACC-2100-027",
+    creditDebit: "debit",
+    amount: wire("1000.00", "USD"),
+    postingDate: "2026-06-10",
+  });
+
+  // Same shared account — ZAR debit, balanced by a ZAR credit counter.
+  appendLeg(eventStore, {
+    accountCode: "ACC-2100-006",
+    creditDebit: "debit",
+    amount: wire("5000.00", "ZAR"),
+    postingDate: "2026-06-10",
+  });
+  appendLeg(eventStore, {
+    accountCode: "ACC-2100-027",
+    creditDebit: "credit",
+    amount: wire("5000.00", "ZAR"),
+    postingDate: "2026-06-10",
+  });
+
+  return { eventStore, marketDataStore };
+}
+
+describe("buildGlView — per-(account,currency) TB + CCY/ZAR-equivalent", () => {
   test("production-only lens is honestly empty (sim is simulated provenance)", () => {
     const { eventStore, marketDataStore } = populatedStores();
     const view = buildGlView({ eventStore, marketDataStore, filter: { mode: "production-only" } });
@@ -69,14 +199,16 @@ describe("buildGlView — compact TB + CCY/ZAR-equivalent", () => {
     expect(view.rows.length).toBe(0);
   });
 
-  test("+Sim lens: exactly one row per account (compact)", () => {
+  test("+Sim lens: rows are keyed per (account, currency); NO 'multi' sentinel anywhere", () => {
     const { eventStore, marketDataStore } = populatedStores();
     const view = buildGlView({ eventStore, marketDataStore, filter: { mode: "combined" } });
     expect(view.dataState).toBe("live");
     expect(view.rows.length).toBeGreaterThan(0);
-    const accountIds = view.rows.map((r) => r.accountId);
-    // No accountId appears twice — the per-(account,currency) fold rows are collapsed.
-    expect(new Set(accountIds).size).toBe(accountIds.length);
+    // No row carries the retired "multi" sentinel — every currency is a real ISO code.
+    expect(view.rows.every((r) => r.currency !== "multi")).toBe(true);
+    // Each (accountId, currency) pair is unique — no duplicate per-currency rows.
+    const keys = view.rows.map((r) => `${r.accountId}|${r.currency}`);
+    expect(new Set(keys).size).toBe(keys.length);
   });
 
   test("non-ZAR accounts carry a ZAR-equivalent; ZAR accounts are the identity", () => {
@@ -101,12 +233,85 @@ describe("buildGlView — compact TB + CCY/ZAR-equivalent", () => {
     }
   });
 
-  test("native in-balance check holds; ZAR-equivalent totals are populated", () => {
+  test("ZAR-equivalent (functional) in-balance check holds; ZAR-equiv totals are populated", () => {
     const { eventStore, marketDataStore } = populatedStores();
     const view = buildGlView({ eventStore, marketDataStore, filter: { mode: "combined" } });
     expect(view.inBalance).toBe(true);
     expect(view.zarTotalDebitMinor).toBeGreaterThan(0);
     expect(view.zarTotalCreditMinor).toBeGreaterThan(0);
+    // The in-balance invariant is asserted on the ZAR-equivalent totals.
+    expect(view.zarTotalDebitMinor).toBe(view.zarTotalCreditMinor);
+  });
+
+  test("SHARED account with USD + ZAR postings yields TWO per-currency rows, ZERO 'multi'", () => {
+    const { eventStore, marketDataStore } = sharedAccountTwoCurrencyStores();
+    const view = buildGlView({ eventStore, marketDataStore, filter: { mode: "production-only" } });
+
+    // ACC-2100-006 (realised FX P&L) was posted in BOTH USD and ZAR → TWO rows.
+    const shared = view.rows.filter((r) => r.accountId === "ACC-2100-006");
+    expect(shared.length).toBe(2);
+    const currencies = shared.map((r) => r.currency).sort();
+    expect(currencies).toEqual(["USD", "ZAR"]);
+
+    // NEVER a "multi" sentinel — across the WHOLE view, not just this account.
+    expect(view.rows.some((r) => r.currency === "multi")).toBe(false);
+
+    // Each per-currency row carries a MEANINGFUL native Dr/Cr in its own currency.
+    const usdRow = shared.find((r) => r.currency === "USD");
+    const zarRow = shared.find((r) => r.currency === "ZAR");
+    expect(usdRow).toBeDefined();
+    expect(zarRow).toBeDefined();
+    if (usdRow) {
+      // Posted as a net USD credit of 1000.00 → 100000 minor credit.
+      expect(usdRow.creditMinor).toBe(100000);
+      expect(usdRow.debitMinor).toBe(0);
+      expect(usdRow.creditFmt).not.toBe("");
+      // Honest ZAR equivalent at the ingested 18.5 mark.
+      expect(usdRow.zarRateAvailable).toBe(true);
+      expect(Math.abs(usdRow.zarNetMinor)).toBe(Math.round(100000 * 18.5));
+    }
+    if (zarRow) {
+      // Posted as a net ZAR debit of 5000.00 → 500000 minor debit; ZAR is identity.
+      expect(zarRow.debitMinor).toBe(500000);
+      expect(zarRow.creditMinor).toBe(0);
+      expect(zarRow.zarNetMinor).toBe(zarRow.netMinor);
+    }
+
+    // Rows are sorted by account then currency (USD before ZAR for the shared acct).
+    expect(shared[0]?.currency).toBe("USD");
+    expect(shared[1]?.currency).toBe("ZAR");
+
+    // The book self-balances per currency → the ZAR functional in-balance check holds.
+    expect(view.inBalance).toBe(true);
+  });
+
+  test("missing production FX rate is honest (zarRateAvailable=false), not a fake zero", () => {
+    // No USD/ZAR mark ingested → the USD leg has no production rate.
+    const eventStore = new EventStore();
+    const marketDataStore = new MarketDataStore(":memory:");
+    appendLeg(eventStore, {
+      accountCode: "ACC-2100-006",
+      creditDebit: "credit",
+      amount: wire("1000.00", "USD"),
+      postingDate: "2026-06-10",
+    });
+    appendLeg(eventStore, {
+      accountCode: "ACC-2100-027",
+      creditDebit: "debit",
+      amount: wire("1000.00", "USD"),
+      postingDate: "2026-06-10",
+    });
+    const view = buildGlView({ eventStore, marketDataStore, filter: { mode: "production-only" } });
+
+    const usd = view.rows.find((r) => r.accountId === "ACC-2100-006" && r.currency === "USD");
+    expect(usd).toBeDefined();
+    if (usd) {
+      // Native figure is preserved and meaningful…
+      expect(usd.creditMinor).toBe(100000);
+      // …but the ZAR equivalent is HONESTLY unavailable, never a fake R0.
+      expect(usd.zarRateAvailable).toBe(false);
+      expect(usd.zarNetFmt).toBe("rate n/a");
+    }
   });
 
   test("trade-date FX (open trade) lands in the OFF-BALANCE-SHEET memorandum section, excluded from on-BS totals + in-balance", () => {
@@ -121,14 +326,16 @@ describe("buildGlView — compact TB + CCY/ZAR-equivalent", () => {
     const obsRows = view.rows.filter((r) => r.offBalanceSheet);
     expect(obsRows.length).toBeGreaterThan(0);
     expect(obsRows.every((r) => r.accountId.startsWith("ACC-9100-"))).toBe(true);
+    // OBS rows are per-currency real rows too — never "multi".
+    expect(obsRows.every((r) => r.currency !== "multi")).toBe(true);
 
     // The OBS section self-balances and is reported in its own totals (ZAR-equiv).
     expect(view.offBalanceSheetInBalance).toBe(true);
     expect(view.offBalanceSheetDebitMinor).toBeGreaterThan(0);
     expect(view.offBalanceSheetDebitMinor).toBe(view.offBalanceSheetCreditMinor);
 
-    // OBS rows are EXCLUDED from the on-balance-sheet Dr/Cr totals + the in-balance
-    // check (the on-BS book still balances on its own).
+    // OBS rows are EXCLUDED from the on-balance-sheet in-balance check (the on-BS
+    // book still balances on its own).
     expect(view.inBalance).toBe(true);
   });
 
@@ -155,8 +362,8 @@ describe("buildGlView — compact TB + CCY/ZAR-equivalent", () => {
     // no net from settlement (realisation is reserved to a FCY→ZAR conversion). The
     // book balances. (A settled trade's cash is recognised against the FX settlement
     // clearing account, ACC-2100-027.)
-    const realisedRow = view.rows.find((r) => r.accountId === "ACC-2100-006");
-    expect(realisedRow === undefined || realisedRow.zarNetMinor === 0).toBe(true);
+    const realisedRows = view.rows.filter((r) => r.accountId === "ACC-2100-006");
+    expect(realisedRows.every((r) => r.zarNetMinor === 0)).toBe(true);
     expect(view.inBalance).toBe(true);
   });
 });

@@ -128,30 +128,32 @@ function isOffBalanceSheetCategory(category: string): boolean {
 export type GlDataState = "live" | "empty";
 
 /**
- * One trial-balance row — COMPACT: exactly one row per account (not per
- * account/currency). Drills to its account ledger. The native Dr/Cr is in the
- * account's own currency; the ZAR-equivalent (translated at the latest production
- * spot) is the comparable common-currency column (V1 parity). An account that
- * holds more than one currency reports `currency: "multi"` (native blank) and
- * relies on the ZAR-equivalent for its single-row figure.
+ * One trial-balance row — exactly one row per (account, currency) (NOT one
+ * collapsed row per account). Drills to its account ledger. The native Dr/Cr is in
+ * the row's own ISO currency (always a real currency — never a "multi" sentinel);
+ * the ZAR-equivalent (translated at the latest production spot) is the comparable
+ * common-currency column (functional-currency presentation, Principle 5). An
+ * account that holds postings in two currencies becomes TWO rows (e.g.
+ * realised-FX-P&L USD and realised-FX-P&L ZAR), each with a meaningful native
+ * Dr/Cr — cross-currency minor units are never summed into a single meaningless row.
  */
 export interface GlTrialBalanceRow {
   readonly accountId: string;
   readonly accountName: string;
   readonly category: string;
   readonly categoryLabel: string;
-  /** Native currency of the account, or "multi" when it holds >1 currency. */
+  /** Native ISO 4217 currency of this (account, currency) row — always a real currency. */
   readonly currency: string;
-  /** Debit balance in NATIVE minor units (0 when this account nets credit; 0 when multi). */
+  /** Debit balance in NATIVE minor units (0 when this row nets credit). */
   readonly debitMinor: number;
   readonly debitFmt: string;
-  /** Credit balance in NATIVE minor units (0 when this account nets debit; 0 when multi). */
+  /** Credit balance in NATIVE minor units (0 when this row nets debit). */
   readonly creditMinor: number;
   readonly creditFmt: string;
   /** Signed NATIVE net in minor units (positive = debit balance). */
   readonly netMinor: number;
   readonly netFmt: string;
-  /** Whether a production FX rate was available to translate every currency to ZAR. */
+  /** Whether a production FX rate was available to translate this currency to ZAR. */
   readonly zarRateAvailable: boolean;
   /** Debit balance translated to ZAR minor units (indicative, @ latest spot). */
   readonly zarDebitMinor: number;
@@ -187,15 +189,26 @@ export interface GlView {
   readonly reason: string;
   /** Headline totals tiles (assets, liabilities, equity, in-balance check). */
   readonly tiles: readonly GlTotalsTile[];
-  /** The trial-balance rows (one per account/currency), sorted by account. */
+  /** The trial-balance rows (one per account/currency), sorted by account then currency. */
   readonly rows: readonly GlTrialBalanceRow[];
-  /** Σ debits over all rows (minor units, ZAR build-phase book). */
+  /**
+   * Σ native debits over all on-BS rows (minor units), summed per currency then
+   * added — a presentation aggregate only. NOT used for the in-balance check (native
+   * minor units across currencies are not commensurable); see `inBalance`.
+   */
   readonly totalDebitMinor: number;
   readonly totalDebitFmt: string;
-  /** Σ credits over all rows (minor units). */
+  /** Σ native credits over all on-BS rows (minor units) — presentation aggregate only. */
   readonly totalCreditMinor: number;
   readonly totalCreditFmt: string;
-  /** True iff ΣDr = ΣCr (the double-entry invariant holds, native minor). */
+  /**
+   * True iff ΣDr = ΣCr on the ZAR-EQUIVALENT (functional-currency) on-balance-sheet
+   * totals — native minor units cannot be summed across currencies, so the
+   * double-entry invariant is asserted in the functional currency (Principle 5;
+   * reporting currency is presentation). Honest about missing rates: a row whose
+   * currency has no production FX rate is excluded from this check (its ZAR-equiv is
+   * unavailable, never a fake zero).
+   */
   readonly inBalance: boolean;
   /** Σ debits translated to ZAR (indicative, @ latest spot). */
   readonly zarTotalDebitMinor: number;
@@ -288,36 +301,20 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
     metaByAccount.set(a.accountId, { name: a.name, category: a.category });
   }
 
-  // COMPACT: aggregate the per-(account,currency) fold rows into ONE row per
-  // accountId. Each account's per-currency nets are kept so the native column can
-  // show the single currency (or "multi"), and every currency leg is translated to
-  // ZAR (indicative, @ latest production spot) for the common-currency column.
-  interface AccountAgg {
-    readonly accountId: string;
-    readonly name: string;
-    readonly category: string;
-    /** signed native net per currency (positive = debit). */
-    readonly netByCurrency: Map<string, number>;
-  }
-  const aggByAccount = new Map<string, AccountAgg>();
-  for (const r of tb.rows) {
-    const meta = metaByAccount.get(r.leafAccountId);
-    let agg = aggByAccount.get(r.leafAccountId);
-    if (!agg) {
-      agg = {
-        accountId: r.leafAccountId,
-        name: meta?.name ?? r.leafAccountId,
-        category: meta?.category ?? "unknown",
-        netByCurrency: new Map(),
-      };
-      aggByAccount.set(r.leafAccountId, agg);
-    }
-    agg.netByCurrency.set(r.currency, (agg.netByCurrency.get(r.currency) ?? 0) + r.amountMinor);
-  }
-
+  // ONE ROW PER (account, currency): emit the `computeTrialBalanceV2` per-(account,
+  // currency) fold rows DIRECTLY — no per-account aggregation, no "multi" sentinel.
+  // A shared account holding postings in two currencies (e.g. realised-FX-P&L USD +
+  // realised-FX-P&L ZAR) becomes TWO rows, each carrying its real native currency
+  // and a meaningful native Dr/Cr. Native minor units are NEVER summed across
+  // currencies (USD cents ≠ ZAR cents).
   const rows: GlTrialBalanceRow[] = [];
-  let totalDebitMinor = 0;
-  let totalCreditMinor = 0;
+
+  // ON-BALANCE-SHEET native Dr/Cr totals PER CURRENCY (native minor units cannot be
+  // summed across currencies, so we keep one running pair per currency). The native
+  // in-balance invariant holds iff every currency self-balances; the headline
+  // in-balance check (below) is asserted on the ZAR-EQUIVALENT functional totals.
+  const nativeTotalsByCurrency = new Map<string, { debit: number; credit: number }>();
+  // ZAR-equivalent functional on-balance-sheet totals — the headline in-balance check.
   let zarTotalDebitMinor = 0;
   let zarTotalCreditMinor = 0;
   const classTotals: Record<GlClass, number> = {
@@ -329,83 +326,70 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
     "off-balance-sheet": 0,
     other: 0,
   };
-  // On-balance-sheet Dr/Cr running totals — the native in-balance check runs on
-  // these ONLY; off-balance-sheet memorandum rows are excluded (they self-balance
-  // in their own segregated section). (D-FX-TRADE-DATE-FVTPL-OBS.)
+  // Off-balance-sheet memorandum totals (ZAR-equivalent) — EXCLUDED from the on-BS
+  // in-balance check; they self-balance in their own segregated section.
+  // (D-FX-TRADE-DATE-FVTPL-OBS.)
   let obsDebitMinor = 0;
   let obsCreditMinor = 0;
 
-  for (const agg of aggByAccount.values()) {
-    const currencies = [...agg.netByCurrency.keys()];
-    const single = currencies.length === 1 ? (currencies[0] as string) : null;
-    const displayCurrency = single ?? "multi";
+  for (const r of tb.rows) {
+    const meta = metaByAccount.get(r.leafAccountId);
+    const accountId = r.leafAccountId;
+    const name = meta?.name ?? r.leafAccountId;
+    const category = meta?.category ?? "unknown";
+    const currency = r.currency;
 
-    // NATIVE figures — only meaningful for a single-currency account.
-    const nativeNet = single ? (agg.netByCurrency.get(single) ?? 0) : 0;
-    const debitMinor = single && nativeNet >= 0 ? nativeNet : 0;
-    const creditMinor = single && nativeNet < 0 ? -nativeNet : 0;
+    // NATIVE figures — the row's own currency (positive net = debit balance).
+    const nativeNet = r.amountMinor;
+    const debitMinor = nativeNet >= 0 ? nativeNet : 0;
+    const creditMinor = nativeNet < 0 ? -nativeNet : 0;
 
-    // ZAR-EQUIVALENT — translate every currency leg and sum (the comparable column).
-    let zarNet = 0;
-    let zarRateAvailable = true;
-    for (const [ccy, net] of agg.netByCurrency) {
-      const zar = toZarEquivMinor(net, ccy, marketDataStore);
-      if (zar === null) {
-        zarRateAvailable = false;
-        continue;
-      }
-      zarNet += zar;
-    }
+    // ZAR-EQUIVALENT — translate this single currency leg (honest null on missing rate).
+    const zar = toZarEquivMinor(nativeNet, currency, marketDataStore);
+    const zarRateAvailable = zar !== null;
+    const zarNet = zar ?? 0;
     const zarDebitMinor = zarNet >= 0 ? zarNet : 0;
     const zarCreditMinor = zarNet < 0 ? -zarNet : 0;
 
-    const isObs = isOffBalanceSheetCategory(agg.category);
-    if (isObs) {
-      // Off-balance-sheet memorandum rows are tracked separately and EXCLUDED from
-      // the on-balance-sheet Dr/Cr in-balance check + the on-BS totals. OBS
-      // memorandum accounts (the FX commitment contra in particular) are inherently
-      // multi-currency, so the section total runs on the ZAR-EQUIVALENT (the native
-      // per-row Dr/Cr is blank for a multi-currency row). The per-currency self-
-      // balancing is the real invariant the recon gate asserts.
-      if (zarRateAvailable) {
+    const isObs = isOffBalanceSheetCategory(category);
+    if (zarRateAvailable) {
+      if (isObs) {
+        // OBS memorandum rows accumulate into their own segregated section total.
         obsDebitMinor += zarDebitMinor;
         obsCreditMinor += zarCreditMinor;
-      }
-    } else {
-      // The native on-balance-sheet in-balance check runs PER CURRENCY across every
-      // account/currency leg — NOT only single-currency accounts. A multi-currency
-      // account (e.g. Realised FX P&L, which carries one leg per settled currency
-      // under FVTPL settlement, D-FX-TRADE-DATE-FVTPL-OBS) contributes each currency
-      // leg here. Because every currency self-balances (ΣDr_ccy == ΣCr_ccy), the
-      // native cross-currency totals are equal iff the book balances in every
-      // currency. The collapsed per-row `debitMinor`/`creditMinor` above remain the
-      // single-currency DISPLAY figures (blank for a multi-currency row).
-      for (const net of agg.netByCurrency.values()) {
-        if (net >= 0) totalDebitMinor += net;
-        else totalCreditMinor += -net;
-      }
-    }
-    if (zarRateAvailable) {
-      if (!isObs) {
+      } else {
         zarTotalDebitMinor += zarDebitMinor;
         zarTotalCreditMinor += zarCreditMinor;
+        // Native per-currency on-BS running totals (for the per-currency invariant).
+        const t = nativeTotalsByCurrency.get(currency) ?? { debit: 0, credit: 0 };
+        t.debit += debitMinor;
+        t.credit += creditMinor;
+        nativeTotalsByCurrency.set(currency, t);
       }
       // Class totals run on the ZAR-equivalent so multi-currency books aggregate.
-      classTotals[glClassOf(agg.category)] += zarNet;
+      classTotals[glClassOf(category)] += zarNet;
+    } else if (!isObs) {
+      // Honest about a missing rate: still record the native per-currency on-BS
+      // pair so a currency with no production rate is visible in the native columns,
+      // even though it cannot contribute to the ZAR functional in-balance check.
+      const t = nativeTotalsByCurrency.get(currency) ?? { debit: 0, credit: 0 };
+      t.debit += debitMinor;
+      t.credit += creditMinor;
+      nativeTotalsByCurrency.set(currency, t);
     }
 
     rows.push({
-      accountId: agg.accountId,
-      accountName: agg.name,
-      category: agg.category,
-      categoryLabel: categoryLabel(agg.category),
-      currency: displayCurrency,
+      accountId,
+      accountName: name,
+      category,
+      categoryLabel: categoryLabel(category),
+      currency,
       debitMinor,
-      debitFmt: single && debitMinor !== 0 ? fmtMinor(debitMinor, single) : "",
+      debitFmt: debitMinor !== 0 ? fmtMinor(debitMinor, currency) : "",
       creditMinor,
-      creditFmt: single && creditMinor !== 0 ? fmtMinor(creditMinor, single) : "",
+      creditFmt: creditMinor !== 0 ? fmtMinor(creditMinor, currency) : "",
       netMinor: nativeNet,
-      netFmt: single ? fmtMinor(nativeNet, single) : "",
+      netFmt: fmtMinor(nativeNet, currency),
       zarRateAvailable,
       zarDebitMinor,
       zarDebitFmt: !zarRateAvailable
@@ -425,11 +409,26 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
     });
   }
 
-  // Stable order: by account id.
-  rows.sort((a, b) => a.accountId.localeCompare(b.accountId));
+  // Stable order: by account id, then by currency.
+  rows.sort(
+    (a, b) => a.accountId.localeCompare(b.accountId) || a.currency.localeCompare(b.currency),
+  );
 
-  // The on-balance-sheet in-balance check runs on the on-BS Dr/Cr totals ONLY.
-  const inBalance = totalDebitMinor === totalCreditMinor;
+  // Native on-balance-sheet Σ Dr / Σ Cr — these are per-currency-summed figures kept
+  // for the headline native totals tiles. They MUST NOT drive the in-balance check
+  // (USD cents + ZAR cents is meaningless); the in-balance check is on the ZAR
+  // functional totals below.
+  let totalDebitMinor = 0;
+  let totalCreditMinor = 0;
+  for (const t of nativeTotalsByCurrency.values()) {
+    totalDebitMinor += t.debit;
+    totalCreditMinor += t.credit;
+  }
+
+  // The on-balance-sheet in-balance check runs on the ZAR-EQUIVALENT (functional)
+  // on-BS totals — native minor units cannot be summed across currencies. The OBS
+  // memorandum section self-balances on its own ZAR-equivalent totals.
+  const inBalance = zarTotalDebitMinor === zarTotalCreditMinor;
   const offBalanceSheetInBalance = obsDebitMinor === obsCreditMinor;
   // Equity stock is a credit balance (negative net); present as a positive figure.
   const assetsMinor = classTotals.asset;
@@ -467,7 +466,9 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
       key: "in-balance",
       label: "Trial balance",
       valueFmt: inBalance ? "In balance" : "OUT OF BALANCE",
-      unit: `ΣDr ${fmtMinor(totalDebitMinor, FUNCTIONAL_CURRENCY)} = ΣCr ${fmtMinor(totalCreditMinor, FUNCTIONAL_CURRENCY)}`,
+      // The in-balance check is on the ZAR-EQUIVALENT (functional) on-BS totals —
+      // native minor units cannot be summed across currencies (Principle 5).
+      unit: `ΣDr ${fmtMinor(zarTotalDebitMinor, FUNCTIONAL_CURRENCY)} = ΣCr ${fmtMinor(zarTotalCreditMinor, FUNCTIONAL_CURRENCY)} (ZAR-equiv)`,
     },
   ];
 

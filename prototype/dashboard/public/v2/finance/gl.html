@@ -83,8 +83,9 @@
       // Trial-balance table — EVERY row drills to its account ledger.
       const s = document.createElement("div"); s.className = "v2-section"; tbHost.appendChild(s);
       const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "Trial balance"; s.appendChild(h);
-      // Compact: ONE row per account. Native Dr/Cr in the account's own currency,
-      // plus the ZAR-equivalent (indicative, translated at the latest production spot).
+      // ONE row per (account, currency): a shared account holding two currencies
+      // (e.g. realised-FX-P&L USD + ZAR) renders as TWO rows, each with its real
+      // native Dr/Cr, plus the ZAR-equivalent (indicative, @ latest production spot).
       const tbRows = d.rows.map((r) => ({
         href: accountHref(r.accountId),
         cells: [
@@ -97,17 +98,19 @@
           v2Esc(r.zarCreditFmt),
         ],
       }));
-      // Totals row (non-clickable): native ΣDr=ΣCr in-balance check + ZAR-equiv totals.
+      // Totals row (non-clickable): the in-balance check is on the ZAR-equivalent
+      // (functional) totals — native minor units across currencies are not summable,
+      // so the native (CCY) total cells are left blank.
       if (d.rows.length > 0) {
         tbRows.push({
           cells: [
-            `<strong>Totals</strong> ${d.inBalance
+            `<strong>Totals (ZAR-equiv)</strong> ${d.inBalance
               ? '<span class="v2-badge v2-badge-success">in balance</span>'
               : '<span class="v2-badge v2-badge-danger">OUT OF BALANCE</span>'}`,
             "",
             "",
-            `<strong>${v2Esc(d.totalDebitFmt)}</strong>`,
-            `<strong>${v2Esc(d.totalCreditFmt)}</strong>`,
+            "",
+            "",
             `<strong>${v2Esc(d.zarTotalDebitFmt)}</strong>`,
             `<strong>${v2Esc(d.zarTotalCreditFmt)}</strong>`,
           ],
@@ -120,7 +123,7 @@
       });
       const tbNote = document.createElement("p");
       tbNote.className = "v2-muted"; tbNote.style.fontSize = "0.78rem"; tbNote.style.marginTop = "var(--space-1)";
-      tbNote.textContent = "One row per account. CCY columns are each account's native currency; ZAR columns translate at the latest production spot (indicative). The in-balance check is on the native booking.";
+      tbNote.textContent = "One row per account and currency — a shared account holding two currencies shows two rows. CCY columns are each row's native currency; ZAR columns translate at the latest production spot (indicative). The in-balance check is on the ZAR-equivalent (functional) totals.";
       s.appendChild(tbNote);
 
       renderRefs(refsHost, {
