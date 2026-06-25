@@ -90,6 +90,10 @@ export { KYC_EVENT_TYPES_REGISTRY } from "./kyc";
 // 12 ClientOnboarding* phase events; v2-replaced (no V1 ancestor). Authority:
 // D-V1-REMOVAL-PHASE-1; FIC Act 38/2001; FAIS Act 37/2002; POPIA s.11/s.55.
 export { CLIENT_ONBOARDING_EVENT_TYPES_REGISTRY } from "./client-onboarding";
+// WS-AGENT-MEMORY Slice 1 — born-V2 federated agent-memory event family.
+// 1 AgentMemoryCommitted type; v2-replaced (no V1 ancestor). Authority:
+// D-AGENT-MEMORY-PERSISTENCE (CEO-approved 2026-06-25).
+export { AGENT_MEMORY_EVENT_TYPES_REGISTRY } from "./agent-memory";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE bond lifecycle accounting events.
 export { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 export { BOND_ACCOUNTING_V2_EVENT_TYPES_REGISTRY } from "./bond-accounting-v2";
@@ -325,6 +329,7 @@ export { V2_EVAL_EVENT_TYPES_REGISTRY } from "./v2-eval";
 // that the original registry.ts exported as EVENT_TYPE_REGISTRY.
 // ---------------------------------------------------------------------------
 
+import { AGENT_MEMORY_EVENT_TYPES_REGISTRY } from "./agent-memory";
 import { ALCO_EVENT_TYPES_REGISTRY } from "./alco";
 import { APPLICABILITY_ASSESSMENT_EVENT_TYPES_REGISTRY } from "./applicability-assessment";
 import { BALANCE_SHEET_EVENT_TYPES_REGISTRY } from "./balance-sheet";
@@ -489,6 +494,12 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // integrity asserts it fail-closed. Authority: D-V1-REMOVAL-PHASE-1;
   // FIC Act 38/2001; FAIS Act 37/2002; POPIA s.11/s.55; IRC §1471–1474; OECD CRS.
   ...CLIENT_ONBOARDING_EVENT_TYPES_REGISTRY,
+  // WS-AGENT-MEMORY Slice 1 — born-V2 federated agent-memory event family.
+  // 1 AgentMemoryCommitted type (v2-replaced — no V1 ancestor). Federated by the
+  // `domains[]` mandate tag (NOT by agent); body in the BLAKE3 doc store; ≥1
+  // citation fail-closed; append-only via `supersedes`. Authority:
+  // D-AGENT-MEMORY-PERSISTENCE (CEO-approved 2026-06-25).
+  ...AGENT_MEMORY_EVENT_TYPES_REGISTRY,
   // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE bond lifecycle accounting events.
   // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
   ...BOND_ACCOUNTING_EVENT_TYPES_REGISTRY,

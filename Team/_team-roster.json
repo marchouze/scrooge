@@ -5,6 +5,7 @@
   "personas": [
     {
       "name": "PAX",
+      "agentId": "agent:pax",
       "role": "Role researcher",
       "type": "engineering",
       "expertise": "Role definition, regulatory scans, talent-market intelligence, structured role briefs",
@@ -14,6 +15,7 @@
     },
     {
       "name": "Nolan",
+      "agentId": "agent:nolan",
       "role": "Recruiter",
       "type": "engineering",
       "expertise": "Translating role briefs into hires, persona drafting, maintaining the team roster",
@@ -23,33 +25,55 @@
     },
     {
       "name": "Atlas",
+      "agentId": "agent:atlas",
       "role": "Core banking platform architect",
       "type": "engineering",
       "expertise": "Event-sourced platform, projections, identity, IaC, cloud-native foundations",
       "reportsTo": "Devon",
-      "workflowFiles": ["agent-runtime-atlas-substrate-state.yml", "agent-runtime-atlas-goal-loop.yml"],
-      "workflowTriggers": ["substrate-state", "goal-loop"]
+      "workflowFiles": [
+        "agent-runtime-atlas-substrate-state.yml",
+        "agent-runtime-atlas-goal-loop.yml"
+      ],
+      "workflowTriggers": [
+        "substrate-state",
+        "goal-loop"
+      ]
     },
     {
       "name": "Bea",
+      "agentId": "agent:bea",
       "role": "Accounting & financial reporting engineer",
       "type": "engineering",
       "expertise": "IFRS, SARB BA returns, automated close, sub-ledger architecture",
       "reportsTo": "Camille",
-      "workflowFiles": ["agent-runtime-bea-accounting-readiness.yml", "agent-runtime-bea-goal-loop.yml"],
-      "workflowTriggers": ["accounting-readiness", "goal-loop"]
+      "workflowFiles": [
+        "agent-runtime-bea-accounting-readiness.yml",
+        "agent-runtime-bea-goal-loop.yml"
+      ],
+      "workflowTriggers": [
+        "accounting-readiness",
+        "goal-loop"
+      ]
     },
     {
       "name": "Mira",
+      "agentId": "agent:mira",
       "role": "Compliance / RegTech engineer",
       "type": "engineering",
       "expertise": "FIC Act, FAIS, Twin Peaks, sanctions, transaction monitoring, obligations-register curator",
       "reportsTo": "Zara",
-      "workflowFiles": ["agent-runtime-mira-obligations-snapshot.yml", "agent-runtime-mira-citation-gate.yml"],
-      "workflowTriggers": ["obligations-snapshot", "citation-gate"]
+      "workflowFiles": [
+        "agent-runtime-mira-obligations-snapshot.yml",
+        "agent-runtime-mira-citation-gate.yml"
+      ],
+      "workflowTriggers": [
+        "obligations-snapshot",
+        "citation-gate"
+      ]
     },
     {
       "name": "Kai",
+      "agentId": "agent:kai",
       "role": "Trading systems engineer",
       "type": "engineering",
       "expertise": "OMS/EMS, FIX, multi-asset booking, exchange connectivity, surveillance feeds",
@@ -59,15 +83,23 @@
     },
     {
       "name": "Rohan",
+      "agentId": "agent:rohan",
       "role": "Risk engineer",
       "type": "engineering",
       "expertise": "Market/credit/liquidity/op risk, IFRS 9 ECL, ICAAP/ILAAP, BCBS standards",
       "reportsTo": "Helena",
-      "workflowFiles": ["agent-runtime-rohan-daily-mtm.yml", "agent-runtime-rohan-risk-run.yml"],
-      "workflowTriggers": ["daily-mtm", "risk-run"]
+      "workflowFiles": [
+        "agent-runtime-rohan-daily-mtm.yml",
+        "agent-runtime-rohan-risk-run.yml"
+      ],
+      "workflowTriggers": [
+        "daily-mtm",
+        "risk-run"
+      ]
     },
     {
       "name": "Nadia",
+      "agentId": "agent:nadia",
       "role": "Independent-validation engineer (second line)",
       "type": "engineering",
       "expertise": "Independent model validation, SR 11-7 / SS 1/23, BCBS CG-Principles, validation testing & backtesting, model-registry co-curatorship, RAS § B7 tier discipline",
@@ -78,15 +110,23 @@
     },
     {
       "name": "Tomas",
+      "agentId": "agent:tomas",
       "role": "Operations & payments engineer",
       "type": "engineering",
       "expertise": "Correspondent bank channel, BankservAfrica, SWIFT, ISO 20022, reconciliation, cut-off engineering",
       "reportsTo": "Devon",
-      "workflowFiles": ["agent-runtime-tomas-daily-reconciliation.yml", "agent-runtime-tomas-payments-readiness.yml"],
-      "workflowTriggers": ["daily-reconciliation", "payments-readiness"]
+      "workflowFiles": [
+        "agent-runtime-tomas-daily-reconciliation.yml",
+        "agent-runtime-tomas-payments-readiness.yml"
+      ],
+      "workflowTriggers": [
+        "daily-reconciliation",
+        "payments-readiness"
+      ]
     },
     {
       "name": "Imani",
+      "agentId": "agent:imani",
       "role": "Legal-as-code engineer",
       "type": "engineering",
       "expertise": "Master agreements, clause libraries, ECTA execution, legal-entity hierarchy",
@@ -98,6 +138,7 @@
     },
     {
       "name": "Sade",
+      "agentId": "agent:sade",
       "role": "AgentOps & Token Efficiency Engineer",
       "type": "engineering",
       "expertise": "Agent fleet operations; token usage monitoring; efficiency advisory and autonomous prompt/mandate optimisation; agent fit-and-proper analogue; HR systems (licence-day)",
@@ -110,6 +151,7 @@
     },
     {
       "name": "Niko",
+      "agentId": "agent:niko",
       "role": "Sales / CRM engineer",
       "type": "engineering",
       "expertise": "Lead-to-client lifecycle, FAIS-compliant advice records, onboarding hand-off",
@@ -120,6 +162,7 @@
     },
     {
       "name": "Yael",
+      "agentId": "agent:yael",
       "role": "Tax engineer",
       "type": "engineering",
       "expertise": "SARS submissions, VAT FS apportionment, FATCA/CRS, IAS 12, transfer pricing",
@@ -130,16 +173,24 @@
     },
     {
       "name": "Vera",
+      "agentId": "agent:vera",
       "role": "Internal audit / continuous-assurance engineer",
       "type": "engineering",
       "expertise": "Continuous controls monitoring, evidence engineering, IIA IPPF, audit-committee reporting",
       "reportsTo": "Thandiwe",
       "reportsToNote": "Functional line to Thandiwe (CAE); administrative line via CEO. Third-line independence is non-negotiable.",
-      "workflowFiles": ["agent-runtime-vera-overnight-recon.yml", "agent-runtime-vera-codebase-quality-review.yml"],
-      "workflowTriggers": ["overnight-recon", "codebase-quality-review"]
+      "workflowFiles": [
+        "agent-runtime-vera-overnight-recon.yml",
+        "agent-runtime-vera-codebase-quality-review.yml"
+      ],
+      "workflowTriggers": [
+        "overnight-recon",
+        "codebase-quality-review"
+      ]
     },
     {
       "name": "Senna",
+      "agentId": "agent:senna",
       "role": "Security engineer",
       "type": "engineering",
       "expertise": "Threat modelling, zero-trust, HSM key management, secure SDLC, IR, POPIA breach workflow, Joint Standard 2 of 2024",
@@ -149,6 +200,7 @@
     },
     {
       "name": "Ravi",
+      "agentId": "agent:ravi",
       "role": "Treasury / ALM engineer",
       "type": "engineering",
       "expertise": "Funding, liquidity (LCR/NSFR), IRRBB, FX position, FTP, collateral, correspondent settlement-account (nostro) funding",
@@ -158,6 +210,7 @@
     },
     {
       "name": "Anya",
+      "agentId": "agent:anya",
       "role": "Data / analytics engineer",
       "type": "engineering",
       "expertise": "Projection runtime, master data, semantic layer, regulatory/MI marts, data contracts, ML platform",
@@ -167,9 +220,15 @@
     },
     {
       "name": "Env",
+      "agentId": "agent:env",
       "role": "External environment simulator",
       "type": "engineering",
-      "expertise": ["simulation", "market-data", "swift-messaging", "correspondent-banking"],
+      "expertise": [
+        "simulation",
+        "market-data",
+        "swift-messaging",
+        "correspondent-banking"
+      ],
       "reportsTo": "Devon",
       "specFile": "Team/Env.md",
       "workflowFile": "agent-runtime-env-readiness.yml",
@@ -178,6 +237,7 @@
     {
       "id": "noa",
       "name": "Noa",
+      "agentId": "agent:noa",
       "title": "Intranet Product Owner & UI Architect",
       "role": "Intranet Product Owner & UI Architect",
       "type": "engineering",
@@ -192,6 +252,7 @@
     },
     {
       "name": "Linnea",
+      "agentId": "agent:linnea",
       "role": "Brand & design lead",
       "type": "engineering",
       "expertise": "Visual identity, brand strategy, institutional design systems, regulatory-compliant communications, voice-and-tone, asset library",
@@ -202,6 +263,7 @@
     },
     {
       "name": "Scrooge",
+      "agentId": "agent:scrooge",
       "role": "Chief of Staff / Orchestrator",
       "type": "engineering",
       "expertise": "Task routing, agent dispatch, session delegation, coordination",
@@ -211,6 +273,7 @@
     },
     {
       "name": "Helena",
+      "agentId": "agent:helena",
       "role": "Chief Risk Officer",
       "type": "governance",
       "expertise": "Risk Appetite Statement & Framework, risk taxonomy, three lines of defence, ICAAP/ILAAP, BRC, model-risk governance, regulator engagement on risk",
@@ -220,15 +283,23 @@
     },
     {
       "name": "Owen",
+      "agentId": "agent:owen",
       "role": "Company Secretary",
       "type": "governance",
       "expertise": "Board & committee secretariat, governance framework custodianship, director duties, Companies Act compliance, conflicts & related-party registers, whistleblowing",
       "reportsTo": "CEO",
-      "workflowFiles": ["agent-runtime-owen-governance-cycle-prep.yml", "agent-runtime-owen-goal-loop.yml"],
-      "workflowTriggers": ["governance-cycle-prep", "goal-loop"]
+      "workflowFiles": [
+        "agent-runtime-owen-governance-cycle-prep.yml",
+        "agent-runtime-owen-goal-loop.yml"
+      ],
+      "workflowTriggers": [
+        "governance-cycle-prep",
+        "goal-loop"
+      ]
     },
     {
       "name": "Zara",
+      "agentId": "agent:zara",
       "role": "Chief Compliance Officer",
       "type": "governance",
       "expertise": "RMCP under FIC, MLRO, FIC Compliance Officer, FAIS conduct, sanctions & PEP policy, TCF, regulator engagement on conduct & AML/CFT",
@@ -238,6 +309,7 @@
     },
     {
       "name": "Iris",
+      "agentId": "agent:iris",
       "role": "Information Officer",
       "type": "governance",
       "expertise": "POPIA Information Officer (s.56), lawful-processing register, data-subject rights, breach notification, PAIA manual, cross-border transfer governance",
@@ -247,6 +319,7 @@
     },
     {
       "name": "Devon",
+      "agentId": "agent:devon",
       "role": "Chief Operating Officer",
       "type": "governance",
       "expertise": "Operating model, operational resilience, technology & platform governance, change governance; engineering reports for ops/platform/data/customer-facing seats",
@@ -256,6 +329,7 @@
     },
     {
       "name": "Camille",
+      "agentId": "agent:camille",
       "role": "Chief Financial Officer",
       "type": "governance",
       "expertise": "Financial reporting (IFRS, BA returns), capital management, accounting, tax, FP&A, external-audit relationship",
@@ -265,6 +339,7 @@
     },
     {
       "name": "Eitan",
+      "agentId": "agent:eitan",
       "role": "Treasurer",
       "type": "governance",
       "expertise": "Funding, liquidity (LCR/NSFR), IRRBB, FX position, FTP, collateral, correspondent settlement-account (nostro) funding, capital actions (operational), ALCO chair",
@@ -274,6 +349,7 @@
     },
     {
       "name": "Saskia",
+      "agentId": "agent:saskia",
       "role": "Head of Global Markets",
       "type": "governance",
       "expertise": "Sales & trading franchise; market-making and institutional sales; market-risk warehouse within CRO appetite; trading conduct & surveillance",
@@ -283,6 +359,7 @@
     },
     {
       "name": "Thandiwe",
+      "agentId": "agent:thandiwe",
       "role": "Chief Audit Executive",
       "type": "governance",
       "expertise": "Internal audit charter, risk-based audit plan, continuous-controls assurance programme, AC secretariat (third-line); IIA IPPF, BCBS 223, King IV; investigations; combined assurance",
@@ -293,6 +370,7 @@
     },
     {
       "name": "Rashida",
+      "agentId": "agent:rashida",
       "role": "Chief Information Security Officer",
       "type": "governance",
       "expertise": "InfoSec / Cyber Resilience / IR policy ownership, Joint Standard 2 of 2024 programme, POPIA s.19–22 operational security, threat-model gate, cyber-resilience scenario testing, HSM key governance, supply-chain security, incident command",
@@ -315,7 +393,10 @@
       "Thandiwe (CAE — administrative; functional into AC / Interim Audit Forum)",
       "Rashida (CISO)"
     ],
-    "futureDirectReportsAsHired": ["GC", "CHRO"]
+    "futureDirectReportsAsHired": [
+      "GC",
+      "CHRO"
+    ]
   },
   "rules": {
     "engineeringVsGovernance": "Engineering roles BUILD coded controls, projections, and platform components. Governance roles hold NAMED REGULATORY ACCOUNTABILITY and oversee the engineers' outputs. The two seat types are distinct; do not conflate them.",

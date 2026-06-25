@@ -50,6 +50,7 @@
 // re-exported directly here as before.
 
 export * from "./agent";
+export * from "./agent-memory";
 export * from "./audit";
 export * from "./decision";
 export * from "./decision-distillation";

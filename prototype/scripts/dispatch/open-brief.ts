@@ -41,6 +41,7 @@
 import "./resolve-event-db-boot";
 
 import { existsSync, readFileSync } from "node:fs";
+import { tryAgentIdForName } from "../../platform/agent-identity";
 import { clock, eventStore } from "../../platform/composition";
 import { type LocalFsDocumentStore, defaultDocumentStore } from "../../platform/document-store";
 import type { AgentBriefIssuedPayload, RmsAgentRef } from "../../platform/event-store/event-types";
@@ -200,14 +201,19 @@ function main(): void {
   const briefId =
     briefIdOverride ?? `brief:${slugify(toName)}:${slugify(title)}:${asOf.slice(0, 10)}`;
 
+  // Slice 0 (WS-AGENT-MEMORY): source the stable agentId from the roster
+  // (Team/_team-roster.json — Charter cmd 4). Off-roster names fall back to the
+  // long-standing `agent:<slug>` form; on-roster names always use the roster id.
+  // Both the addressee (issuedTo) AND the issuer (issuedBy) carry an agentId.
   const issuedTo: RmsAgentRef = {
     name: toName,
     position: toPosition,
-    agentId: `agent:${slugify(toName)}`,
+    agentId: tryAgentIdForName(toName) ?? `agent:${slugify(toName)}`,
   };
   const issuedBy: RmsAgentRef = {
     name: issuedByName,
     position: issuedByPosition,
+    agentId: tryAgentIdForName(issuedByName) ?? `agent:${slugify(issuedByName)}`,
   };
 
   const result = recordBriefIssued(

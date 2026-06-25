@@ -163,6 +163,14 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // a fake policy resolver for every test event, defeating the purpose.
   "platform/recon/harness.ts",
   "platform/recon/recon-self-test.ts",
+  // WS-AGENT-MEMORY Slice 1 — the dual-vocabulary gate builds one ephemeral
+  // `:memory:` EventStore to BEHAVIOURALLY probe that the world-state read
+  // surface surfaces AgentMemoryCommitted (the Substrate* vocabulary half of the
+  // two-vocabulary footgun). No production access path — the probe store is
+  // `:memory:` and discarded; gating it would require a fake policy resolver and
+  // defeat the read-surface probe. Citation: D-AGENT-MEMORY-PERSISTENCE,
+  // P4-SECURITY-DESIGNED-IN.
+  "platform/recon/agent-memory-dual-vocabulary.ts",
   // Recon pipelines that read-only replay the live store. Wrapping the read
   // path with the gate is a no-op (the gate intercepts append, not replay).
   "platform/recon/dashboard-derivation-recon.ts",

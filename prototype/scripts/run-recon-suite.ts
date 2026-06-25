@@ -514,6 +514,17 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // credit / accounts) + a prospect registration. A concealed activation is a
     // fail-closed compliance breach. Authority: D-V1-REMOVAL-PHASE-1.
     "recon:v2-client-onboarding-integrity",
+    // WS-AGENT-MEMORY Slice 1 — federated agent-memory gates. ENFORCING from the
+    // start (the family is born this slice; the only writers require ≥1 citation
+    // and pair the doc-store put with the event append). dual-vocabulary asserts
+    // AgentMemoryCommitted is visible to BOTH read surfaces (the Substrate*
+    // world-state surface AND the un-prefixed RMS register surface — the
+    // two-vocabulary footgun); citation-integrity asserts every memory carries
+    // ≥1 citation (P2); doc-resolves asserts every bodyDocumentHash resolves in
+    // the doc store (P1). Authority: D-AGENT-MEMORY-PERSISTENCE.
+    "recon:agent-memory-dual-vocabulary",
+    "recon:agent-memory-citation-integrity",
+    "recon:agent-memory-doc-resolves",
     // WS-FX-V2-SIMULATOR-FIRST — the FX simulator's counterparty-source coherence
     // gate. ENFORCING: every simulator-authored FX trade (venue OTC-SIM) must name
     // a counterparty that is an IN-SIM ONBOARDED, active, FX-eligible client

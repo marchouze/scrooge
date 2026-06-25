@@ -38,6 +38,7 @@ import { clock, eventStore } from "../composition";
 import { type DocumentHash, type DocumentStore, defaultDocumentStore } from "../document-store";
 import {
   type AgentBriefIssuedPayload,
+  type AgentMemoryCommittedPayload,
   type AgentRunCompletedPayload,
   type AgentRunStartedPayload,
   type BriefSupersededPayload,
@@ -46,6 +47,7 @@ import {
   type RecordFiledPayload,
   type RmsAgentRef,
   makeAgentBriefIssued,
+  makeAgentMemoryCommitted,
   makeAgentRunCompleted,
   makeAgentRunStarted,
   makeBriefSuperseded,
@@ -622,6 +624,89 @@ export function recordFiled(
         : {}),
       ...(input.metadata ? { metadata: input.metadata } : {}),
     },
+  });
+
+  eventStore.append(event);
+
+  return {
+    event,
+    eventId: event.event_id,
+    documentHash: put.hash,
+    isNewDocument: put.isNew,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// recordMemoryCommitted — WS-AGENT-MEMORY Slice 1
+//
+// Put the memory body into the content-addressed document store, then append a
+// born-V2 `AgentMemoryCommitted` event citing it by hash. Sibling to
+// `recordFiled` (reuses body-by-hash + supersedes mechanics) but a distinct
+// typed event: the projection filters on typed `domains[]` / `producedByRunId`
+// that RecordFiled does not carry.
+//
+// FAIL-CLOSED on citations: P2 requires ≥1 citation on every memory; the schema
+// enforces `citations.min(1)`, and this helper requires a non-empty array before
+// it touches the store, so a citation-less memory never reaches the doc store.
+// ---------------------------------------------------------------------------
+
+export interface RecordMemoryCommittedInput {
+  /** Stable memory identity. A `supersedes` edit moves the head to a new id. */
+  readonly memoryId: string;
+  /** Mandate tags (≥1) — the federation key. A cross-cutting fact carries N. */
+  readonly domains: readonly string[];
+  /** The agent that produced this memory (carries the Slice-0 agentId). */
+  readonly producedByAgent: RmsAgentRef;
+  /** The closing run that committed this memory. */
+  readonly producedByRunId: string;
+  /** Short human label. */
+  readonly title: string;
+  /** Memory body — put into the doc store; its BLAKE3 hash is cited. */
+  readonly body: string | Uint8Array;
+  /** P2 fail-closed: ≥1 citation. */
+  readonly citations: readonly string[];
+  /** Optional prior memoryId this memory replaces (append-only edit). */
+  readonly supersedes?: string;
+  readonly actor: Actor;
+  readonly entity?: string;
+}
+
+/**
+ * Materialise a federated, mandate-tagged, citation-bearing, append-only agent
+ * memory: doc-store `put` → `bodyDocumentHash`; emit `AgentMemoryCommitted`.
+ */
+export function recordMemoryCommitted(
+  input: RecordMemoryCommittedInput,
+  asOf: string,
+  deps?: RecordHelperDeps,
+): RecordHelperResult {
+  requireNonEmpty("memoryId", input.memoryId);
+  requireNonEmptyArray("domains", input.domains);
+  requireNonEmpty("producedByRunId", input.producedByRunId);
+  requireNonEmpty("title", input.title);
+  requireNonEmptyBody("body", input.body);
+  requireNonEmptyArray("citations", input.citations);
+
+  const store = resolveStore(deps);
+  const put = store.put(input.body);
+
+  const payload: AgentMemoryCommittedPayload = {
+    memoryId: input.memoryId,
+    domains: [...input.domains],
+    producedByAgent: input.producedByAgent,
+    producedByRunId: input.producedByRunId,
+    title: input.title,
+    bodyDocumentHash: put.hash,
+    citations: [...input.citations],
+    ...(input.supersedes ? { supersedes: input.supersedes } : {}),
+  };
+
+  const event = makeAgentMemoryCommitted({
+    asOf,
+    entity: input.entity ?? DEFAULT_ENTITY,
+    actor: input.actor,
+    citations: [...input.citations],
+    payload,
   });
 
   eventStore.append(event);
