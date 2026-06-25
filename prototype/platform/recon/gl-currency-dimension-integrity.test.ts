@@ -20,7 +20,11 @@
 
 import { describe, expect, test } from "bun:test";
 
-import { buildGlView, type GlTrialBalanceRow, type GlView } from "../../dashboard/v2-finance-gl-view";
+import {
+  type GlTrialBalanceRow,
+  type GlView,
+  buildGlView,
+} from "../../dashboard/v2-finance-gl-view";
 import {
   CURRENCY_SENTINELS,
   SCANNED_VIEW_FILES,

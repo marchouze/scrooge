@@ -324,6 +324,16 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // gate is a no-op on the read path.
   // Citation: D-EVENT-STORE-SCALING-PHASE-5, P4-SECURITY-DESIGNED-IN.
   "platform/recon/event-store-append-only.ts",
+  // gl-currency-dimension-integrity — the GL/finance-view currency-dimension
+  // gate (CEO finding 2026-06-25; institutionalizes the #1540 trial-balance
+  // "multi"-currency near-miss). Builds an in-memory throwaway EventStore +
+  // MarketDataStore(":memory:") fixture to drive buildGlView over a multi-
+  // currency book and assert no currency sentinel / functional-currency in-
+  // balance. Same carve-out rationale as the gl-view test it mirrors
+  // (dashboard/v2-finance-gl-view.test.ts, above): no production access path —
+  // the fixture store is throwaway and never touches the canonical store.
+  // Citation: D-V2-UI-VISIBILITY-REMEDIATION, Principle-5, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/gl-currency-dimension-integrity.ts",
   // M2 Slice 2 — period-close handler unit tests. Co-located with the module
   // per the per-module test convention. Raw EventStore(":memory:") in tests is
   // a build-phase fixture, not a production access path. T-01 carve-out.

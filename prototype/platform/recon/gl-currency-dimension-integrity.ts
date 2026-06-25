@@ -80,6 +80,8 @@ import { readFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { type GlView, buildGlView } from "../../dashboard/v2-finance-gl-view";
+import { tenantIdSchema } from "../../v2-core/control-plane/tenant";
 import { money } from "../core/decimal-money";
 import { isKnownCurrency } from "../core/iso4217";
 import { encodeMoney } from "../core/money-codec";
@@ -92,8 +94,6 @@ import { productionTag } from "../event-store/provenance";
 import { EventStore } from "../event-store/store";
 import type { Actor, Event } from "../event-store/types";
 import { MarketDataStore } from "../market-data/store";
-import { tenantIdSchema } from "../../v2-core/control-plane/tenant";
-import { type GlView, buildGlView } from "../../dashboard/v2-finance-gl-view";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "gl-currency-dimension-integrity";
@@ -186,7 +186,8 @@ export function assertViewCurrencyDimension(view: GlView, label: string): ReconV
     if (view.inBalance && nativeHasValue && functionalIsZero && allRatesAvailable) {
       violations.push({
         subject: `${label}:fake-balanced-zero`,
-        message: `The view reports in-balance with native rows carrying value and all FX rates available, yet the FUNCTIONAL (ZAR-equivalent) totals are both zero — a fake balanced zero. The in-balance invariant must run on the populated functional totals (Engineering Charter cmd 2 fail-closed; honest-on-missing-rate).`,
+        message:
+          "The view reports in-balance with native rows carrying value and all FX rates available, yet the FUNCTIONAL (ZAR-equivalent) totals are both zero — a fake balanced zero. The in-balance invariant must run on the populated functional totals (Engineering Charter cmd 2 fail-closed; honest-on-missing-rate).",
         severity: "fail",
       });
     }
