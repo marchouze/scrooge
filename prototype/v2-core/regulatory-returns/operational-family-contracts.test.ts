@@ -14,7 +14,7 @@
 // operational cell gates a product, and the live FX product is never bound.
 //
 // HONEST STATUS: the family is WHOLLY licence-day-data. The BIA α / business-line
-// β / 12.5× RWA constants are real BCBS D196 / Reg 33 factors, but they live as
+// β / 12.5× RWA constants are real Basel II bcbs128 / Reg 33 factors, but they live as
 // code constants INSIDE the ba-400-op-risk.ts fold, not as reported form cells;
 // every reported cell needs real audited gross income (3 years in steady state)
 // and/or operational-loss history that does not exist pre-licence-day (the known

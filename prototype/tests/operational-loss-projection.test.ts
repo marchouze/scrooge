@@ -19,7 +19,7 @@ import { buildOperationalLossProjection } from "../platform/reporting/operationa
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR: Actor = { type: "service", id: "agent:tomas:op-risk-loss-capture" };
-const CITATIONS = ["D-FX-HELD-DIMS-SEAT-SWEEP", "BCBS-D196-§644"];
+const CITATIONS = ["D-FX-HELD-DIMS-SEAT-SWEEP", "BCBS-bcbs128-§644"];
 
 let tmpDir: string;
 

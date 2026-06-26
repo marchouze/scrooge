@@ -34,7 +34,7 @@
 //
 // Authority: D-FX-HELD-DIMS-SEAT-SWEEP (CEO session-delegation 2026-06-11);
 //   D-FX-NPA-VERIFICATION-PASS-2-DISPATCH; D-FX-OTC-NPA-SCOPE-EXPANSION;
-//   D-NEW-PRODUCT-APPROVAL-POLICY §5; Basel II Annex 9 / BCBS D196 §644; Reg 33.
+//   D-NEW-PRODUCT-APPROVAL-POLICY §5; Basel II Annex 9 / Basel II bcbs128 §644; Reg 33.
 // Author: Tomas (Operations & payments engineer, engineering) — governance
 //   owner Devon (Chief Operating Officer, governance; op-risk seat).
 
@@ -68,7 +68,7 @@ const OPRISK_CITATIONS = [
 
 export const OPRISK_CITATION_CHAIN: readonly string[] = [
   ...OPRISK_CITATIONS,
-  "BCBS-D196-§644",
+  "BCBS-bcbs128-§644",
   "REG-33",
   "FIC-ACT-38-2001",
   "platform/event-store/event-types/operational-risk.ts",
@@ -82,12 +82,12 @@ export const OPRISK_DEFERRED_GAPS: readonly ProductDeferredGap[] = [
   {
     gapId: "fx-op-rwa-gross-income",
     title:
-      "op-RWA capital (BIA/TSA per BCBS D196 §645–654 / Reg 33) is gross-income-blocked: it requires three fiscal years of audited gross income, which do not exist in the build phase. The BA 400 engine (platform/reporting/ba-400-op-risk.ts) is rehearsal-grade against synthetic fixtures; no hollow gross-income figure is fabricated.",
+      "op-RWA capital (BIA/TSA per Basel II bcbs128 §645–654 / Reg 33) is gross-income-blocked: it requires three fiscal years of audited gross income, which do not exist in the build phase. The BA 400 engine (platform/reporting/ba-400-op-risk.ts) is rehearsal-grade against synthetic fixtures; no hollow gross-income figure is fabricated.",
     owner:
       "Camille (Chief Financial Officer, governance) + Bea (Accounting & financial reporting engineer, engineering)",
     targetTrigger:
       "revenue-start + three fiscal years of audited gross income (post-licence-day) feed the BA 400 op-RWA computation",
-    citations: ["BCBS-D196-§644", "REG-33", "platform/reporting/ba-400-op-risk.ts"],
+    citations: ["BCBS-bcbs128-§644", "REG-33", "platform/reporting/ba-400-op-risk.ts"],
   },
   {
     gapId: "fx-op-risk-loss-distribution",
@@ -96,7 +96,7 @@ export const OPRISK_DEFERRED_GAPS: readonly ProductDeferredGap[] = [
     owner: "Tomas (Operations & payments engineer, engineering)",
     targetTrigger:
       "licence-day op-risk model build — multi-year internal-loss data history accumulates, then the LDA/SMA model is calibrated and validated (Helena, CRO methodology owner)",
-    citations: ["BCBS-D196-§644", "platform/event-store/event-types/operational-risk.ts"],
+    citations: ["BCBS-bcbs128-§644", "platform/event-store/event-types/operational-risk.ts"],
   },
   {
     gapId: "fx-op-risk-real-counterparty-onboarding",

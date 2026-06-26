@@ -56,7 +56,7 @@ export function isOperationalLossEventRegistered(): boolean {
         asOf: T_SEED,
         entity: ENTITY,
         actor: { type: "service", id: "agent:tomas:oprisk-probe" },
-        citations: ["D-FX-HELD-DIMS-SEAT-SWEEP", "BCBS-D196-§644"],
+        citations: ["D-FX-HELD-DIMS-SEAT-SWEEP", "BCBS-bcbs128-§644"],
         payload: {
           lossEventId: "loss:probe:001",
           eventDate: "2026-06-10",

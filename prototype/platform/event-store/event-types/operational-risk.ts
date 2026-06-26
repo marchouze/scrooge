@@ -19,7 +19,7 @@
 //     (BaselBusinessLine from platform/reporting/ba-400-op-risk.ts), so a
 //     captured loss can later be bucketed into the same lines the capital
 //     engine uses,
-//   - the BCBS event-type category (Basel II Annex 9 / BCBS D196 §644 seven
+//   - the BCBS event-type category (Basel II Annex 9 / Basel II bcbs128 §644 seven
 //     loss-event-type classes),
 //   - any recovery to date (minor units; gross less recovery = net),
 //   - a status lifecycle (open → under-investigation → recovered/closed/
@@ -27,7 +27,7 @@
 //   - Principle-2 citations.
 //
 // Authority: D-FX-HELD-DIMS-SEAT-SWEEP (CEO session-delegation 2026-06-11);
-//   D-FX-NPA-VERIFICATION-PASS-2-DISPATCH; Basel II Annex 9 / BCBS D196 §644
+//   D-FX-NPA-VERIFICATION-PASS-2-DISPATCH; Basel II Annex 9 / Basel II bcbs128 §644
 //   (loss-event-type classification + business-line mapping); Reg 33 (op-risk).
 // Author: Tomas (Operations & payments engineer, engineering) — governance
 //   owner Devon (Chief Operating Officer, governance; op-risk seat).
@@ -72,7 +72,7 @@ const _assertBusinessLineAligned: [_AssertBusinessLineSubset, _AssertBusinessLin
 void _assertBusinessLineAligned;
 
 // ---------------------------------------------------------------------------
-// BCBS loss-event-type categories — Basel II Annex 9 / BCBS D196 §644.
+// BCBS loss-event-type categories — Basel II Annex 9 / Basel II bcbs128 §644.
 // The seven Level-1 loss-event-type classes.
 // ---------------------------------------------------------------------------
 
@@ -178,7 +178,7 @@ export function makeOperationalLossEvent(args: {
 // op-losses can crystallise in any settlement currency). Every other field
 // copies the V1 payload verbatim, so the V2 type is a pure money-encoding lift
 // — the capture semantics (the internal-loss data set every bank collects,
-// Basel II Annex 9 / BCBS D196 §644, Reg 33) are unchanged.
+// Basel II Annex 9 / Basel II bcbs128 §644, Reg 33) are unchanged.
 //
 // V1 is RETIRED-BY-CONSTRUCTION (D-V1-REMOVAL-FLIP-BASIS-RBC): the V1 schema
 // carries required numeric `*Minor` fields, so any V1 emission trips

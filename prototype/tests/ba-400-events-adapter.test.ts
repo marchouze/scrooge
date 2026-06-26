@@ -14,7 +14,7 @@
 //
 // Authority: D-BA-RETURNS-FOLLOWON-BATCH; brief
 //   brief:mira:ws-ba-returns-followon-ba-400-op-risk-events-fir:2026-06-09.
-// Citations: BCBS D196 §645–§654; Regulations Relating to Banks Reg 33;
+// Citations: Basel II bcbs128 §645–§654; Regulations Relating to Banks Reg 33;
 //   Principles/1-events-are-truth.md.
 //
 // Author: Mira (Regulatory reporting engineer, engineering — reports to Camille
@@ -33,7 +33,7 @@ import {
 
 const ENTITY_BANK = "LE-ZA-HOZ-BANK";
 const ACTOR = { type: "service" as const, id: "agent:Mira" };
-const CITATIONS = ["D-BA-RETURNS-FOLLOWON-BATCH", "BCBS D196"];
+const CITATIONS = ["D-BA-RETURNS-FOLLOWON-BATCH", "Basel II bcbs128"];
 
 // Real chart-of-accounts leaves (ACC-NNNN-NNN) classified as P&L:
 //   ACC-4101-001 — Interest Income (EIR) — Bonds        (income-interest, credit)
@@ -308,7 +308,7 @@ describe("BA 400 events-first — gross-income definition", () => {
   });
 
   it("nets deposit interest expense (expense-interest) INTO net interest income", () => {
-    // Net interest income = interest income − interest expense (BCBS D196 §650).
+    // Net interest income = interest income − interest expense (Basel II bcbs128 §650).
     // Interest income 10m, deposit interest expense 3m → gross income 7m, lower
     // than the 10m a book with no interest-expense netting would report.
     const store = new EventStore(":memory:");

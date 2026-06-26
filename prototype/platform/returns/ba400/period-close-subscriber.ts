@@ -36,7 +36,7 @@
 //
 // Citation: Principles/1-events-are-truth.md; D-REPORTING-CAPABILITY-M2-M3-
 //   BUILD-PLAN; Banks Act 94 of 1990 §70; Regulations Relating to Banks
-//   Reg 33; BCBS D196.
+//   Reg 33; Basel II bcbs128.
 //
 // Authors: Bea (Accounting & financial reporting engineer, engineering —
 //   reports to Camille CFO; BA-form line mapping + subscriber owner)
@@ -126,7 +126,7 @@ export interface Ba400PeriodCloseSubscriberResult {
  *   Principles/1-events-are-truth.md;
  *   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved 2026-05-10);
  *   Banks Act 94 of 1990 §70; Regulations Relating to Banks Reg 33;
- *   BCBS D196 §645–§654.
+ *   Basel II bcbs128 §645–§654.
  */
 export function ba400PeriodCloseSubscriber(
   input: Ba400PeriodCloseSubscriberInput,

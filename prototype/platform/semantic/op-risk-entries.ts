@@ -9,7 +9,7 @@
 //
 //   GrossIncomeBusinessLine   — annual gross-income, decomposed by
 //                                Basel business line (BIA / TSA inputs).
-//                                BCBS D196 §645–§654 / Reg 33.
+//                                Basel II bcbs128 §645–§654 / Reg 33.
 //   OpRiskCapitalBia          — Basic Indicator Approach capital charge
 //                                (15% × 3-year average positive gross
 //                                income). Reg 33(3).
@@ -54,7 +54,7 @@ export const grossIncomeBusinessLine: SemanticEntry = {
   id: "GrossIncomeBusinessLine",
   version: "v0.1",
   description:
-    "Annual gross income (net interest income + net non-interest income before deducting any provisions, operating expenses, or extraordinary items) decomposed by Basel business line for BIA / TSA op-risk inputs. Per BCBS D196 §646–§654 / Reg 33(2).",
+    "Annual gross income (net interest income + net non-interest income before deducting any provisions, operating expenses, or extraordinary items) decomposed by Basel business line for BIA / TSA op-risk inputs. Per Basel II bcbs128 §646–§654 / Reg 33(2).",
   units: "money-minor",
   dimensions: ["currency"],
   projection: "income-projection",
@@ -77,7 +77,7 @@ export const grossIncomeBusinessLine: SemanticEntry = {
     {
       type: "regulation",
       regulationId: "ORG-PR-06",
-      note: "BCBS D196 §646–§654 / Regulations Relating to Banks Reg 33(2) — gross-income definition + business-line mapping.",
+      note: "Basel II bcbs128 §646–§654 / Regulations Relating to Banks Reg 33(2) — gross-income definition + business-line mapping.",
     },
     {
       type: "tbc",
@@ -94,7 +94,7 @@ export const grossIncomeBusinessLine: SemanticEntry = {
 
 /**
  * `OpRiskCapitalBia` — Basic Indicator Approach. Capital = 15% × 3-year
- * average of positive gross income. Per BCBS D196 §649 / Reg 33(3).
+ * average of positive gross income. Per Basel II bcbs128 §649 / Reg 33(3).
  *
  * The "positive" qualifier means years with negative gross income are
  * excluded from numerator AND denominator (n is the count of positive
@@ -104,7 +104,7 @@ export const opRiskCapitalBia: SemanticEntry = {
   id: "OpRiskCapitalBia",
   version: "v0.1",
   description:
-    "Basic Indicator Approach op-risk capital charge — 15% × 3-year average of *positive* gross income. Per BCBS D196 §649 / Reg 33(3).",
+    "Basic Indicator Approach op-risk capital charge — 15% × 3-year average of *positive* gross income. Per Basel II bcbs128 §649 / Reg 33(3).",
   units: "money-minor",
   dimensions: [],
   projection: "income-projection",
@@ -126,7 +126,7 @@ export const opRiskCapitalBia: SemanticEntry = {
     {
       type: "regulation",
       regulationId: "ORG-PR-06",
-      note: "BCBS D196 §649 / Regulations Relating to Banks Reg 33(3) — BIA α=15%, 3-year positive-year average.",
+      note: "Basel II bcbs128 §649 / Regulations Relating to Banks Reg 33(3) — BIA α=15%, 3-year positive-year average.",
     },
     {
       type: "tbc",
@@ -145,13 +145,13 @@ export const opRiskCapitalBia: SemanticEntry = {
  * `OpRiskCapitalTsa` — Standardised Approach. Capital = 3-year average of
  * sum across business lines of (β_i × gross income_i). β factors are
  * regulator-set (12% / 15% / 18% — Reg 33 Annex). Negative annual sums in
- * a year are floored at zero in the average. Per BCBS D196 §651 / Reg 33(4).
+ * a year are floored at zero in the average. Per Basel II bcbs128 §651 / Reg 33(4).
  */
 export const opRiskCapitalTsa: SemanticEntry = {
   id: "OpRiskCapitalTsa",
   version: "v0.1",
   description:
-    "Standardised Approach op-risk capital charge — 3-year average of max(0, sum_i(β_i × grossIncome_i)) where β is the per-business-line factor (12% / 15% / 18%). Per BCBS D196 §651 / Reg 33(4).",
+    "Standardised Approach op-risk capital charge — 3-year average of max(0, sum_i(β_i × grossIncome_i)) where β is the per-business-line factor (12% / 15% / 18%). Per Basel II bcbs128 §651 / Reg 33(4).",
   units: "money-minor",
   dimensions: [],
   projection: "income-projection",
@@ -173,7 +173,7 @@ export const opRiskCapitalTsa: SemanticEntry = {
     {
       type: "regulation",
       regulationId: "ORG-PR-06",
-      note: "BCBS D196 §651 / Regulations Relating to Banks Reg 33(4) — TSA β factors + 3-year averaging.",
+      note: "Basel II bcbs128 §651 / Regulations Relating to Banks Reg 33(4) — TSA β factors + 3-year averaging.",
     },
     {
       type: "tbc",

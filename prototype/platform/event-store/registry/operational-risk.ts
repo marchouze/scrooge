@@ -16,7 +16,7 @@
 //     loss-distribution approaches require (Banks Act 94 of 1990; Reg 33).
 //
 // Authority: D-FX-HELD-DIMS-SEAT-SWEEP (CEO session-delegation 2026-06-11);
-//   D-FX-NPA-VERIFICATION-PASS-2-DISPATCH; Basel II Annex 9 / BCBS D196 §644;
+//   D-FX-NPA-VERIFICATION-PASS-2-DISPATCH; Basel II Annex 9 / Basel II bcbs128 §644;
 //   Reg 33 (operational risk).
 // Author: Tomas (Operations & payments engineer, engineering) — governance
 //   owner Devon (Chief Operating Officer, governance; op-risk seat).
@@ -47,7 +47,7 @@ export const OPERATIONAL_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[]
     replay: "append-only-audit",
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: operationalLossEventPayloadSchema,
-    citationsHint: ["D-FX-HELD-DIMS-SEAT-SWEEP", "BCBS-D196-§644", "REG-33"],
+    citationsHint: ["D-FX-HELD-DIMS-SEAT-SWEEP", "BCBS-bcbs128-§644", "REG-33"],
     source:
       "platform/event-store/event-types/operational-risk.ts (decode/replay only); platform/markets/products/oprisk-attestation-gates.ts now captures OperationalLossEventV2 (V2 sole live path)",
     // FLIP (WS-V2-MIGRATION-BUCKET-A batch A3, the FINAL batch — closes bucket A)
@@ -96,7 +96,7 @@ export const OPERATIONAL_RISK_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[]
       "D-BANK-WIDE-V2-MIGRATION",
       "D-V1-REMOVAL-FLIP-BASIS-RBC",
       "D-V2-CORE-MONEY-DECIMAL-NATIVE",
-      "BCBS-D196-§644",
+      "BCBS-bcbs128-§644",
       "REG-33",
     ],
     source: "platform/event-store/event-types/operational-risk.ts (makeOperationalLossEventV2)",

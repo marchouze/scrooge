@@ -44,7 +44,7 @@ describe("OperationalLossEventV2 — decimal-native capture", () => {
           asOf: "2026-06-16T00:00:00.000Z",
           entity: ENTITY,
           actor: ACTOR,
-          citations: ["D-FX-HELD-DIMS-SEAT-SWEEP", "BCBS-D196-§644"],
+          citations: ["D-FX-HELD-DIMS-SEAT-SWEEP", "BCBS-bcbs128-§644"],
           payload: {
             lossEventId: "OLE-V2-001",
             eventDate: "2026-06-14",

@@ -29,13 +29,25 @@
 //   352 = market risk minimum capital requirements (Jan 2016, superseded)
 //   457 = FRTB market risk minimum capital requirements (Jan 2019)
 //   450 = Stress testing principles (Oct 2018)
+//   196 = Operational Risk — Supervisory Guidelines for the Advanced
+//         Measurement Approaches (AMA guidelines, Jun 2011)
 //
-// Two numbers are explicitly flagged as NEVER-a-liquidity/IRRBB-standard, so
-// any pairing of them with LCR/NSFR/IRRBB is a violation:
+// Three numbers are explicitly flagged as NEVER-a-given-standard, so any
+// pairing of them with that standard is a violation:
 //   295 must NOT be cited as the LCR (it is the NSFR)
 //   335 must NOT be cited as the NSFR or IRRBB (it is RCAP Saudi Arabia)
 //   365 must NOT be cited as the IRRBB standard (it is the leverage-ratio
 //       consultative document, Apr 2016 — the IRRBB STANDARD is d368)
+//   196 must NOT be cited as the Basic Indicator Approach (BIA) / the
+//       Standardised Approach (TSA) / the op-risk-capital α / β / gross-income
+//       definition: d196 is the AMA Supervisory Guidelines (Jun 2011), which
+//       define NONE of those. The BIA/TSA (α=15%, business-line β, gross
+//       income; §644–§654) are Basel II bcbs128 (Jun 2006), consolidated as the
+//       OPE op-risk standard. (The CURRENT consolidated OPE25 is the new SA /
+//       SMA — bcbs d424, Dec 2017 — which superseded BIA/TSA from 2023; the
+//       build-phase engine computes the bcbs128 BIA/TSA figure until enough
+//       loss history exists. That is a Helena/CRO methodology matter, not a
+//       citation matter — this gate pins the CITATION only.)
 //
 // Scope
 // -----
@@ -84,7 +96,24 @@ export const CANONICAL_BCBS_NUMBERS = {
   SA_CCR: 279, // Standardised approach for counterparty credit risk, Mar 2014
   FRTB: 457, // Minimum capital requirements for market risk (FRTB), Jan 2019
   STRESS_TESTING: 450, // Stress testing principles, Oct 2018
+  OPRISK_AMA_GUIDELINES: 196, // Operational Risk — Supervisory Guidelines for the AMA, Jun 2011
 } as const;
+
+/**
+ * Numbers that are categorically NOT the op-risk-CAPITAL standard. d196 is the
+ * AMA *supervisory guidelines* — it does not define the Basic Indicator
+ * Approach, the Standardised Approach, the α / β factors, or the gross-income
+ * definition (those are Basel II bcbs128 §644–§654, consolidated as OPE). Pinned
+ * here so a `BCBS d196` / `BCBS-D196-…` citation against any op-risk-capital
+ * keyword fails closed. Validated against bis.org (the domain-truth oracle).
+ */
+export const OPRISK_CAPITAL_TITLE_KEYWORDS = [
+  "basic indicator approach",
+  "basic-indicator approach",
+  "standardised approach",
+  "gross income",
+  "gross-income",
+] as const;
 
 /**
  * Numbers that are categorically NOT a given standard — citing them against
@@ -137,6 +166,21 @@ const FORBIDDEN_PAIRINGS: readonly {
     titleLabel: "stress testing",
     keywords: ["stress testing", "stress-testing"],
     reason: "BCBS d295 is the NSFR; the Stress Testing Principles are BCBS d450 (Oct 2018)",
+  },
+  {
+    number: 196,
+    titleLabel: "Basic Indicator Approach (op-risk capital)",
+    keywords: [
+      "basic indicator approach",
+      "basic-indicator approach",
+      "bia",
+      "bia/tsa",
+      "standardised approach",
+      "gross income",
+      "gross-income",
+    ],
+    reason:
+      "BCBS d196 is the AMA Supervisory Guidelines (Jun 2011) — it does NOT define the BIA/TSA, the α=15% / β factors, or gross income; those are Basel II bcbs128 §644–§654, consolidated as the OPE op-risk standard",
   },
 ];
 
@@ -278,6 +322,14 @@ const SKIP_PATH_FRAGMENTS = [
   // token, so the .json is validated via its generator source, not re-scanned.
   "regulatory-returns/ba300-contract.json",
   "regulatory-returns/ba310-contract.json",
+  // Historical RECORDS that preserve a now-superseded citation verbatim (the
+  // old `BCBS D196` op-risk attribution, corrected forward-only under
+  // D-BCBS-CITATION-NUMBERING-REMEDIATION). They are append-only records OF past
+  // state, not live citations the bank asserts now — excluded like the audit md
+  // + source-doc verbatim extracts. Each carries an inline correction marker so
+  // a reader knows the d196 mention is the OLD wrong attribution kept as history.
+  "scripts/record-d-reporting-capability-slice-5.ts",
+  "seeds/agent-memory/notes.seed.json",
 ];
 const SCAN_EXTS = [".md", ".html", ".ts", ".json", ".yml", ".yaml"];
 
