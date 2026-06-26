@@ -125,6 +125,14 @@ const FORBIDDEN_PAIRINGS: readonly {
   titleLabel: string;
   keywords: readonly string[];
   reason: string;
+  /**
+   * Optional proximity-window override (chars either side of the token). The
+   * op-risk pairing needs a wider window than the default because op-risk
+   * citations carry a long `§645–§654` paragraph span between the `BCBS d196`
+   * token and the title keyword (`BCBS d196 §645–§654 (op-risk measurement)`),
+   * which the default 28-char window cannot reach.
+   */
+  window?: number;
 }[] = [
   {
     number: 295,
@@ -174,13 +182,21 @@ const FORBIDDEN_PAIRINGS: readonly {
       "basic indicator approach",
       "basic-indicator approach",
       "bia",
-      "bia/tsa",
+      "tsa",
       "standardised approach",
       "gross income",
       "gross-income",
+      "op-risk",
+      "operational risk",
+      "operational-risk",
+      "loss-event",
+      "loss event",
     ],
     reason:
       "BCBS d196 is the AMA Supervisory Guidelines (Jun 2011) — it does NOT define the BIA/TSA, the α=15% / β factors, or gross income; those are Basel II bcbs128 §644–§654, consolidated as the OPE op-risk standard",
+    // op-risk citations span `§645–§654` between the token and the title
+    // keyword; widen the window so the BIA/op-risk keyword is reached.
+    window: 80,
   },
 ];
 
@@ -234,7 +250,15 @@ function isCorrectionContext(line: string): boolean {
     l.includes("not the nsfr") ||
     l.includes("not the lcr") ||
     l.includes("not the irrbb") ||
-    l.includes("rcap saudi arabia")
+    l.includes("rcap saudi arabia") ||
+    // d196 correction context: lines that recite d196 to RECORD that it is the
+    // AMA guidelines and NOT the BIA/op-risk-capital source (the remediation
+    // trail), e.g. the inline `[citation corrected (…): … NOT BCBS d196 — d196
+    // is the AMA Supervisory Guidelines …]` annotation on the op-risk path.
+    l.includes("supervisory guidelines") ||
+    l.includes("advanced measurement approaches") ||
+    l.includes("not bcbs d196") ||
+    l.includes("citation corrected")
   );
 }
 
@@ -365,9 +389,10 @@ function nearbyHasKeyword(
   idx: number,
   len: number,
   keywords: readonly string[],
+  window: number = WINDOW,
 ): boolean {
-  const start = Math.max(0, idx - WINDOW);
-  const end = Math.min(text.length, idx + len + WINDOW);
+  const start = Math.max(0, idx - window);
+  const end = Math.min(text.length, idx + len + window);
   const win = text.slice(start, end).toLowerCase();
   return keywords.some((k) => win.includes(k));
 }
@@ -443,7 +468,7 @@ export function run(): ReconResult {
           ownTitles.some((k) => preceding.includes(k));
         if (!apposedToOwnTitle) {
           for (const fp of FORBIDDEN_PAIRINGS) {
-            if (num === fp.number && nearbyHasKeyword(text, idx, len, fp.keywords)) {
+            if (num === fp.number && nearbyHasKeyword(text, idx, len, fp.keywords, fp.window)) {
               violations.push({
                 subject: `${rel}:${lineNo}`,
                 message: `BCBS d${num} cited as the ${fp.titleLabel} — ${fp.reason}`,
@@ -481,6 +506,22 @@ export function run(): ReconResult {
             });
           }
         }
+      }
+
+      // d196-specific constant guard. Any `BCBS-D196-…` runtime citation
+      // constant is a mis-citation regardless of its trailing tag: d196 is the
+      // AMA Supervisory Guidelines (Jun 2011), an AMA *guideline* with no
+      // citation-constant role in this codebase. Every observed `BCBS-D196-§644`
+      // was the mis-attributed op-risk-capital label (corrected forward-only to
+      // `BCBS-bcbs128-§644` under D-BCBS-CITATION-NUMBERING-REMEDIATION). A
+      // re-injected `BCBS-D196-…` constant — including the `§644` form whose tag
+      // is not a recognised title keyword — therefore fails closed here.
+      if (num === 196 && !isCorrectionContext(lineText)) {
+        violations.push({
+          subject: `${rel}:${lineNo}`,
+          message: `BCBS-D196-${(c[2] ?? "").toUpperCase()} constant — d196 is the AMA Supervisory Guidelines (Jun 2011), NOT an op-risk-capital citation; the BIA/TSA basis is Basel II bcbs128 §644–§654 (use BCBS-bcbs128-§644)`,
+          severity: "fail",
+        });
       }
 
       c = CONSTANT_RE.exec(text);
