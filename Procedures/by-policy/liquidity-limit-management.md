@@ -37,7 +37,7 @@ The obligation chain (Principle 2):
 ```
 Regulation (Banks Act §§ 60–72; RRB Reg 26 — LCR + intraday + ILAAP;
             RRB Reg 26A — NSFR; PA D6/2015; PA D1/2023; PA D4/2021;
-            BCBS 144; BCBS D295; BCBS D335; BCBS 248)
+            BCBS 144; BCBS D238; BCBS D295; BCBS 248)
   → Policy: liquidity-risk-management-policy-v1
     (§2 LCR; §3 NSFR; §4 intraday; §9.1 breach taxonomy; §9.3 restoration)
     → PROC-RISK-LLM-01 (this procedure — tier-by-line threshold matrix,
@@ -52,8 +52,8 @@ Regulation (Banks Act §§ 60–72; RRB Reg 26 — LCR + intraday + ILAAP;
 
 | Citation | Requirement |
 |---|---|
-| `ORG-PR-06` (BCBS D295 / BA 300 — LCR ≥ 100%) | Maintain LCR ≥ 100% at all times under stress assumptions; internal buffer per ILAAP-calibrated floor. |
-| `ORG-PR-07` (BCBS D335 / BA 300 series — NSFR ≥ 100%) | Maintain NSFR ≥ 100% at all times. |
+| `ORG-PR-06` (BCBS D238 / BA 300 — LCR ≥ 100%) | Maintain LCR ≥ 100% at all times under stress assumptions; internal buffer per ILAAP-calibrated floor. |
+| `ORG-PR-07` (BCBS D295 / BA 300 series — NSFR ≥ 100%) | Maintain NSFR ≥ 100% at all times. |
 | `ORG-PR-08` (BCBS 248 — Intraday liquidity monitoring tools) | Seven intraday-monitoring metrics; intraday buffer adequate for peak net debit position. |
 | `ORG-PR-14` (Banks Act + PA ILAAP Directive) | Annual ILAAP submission attesting that limits, buffers, and CFP are adequate. |
 | `ORG-PR-15` (BCBS 144 — Contingency Funding Plan) | Annual CFP rehearsal; CFP trigger taxonomy aligned with breach severity. |

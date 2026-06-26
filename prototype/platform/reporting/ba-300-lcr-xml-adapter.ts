@@ -54,7 +54,7 @@ function lineItem(it: Ba300LcrLineItem): SarbXmlSection {
  *   with raw stock, post-cap contribution, and cap-binding indicator per level.
  * - CashFlows carries gross outflows, gross inflows, the 75%-capped inflow
  *   amount, and the net cash outflows (LCR denominator) — all as per
- *   BCBS D295 §142 / Reg 26(11).
+ *   BCBS D238 §142 / Reg 26(11).
  * - LcrRatio is the dimensionless ratio (1.0 = 100%); the SARB portal
  *   renders as percentage — the adapter emits the raw value for XSD
  *   compliance; the caller can multiply by 100 for display.
@@ -65,7 +65,7 @@ function lineItem(it: Ba300LcrLineItem): SarbXmlSection {
  *   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN;
  *   Banks Act 94 of 1990 §70;
  *   Regulations Relating to Banks Reg 26;
- *   BCBS D295 (LCR);
+ *   BCBS D238 (LCR);
  *   BCBS-LCR-2013.
  */
 export function ba300LcrToXmlPayload(report: Ba300LcrOutput): SarbXmlReportPayload {

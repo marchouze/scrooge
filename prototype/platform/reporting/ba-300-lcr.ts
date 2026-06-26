@@ -65,7 +65,7 @@
 //      → BA 110 PROJECTION   — this module — pure function
 //      → RENDER + STORE      — `ba-110-render.ts` + RMS doc store
 //
-// Computation per BCBS D295 + Regulations Relating to Banks Reg 26:
+// Computation per BCBS D238 + Regulations Relating to Banks Reg 26:
 //
 //   stockHQLA(post-cap) =
 //        Level1
@@ -230,7 +230,7 @@ function normaliseTradeId(tradeId: string | Identifier): string {
 // ---------------------------------------------------------------------------
 
 /**
- * HQLA tier per BCBS D295 §50–§54 / Reg 26(7). Each leaf account in the
+ * HQLA tier per BCBS D238 §50–§54 / Reg 26(7). Each leaf account in the
  * trial balance is assigned at most one tier; accounts that do not
  * qualify as HQLA carry no tier.
  */
@@ -254,7 +254,7 @@ export type HqlaLevel = "level-1" | "level-2a" | "level-2b";
  * `Ba300LcrOutput.placeholders`). Only `hqlaLevel` entries are processed.
  *
  * The Level-2B `assetSpecificFactor` lets the call site pass a per-asset
- * factor (50% lower bound; 25% RMBS) per BCBS D295 §54. Unspecified
+ * factor (50% lower bound; 25% RMBS) per BCBS D238 §54. Unspecified
  * defaults to 0.50 (the lower-bound factor for non-RMBS Level-2B per
  * Reg 26(7)(c)).
  *
@@ -374,7 +374,7 @@ export interface Ba300LcrGeneratorInput {
    *
    * Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
    * corrected 2026-05-29 per brief:ravi:fix-ba-110-hqla-stock-instrument-level-positions.
-   * Citations: BCBS D295 §50–§54; Reg 26(7).
+   * Citations: BCBS D238 §50–§54; Reg 26(7).
    */
   readonly hqlaStock?: HqlaStockInput;
   /**
@@ -390,7 +390,7 @@ export interface Ba300LcrGeneratorInput {
    * positive-balance, functional-currency, custodied cash accounts only. An
    * overdrawn reserve account is a borrowing, not HQLA — it contributes nothing.
    *
-   * Authority: BCBS D295 §50; Reg 26(7)(a)(i); 2026-05-29 custodian-derived rework.
+   * Authority: BCBS D238 §50; Reg 26(7)(a)(i); 2026-05-29 custodian-derived rework.
    */
   readonly cashHqlaLines?: readonly HqlaStockLine[];
 }
@@ -468,7 +468,7 @@ export interface Ba300LcrCashFlowSection {
   };
   readonly inflows: {
     readonly grossMinor: number;
-    /** Capped at 75% of gross outflows per BCBS D295 §142 / Reg 26(11). */
+    /** Capped at 75% of gross outflows per BCBS D238 §142 / Reg 26(11). */
     readonly cappedMinor: number;
     readonly capBindingIndicator: boolean;
     readonly lineItems: readonly Ba300LcrLineItem[];
@@ -631,7 +631,7 @@ function assertBankEntity(entity: string): void {
 
 /**
  * Apply the 40% (Level-2A) and 15% (Level-2B) caps to the HQLA
- * numerator. Closed-form solution per BCBS D295 §47 / Reg 26(7):
+ * numerator. Closed-form solution per BCBS D238 §47 / Reg 26(7):
  *
  *   Let L1 = Level-1 stock (no cap).
  *       L2Araw = 0.85 * Level-2A raw stock.
@@ -759,7 +759,7 @@ interface SettlementCashFlow {
  *
  * Event-fold semantics:
  * - `FxSettlementInstructed.netCash` represents the expected cash leg of
- *   the settlement. Per BCBS D295 §31: settlement instructions within the
+ *   the settlement. Per BCBS D238 §31: settlement instructions within the
  *   30-day stress window are the primary contractual cash-flow input.
  *   `netCash.amountMinor > 0` → bank receives (inflow);
  *   `netCash.amountMinor < 0` → bank pays (outflow).
@@ -829,9 +829,9 @@ function foldSettlementCashFlows(args: {
     if (event.type === "EquitySettlementInstructed") {
       // Equity settlement cash flows — Basel III Table 1 (contractual obligations).
       // `netCash.amountMinor < 0` = bank pays (outflow); `> 0` = bank receives (inflow).
-      // Per BCBS D295 §31: settlement instructions within the 30-day window are the
+      // Per BCBS D238 §31: settlement instructions within the 30-day window are the
       // primary contractual cash-flow input.
-      // Citation: Regulations Relating to Banks Reg 26; BCBS D295.
+      // Citation: Regulations Relating to Banks Reg 26; BCBS D238.
       const payload = event.payload as EquitySettlementInstructedPayload;
       if (payload.netCash.amountMinor !== 0) {
         const netCashCcy = payload.netCash.currency as Currency;
@@ -904,7 +904,7 @@ function foldSettlementCashFlows(args: {
 }
 
 // ---------------------------------------------------------------------------
-// LCR run-off rate table (BCBS D295 §31 / Reg 26 Table 1)
+// LCR run-off rate table (BCBS D238 §31 / Reg 26 Table 1)
 // ---------------------------------------------------------------------------
 
 const DEPOSIT_RUNOFF_RATES: Record<DepositTakenPayload["depositCategory"], number> = {
@@ -923,7 +923,7 @@ const DEPOSIT_RUNOFF_RATES: Record<DepositTakenPayload["depositCategory"], numbe
  * (opening event not yet closed) are included.
  *
  * Principle 1: all cash flows fold from typed events, never from the GL.
- * Citations: BCBS D295 §31 / Reg 26 Table 1 (run-off rates);
+ * Citations: BCBS D238 §31 / Reg 26 Table 1 (run-off rates);
  *            D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (BA 300 = LCR).
  */
 function foldProductMaturityOutflows(args: {
@@ -1028,7 +1028,7 @@ function foldProductMaturityOutflows(args: {
       if (closedRepoTradeIds.has(p.tradeId)) continue;
       if (!inHorizon(p.endLegSettlementDate)) continue;
       // Repo run-off: 15% if HQLA govt bond collateral (ZAG prefix), else 100%.
-      // BCBS D295 §163 / Reg 26 Table 2: secured funding backed by Level-1 HQLA.
+      // BCBS D238 §163 / Reg 26 Table 2: secured funding backed by Level-1 HQLA.
       const rate = p.collateralIsin?.startsWith("ZAG") ? 0.15 : 1.0;
       const outflowMinor = Math.round(p.repurchasePriceZar * rate);
       if (outflowMinor === 0) continue;
@@ -1064,7 +1064,7 @@ function foldProductMaturityOutflows(args: {
       if (closedIblPlacementIds.has(p.placementId)) continue;
       if (p.maturityDate === null) continue; // call placements excluded (no fixed horizon)
       if (!inHorizon(p.maturityDate)) continue;
-      const inflowMinor = p.principalZar; // 100% inflow per BCBS D295 §133
+      const inflowMinor = p.principalZar; // 100% inflow per BCBS D238 §133
       if (inflowMinor === 0) continue;
       inflowLines.push({
         lineId: `product-maturity.ibl.${p.placementId}`,
@@ -1233,7 +1233,7 @@ export function generateBa300Lcr(
   // held by the bank is classified via FinancialInstrumentClassified.hqlaLevel
   // in the SecurityMaster projection, and the mark-to-market value of the
   // unified-position projection provides the stock amount. This is the correct
-  // approach per BCBS D295: a single GL account may hold both Level-1 SAGBs
+  // approach per BCBS D238: a single GL account may hold both Level-1 SAGBs
   // and non-HQLA corporate bonds, so account-level tags are structurally wrong.
   //
   // The fallback path (legacy) uses trial-balance account balances mapped
@@ -1242,7 +1242,7 @@ export function generateBa300Lcr(
   //
   // Authority: D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22);
   // corrected 2026-05-29 per brief:ravi:fix-ba-110-hqla-stock-instrument-level-positions.
-  // Citations: BCBS D295 §50–§54; Reg 26(7); Principles/1-events-are-truth.md.
+  // Citations: BCBS D238 §50–§54; Reg 26(7); Principles/1-events-are-truth.md.
   // -------------------------------------------------------------------------
 
   const level1Lines: Ba300LcrLineItem[] = [];
@@ -1257,7 +1257,7 @@ export function generateBa300Lcr(
   if (input.hqlaStock) {
     // -----------------------------------------------------------------------
     // Preferred path: instrument-level HQLA stock.
-    // computeHqlaStockFromPositions() has already applied BCBS D295 haircuts
+    // computeHqlaStockFromPositions() has already applied BCBS D238 haircuts
     // and filtered to functional currency. Map HqlaStockLine → Ba300LcrLineItem.
     // -----------------------------------------------------------------------
     const stockResult = computeHqlaStockFromPositions({
@@ -1653,7 +1653,7 @@ export function generateBa300Lcr(
   };
 
   // -------------------------------------------------------------------------
-  // LCR ratio. Per BCBS D295 §22 / Reg 26(2): division by zero (no
+  // LCR ratio. Per BCBS D238 §22 / Reg 26(2): division by zero (no
   // outflows) means the bank has no stress to cover.
   // -------------------------------------------------------------------------
   const lcrRatio =
@@ -1743,7 +1743,7 @@ export function generateBa300Lcr(
       "D-REPORTING-CAPABILITY-SLICE-3",
       "Banks Act 94 of 1990 §70",
       "Regulations Relating to Banks Reg 26",
-      "BCBS D295",
+      "BCBS D238",
       "BCBS-LCR-2013",
       "BCBS 248",
     ],
@@ -1775,7 +1775,7 @@ function fingerprintClassifications(
  * At Hoz Bank's posture the stock is overwhelmingly Level-1 (SARB operational
  * cash). The alert fires when Level-1 share deviates >5pp from this baseline.
  *
- * Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN; BCBS D295 §47.
+ * Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN; BCBS D238 §47.
  */
 const PRIOR_LEVEL1_FRACTION = 0.9;
 const HQLA_DRIFT_THRESHOLD = 0.05;
@@ -1793,7 +1793,7 @@ const HQLA_DRIFT_THRESHOLD = 0.05;
  * Citations:
  *   Principles/1-events-are-truth.md;
  *   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN;
- *   REG-26-LCR; BCBS-D295; BA-110.
+ *   REG-26-LCR; BCBS-D238; BA-110.
  */
 export async function generateBa300LcrWithEvents(
   input: Ba300LcrGeneratorInput,
@@ -1815,7 +1815,7 @@ export async function generateBa300LcrWithEvents(
     asOf: periodEnd,
     entity,
     actor: { type: "service", id: "agent:ravi:lcr-engine" },
-    citations: ["REG-26-LCR", "BCBS-D295", "BA-110"],
+    citations: ["REG-26-LCR", "BCBS-D238", "BA-110"],
     payload: {
       projectionId: newEventId(),
       asOf: periodEnd,
@@ -1842,7 +1842,7 @@ export async function generateBa300LcrWithEvents(
         asOf: periodEnd,
         entity,
         actor: { type: "service", id: "agent:ravi:lcr-engine" },
-        citations: ["REG-26-LCR", "BCBS-D295"],
+        citations: ["REG-26-LCR", "BCBS-D238"],
         payload: {
           alertId: newEventId(),
           detectedAt: periodEnd,

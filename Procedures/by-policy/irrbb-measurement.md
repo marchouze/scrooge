@@ -25,11 +25,11 @@ system-capability: "@platform/alm (LIVE — eve, nii, repricing-gap via daily ra
 - [`Policies/irrbb-policy-v1.md`](../../Policies/irrbb-policy-v1.md) — Interest Rate Risk in the Banking Book (IRRBB) Policy v1 (IN FORCE; joint owners: Helena (Chief Risk Officer, governance) + Eitan (Treasurer, governance) — Eitan leads substrate + measurement methodology).
 - [`archive/owner-inbox/2026-05-06_risk-appetite-statement-and-framework.md`](../../archive/owner-inbox/2026-05-06_risk-appetite-statement-and-framework.md) §B6 — IRRBB appetite: EVE sensitivity limit; NII sensitivity limit; basis risk monitoring (structured successor register: `prototype/platform/risk/ras-appetite-register.ts`, line `appetite:irrbb:delta-eve-outlier`).
 - [`archive/owner-inbox/2026-05-07_rohan_risk-policies-bundle-v0.md`](../../archive/owner-inbox/2026-05-07_rohan_risk-policies-bundle-v0.md) — IRRBB excerpt (historical design input; superseded by `irrbb-policy-v1`).
-- Basel III / IRRBB Standards (BCBS d365, April 2016, effective 2018) — industry-standard six shock scenarios and reporting metrics: EVE, NII, CSRBB (credit spread risk in the banking book).
+- Basel III / IRRBB Standards (BCBS d368, April 2016, effective 2018) — industry-standard six shock scenarios and reporting metrics: EVE, NII, CSRBB (credit spread risk in the banking book).
 
 The obligation chain (Principle 2):
 ```
-Regulation (Banks Act Reg 26/27 / BCBS d365 IRRBB / PA IRRBB Directive)
+Regulation (Banks Act Reg 26/27 / BCBS d368 IRRBB / PA IRRBB Directive)
   → Policy: irrbb-policy-v1 (IN FORCE)
     → PROC-RISK-IRRBB-01 (this procedure)
       → @platform/alm (LIVE — eve.ts + nii.ts + repricing-gap.ts;

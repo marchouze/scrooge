@@ -656,6 +656,13 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:entity-identity-coherence",
     "recon:procedure-event-name-coherence",
     "recon:regulatory-extraction-coverage",
+    // D-BCBS-CITATION-NUMBERING-REMEDIATION (CEO session-delegation 2026-06-26) —
+    // fail-closed, harden-only gate pinning each cited BCBS document number to its
+    // canonical title (238=LCR, 295=NSFR, 368=IRRBB, 248=intraday, 144=sound-
+    // liquidity, 450=stress-testing), validated against the BIS source. Forecloses
+    // the systemic LCR=d295 / NSFR=d335 mis-citation that survived the citation-gate
+    // because it was internally consistent but wrong.
+    "recon:bcbs-citation-number-integrity",
     "recon:provision-tick-drift",
     "recon:decision-distillation-coverage",
     "recon:fil-conformance",

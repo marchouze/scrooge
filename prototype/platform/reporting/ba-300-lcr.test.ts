@@ -23,7 +23,7 @@
 // Citations:
 //   D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22)
 //   BA-110-LCR (SARB BA 110 Liquidity Coverage Ratio return)
-//   BCBS-LCR-2013 (BCBS D295, Basel III LCR, Jan 2013)
+//   BCBS-LCR-2013 (BCBS D238, Basel III LCR, Jan 2013)
 
 import { describe, expect, it } from "bun:test";
 

@@ -27,13 +27,13 @@ system-capability: "@platform/alm (LIVE — repricing-gap, eve, nii) · prototyp
   - **§3.2 (Asset-liability maturity mismatch)** — "Ravi monitors the contractual cashflow gap daily"; this run is that daily monitoring.
   - **§5.1 (Contractual gap)** — daily contractual gap computation from event-log position data.
   - **§6 (ALM limit framework)** — daily monitoring by Ravi; the run's outputs feed PROC-ALM-LIM-01's utilisation checks.
-- [`Policies/irrbb-policy-v1.md`](../../Policies/irrbb-policy-v1.md) — IRRBB Policy v1 (IN FORCE) — the ΔEVE (six BCBS d365 shocks) and ΔNII measurement obligations the run discharges daily; PROC-RISK-IRRBB-01 (`irrbb-measurement.md`) governs the monthly governance cycle that consumes these outputs.
+- [`Policies/irrbb-policy-v1.md`](../../Policies/irrbb-policy-v1.md) — IRRBB Policy v1 (IN FORCE) — the ΔEVE (six BCBS d368 shocks) and ΔNII measurement obligations the run discharges daily; PROC-RISK-IRRBB-01 (`irrbb-measurement.md`) governs the monthly governance cycle that consumes these outputs.
 
 The obligation chain (Principle 2):
 
 ```
 Regulation (Banks Act 94 of 1990 ss.60–64; Regulations Relating to Banks reg.26 + reg.27;
-            BCBS d365 — IRRBB (April 2016); Basel III LCR (2013) + NSFR (2014))
+            BCBS d368 — IRRBB (April 2016); Basel III LCR (2013) + NSFR (2014))
   → Policy: asset-liability-management-policy-v1 (§3.2 + §5.1 daily monitoring; §6 limits)
     → PROC-ALM-DAR-01 (this procedure — the daily measurement run)
       → @platform/alm (repricing-gap.ts BCBS 319 buckets; eve.ts; nii.ts)
@@ -44,7 +44,7 @@ Regulation (Banks Act 94 of 1990 ss.60–64; Regulations Relating to Banks reg.2
 
 | Citation | Requirement |
 |---|---|
-| `ORG-PR-11` / BCBS d365 (IRRBB, April 2016) | Measure EVE under the six prescribed shock scenarios and NII under parallel shocks; outlier test at 15% of Tier 1 capital. |
+| `ORG-PR-11` / BCBS d368 (IRRBB, April 2016) | Measure EVE under the six prescribed shock scenarios and NII under parallel shocks; outlier test at 15% of Tier 1 capital. |
 | Regulations Relating to Banks reg.26 | Daily liquidity-risk monitoring; LCR/NSFR status awareness feeds the run's overall status. |
 | Regulations Relating to Banks reg.27 | Interest-rate risk measurement and reporting in the banking book. |
 | Banks Act 94 of 1990 ss.60–64 | Liquidity and balance-sheet governance underpinning daily measurement discipline. |
@@ -54,7 +54,7 @@ Regulation (Banks Act 94 of 1990 ss.60–64; Regulations Relating to Banks reg.2
 
 The handler `ravi:alm-run` has run daily since `D-TREASURY-GAPS-WAVE1` (2026-05-19) without a governing procedure — named as a gap in `Team/Ravi.md` §13 since v1.0 and dispatched as Wave-1 item W1.4 of the Treasurer role-definition review. This procedure is that governing artefact. It defines:
 
-1. **What the run computes** — repricing gap (BCBS 319 buckets), ΔEVE (six BCBS d365 shocks), ΔNII (four parallel shocks, 12-month horizon), plus the LCR/NSFR status read that sets the run's overall RAG status.
+1. **What the run computes** — repricing gap (BCBS 319 buckets), ΔEVE (six BCBS d368 shocks), ΔNII (four parallel shocks, 12-month horizon), plus the LCR/NSFR status read that sets the run's overall RAG status.
 2. **What the run emits** — one `ALMRunCompleted` summary event and ten `IRRBBChecked` events (6 EVE + 4 NII) per run, each citation-carrying (Principle 1).
 3. **The failure and escalation contract** — what happens when a run is missed, errors, or produces a breach flag.
 4. **The build-phase posture** — with no positions until commencement of trading, all sensitivities are zero by construction; the zero posture is explicit and auditable, and the run is structurally complete so non-zero outputs flow the day trades land.
@@ -73,7 +73,7 @@ The handler `ravi:alm-run` has run daily since `D-TREASURY-GAPS-WAVE1` (2026-05-
 |---|---|---|---|---|
 | 1 | **Liquidity status read.** Run the liquidity projection; extract the 30-day-horizon LCR and NSFR ratios. Overall run status: red if either < 100%, amber if either < 110%, else green. | `system` | `@platform/liquidity` (`projection.ts`, `runLiquidityProjection`) | Status thresholds mirror the LRM Policy floors consumed by PROC-RISK-LLM-01. |
 | 2 | **Repricing gap.** Compute the banking-book repricing-gap schedule across the BCBS 319 time buckets from event-log position data. | `system` | `@platform/alm` (`repricing-gap.ts`, `computeRepricingGap`) | Discharges ALM Policy §5.1 daily contractual-gap monitoring. The policy-named `ContractualCashflowGapComputed` event is not yet registered — gap output rides `ALMRunCompleted` (§10). |
-| 3 | **ΔEVE.** Compute EVE sensitivity under the six BCBS d365 shock scenarios (parallel up/down, steepener, flattener, short up/down); record worst case against the 15%-of-Tier-1 outlier threshold. | `system` | `@platform/alm` (`eve.ts`, `computeEVE`) | Build phase: Tier 1 not yet measured; 15% placeholder limit per `EVE_OUTLIER_LIMIT_PCT`. |
+| 3 | **ΔEVE.** Compute EVE sensitivity under the six BCBS d368 shock scenarios (parallel up/down, steepener, flattener, short up/down); record worst case against the 15%-of-Tier-1 outlier threshold. | `system` | `@platform/alm` (`eve.ts`, `computeEVE`) | Build phase: Tier 1 not yet measured; 15% placeholder limit per `EVE_OUTLIER_LIMIT_PCT`. |
 | 4 | **ΔNII.** Compute NII sensitivity under four parallel shocks over a 12-month horizon against the 5% appetite placeholder (`NII_APPETITE_LIMIT_PCT`; Eitan calibrates when positions land). | `system` | `@platform/alm` (`nii.ts`, `computeNII`) | |
 | 5 | **Event emission.** Emit one `ALMRunCompleted { runId: "ALM-RUN-<date>", … }` summarising the run, then one `IRRBBChecked` per metric/shock combination (6 EVE + 4 NII = 10), each carrying `breach` flags and the standing citations (`BANKS-ACT-94-1990`, `BANKS-REG-26`, `BANKS-REG-27`, `BCBS-D365-IRRBB`). | `system` | `@platform/event-store` (`event-types/alm.ts` — `makeALMRunCompleted`, `makeIRRBBChecked`) | Events are the canonical record (Principle 1); the markdown deliverable in step 6 is a render. |
 | 6 | **Deliverable render.** Write the daily ALM-run deliverable (RAG summary, sensitivity table, gap schedule) for the Treasurer's consumption and the ALCO pack feed. | `system` | `prototype/runtime/agents/ravi-alm-run.ts` | |
@@ -120,7 +120,7 @@ The handler `ravi:alm-run` has run daily since `D-TREASURY-GAPS-WAVE1` (2026-05-
 | Run presence — every business day has exactly one `ALMRunCompleted` | Daily | Vera (Internal audit engineer, engineering) |
 | Event-count integrity — each run emits exactly 10 `IRRBBChecked` (6 EVE + 4 NII) | Daily | Vera |
 | Breach-flag disposition — every `breach: true` traces to an `AgentEscalation` | Daily | Vera |
-| Methodology validation — shock vectors and bucket conventions vs BCBS d365 / BCBS 319 | Annual | Helena (Chief Risk Officer, governance) |
+| Methodology validation — shock vectors and bucket conventions vs BCBS d368 / BCBS 319 | Annual | Helena (Chief Risk Officer, governance) |
 | Zero-posture honesty — build-phase zero outputs explicitly labelled in the deliverable, never presented as measured exposure | Each run | Ravi (Treasury/ALM engineer, engineering) |
 
 ## 10. Substrate gaps
