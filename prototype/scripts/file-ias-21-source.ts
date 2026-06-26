@@ -38,16 +38,13 @@ import "./dispatch/resolve-event-db-boot";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { clock, eventStore } from "../platform/composition";
-import { hashContent } from "../platform/document-store/hash";
-import { makeRegulatoryInstrumentRegistered } from "../platform/event-store/event-types/regulatory";
+import { clock } from "../platform/composition";
 import type { Actor } from "../platform/event-store/types";
 import { recordRegulatorySource } from "../platform/records";
 import type { StructuredSourceDocument } from "../platform/regulatory/structured-source-schema";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR: Actor = { type: "service", id: "agent:bea" };
-const CITATIONS = ["D-FX-IFRS-REVIEW-FOUNDATION", "D-REGULATORY-LIBRARY-V1"];
 
 const INSTRUMENT_ID = "IAS-21";
 const SLUG = "ias-21";
@@ -79,46 +76,24 @@ function deterministicSourceBody(): string {
   return `${parts.join("\n\n")}\n`;
 }
 
-/** True iff a RegulatoryInstrumentRegistered already exists for IAS-21. */
-function isInstrumentRegistered(instrumentId: string): boolean {
-  for (const event of eventStore.replay({ type: "RegulatoryInstrumentRegistered" })) {
-    const p = event.payload as { instrumentId?: string };
-    if (p.instrumentId === instrumentId) return true;
-  }
-  return false;
-}
-
 function main(): void {
   const body = deterministicSourceBody();
   const bytes = new TextEncoder().encode(body);
   const asOf = clock.now();
 
-  // 1. Register the instrument (idempotent).
-  let registered = false;
-  if (!isInstrumentRegistered(INSTRUMENT_ID)) {
-    eventStore.append(
-      makeRegulatoryInstrumentRegistered({
-        asOf,
-        entity: ENTITY,
-        actor: ACTOR,
-        citations: CITATIONS,
-        payload: {
-          instrumentId: INSTRUMENT_ID,
-          title: TITLE,
-          issuingBody: "IASB",
-          instrumentType: "guidance",
-          jurisdiction: "INTL",
-          publicationDate: "1983-12-01",
-          effectiveDate: "2005-01-01",
-          version: "2005-revised",
-          contentHash: hashContent(bytes),
-        },
-      }),
-    );
-    registered = true;
-  }
+  // NB — we deliberately do NOT emit `RegulatoryInstrumentRegistered` here. That
+  // event puts the instrument in scope of `recon:regulatory-extraction-coverage`,
+  // which then (correctly) requires a full horizon-scan
+  // (RegulatoryInstrumentContextualised + RegulatoryConceptExtracted) — Mira's
+  // WS-ONTOLOGY-REG-EXTRACTION pipeline, OUT OF SCOPE for this FX-IFRS-review
+  // foundation. Registering without that full extraction is exactly the
+  // "incomplete state" that gate forbids. We file the SOURCE (the provenance the
+  // §18 oracle needs) without claiming a complete graph-extraction the instrument
+  // does not yet have. The IAS 21 graph node (urn:reg:ifrs:ias-21) already exists
+  // via the IASB instruments graph; full concept extraction is a later Mira run.
 
-  // 2. File the source bytes (idempotent on content hash).
+  // File the source bytes (idempotent on content hash). `recordRegulatorySource`
+  // is what `sourceAcquired` keys off; it carries the deterministic goldenSourceHash.
   const result = recordRegulatorySource(
     {
       instrumentId: INSTRUMENT_ID,
@@ -139,7 +114,6 @@ function main(): void {
       script: "file-ias-21-source",
       instrumentId: INSTRUMENT_ID,
       slug: SLUG,
-      registered,
       filed: result.isNewDocument,
       documentHash: result.documentHash,
       bodyChars: body.length,
