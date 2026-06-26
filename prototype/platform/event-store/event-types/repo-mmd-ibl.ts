@@ -35,7 +35,7 @@
 //            D-MARKETS-SCHEMA-FOUNDATION (CEO-approved);
 //            IFRS 9 §3.1.1, §4.1.1, §5.4.1, §5.7.1;
 //            Banks Act 94 of 1990 — Reg 26/27 (LCR/NSFR);
-//            BCBS d365 (IRRBB); BA 110 / BA 120.
+//            BCBS d368 (IRRBB); BA 110 / BA 120.
 //
 // Authors: Ravi (Treasury/ALM Engineer, engineering),
 //          Eitan (Treasurer, governance)
@@ -43,7 +43,7 @@
 import { z } from "zod";
 
 import { newEventId } from "../../core/types";
-import { type Actor, type Event, eventSchema } from "../types";
+import { type Actor, type Event, type ProvenanceTag, eventSchema } from "../types";
 
 // ---------------------------------------------------------------------------
 // Repo event schemas
@@ -317,6 +317,7 @@ export function makeDepositTaken(args: {
   citations: string[];
   payload: DepositTakenPayload;
   eventId?: string;
+  provenance?: ProvenanceTag;
 }): Event {
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
@@ -326,6 +327,7 @@ export function makeDepositTaken(args: {
     actor: args.actor,
     citations: args.citations,
     payload: depositTakenPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
 
@@ -491,6 +493,7 @@ export function makeFundingLineDrawn(args: {
   citations: string[];
   payload: FundingLineDrawnPayload;
   eventId?: string;
+  provenance?: ProvenanceTag;
 }): Event {
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
@@ -500,6 +503,7 @@ export function makeFundingLineDrawn(args: {
     actor: args.actor,
     citations: args.citations,
     payload: fundingLineDrawnPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
 
@@ -587,6 +591,7 @@ export function makeInterbankLoanPlaced(args: {
   citations: string[];
   payload: InterbankLoanPlacedPayload;
   eventId?: string;
+  provenance?: ProvenanceTag;
 }): Event {
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
@@ -596,6 +601,7 @@ export function makeInterbankLoanPlaced(args: {
     actor: args.actor,
     citations: args.citations,
     payload: interbankLoanPlacedPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
 

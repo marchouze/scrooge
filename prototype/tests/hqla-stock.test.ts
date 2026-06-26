@@ -19,7 +19,7 @@
 //  13. Stable sort — output lines are in instrumentId order.
 //
 // Authority: brief:ravi:fix-ba-110-hqla-stock-instrument-level-positions:2026-05-29.
-// Citations: BCBS D295 §50–§54; D-FINANCIAL-INSTRUMENT-ENTITY; Reg 26(7).
+// Citations: BCBS D238 §50–§54; D-FINANCIAL-INSTRUMENT-ENTITY; Reg 26(7).
 //
 // Author: Ravi (Treasury/ALM quantitative engineer, engineering).
 
@@ -342,7 +342,7 @@ describe("computeHqlaStockFromPositions()", () => {
   });
 
   it("11. Level-2B assetSpecificHaircut override via level2bHaircutOverrides", () => {
-    // RMBS: override haircut to 0.50 (BCBS D295 §54 lower bound for some RMBS)
+    // RMBS: override haircut to 0.50 (BCBS D238 §54 lower bound for some RMBS)
     const overrides = new Map([["fi:bond:RMBS001", 0.5]]);
     const result = computeHqlaStockFromPositions({
       ...makeInput(

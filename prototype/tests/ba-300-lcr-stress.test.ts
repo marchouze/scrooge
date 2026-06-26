@@ -110,7 +110,7 @@ describe("BA 300 stress — ST-1: LCR = 0 scenario", () => {
 
   it("generator with empty HQLA + empty event store yields lcrRatio = Infinity (no outflows)", () => {
     // Documents that with zero HQLA AND zero outflows the generator yields
-    // Infinity per BCBS D295 §22 (no stress to cover).
+    // Infinity per BCBS D238 §22 (no stress to cover).
     const output = generateBa300Lcr(baseInput());
     expect(output.hqla.totalStockHqlaMinor).toBe(0);
     expect(output.cashFlows.netCashOutflowsMinor).toBe(0);
@@ -430,7 +430,7 @@ describe("BA 300 stress — ST-8: Zero trial balance (empty arrays)", () => {
   });
 
   it("empty trial balance + empty event store → lcrRatio = Infinity", () => {
-    // Per BCBS D295 §22: no outflows = no stress. Infinite ratio is compliant.
+    // Per BCBS D238 §22: no outflows = no stress. Infinite ratio is compliant.
     const output = generateBa300Lcr(baseInput());
     expect(output.lcrRatio).toBe(Number.POSITIVE_INFINITY);
     expect(output.lcrCompliant).toBe(true);

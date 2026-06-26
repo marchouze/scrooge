@@ -47,7 +47,7 @@
 // Citations:
 //   D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22)
 //   BA-110-LCR (SARB BA 110 Liquidity Coverage Ratio return)
-//   BCBS-LCR-2013 (BCBS D295, Basel III LCR and liquidity risk monitoring tools, Jan 2013)
+//   BCBS-LCR-2013 (BCBS D238, Basel III LCR and liquidity risk monitoring tools, Jan 2013)
 
 import type { SecurityMasterState } from "../projections/markets/security-master";
 

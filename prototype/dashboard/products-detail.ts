@@ -19,7 +19,6 @@ import { resolve as resolvePath } from "node:path";
 import {
   POSTING_RULE_REGISTRY,
   type PostingRuleEntry,
-  findEntriesForEventType,
   findEntryForRuleId,
 } from "../platform/accounting/posting-rule-registry";
 import { lookupEventType } from "../platform/event-store/registry";
@@ -474,19 +473,6 @@ export const DIMENSION_METADATA: readonly DimensionMetadata[] = [
 // `missing` substrate gap — fail-closed honesty, never a fabricated row.
 // ---------------------------------------------------------------------------
 
-export interface PostingRuleSummary {
-  /** Stable rule ID (e.g. "PR-FX-001") — registry `postingRuleId`. */
-  ruleId: string;
-  /** Canonical registry module the rule is sourced from. */
-  module: string;
-  /** Human-readable legs / treatment description — registry `conditionDetail`. */
-  legs: string;
-  /** Where in the lifecycle the trigger sits (registry `lifecycleStage`). */
-  lifecycleStage: PostingRuleEntry["lifecycleStage"];
-  /** When a posting is expected (registry `condition`). */
-  condition: PostingRuleEntry["condition"];
-}
-
 /** Canonical home of the posting-rule registry — surfaced as each rule's module. */
 const POSTING_RULE_REGISTRY_MODULE = "v2-core/posting-rules/registry.ts";
 
@@ -498,34 +484,6 @@ const POSTING_RULE_REGISTRY_MODULE = "v2-core/posting-rules/registry.ts";
  */
 function unregisteredEventTypes(names: readonly string[]): string[] {
   return names.filter((n) => lookupEventType(n) === undefined);
-}
-
-/**
- * Build a `PostingRuleSummary` for the registry entry that best describes a
- * lifecycle event. When several entries share a trigger event type (e.g. the
- * three FX FIL-fold variants on `FilInstrumentTerminated`), the
- * posting-bearing rules are preferred over `intentional-no-impact` memos, and
- * their ids/legs are concatenated so the page reflects every real rule.
- */
-function summariseRegistryEntries(entries: readonly PostingRuleEntry[]): PostingRuleSummary {
-  // Prefer the posting-bearing entries; fall back to memo entries if all are
-  // intentional-no-impact (still real, registered rules).
-  const posting = entries.filter((e) => e.condition !== "intentional-no-impact");
-  const chosen = posting.length > 0 ? posting : entries;
-  const ruleId = chosen.map((e) => e.postingRuleId).join(" · ");
-  const legs = chosen
-    .map((e) => (e.conditionDetail ? `${e.postingRuleId}: ${e.conditionDetail}` : e.postingRuleId))
-    .join("  |  ");
-  // lifecycleStage / condition are reported from the primary (first) chosen
-  // entry — they scope the recon assertion strength on the page.
-  const primary = chosen[0] as PostingRuleEntry;
-  return {
-    ruleId,
-    module: POSTING_RULE_REGISTRY_MODULE,
-    legs,
-    lifecycleStage: primary.lifecycleStage,
-    condition: primary.condition,
-  };
 }
 
 // ---------------------------------------------------------------------------
@@ -583,13 +541,6 @@ export interface DimensionCard {
    * chain for this dimension (e.g. operational-readiness substrate).
    */
   chain: DimensionPolicyChain;
-}
-
-export interface LifecycleEventJournalRow {
-  eventType: string;
-  /** "present" if a Bea posting rule maps this event; "missing" otherwise (substrate gap). */
-  status: "present" | "missing";
-  rule?: PostingRuleSummary;
 }
 
 export interface PostApprovalFindingRow {
@@ -758,8 +709,9 @@ export interface AccountingPerspectiveView {
   readonly authority: readonly string[];
 }
 
-/** Product family → posting-rule registry lifecycleId set. */
-const FAMILY_LIFECYCLE_IDS: Readonly<Record<string, readonly string[]>> = {
+/** Product family → posting-rule registry lifecycleId set. Exported so render-
+ * coherence recon gates source the same family→lifecycle map the page uses. */
+export const FAMILY_LIFECYCLE_IDS: Readonly<Record<string, readonly string[]>> = {
   fx: ["fx-spot-trade", "fx-fil-instance"],
   "listed-bond": ["bond-trade"],
   "listed-equity": ["equity-trade"],
@@ -785,12 +737,38 @@ const DEFERRED_RULE_IDS: ReadonlyMap<string, string> = new Map(
   }),
 );
 
+/**
+ * True iff a posting rule's IFRS 9 measurement-family gate (if any) matches the
+ * product's classification. A rule with no `appliesWhenIfrs9Family` applies to
+ * any family; a gated rule (e.g. the FVOCI→P&L reclassification rule) renders
+ * ONLY for a matching product. FX is FVTPL-only, so an FVOCI-gated rule never
+ * renders for it (D-FX-ACCOUNTING-RENDER-COHERENCE; D-FX-IFRS-REVIEW-FOUNDATION
+ * F1). Source-don't-hardcode (Charter cmd 4): the gate is read off the registry
+ * row, never a per-id render denylist.
+ */
+export function ruleAppliesToProductIfrs9Family(rule: PostingRuleEntry, product: Product): boolean {
+  if (rule.appliesWhenIfrs9Family === undefined) return true;
+  return (
+    rule.appliesWhenIfrs9Family.toLowerCase() ===
+    product.accountingClassification.ifrs9Family.toLowerCase()
+  );
+}
+
 /** Build the accounting-treatment view for a product. Pure, name-free. */
 export function buildAccountingTreatmentView(product: Product): AccountingTreatmentView {
   const lifecycleIds = FAMILY_LIFECYCLE_IDS[product.family] ?? [];
   const rules: AccountingTreatmentPostingRule[] = POSTING_RULE_REGISTRY.filter(
     (r: PostingRuleEntry) =>
-      lifecycleIds.includes(r.lifecycleId) && r.condition !== "intentional-no-impact",
+      lifecycleIds.includes(r.lifecycleId) &&
+      r.condition !== "intentional-no-impact" &&
+      // A retired rule (structured `deprecated` flag) must NEVER render as a live
+      // posting rule — a static registry presence is not evidence it is current
+      // (D-DERIVED-EVENT-IRREDUCIBILITY-TEST; D-FX-ACCOUNTING-RENDER-COHERENCE).
+      r.deprecated !== true &&
+      // A measurement-family-gated rule renders only for a matching product (an
+      // FVOCI-only rule never renders for an FVTPL FX product — FX is FVTPL-only,
+      // IFRS 9 §5.7.5 is equity-only; D-FX-IFRS-REVIEW-FOUNDATION F1).
+      ruleAppliesToProductIfrs9Family(r, product),
   ).map((r) => {
     const deferredTrigger = DEFERRED_RULE_IDS.get(r.postingRuleId);
     return {
@@ -1517,7 +1495,12 @@ export function buildValuationLenses(product: Product): ValuationDomainLens[] {
     const lifecycleIds = FAMILY_LIFECYCLE_IDS[product.family] ?? [];
     const glEntries = POSTING_RULE_REGISTRY.filter(
       (r: PostingRuleEntry) =>
-        lifecycleIds.includes(r.lifecycleId) && r.condition !== "intentional-no-impact",
+        lifecycleIds.includes(r.lifecycleId) &&
+        r.condition !== "intentional-no-impact" &&
+        // Retired rules never render as a live GL posting rule (structured flag).
+        r.deprecated !== true &&
+        // FVOCI-only rules never render for an FVTPL FX product (IFRS gate).
+        ruleAppliesToProductIfrs9Family(r, product),
     );
     // GL posting rule ids = lifecycle-family registry entries UNION the
     // posting-rules treatment module's declared rule ids (both sourced; the
@@ -1905,8 +1888,14 @@ export interface ProductDetailView {
   componentGraph: ComponentGraph;
   /** §4 — cross-bank lens view (Markets / Finance / Risk / Compliance). */
   lenses: ProductLensView;
-  journalEntries: LifecycleEventJournalRow[];
-  /** Accounting-treatment surface (WS-ACCT-FX-COMPLETENESS Slice 5). */
+  /**
+   * Accounting-treatment surface (WS-ACCT-FX-COMPLETENESS Slice 5) — the LIVE,
+   * family-scoped posting rules with active/deferred status. This is the single
+   * accounting-rule surface on the page; the former standalone `journalEntries`
+   * lifecycle-journal block was RETIRED (D-FX-ACCOUNTING-RENDER-COHERENCE) — it
+   * rendered the superseded pre-FIL event family and read a retired rule as
+   * "present" off a static registry lookup.
+   */
   accountingTreatment: AccountingTreatmentView;
   /**
    * §Accounting/CFO perspective (WS-NPA-PERSPECTIVE-IA Slice 2). The deep
@@ -2140,20 +2129,22 @@ export function buildProductDetailView(
     };
   });
 
-  const journalEntries: LifecycleEventJournalRow[] = product.lifecycleEventFamily.map(
-    (eventType) => {
-      const entries = findEntriesForEventType(eventType);
-      if (entries.length > 0) {
-        return { eventType, status: "present", rule: summariseRegistryEntries(entries) };
-      }
-      return { eventType, status: "missing" };
-    },
-  );
+  // Accounting-treatment view — the LIVE, family-scoped posting rules
+  // (FAMILY_LIFECYCLE_IDS → registry, intentional-no-impact excluded). This is
+  // the single accounting-rule surface; the former standalone `journalEntries`
+  // block (a static map of the product fixture's `lifecycleEventFamily` through
+  // the registry) is RETIRED — it rendered the SUPERSEDED pre-FIL event family
+  // and read a retired rule as "present" off a static registry lookup, which is
+  // not evidence of a real posting (D-DERIVED-EVENT-IRREDUCIBILITY-TEST). The
+  // `accountingPerspective` block presents the real per-stage fold legs; this
+  // `accountingTreatment` block presents the live active/deferred rule set.
+  // Authority: D-FX-ACCOUNTING-RENDER-COHERENCE.
+  const accountingTreatment = buildAccountingTreatmentView(product);
 
   // Product-level chain: union of dimension policy hints + declared
-  // functions from the product fixture (CDM modules + posting rules for
-  // the lifecycle event family) + product-relevance filter on procedures.
-  const productChain = buildProductChain(product, journalEntries, repoRoot);
+  // functions from the product fixture (CDM modules + the LIVE posting-rule
+  // modules for the product's family) + product-relevance filter on procedures.
+  const productChain = buildProductChain(product, accountingTreatment, repoRoot);
 
   // Fold post-approval findings and retrospective reviews.
   const findingsFold = new Map<
@@ -2253,8 +2244,7 @@ export function buildProductDetailView(
     ...(fxLifecycle ? { fxLifecycle } : {}),
     componentGraph: buildComponentGraph(product),
     lenses: buildProductLenses(product, attestedCount, dimensions.length),
-    journalEntries,
-    accountingTreatment: buildAccountingTreatmentView(product),
+    accountingTreatment,
     ...(accountingPerspective ? { accountingPerspective } : {}),
     productChain,
     postApprovalFindings,
@@ -2269,14 +2259,16 @@ export function buildProductDetailView(
 
 function buildProductChain(
   product: Product,
-  journalEntries: LifecycleEventJournalRow[],
+  accountingTreatment: AccountingTreatmentView,
   repoRoot: string,
 ): DimensionPolicyChain {
   const policyHintSet = new Set<string>();
   for (const m of DIMENSION_METADATA) for (const h of m.policyHints) policyHintSet.add(h);
 
   // Declared functions on the product itself — CDM primitives, CDM
-  // extensions, and posting-rule modules for events the product emits.
+  // extensions, and posting-rule modules for the LIVE, family-scoped posting
+  // rules (sourced from the accounting-treatment view, not the retired
+  // journalEntries lifecycle-journal). Deferred rules are declared "planned".
   const declared: ProductDeclaredFunction[] = [];
   const seenDeclared = new Set<string>();
   const pushDeclared = (name: string, status: "active" | "planned", source: string) => {
@@ -2291,10 +2283,12 @@ function buildProductChain(
   for (const ext of product.cdmComposition.extensions) {
     pushDeclared(ext.module, "active", `product:cdm-extension:${ext.name}`);
   }
-  for (const row of journalEntries) {
-    if (row.status === "present" && row.rule) {
-      pushDeclared(row.rule.module, "active", `product:posting-rule:${row.rule.ruleId}`);
-    }
+  for (const rule of accountingTreatment.postingRules) {
+    pushDeclared(
+      POSTING_RULE_REGISTRY_MODULE,
+      rule.deferred ? "planned" : "active",
+      `product:posting-rule:${rule.postingRuleId}`,
+    );
   }
 
   // Product-relevance tokens — family + slug fragments from the productId.

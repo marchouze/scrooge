@@ -75,7 +75,7 @@
 //   PA Directive 1 of 2022 §4.1.2 (consolidation rules), §3.1 (Rand);
 //   Regulations Relating to Banks Reg 26 (LCR), Reg 36 (consolidated
 //     supervision inclusion);
-//   BCBS D295 §142 (75% inflow cap), §47 (level caps);
+//   BCBS D238 §142 (75% inflow cap), §47 (level caps);
 //   Policies/liquidity-risk-management-policy-v1.md §2.6
 //     (ORG-PR-LCR-003/004/005/006/007/008);
 //   GAP-LCR-CONSOLIDATION-ENGINE (policy §11.5, build half);
@@ -98,7 +98,7 @@ import { type Ba300LcrOutput, applyHqlaCaps } from "../../reporting/ba-300-lcr";
 /**
  * Group-basis inflow cap: total inflows count at most 75% of gross outflows,
  * applied on a consolidated basis (NOT per entity).
- * Citation: ORG-PR-LCR-006; D1/2022 §4.1.2.8; BCBS D295 §142; Reg 26(11).
+ * Citation: ORG-PR-LCR-006; D1/2022 §4.1.2.8; BCBS D238 §142; Reg 26(11).
  */
 export const GROUP_INFLOW_CAP_RATIO = 0.75;
 
@@ -106,13 +106,13 @@ export const GROUP_INFLOW_CAP_RATIO = 0.75;
  * Net-cash-outflow floor: net outflows are floored at 25% of gross outflows
  * (the arithmetic complement of the 75% inflow cap, kept explicit so the
  * floor-binding indicator matches the solo generator).
- * Citation: BCBS D295 §69 (denominator definition); Reg 26(11).
+ * Citation: BCBS D238 §69 (denominator definition); Reg 26(11).
  */
 export const NET_CASH_OUTFLOW_FLOOR_RATIO = 0.25;
 
 /**
  * Home-jurisdiction (SA) minimum LCR requirement: 100%.
- * Citation: Reg 26(2); D1/2022 §2.1; BCBS D295 §17 (post-2019 phase-in).
+ * Citation: Reg 26(2); D1/2022 §2.1; BCBS D238 §17 (post-2019 phase-in).
  */
 export const HOME_JURISDICTION_MINIMUM_LCR_RATIO = 1.0;
 
@@ -133,7 +133,7 @@ const CONSOLIDATED_LCR_CITATIONS: readonly string[] = [
   "PA Directive 1 of 2022 §4.1.2",
   "Regulations Relating to Banks Reg 26",
   "Regulations Relating to Banks Reg 36",
-  "BCBS D295 §142",
+  "BCBS D238 §142",
   "Policies/liquidity-risk-management-policy-v1.md §2.6 (ORG-PR-LCR-003/004/005/006/007/008)",
   "GAP-LCR-CONSOLIDATION-ENGINE (build-half closure)",
   "D-QUEUE-CLOSEOUT-2026-06-10",
@@ -503,7 +503,7 @@ export function consolidateBa300Lcr(input: ConsolidatedLcrInput): Ba300Consolida
     const capBinding = excessExcluded > 0;
 
     // Pro-rata the entity's level components down to the counted amount so
-    // the group-level 40%/15% caps (BCBS D295 §47) re-apply on a coherent
+    // the group-level 40%/15% caps (BCBS D238 §47) re-apply on a coherent
     // decomposition. scale = 1 whenever no entity cap binds — the
     // single-home-entity case therefore reproduces the solo cap inputs
     // exactly (golden identity).
@@ -528,7 +528,7 @@ export function consolidateBa300Lcr(input: ConsolidatedLcrInput): Ba300Consolida
   }
 
   // -------------------------------------------------------------------------
-  // Group-level HQLA composition caps (BCBS D295 §47 / Reg 26(7)) — re-applied
+  // Group-level HQLA composition caps (BCBS D238 §47 / Reg 26(7)) — re-applied
   // at the consolidated level via the SAME closed-form as the solo generator.
   // -------------------------------------------------------------------------
   const caps = applyHqlaCaps({

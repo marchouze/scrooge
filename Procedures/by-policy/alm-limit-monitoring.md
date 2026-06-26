@@ -87,7 +87,7 @@ Build-phase posture: the bank holds no positions until commencement of trading, 
 | L1 | Maximum cumulative contractual cashflow gap per maturity bucket | ≤ 25% of total assets cumulative outflow in any bucket ≤ 1Y; ≤ 40% cumulative ≤ 5Y | ALCO | Repricing-gap output of `ravi:alm-run` (`@platform/alm/repricing-gap`, BCBS 319 buckets), summarised in `ALMRunCompleted` | > 80% utilisation in any bucket |
 | L2 | Minimum liquidity buffer above LCR floor | LCR internal floor 120% (LRM Policy §2.5); headroom ≥ 10% above the 100% regulatory minimum at all times | ALCO | `@platform/liquidity` (`lcr.ts`) via daily liquidity projection folded into `ALMRunCompleted`; breach lifecycle per PROC-RISK-LLM-01 tier matrix | < 10% headroom above regulatory minimum |
 | L3 | Maximum NSFR required-stable-funding shortfall | Zero shortfall — NSFR ≥ 100% (internal floor 115%, LRM Policy §3.1) | ALCO | `@platform/liquidity` (`nsfr.ts`); breach lifecycle per PROC-RISK-LLM-01 | Any shortfall vs NSFR ≥ 100% |
-| L4 | Maximum EVE sensitivity (worst of six BCBS d365 shocks) | ≤ 15% of Tier 1 capital (build-phase placeholder pending Tier-1 measurement; outlier threshold per BCBS d365) | Board (per IRRBB policy) | `IRRBBChecked { metric: "EVE" }` — six shock scenarios per daily `ravi:alm-run`; RAS line `appetite:irrbb:delta-eve-outlier` | Breach of IRRBB EVE limit |
+| L4 | Maximum EVE sensitivity (worst of six BCBS d368 shocks) | ≤ 15% of Tier 1 capital (build-phase placeholder pending Tier-1 measurement; outlier threshold per BCBS d368) | Board (per IRRBB policy) | `IRRBBChecked { metric: "EVE" }` — six shock scenarios per daily `ravi:alm-run`; RAS line `appetite:irrbb:delta-eve-outlier` | Breach of IRRBB EVE limit |
 | L5 | Maximum NII sensitivity (parallel shocks, 12-month horizon) | ≤ 5% of projected 12-month NII (build-phase placeholder; Eitan calibrates when positions land) | Board (per IRRBB policy) | `IRRBBChecked { metric: "NII" }` — four parallel shocks per daily run | Breach of IRRBB NII limit |
 | L6 | Maximum CSRBB exposure | Monitoring-only — no quantitative limit until CSRBB field-testing concludes (deferred per the 2026-06-08 bond-trading review) | ALCO | PLANNED — CSRBB measure not yet computed (see §10) | > 80% utilisation once calibrated |
 | L7 | Maximum funding concentration — single counterparty | ≤ 15% of total liabilities | ALCO | `@platform/risk/liquidity-limit-engine` line `funding-concentration-counterparty` (tier-2 at 15%, tier-1 at 25% per PROC-RISK-LLM-01 §5.1) | > 15% of total liabilities |
@@ -125,7 +125,7 @@ Build-phase posture: the bank holds no positions until commencement of trading, 
 |---|---|---|
 | Any register row > 80% utilisation (L1, L6 trigger convention) | Medium | Eitan documents; next ALCO agenda |
 | L2/L3/L7 liquidity-dimension breach | Per PROC-RISK-LLM-01 tier | PROC-RISK-LLM-01 escalation matrix + integrated ALCO balance-sheet review (§5.2 step 4) |
-| L4 EVE limit breach / BCBS d365 outlier | Critical | Eitan + Helena immediate; ALCO extraordinary session; PA-outlier pathway per `Policies/irrbb-policy-v1.md`; Board notified |
+| L4 EVE limit breach / BCBS d368 outlier | Critical | Eitan + Helena immediate; ALCO extraordinary session; PA-outlier pathway per `Policies/irrbb-policy-v1.md`; Board notified |
 | L5 NII limit breach | High | Eitan + Helena within 1 business day; ALCO within 24h |
 | L8 funding-mix target breach | Medium | ALCO review within 5 business days (ALM Policy §3.1) |
 | Breach unresolved within policy timeframe | Critical | ALCO → Board (CEO interim) per ALM Policy §2.3 |
@@ -134,7 +134,7 @@ Build-phase posture: the bank holds no positions until commencement of trading, 
 
 | Capability | Status | Notes |
 |---|---|---|
-| `@platform/alm` | ✓ live | `repricing-gap.ts` (BCBS 319 buckets), `eve.ts` (6 BCBS d365 shocks), `nii.ts` (4 parallel shocks) — exercised daily by `ravi:alm-run` |
+| `@platform/alm` | ✓ live | `repricing-gap.ts` (BCBS 319 buckets), `eve.ts` (6 BCBS d368 shocks), `nii.ts` (4 parallel shocks) — exercised daily by `ravi:alm-run` |
 | `ravi:alm-run` handler | ✓ live | `prototype/runtime/agents/ravi-alm-run.ts`, scheduled daily 05:50 UTC; emits `ALMRunCompleted` + 10 `IRRBBChecked` (PROC-ALM-DAR-01 governs) |
 | `@platform/risk/liquidity-limit-engine` | ✓ live | Tier-by-line liquidity breach detection + gateway block (PROC-RISK-LLM-01 governs) |
 | `@platform/risk/ras-appetite-register` | ✓ live | `appetite:irrbb:delta-eve-outlier`, `appetite:liquidity:lcr`, `appetite:liquidity:nsfr` structured lines |

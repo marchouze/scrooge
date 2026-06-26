@@ -27,8 +27,8 @@ RAS B2 (deferred — pending calibration; policy floors per RAS / RAF §B3).
 | `ORG-PR-02` (BCBS Basel III/IV) | Apply Pillar 2A add-ons. |
 | `ORG-PR-03` (BCBS) | Hold capital conservation buffer + countercyclical buffer where required. |
 | `ORG-PR-04` (RAS B2) | Maintain CET1 management buffer ≥ +1.5pp above PA minima + Pillar 2A + capital conservation buffer. |
-| `ORG-PR-06` (BCBS D295 / BA 300 — LCR) | LCR ≥ 100% (PA min) with internal buffer. |
-| `ORG-PR-07` (BCBS D335 / BA 300 series — NSFR) | NSFR ≥ 100% (PA min) with internal buffer. |
+| `ORG-PR-06` (BCBS D238 / BA 300 — LCR) | LCR ≥ 100% (PA min) with internal buffer. |
+| `ORG-PR-07` (BCBS D295 / BA 300 series — NSFR) | NSFR ≥ 100% (PA min) with internal buffer. |
 | `ORG-PR-08` (BCBS 248) | Monitor intraday liquidity. |
 
 ## 3. Purpose
@@ -46,8 +46,8 @@ Compute the bank's capital and liquidity ratios daily as projections over the ev
 |---|---|---|---|---|
 | 1 | Determine as-of date / time for the computation | `system` (scheduler) | `@platform/scheduler` (`PLANNED`) | Daily run targets prior business-day close per ZA-CAL. |
 | 2 | Compute CET1 / AT1 / T2 ratio as projection | `system` | `@domains/capital/projection` (`PLANNED`) | Reads event log; applies CRR-equivalent risk-weights from BCBS framework. Emits `RatioComputed`. |
-| 3 | Compute LCR projection (HQLA / 30d net cash outflow) | `system` | `@domains/liquidity/lcr-projection` (`PLANNED`) | Per BCBS D295. Emits `RatioComputed`. HQLA stock (LCR numerator) is sourced from the **instrument-level position register**. For each instrument held by the bank, the SecurityMaster classification (`FinancialInstrumentClassified.hqlaLevel`) determines the HQLA tier. The mark-to-market value of each eligible position is multiplied by the applicable BCBS D295 haircut (Level 1: 0%; Level 2A: 15%; Level 2B: 25% default). GL account balances are not used as a proxy for HQLA stock. Account-level `hqlaLevel` tags on the Chart of Accounts were a Phase-0 shortcut and are deprecated (`D-FINANCIAL-INSTRUMENT-ENTITY`, 2026-05-22; corrected 2026-05-29). |
-| 4 | Compute NSFR projection (ASF / RSF) | `system` | `@domains/liquidity/nsfr-projection` (`PLANNED`) | Per BCBS D335. Emits `RatioComputed`. |
+| 3 | Compute LCR projection (HQLA / 30d net cash outflow) | `system` | `@domains/liquidity/lcr-projection` (`PLANNED`) | Per BCBS D238. Emits `RatioComputed`. HQLA stock (LCR numerator) is sourced from the **instrument-level position register**. For each instrument held by the bank, the SecurityMaster classification (`FinancialInstrumentClassified.hqlaLevel`) determines the HQLA tier. The mark-to-market value of each eligible position is multiplied by the applicable BCBS D238 haircut (Level 1: 0%; Level 2A: 15%; Level 2B: 25% default). GL account balances are not used as a proxy for HQLA stock. Account-level `hqlaLevel` tags on the Chart of Accounts were a Phase-0 shortcut and are deprecated (`D-FINANCIAL-INSTRUMENT-ENTITY`, 2026-05-22; corrected 2026-05-29). |
+| 4 | Compute NSFR projection (ASF / RSF) | `system` | `@domains/liquidity/nsfr-projection` (`PLANNED`) | Per BCBS D295. Emits `RatioComputed`. |
 | 5 | Compute by-significant-currency LCR | `system` | `@domains/liquidity/lcr-projection` (`PLANNED`) | Per RAS / Liquidity Policy. |
 | 6 | Compare against thresholds (regulatory min, internal trigger, internal escalation) | `system` | `@domains/capital/threshold-engine` (`PLANNED`) | Soft / Hard / Critical severity per breach taxonomy. |
 | 7 | Soft threshold breach → notification to ALCO secretariat (Eitan) and BRC dashboard | `system` | `@domains/notification` (`PLANNED`) | Event: `LimitBreach { severity: 'Soft' }`. |

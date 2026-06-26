@@ -17,7 +17,7 @@
 // its maturity, currency, and rate type.
 //
 // Authority: D-MARKETS-SCHEMA-FOUNDATION (CEO-approved 2026-05-12).
-//            Banks Act Reg 26/27 (LCR/NSFR); BCBS d365 (IRRBB).
+//            Banks Act Reg 26/27 (LCR/NSFR); BCBS d368 (IRRBB).
 // Authors: Ravi (Treasury/ALM Engineer, engineering),
 //          Eitan (Treasurer, governance)
 

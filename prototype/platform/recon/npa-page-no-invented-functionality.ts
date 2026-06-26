@@ -9,15 +9,17 @@
 // gap channel. A static assertion with no backing and no gap-surfacing is a
 // FAIL — the page must never invent functionality it does not have.
 //
-// Three assertion families, per product:
+// Assertion families, per product:
 //
-//   (A) Lifecycle journal rows. Each `journalEntries[]` row maps a
-//       lifecycleEventFamily event type to the canonical posting-rule registry
-//       (v2-core/posting-rules/registry.ts). A row that claims `present` MUST
-//       have ≥1 real registry entry for that event type (no fabricated rule
-//       id); a row with no registry entry MUST be surfaced as `missing` (the
-//       gap channel). A `present` row with no registry backing, or a registry-
-//       backed event type silently dropped, is a FAIL.
+//   (A) RETIRED. The standalone lifecycle-journal block (`journalEntries[]`) was
+//       retired (D-FX-ACCOUNTING-RENDER-COHERENCE) — it mapped the product
+//       fixture's `lifecycleEventFamily` (the superseded pre-FIL event family for
+//       FX) through a static registry lookup and read a retired rule as "present"
+//       (not evidence of a real posting; D-DERIVED-EVENT-IRREDUCIBILITY-TEST).
+//       The live, family-scoped posting-rule set is the single accounting-rule
+//       surface; the dedicated `recon:fx-render-no-deprecated-or-stale-family`
+//       gate guards against a deprecated / stale-family rule re-entering any FX
+//       render surface.
 //
 //   (B) Dimension trigger/emit event types. Each DimensionCard names
 //       `triggeredBy` / `emits` event types. Every name MUST either resolve to
@@ -68,11 +70,7 @@
 //            deferral).
 // Author: Atlas (Core banking platform architect, engineering)
 
-import {
-  type PostingRuleEntry,
-  findEntriesForEventType,
-  findEntryForRuleId,
-} from "../accounting/posting-rule-registry";
+import { findEntryForRuleId } from "../accounting/posting-rule-registry";
 import { lookupEventType } from "../event-store/registry";
 import type { Event } from "../event-store/types";
 
@@ -104,11 +102,6 @@ function isRegisteredEventType(name: string): boolean {
   return lookupEventType(name) !== undefined;
 }
 
-/** True iff the event type has ≥1 posting-rule registry entry. */
-function hasRegistryEntry(name: string): boolean {
-  return findEntriesForEventType(name).length > 0;
-}
-
 /** True iff the account code resolves to a real canonical CoA account. */
 function isRealCoaAccount(code: string): boolean {
   return COA_BY_ID.get(code) !== undefined;
@@ -116,61 +109,25 @@ function isRealCoaAccount(code: string): boolean {
 
 /**
  * Assert the anti-invention invariant for a single built product-detail view.
- * Pure — takes the view + the product's declared lifecycle event family so the
- * gate's negative test can drive it with a fabricated event type. Returns one
- * violation per breach.
+ * Pure — takes the built view and surfaces one violation per breach across the
+ * dimension trigger/emit, valuation-lens, FX-lifecycle and accounting-
+ * perspective assertion families (the lifecycle-journal family is retired).
  */
-export function assertNoInvention(
-  productId: string,
-  lifecycleEventFamily: readonly string[],
-  view: ProductDetailView,
-): ReconViolation[] {
+export function assertNoInvention(productId: string, view: ProductDetailView): ReconViolation[] {
   const violations: ReconViolation[] = [];
 
-  // ── (A) Lifecycle journal rows ──────────────────────────────────────────
-  // The builder must produce exactly one row per lifecycle event family entry,
-  // ordered the same way; that one-to-one mapping is part of the contract.
-  if (view.journalEntries.length !== lifecycleEventFamily.length) {
-    violations.push({
-      subject: `${productId}:journal-row-count`,
-      severity: "fail",
-      message: `journalEntries length (${view.journalEntries.length}) does not match lifecycleEventFamily length (${lifecycleEventFamily.length}) — the page dropped or duplicated a lifecycle event.`,
-    });
-  }
-  for (const row of view.journalEntries) {
-    const backed = hasRegistryEntry(row.eventType);
-    if (row.status === "present") {
-      if (!backed) {
-        violations.push({
-          subject: `${productId}:journal:${row.eventType}`,
-          severity: "fail",
-          message: `journal row for "${row.eventType}" claims status "present" but the posting-rule registry has NO entry for it — invented posting rule. It must render "missing" (the gap channel) instead.`,
-        });
-      } else if (row.rule) {
-        // The summarised rule id must be composed only of real registry rule ids.
-        const realIds = new Set(
-          findEntriesForEventType(row.eventType).map((e: PostingRuleEntry) => e.postingRuleId),
-        );
-        const claimed = row.rule.ruleId.split(" · ").map((s) => s.trim());
-        for (const id of claimed) {
-          if (!realIds.has(id)) {
-            violations.push({
-              subject: `${productId}:journal:${row.eventType}:${id}`,
-              severity: "fail",
-              message: `journal row for "${row.eventType}" cites posting-rule id "${id}", which is not a real registry entry for that trigger — fabricated rule id.`,
-            });
-          }
-        }
-      }
-    } else if (backed) {
-      // status === "missing" but the registry DOES back it → false gap.
-      violations.push({
-        subject: `${productId}:journal:${row.eventType}:false-missing`,
-        severity: "fail",
-        message: `journal row for "${row.eventType}" renders "missing" but the posting-rule registry DOES have an entry — a real fact is being hidden behind the gap channel.`,
-      });
-    }
-  }
+  // ── (A) RETIRED — the standalone lifecycle-journal block is gone ─────────
+  // The `journalEntries` block (a static map of the product fixture's
+  // `lifecycleEventFamily` through the registry) was RETIRED
+  // (D-FX-ACCOUNTING-RENDER-COHERENCE): it rendered the superseded pre-FIL event
+  // family and read a retired rule as "present" off a static registry lookup,
+  // which is not evidence of a real posting (D-DERIVED-EVENT-IRREDUCIBILITY-
+  // TEST). The live, family-scoped posting-rule set is now the single accounting-
+  // rule surface (`accountingTreatment`), and the per-stage fold legs the
+  // Accounting / CFO perspective (assertion F below). The dedicated
+  // `recon:fx-render-no-deprecated-or-stale-family` gate guards against a
+  // RETIRED or stale-family rule re-entering any FX render surface; this
+  // assertion family no longer applies.
 
   // ── (B) + (C) Dimension trigger/emit event types ────────────────────────
   for (const dim of view.dimensions) {
@@ -443,7 +400,6 @@ export function run(opts: RunOpts = {}): ReconResult {
     // Each journal row + each dimension trigger/emit name + each valuation-lens
     // posting-rule-id / event-type / domain is one assertion.
     asserted +=
-      view.journalEntries.length +
       view.dimensions.reduce((n, d) => n + d.triggeredBy.length + d.emits.length, 0) +
       (view.lenses?.valuation ?? []).reduce(
         (n, d) => n + d.postingRuleIds.length + d.eventTypes.length + 1,
@@ -459,7 +415,7 @@ export function run(opts: RunOpts = {}): ReconResult {
         (n, s) => n + s.postingRules.reduce((m, pr) => m + pr.legs.length + 2, 0),
         0,
       );
-    violations.push(...assertNoInvention(product.productId, product.lifecycleEventFamily, view));
+    violations.push(...assertNoInvention(product.productId, view));
   }
 
   return {

@@ -177,7 +177,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     formula:
       "HqlaStock / max(LcrCashOutflows30D - min(LcrCashInflows30D, 0.75*LcrCashOutflows30D), 0.25*LcrCashOutflows30D)",
     regulatorySource:
-      "Basel III (BCBS D295) / Banks Act 94 of 1990 §70 / Regulations Relating to Banks Reg 26(2) — LCR ≥ 100%",
+      "Basel III (BCBS D238) / Banks Act 94 of 1990 §70 / Regulations Relating to Banks Reg 26(2) — LCR ≥ 100%",
     sarbReturnCell: "BA 110 — Liquidity Coverage Ratio (%) exit cell",
     dataLineage: ["liquidity-projection", "BankAccountOpened", "TrialBalanceSnapshotted"],
     reportingFrequency: "monthly",
@@ -191,7 +191,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     unit: "ratio",
     formula: "AvailableStableFunding / RequiredStableFunding",
     regulatorySource:
-      "Basel III (BCBS d295-nsfr) / Regulations Relating to Banks Reg 26A — NSFR ≥ 100%",
+      "Basel III (BCBS d238-nsfr) / Regulations Relating to Banks Reg 26A — NSFR ≥ 100%",
     sarbReturnCell: "BA 120 — Net Stable Funding Ratio (%) exit cell",
     dataLineage: ["liquidity-projection", "BankAccountOpened", "TrialBalanceSnapshotted"],
     reportingFrequency: "monthly",
@@ -206,7 +206,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     formula:
       "HqlaLevel1 + min(HqlaLevel2A*0.85, 0.40*totalHqla) + min(HqlaLevel2B*assetFactor, 0.15*totalHqla)",
     regulatorySource:
-      "BCBS D295 §47–§55 / Regulations Relating to Banks Reg 26(7) — HQLA composition and haircuts",
+      "BCBS D238 §47–§55 / Regulations Relating to Banks Reg 26(7) — HQLA composition and haircuts",
     sarbReturnCell: "BA 110 — HQLA stock (LCR numerator)",
     dataLineage: ["liquidity-projection", "BankAccountOpened", "TrialBalanceSnapshotted"],
     reportingFrequency: "daily",
@@ -221,7 +221,7 @@ export const QUANTITY_REGISTRY: readonly QuantityDefinition[] = [
     formula:
       "max(LcrCashOutflows30D - min(LcrCashInflows30D, 0.75*LcrCashOutflows30D), 0.25*LcrCashOutflows30D)",
     regulatorySource:
-      "BCBS D295 §69–§142 / Regulations Relating to Banks Reg 26(8)+(11) — outflow run-off rates + 75% inflow cap",
+      "BCBS D238 §69–§142 / Regulations Relating to Banks Reg 26(8)+(11) — outflow run-off rates + 75% inflow cap",
     sarbReturnCell: "BA 110 — Total net cash outflows (LCR denominator)",
     dataLineage: ["liquidity-projection", "BankAccountOpened", "TrialBalanceSnapshotted"],
     reportingFrequency: "daily",

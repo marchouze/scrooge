@@ -206,6 +206,20 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // prove the BCBS golden oracle + production=0 boundary. No production access
   // path — same rationale as ba320-trading-book-sim-drive.
   "platform/recon/cva-derivatives-sim-drive.ts",
+  // BA 300 deposit/funding/HQLA sim-drive gate (D-BA-RETURN-SIMULATOR-FIRST):
+  // builds a throwaway `:memory:` EventStore with a simulated deposit / funding /
+  // HQLA book to drive BA 300 LCR + NSFR and the BA 310 minimum-liquid-reserve
+  // fold to a hand-computed Basel/SARB golden oracle, and reads the LIVE store
+  // read-only for the BA 310 production=0 / operating-book-drive legs. No
+  // production access path — same rationale as ba320-trading-book-sim-drive.
+  "platform/recon/ba300-deposit-funding-sim-drive.ts",
+  // BA 200 credit (loans-and-advances) sim-drive gate (D-BA-RETURN-SIMULATOR-FIRST):
+  // builds a throwaway `:memory:` EventStore with simulated IFRS 9 staging events to
+  // drive the BA 200 credit-risk projection + the CRE20 standardised credit-RWA leg
+  // (and hence the BA 700 credit-RWA denominator) to a hand-computed Reg 23 / IFRS 9
+  // golden oracle, and asserts the production-only BA 700 credit leg stays 0. No
+  // production access path — same rationale as ba320-trading-book-sim-drive.
+  "platform/recon/ba200-credit-sim-drive.ts",
   // Recon pipelines that read-only replay the live store. Wrapping the read
   // path with the gate is a no-op (the gate intercepts append, not replay).
   "platform/recon/dashboard-derivation-recon.ts",
@@ -821,6 +835,15 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
   // the production=0 / simulated=values + trading/banking-book boundaries. No
   // production access path. Citation: D-BA-RETURN-SIMULATOR-FIRST, P4-SECURITY-DESIGNED-IN.
   "platform/returns/ba340/",
+  // BA 200 (Credit Risk — loans-and-advances) simulator-first golden test
+  // (D-BA-RETURN-SIMULATOR-FIRST Phase A) — per-module fixture test (same
+  // carve-out rationale as platform/returns/ba320/ and ba340/): builds an
+  // in-memory EventStore with simulated IFRS 9 staging events to prove the
+  // per-event production=0 / operating-book provenance boundary for the
+  // simulated loan book that drives the BA 200 credit-risk + CRE20 credit-RWA
+  // folds. No production access path. Citation: D-BA-RETURN-SIMULATOR-FIRST,
+  // P4-SECURITY-DESIGNED-IN.
+  "platform/returns/ba200/",
   // M3 Slice 8 CMS subscriber — per-module fixture test (same carve-out
   // rationale as tests/; builds in-memory stores for conduct scenario assertion).
   // Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, P4-SECURITY-DESIGNED-IN.

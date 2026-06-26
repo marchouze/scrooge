@@ -5,7 +5,7 @@
 ## Citation
 
 - **Title:** Basel Framework — LCR (Liquidity Coverage Ratio).
-- **Issuer:** Basel Committee on Banking Supervision (BCBS) — d295 lineage.
+- **Issuer:** Basel Committee on Banking Supervision (BCBS) — d238 lineage (*Basel III: The Liquidity Coverage Ratio and liquidity risk monitoring tools*, January 2013, https://www.bis.org/publ/bcbs238.htm). `[correction (Mira, D-BCBS-CITATION-NUMBERING-REMEDIATION): BCBS document number corrected d295 → d238 — d295 is the NSFR (October 2014), not the LCR; validated against the BIS source.]`
 - **Source:** [bis.org/basel_framework](https://www.bis.org/basel_framework/) — standard group LCR.
 - **Applicability:** `transposed` — binds via SARB Reg 26 and BA 325. Basel is the baseline.
 

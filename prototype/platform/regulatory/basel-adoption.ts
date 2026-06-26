@@ -54,7 +54,17 @@
 // Author: Mira (Compliance / RegTech engineer, engineering).
 
 /** Pillar-1 Basel standard groups catalogued in this first slice. */
-export type BaselStandard = "RBC" | "CAP" | "CRE" | "MAR" | "OPE" | "LCR" | "NSF" | "LEV" | "LEX";
+export type BaselStandard =
+  | "RBC"
+  | "CAP"
+  | "CRE"
+  | "MAR"
+  | "OPE"
+  | "LCR"
+  | "NSF"
+  | "LEV"
+  | "LEX"
+  | "SRP";
 
 /** How a jurisdiction relates a local instrument to a Basel baseline provision. */
 export type AdoptionType = "ADOPTS" | "MODIFIES" | "GOLD_PLATES" | "SUPERSEDES";
@@ -197,6 +207,38 @@ export const BASEL_PROVISIONS: readonly BaselProvision[] = [
     unit: "ratio",
     operator: "=",
     effectiveFrom: "2023-01-01",
+  },
+  // ── MAR50 — Credit valuation adjustment (CVA) risk framework ─────────────
+  // The CVA capital framework is the consolidated MAR50 chapter (the standard
+  // formerly published standalone as BCBS d424). `urn:reg:bcbs:mar:50.14` is
+  // the reduced version of the BA-CVA — the build-phase `cva-engine.ts`
+  // analogue (Σ LGD × EAD × PD × discount, hedges not recognised) maps to the
+  // reduced version (mar:50.13 elects reduced/full; 50.14 Kreduced; 50.15
+  // SCVA_c; 50.16 RW_c). The full version (50.17+) and SA-CVA are not
+  // implemented. Authority: D-BCBS-CVA-IRRBB-ORACLE-RECITATION.
+  {
+    urn: "urn:reg:bcbs:mar:50.14",
+    standard: "MAR",
+    paragraph: "50.14",
+    title: "Reduced version of the BA-CVA (hedges not recognised)",
+    rule: "Under the reduced version of the basic approach (BA-CVA), the CVA capital requirement is the discount-scalar-scaled aggregate of stand-alone CVA capital requirements across counterparties, with counterparty credit-spread hedges not recognised.",
+    effectiveFrom: "2023-01-01",
+  },
+  // ── SRP31 — Interest rate risk in the banking book (IRRBB) ───────────────
+  // IRRBB is the consolidated SRP31 chapter (the standard the standalone d368
+  // was consolidated into). `urn:reg:bcbs:srp:31.1`+ carry the ΔEVE / ΔNII
+  // measurement and the >15%-of-Tier-1 outlier test. Authority:
+  // D-BCBS-CVA-IRRBB-ORACLE-RECITATION.
+  {
+    urn: "urn:reg:bcbs:srp:31.1",
+    standard: "SRP",
+    paragraph: "31.1",
+    title: "Interest rate risk in the banking book (IRRBB) — scope",
+    rule: "Banks must measure and control interest rate risk in the banking book through both an economic-value (ΔEVE) and an earnings-based (ΔNII) perspective under prescribed interest-rate shock scenarios, with an outlier test that flags a ΔEVE decline exceeding 15% of Tier 1 capital.",
+    value: 0.15,
+    unit: "ratio",
+    operator: "<=",
+    effectiveFrom: "2018-01-01",
   },
   // ── OPE — Operational risk (Standardised Approach, not the retired BIA) ──
   {
@@ -369,6 +411,32 @@ export const ADOPTION_EDGES: readonly AdoptionEdge[] = [
     localInstrument: "urn:reg:za:regs-relating-to-banks:reg38",
     adoptionType: "ADOPTS",
     effectiveFrom: "2013-01-01",
+  },
+  // MAR50 — CVA capital charge via Reg 28 (the market-risk / position-risk
+  // regulation under which the derivative CVA charge is calculated and reported
+  // on the BA 350 derivatives return; see ba-350-derivatives.ts citing reg28).
+  // The bank applies the reduced BA-CVA analogue during the build phase pending
+  // the full BA-CVA / SA-CVA engine. (D-BCBS-CVA-IRRBB-ORACLE-RECITATION.)
+  {
+    baselProvision: "urn:reg:bcbs:mar:50.14",
+    jurisdiction: "za",
+    localInstrument: "urn:reg:za:regs-relating-to-banks:reg28",
+    adoptionType: "MODIFIES",
+    delta:
+      "The bank applies the reduced BA-CVA analogue (cva-engine.ts: Σ LGD × EAD × PD × discount, hedges not recognised) during the build phase, pending the full BA-CVA / SA-CVA sensitivity engine.",
+    effectiveFrom: "2013-01-01",
+  },
+  // SRP31 — IRRBB via Reg 30, read with SARB PA Directive 8/2023 (which sets the
+  // IRRBB threshold dimension). RT-IRRBB taxonomy node cites the same chain
+  // (Reg 30; PA Directive 8/2023). (D-BCBS-CVA-IRRBB-ORACLE-RECITATION.)
+  {
+    baselProvision: "urn:reg:bcbs:srp:31.1",
+    jurisdiction: "za",
+    localInstrument: "urn:reg:za:regs-relating-to-banks:reg30",
+    adoptionType: "ADOPTS",
+    delta:
+      "Operationalised via SARB PA Directive 8/2023 (IRRBB threshold dimension) and reported on the BA 330 IRRBB repricing-gap return.",
+    effectiveFrom: "2018-01-01",
   },
   // OPE — operational risk via Reg 33.
   {

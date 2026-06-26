@@ -303,7 +303,7 @@ The 17 lines by category and breach tier (RAS §B9 taxonomy: tier-1 / tier-2 / z
 | Market | `appetite:market:trading-var` | Trading-book 1-day 99% VaR | tier-2 |
 | Market | `appetite:market:counterparty-concentration` | Counterparty concentration (markets) | tier-2 |
 | Market | `appetite:market:bond-inventory-face-value` | Gross long bond inventory cap — trading book face value (amber R140m / red R200m) | tier-2 |
-| IRRBB | `appetite:irrbb:delta-eve-outlier` | IRRBB δEVE outlier — BCBS d365 §A-3.4 supervisory test (amber 10% / red 15% of Tier-1) | tier-1 |
+| IRRBB | `appetite:irrbb:delta-eve-outlier` | IRRBB δEVE outlier — BCBS d368 §A-3.4 supervisory test (amber 10% / red 15% of Tier-1) | tier-1 |
 | Financial crime | `appetite:financial-crime:sanctions-match` | Sanctions true-positives blocked end-to-end pre-execution | zero-appetite |
 | Financial crime | `appetite:financial-crime:str-filing-judgement` | STR-filing judgement — no internal override | zero-appetite |
 | Operational | `appetite:operational:cyber-severity-tiers` | Cyber-incident severity tiering | tier-2 |

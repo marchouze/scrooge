@@ -45,13 +45,25 @@ describe("buildAccountingTreatmentView (FX product)", () => {
       "PR-FX-SWAP-NEAR-V2",
       "PR-FX-SWAP-FAR-V2",
       "PR-FX-NDF-FIX-V2",
-      "PR-FX-FVOCI-RECLASS-V2",
     ]) {
       const rule = view.postingRules.find((r) => r.postingRuleId === ruleId);
       if (rule === undefined) continue; // not all ids surface on every fixture family
       expect(rule.deferred).toBe(false);
       expect(rule.deferredTargetTrigger).toBeUndefined();
     }
+  });
+
+  test("does NOT render the FVOCI-reclass rule — FX is FVTPL-only, never FVOCI", () => {
+    // PR-FX-FVOCI-RECLASS-V2 is RETAINED machinery for the future equity estate
+    // but is IFRS-family-gated FVOCI-only; an FVTPL FX product must NOT surface it
+    // (IFRS 9 §5.7.5 is equity-only; D-FX-ACCOUNTING-RENDER-COHERENCE /
+    // D-FX-IFRS-REVIEW-FOUNDATION F1).
+    const ids = view.postingRules.map((r) => r.postingRuleId);
+    expect(ids).not.toContain("PR-FX-FVOCI-RECLASS-V2");
+    // And no superseded V1 trade-event rule renders as live.
+    expect(ids).not.toContain("PR-FX-001");
+    expect(ids).not.toContain("PR-FX-PRIN");
+    expect(ids).not.toContain("PR-FX-LIFECYCLE-CLOSE");
   });
 
   test("is name-free — no agent personal name appears in the DTO (no-agent-names rule)", () => {
