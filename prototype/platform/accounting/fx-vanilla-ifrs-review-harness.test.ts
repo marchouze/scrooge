@@ -10,10 +10,7 @@
 
 import { describe, expect, test } from "bun:test";
 
-import {
-  type FxIfrsPremise,
-  runFxVanillaIfrsReview,
-} from "./fx-vanilla-ifrs-review-harness";
+import { type FxIfrsPremise, runFxVanillaIfrsReview } from "./fx-vanilla-ifrs-review-harness";
 
 describe("FX-vanilla IFRS review harness — structure (PROC-FIN-12)", () => {
   const verdict = runFxVanillaIfrsReview();

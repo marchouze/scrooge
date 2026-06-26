@@ -231,8 +231,11 @@ if (import.meta.main) {
     for (const f of c.findings) process.stderr.write(`      • ${f}\n`);
   }
   if (verdict.openTrackedGaps.length > 0) {
-    process.stdout.write(`\nOpen tracked gaps (surfaced for CFO): ${verdict.openTrackedGaps.length}\n`);
-    for (const g of verdict.openTrackedGaps) process.stdout.write(`      • ${g.gapId}: ${g.title}\n`);
+    process.stdout.write(
+      `\nOpen tracked gaps (surfaced for CFO): ${verdict.openTrackedGaps.length}\n`,
+    );
+    for (const g of verdict.openTrackedGaps)
+      process.stdout.write(`      • ${g.gapId}: ${g.title}\n`);
   }
   process.stdout.write(
     `\nFX-vanilla IFRS review verdict: ${verdict.pass ? "PASS — eligible for CFO sign-off" : "FAIL — findings supersede; do NOT sign off"}\n`,
