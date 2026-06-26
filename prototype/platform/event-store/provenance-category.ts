@@ -138,6 +138,19 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   //   D-V1-REMOVAL-FLIP-BASIS-RBC.
   RwaComputed: "governance",
   RwaComputedV2: "governance",
+  // BA-return-of-record + filing-lifecycle family (D-BA-RETURN-OF-RECORD-EVENT-
+  // FAMILY). These are the persisted record of the generated SARB BA return + its
+  // filing lifecycle — regulatory commitments of record (Banks Act §70/§73), NOT
+  // operational simulated data. Co-categorised "governance" with RwaComputed /
+  // SarbSubmissionAttempted so they survive the production-filter fold: the
+  // BA700↔GL cross-domain recon (recon:ba-returns-vs-gl-balances) and the V2
+  // Finance returns projection (last-filed / reporting-period / overdue) must
+  // read them. Categorising here BEFORE seeding is the F-032 site-3 requirement —
+  // without it a seeded ReportGenerated would be tagged `simulated` and dropped.
+  ReportGenerated: "governance",
+  ReportDue: "governance",
+  ReportFiled: "governance",
+  ReportSubmissionAcknowledged: "governance",
   // Operational-loss CAPTURE records — the internal-loss data set every bank
   // must collect (Basel II Annex 9 / BCBS D196 §644; Reg 33). A risk-governance
   // record (registry class "governance"), NOT operational simulated trading
