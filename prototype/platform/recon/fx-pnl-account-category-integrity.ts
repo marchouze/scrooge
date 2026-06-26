@@ -9,13 +9,19 @@
 // ACCOUNT CATEGORY — the independent oracle:
 //
 //   (A) DIRECTION INVARIANT (IAS 21 §28; the invariant the settlement-realisation
-//       bug violated). A realised FX gain/loss leg must land on a PROFIT-OR-LOSS
-//       account (COA category `income-*` / `expense-*`) — NEVER a balance-sheet
-//       account (`asset-*` / `liability-*` / `equity`). An accountant would never
-//       post a realised exchange difference to a balance-sheet account. This gate
-//       resolves the realised-P&L account's COA category from the canonical
-//       registry and fails closed if it is not a P&L category, and fails closed
-//       if any FX rule posts a realised gain/loss to a non-P&L account.
+//       bug violated). A realised FX gain/loss — and an unrealised FVTPL movement —
+//       must land on a PROFIT-OR-LOSS account (COA category `income-*` / `expense-*`)
+//       — NEVER a balance-sheet account (`asset-*` / `liability-*` / `equity`) nor a
+//       memorandum/suspense account. An accountant would never post a realised
+//       exchange difference to a balance-sheet account. This gate (i) resolves the
+//       realised/unrealised-P&L CONSTANTS' COA category from the canonical registry
+//       and fails closed if either is not a P&L category, AND (ii) — keyed off the
+//       rule's P&L INTENT, the born-V2 `pnlKind` discriminator the rules stamp on a
+//       leg they MEAN as a realised/unrealised P&L recognition (F7) — asserts every
+//       pnlKind-marked leg lands on a P&L account WHEREVER it points. The intent key
+//       (not the account code) is what makes this non-tautological: a realised gain
+//       mis-routed to a balance-sheet account (a DIFFERENT account code, so invisible
+//       to an account-code branch) now fails closed (D-FX-IFRS-REVIEW-FOUNDATION, F7).
 //
 //   (B) FVTPL MOVEMENT DESTINATION (IFRS 9 §5.7.1). The FVTPL revaluation rule's
 //       COUNTER-leg (the fair-value movement) must land on a P&L account
@@ -147,20 +153,29 @@ export function assertFxPnlAccountCategory(legs: readonly FxFoldLeg[]): ReconRes
     // ----- Assert the direction invariant on every realised/unrealised leg. -----
     let realisedLegs = 0;
     let revalCounterLegs = 0;
+    let pnlIntentLegs = 0;
     for (const leg of legs) {
       if (isZeroAmount(leg.amount.amount)) continue;
 
-      // (A) DIRECTION INVARIANT — any leg on the realised-P&L account must be a
-      // P&L account (it is, by the static check above; this also catches a leg the
-      // rules send to the realised account that somehow names a non-P&L code).
-      if (leg.accountCode === FX_REALISED_PNL_ACCOUNT) {
-        realisedLegs += 1;
+      // (A) DIRECTION INVARIANT — keyed off the rule's P&L INTENT (`pnlKind`), NOT
+      // the account code (F7). The old branch inspected legs whose accountCode WAS
+      // the realised-P&L account, then asked whether that same account is P&L — a
+      // tautology that could never fire (the static check above already proves the
+      // realised constant is P&L), and one that SKIPPED the real defect: a realised
+      // gain mis-routed to a balance-sheet account (different code → not inspected).
+      // The `pnlKind` marker records the rule's intent at emission, so a leg the
+      // rule MEANS as a realised or unrealised P&L recognition must land on a P&L
+      // account WHEREVER it points. A `pnlKind`-marked leg on an asset/liability/
+      // equity/memorandum/suspense account fails closed (IAS 21 §28; IFRS 9 §5.7.1).
+      if (leg.pnlKind !== undefined) {
+        pnlIntentLegs += 1;
+        if (leg.pnlKind === "realised") realisedLegs += 1;
         result.asserted += 1;
         const cat = categoryOf(leg.accountCode);
         if (cat === undefined || !isPnlCategory(cat)) {
           violations.push({
-            subject: `${PIPELINE}:realised-on-non-pnl:${leg.postingRuleId}|${leg.amount.currency}`,
-            message: `Rule "${leg.postingRuleId}" posted a realised FX gain/loss (${leg.amount.amount} ${leg.amount.currency}) to ${leg.accountCode} (category "${cat ?? "<unknown>"}"), which is not a P&L account. A realised exchange difference must post to P&L only (IAS 21 §28).`,
+            subject: `${PIPELINE}:${leg.pnlKind}-on-non-pnl:${leg.postingRuleId}|${leg.accountCode}|${leg.amount.currency}`,
+            message: `Rule "${leg.postingRuleId}" emitted a leg marked pnlKind="${leg.pnlKind}" (${leg.amount.amount} ${leg.amount.currency}) on ${leg.accountCode} (category "${cat ?? "<unknown>"}"), which is NOT a profit-or-loss account (income-*/expense-*). A ${leg.pnlKind} FX exchange difference / FVTPL movement must post to P&L only, never a balance-sheet account — independent of which account code the rule names (IAS 21 §28; IFRS 9 §5.7.1). This is the direction invariant the settlement-realisation bug violated (D-FX-IFRS-REVIEW-FOUNDATION, F7).`,
             severity: "fail",
           });
         }
@@ -217,7 +232,7 @@ export function assertFxPnlAccountCategory(legs: readonly FxFoldLeg[]): ReconRes
       }
     }
 
-    result.asOf = `${PIPELINE}: realised legs=${realisedLegs}, reval-counter legs=${revalCounterLegs}. ${
+    result.asOf = `${PIPELINE}: pnl-intent legs=${pnlIntentLegs} (realised=${realisedLegs}), reval-counter legs=${revalCounterLegs}. ${
       violations.some((v) => v.severity === "fail")
         ? "DIRECTION-VIOLATION"
         : "Realised/unrealised FX P&L posts to P&L only; FVTPL movement to P&L (or governed FVOCI OCI reserve)"

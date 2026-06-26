@@ -441,6 +441,8 @@ export function postFxConversionLegs(input: FxConversionInput): FxPostingLeg[] {
       accountCode: FX_REALISED_PNL_ACCOUNT,
       amount: money(reporting, magnitude),
       description: `FX Conversion realised P&L ${reporting} (proceeds − cost basis, ${isGain ? "gain" : "loss"})`,
+      // REALISED exchange-difference recognition (F7).
+      pnlKind: "realised",
     });
   }
 
@@ -456,6 +458,8 @@ export function postFxConversionLegs(input: FxConversionInput): FxPostingLeg[] {
       accountCode: FX_UNREALISED_PNL_ACCOUNT,
       amount: money(reporting, magnitude),
       description: `FX Conversion reverse cumulative unrealised ${reporting}`,
+      // Reverses the UNREALISED P&L sitting on the unrealised account (F7).
+      pnlKind: "unrealised",
     });
     legs.push({
       ...base,
@@ -463,6 +467,8 @@ export function postFxConversionLegs(input: FxConversionInput): FxPostingLeg[] {
       accountCode: FX_REALISED_PNL_ACCOUNT,
       amount: money(reporting, magnitude),
       description: `FX Conversion reclassify unrealised → realised ${reporting}`,
+      // Reclassifies into REALISED P&L (F7).
+      pnlKind: "realised",
     });
   }
 
@@ -521,6 +527,8 @@ export function postFxDerecognitionLegs(input: FxDerecognitionInput): FxPostingL
       accountCode: accounts.unrealisedPnl,
       amount: money(input.currency, magnitude),
       description: `FX Derecognition reverse unrealised ${input.currency}`,
+      // Reverses the accumulated UNREALISED reval P&L (F7).
+      pnlKind: "unrealised",
     },
     {
       ...base,
@@ -528,6 +536,8 @@ export function postFxDerecognitionLegs(input: FxDerecognitionInput): FxPostingL
       accountCode: FX_REALISED_PNL_ACCOUNT,
       amount: money(input.currency, magnitude),
       description: `FX Derecognition recognise realised ${input.currency}`,
+      // Recognises REALISED P&L on derecognition (F7).
+      pnlKind: "realised",
     },
   ];
 }
@@ -610,6 +620,8 @@ export function postFxNdfFixingLegs(input: FxNdfFixingInput): FxPostingLeg[] {
       accountCode: FX_REALISED_PNL_ACCOUNT,
       amount: money(input.settlementCurrency, magnitude),
       description: `FX NDF fixing realised P&L ${input.settlementCurrency}`,
+      // NDF fixing is a cash-settled REALISED exchange difference (F7).
+      pnlKind: "realised",
     },
   ];
 }
@@ -663,6 +675,10 @@ export function postFxFvociReclassLegs(input: FxFvociReclassInput): FxPostingLeg
       accountCode: FX_REALISED_PNL_ACCOUNT,
       amount: money(input.currency, magnitude),
       description: `FX FVOCI → P&L reclassification ${input.currency}`,
+      // Recycles OCI into REALISED P&L (F7). NB: the FVOCI path is IFRS-invalid
+      // for FX (F1) and never fires for an FX instance; the marker is set for
+      // completeness on the rule itself.
+      pnlKind: "realised",
     },
   ];
 }

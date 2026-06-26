@@ -111,6 +111,89 @@ function legMinor(leg: FxFoldLeg): number {
   return Number(amountToMinorUnits(m));
 }
 
+/**
+ * PURE asserter over an EXPLICIT leg list + the open-trade flag (extracted so
+ * Vera's gate-injection audit can construct a REAL violating leg set and prove the
+ * gate fails closed without a live store, D-FX-IFRS-REVIEW-FOUNDATION Scope B). The
+ * caller (`run`) folds the production legs and delegates here. Behaviour is
+ * byte-identical to the prior inline block (same three checks, same order).
+ */
+export function assertFxSettlementShape(
+  legs: readonly FxFoldLeg[],
+  openFxInstanceExists: boolean,
+): { violations: ReconViolation[]; asserted: number } {
+  const violations: ReconViolation[] = [];
+  let asserted = 0;
+
+  const recvPay = fxReceivablePayableAccounts();
+
+  // (1) NO gross FX receivable/payable net anywhere in the settled book. The
+  // FVTPL settlement never posts to these accounts; a non-zero net means the old
+  // gross relief (or an un-migrated path) is still running.
+  const recvPayNet = new Map<string, number>();
+  const obsNet = new Map<string, number>();
+  // (3) Realised-P&L net attributable to a SETTLEMENT rule. Settlement is
+  // P&L-neutral — any realised-P&L leg from PR-FX-SETTLE-V2 / PR-FX-SWAP-*-V2 is
+  // the old settle-as-realise defect. Keyed by `ruleId|currency`.
+  const settlementRealisedNet = new Map<string, number>();
+  for (const leg of legs) {
+    const signed = leg.creditDebit === "debit" ? legMinor(leg) : -legMinor(leg);
+    const key = `${leg.accountCode}|${leg.amount.currency}`;
+    if (recvPay.has(leg.accountCode)) {
+      recvPayNet.set(key, (recvPayNet.get(key) ?? 0) + signed);
+    }
+    if (OBS_ACCOUNTS.has(leg.accountCode)) {
+      obsNet.set(key, (obsNet.get(key) ?? 0) + signed);
+    }
+    if (leg.accountCode === FX_REALISED_PNL_ACCOUNT && SETTLEMENT_RULE_IDS.has(leg.postingRuleId)) {
+      const rk = `${leg.postingRuleId}|${leg.amount.currency}`;
+      settlementRealisedNet.set(rk, (settlementRealisedNet.get(rk) ?? 0) + signed);
+    }
+  }
+
+  asserted += 1;
+  for (const [key, net] of recvPayNet) {
+    if (net !== 0) {
+      violations.push({
+        subject: `${PIPELINE}:gross-receivable-payable:${key}`,
+        message: `Settled FX book carries a non-zero net ${net} minor on FX trading receivable/payable "${key}". Under FVTPL settlement (D-FX-TRADE-DATE-FVTPL-OBS) settlement recognises cash + realised P&L and NEVER relieves a gross receivable/payable (trade-date is OBS-only). A non-zero net here is the dangling-gross defect. Authority: D-FX-TRADE-DATE-FVTPL-OBS.`,
+        severity: "fail",
+      });
+    }
+  }
+
+  // (2) Zero residual OBS commitment once the whole FX book is settled. Skipped
+  // while any open FX trade still carries a live commitment.
+  asserted += 1;
+  if (!openFxInstanceExists) {
+    for (const [key, net] of obsNet) {
+      if (net !== 0) {
+        violations.push({
+          subject: `${PIPELINE}:residual-obs-commitment:${key}`,
+          message: `Fully-settled FX book carries a residual OFF-balance-sheet commitment net ${net} minor on "${key}". Settlement must release the trade-date OBS commitment (PR-FX-OBS-RELEASE-V2) so it nets to zero. A non-zero residual means the OBS release did not fire for a settled/matured instance. Authority: D-FX-TRADE-DATE-FVTPL-OBS.`,
+          severity: "fail",
+        });
+      }
+    }
+  }
+
+  // (3) NO realised P&L from settlement (P&L-NEUTRAL settlement,
+  // D-FX-PNL-FCY-EXPOSURE-REVALUATION). Any non-zero realised net attributable to
+  // a settlement rule is the OLD settle-as-realise defect — fail.
+  asserted += 1;
+  for (const [key, net] of settlementRealisedNet) {
+    if (net !== 0) {
+      violations.push({
+        subject: `${PIPELINE}:settlement-realised-pnl:${key}`,
+        message: `A SETTLEMENT rule posted a non-zero realised-P&L net ${net} minor to ${FX_REALISED_PNL_ACCOUNT} ("${key}"). Settlement is P&L-NEUTRAL (a change of form — the FCY receivable becomes FCY cash at its ZAR cost basis); realised P&L arises ONLY on a FCY→ZAR conversion (PR-FX-CONVERT-V2). A realised-P&L leg from a settlement rule is the old settle-as-realise defect. Authority: D-FX-PNL-FCY-EXPOSURE-REVALUATION.`,
+        severity: "fail",
+      });
+    }
+  }
+
+  return { violations, asserted };
+}
+
 export function run(): ReconResult {
   const result = emptyResult(PIPELINE);
   const violations: ReconViolation[] = [];
@@ -130,92 +213,21 @@ export function run(): ReconResult {
 
     // Are there any OPEN (non-settled, non-cancelled) FX trades still carrying an
     // OBS commitment? Their commitment legitimately remains, so the OBS net-zero
-    // assertion only holds once the WHOLE book is settled. We detect any FX
-    // instance with a creation but no terminal event under the lens by folding and
-    // checking residual OBS attributable to non-settled instances. Simpler + sound:
-    // assert OBS nets to zero PER CURRENCY only when NO open trade contributes — we
-    // approximate "no open trade" by: a non-empty OBS net is a violation ONLY if
-    // every FX instance in the fold is terminal (settled/matured/cancelled).
+    // assertion only holds once the WHOLE book is settled.
     const fold = foldFxContributionLegs({
       eventStore,
       periodStart: V2_PERIOD_START,
       periodEnd: V2_PERIOD_END,
     });
 
-    const recvPay = fxReceivablePayableAccounts();
-
-    // (1) NO gross FX receivable/payable net anywhere in the settled book. The
-    // FVTPL settlement never posts to these accounts; a non-zero net means the old
-    // gross relief (or an un-migrated path) is still running. Asserted at the book
-    // level: a fully-settled FX book carries zero net on every receivable/payable.
-    const recvPayNet = new Map<string, number>();
-    const obsNet = new Map<string, number>();
-    // (3) Realised-P&L net attributable to a SETTLEMENT rule. Settlement is
-    // P&L-neutral — any realised-P&L leg from PR-FX-SETTLE-V2 / PR-FX-SWAP-*-V2 is
-    // the old settle-as-realise defect. Keyed by `ruleId|currency`.
-    const settlementRealisedNet = new Map<string, number>();
-    for (const leg of fold.legs) {
-      const signed = leg.creditDebit === "debit" ? legMinor(leg) : -legMinor(leg);
-      const key = `${leg.accountCode}|${leg.amount.currency}`;
-      if (recvPay.has(leg.accountCode)) {
-        recvPayNet.set(key, (recvPayNet.get(key) ?? 0) + signed);
-      }
-      if (OBS_ACCOUNTS.has(leg.accountCode)) {
-        obsNet.set(key, (obsNet.get(key) ?? 0) + signed);
-      }
-      if (
-        leg.accountCode === FX_REALISED_PNL_ACCOUNT &&
-        SETTLEMENT_RULE_IDS.has(leg.postingRuleId)
-      ) {
-        const rk = `${leg.postingRuleId}|${leg.amount.currency}`;
-        settlementRealisedNet.set(rk, (settlementRealisedNet.get(rk) ?? 0) + signed);
-      }
-    }
-
     // Whether any FX instance is still OPEN (created, not terminal under any stage).
     // The OBS net-zero assertion only binds when the whole book is closed; an open
     // trade's standing OBS commitment is correct and must NOT be flagged.
     const openFxInstanceExists = hasOpenFxInstance(settledInstances);
 
-    result.asserted += 1;
-    for (const [key, net] of recvPayNet) {
-      if (net !== 0) {
-        violations.push({
-          subject: `${PIPELINE}:gross-receivable-payable:${key}`,
-          message: `Settled FX book carries a non-zero net ${net} minor on FX trading receivable/payable "${key}". Under FVTPL settlement (D-FX-TRADE-DATE-FVTPL-OBS) settlement recognises cash + realised P&L and NEVER relieves a gross receivable/payable (trade-date is OBS-only). A non-zero net here is the dangling-gross defect. Authority: D-FX-TRADE-DATE-FVTPL-OBS.`,
-          severity: "fail",
-        });
-      }
-    }
-
-    // (2) Zero residual OBS commitment once the whole FX book is settled. Skipped
-    // (with an info note) while any open FX trade still carries a live commitment.
-    result.asserted += 1;
-    if (!openFxInstanceExists) {
-      for (const [key, net] of obsNet) {
-        if (net !== 0) {
-          violations.push({
-            subject: `${PIPELINE}:residual-obs-commitment:${key}`,
-            message: `Fully-settled FX book carries a residual OFF-balance-sheet commitment net ${net} minor on "${key}". Settlement must release the trade-date OBS commitment (PR-FX-OBS-RELEASE-V2) so it nets to zero. A non-zero residual means the OBS release did not fire for a settled/matured instance. Authority: D-FX-TRADE-DATE-FVTPL-OBS.`,
-            severity: "fail",
-          });
-        }
-      }
-    }
-
-    // (3) NO realised P&L from settlement (P&L-NEUTRAL settlement,
-    // D-FX-PNL-FCY-EXPOSURE-REVALUATION). Any non-zero realised net attributable to
-    // a settlement rule is the OLD settle-as-realise defect — fail.
-    result.asserted += 1;
-    for (const [key, net] of settlementRealisedNet) {
-      if (net !== 0) {
-        violations.push({
-          subject: `${PIPELINE}:settlement-realised-pnl:${key}`,
-          message: `A SETTLEMENT rule posted a non-zero realised-P&L net ${net} minor to ${FX_REALISED_PNL_ACCOUNT} ("${key}"). Settlement is P&L-NEUTRAL (a change of form — the FCY receivable becomes FCY cash at its ZAR cost basis); realised P&L arises ONLY on a FCY→ZAR conversion (PR-FX-CONVERT-V2). A realised-P&L leg from a settlement rule is the old settle-as-realise defect. Authority: D-FX-PNL-FCY-EXPOSURE-REVALUATION.`,
-          severity: "fail",
-        });
-      }
-    }
+    const shape = assertFxSettlementShape(fold.legs, openFxInstanceExists);
+    result.asserted += shape.asserted;
+    violations.push(...shape.violations);
 
     const settledCount = settledInstances.size;
     result.asOf = `${PIPELINE}: settled/matured FX instances=${settledCount}; openFxTrade=${openFxInstanceExists}. ${

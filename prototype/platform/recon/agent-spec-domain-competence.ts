@@ -25,17 +25,32 @@
 // visible — without it, a persona could ship without the domain-competence
 // sections and the gap would be silent.
 //
-// SEVERITY — grooming posture (warn → fail)
-// -----------------------------------------
-// This launches at `warn` severity, exactly as `agent-spec-cross-link.ts`
-// did: the existing 31-persona corpus pre-dates §18–§20, and upgrading each
-// seat with citation-backed domain content (its real standards, golden
-// cases, and outranking scope) is per-seat domain work that must be sourced,
-// not fabricated in one sweep (Engineering-Charter cmd 4 — source, don't
-// hardcode). Surfacing the count as `warn` gives the controls signal in the
-// overnight digest without blocking every PR or forcing invented knowledge
-// bases. Once the corpus is groomed, this pipeline lifts to `fail` (the
-// D-AGENT-DOMAIN-COMPETENCE closure step) — a harden-only ratchet.
+// SEVERITY — per-seat enforced-set (the harden-only ratchet)
+// ----------------------------------------------------------
+// This launched at `warn` severity for EVERY seat, exactly as
+// `agent-spec-cross-link.ts` did: the existing persona corpus pre-dates
+// §18–§20, and upgrading each seat with citation-backed domain content (its
+// real standards, golden cases, and outranking scope) is per-seat domain work
+// that must be sourced, not fabricated in one sweep (Engineering-Charter cmd 4
+// — source, don't hardcode).
+//
+// FLIPPING THE GLOBAL `enforce` SWITCH IS WRONG (D-FX-IFRS-REVIEW-FOUNDATION,
+// Scope D). The global flag promotes EVERY seat to `fail` at once, which FAILs
+// the ~28 still-ungroomed seats — it cannot be turned on until the whole corpus
+// is groomed, so the seats that ARE groomed (Bea, Camille, Owen, …) get NO
+// enforcement in the meantime. The fix is a PER-SEAT enforced-set: a seat in
+// `FAIL_ENFORCED_SEATS` has its §18–§20 violations raised to `fail`; every other
+// seat stays `warn`. A groomed seat is enforced the moment it lands, while the
+// backlog continues to surface as `warn` — no green by concealment, no blocking
+// the build (Engineering-Charter cmd 3).
+//
+// HARDEN-ONLY INVARIANT. `FAIL_ENFORCED_SEATS` only ever GROWS: a seat is added
+// when its §18–§20 are groomed + validated, and is NEVER removed (removing one
+// would weaken the ratchet, which Engineering-Charter cmd 3 forbids). When the
+// set covers the whole corpus the grooming backlog is closed and the gate is
+// fully enforcing — reached by accretion, not by a single global flip. The
+// `assertNoEnforcedSeatRemoved` ratchet check (below) makes the harden-only
+// property machine-checked, not merely documented.
 //
 // Independence note: this pipeline is STRUCTURAL — it asserts the presence
 // and substantive fill of §18–§20. It reads files only; it imports no domain
@@ -86,6 +101,68 @@ const DOMAIN_COMPETENCE_SECTIONS: ReadonlyArray<readonly [number, string]> = [
  * row) are also accepted.
  */
 const MIN_BODY_CHARS = 50;
+
+/**
+ * The PER-SEAT enforced-set (D-FX-IFRS-REVIEW-FOUNDATION, Scope D). A seat whose
+ * name (the `/Team/<Name>.md` basename without extension) is in this set has its
+ * §18–§20 presence/substance violations raised to `fail`; every seat NOT in the
+ * set stays `warn` (the grooming-window posture). This replaces the global
+ * `enforce` flag's all-or-nothing flip: a groomed seat is enforced the moment its
+ * §18–§20 land + validate, without waiting for the whole ~28-seat backlog.
+ *
+ * HARDEN-ONLY — this set ONLY GROWS. Add a seat when its §18–§20 are groomed and
+ * validated; NEVER remove one (Engineering-Charter cmd 3 — ratchets harden only).
+ * The `FAIL_ENFORCED_SEATS_BASELINE` below is the immutable record of the seats
+ * enforced as of the last hardening; `assertNoEnforcedSeatRemoved` fails closed if
+ * any baseline seat is missing from the live set (a weakening). Seeded with the
+ * three seats whose §18–§20 are confirmed clean under enforcement: Bea (the
+ * accounting/financial-reporting engineer who built the FX-IFRS gates), Camille
+ * (the CFO signer), and Owen (the Company Secretary who authored the gate).
+ */
+export const FAIL_ENFORCED_SEATS: ReadonlySet<string> = new Set(["Bea", "Camille", "Owen"]);
+
+/**
+ * The harden-only BASELINE — the seats that were FAIL-enforced as of the last
+ * ratchet. The live `FAIL_ENFORCED_SEATS` must always be a SUPERSET of this; a
+ * baseline seat missing from the live set is a weakening of the ratchet and fails
+ * closed (`assertNoEnforcedSeatRemoved`). Update this baseline ONLY when adding
+ * seats — never to drop one.
+ */
+export const FAIL_ENFORCED_SEATS_BASELINE: readonly string[] = ["Bea", "Camille", "Owen"];
+
+/**
+ * The resolved §18–§20 severity for one seat: `fail` iff the seat is in the
+ * per-seat enforced-set OR the global `enforce` override is set (the latter
+ * retained for the eventual whole-corpus closure step / tests). Otherwise `warn`.
+ */
+function severityForSeat(
+  personaName: string,
+  globalEnforce: boolean,
+  enforcedSeats: ReadonlySet<string>,
+): ReconViolation["severity"] {
+  return globalEnforce || enforcedSeats.has(personaName) ? "fail" : "warn";
+}
+
+/**
+ * HARDEN-ONLY ratchet assertion: every seat in `FAIL_ENFORCED_SEATS_BASELINE` must
+ * still be present in the live `FAIL_ENFORCED_SEATS`. A missing baseline seat is a
+ * weakening of the enforcement ratchet (Engineering-Charter cmd 3) and yields a
+ * `fail` violation. Returns the violations (empty when the invariant holds).
+ */
+export function assertNoEnforcedSeatRemoved(
+  liveSet: ReadonlySet<string> = FAIL_ENFORCED_SEATS,
+  baseline: readonly string[] = FAIL_ENFORCED_SEATS_BASELINE,
+): ReconViolation[] {
+  const removed = baseline.filter((s) => !liveSet.has(s));
+  if (removed.length === 0) return [];
+  return [
+    {
+      subject: "agent-spec-domain-competence:enforced-set-weakened",
+      message: `The per-seat §18–§20 enforced-set lost baseline seat(s) [${removed.join(", ")}]. FAIL_ENFORCED_SEATS is HARDEN-ONLY — a seat, once enforced, is never dropped (Engineering-Charter cmd 3 — ratchets harden only). Restore the removed seat(s) or, if a removal is genuinely intended, it requires a recorded engineering Decision.`,
+      severity: "fail",
+    },
+  ];
+}
 
 function exactLabelRegex(num: number, label: string): RegExp {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -188,22 +265,46 @@ export interface AssertOpts {
    */
   specs?: ReadonlyArray<readonly [string, string]>;
   /**
-   * Promote presence violations from `warn` to `fail`. The grooming-window
-   * default is `warn`; the D-AGENT-DOMAIN-COMPETENCE closure step flips this
-   * to `true` once every persona carries §18–§20 (harden-only ratchet).
+   * GLOBAL override: promote EVERY seat's presence violations from `warn` to
+   * `fail`. RETAINED for the eventual whole-corpus closure step + tests, but it is
+   * NOT the default path — the default uses the PER-SEAT `FAIL_ENFORCED_SEATS`
+   * (Scope D), so a groomed seat is enforced without FAILing the ungroomed backlog.
    */
   enforce?: boolean;
+  /**
+   * Override the per-seat enforced-set — used by tests to inject a synthetic
+   * enforced seat. Defaults to `FAIL_ENFORCED_SEATS`.
+   */
+  enforcedSeats?: ReadonlySet<string>;
+  /**
+   * Override the harden-only baseline the enforced-set is checked against — used
+   * by tests that inject a synthetic `enforcedSeats` for severity testing and do
+   * NOT want the production ratchet to fire. Defaults to
+   * `FAIL_ENFORCED_SEATS_BASELINE` (the production invariant).
+   */
+  enforcedSeatsBaseline?: readonly string[];
 }
 
 /**
  * Assert agent-spec domain-competence integrity over `specs`. Pure function;
  * reads only the strings provided (or, if `specs` is omitted, reads every
  * persona file under `teamDir` ?? TEAM_DIR).
+ *
+ * SEVERITY is resolved PER SEAT (Scope D): a seat in `enforcedSeats`
+ * (default `FAIL_ENFORCED_SEATS`) — or every seat when the global `enforce`
+ * override is set — has its §18–§20 violations at `fail`; every other seat at
+ * `warn`. The harden-only `assertNoEnforcedSeatRemoved` ratchet is folded in so a
+ * weakening of the enforced-set itself fails the gate.
  */
 export function assertDomainCompetence(opts: AssertOpts = {}): ReconResult {
   const result = emptyResult("agent-spec-domain-competence");
   const violations: ReconViolation[] = [];
-  const severity: ReconViolation["severity"] = opts.enforce === true ? "fail" : "warn";
+  const globalEnforce = opts.enforce === true;
+  const enforcedSeats = opts.enforcedSeats ?? FAIL_ENFORCED_SEATS;
+  const enforcedSeatsBaseline = opts.enforcedSeatsBaseline ?? FAIL_ENFORCED_SEATS_BASELINE;
+
+  // Harden-only ratchet: a weakening of the enforced-set itself fails closed.
+  violations.push(...assertNoEnforcedSeatRemoved(enforcedSeats, enforcedSeatsBaseline));
 
   const specs: Array<readonly [string, string]> =
     opts.specs !== undefined
@@ -216,6 +317,7 @@ export function assertDomainCompetence(opts: AssertOpts = {}): ReconResult {
     const fileName = basename(path);
     const subject = path.replace(`${REPO_ROOT}/`, "");
     const personaName = fileName.replace(/\.md$/i, "");
+    const severity = severityForSeat(personaName, globalEnforce, enforcedSeats);
     result.asserted++;
 
     for (const [num, label] of DOMAIN_COMPETENCE_SECTIONS) {
@@ -245,8 +347,10 @@ export function assertDomainCompetence(opts: AssertOpts = {}): ReconResult {
 
 /**
  * Convenience entry point — runs the assertion over the live `/Team/`
- * directory at the grooming-window severity (`warn`). The closure step
- * flips to `assertDomainCompetence({ enforce: true })`.
+ * directory with PER-SEAT enforcement (Scope D): the seats in
+ * `FAIL_ENFORCED_SEATS` are `fail`-enforced, the rest stay `warn` (the grooming
+ * window). The whole-corpus closure step is reached by accreting seats into
+ * `FAIL_ENFORCED_SEATS`, not by flipping the global `enforce` flag.
  */
 export function run(): ReconResult {
   return assertDomainCompetence({});

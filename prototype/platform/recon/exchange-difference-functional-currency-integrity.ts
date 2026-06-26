@@ -1,17 +1,31 @@
-// platform/recon/fx-monetary-closing-rate-integrity.ts
+// platform/recon/exchange-difference-functional-currency-integrity.ts
 //
-// recon:fx-monetary-closing-rate-integrity — ENFORCING IAS 21 monetary-item gate.
+// recon:exchange-difference-functional-currency-integrity — ENFORCING IAS 21 §28
+// exchange-difference functional-CURRENCY gate.
 //
-// THE INVARIANT (IAS 21 §23 + §28; D-FX-IFRS-REVIEW-FOUNDATION, CEO-approved
-// 2026-06-26). An open FX trading position is a MONETARY item (IAS 21 §8 — a
-// right to receive / obligation to deliver a fixed number of currency units). At
-// each reporting date a monetary item is retranslated at the CLOSING RATE (§23),
-// and the exchange difference is recognised in profit or loss IN THE FUNCTIONAL
-// (reporting) CURRENCY (§28). The bank's FVTPL revaluation rule (PR-FX-REVAL-V2)
-// IS that retranslation mechanism: it posts the period's measured fair-value /
-// exchange-difference movement to the on-balance-sheet position vs P&L.
+// RENAMED FROM recon:fx-monetary-closing-rate-integrity (D-FX-IFRS-REVIEW-
+// FOUNDATION, F8). The old name OVERCLAIMED: it implied the gate enforces the
+// IAS 21 §23 closing-RATE MAGNITUDE, but the gate has NO rate-magnitude oracle —
+// it asserts the §28 CURRENCY-OF-RECOGNITION (every exchange-difference leg is
+// struck in the functional currency), NOT that the retranslation used the correct
+// period-end RATE. A wrong-RATE retranslation of the RIGHT currency would pass this
+// gate. The rename makes the gate's scope honest (Engineering Charter cmd 3 — no
+// green by concealment); the assertion logic is UNCHANGED, so this is a truth-in-
+// naming fix, not a weakening.
 //
-// What this gate asserts — the OBSERVABLE, fail-closed consequence of §23/§28:
+// WHERE THE §23 RATE MAGNITUDE IS PROVEN (so the coverage is not lost). The
+// closing-RATE retranslation magnitude is the domain-truth job of the MEASUREMENT
+// engine `forwardMtmValue` (v2-core/fil-models/fx-valuation/methodology.ts), and it
+// is asserted END-TO-END by the CASE 2-DERIVE / 3-DERIVE golden cases
+// (v2-core/posting-rules/fx-ifrs-golden-cases.test.ts): they feed independently-
+// chosen booked + period-end rates and assert the DERIVED exchange difference
+// equals `notional × (closing − booked)` — the §23 magnitude oracle. This gate is
+// the COMPLEMENTARY §28 currency assertion; together with the DERIVE golden they
+// encode "retranslated at the closing rate (magnitude — DERIVE golden); difference
+// recognised in the functional currency (this gate)".
+//
+// What this gate asserts — the §28 functional-CURRENCY consequence (NOT the §23
+// rate magnitude — see the note above):
 //
 //   (1) Every FVTPL revaluation movement (PR-FX-REVAL-V2) and every realisation
 //       leg (PR-FX-CONVERT-V2 / PR-FX-CLOSE-V2) — the exchange-difference postings
@@ -29,17 +43,17 @@
 //       retranslation result is recorded in the measurement currency, not a stale
 //       foreign one.
 //
-// This is the IAS 21 §23/§28 counterpart to the §28-direction gate
+// This is the §28-CURRENCY counterpart to the §28-DIRECTION gate
 // (recon:fx-pnl-account-category-integrity, which asserts the exchange difference
-// lands in P&L) — here we assert it lands in the right CURRENCY (the closing
-// functional rate). Together they encode "monetary items retranslated at the
-// closing rate; difference to P&L".
+// lands in P&L) — here we assert it lands in the right CURRENCY (the functional
+// currency). Together they encode "exchange difference recognised in P&L, in the
+// functional currency".
 //
 // METHOD. Folds the FX contribution legs (default lens) and resolves the
 // functional currency from the canonical identity source (anchorFunctionalCurrency
-// — sourced, not hardcoded). Pure asserter `assertFxMonetaryClosingRate(legs,
-// functional)` is testable with an injected violating leg. Read-only; values
-// nothing; touches no v1 number.
+// — sourced, not hardcoded). Pure asserter
+// `assertExchangeDifferenceFunctionalCurrency(legs, functional)` is testable with
+// an injected violating leg. Read-only; values nothing; touches no v1 number.
 //
 // CLEAN-STORE BEHAVIOUR: a store with no FX exchange-difference legs passes
 // vacuously after the static account-currency check (which always runs, so the
@@ -63,7 +77,7 @@ import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import { V2_PERIOD_END, V2_PERIOD_START } from "../projections/v2-read-window";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
-const PIPELINE = "fx-monetary-closing-rate-integrity";
+const PIPELINE = "exchange-difference-functional-currency-integrity";
 
 /** The exchange-difference (P&L) accounts whose legs must be functional-denominated. */
 const EXCHANGE_DIFFERENCE_ACCOUNTS: ReadonlySet<string> = new Set([
@@ -88,7 +102,7 @@ function isZeroAmount(amount: string): boolean {
  * live store. Asserts the exchange-difference accounts carry the functional
  * currency, and every exchange-difference leg is functional-denominated.
  */
-export function assertFxMonetaryClosingRate(
+export function assertExchangeDifferenceFunctionalCurrency(
   legs: readonly FxFoldLeg[],
   functional: string,
 ): ReconResult {
@@ -138,13 +152,13 @@ export function assertFxMonetaryClosingRate(
 
     result.asOf = `${PIPELINE}: functional=${functional}; exchange-difference legs asserted=${exchangeDiffLegs}. ${
       violations.some((v) => v.severity === "fail")
-        ? "MONETARY-RETRANSLATION-VIOLATION"
-        : "monetary items retranslated at the closing rate; exchange difference recognised in the functional currency"
+        ? "EXCHANGE-DIFFERENCE-CURRENCY-VIOLATION"
+        : "exchange difference recognised in the functional currency (§28); rate magnitude proven by the DERIVE golden (§23)"
     }.`;
   } catch (err) {
     violations.push({
       subject: `${PIPELINE}:error`,
-      message: `FX monetary closing-rate assertion threw: ${err instanceof Error ? err.message : String(err)}.`,
+      message: `Exchange-difference functional-currency assertion threw: ${err instanceof Error ? err.message : String(err)}.`,
       severity: "fail",
     });
     result.asserted += 1;
@@ -155,7 +169,8 @@ export function assertFxMonetaryClosingRate(
   return result;
 }
 
-/** Fold the production FX legs and assert the IAS 21 monetary closing-rate invariant. */
+/** Fold the production FX legs and assert the IAS 21 §28 exchange-difference
+ * functional-currency invariant. */
 export function run(): ReconResult {
   try {
     const functional = anchorFunctionalCurrency();
@@ -164,14 +179,14 @@ export function run(): ReconResult {
       periodStart: V2_PERIOD_START,
       periodEnd: V2_PERIOD_END,
     });
-    return assertFxMonetaryClosingRate(fold.legs as FxFoldLeg[], functional);
+    return assertExchangeDifferenceFunctionalCurrency(fold.legs as FxFoldLeg[], functional);
   } catch (err) {
     const result = emptyResult(PIPELINE);
     result.asserted += 1;
     result.violations = [
       {
         subject: `${PIPELINE}:error`,
-        message: `FX monetary closing-rate fold threw: ${err instanceof Error ? err.message : String(err)}.`,
+        message: `Exchange-difference functional-currency fold threw: ${err instanceof Error ? err.message : String(err)}.`,
         severity: "fail",
       },
     ];
