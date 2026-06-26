@@ -1,8 +1,8 @@
 // platform/alm/repricing-gap.ts
 //
-// Repricing gap schedule computation — BCBS 319 standard time buckets.
+// Repricing gap schedule computation — BCBS d368 / SRP31 standard time buckets.
 //
-// The repricing gap is the cornerstone of IRRBB measurement under BCBS d365.
+// The repricing gap is the cornerstone of IRRBB measurement under BCBS d368.
 // For each bucket it measures:
 //   RSA (rate-sensitive assets)  — bonds (fixed-rate) + swap fixed legs
 //   RSL (rate-sensitive liabs)   — swap floating legs + repo obligations
@@ -18,10 +18,12 @@
 //   production posture: the gap schedule is query-derived, not stored state
 //   (Principle 1 — events are the only source of truth).
 //
-// BCBS 319 time buckets used:
+// Standard time buckets used (BCBS d368 / SRP31; the bucket grid first appeared
+// in the 2015 consultative BCBS 319 and was finalised in d368):
 //   ON (overnight / ≤ 1 day), 1M, 3M, 6M, 1Y, 2Y, 3Y, 5Y, 7Y, 10Y+
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BCBS d365 (IRRBB, 2016); Banks Act Reg 26/27.
+// Authority: D-TREASURY-GAPS-WAVE1; BCBS d368 (Interest rate risk in the banking
+//   book, April 2016) / SRP31 (urn:reg:bcbs:srp:31); Banks Act Reg 26/27.
 // Author: Ravi (Treasury/ALM Engineer, engineering)
 
 import type { EventStore } from "../event-store/store";
@@ -32,7 +34,7 @@ import { eventInOperatingBook } from "../projections/filter";
 // Types
 // ---------------------------------------------------------------------------
 
-/** Standard BCBS 319 repricing time buckets. */
+/** Standard BCBS d368 / SRP31 repricing time buckets. */
 export type RepricingBucket = "ON" | "1M" | "3M" | "6M" | "1Y" | "2Y" | "3Y" | "5Y" | "7Y" | "10Y+";
 
 export const REPRICING_BUCKETS: readonly RepricingBucket[] = [
@@ -113,7 +115,7 @@ function minorToZar(minor: number): number {
 // ---------------------------------------------------------------------------
 
 /**
- * Compute the BCBS 319 repricing gap schedule from the event store.
+ * Compute the BCBS d368 / SRP31 repricing gap schedule from the event store.
  *
  * Reads `TradeBooked` and `TradeSettled` events. In build phase (no trades)
  * returns a zero-gap schedule with `status: "zero-positions"`.
@@ -129,7 +131,7 @@ function minorToZar(minor: number): number {
  *       RSL += notional, bucket = repo tenor
  *
  * This logic is intentionally simple for the build phase. Production will
- * enrich each leg with actual cashflow schedules per BCBS d365 §4.
+ * enrich each leg with actual cashflow schedules per BCBS d368 §4.
  *
  * Units: all accumulators (`rsa` / `rsl`) hold whole rand. The deposit / repo
  * / interbank-loan events carry `*Zar` amounts in minor units (cents) and are
