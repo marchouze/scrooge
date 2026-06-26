@@ -185,6 +185,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // the assembly reconciliation + the production=0 / simulated=values boundary.
   // No production access path — same rationale as ba320-trading-book-sim-drive.
   "platform/recon/ba325-selected-risk-sim-drive.ts",
+  // BA 350 derivatives inventory sim-drive gate (D-BA-RETURN-SIMULATOR-FIRST
+  // Phase 2b): builds a throwaway `:memory:` EventStore with a simulated
+  // derivative book (every instrument type / asset class / venue / maturity /
+  // book) to drive the BA 350 notional + fair-value fold and prove the oracle
+  // reconciliation + production=0 / simulated=values boundary. No production
+  // access path — same rationale as ba320-trading-book-sim-drive.
+  "platform/recon/ba350-derivatives-sim-drive.ts",
   // Recon pipelines that read-only replay the live store. Wrapping the read
   // path with the gate is a no-op (the gate intercepts append, not replay).
   "platform/recon/dashboard-derivation-recon.ts",

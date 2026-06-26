@@ -289,6 +289,39 @@ export const SUBSTRATE_GAP_REGISTER: readonly SubstrateGapRecord[] = [
     status: "planned",
     mitigation: "partial",
   },
+  // ---------------------------------------------------------------------------
+  // BA 350 (Derivatives Instruments) — Phase 2b (D-BA-RETURN-SIMULATOR-FIRST).
+  // The aggregate inventory backbone (asset-class × book × venue × instrument-
+  // type × maturity-band notional + fair value) IS folded and oracle-validated;
+  // what is deferred is the exhaustive leaf-cell row-number mapping of the
+  // ~1000-cell maturity ladder. The DATA exists in the fold; only the
+  // presentation-row enumeration is deferred — tracked here, not silently zeroed.
+  // ---------------------------------------------------------------------------
+  {
+    id: "ba350-maturity-ladder-cell-mapping",
+    title: "BA 350 maturity-ladder leaf-cell row-number mapping: deferred (data folded)",
+    description:
+      "BA 350 (Derivatives Instruments) is a notional + fair-value inventory grid. Phase 2b (D-BA-RETURN-SIMULATOR-FIRST) folds the derivative book (born-V2 DerivativeTradingPositionOpened; scripts/sim/seed-derivative-book-sim-v1.ts) into the BA 350 inventory (platform/reporting/ba-350-derivatives-fold.ts) carrying every grid axis — asset class, ETD/OTC venue, instrument type, maturity band, trading/banking book — and the cell-assembly (platform/returns/ba350/ba-350-derivatives.ts) drives the BACKBONE cells (per-asset-class × per-book notional + net/positive/negative fair value, ETD/OTC venue split, credit-derivative Section 2, grand-total hash-totals) to oracle-validated NON-ZERO figures. The fine-grained ~1000-leaf maturity-ladder detail rows (R0250–R0790: each instrument-type × maturity-band leaf cell) are a PRESENTATION EXPANSION of the same folded inventory — the fold already carries instrumentType + maturityBand, so the data EXISTS; only the exhaustive leaf-cell row-number enumeration onto the xlsx-derived contract grid is deferred. It is a mechanical mapping follow-on, gated on nothing (no missing engine). Surfaced as a tracked gap on the assembled BA 350 output's gaps[] — never a silent zero. Authority: D-BA-RETURN-SIMULATOR-FIRST; Engineering Charter cmd 5; Reg 28 / Reg 30.",
+    severity: "medium",
+    status: "planned",
+    mitigation: "partial",
+  },
+  // ---------------------------------------------------------------------------
+  // Cohort-VaR provenance filtering (surfaced by BA 325 Phase 2a, tracked by
+  // Phase 2b — D-BA-RETURN-SIMULATOR-FIRST). The cohort VaR engine relies on
+  // STORE SEPARATION, not provenance FILTERING, so a canonical store that ever
+  // held a simulated FIL instrument would compute VaR over it. The fix is a
+  // separate FX-V2-simulator hardening, OUT of scope for the BA 350 / CVA slice.
+  // ---------------------------------------------------------------------------
+  {
+    id: "cohort-var-provenance-filter",
+    title: "Cohort VaR engine not provenance-filtered (relies on store separation)",
+    description:
+      "The cohort VaR engine (platform/market-risk/eod-cohort-var-v2.ts, computeCohortVar) derives FX exposures by replaying FIL-instrument lifecycle events from the supplied event store WITHOUT applying a provenance filter — it relies on STORE SEPARATION (the production canonical store and the simulated store are physically distinct files) rather than provenance FILTERING within a store. BA 325 Phase 2a's provenance-boundary proof works by passing an EMPTY production store for the production leg (so 'no-positions'); it does NOT prove the engine would exclude a simulated FIL instrument if one were ever present in the production canonical store. If a simulated FIL instrument ever leaked into the production store (the same class of regression as the R300m-into-Prod incident, D-V2-UI-VISIBILITY-REMEDIATION), computeCohortVar would silently compute VaR over it — a production figure contaminated by simulated positions. The correct fix is to thread a ProvenanceFilter through deriveCohortFxExposures / computeCohortVar (the same filter the BA 320 / BA 350 folds apply) so the production read fails closed regardless of store contents. This is a FX-V2-simulator hardening tracked as a named follow-on; it is OUT of scope for the BA 350 + CVA slice (which only consumes the engine via the empty-store production leg, already correct under store separation). Authority: D-BA-RETURN-SIMULATOR-FIRST; D-FX-V2-SIMULATOR-FIRST; D-PROVENANCE-FILTER-ENFORCEMENT; Engineering Charter cmd 5 (no silent deferral).",
+    severity: "high",
+    status: "planned",
+    mitigation: "partial",
+  },
 ];
 
 /** Open (not-yet-resolved) gaps — the inventory the substrate snapshot tracks. */

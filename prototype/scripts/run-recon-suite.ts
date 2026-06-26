@@ -461,6 +461,18 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // `absent` — never a silent zero, never an overclaimed fold. Self-contained,
     // so it always asserts (a clean store cannot manufacture a pass).
     "recon:ba325-selected-risk-sim-drive",
+    // D-BA-RETURN-SIMULATOR-FIRST Phase 2b — ENFORCING: BA 350 (Derivatives
+    // Instruments) INVENTORY fold. Builds a self-contained in-memory simulated
+    // derivative book (every instrument type / asset class / ETD-vs-OTC venue /
+    // maturity band / trading-vs-banking book) and asserts (A) the per-asset-
+    // class × book notional + grand totals + ETD/OTC venue split land on a hand-
+    // computed oracle (R820m grand notional; +R3.22m net fair value); (B) the
+    // fair-value sign split (positive asset / negative liability) sums to net;
+    // (C) the provenance boundary holds (production lens → empty / absent, the
+    // R300m-into-Prod regression guard); (D) the deferred maturity-ladder leaf-
+    // cell mapping is tracked in the gap-register AND surfaced `absent`. Self-
+    // contained, so it always asserts (a clean store cannot manufacture a pass).
+    "recon:ba350-derivatives-sim-drive",
     // WS-V2-AUTHORITATIVE S6 — ALM-snapshot-SHAPE V2 parity gate (advisory).
     // Structural-compares V1 getALMPositionSnapshot vs V2 getALMPositionSnapshotV2
     // (HQLA / funding / ASF / RSF arrays) for the anchor bank entity — the

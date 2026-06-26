@@ -103,6 +103,9 @@ export { BOND_ACCOUNTING_V2_EVENT_TYPES_REGISTRY } from "./bond-accounting-v2";
 // D-BA-RETURN-SIMULATOR-FIRST — born-V2 trading-book equity + commodity position
 // events that feed the BA 320 (Market Risk) equity / commodity folds.
 export { TRADING_BOOK_POSITION_EVENT_TYPES_REGISTRY } from "./trading-book-positions";
+// D-BA-RETURN-SIMULATOR-FIRST Phase 2b — born-V2 derivative-book position events
+// that feed the BA 350 (Derivatives Instruments) inventory + CVA capital folds.
+export { DERIVATIVE_BOOK_POSITION_EVENT_TYPES_REGISTRY } from "./derivative-book-positions";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE equity lifecycle accounting events.
 export { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — OTC IRD swap lifecycle accounting events.
@@ -359,6 +362,7 @@ import { CREDIT_LIMIT_EVENT_TYPES_REGISTRY } from "./credit-limit";
 import { CROSS_TENANT_CSI_EVENT_TYPES } from "./cross-tenant-csi";
 import { DECISION_DISTILLATION_EVENT_TYPES_REGISTRY } from "./decision-distillation";
 import { DECISION_IMPACT_SWEEP_EVENT_TYPES_REGISTRY } from "./decision-impact-sweep";
+import { DERIVATIVE_BOOK_POSITION_EVENT_TYPES_REGISTRY } from "./derivative-book-positions";
 import { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
 import { EXTERNAL_CREDIT_RATING_EVENT_TYPES_REGISTRY } from "./external-credit-rating";
 import { FIL_ATTRIBUTION_EVENT_TYPES_REGISTRY } from "./fil-attribution";
@@ -520,6 +524,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // D-BA-RETURN-SIMULATOR-FIRST — born-V2 trading-book equity + commodity
   // position events feeding the BA 320 (Market Risk) equity / commodity folds.
   ...TRADING_BOOK_POSITION_EVENT_TYPES_REGISTRY,
+  // D-BA-RETURN-SIMULATOR-FIRST Phase 2b — born-V2 derivative-book position
+  // events feeding the BA 350 (Derivatives Instruments) inventory + CVA folds.
+  ...DERIVATIVE_BOOK_POSITION_EVENT_TYPES_REGISTRY,
   // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE equity lifecycle accounting events.
   // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
   ...EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY,
