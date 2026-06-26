@@ -34,11 +34,11 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { minorFromMoneyWire } from "../core/money-codec";
-import type { EventStore } from "../event-store/store";
 import type {
   EquityTradingPositionClosedPayload,
   EquityTradingPositionOpenedPayload,
 } from "../event-store/event-types/trading-book-positions";
+import type { EventStore } from "../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 import type { EquityRow } from "./ba-320-market-risk";
 

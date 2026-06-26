@@ -51,8 +51,8 @@
 
 import { z } from "zod";
 
-import { newEventId } from "../../core/types";
 import { moneyWireSchema } from "../../core/money-codec";
+import { newEventId } from "../../core/types";
 import { type Actor, type Event, type ProvenanceTag, eventSchema } from "../types";
 
 // ---------------------------------------------------------------------------
