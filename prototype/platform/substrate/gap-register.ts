@@ -247,6 +247,15 @@ export const SUBSTRATE_GAP_REGISTER: readonly SubstrateGapRecord[] = [
     status: "planned",
     mitigation: "partial",
   },
+  {
+    id: "ba320-ir-sim-gl",
+    title: "BA 320 IR risk class: live simulated trading-book bond seed deferred",
+    description:
+      "The simulator-first trading book (D-BA-RETURN-SIMULATOR-FIRST Phase 1; scripts/sim/seed-trading-book-sim-v1.ts) seeds live SIMULATED equity + commodity trading-book positions that drive the BA 320 equity + commodity risk classes (the classes that previously folded to zero — no event stream fed them). It does NOT seed a live simulated BondTradeExecuted for the INTEREST-RATE risk class, because every live BondTradeExecuted requires its matching V1 SubLedgerPostingEmitted (posting rule PR-BOND-001) or recon:gl-ledger-coverage flags an uncovered lifecycle — seeding a live sim bond would drag the whole bond GL-posting chain into this slice. The IR risk class is ALREADY driven by the existing ba-320-bond-events-adapter / ba-320-irs-events-adapter (which filter portfolio === 'trading-book'); the brief's IR scope ('ensure trading-book designation') is honoured and PROVEN end-to-end against the Reg 28(3)(a) Table A oracle by platform/returns/ba320/trading-book-sim-golden.test.ts (R100m SA-gov @ 5-7y → R3,250,000; banking-book excluded) using an in-memory store. The live IR sim seed (a simulated trading-book bond WITH its GL postings on the sim path) is the named follow-on. Authority: D-BA-RETURN-SIMULATOR-FIRST; Engineering Charter cmd 5 (no silent deferral).",
+    severity: "medium",
+    status: "planned",
+    mitigation: "partial",
+  },
 ];
 
 /** Open (not-yet-resolved) gaps — the inventory the substrate snapshot tracks. */

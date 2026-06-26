@@ -100,6 +100,9 @@ export { AGENT_MEMORY_EVENT_TYPES_REGISTRY } from "./agent-memory";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE bond lifecycle accounting events.
 export { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 export { BOND_ACCOUNTING_V2_EVENT_TYPES_REGISTRY } from "./bond-accounting-v2";
+// D-BA-RETURN-SIMULATOR-FIRST — born-V2 trading-book equity + commodity position
+// events that feed the BA 320 (Market Risk) equity / commodity folds.
+export { TRADING_BOOK_POSITION_EVENT_TYPES_REGISTRY } from "./trading-book-positions";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE equity lifecycle accounting events.
 export { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — OTC IRD swap lifecycle accounting events.
@@ -430,6 +433,7 @@ import {
 import { SEED_MANAGEMENT_EVENT_TYPES } from "./seed-management";
 import { SETTLEMENT_EVENT_TYPES_REGISTRY } from "./settlement";
 import { SLA_APPROVAL_EVENT_TYPES_REGISTRY } from "./sla-approval";
+import { TRADING_BOOK_POSITION_EVENT_TYPES_REGISTRY } from "./trading-book-positions";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
 import { V2_BANKING_EVENT_TYPES_REGISTRY } from "./v2-banking";
 import { V2_CONTROL_PLANE_EVENT_TYPES } from "./v2-control-plane";
@@ -513,6 +517,9 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...BOND_ACCOUNTING_EVENT_TYPES_REGISTRY,
   // D-V1-REMOVAL-PHASE-3C — V2-parallel JSE bond lifecycle events.
   ...BOND_ACCOUNTING_V2_EVENT_TYPES_REGISTRY,
+  // D-BA-RETURN-SIMULATOR-FIRST — born-V2 trading-book equity + commodity
+  // position events feeding the BA 320 (Market Risk) equity / commodity folds.
+  ...TRADING_BOOK_POSITION_EVENT_TYPES_REGISTRY,
   // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE equity lifecycle accounting events.
   // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
   ...EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY,
