@@ -16,7 +16,7 @@
 //   - IntradayHQLAStressProjection → RETENTION_BANKING_5Y
 //     (intraday prudential record; Banks Act 94 of 1990 — 5 years)
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d365;
+// Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d368;
 //   Banks Act 94 of 1990; Companies Act 71 of 2008.
 // Author: Atlas (Core banking platform architect, engineering)
 
@@ -48,7 +48,7 @@ export const ALCO_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_GOVERNANCE_7Y,
     payloadSchema: alcoPackGeneratedPayloadSchema,
-    citationsHint: ["D-TREASURY-GAPS-WAVE1", "BA-110", "BA-120", "BCBS-D365-IRRBB"],
+    citationsHint: ["D-TREASURY-GAPS-WAVE1", "BA-110", "BA-120", "BCBS-D368-IRRBB"],
     source: "platform/event-store/event-types/alco.ts",
     v2Status: "v1-only",
   },

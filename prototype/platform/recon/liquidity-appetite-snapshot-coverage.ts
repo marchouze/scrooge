@@ -256,7 +256,7 @@ export function run(opts: RunOpts = {}): ReconResult {
         continue;
       }
       const sourceNote = isB4
-        ? "RAS §B4 thresholds: green <10% Tier-1 / amber 10-15% Tier-1 / red ≥15% Tier-1 (BCBS d365 §A-3.4). Source projection: platform/projections/irrbb-delta-eve.ts (IRRBBChecked EVE events of record from Ravi's ALM run)."
+        ? "RAS §B4 thresholds: green <10% Tier-1 / amber 10-15% Tier-1 / red ≥15% Tier-1 (BCBS d368 §A-3.4). Source projection: platform/projections/irrbb-delta-eve.ts (IRRBBChecked EVE events of record from Ravi's ALM run)."
         : "RAS §B3 thresholds: LCR green ≥120% / amber 110-120% / red <110% / critical <105%; NSFR green ≥115% / amber 108-115% / red <108% / critical <103%. Source projection: platform/projections/alm-positions.ts.";
       violations.push({
         subject: `RiskAppetiteSnapshot:${latest.event_id}:${lineId}`,

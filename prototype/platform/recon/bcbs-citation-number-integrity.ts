@@ -37,17 +37,20 @@
 //   365 must NOT be cited as the IRRBB standard (it is the leverage-ratio
 //       consultative document, Apr 2016 — the IRRBB STANDARD is d368)
 //
-// Scope / known exception
-// -----------------------
-// The runtime citation-identifier constant `BCBS-D365-IRRBB` (a hyphenated
-// token, distinct from the prose form `BCBS d365`) is a replay-sensitive
-// event-citation identity emitted across the markets / ALM event registries.
-// Its correction (d365 → d368) is coupled to the `platform/alm/*` engine
-// change owned by a separate concurrent task (one-dispatch-path-per-scope).
-// This gate therefore asserts only on the PROSE citation form `BCBS [D]<nnn>`
-// and explicitly ignores the hyphenated `BCBS-D<nnn>-<TAG>` constant form, to
-// avoid colliding with that change. The constant cluster is tracked as a
-// cross-task coordination finding under D-BCBS-CITATION-NUMBERING-REMEDIATION.
+// Scope
+// -----
+// This gate asserts on BOTH citation forms:
+//   1. the PROSE citation form `BCBS [D]<nnn>` (e.g. `BCBS d365`, `BCBS 295`); and
+//   2. the hyphenated runtime citation-identifier CONSTANT form
+//      `BCBS-D<nnn>-<TAG>` (e.g. `BCBS-D365-IRRBB`) — the replay-sensitive
+//      event-citation identity emitted across the markets / ALM event
+//      registries. A re-injected `BCBS-D365-IRRBB` constant (claiming d365 is
+//      the IRRBB standard) is therefore caught, not just the prose form.
+// The `platform/alm/*` exclusion is LIFTED: the alm prose + the
+// `BCBS-D365-IRRBB → BCBS-D368-IRRBB` constant rename were completed under the
+// Rohan finisher dispatch (D-BCBS-CITATION-NUMBERING-REMEDIATION), so the alm
+// estate is now scanned like every other surface — a re-injected d365=IRRBB in
+// alm fails the gate.
 //
 // Mode: blocking (FAIL severity). Harden-only.
 //
@@ -196,9 +199,31 @@ function isCorrectionContext(line: string): boolean {
  * but NOT the hyphenated constant `BCBS-D365-IRRBB` (which is preceded by a
  * hyphen and followed by `-TAG`), nor a hyphen-joined `BCBS-D295`. We require a
  * whitespace separator between `BCBS` and the optional `D`/`d` + digits, and we
- * reject a trailing `-<LETTER>` constant tag.
+ * reject a trailing `-<LETTER>` constant tag. The hyphenated constant form is
+ * checked separately by CONSTANT_RE below (it carries its own title TAG, so it
+ * needs no proximity window).
  */
 const TOKEN_RE = /BCBS\s+[Dd]?(\d{3})\b(?!-[A-Za-z])/g;
+
+/**
+ * Hyphenated runtime citation-identifier CONSTANT token:
+ * `BCBS-D365-IRRBB`, `BCBS-d365-IRRBB`, `BCBS-D368-IRRBB`, `BCBS-D196-§644`,
+ * `BCBS-D238`, `BCBS-D295-NSFR`. Captures the number (group 1) and the optional
+ * trailing TAG (group 2). The TAG is itself the title in apposition, so a
+ * forbidden pairing is decided directly from (number, tag) — no proximity
+ * window needed. A re-injected `BCBS-D365-IRRBB` (claiming d365 is the IRRBB
+ * standard) is caught here.
+ */
+const CONSTANT_RE = /BCBS-[Dd](\d{3})(?:-([A-Za-z§]+))?\b/g;
+
+/**
+ * Maps a constant TAG (the suffix after the number, e.g. `IRRBB`, `NSFR`,
+ * `LCR`) to the forbidden-pairing keyword set, so the constant check reuses the
+ * same FORBIDDEN_PAIRINGS table as the prose check. Returns the lower-cased tag.
+ */
+function tagToTitleKeyword(tag: string | undefined): string {
+  return (tag ?? "").toLowerCase();
+}
 
 function findRepoRoot(start: string): string {
   let dir = start;
@@ -244,10 +269,9 @@ const SKIP_PATH_FRAGMENTS = [
   // This gate's own source documents the canonical numbers + the forbidden
   // pairings in prose; it is the definition of the rule, not a citation.
   "bcbs-citation-number-integrity.ts",
-  // platform/alm/* is owned by a separate concurrent task (d365 → d368 +
-  // the BCBS-D365-IRRBB constant). One-dispatch-path-per-scope: this gate must
-  // not bracket that change. The d365-in-alm sites are flagged in the audit.
-  "/platform/alm/",
+  // (platform/alm/* exclusion LIFTED 2026-06-26 under D-BCBS-CITATION-NUMBERING-
+  //  REMEDIATION — the alm d365→d368 prose + the BCBS-D365-IRRBB→BCBS-D368-IRRBB
+  //  constant rename are done, so alm is scanned like every other surface.)
   // Generated, minified single-line BA-return contracts: the cell-data prose is
   // GENERATED from `gen-return-contract.py` (which IS scanned, where apposition
   // works). On one 1,500+-cell line the apposition heuristic cannot isolate a
@@ -379,6 +403,35 @@ export function run(): ReconResult {
       }
 
       m = TOKEN_RE.exec(text);
+    }
+
+    // ---- Hyphenated CONSTANT form: `BCBS-D365-IRRBB`, `BCBS-D196-§644`, etc.
+    // The TAG after the number is the title in apposition, so a forbidden
+    // pairing is decided directly from (number, tag) — no proximity window.
+    CONSTANT_RE.lastIndex = 0;
+    let c: RegExpExecArray | null = CONSTANT_RE.exec(text);
+    while (c !== null) {
+      const num = Number(c[1]);
+      const tag = tagToTitleKeyword(c[2]);
+      const idx = c.index;
+      asserted++;
+
+      const lineNo = text.slice(0, idx).split("\n").length;
+      const lineText = text.split("\n")[lineNo - 1] ?? "";
+
+      if (tag.length > 0 && !isCorrectionContext(lineText)) {
+        for (const fp of FORBIDDEN_PAIRINGS) {
+          if (num === fp.number && fp.keywords.some((k) => tag.includes(k))) {
+            violations.push({
+              subject: `${rel}:${lineNo}`,
+              message: `BCBS-D${num}-${(c[2] ?? "").toUpperCase()} constant cited as the ${fp.titleLabel} — ${fp.reason}`,
+              severity: "fail",
+            });
+          }
+        }
+      }
+
+      c = CONSTANT_RE.exec(text);
     }
   }
 
