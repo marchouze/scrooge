@@ -848,6 +848,16 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // ENFORCING, fail-closed on any missing rule / wrong account role / wrong
     // direction / wrong order.
     "recon:fx-leg-structure-matches-rules",
+    // D-FX-ACCOUNTING-RENDER-COHERENCE (CEO-approved 2026-06-26): FX render-path
+    // coherence. No FX product's rendered accounting surfaces (accountingTreatment
+    // posting-rules table, accountingPerspective per-stage legs, GL valuation lens)
+    // may cite a posting rule the registry flags `deprecated` (retired), nor a
+    // trigger event type absent from the LIVE (non-deprecated) family trigger set
+    // (a superseded event family). Complements the EXECUTION-path
+    // recon:fx-pnl-account-category-integrity guard (FVOCI-for-FX forbidden). The
+    // deprecated set is sourced from the registry's own structured flag, not a
+    // hardcoded denylist (Charter cmd 4). ENFORCING, fail-closed.
+    "recon:fx-render-no-deprecated-or-stale-family",
     // D-BA-RETURN-DATA-CONTRACT (CEO-approved 2026-06-19): binds the L3 return-
     // cell data contract into the NPA gate. Every CURRENTLY-EFFECTIVE product
     // (resolveEffectiveApprovals — not dead approvals) must capture, or track as

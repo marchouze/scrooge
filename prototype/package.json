@@ -137,6 +137,7 @@
     "recon:npa-post-approval-finding-review": "bun run platform/recon/npa-post-approval-finding-review.ts",
     "recon:npa-page-no-invented-functionality": "bun run platform/recon/npa-page-no-invented-functionality.ts",
     "recon:fx-leg-structure-matches-rules": "bun run platform/recon/fx-leg-structure-matches-rules.ts",
+    "recon:fx-render-no-deprecated-or-stale-family": "bun run platform/recon/fx-render-no-deprecated-or-stale-family.ts",
     "recon:npa-return-data-obligation-integrity": "bun run platform/recon/npa-return-data-obligation-integrity.ts",
     "recon:product-return-capture-coherence": "bun run platform/recon/product-return-capture-coherence.ts",
     "recon:dsar-sla": "bun run platform/recon/dsar-sla.ts",

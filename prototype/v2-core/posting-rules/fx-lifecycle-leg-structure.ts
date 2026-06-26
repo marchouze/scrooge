@@ -10,8 +10,18 @@
 // WHAT THIS IS — and is NOT
 // -------------------------
 // This module declares, per FX posting rule, the ORDERED list of Dr/Cr legs by
-// ACCOUNT ROLE (receivable / payable / unrealised-pnl / realised-pnl / oci-reserve
-// / nostro) + direction + IAS/IFRS citation. It is the STRUCTURE only — NO amounts.
+// ACCOUNT ROLE (receivable / payable / unrealised-pnl / realised-pnl / nostro)
+// + direction + IAS/IFRS citation. It is the STRUCTURE only — NO amounts.
+//
+// IFRS NOTE — FX is FVTPL-ONLY, never FVOCI. An FX spot/forward/swap is a
+// derivative held for trading: it fails SPPI and is mandatorily FVTPL (IFRS 9
+// §4.1.4, §5.7.1). The FVOCI election (IFRS 9 §5.7.5, gated by §5.7.1(b)) is
+// EQUITY-INSTRUMENTS-ONLY, so no FX instance can ever be FVOCI and no FX leg
+// routes to an OCI reserve. This render model therefore carries NO FVOCI path
+// (D-FX-IFRS-REVIEW-FOUNDATION finding F1; D-FX-ACCOUNTING-RENDER-COHERENCE).
+// The `postFxFvociReclassLegs` machinery + the `FX_FVOCI_OCI_RESERVE_ACCOUNT`
+// constant are RETAINED in fx.ts / fx-settlement.ts for the future equity-
+// instrument estate, but are deliberately ABSENT from this FX leg map.
 // Amounts are folded at runtime by the pure `postFx*Legs` functions (fx.ts /
 // fx-settlement.ts); this declaration mirrors THOSE functions' leg shape so the
 // page shows the same Dr/Cr structure the engine posts, account-role for
@@ -21,7 +31,7 @@
 // claim "PR-FX-001-V2 debits the receivable and credits the payable" traces to
 // `postFxInitialRecognitionLegs`. The account ROLES resolve to concrete CoA codes
 // at render time via `resolveFxAccountSet(currency)` + the two named-constant
-// accounts (`FX_FVOCI_OCI_RESERVE_ACCOUNT`, the nostro per `nostroFor`); the
+// accounts (the settlement clearing constant, the nostro per `nostroFor`); the
 // codes then resolve to CoA NAMES via `COA_BY_ID`. The de-invention gate
 // (`recon:npa-page-no-invented-functionality`) asserts every resolved code is a
 // real CoA account and every rule id a real registry entry.
@@ -31,7 +41,7 @@
 //   revaluation (daily) — PR-FX-REVAL-V2 (FilInstrumentAmended): FVTPL mark-to-market.
 //   b Payment           — PR-FX-SETTLE-V2 / PR-FX-SWAP-NEAR-V2 (pay leg of settlement).
 //   c Receipt           — PR-FX-SETTLE-V2 / PR-FX-SWAP-FAR-V2 / PR-FX-NDF-FIX-V2 (receive / cash-settle).
-//   d Termination       — PR-FX-CLOSE-V2 / PR-FX-FVOCI-RECLASS-V2 (derecognition).
+//   d Termination       — PR-FX-CLOSE-V2 (derecognition) + PR-FX-OBS-RELEASE-V2.
 // A rule that settles BOTH the pay and receive movements (PR-FX-SETTLE-V2)
 // appears under both Payment and Receipt with the leg subset for that movement.
 //
@@ -44,7 +54,6 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import {
-  FX_FVOCI_OCI_RESERVE_ACCOUNT,
   FX_OBS_BOUGHT_COMMITMENT_ACCOUNT,
   FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
   FX_OBS_SOLD_COMMITMENT_ACCOUNT,
@@ -71,7 +80,6 @@ export type FxAccountRole =
   | "payable"
   | "unrealised-pnl"
   | "realised-pnl"
-  | "oci-reserve"
   | "nostro"
   | "settlement-clearing"
   | "obs-bought-commitment"
@@ -84,7 +92,6 @@ export const FX_ACCOUNT_ROLE_LABEL: Readonly<Record<FxAccountRole, string>> = {
   payable: "FX trading payable",
   "unrealised-pnl": "Unrealised FX P&L (FVTPL)",
   "realised-pnl": "Realised FX P&L",
-  "oci-reserve": "OCI reserve (FVOCI election)",
   nostro: "Cash / nostro",
   "settlement-clearing": "FX settlement clearing (P&L-neutral)",
   "obs-bought-commitment": "OBS FX bought-commitment (memorandum)",
@@ -96,8 +103,8 @@ export const FX_ACCOUNT_ROLE_LABEL: Readonly<Record<FxAccountRole, string>> = {
  * Resolve an account role to its concrete CoA account code for a currency.
  * Mirrors EXACTLY how the pure rule functions pick accounts: the receivable /
  * payable / unrealised-pnl / realised-pnl come from `resolveFxAccountSet`; the
- * OCI reserve + the settlement clearing are named constants; the nostro is
- * `nostroFor`. Source, don't duplicate (Charter cmd 4).
+ * settlement clearing is a named constant; the nostro is `nostroFor`. Source,
+ * don't duplicate (Charter cmd 4). No `oci-reserve` role — FX is FVTPL-only.
  */
 export function resolveFxAccountRole(role: FxAccountRole, currency: string): string {
   const set: FxAccountSet = resolveFxAccountSet(currency);
@@ -110,8 +117,6 @@ export function resolveFxAccountRole(role: FxAccountRole, currency: string): str
       return set.unrealisedPnl;
     case "realised-pnl":
       return set.realisedPnl;
-    case "oci-reserve":
-      return FX_FVOCI_OCI_RESERVE_ACCOUNT;
     case "nostro":
       return nostroFor(currency);
     case "settlement-clearing":
@@ -164,15 +169,15 @@ export interface FxRuleStageLegStructure {
 const FX_TS = "v2-core/posting-rules/fx.ts";
 const FX_SETTLEMENT_TS = "v2-core/posting-rules/fx-settlement.ts";
 
+// FX is FVTPL-only (IFRS 9 §4.1.4, §5.7.1) — there is NO FVOCI reval / reclass
+// citation here because FX can never elect FVOCI (§5.7.5 is equity-only).
 const IAS = {
   initial: "IFRS 9 §3.1.1, §5.1.1, B3.1.2",
   revalFvtpl: "IFRS 9 §5.7.1",
-  revalFvoci: "IFRS 9 §5.7.5",
   settleCash: "IAS 21 §23",
   settlePnl: "IAS 21 §28",
   ndf: "IFRS 9 §5.7.1 / IAS 21 §28",
   derecognise: "IFRS 9 §3.2.3",
-  fvociReclass: "IFRS 9 §5.7.10–11",
   obsRelease: "IAS 21 §23",
   convert: "IAS 21 §28 / IFRS 9 §5.7.1",
 } as const;
@@ -235,8 +240,9 @@ export const FX_RULE_STAGE_LEG_STRUCTURES: readonly FxRuleStageLegStructure[] = 
   // last measurement, NOT the notional. This is the ON-balance-sheet position
   // carrier: an at-market trade recognised NIL on-BS at inception (PR-FX-001-V2 is
   // OBS-only), so the position and exposure accrue HERE as MtM moves. The position
-  // account is the FX-derivative carrying account (resolveFxAccountSet.receivable);
-  // FVOCI election routes the credit leg to the OCI reserve instead of P&L.
+  // account is the FX-derivative carrying account (resolveFxAccountSet.receivable).
+  // FX is FVTPL-only: the credit leg ALWAYS hits P&L (no FVOCI election for a
+  // derivative — IFRS 9 §5.7.5 is equity-only).
   {
     postingRuleId: "PR-FX-REVAL-V2",
     stage: "revaluation",
@@ -252,11 +258,11 @@ export const FX_RULE_STAGE_LEG_STRUCTURES: readonly FxRuleStageLegStructure[] = 
         accountRole: "unrealised-pnl",
         drCr: "credit",
         iasCite: IAS.revalFvtpl,
-        note: "FVTPL: the fair-value change hits P&L each day. (FVOCI election routes this leg to the OCI reserve instead — IFRS 9 §5.7.5.)",
+        note: "FVTPL: the fair-value change hits P&L each day. FX is a held-for-trading derivative — mandatorily FVTPL, no OCI route (IFRS 9 §5.7.1).",
       },
     ],
     derivedFrom: `${FX_TS} · postFxRevaluationLegs`,
-    citations: [IAS.revalFvtpl, IAS.revalFvoci, D_COMPLETE],
+    citations: [IAS.revalFvtpl, D_COMPLETE],
   },
 
   // ── b · Payment — PR-FX-SETTLE-V2 (pay movement) ──────────────────────────
@@ -405,29 +411,13 @@ export const FX_RULE_STAGE_LEG_STRUCTURES: readonly FxRuleStageLegStructure[] = 
     citations: [IAS.derecognise, D_COMPLETE],
   },
 
-  // ── d · Termination — PR-FX-FVOCI-RECLASS-V2 (postFxFvociReclassLegs) ─────
-  // Recycle the accumulated FVOCI OCI reserve into P&L on derecognition.
-  {
-    postingRuleId: "PR-FX-FVOCI-RECLASS-V2",
-    stage: "d",
-    condition: "non-zero-pnl",
-    legs: [
-      {
-        accountRole: "oci-reserve",
-        drCr: "debit",
-        iasCite: IAS.fvociReclass,
-        note: "Recycle the accumulated FVOCI OCI reserve (reserve sat as a credit; debit recycles it).",
-      },
-      {
-        accountRole: "realised-pnl",
-        drCr: "credit",
-        iasCite: IAS.fvociReclass,
-        note: "Reclassify the recycled OCI into realised P&L on derecognition.",
-      },
-    ],
-    derivedFrom: `${FX_SETTLEMENT_TS} · postFxFvociReclassLegs`,
-    citations: [IAS.fvociReclass, D_COMPLETE],
-  },
+  // NOTE — there is deliberately NO PR-FX-FVOCI-RECLASS-V2 entry here. FX is a
+  // held-for-trading derivative: mandatorily FVTPL, never FVOCI (IFRS 9 §5.7.5 is
+  // equity-only). An OCI-reserve recycle can never fire for FX, so the FVOCI
+  // reclass rule is absent from this FX leg map by construction. The
+  // `postFxFvociReclassLegs` function is RETAINED in fx-settlement.ts for the
+  // future equity-instrument estate (D-FX-IFRS-REVIEW-FOUNDATION finding F1;
+  // D-FX-ACCOUNTING-RENDER-COHERENCE).
 
   // ── d · Termination — PR-FX-OBS-RELEASE-V2 (postFxObsCommitmentReleaseLegs) ─
   // Release the trade-date OFF-balance-sheet FX-commitment memorandum on
@@ -545,7 +535,7 @@ export const FX_GL_LIFECYCLE_STAGES: readonly FxLifecycleStageMeta[] = [
     id: "revaluation",
     label: "Daily revaluation",
     summary:
-      "FVTPL mark-to-market — posts the fair-value DELTA (not the notional) to the on-balance-sheet position vs P&L (or OCI under an FVOCI election). The position accrues here; the trade-date booking was OBS-only.",
+      "FVTPL mark-to-market — posts the fair-value DELTA (not the notional) to the on-balance-sheet position vs P&L. FX is a held-for-trading derivative, so the movement always hits P&L (no FVOCI election — IFRS 9 §5.7.5 is equity-only). The position accrues here; the trade-date booking was OBS-only.",
   },
   {
     id: "b",
@@ -563,7 +553,7 @@ export const FX_GL_LIFECYCLE_STAGES: readonly FxLifecycleStageMeta[] = [
     id: "d",
     label: "Termination",
     summary:
-      "Derecognition — accumulated unrealised reval (or OCI reserve) is recycled into realised P&L, and the trade-date OFF-balance-sheet commitment (ACC-9100-*) is released.",
+      "Derecognition — the accumulated unrealised reval is recycled into realised P&L (FVTPL; no OCI reserve, FX is never FVOCI), and the trade-date OFF-balance-sheet commitment (ACC-9100-*) is released.",
   },
   {
     id: "realisation",
