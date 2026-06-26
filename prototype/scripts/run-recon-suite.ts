@@ -357,13 +357,24 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // FVOCI OCI reserve (IFRS 9 §5.7.1, §5.7.5). Sourced from the canonical chart
     // of accounts, not hardcoded. Authority: D-FX-IFRS-REVIEW-FOUNDATION.
     "recon:fx-pnl-account-category-integrity",
-    // D-FX-IFRS-REVIEW-FOUNDATION (ENFORCING) — IAS 21 §23/§28 monetary-item gate.
-    // An open FX position is a monetary item (IAS 21 §8) retranslated at the
-    // closing rate each reporting date, the exchange difference recognised in the
-    // functional currency. Asserts every FVTPL revaluation / realisation
-    // exchange-difference leg is functional-denominated and the exchange-difference
-    // P&L accounts carry the functional currency. Authority: D-FX-IFRS-REVIEW-FOUNDATION.
-    "recon:fx-monetary-closing-rate-integrity",
+    // D-FX-IFRS-REVIEW-FOUNDATION (ENFORCING, F8) — IAS 21 §28 exchange-difference
+    // functional-CURRENCY gate (renamed from recon:fx-monetary-closing-rate-integrity:
+    // the old name overclaimed a §23 rate-MAGNITUDE oracle the gate never had). An
+    // open FX position is a monetary item (IAS 21 §8) retranslated at the closing
+    // rate each reporting date; the exchange difference is recognised in the
+    // FUNCTIONAL currency (§28). Asserts every FVTPL revaluation / realisation
+    // exchange-difference leg is functional-denominated and the P&L accounts carry
+    // the functional currency. The §23 rate MAGNITUDE is proven by the CASE 2/3-DERIVE
+    // golden cases against forwardMtmValue. Authority: D-FX-IFRS-REVIEW-FOUNDATION.
+    "recon:exchange-difference-functional-currency-integrity",
+    // D-FX-IFRS-REVIEW-FOUNDATION (ENFORCING, F6) — IFRS 13 fair-value hierarchy gate.
+    // DERIVES the expected hierarchy level from the FX model's valuation-input
+    // observability (spot fixing + forward points → observable market inputs → IFRS
+    // 13 §81 Level 2) and fails closed if the DECLARED level on the FX model facet or
+    // the FX treatment module diverges. Closes the declared-not-verified gap a literal
+    // `toBe("level-2")` left open (the PR #643 level-1 mis-tag re-passes it).
+    // Store-independent. Authority: D-FX-IFRS-REVIEW-FOUNDATION.
+    "recon:fx-fair-value-hierarchy-integrity",
     // D-FIL-CONSUMER-SURFACE-ARCHITECTURE (Step D, ENFORCING) — FIL consumer-surface
     // isolation gate. Static scan: the accounting / GL surface (platform/accounting/**
     // + gl-projection-v2.ts) may replay FilInstrument* FOR STATE only through the

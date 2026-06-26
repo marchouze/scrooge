@@ -18,7 +18,7 @@ import {
   FX_UNREALISED_PNL_ACCOUNT,
 } from "../../v2-core/posting-rules/fx-settlement";
 import type { FxFoldLeg } from "../accounting/posting-rules-v2/fx-fold";
-import { assertFxMonetaryClosingRate } from "./fx-monetary-closing-rate-integrity";
+import { assertExchangeDifferenceFunctionalCurrency } from "./exchange-difference-functional-currency-integrity";
 import { assertFxPnlAccountCategory } from "./fx-pnl-account-category-integrity";
 
 function leg(
@@ -152,9 +152,9 @@ describe("recon:fx-pnl-account-category-integrity — direction invariant (IAS 2
   });
 });
 
-describe("recon:fx-monetary-closing-rate-integrity — IAS 21 §23/§28 monetary retranslation", () => {
+describe("recon:exchange-difference-functional-currency-integrity — IAS 21 §23/§28 monetary retranslation", () => {
   test("PASSES exchange-difference legs denominated in the functional currency (ZAR)", () => {
-    const r = assertFxMonetaryClosingRate(
+    const r = assertExchangeDifferenceFunctionalCurrency(
       [
         leg({
           accountCode: FX_UNREALISED_PNL_ACCOUNT,
@@ -174,7 +174,7 @@ describe("recon:fx-monetary-closing-rate-integrity — IAS 21 §23/§28 monetary
   });
 
   test("FAILS when a monetary exchange difference is struck in a FOREIGN currency (USD)", () => {
-    const r = assertFxMonetaryClosingRate(
+    const r = assertExchangeDifferenceFunctionalCurrency(
       [
         leg({
           accountCode: FX_UNREALISED_PNL_ACCOUNT,
@@ -189,7 +189,7 @@ describe("recon:fx-monetary-closing-rate-integrity — IAS 21 §23/§28 monetary
   });
 
   test("FAILS a realisation (convert) exchange difference struck in a foreign currency", () => {
-    const r = assertFxMonetaryClosingRate(
+    const r = assertExchangeDifferenceFunctionalCurrency(
       [
         leg({
           accountCode: FX_REALISED_PNL_ACCOUNT,
