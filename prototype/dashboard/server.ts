@@ -333,6 +333,7 @@ import {
 import { buildGlAccountLedger, buildGlView } from "./v2-finance-gl-view";
 import { buildFinanceReturnsView } from "./v2-finance-returns-view";
 import { buildCapitalView } from "./v2-finance-view";
+import { buildV2AllTradesView } from "./v2-markets-all-trades-view";
 import { buildV2FxTradeHistoryView } from "./v2-markets-fx-trades-view";
 import {
   buildV2FxBlotterView,
@@ -4780,11 +4781,12 @@ const server = Bun.serve({
       const offset = (safePage - 1) * limit;
       const rows = allEvents.slice(offset, offset + limit);
 
-      // Distinct type list for filter dropdown (from full unfiltered store).
+      // Distinct type list for the filter dropdown — always computed from the
+      // full unfiltered store so the dropdown is populated regardless of the
+      // active filters (a filtered-only list would drop the option the user
+      // needs to switch to).
       const allTypes = new Set<string>();
-      if (!typeFilter && !entityFilter && !search) {
-        for (const ev of eventStore.replay()) allTypes.add(ev.type);
-      }
+      for (const ev of eventStore.replay()) allTypes.add(ev.type);
 
       return jsonResponse({
         total,
@@ -4795,6 +4797,7 @@ const server = Bun.serve({
         entityFilter,
         search,
         provenanceFilter: provenanceParam,
+        types: [...allTypes].sort(),
         events: rows,
         storeCount: eventStore.count(),
         pageProvenance: { mode: "production-only" },
@@ -5921,6 +5924,17 @@ const server = Bun.serve({
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       return jsonResponse({
         ...buildV2FxTradeHistoryView({ eventStore, filter }),
+        asOf: nowUtc(),
+        pageProvenance: filter,
+      });
+    }
+    // All-trades blotter — every trade across FX / equity / bond / IRS, folded
+    // newest-first, provenance-filtered. Cross-family roll-up distinct from the
+    // FX-only /api/v2/markets/fx/trades history above.
+    if (req.method === "GET" && url.pathname === "/api/v2/markets/trades") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildV2AllTradesView({ eventStore, filter }),
         asOf: nowUtc(),
         pageProvenance: filter,
       });

@@ -42,8 +42,10 @@ const NAV = [
     href: "/v2/markets/index.html",
     items: [
       { label: "Overview", href: "/v2/markets/index.html" },
+      { label: "All Trades", href: "/v2/markets/trades.html" },
       { label: "FIL Positions", href: "/v2/markets/positions.html" },
       { label: "FX Positions", href: "/v2/markets/fx.html" },
+      { label: "Market Data", href: "/v2/markets/market-data.html" },
       { label: "World Simulator", href: "/v2/markets/world-simulator.html" },
     ],
   },
@@ -98,6 +100,7 @@ const NAV = [
     href: "/v2/operations/index.html",
     items: [
       { label: "Overview", href: "/v2/operations/index.html" },
+      { label: "Event Log", href: "/v2/operations/events.html" },
       { label: "Agent Fleet", href: "/v2/operations/agents.html" },
       { label: "Evaluations", href: "/v2/operations/evals.html" },
       { label: "Event Schemas", href: "/v2/operations/schemas.html" },
@@ -111,6 +114,7 @@ const NAV = [
     href: "/v2/governance/index.html",
     items: [
       { label: "Overview", href: "/v2/governance/index.html" },
+      { label: "RMS Registers", href: "/v2/governance/rms.html" },
       { label: "Decisions", href: "/v2/governance/decisions.html" },
       { label: "New Products (NPA)", href: "/v2/governance/npa.html" },
       { label: "Policies", href: "/v2/governance/policies.html" },
