@@ -192,6 +192,14 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // reconciliation + production=0 / simulated=values boundary. No production
   // access path — same rationale as ba320-trading-book-sim-drive.
   "platform/recon/ba350-derivatives-sim-drive.ts",
+  // BA 340 banking-book equity-risk sim-drive gate (D-BA-RETURN-SIMULATOR-FIRST
+  // Phase 2c): builds a throwaway `:memory:` EventStore with a simulated banking-
+  // book equity book (listed / unlisted / speculative-unlisted holdings) to drive
+  // the BA 340 simple-risk-weight engine (300% / 400% × 8%) to a hand-computed
+  // Reg 31 Table-1 oracle and prove the oracle reconciliation, the production=0 /
+  // simulated=values boundary, and the trading/banking-book no-leakage boundary.
+  // No production access path — same rationale as ba320-trading-book-sim-drive.
+  "platform/recon/ba340-equity-risk-sim-drive.ts",
   // CVA derivatives sim-drive gate (D-BA-RETURN-SIMULATOR-FIRST Phase 2b):
   // builds a throwaway `:memory:` EventStore with a simulated OTC derivative
   // counterparty book to drive the standardised CVA charge + CVA RWA leg and
@@ -805,6 +813,14 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
   // production=0 / simulated=values provenance split. No production access path.
   // Citation: D-BA-RETURN-SIMULATOR-FIRST, P4-SECURITY-DESIGNED-IN.
   "platform/returns/ba350/",
+  // BA 340 (Equity Risk in the Banking Book) simulator-first golden test
+  // (D-BA-RETURN-SIMULATOR-FIRST Phase 2c) — per-module fixture test (same
+  // carve-out rationale as platform/returns/ba350/): builds an in-memory
+  // EventStore with a simulated banking-book equity book to drive the BA 340
+  // simple-risk-weight engine to a hand-computed Reg 31 Table-1 oracle and prove
+  // the production=0 / simulated=values + trading/banking-book boundaries. No
+  // production access path. Citation: D-BA-RETURN-SIMULATOR-FIRST, P4-SECURITY-DESIGNED-IN.
+  "platform/returns/ba340/",
   // M3 Slice 8 CMS subscriber — per-module fixture test (same carve-out
   // rationale as tests/; builds in-memory stores for conduct scenario assertion).
   // Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, P4-SECURITY-DESIGNED-IN.

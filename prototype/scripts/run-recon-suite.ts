@@ -473,6 +473,21 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // cell mapping is tracked in the gap-register AND surfaced `absent`. Self-
     // contained, so it always asserts (a clean store cannot manufacture a pass).
     "recon:ba350-derivatives-sim-drive",
+    // D-BA-RETURN-SIMULATOR-FIRST Phase 2c — ENFORCING: BA 340 (Equity Risk in
+    // the Banking Book) SIMPLE-RISK-WEIGHT engine. Builds a self-contained
+    // in-memory simulated BANKING-BOOK equity book and asserts (A) the per-class
+    // exposure → risk-weighted exposure → capital lands on a hand-computed
+    // Reg 31 Table-1 oracle (listed 300%: R25m exp → R75m RWE → R6m cap; unlisted
+    // 400%: R10m → R40m → R3.2m; Table-1 totals R35m/R115m/R9.2m); (B) the risk
+    // weights are exactly 300% / 400% and speculative-unlisted is NOT Table-1-
+    // charged (RWE/cap 0 — routes to the deduction regime); (C) the provenance
+    // boundary holds (production lens → empty/zero, the R300m-into-Prod guard);
+    // (D) the TRADING/BANKING-BOOK boundary holds — the same banking-book book
+    // read through the BA 320 trading-book equity adapter yields ZERO rows (no
+    // leakage; separate event families); (E) the internal-models-approach column
+    // is tracked in the gap-register AND surfaced `absent` — never a silent zero,
+    // never an overclaimed fold. Self-contained, so it always asserts.
+    "recon:ba340-equity-risk-sim-drive",
     // D-BA-RETURN-SIMULATOR-FIRST Phase 2b — ENFORCING: the standardised CVA
     // capital charge over the OTC derivative counterparty book. Builds a self-
     // contained in-memory simulated derivative book and asserts (A) CVA lands on

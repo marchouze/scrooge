@@ -306,6 +306,15 @@ export const SUBSTRATE_GAP_REGISTER: readonly SubstrateGapRecord[] = [
     status: "planned",
     mitigation: "partial",
   },
+  {
+    id: "ba340-internal-models-approach-engine",
+    title: "BA 340 internal-models / market-based approach for banking-book equity: no engine",
+    description:
+      "BA 340 (Equity Risk in the Banking Book) reports the capital held against banking-book equity (strategic / held-to-collect investments). Phase 2c (D-BA-RETURN-SIMULATOR-FIRST) builds the SIMPLE RISK-WEIGHT method engine (SARB Reg 31(6)(b)(i), Table 1: 300% publicly-traded / 400% other; Reg 38 8% min ratio) — the fold (platform/reporting/ba-340-equity-risk-banking-book.ts) + cell-assembly (platform/returns/ba340/ba-340-equity-risk-banking-book.ts) drive the per-holding-class exposure → risk-weighted exposure → capital cells to oracle-validated NON-ZERO figures over a simulated banking-book equity book (scripts/sim/seed-banking-book-equity-sim-v1.ts). The ALTERNATIVE column — the internal-models / market-based approach (Reg 31(6)(b)(ii); BA 340 R0060–R0080) — is NOT implemented: it requires a PD/LGD market-based equity model the build-phase substrate does not yet have. It is surfaced as an explicit `absent` on the assembled BA 340 output's IMA section + tracked here — never a silent zero, never an overclaimed fold. A bank using the simple risk-weight method (the conservative default, the build-phase choice) does not file the IMA column; the engine is a future-product follow-on if the bank ever adopts the market-based approach. Authority: D-BA-RETURN-SIMULATOR-FIRST; Engineering Charter cmd 5; Reg 31 / Reg 38; Basel CRE.",
+    severity: "medium",
+    status: "planned",
+    mitigation: "partial",
+  },
   // ---------------------------------------------------------------------------
   // Cohort-VaR provenance filtering (surfaced by BA 325 Phase 2a, tracked by
   // Phase 2b — D-BA-RETURN-SIMULATOR-FIRST). The cohort VaR engine relies on
