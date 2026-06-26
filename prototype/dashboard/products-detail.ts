@@ -746,10 +746,7 @@ const DEFERRED_RULE_IDS: ReadonlyMap<string, string> = new Map(
  * F1). Source-don't-hardcode (Charter cmd 4): the gate is read off the registry
  * row, never a per-id render denylist.
  */
-export function ruleAppliesToProductIfrs9Family(
-  rule: PostingRuleEntry,
-  product: Product,
-): boolean {
+export function ruleAppliesToProductIfrs9Family(rule: PostingRuleEntry, product: Product): boolean {
   if (rule.appliesWhenIfrs9Family === undefined) return true;
   return (
     rule.appliesWhenIfrs9Family.toLowerCase() ===

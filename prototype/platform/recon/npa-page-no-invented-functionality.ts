@@ -113,10 +113,7 @@ function isRealCoaAccount(code: string): boolean {
  * dimension trigger/emit, valuation-lens, FX-lifecycle and accounting-
  * perspective assertion families (the lifecycle-journal family is retired).
  */
-export function assertNoInvention(
-  productId: string,
-  view: ProductDetailView,
-): ReconViolation[] {
+export function assertNoInvention(productId: string, view: ProductDetailView): ReconViolation[] {
   const violations: ReconViolation[] = [];
 
   // ── (A) RETIRED — the standalone lifecycle-journal block is gone ─────────

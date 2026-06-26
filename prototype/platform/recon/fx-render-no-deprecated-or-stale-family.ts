@@ -67,7 +67,7 @@ import {
 } from "../../dashboard/products-detail";
 import { BASELINE_FIXTURES } from "../../dashboard/products-view";
 
-import { type Event } from "../event-store/types";
+import type { Event } from "../event-store/types";
 
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
