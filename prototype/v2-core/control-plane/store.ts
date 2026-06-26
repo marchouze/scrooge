@@ -190,10 +190,16 @@ class ControlPlaneStoreImpl implements ControlPlaneStore {
     }
     this.db = new Database(path);
     if (path !== ":memory:") {
+      // `busy_timeout` MUST precede `journal_mode = WAL`: the WAL switch
+      // takes a momentary lock and, with busy_timeout still at the default
+      // 0, fails immediately with `SQLITE_BUSY: database is locked` when a
+      // concurrent connection (store-tee writer vs *-v2-parity recon reader)
+      // holds the file. Mirrors the same fix in
+      // platform/event-store/store.ts. Authority: Engineering Charter cmd 1.
       this.db.exec(`
+        PRAGMA busy_timeout = 5000;
         PRAGMA journal_mode = WAL;
         PRAGMA synchronous  = NORMAL;
-        PRAGMA busy_timeout = 5000;
       `);
     }
     this.db.exec(CP_DDL);

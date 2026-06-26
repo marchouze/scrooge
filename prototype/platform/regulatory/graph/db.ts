@@ -22,7 +22,13 @@ function initDb(path: string): Database {
     mkdirSync(dirname(path), { recursive: true });
   }
   const db = new Database(path);
-  // Enable WAL mode for better concurrent read performance
+  // Enable WAL mode for better concurrent read performance. `busy_timeout`
+  // is set FIRST: the journal-mode switch takes a momentary lock and would
+  // otherwise fail immediately with `SQLITE_BUSY: database is locked` when a
+  // reader (the dashboard) holds the graph DB while the launchd job
+  // regenerates it. The busy-wait makes the switch block-and-retry instead.
+  // Mirrors platform/event-store/store.ts. Authority: Engineering Charter cmd 1.
+  db.exec("PRAGMA busy_timeout=5000;");
   db.exec("PRAGMA journal_mode=WAL;");
   const ddl = readFileSync(SCHEMA_SQL_PATH, "utf-8");
   db.exec(ddl);
