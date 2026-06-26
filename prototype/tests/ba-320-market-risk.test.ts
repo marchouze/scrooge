@@ -8,13 +8,13 @@
 import { describe, expect, it } from "bun:test";
 
 import {
-  BA_310_BANK_ENTITIES,
-  BA_310_NAMESPACE,
-  BA_310_REQUIRED_ELEMENTS,
-  BA_310_XSD_URI,
-  Ba310GeneratorError,
-  ba310ToXmlPayload,
-  generateBa310MarketRisk,
+  BA_320_BANK_ENTITIES,
+  BA_320_NAMESPACE,
+  BA_320_REQUIRED_ELEMENTS,
+  BA_320_XSD_URI,
+  Ba320GeneratorError,
+  ba320ToXmlPayload,
+  generateBa320MarketRisk,
   renderSarbXml,
   validateSarbXmlStructural,
 } from "../platform/reporting";
@@ -85,13 +85,13 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — market-risk semantic entries", () =
 // =====================================================================
 
 describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 per-entity isolation", () => {
-  it("BA_310_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
-    expect(BA_310_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
+  it("BA_320_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
+    expect(BA_320_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
   });
 
   it("rejects LE-ZA-HOZ-SECURITIES", () => {
     expect(() =>
-      generateBa310MarketRisk({
+      generateBa320MarketRisk({
         ...COMMON,
         entity: ENTITY_SECURITIES,
         irGeneralMaturityLadder: [],
@@ -100,12 +100,12 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 per-entity isolation", () =>
         fxPositions: [],
         commodity: [],
       }),
-    ).toThrow(Ba310GeneratorError);
+    ).toThrow(Ba320GeneratorError);
   });
 
   it("rejects an invalid functional currency", () => {
     expect(() =>
-      generateBa310MarketRisk({
+      generateBa320MarketRisk({
         ...COMMON,
         functionalCurrency: "ZARS",
         irGeneralMaturityLadder: [],
@@ -124,7 +124,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 per-entity isolation", () =>
 
 describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 sub-charge arithmetic", () => {
   it("zero positions ⇒ zero capital + zero RWA", () => {
-    const out = generateBa310MarketRisk({
+    const out = generateBa320MarketRisk({
       ...COMMON,
       irGeneralMaturityLadder: [],
       irSpecificRisk: [],
@@ -137,7 +137,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 sub-charge arithmetic", () =
   });
 
   it("IR general — sums |long-short| across bands + adds disallowances", () => {
-    const out = generateBa310MarketRisk({
+    const out = generateBa320MarketRisk({
       ...COMMON,
       irGeneralMaturityLadder: [
         { band: "0-1m", weightedLongMinor: 1000, weightedShortMinor: 400 },
@@ -155,7 +155,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 sub-charge arithmetic", () =
   });
 
   it("IR specific — gross × weight per issuer, summed", () => {
-    const out = generateBa310MarketRisk({
+    const out = generateBa320MarketRisk({
       ...COMMON,
       irGeneralMaturityLadder: [],
       irSpecificRisk: [
@@ -172,7 +172,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 sub-charge arithmetic", () =
   });
 
   it("Equity — 8% net + (4% liquid|8% else) gross", () => {
-    const out = generateBa310MarketRisk({
+    const out = generateBa320MarketRisk({
       ...COMMON,
       irGeneralMaturityLadder: [],
       irSpecificRisk: [],
@@ -200,7 +200,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 sub-charge arithmetic", () =
   });
 
   it("FX — 8% × max(sum-longs, sum-shorts); functional ccy excluded", () => {
-    const out = generateBa310MarketRisk({
+    const out = generateBa320MarketRisk({
       ...COMMON,
       irGeneralMaturityLadder: [],
       irSpecificRisk: [],
@@ -220,7 +220,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 sub-charge arithmetic", () =
   });
 
   it("Commodity — 15% × |net| + 3% × gross (simplified method)", () => {
-    const out = generateBa310MarketRisk({
+    const out = generateBa320MarketRisk({
       ...COMMON,
       irGeneralMaturityLadder: [],
       irSpecificRisk: [],
@@ -233,7 +233,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 sub-charge arithmetic", () =
   });
 
   it("RWA = 12.5 × total capital", () => {
-    const out = generateBa310MarketRisk({
+    const out = generateBa320MarketRisk({
       ...COMMON,
       irGeneralMaturityLadder: [{ band: "0-1m", weightedLongMinor: 1000, weightedShortMinor: 0 }],
       irSpecificRisk: [],
@@ -247,7 +247,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 sub-charge arithmetic", () =
 
   it("rejects out-of-range specific-risk weight", () => {
     expect(() =>
-      generateBa310MarketRisk({
+      generateBa320MarketRisk({
         ...COMMON,
         irGeneralMaturityLadder: [],
         irSpecificRisk: [{ issuerLabel: "x", grossPositionMinor: 100, specificRiskWeight: 1.5 }],
@@ -260,7 +260,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 sub-charge arithmetic", () =
 
   it("rejects negative weighted maturity-band positions", () => {
     expect(() =>
-      generateBa310MarketRisk({
+      generateBa320MarketRisk({
         ...COMMON,
         irGeneralMaturityLadder: [{ band: "0-1m", weightedLongMinor: -1, weightedShortMinor: 0 }],
         irSpecificRisk: [],
@@ -272,7 +272,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 sub-charge arithmetic", () =
   });
 
   it("placeholders carry the SOURCED BA 320 line-numbering citation (TBC retired)", () => {
-    const out = generateBa310MarketRisk({
+    const out = generateBa320MarketRisk({
       ...COMMON,
       irGeneralMaturityLadder: [],
       irSpecificRisk: [],
@@ -301,7 +301,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 sub-charge arithmetic", () =
 
 describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 XML render round-trip", () => {
   it("renders well-formed XML with declared envelope", () => {
-    const out = generateBa310MarketRisk({
+    const out = generateBa320MarketRisk({
       ...COMMON,
       irGeneralMaturityLadder: [{ band: "0-1m", weightedLongMinor: 1000, weightedShortMinor: 0 }],
       irSpecificRisk: [],
@@ -309,17 +309,17 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 XML render round-trip", () =
       fxPositions: [],
       commodity: [],
     });
-    const payload = ba310ToXmlPayload(out);
+    const payload = ba320ToXmlPayload(out);
     const xml = renderSarbXml(payload, { renderedAt: "2026-05-10T15:00:00.000Z" });
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
     expect(xml.includes("<BA320")).toBe(true);
-    expect(xml.includes(`xmlns="${BA_310_NAMESPACE}"`)).toBe(true);
-    expect(xml.includes(`xsdUri="${BA_310_XSD_URI}"`)).toBe(true);
+    expect(xml.includes(`xmlns="${BA_320_NAMESPACE}"`)).toBe(true);
+    expect(xml.includes(`xsdUri="${BA_320_XSD_URI}"`)).toBe(true);
     expect(xml.includes("</BA320>")).toBe(true);
   });
 
   it("structural validator passes when all required elements present", () => {
-    const out = generateBa310MarketRisk({
+    const out = generateBa320MarketRisk({
       ...COMMON,
       irGeneralMaturityLadder: [],
       irSpecificRisk: [],
@@ -327,13 +327,13 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 XML render round-trip", () =
       fxPositions: [],
       commodity: [],
     });
-    const payload = ba310ToXmlPayload(out);
+    const payload = ba320ToXmlPayload(out);
     const xml = renderSarbXml(payload, { renderedAt: "2026-05-10T15:00:00.000Z" });
     const result = validateSarbXmlStructural({
       xml,
       formId: "BA320",
-      namespaceUri: BA_310_NAMESPACE,
-      requiredElements: [...BA_310_REQUIRED_ELEMENTS],
+      namespaceUri: BA_320_NAMESPACE,
+      requiredElements: [...BA_320_REQUIRED_ELEMENTS],
     });
     expect(result.ok).toBe(true);
   });
@@ -349,10 +349,10 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 XML render round-trip", () =
       fxPositions: [],
       commodity: [],
     };
-    const a = renderSarbXml(ba310ToXmlPayload(generateBa310MarketRisk(input)), {
+    const a = renderSarbXml(ba320ToXmlPayload(generateBa320MarketRisk(input)), {
       renderedAt: "2026-05-10T15:00:00.000Z",
     });
-    const b = renderSarbXml(ba310ToXmlPayload(generateBa310MarketRisk(input)), {
+    const b = renderSarbXml(ba320ToXmlPayload(generateBa320MarketRisk(input)), {
       renderedAt: "2026-05-10T15:00:00.000Z",
     });
     expect(a).toBe(b);

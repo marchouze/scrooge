@@ -22,12 +22,12 @@
 
 import { describe, expect, it } from "bun:test";
 
-import type { Ba100Output } from "../platform/reporting/ba-700-capital";
-import { generateBa100Capital } from "../platform/reporting/ba-700-capital";
+import type { Ba700Output } from "../platform/reporting/ba-700-capital";
+import { generateBa700Capital } from "../platform/reporting/ba-700-capital";
 import {
-  BA_100_NAMESPACE,
-  BA_100_REQUIRED_ELEMENTS,
-  BA_100_XSD_URI,
+  BA_700_NAMESPACE,
+  BA_700_REQUIRED_ELEMENTS,
+  BA_700_XSD_URI,
   ba100ToXmlPayload,
 } from "../platform/reporting/ba-700-xml-adapter";
 import { renderSarbXml, validateSarbXmlStructural } from "../platform/reporting/xml-render";
@@ -42,8 +42,8 @@ const PERIOD_ID = "period:hoz-bank:month:2026-05";
 const FUNCTIONAL_CURRENCY = "ZAR";
 
 /** Minimal BA 100 output using the pure generator (no EventStore required). */
-function makeMinimalBa100Output(): Ba100Output {
-  return generateBa100Capital({
+function makeMinimalBa100Output(): Ba700Output {
+  return generateBa700Capital({
     entity: ENTITY,
     asOf: AS_OF,
     periodId: PERIOD_ID,
@@ -87,8 +87,8 @@ describe("ba100ToXmlPayload()", () => {
     const output = makeMinimalBa100Output();
     const payload = ba100ToXmlPayload(output);
     expect(payload.formVersion).toBe(output.meta.formVersion);
-    expect(payload.xsdUri).toBe(BA_100_XSD_URI);
-    expect(payload.namespaceUri).toBe(BA_100_NAMESPACE);
+    expect(payload.xsdUri).toBe(BA_700_XSD_URI);
+    expect(payload.namespaceUri).toBe(BA_700_NAMESPACE);
   });
 
   it("TC-3: body.Meta contains Form, Entity, PeriodId", () => {
@@ -138,7 +138,7 @@ describe("ba100ToXmlPayload()", () => {
 
   it("TC-7: infinite ratios serialise as the string 'Infinity'", () => {
     // With non-zero capital and zero RWA, ratios would be Infinity.
-    const output = generateBa100Capital({
+    const output = generateBa700Capital({
       entity: ENTITY,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -171,7 +171,7 @@ describe("ba100ToXmlPayload()", () => {
   });
 
   it("TC-9: trialBalanceSnapshotEventId forwarded when supplied", () => {
-    const output = generateBa100Capital({
+    const output = generateBa700Capital({
       entity: ENTITY,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -196,7 +196,7 @@ describe("ba100ToXmlPayload() → renderSarbXml() round-trip", () => {
     expect(xml).toContain('<?xml version="1.0" encoding="UTF-8"?>');
     expect(xml).toContain("<BA700");
     expect(xml).toContain("</BA700>");
-    expect(xml).toContain(`xmlns="${BA_100_NAMESPACE}"`);
+    expect(xml).toContain(`xmlns="${BA_700_NAMESPACE}"`);
   });
 
   it("TC-11: validateSarbXmlStructural() passes for well-formed BA 100 XML", () => {
@@ -206,8 +206,8 @@ describe("ba100ToXmlPayload() → renderSarbXml() round-trip", () => {
     const result = validateSarbXmlStructural({
       xml,
       formId: "BA700",
-      namespaceUri: BA_100_NAMESPACE,
-      requiredElements: BA_100_REQUIRED_ELEMENTS,
+      namespaceUri: BA_700_NAMESPACE,
+      requiredElements: BA_700_REQUIRED_ELEMENTS,
     });
     expect(result.ok).toBe(true);
   });
@@ -219,8 +219,8 @@ describe("ba100ToXmlPayload() → renderSarbXml() round-trip", () => {
     const result = validateSarbXmlStructural({
       xml,
       formId: "BA700",
-      namespaceUri: BA_100_NAMESPACE,
-      requiredElements: [...BA_100_REQUIRED_ELEMENTS, "PhantomSection"],
+      namespaceUri: BA_700_NAMESPACE,
+      requiredElements: [...BA_700_REQUIRED_ELEMENTS, "PhantomSection"],
     });
     expect(result.ok).toBe(false);
     if (!result.ok) {

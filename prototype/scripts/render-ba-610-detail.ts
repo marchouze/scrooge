@@ -42,25 +42,25 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 import type { TrialBalanceSnapshotRow } from "../platform/event-store/event-types";
-import { renderBa610DetailCanonical } from "../platform/reporting/ba-120-detail-render";
+import { renderBa120DetailCanonical } from "../platform/reporting/ba-120-detail-render";
 import type {
-  Ba610DetailBandingMap,
-  Ba610DetailFtpRates,
-  Ba610DetailGeneratorInput,
+  Ba120DetailBandingMap,
+  Ba120DetailFtpRates,
+  Ba120DetailGeneratorInput,
 } from "../platform/reporting/ba-120-income-detail";
-import { generateBa610DetailIncomeDetail } from "../platform/reporting/ba-120-income-detail";
+import { generateBa120DetailIncomeDetail } from "../platform/reporting/ba-120-income-detail";
 import type {
-  Ba610ClassificationMap,
-  Ba610GeneratorInput,
+  Ba120ClassificationMap,
+  Ba120GeneratorInput,
 } from "../platform/reporting/ba-120-income-statement";
-import { generateBa610IncomeStatement } from "../platform/reporting/ba-120-income-statement";
+import { generateBa120IncomeStatement } from "../platform/reporting/ba-120-income-statement";
 
 // ---------------------------------------------------------------------------
 // Build-phase default BA 610 classifications — synthetic fixtures covering
 // the FX-spot P&L accounts landed in PR #468-#472.
 // ---------------------------------------------------------------------------
 
-const BUILD_PHASE_BA300_CLASSIFICATIONS: Ba610ClassificationMap = [
+const BUILD_PHASE_BA300_CLASSIFICATIONS: Ba120ClassificationMap = [
   {
     leafAccountId: "ACC-interest-income-interbank-stub",
     category: "interest-income",
@@ -154,7 +154,7 @@ const BUILD_PHASE_TRIAL_BALANCE: readonly TrialBalanceSnapshotRow[] = [
 // Build-phase default BA 610 detail banding map.
 // ---------------------------------------------------------------------------
 
-const BUILD_PHASE_BANDING_MAP: Ba610DetailBandingMap = [
+const BUILD_PHASE_BANDING_MAP: Ba120DetailBandingMap = [
   {
     leafAccountId: "ACC-interest-income-interbank-stub",
     instrumentClass: "interbank",
@@ -179,7 +179,7 @@ const BUILD_PHASE_BANDING_MAP: Ba610DetailBandingMap = [
 const BUILD_PHASE_AVG_EARNING_ASSETS = 80_000_000_000;
 
 // Default FTP rates — informational placeholder (Ravi's FTP engine downstream).
-const BUILD_PHASE_FTP_RATES: Ba610DetailFtpRates = [
+const BUILD_PHASE_FTP_RATES: Ba120DetailFtpRates = [
   { maturityBand: "overnight", ftpRateBps: 75 },
   { maturityBand: "1-7d", ftpRateBps: 80 },
   { maturityBand: "8-30d", ftpRateBps: 90 },
@@ -265,19 +265,19 @@ function main(argv: readonly string[]): number {
   const args = parseArgs(argv);
 
   const ba300Classifications = args.ba300ClassificationsPath
-    ? loadJson<Ba610ClassificationMap>(args.ba300ClassificationsPath, "ba300-classifications")
+    ? loadJson<Ba120ClassificationMap>(args.ba300ClassificationsPath, "ba300-classifications")
     : BUILD_PHASE_BA300_CLASSIFICATIONS;
 
   const bandingMap = args.bandingPath
-    ? loadJson<Ba610DetailBandingMap>(args.bandingPath, "banding")
+    ? loadJson<Ba120DetailBandingMap>(args.bandingPath, "banding")
     : BUILD_PHASE_BANDING_MAP;
 
-  const ftpRates: Ba610DetailFtpRates = args.ftpRatesPath
-    ? loadJson<Ba610DetailFtpRates>(args.ftpRatesPath, "ftp-rates")
+  const ftpRates: Ba120DetailFtpRates = args.ftpRatesPath
+    ? loadJson<Ba120DetailFtpRates>(args.ftpRatesPath, "ftp-rates")
     : BUILD_PHASE_FTP_RATES;
 
   // Step 1: Generate BA 610 from synthetic trial balance.
-  const ba300Input: Ba610GeneratorInput = {
+  const ba300Input: Ba120GeneratorInput = {
     entity: args.entity,
     periodStart: args.periodStart,
     periodEnd: args.periodEnd,
@@ -286,19 +286,19 @@ function main(argv: readonly string[]): number {
     trialBalance: BUILD_PHASE_TRIAL_BALANCE,
     classifications: ba300Classifications,
   };
-  const ba300Output = generateBa610IncomeStatement(ba300Input);
+  const ba300Output = generateBa120IncomeStatement(ba300Input);
 
   // Step 2: Generate BA 610 detail from BA 610 output + banding map.
-  const ba310Input: Ba610DetailGeneratorInput = {
+  const ba320Input: Ba120DetailGeneratorInput = {
     ba300Output,
     bandingMap,
     ftpRates,
     averageEarningAssetsMinor: args.avgEarningAssets,
   };
-  const ba310Output = generateBa610DetailIncomeDetail(ba310Input);
+  const ba320Output = generateBa120DetailIncomeDetail(ba320Input);
 
   // Step 3: Render to canonical JSON.
-  const { canonicalJson } = renderBa610DetailCanonical(ba310Output, {
+  const { canonicalJson } = renderBa120DetailCanonical(ba320Output, {
     renderedAt: new Date().toISOString(),
   });
 

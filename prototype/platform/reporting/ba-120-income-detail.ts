@@ -1,19 +1,21 @@
 // platform/reporting/ba-120-income-detail.ts
 //
-// WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail (Selected Income-Statement
+// WS-FINANCE-BA-RETURNS-QUINTET — BA 120 detail (Selected Income-Statement
 // Information / Profitability Detail) projection. Monthly SARB return.
+// (Canonical form: BA 120 = Income Statement; the "BA 610" label was a
+// fabricated numbering artefact — BA 610 = Foreign Operations.)
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN
 // (CEO-approved 2026-05-10), extended 2026-05-17 to add the BA-returns
 // quintet (Marc's directive — `WS-FINANCE-BA-RETURNS-QUINTET`).
 //
-// BA 610 detail extends BA 610. It takes the `Ba610IncomeStatement` output as its
+// BA 610 detail extends BA 610. It takes the `Ba120IncomeStatement` output as its
 // primary typed input and decomposes the NII + non-interest income further
 // by:
 //   (a) Instrument class (interbank / corporate / sovereign / retail-
-//       placeholder) — per the caller-supplied `Ba610DetailBandingMap`.
+//       placeholder) — per the caller-supplied `Ba120DetailBandingMap`.
 //   (b) ALM maturity band (overnight / 1-7d / 8-30d / 1-3m / 3-6m /
-//       6-12m / >1y) — per the caller-supplied `Ba610DetailBandingMap`.
+//       6-12m / >1y) — per the caller-supplied `Ba120DetailBandingMap`.
 //   (c) Net-Interest Margin (NIM) — NII divided by average earning assets
 //       (AEA), client NIM vs structural NIM split deferred pending Ravi's
 //       FTP engine.
@@ -51,11 +53,11 @@
 // Substrate gaps surfaced (forward-link in the decision record):
 //   - **FTP engine (Ravi, IRRBB substrate, downstream)** — client NIM vs
 //     structural NIM split is informational at v0; FTP rates are caller-
-//     supplied via `Ba610DetailFtpRates` (nullable). When Ravi's FTP engine
+//     supplied via `Ba120DetailFtpRates` (nullable). When Ravi's FTP engine
 //     lands, the engine's typed output replaces the caller-supplied fixture.
 //     No generator API change expected.
 //   - **ALM cashflow engine (Ravi, downstream)** — ALM maturity-band
-//     banding is caller-supplied via `Ba610DetailBandingMap` at v0. The ALM
+//     banding is caller-supplied via `Ba120DetailBandingMap` at v0. The ALM
 //     cashflow engine will produce contractual maturity dates that drive
 //     the banding automatically; the generator's banding interface is
 //     forward-compatible.
@@ -77,7 +79,7 @@
 import { returnContractCitation } from "../../v2-core/regulatory-returns/return-contracts";
 import { type Money, amountToMinorUnits, moneyFromMinorUnits } from "../core/decimal-money";
 import type { Currency } from "../core/types";
-import type { Ba610IncomeStatement, Ba610LineItem } from "./ba-120-income-statement";
+import type { Ba120IncomeStatement, Ba120LineItem } from "./ba-120-income-statement";
 
 // ---------------------------------------------------------------------------
 // Instrument classes
@@ -89,7 +91,7 @@ import type { Ba610IncomeStatement, Ba610LineItem } from "./ba-120-income-statem
  * categories (mortgage / personal / SME) at a future slice once the
  * loan-book substrate lands.
  */
-export type Ba610DetailInstrumentClass =
+export type Ba120DetailInstrumentClass =
   | "interbank"
   | "corporate"
   | "sovereign"
@@ -104,7 +106,7 @@ export type Ba610DetailInstrumentClass =
  * contractual repricing / maturity schedule. v0 banding is caller-supplied
  * (Ravi's ALM cashflow engine downstream).
  */
-export type Ba610DetailMaturityBand =
+export type Ba120DetailMaturityBand =
   | "overnight"
   | "1-7d"
   | "8-30d"
@@ -129,10 +131,10 @@ export type Ba610DetailMaturityBand =
  * fixture (synthetic average balance). Ravi's ALM cashflow engine
  * produces this shape once it lands.
  */
-export interface Ba610DetailBandingEntry {
+export interface Ba120DetailBandingEntry {
   readonly leafAccountId: string;
-  readonly instrumentClass: Ba610DetailInstrumentClass;
-  readonly maturityBand: Ba610DetailMaturityBand;
+  readonly instrumentClass: Ba120DetailInstrumentClass;
+  readonly maturityBand: Ba120DetailMaturityBand;
   /**
    * Average volume (earning asset or interest-bearing liability) over the
    * period, in minor units (unsigned). Used as the denominator proxy for
@@ -147,7 +149,7 @@ export interface Ba610DetailBandingEntry {
  * income or interest expense decomposition. Accounts without an entry are
  * classified as gaps.
  */
-export type Ba610DetailBandingMap = readonly Ba610DetailBandingEntry[];
+export type Ba120DetailBandingMap = readonly Ba120DetailBandingEntry[];
 
 // ---------------------------------------------------------------------------
 // FTP rates (optional — nullable at v0)
@@ -162,13 +164,13 @@ export type Ba610DetailBandingMap = readonly Ba610DetailBandingEntry[];
  *
  * Ravi's IRRBB substrate will produce this shape once it lands.
  */
-export interface Ba610DetailFtpRateBand {
-  readonly maturityBand: Ba610DetailMaturityBand;
+export interface Ba120DetailFtpRateBand {
+  readonly maturityBand: Ba120DetailMaturityBand;
   /** FTP rate per band (basis-points: 100 = 1%). */
   readonly ftpRateBps: number;
 }
 
-export type Ba610DetailFtpRates = readonly Ba610DetailFtpRateBand[] | null;
+export type Ba120DetailFtpRates = readonly Ba120DetailFtpRateBand[] | null;
 
 // ---------------------------------------------------------------------------
 // Generator input
@@ -187,13 +189,13 @@ export type Ba610DetailFtpRates = readonly Ba610DetailFtpRateBand[] | null;
  * calculation — caller-supplied at v0 (Ravi's ALM cashflow engine
  * downstream). Must be non-negative; zero produces null NIM.
  */
-export interface Ba610DetailGeneratorInput {
+export interface Ba120DetailGeneratorInput {
   /** BA 610 output — primary typed input for BA 610 detail. */
-  readonly ba300Output: Ba610IncomeStatement;
+  readonly ba300Output: Ba120IncomeStatement;
   /** Per-account instrument class + ALM maturity band assignments. */
-  readonly bandingMap: Ba610DetailBandingMap;
+  readonly bandingMap: Ba120DetailBandingMap;
   /** FTP rates per band — `null` suppresses client/structural NIM split. */
-  readonly ftpRates: Ba610DetailFtpRates;
+  readonly ftpRates: Ba120DetailFtpRates;
   /**
    * Average earning assets over the period, in minor units (unsigned).
    * Denominator for the NIM calculation. v0: caller-supplied fixture.
@@ -212,7 +214,7 @@ export interface Ba610DetailGeneratorInput {
 // Outputs
 // ---------------------------------------------------------------------------
 
-export interface Ba610DetailLineItem {
+export interface Ba120DetailLineItem {
   readonly lineId: string;
   readonly lineLabel: string;
   readonly amountMinor: number;
@@ -227,36 +229,36 @@ export interface Ba610DetailLineItem {
 /**
  * NII decomposed by instrument class.
  */
-export interface Ba610DetailNiiByClass {
-  readonly instrumentClass: Ba610DetailInstrumentClass;
+export interface Ba120DetailNiiByClass {
+  readonly instrumentClass: Ba120DetailInstrumentClass;
   readonly interestIncomeMinor: number;
   readonly interestExpenseMinor: number;
   readonly netInterestIncomeMinor: number;
-  readonly lineItems: readonly Ba610DetailLineItem[];
+  readonly lineItems: readonly Ba120DetailLineItem[];
 }
 
 /**
  * NII + volume decomposed by ALM maturity band.
  */
-export interface Ba610DetailNiiByBand {
-  readonly maturityBand: Ba610DetailMaturityBand;
+export interface Ba120DetailNiiByBand {
+  readonly maturityBand: Ba120DetailMaturityBand;
   readonly interestIncomeMinor: number;
   readonly interestExpenseMinor: number;
   readonly netInterestIncomeMinor: number;
   /** Average volume (earning asset / funding) for this band in minor units. */
   readonly volumeMinor: number;
-  readonly lineItems: readonly Ba610DetailLineItem[];
+  readonly lineItems: readonly Ba120DetailLineItem[];
 }
 
 /**
  * NII breakdown section.
  */
-export interface Ba610DetailNiiBreakdown {
+export interface Ba120DetailNiiBreakdown {
   readonly totalInterestIncomeMinor: number;
   readonly totalInterestExpenseMinor: number;
   readonly totalNetInterestIncomeMinor: number;
-  readonly byInstrumentClass: readonly Ba610DetailNiiByClass[];
-  readonly byMaturityBand: readonly Ba610DetailNiiByBand[];
+  readonly byInstrumentClass: readonly Ba120DetailNiiByClass[];
+  readonly byMaturityBand: readonly Ba120DetailNiiByBand[];
   /** Accounts in interest income/expense sections not covered by the banding map. */
   readonly bandingGaps: readonly string[];
 }
@@ -264,10 +266,10 @@ export interface Ba610DetailNiiBreakdown {
 /**
  * ALM banding section — mirrors `byMaturityBand` with volume coverage.
  */
-export interface Ba610DetailAlmBandingSection {
+export interface Ba120DetailAlmBandingSection {
   readonly totalVolumeMinor: number;
   readonly totalNetInterestIncomeMinor: number;
-  readonly bands: readonly Ba610DetailNiiByBand[];
+  readonly bands: readonly Ba120DetailNiiByBand[];
 }
 
 /**
@@ -276,7 +278,7 @@ export interface Ba610DetailAlmBandingSection {
  * downstream). Fields are `null` when FTP rates are not supplied or when
  * AEA is zero (division undefined).
  */
-export interface Ba610DetailNimSection {
+export interface Ba120DetailNimSection {
   /** Overall NIM = totalNetInterestIncome / averageEarningAssets. Null if AEA is zero. */
   readonly overallNim: number | null;
   readonly overallNimBps: number | null;
@@ -296,7 +298,7 @@ export interface Ba610DetailNimSection {
    * when FTP not available for the band.
    */
   readonly byBand: ReadonlyArray<{
-    readonly maturityBand: Ba610DetailMaturityBand;
+    readonly maturityBand: Ba120DetailMaturityBand;
     readonly nim: number | null;
     readonly nimBps: number | null;
     readonly clientNim: number | null;
@@ -308,19 +310,19 @@ export interface Ba610DetailNimSection {
 /**
  * Non-interest income section — lifted from the BA 610 output.
  */
-export interface Ba610DetailNonInterestSection {
+export interface Ba120DetailNonInterestSection {
   readonly feeIncomeMinor: number;
   readonly tradingProfitLossMinor: number;
   readonly otherIncomeMinor: number;
   readonly otherExpenseMinor: number;
   readonly totalNonInterestIncomeMinor: number;
-  readonly lineItems: readonly Ba610DetailLineItem[];
+  readonly lineItems: readonly Ba120DetailLineItem[];
 }
 
 /**
  * Operating efficiency (cost-to-income ratio) section.
  */
-export interface Ba610DetailEfficiencySection {
+export interface Ba120DetailEfficiencySection {
   /**
    * Cost-to-income ratio = operatingExpenses / totalOperatingIncome.
    * Null when totalOperatingIncome is zero (division undefined).
@@ -338,7 +340,7 @@ export interface Ba610DetailEfficiencySection {
 /**
  * Full BA 610 detail output.
  */
-export interface Ba610DetailIncomeDetail {
+export interface Ba120DetailIncomeDetail {
   readonly meta: {
     readonly form: "BA 120 detail";
     readonly formVersion: "v0.1-rehearsal";
@@ -352,12 +354,12 @@ export interface Ba610DetailIncomeDetail {
     readonly ba300ClassificationsFingerprint: string;
     readonly bandingMapFingerprint: string;
   };
-  readonly netInterestIncome: Ba610DetailNiiBreakdown;
-  readonly almBanding: Ba610DetailAlmBandingSection;
-  readonly netInterestMargin: Ba610DetailNimSection;
-  readonly nonInterestIncome: Ba610DetailNonInterestSection;
-  readonly operatingEfficiency: Ba610DetailEfficiencySection;
-  readonly lineItems: readonly Ba610DetailLineItem[];
+  readonly netInterestIncome: Ba120DetailNiiBreakdown;
+  readonly almBanding: Ba120DetailAlmBandingSection;
+  readonly netInterestMargin: Ba120DetailNimSection;
+  readonly nonInterestIncome: Ba120DetailNonInterestSection;
+  readonly operatingEfficiency: Ba120DetailEfficiencySection;
+  readonly lineItems: readonly Ba120DetailLineItem[];
   readonly classificationGaps: readonly string[];
   readonly periodStart: string;
   readonly periodEnd: string;
@@ -370,19 +372,19 @@ export interface Ba610DetailIncomeDetail {
 // Errors + scope guard
 // ---------------------------------------------------------------------------
 
-export class Ba610DetailGeneratorError extends Error {
+export class Ba120DetailGeneratorError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "Ba610DetailGeneratorError";
+    this.name = "Ba120DetailGeneratorError";
   }
 }
 
-export const BA_610_DETAIL_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
+export const BA_120_DETAIL_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 
 function assertBankEntity(entity: string): void {
-  if (!BA_610_DETAIL_BANK_ENTITIES.includes(entity)) {
-    throw new Ba610DetailGeneratorError(
-      `BA 610 detail (Selected Income-Statement Information) is bank-licence-bound; entity '${entity}' is not in BA_610_DETAIL_BANK_ENTITIES (${BA_610_DETAIL_BANK_ENTITIES.join(", ")}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER. Group-consolidated BA 610 detail lands at a later slice.`,
+  if (!BA_120_DETAIL_BANK_ENTITIES.includes(entity)) {
+    throw new Ba120DetailGeneratorError(
+      `BA 610 detail (Selected Income-Statement Information) is bank-licence-bound; entity '${entity}' is not in BA_120_DETAIL_BANK_ENTITIES (${BA_120_DETAIL_BANK_ENTITIES.join(", ")}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER. Group-consolidated BA 610 detail lands at a later slice.`,
     );
   }
 }
@@ -391,7 +393,7 @@ function assertBankEntity(entity: string): void {
 // Ordered band / class lists
 // ---------------------------------------------------------------------------
 
-const ORDERED_BANDS: readonly Ba610DetailMaturityBand[] = [
+const ORDERED_BANDS: readonly Ba120DetailMaturityBand[] = [
   "overnight",
   "1-7d",
   "8-30d",
@@ -401,7 +403,7 @@ const ORDERED_BANDS: readonly Ba610DetailMaturityBand[] = [
   ">1y",
 ];
 
-const ORDERED_CLASSES: readonly Ba610DetailInstrumentClass[] = [
+const ORDERED_CLASSES: readonly Ba120DetailInstrumentClass[] = [
   "interbank",
   "corporate",
   "sovereign",
@@ -414,20 +416,20 @@ const ORDERED_CLASSES: readonly Ba610DetailInstrumentClass[] = [
 
 /**
  * Non-null safe get from a Map that is known to contain all keys. Throws
- * a descriptive `Ba610DetailGeneratorError` on the impossible code path instead
+ * a descriptive `Ba120DetailGeneratorError` on the impossible code path instead
  * of using a non-null assertion (Biome `noNonNullAssertion` rule).
  */
 function mustGet<K, V>(map: Map<K, V>, key: K, context: string): V {
   const v = map.get(key);
   if (v === undefined) {
-    throw new Ba610DetailGeneratorError(
+    throw new Ba120DetailGeneratorError(
       `BA 610 detail generator: internal error — expected '${String(key)}' in ${context}`,
     );
   }
   return v;
 }
 
-function fingerprintBandingMap(map: Ba610DetailBandingMap): string {
+function fingerprintBandingMap(map: Ba120DetailBandingMap): string {
   const sorted = [...map].sort((a, b) =>
     a.leafAccountId < b.leafAccountId ? -1 : a.leafAccountId > b.leafAccountId ? 1 : 0,
   );
@@ -443,11 +445,11 @@ function formatPercent(ratio: number): string {
 }
 
 function ba300LineToLineItem(
-  item: Ba610LineItem,
+  item: Ba120LineItem,
   lineIdPrefix: string,
   newAmountMinor: number,
   currency: Currency,
-): Ba610DetailLineItem {
+): Ba120DetailLineItem {
   const amount = moneyFromMinorUnits(BigInt(newAmountMinor), currency);
   return {
     lineId: `${lineIdPrefix}.${item.lineId}`,
@@ -467,7 +469,7 @@ function ba300LineToLineItem(
 
 /**
  * Generate the BA 610 detail (Selected Income-Statement Information) projection
- * from a `Ba610IncomeStatement` output + caller-supplied banding map +
+ * from a `Ba120IncomeStatement` output + caller-supplied banding map +
  * optional FTP rates. Pure function; deterministic.
  *
  * BA 610 detail DOES NOT re-fold the trial balance. It re-slices the BA 610 NII
@@ -480,26 +482,26 @@ function ba300LineToLineItem(
  * expense are also positive magnitudes (signed out at the NII / PBT
  * computation layer).
  */
-export function generateBa610DetailIncomeDetail(
-  input: Ba610DetailGeneratorInput,
-): Ba610DetailIncomeDetail {
+export function generateBa120DetailIncomeDetail(
+  input: Ba120DetailGeneratorInput,
+): Ba120DetailIncomeDetail {
   const { ba300Output, bandingMap, ftpRates, averageEarningAssetsMinor } = input;
 
   // Entity inherited from BA 610 — assert it is bank-licensed.
   assertBankEntity(ba300Output.meta.entity);
 
   if (!ba300Output.meta.functionalCurrency || ba300Output.meta.functionalCurrency.length !== 3) {
-    throw new Ba610DetailGeneratorError(
+    throw new Ba120DetailGeneratorError(
       `BA 610 detail generator: BA 610 functionalCurrency must be ISO-4217 (3 chars), got '${ba300Output.meta.functionalCurrency}'`,
     );
   }
   if (!(ba300Output.meta.periodStart < ba300Output.meta.periodEnd)) {
-    throw new Ba610DetailGeneratorError(
+    throw new Ba120DetailGeneratorError(
       `BA 610 detail generator: periodStart (${ba300Output.meta.periodStart}) must precede periodEnd (${ba300Output.meta.periodEnd})`,
     );
   }
   if (!Number.isFinite(averageEarningAssetsMinor) || averageEarningAssetsMinor < 0) {
-    throw new Ba610DetailGeneratorError(
+    throw new Ba120DetailGeneratorError(
       `BA 610 detail generator: averageEarningAssetsMinor must be a non-negative finite number, got ${averageEarningAssetsMinor}`,
     );
   }
@@ -507,15 +509,15 @@ export function generateBa610DetailIncomeDetail(
   const ccy = ba300Output.meta.functionalCurrency as Currency;
 
   // Build banding index. Duplicate detection.
-  const bandIndex = new Map<string, Ba610DetailBandingEntry>();
+  const bandIndex = new Map<string, Ba120DetailBandingEntry>();
   for (const entry of bandingMap) {
     if (bandIndex.has(entry.leafAccountId)) {
-      throw new Ba610DetailGeneratorError(
+      throw new Ba120DetailGeneratorError(
         `BA 610 detail generator: duplicate banding-map entry for account '${entry.leafAccountId}'`,
       );
     }
     if (!Number.isFinite(entry.volumeMinor) || entry.volumeMinor < 0) {
-      throw new Ba610DetailGeneratorError(
+      throw new Ba120DetailGeneratorError(
         `BA 610 detail generator: banding-map entry for '${entry.leafAccountId}' has invalid volumeMinor=${entry.volumeMinor} (must be non-negative finite)`,
       );
     }
@@ -530,26 +532,26 @@ export function generateBa610DetailIncomeDetail(
   type ClassBucket = {
     interestIncome: number;
     interestExpense: number;
-    lines: Ba610DetailLineItem[];
+    lines: Ba120DetailLineItem[];
   };
   type BandBucket = {
     interestIncome: number;
     interestExpense: number;
     volume: number;
-    lines: Ba610DetailLineItem[];
+    lines: Ba120DetailLineItem[];
   };
 
-  const classBuckets = new Map<Ba610DetailInstrumentClass, ClassBucket>(
+  const classBuckets = new Map<Ba120DetailInstrumentClass, ClassBucket>(
     ORDERED_CLASSES.map((c) => [c, { interestIncome: 0, interestExpense: 0, lines: [] }]),
   );
-  const bandBuckets = new Map<Ba610DetailMaturityBand, BandBucket>(
+  const bandBuckets = new Map<Ba120DetailMaturityBand, BandBucket>(
     ORDERED_BANDS.map((b) => [b, { interestIncome: 0, interestExpense: 0, volume: 0, lines: [] }]),
   );
 
   const bandingGaps = new Set<string>();
 
   const processInterestItems = (
-    items: readonly Ba610LineItem[],
+    items: readonly Ba120LineItem[],
     side: "income" | "expense",
   ): void => {
     for (const item of items) {
@@ -560,7 +562,7 @@ export function generateBa610DetailIncomeDetail(
         continue;
       }
 
-      const lineItem: Ba610DetailLineItem = ba300LineToLineItem(
+      const lineItem: Ba120DetailLineItem = ba300LineToLineItem(
         item,
         `ba310.${side}`,
         item.amountMinor,
@@ -595,7 +597,7 @@ export function generateBa610DetailIncomeDetail(
   processInterestItems(ba300Output.interestExpense.lineItems, "expense");
 
   // Build NII by class.
-  const byInstrumentClass: Ba610DetailNiiByClass[] = ORDERED_CLASSES.map((cls) => {
+  const byInstrumentClass: Ba120DetailNiiByClass[] = ORDERED_CLASSES.map((cls) => {
     const b = mustGet(classBuckets, cls, "classBuckets");
     return {
       instrumentClass: cls,
@@ -607,7 +609,7 @@ export function generateBa610DetailIncomeDetail(
   });
 
   // Build NII by band.
-  const byMaturityBand: Ba610DetailNiiByBand[] = ORDERED_BANDS.map((band) => {
+  const byMaturityBand: Ba120DetailNiiByBand[] = ORDERED_BANDS.map((band) => {
     const b = mustGet(bandBuckets, band, "bandBuckets");
     return {
       maturityBand: band,
@@ -623,7 +625,7 @@ export function generateBa610DetailIncomeDetail(
   const totalInterestExpenseMinor = ba300Output.interestExpense.totalMinor;
   const totalNiiMinor = ba300Output.netInterestIncomeMinor;
 
-  const niiBreakdown: Ba610DetailNiiBreakdown = {
+  const niiBreakdown: Ba120DetailNiiBreakdown = {
     totalInterestIncomeMinor,
     totalInterestExpenseMinor,
     totalNetInterestIncomeMinor: totalNiiMinor,
@@ -638,7 +640,7 @@ export function generateBa610DetailIncomeDetail(
 
   const almTotalVolume = byMaturityBand.reduce((s, b) => s + b.volumeMinor, 0);
 
-  const almBanding: Ba610DetailAlmBandingSection = {
+  const almBanding: Ba120DetailAlmBandingSection = {
     totalVolumeMinor: almTotalVolume,
     totalNetInterestIncomeMinor: totalNiiMinor,
     bands: byMaturityBand,
@@ -703,7 +705,7 @@ export function generateBa610DetailIncomeDetail(
     }
   }
 
-  const nimSection: Ba610DetailNimSection = {
+  const nimSection: Ba120DetailNimSection = {
     overallNim,
     overallNimBps: overallNimBpsVal,
     averageEarningAssetsMinor: aea,
@@ -722,7 +724,7 @@ export function generateBa610DetailIncomeDetail(
   const otherExpenseMinor = ba300Output.otherExpenses.totalMinor;
   const totalNonInterestIncome = feeMinor + tradingMinor + otherIncomeMinor - otherExpenseMinor;
 
-  const nonInterestLineItems: Ba610DetailLineItem[] = [
+  const nonInterestLineItems: Ba120DetailLineItem[] = [
     ...ba300Output.feeIncome.lineItems.map((item) =>
       ba300LineToLineItem(item, "ba310.fee", item.amountMinor, ccy),
     ),
@@ -737,7 +739,7 @@ export function generateBa610DetailIncomeDetail(
     ),
   ];
 
-  const nonInterestSection: Ba610DetailNonInterestSection = {
+  const nonInterestSection: Ba120DetailNonInterestSection = {
     feeIncomeMinor: feeMinor,
     tradingProfitLossMinor: tradingMinor,
     otherIncomeMinor,
@@ -755,7 +757,7 @@ export function generateBa610DetailIncomeDetail(
     totalNiiMinor + feeMinor + tradingMinor + otherIncomeMinor - otherExpenseMinor;
   const cir = totalOpIncome !== 0 ? opExpMinor / totalOpIncome : null;
 
-  const efficiencySection: Ba610DetailEfficiencySection = {
+  const efficiencySection: Ba120DetailEfficiencySection = {
     costToIncomeRatio: cir,
     costToIncomePercent: cir !== null ? formatPercent(cir) : null,
     operatingExpensesMinor: opExpMinor,
@@ -763,10 +765,10 @@ export function generateBa610DetailIncomeDetail(
   };
 
   // ---------------------------------------------------------------------------
-  // Aggregate lineItems list (top-level convenience — all Ba610Detail line items).
+  // Aggregate lineItems list (top-level convenience — all Ba120Detail line items).
   // ---------------------------------------------------------------------------
 
-  const allLineItems: Ba610DetailLineItem[] = [
+  const allLineItems: Ba120DetailLineItem[] = [
     ...byInstrumentClass.flatMap((c) => c.lineItems),
     ...nonInterestLineItems,
   ];

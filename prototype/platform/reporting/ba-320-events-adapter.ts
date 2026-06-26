@@ -1,6 +1,6 @@
 // platform/reporting/ba-320-events-adapter.ts
 //
-// P1 fix (C-2) — BA 310 (market-risk return) entry point that folds
+// P1 fix (C-2) — BA 320 (market-risk return) entry point that folds
 // FxTradeExecuted primary trade events directly, without routing through the
 // trial balance.
 //
@@ -13,9 +13,9 @@
 // Correct input chain per Principles/1-events-are-truth.md:
 //   FxTradeExecuted (primary trade events)
 //     → fxPositionCalculator (open positions, net per pair)
-//     → fxPositionsToBa310Input (adapter)
-//     → generateBa310MarketRisk (pure generator)
-//     → Ba310Output
+//     → fxPositionsToBa320Input (adapter)
+//     → generateBa320MarketRisk (pure generator)
+//     → Ba320Output
 //
 // TradeMatured events are folded to identify settled trades so they
 // are excluded from the open-position calculation (Reg 28(5) — only open /
@@ -41,10 +41,10 @@ import { fxPositionCalculator } from "../accounting/fx-calculators";
 import type { EventStore } from "../event-store/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
-import { fxPositionsToBa310Input } from "./ba-320-fx-adapter";
-import { generateBa310MarketRisk } from "./ba-320-market-risk";
+import { fxPositionsToBa320Input } from "./ba-320-fx-adapter";
+import { generateBa320MarketRisk } from "./ba-320-market-risk";
 import type {
-  Ba310Output,
+  Ba320Output,
   CommodityPositionRow,
   EquityRow,
   IrMaturityBandRow,
@@ -56,7 +56,7 @@ import type {
 // ---------------------------------------------------------------------------
 
 /**
- * Input for `generateBa310MarketRiskFromEvents`.
+ * Input for `generateBa320MarketRiskFromEvents`.
  *
  * The FX-position sub-charge is derived by replaying `FxTradeExecuted` and
  * `TradeMatured` events directly (P1-compliant). The remaining
@@ -77,7 +77,7 @@ import type {
  *     corresponding event streams are implemented. Substrate gap surfaced in
  *     the output `placeholders` field.
  */
-export interface Ba310FromEventsInput {
+export interface Ba320FromEventsInput {
   /** Legal entity short-id (`LE-ZA-HOZ-BANK`). Throws on non-bank. */
   readonly entity: string;
   /** ISO 8601 — period-end as-of date. */
@@ -150,10 +150,10 @@ export interface Ba310FromEventsInput {
  * Citations: Principles/1-events-are-truth.md, D-MARKETS-SCHEMA-FOUNDATION,
  * D-MARKETS-CAPITAL-TIME-SHAPE.
  */
-export function generateBa310MarketRiskFromEvents(
+export function generateBa320MarketRiskFromEvents(
   eventStore: EventStore,
-  input: Ba310FromEventsInput,
-): Ba310Output {
+  input: Ba320FromEventsInput,
+): Ba320Output {
   // Provenance filter: exclude simulated events from production projections.
   // Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12).
   const provenanceFilter = defaultProvenanceFilter();
@@ -229,11 +229,11 @@ export function generateBa310MarketRiskFromEvents(
     asOf: input.asOf,
   });
 
-  // ---- Step 4: adapt positions to Ba310 FxPositionRow[]. ------------------
-  const fxPositions = fxPositionsToBa310Input(positions, input.functionalCurrency);
+  // ---- Step 4: adapt positions to Ba320 FxPositionRow[]. ------------------
+  const fxPositions = fxPositionsToBa320Input(positions, input.functionalCurrency);
 
   // ---- Step 5: delegate to the pure generator. ----------------------------
-  const generated = generateBa310MarketRisk({
+  const generated = generateBa320MarketRisk({
     entity: input.entity,
     asOf: input.asOf,
     periodId: input.periodId,
@@ -248,7 +248,7 @@ export function generateBa310MarketRiskFromEvents(
       : {}),
     // No trialBalanceSnapshotEventId — positions came from primary events.
     // The source event IDs are in tradeEventIds (provenance chain is
-    // FxTradeExecuted → fxPositionCalculator → generateBa310MarketRisk).
+    // FxTradeExecuted → fxPositionCalculator → generateBa320MarketRisk).
   });
 
   // ---- Step 6: append substrate-gap placeholders (events-first IR gaps). ---
@@ -262,4 +262,4 @@ export function generateBa310MarketRiskFromEvents(
 }
 
 // Re-export for convenience at the call-sites that import from this module.
-export type { Ba310Output };
+export type { Ba320Output };

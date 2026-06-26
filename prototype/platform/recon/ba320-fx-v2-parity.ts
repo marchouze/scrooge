@@ -52,7 +52,7 @@ import { MarketDataStore, lookupQuoteWithInverse } from "../market-data/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import { computeBA320V2 } from "../projections/ba320-fx-v2";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
-import { fxPositionsToBa310Input } from "../reporting/ba-320-fx-adapter";
+import { fxPositionsToBa320Input } from "../reporting/ba-320-fx-adapter";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 import { runParityCheck } from "./v1-v2-parity-harness";
 
@@ -229,17 +229,17 @@ export function run(opts: RunOpts = {}): ReconResult {
       asOf: AS_OF,
     });
 
-    const ba310Rows = fxPositionsToBa310Input(positions, FUNCTIONAL_CURRENCY);
-    v1CurrencyCount = ba310Rows.length;
+    const ba320Rows = fxPositionsToBa320Input(positions, FUNCTIONAL_CURRENCY);
+    v1CurrencyCount = ba320Rows.length;
     v1OpenTradeCount = trades.length - settledTradeIds.size;
     let v1SumLong = 0;
     let v1SumShort = 0;
-    for (const row of ba310Rows) {
+    for (const row of ba320Rows) {
       v1PositionsByCurrency.set(row.currency, row.netPositionFunctionalMinor);
       if (row.netPositionFunctionalMinor >= 0) v1SumLong += row.netPositionFunctionalMinor;
       else v1SumShort += Math.abs(row.netPositionFunctionalMinor);
     }
-    if (ba310Rows.length > 0) {
+    if (ba320Rows.length > 0) {
       // Reg 28(5) / BCBS §718(xiii): 8% × max(Σ|long|, Σ|short|).
       //
       // PRECISION GAP ROOT-CAUSE (Charter cmd 1 — fix the cause, don't loosen a
@@ -263,7 +263,7 @@ export function run(opts: RunOpts = {}): ReconResult {
   } catch (err) {
     violations.push({
       subject: "ba320-fx-v2-parity:v1-projection-error",
-      message: `V1 BA-320 FX projection threw: ${err instanceof Error ? err.message : String(err)}. Inspect fxPositionCalculator() or generateBa310MarketRiskFromEvents().`,
+      message: `V1 BA-320 FX projection threw: ${err instanceof Error ? err.message : String(err)}. Inspect fxPositionCalculator() or generateBa320MarketRiskFromEvents().`,
       severity: "fail",
     });
     result.asserted += 1;

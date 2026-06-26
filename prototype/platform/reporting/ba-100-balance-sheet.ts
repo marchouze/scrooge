@@ -6,8 +6,9 @@
 // (workbook tab A1). The prior "BA 600" label was a fabricated numbering
 // artefact: BA 600 is actually the Consolidated Return. Re-numbered
 // forward-only under D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (CEO 2026-06-09);
-// see Regulations/SARB-PA/ba-returns/_canonical-register.md. Internal `Ba600*`
-// symbol names retained pending a separate symbol-rename pass.
+// see Regulations/SARB-PA/ba-returns/_canonical-register.md. Internal symbol
+// names aligned to `Ba100*` in the canonical symbol-rename pass (harden-only,
+// behaviour-identical).
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN
 // (CEO-approved 2026-05-10), extended 2026-05-17 to add the BA-returns
@@ -92,7 +93,7 @@ import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
  * is classified into exactly one section; non-classified accounts are
  * silently ignored and surfaced in the `classificationGaps` output field.
  */
-export type Ba600Section = "assets" | "liabilities" | "equity";
+export type Ba100Section = "assets" | "liabilities" | "equity";
 
 /**
  * True iff a GL account is an OFF-BALANCE-SHEET memorandum account (FX trade-date
@@ -122,9 +123,9 @@ export function isOffBalanceSheetAccountId(accountId: string): boolean {
  * magnitude presentation and flags rows whose sign violates the section
  * convention with a warning note.
  */
-export interface Ba600LineClassification {
+export interface Ba100LineClassification {
   readonly leafAccountId: string;
-  readonly section: Ba600Section;
+  readonly section: Ba100Section;
   /**
    * Free-form sub-line label for the BA 600 form (e.g.
    * `assets.cash-and-balances-at-sarb`, `liabilities.deposits-from-banks`,
@@ -137,7 +138,7 @@ export interface Ba600LineClassification {
 }
 
 /** Caller-supplied classification map for the BA 600 generator. */
-export type Ba600ClassificationMap = readonly Ba600LineClassification[];
+export type Ba100ClassificationMap = readonly Ba100LineClassification[];
 
 /**
  * The complete generator input. The trial balance comes from Slice 2's
@@ -146,7 +147,7 @@ export type Ba600ClassificationMap = readonly Ba600LineClassification[];
  * reporting currency to render in is the entity's functional currency
  * from `AccountingPeriodOpened.functionalCurrency`.
  */
-export interface Ba600GeneratorInput {
+export interface Ba100GeneratorInput {
   /** Legal entity short-id (`LE-ZA-HOZ-BANK`). The generator throws on non-bank entities. */
   readonly entity: string;
   /** ISO 8601 — the period-end as-of date the BA 600 is reported at. */
@@ -158,7 +159,7 @@ export interface Ba600GeneratorInput {
   /** Trial-balance rows from `TrialBalanceSnapshotted.rows` / `closePeriod` result. */
   readonly trialBalance: readonly TrialBalanceSnapshotRow[];
   /** Per-account BA 600 line classifications. Accounts without an entry surface in `classificationGaps`. */
-  readonly classifications: Ba600ClassificationMap;
+  readonly classifications: Ba100ClassificationMap;
   /**
    * Optional: cite the source `TrialBalanceSnapshotted.event_id` so the
    * downstream `ReportGenerated` event can chain back to the trial-balance
@@ -184,7 +185,7 @@ export interface Ba600GeneratorInput {
  * `[citation: TBC]` markers on `lineId` indicate the SARB line numbering
  * is awaiting Mira's `WS-INSTRUMENT-ANALYSES` publication.
  */
-export interface Ba600LineItem {
+export interface Ba100LineItem {
   readonly lineId: string;
   readonly lineLabel: string;
   readonly amountMinor: number;
@@ -197,13 +198,13 @@ export interface Ba600LineItem {
 }
 
 export interface Ba600Section_Output {
-  readonly section: Ba600Section;
+  readonly section: Ba100Section;
   readonly totalMinor: number;
-  readonly lineItems: readonly Ba600LineItem[];
+  readonly lineItems: readonly Ba100LineItem[];
 }
 
 /** Per-currency total roll-up across the trial balance. */
-export interface Ba600PerCurrencyTotal {
+export interface Ba100PerCurrencyTotal {
   readonly currency: string;
   readonly assetsMinor: number;
   readonly liabilitiesMinor: number;
@@ -215,7 +216,7 @@ export interface Ba600PerCurrencyTotal {
  * classification. Surfaced so the caller can iteratively resolve the map
  * without the generator throwing on every unmapped account.
  */
-export interface Ba600ClassificationGap {
+export interface Ba100ClassificationGap {
   readonly leafAccountId: string;
   readonly currency: string;
   readonly amountMinor: number;
@@ -231,7 +232,7 @@ export interface Ba600ClassificationGap {
  * Authority: D-BA-RETURNS-FOLLOWON-BATCH. Citation: SARB BA 100 (per-line
  * counterparty-sector decomposition); Banks Act 94 of 1990 §75; Reg 32.
  */
-export interface Ba600SectorSplit {
+export interface Ba100SectorSplit {
   readonly bank: number;
   readonly corporate: number;
   readonly sovereign: number;
@@ -246,14 +247,14 @@ export interface Ba600SectorSplit {
  *
  * Authority: D-BA-RETURNS-FOLLOWON-BATCH. Citation: SARB BA 100.
  */
-export interface Ba600LineSectorBreakdown {
+export interface Ba100LineSectorBreakdown {
   readonly lineId: string;
   readonly lineLabel: string;
-  readonly section: Ba600Section;
-  /** Total magnitude of the line (== the matching `Ba600LineItem.amountMinor`). */
+  readonly section: Ba100Section;
+  /** Total magnitude of the line (== the matching `Ba100LineItem.amountMinor`). */
   readonly amountMinor: number;
   /** Per-sector split; sums to `amountMinor`. */
-  readonly bySector: Ba600SectorSplit;
+  readonly bySector: Ba100SectorSplit;
 }
 
 /**
@@ -263,13 +264,13 @@ export interface Ba600LineSectorBreakdown {
  *
  * Authority: D-BA-RETURNS-FOLLOWON-BATCH. Citation: SARB BA 100.
  */
-export interface Ba600SectorBreakdown {
+export interface Ba100SectorBreakdown {
   /** Per-line sector splits, in the same stable order as the section line items. */
-  readonly lines: readonly Ba600LineSectorBreakdown[];
+  readonly lines: readonly Ba100LineSectorBreakdown[];
   /** Per-section sector roll-up (assets / liabilities / equity). */
-  readonly sectionTotals: Readonly<Record<Ba600Section, Ba600SectorSplit>>;
+  readonly sectionTotals: Readonly<Record<Ba100Section, Ba100SectorSplit>>;
   /** Form-level sector roll-up across all sections. */
-  readonly formTotal: Ba600SectorSplit;
+  readonly formTotal: Ba100SectorSplit;
   /**
    * Reconciliation guard: `true` iff every section's per-sector split sums to
    * that section's `totalMinor`. Always `true` by construction; surfaced for
@@ -282,7 +283,7 @@ export interface Ba600SectorBreakdown {
  * Balance-sheet invariant check — recorded on every output for forensic
  * transparency. `balanced` is `true` iff `|difference| ≤ tolerance`.
  */
-export interface Ba600BalanceCheck {
+export interface Ba100BalanceCheck {
   readonly assetsMinor: number;
   readonly liabilitiesPlusEquityMinor: number;
   readonly differenceMinor: number;
@@ -291,7 +292,7 @@ export interface Ba600BalanceCheck {
 }
 
 /** The full BA 600 generator output. */
-export interface Ba600BalanceSheet {
+export interface Ba100BalanceSheet {
   readonly meta: {
     readonly form: "BA 100";
     readonly formVersion: "v0.1-rehearsal";
@@ -312,10 +313,10 @@ export interface Ba600BalanceSheet {
    * from the COA registry; reconciles to the section / line magnitudes.
    * Authority: D-BA-RETURNS-FOLLOWON-BATCH; SARB BA 100.
    */
-  readonly sectorBreakdown: Ba600SectorBreakdown;
-  readonly perCurrencyTotals: readonly Ba600PerCurrencyTotal[];
-  readonly balanceCheck: Ba600BalanceCheck;
-  readonly classificationGaps: readonly Ba600ClassificationGap[];
+  readonly sectorBreakdown: Ba100SectorBreakdown;
+  readonly perCurrencyTotals: readonly Ba100PerCurrencyTotal[];
+  readonly balanceCheck: Ba100BalanceCheck;
+  readonly classificationGaps: readonly Ba100ClassificationGap[];
   readonly citations: readonly string[];
   readonly placeholders: readonly string[];
 }
@@ -324,10 +325,10 @@ export interface Ba600BalanceSheet {
 // Errors
 // ---------------------------------------------------------------------------
 
-export class Ba600GeneratorError extends Error {
+export class Ba100GeneratorError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "Ba600GeneratorError";
+    this.name = "Ba100GeneratorError";
   }
 }
 
@@ -342,12 +343,12 @@ export class Ba600GeneratorError extends Error {
  * BA 600 are out of scope at this slice — see `D-REGULATORY-PERIMETER`
  * (CEO-approved 2026-05-10).
  */
-export const BA_600_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
+export const BA_100_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 
 function assertBankEntity(entity: string): void {
-  if (!BA_600_BANK_ENTITIES.includes(entity)) {
-    throw new Ba600GeneratorError(
-      `BA 600 (Balance Sheet) is bank-licence-bound; entity '${entity}' is not in BA_600_BANK_ENTITIES (${BA_600_BANK_ENTITIES.join(
+  if (!BA_100_BANK_ENTITIES.includes(entity)) {
+    throw new Ba100GeneratorError(
+      `BA 600 (Balance Sheet) is bank-licence-bound; entity '${entity}' is not in BA_100_BANK_ENTITIES (${BA_100_BANK_ENTITIES.join(
         ", ",
       )}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER. Group-consolidated BA 600 lands at a downstream slice.`,
     );
@@ -368,7 +369,7 @@ function assertBankEntity(entity: string): void {
  * absent from the trial balance are silently ignored (a classification
  * map can be a superset of the chart-of-accounts).
  *
- * Sign convention: see `Ba600LineClassification`. The generator takes
+ * Sign convention: see `Ba100LineClassification`. The generator takes
  * absolute value for line-magnitude presentation and flags sign-violating
  * rows with a `note` on the line item.
  *
@@ -381,16 +382,16 @@ function assertBankEntity(entity: string): void {
  * (per reporting currency). Strict by default; `tolerateImbalanceMinor`
  * allows a soft-fail rehearsal mode.
  */
-export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600BalanceSheet {
+export function generateBa100BalanceSheet(input: Ba100GeneratorInput): Ba100BalanceSheet {
   assertBankEntity(input.entity);
   if (!input.functionalCurrency || input.functionalCurrency.length !== 3) {
-    throw new Ba600GeneratorError(
+    throw new Ba100GeneratorError(
       `BA 600 generator: functionalCurrency must be ISO-4217 (3 chars), got '${input.functionalCurrency}'`,
     );
   }
   const tolerance = input.tolerateImbalanceMinor ?? 0;
   if (tolerance < 0 || !Number.isFinite(tolerance)) {
-    throw new Ba600GeneratorError(
+    throw new Ba100GeneratorError(
       `BA 600 generator: tolerateImbalanceMinor must be a finite non-negative integer, got ${tolerance}`,
     );
   }
@@ -398,10 +399,10 @@ export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600Bala
   const ccy = input.functionalCurrency as Currency;
 
   // Index classifications by leafAccountId — duplicate detection.
-  const classMap = new Map<string, Ba600LineClassification>();
+  const classMap = new Map<string, Ba100LineClassification>();
   for (const c of input.classifications) {
     if (classMap.has(c.leafAccountId)) {
-      throw new Ba600GeneratorError(
+      throw new Ba100GeneratorError(
         `BA 600 generator: duplicate classification for account '${c.leafAccountId}'`,
       );
     }
@@ -410,7 +411,7 @@ export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600Bala
     // tries to is a construction defect, not a legitimate state
     // (D-FX-TRADE-DATE-FVTPL-OBS; Engineering Charter cmd 2 — no silent acceptance).
     if (isOffBalanceSheetAccountId(c.leafAccountId)) {
-      throw new Ba600GeneratorError(
+      throw new Ba100GeneratorError(
         `BA 600 generator: off-balance-sheet memorandum account '${c.leafAccountId}' classified onto on-balance-sheet section '${c.section}'. OBS memorandum accounts are excluded from BA-100 on-balance-sheet lines.`,
       );
     }
@@ -421,14 +422,14 @@ export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600Bala
   const tbInCurrency = input.trialBalance.filter((r) => r.currency === ccy);
 
   // Bucket trial-balance rows by section.
-  const assetLines: Ba600LineItem[] = [];
-  const liabilityLines: Ba600LineItem[] = [];
-  const equityLines: Ba600LineItem[] = [];
+  const assetLines: Ba100LineItem[] = [];
+  const liabilityLines: Ba100LineItem[] = [];
+  const equityLines: Ba100LineItem[] = [];
   let assetsTotal = 0;
   let liabilitiesTotal = 0;
   let equityTotal = 0;
 
-  const classificationGaps: Ba600ClassificationGap[] = [];
+  const classificationGaps: Ba100ClassificationGap[] = [];
 
   // Stable iteration — sort by leafAccountId.
   const sorted = [...tbInCurrency].sort((a, b) =>
@@ -453,7 +454,7 @@ export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600Bala
     }
     const stockMinor = Math.abs(row.amountMinor);
     const note = signWarningForSection(row.amountMinor, c.section);
-    const lineItem: Ba600LineItem = {
+    const lineItem: Ba100LineItem = {
       lineId: `${c.section}.${row.leafAccountId}`,
       lineLabel: c.lineLabel,
       amountMinor: stockMinor,
@@ -505,7 +506,7 @@ export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600Bala
     );
   }
   if (!balanced && tolerance === 0) {
-    throw new Ba600GeneratorError(
+    throw new Ba100GeneratorError(
       `BA 600 generator: balance-sheet invariant violated — assets (${assetsTotal}) ≠ liabilities (${liabilitiesTotal}) + equity (${equityTotal}); difference ${differenceMinor} ${ccy} (cents) exceeds tolerance ${tolerance}. Set tolerateImbalanceMinor to surface as a placeholder instead.`,
     );
   }
@@ -586,7 +587,7 @@ export function generateBa600BalanceSheet(input: Ba600GeneratorInput): Ba600Bala
 // Helpers
 // ---------------------------------------------------------------------------
 
-function signWarningForSection(amountMinor: number, section: Ba600Section): string | undefined {
+function signWarningForSection(amountMinor: number, section: Ba100Section): string | undefined {
   if (amountMinor === 0) return undefined;
   // Asset = debit-typical (positive); liability/equity = credit-typical (negative).
   if (section === "assets" && amountMinor < 0) {
@@ -599,12 +600,12 @@ function signWarningForSection(amountMinor: number, section: Ba600Section): stri
 }
 
 /** Zero-initialised sector split. */
-function emptySectorSplit(): Ba600SectorSplit {
+function emptySectorSplit(): Ba100SectorSplit {
   return { bank: 0, corporate: 0, sovereign: 0, retail: 0, other: 0 };
 }
 
 /** Sum two sector splits component-wise (returns a fresh object). */
-function addSectorSplit(a: Ba600SectorSplit, b: Ba600SectorSplit): Ba600SectorSplit {
+function addSectorSplit(a: Ba100SectorSplit, b: Ba100SectorSplit): Ba100SectorSplit {
   return {
     bank: a.bank + b.bank,
     corporate: a.corporate + b.corporate,
@@ -615,7 +616,7 @@ function addSectorSplit(a: Ba600SectorSplit, b: Ba600SectorSplit): Ba600SectorSp
 }
 
 /** Total magnitude across a sector split (used for the reconciliation guard). */
-function sumSectorSplit(s: Ba600SectorSplit): number {
+function sumSectorSplit(s: Ba100SectorSplit): number {
   return COUNTERPARTY_SECTORS.reduce((acc, k) => acc + s[k], 0);
 }
 
@@ -630,7 +631,7 @@ function sumSectorSplit(s: Ba600SectorSplit): number {
  * contributing accounts when more than one is present). Accounts with no clean
  * COA sector mapping fall to `other`.
  */
-function splitLineBySector(line: Ba600LineItem): Ba600SectorSplit {
+function splitLineBySector(line: Ba100LineItem): Ba100SectorSplit {
   const split: Record<CounterpartySector, number> = {
     bank: 0,
     corporate: 0,
@@ -690,20 +691,20 @@ function splitLineBySector(line: Ba600LineItem): Ba600SectorSplit {
  */
 function computeSectorBreakdown(
   sections: {
-    assets: readonly Ba600LineItem[];
-    liabilities: readonly Ba600LineItem[];
-    equity: readonly Ba600LineItem[];
+    assets: readonly Ba100LineItem[];
+    liabilities: readonly Ba100LineItem[];
+    equity: readonly Ba100LineItem[];
   },
-  sectionTotalsMinor: Readonly<Record<Ba600Section, number>>,
-): Ba600SectorBreakdown {
-  const lines: Ba600LineSectorBreakdown[] = [];
-  const sectionSplits: Record<Ba600Section, Ba600SectorSplit> = {
+  sectionTotalsMinor: Readonly<Record<Ba100Section, number>>,
+): Ba100SectorBreakdown {
+  const lines: Ba100LineSectorBreakdown[] = [];
+  const sectionSplits: Record<Ba100Section, Ba100SectorSplit> = {
     assets: emptySectorSplit(),
     liabilities: emptySectorSplit(),
     equity: emptySectorSplit(),
   };
 
-  const sectionEntries: ReadonlyArray<[Ba600Section, readonly Ba600LineItem[]]> = [
+  const sectionEntries: ReadonlyArray<[Ba100Section, readonly Ba100LineItem[]]> = [
     ["assets", sections.assets],
     ["liabilities", sections.liabilities],
     ["equity", sections.equity],
@@ -745,8 +746,8 @@ function computeSectorBreakdown(
 
 function computePerCurrencyTotals(
   trialBalance: readonly TrialBalanceSnapshotRow[],
-  classMap: Map<string, Ba600LineClassification>,
-): readonly Ba600PerCurrencyTotal[] {
+  classMap: Map<string, Ba100LineClassification>,
+): readonly Ba100PerCurrencyTotal[] {
   const buckets = new Map<
     string,
     { assetsMinor: number; liabilitiesMinor: number; equityMinor: number }
@@ -771,7 +772,7 @@ function computePerCurrencyTotals(
     else bucket.equityMinor += stock;
     buckets.set(row.currency, bucket);
   }
-  const out: Ba600PerCurrencyTotal[] = [];
+  const out: Ba100PerCurrencyTotal[] = [];
   for (const [currency, b] of buckets) {
     out.push({ currency, ...b });
   }
@@ -783,7 +784,7 @@ function computePerCurrencyTotals(
  * Deterministic fingerprint of a classification map for forensic
  * reproducibility. Sorted-stable JSON. Mirrors BA 100 Slice 4.
  */
-function fingerprintClassifications(classifications: Ba600ClassificationMap): string {
+function fingerprintClassifications(classifications: Ba100ClassificationMap): string {
   const sorted = [...classifications].sort((a, b) =>
     a.leafAccountId < b.leafAccountId ? -1 : a.leafAccountId > b.leafAccountId ? 1 : 0,
   );

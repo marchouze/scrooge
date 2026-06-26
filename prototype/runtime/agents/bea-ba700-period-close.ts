@@ -84,7 +84,7 @@ import type { EventStore } from "../../platform/event-store/store";
 import type { Event } from "../../platform/event-store/types";
 import { ba100ToXmlPayload } from "../../platform/reporting/ba-700-xml-adapter";
 import {
-  BA_100_SUBSCRIBER_ENTITIES,
+  BA_700_SUBSCRIBER_ENTITIES,
   onAccountingPeriodClosed,
 } from "../../platform/returns/ba700/period-close-subscriber";
 import { submitToSarbPortal } from "../../simulators/sarb-prudential";
@@ -162,7 +162,7 @@ export async function generateAndRecordBa700ForPeriod(args: {
   const periodId = closedPayload.periodId;
 
   // Scope guard: only bank-licence entities generate BA 700.
-  if (!BA_100_SUBSCRIBER_ENTITIES.includes(entity)) {
+  if (!BA_700_SUBSCRIBER_ENTITIES.includes(entity)) {
     return { submitted: false, periodId, status: "skipped-non-bank-entity" };
   }
 

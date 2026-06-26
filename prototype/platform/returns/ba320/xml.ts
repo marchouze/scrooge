@@ -19,10 +19,10 @@
 //   Devon COO; render-layer infrastructure).
 
 export {
-  BA_310_NAMESPACE,
-  BA_310_REQUIRED_ELEMENTS,
-  BA_310_XSD_URI,
-  ba310ToXmlPayload,
+  BA_320_NAMESPACE,
+  BA_320_REQUIRED_ELEMENTS,
+  BA_320_XSD_URI,
+  ba320ToXmlPayload,
 } from "../../reporting/ba-320-xml-adapter";
 
 export {
@@ -33,4 +33,4 @@ export {
   validateSarbXmlStructural,
 } from "../../reporting/xml-render";
 
-export type { Ba310Output } from "../../reporting/ba-320-market-risk";
+export type { Ba320Output } from "../../reporting/ba-320-market-risk";

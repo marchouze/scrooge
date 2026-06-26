@@ -15,7 +15,7 @@
 //
 //   V1 path  — the existing BA-return generators:
 //                BA-700: generateBA700Return (events-first capital fold).
-//                BA-320: fxPositionCalculator + fxPositionsToBa310Input over
+//                BA-320: fxPositionCalculator + fxPositionsToBa320Input over
 //                        FxTradeExecuted / TradeMatured (the same V1 derivation
 //                        recon:ba320-fx-v2-parity validates).
 //   V2 path  — the V2 projections (selected ONLY when useV2Store is ON):
@@ -60,7 +60,7 @@ import {
   defaultProvenanceFilter,
   eventMatchesProvenanceFilter,
 } from "../platform/projections/filter";
-import { fxPositionsToBa310Input } from "../platform/reporting/ba-320-fx-adapter";
+import { fxPositionsToBa320Input } from "../platform/reporting/ba-320-fx-adapter";
 import { generateBA700Return } from "../platform/returns/ba700/generator";
 import { spotObservableId } from "../v2-core/fil-models/fx-valuation/methodology";
 
@@ -250,8 +250,8 @@ function buildBA320V1(
 ): RegulatoryReturnView {
   // Mirror recon:ba320-fx-v2-parity's V1 derivation: FxTradeExecuted +
   // TradeMatured / FxTradeCancelled → fxPositionCalculator on the shared rate
-  // map → fxPositionsToBa310Input. The functional currency is passed explicitly
-  // to fxPositionsToBa310Input (NOT its "ZAR" default param).
+  // map → fxPositionsToBa320Input. The functional currency is passed explicitly
+  // to fxPositionsToBa320Input (NOT its "ZAR" default param).
   const provenanceFilter = defaultProvenanceFilter();
   const trades: FxTradeExecutedPayload[] = [];
   const settledTradeIds = new Set<string>();
@@ -289,7 +289,7 @@ function buildBA320V1(
     zarRates: rates,
     asOf: AS_OF,
   });
-  const rows = fxPositionsToBa310Input(positions, functionalCurrency);
+  const rows = fxPositionsToBa320Input(positions, functionalCurrency);
 
   // Reg 28(5) / BCBS §718(xiii): 8% × max(Σ|long|, Σ|short|). Computed with the
   // decimal engine (D-DECIMAL-NATIVE-MONEY-ARITHMETIC — no float on a money

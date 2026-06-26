@@ -1,6 +1,6 @@
 // platform/reporting/ba-700-xml-adapter.ts
 //
-// Thin adapter that maps a typed `Ba100Output` to the generic
+// Thin adapter that maps a typed `Ba700Output` to the generic
 // `SarbXmlReportPayload` consumed by `xml-render.ts`.
 //
 // D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 5 — BA 100 (Capital
@@ -9,7 +9,7 @@
 //
 // Architectural placement:
 //
-//   BA 100 PROJECTION    (pure typed Ba100Output)
+//   BA 100 PROJECTION    (pure typed Ba700Output)
 //      → ba100ToXmlPayload()   ← this module
 //      → SarbXmlReportPayload  ← consumed by renderSarbXml()
 //      → SARB portal XML
@@ -30,13 +30,13 @@
 //   + Atlas (Core banking platform architect, engineering — render-layer
 //   infrastructure + simulator harness).
 
-import type { Ba100LineItem, Ba100Output } from "./ba-700-capital";
+import type { Ba700LineItem, Ba700Output } from "./ba-700-capital";
 import type { SarbXmlReportPayload, SarbXmlSection } from "./xml-render";
 
-export const BA_100_XSD_URI = "https://hoz.bank/xsd/ba-100/v0.1-rehearsal.xsd"; // [citation: TBC]
-export const BA_100_NAMESPACE = "https://hoz.bank/ns/ba-100/v0.1";
+export const BA_700_XSD_URI = "https://hoz.bank/xsd/ba-100/v0.1-rehearsal.xsd"; // [citation: TBC]
+export const BA_700_NAMESPACE = "https://hoz.bank/ns/ba-100/v0.1";
 
-function lineItem(it: Ba100LineItem): SarbXmlSection {
+function lineItem(it: Ba700LineItem): SarbXmlSection {
   return {
     LineId: it.lineId,
     LineLabel: it.lineLabel,
@@ -48,7 +48,7 @@ function lineItem(it: Ba100LineItem): SarbXmlSection {
 }
 
 /**
- * Map a typed `Ba100Output` (Capital Adequacy return) to a
+ * Map a typed `Ba700Output` (Capital Adequacy return) to a
  * `SarbXmlReportPayload` ready for `renderSarbXml()`.
  *
  * Field-mapping notes:
@@ -61,7 +61,7 @@ function lineItem(it: Ba100LineItem): SarbXmlSection {
  *   minimums (BCBS base + buffer overlay) so the portal can render
  *   the full "headroom" view.
  * - LeverageRatio section is omitted when the caller did not supply
- *   an exposure-measure decomposition (Ba100Output.leverageRatio is
+ *   an exposure-measure decomposition (Ba700Output.leverageRatio is
  *   undefined).
  * - CET1 / Tier1 / Total capital ratios use the dimensionless form
  *   (0.07 = 7%); the SARB portal multiplies by 100 for display.
@@ -74,7 +74,7 @@ function lineItem(it: Ba100LineItem): SarbXmlSection {
  *   BCBS Basel III §122–§148;
  *   BCBS Basel III §147–§165 (leverage ratio).
  */
-export function ba100ToXmlPayload(report: Ba100Output): SarbXmlReportPayload {
+export function ba100ToXmlPayload(report: Ba700Output): SarbXmlReportPayload {
   const capitalStack = report.capitalStack;
   const body: SarbXmlSection = {
     Meta: {
@@ -167,13 +167,13 @@ export function ba100ToXmlPayload(report: Ba100Output): SarbXmlReportPayload {
   return {
     formId: "BA700",
     formVersion: report.meta.formVersion,
-    xsdUri: BA_100_XSD_URI,
-    namespaceUri: BA_100_NAMESPACE,
+    xsdUri: BA_700_XSD_URI,
+    namespaceUri: BA_700_NAMESPACE,
     body,
   };
 }
 
-export const BA_100_REQUIRED_ELEMENTS: readonly string[] = [
+export const BA_700_REQUIRED_ELEMENTS: readonly string[] = [
   "Meta",
   "CapitalStack",
   "Rwa",

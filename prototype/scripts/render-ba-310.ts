@@ -27,7 +27,7 @@
 //
 // P1 note (C-2): this script accepts caller-supplied FX position fixtures.
 // The P1-compliant entry point that folds FxTradeExecuted events directly is
-// `generateBa310MarketRiskFromEvents()` in `ba-310-events-adapter.ts`.
+// `generateBa320MarketRiskFromEvents()` in `ba-310-events-adapter.ts`.
 // Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
 //
 // This script is rehearsal-grade. The production form (Slice 7) emits a
@@ -43,9 +43,9 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 import {
-  type Ba310GeneratorInput,
-  ba310ToXmlPayload,
-  generateBa310MarketRisk,
+  type Ba320GeneratorInput,
+  ba320ToXmlPayload,
+  generateBa320MarketRisk,
   renderSarbXml,
 } from "../platform/reporting";
 
@@ -94,7 +94,7 @@ const EMPTY_FIXTURE = {
 
 function loadInputs(
   path: string | undefined,
-): Omit<Ba310GeneratorInput, "entity" | "asOf" | "periodId" | "functionalCurrency"> {
+): Omit<Ba320GeneratorInput, "entity" | "asOf" | "periodId" | "functionalCurrency"> {
   if (!path) return EMPTY_FIXTURE;
   const raw = readFileSync(path, "utf8");
   const parsed = JSON.parse(raw);
@@ -113,14 +113,14 @@ function loadInputs(
 function main(argv: readonly string[]): number {
   const args = parseArgs(argv);
   const inputs = loadInputs(args.inputsPath);
-  const out = generateBa310MarketRisk({
+  const out = generateBa320MarketRisk({
     entity: args.entity,
     asOf: args.asOf,
     periodId: args.periodId,
     functionalCurrency: args.functionalCurrency,
     ...inputs,
   });
-  const payload = ba310ToXmlPayload(out);
+  const payload = ba320ToXmlPayload(out);
   const xml = renderSarbXml(payload, { renderedAt: new Date().toISOString() });
   if (args.outXmlPath) {
     writeFileSync(args.outXmlPath, xml, "utf8");

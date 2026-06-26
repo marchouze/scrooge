@@ -14,7 +14,7 @@
 
 import { z } from "zod";
 
-import type { Ba610IncomeStatement } from "./ba-120-income-statement";
+import type { Ba120IncomeStatement } from "./ba-120-income-statement";
 
 // ---------------------------------------------------------------------------
 // JSON schema — Zod
@@ -50,7 +50,7 @@ const ba300ClassificationGapSchema = z.object({
   amountMinor: z.number().int(),
 });
 
-export const Ba610RenderSchema = z.object({
+export const Ba120RenderSchema = z.object({
   $schema: z.literal("https://hoz.bank/schemas/ba-610/v0.1-rehearsal.json"),
   meta: z.object({
     form: z.literal("BA 120"),
@@ -80,24 +80,24 @@ export const Ba610RenderSchema = z.object({
   placeholders: z.array(z.string().min(1)),
 });
 
-export type Ba610Render = z.infer<typeof Ba610RenderSchema>;
+export type Ba120Render = z.infer<typeof Ba120RenderSchema>;
 
-export const BA_610_SCHEMA_URL = "https://hoz.bank/schemas/ba-610/v0.1-rehearsal.json";
-export const BA_610_RENDERER_VERSION = "v0.1" as const;
+export const BA_120_SCHEMA_URL = "https://hoz.bank/schemas/ba-610/v0.1-rehearsal.json";
+export const BA_120_RENDERER_VERSION = "v0.1" as const;
 
 // ---------------------------------------------------------------------------
 // Rendering
 // ---------------------------------------------------------------------------
 
-export interface RenderBa610Options {
+export interface RenderBa120Options {
   readonly renderedAt: string;
 }
 
-export function renderBa610ToJson(
-  output: Ba610IncomeStatement,
-  opts: RenderBa610Options,
-): Ba610Render {
-  const meta: Ba610Render["meta"] = {
+export function renderBa120ToJson(
+  output: Ba120IncomeStatement,
+  opts: RenderBa120Options,
+): Ba120Render {
+  const meta: Ba120Render["meta"] = {
     form: output.meta.form,
     formVersion: output.meta.formVersion,
     entity: output.meta.entity,
@@ -106,7 +106,7 @@ export function renderBa610ToJson(
     periodId: output.meta.periodId,
     functionalCurrency: output.meta.functionalCurrency,
     generatorVersion: output.meta.generatorVersion,
-    rendererVersion: BA_610_RENDERER_VERSION,
+    rendererVersion: BA_120_RENDERER_VERSION,
     ...(output.meta.trialBalanceSnapshotEventId
       ? { trialBalanceSnapshotEventId: output.meta.trialBalanceSnapshotEventId }
       : {}),
@@ -115,7 +115,7 @@ export function renderBa610ToJson(
   };
 
   const candidate = {
-    $schema: BA_610_SCHEMA_URL,
+    $schema: BA_120_SCHEMA_URL,
     meta,
     interestIncome: output.interestIncome,
     interestExpense: output.interestExpense,
@@ -131,10 +131,10 @@ export function renderBa610ToJson(
     placeholders: [...output.placeholders],
   };
 
-  return Ba610RenderSchema.parse(candidate);
+  return Ba120RenderSchema.parse(candidate);
 }
 
-export function canonicaliseBa610(render: Ba610Render): string {
+export function canonicaliseBa120(render: Ba120Render): string {
   return JSON.stringify(sortKeys(render), null, 2);
 }
 
@@ -152,16 +152,16 @@ function sortKeys(value: unknown): unknown {
   return value;
 }
 
-export function renderBa610Canonical(
-  output: Ba610IncomeStatement,
-  opts: RenderBa610Options,
+export function renderBa120Canonical(
+  output: Ba120IncomeStatement,
+  opts: RenderBa120Options,
 ): {
-  readonly render: Ba610Render;
+  readonly render: Ba120Render;
   readonly canonicalJson: string;
   readonly canonicalBytes: Uint8Array;
 } {
-  const render = renderBa610ToJson(output, opts);
-  const canonicalJson = canonicaliseBa610(render);
+  const render = renderBa120ToJson(output, opts);
+  const canonicalJson = canonicaliseBa120(render);
   const canonicalBytes = new TextEncoder().encode(canonicalJson);
   return { render, canonicalJson, canonicalBytes };
 }

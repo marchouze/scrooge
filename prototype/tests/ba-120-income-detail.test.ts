@@ -9,9 +9,9 @@
 //   1. Per-entity isolation — Hoz Securities + Hoz Group rejected.
 //   2. End-to-end:
 //        synthetic trial balance
-//          → generateBa610IncomeStatement (BA 610)
-//          → generateBa610DetailIncomeDetail (BA 610 detail)
-//          → renderBa610DetailToJson
+//          → generateBa120IncomeStatement (BA 610)
+//          → generateBa120DetailIncomeDetail (BA 610 detail)
+//          → renderBa120DetailToJson
 //        produces known NII, NIM, efficiency values.
 //   3. NII decomposition by instrument class.
 //   4. NII decomposition by ALM maturity band.
@@ -23,7 +23,7 @@
 //  10. Banding gaps surfaced for unclassified interest-income accounts.
 //  11. Classification gaps union (BA 610 gaps + BA 610 detail banding gaps).
 //  12. Determinism — same generator output ⇒ byte-identical canonical JSON.
-//  13. Schema validation — rendered output validates against Ba610DetailRenderSchema.
+//  13. Schema validation — rendered output validates against Ba120DetailRenderSchema.
 //  14. Generator boundary errors — duplicate banding entries; invalid AEA;
 //      entity mismatch; invalid functional currency.
 //  15. FTP rates null — client/structural NIM fields null.
@@ -43,25 +43,25 @@ import { describe, expect, it } from "bun:test";
 
 import type { TrialBalanceSnapshotRow } from "../platform/event-store/event-types";
 import {
-  BA_610_DETAIL_SCHEMA_URL,
-  Ba610DetailRenderSchema,
-  renderBa610DetailCanonical,
-  renderBa610DetailToJson,
+  BA_120_DETAIL_SCHEMA_URL,
+  Ba120DetailRenderSchema,
+  renderBa120DetailCanonical,
+  renderBa120DetailToJson,
 } from "../platform/reporting/ba-120-detail-render";
 import {
-  BA_610_DETAIL_BANK_ENTITIES,
-  type Ba610DetailBandingMap,
-  type Ba610DetailFtpRates,
-  Ba610DetailGeneratorError,
-  type Ba610DetailGeneratorInput,
-  generateBa610DetailIncomeDetail,
+  BA_120_DETAIL_BANK_ENTITIES,
+  type Ba120DetailBandingMap,
+  type Ba120DetailFtpRates,
+  Ba120DetailGeneratorError,
+  type Ba120DetailGeneratorInput,
+  generateBa120DetailIncomeDetail,
 } from "../platform/reporting/ba-120-income-detail";
 import type {
-  Ba610ClassificationMap,
-  Ba610GeneratorInput,
-  Ba610IncomeStatement,
+  Ba120ClassificationMap,
+  Ba120GeneratorInput,
+  Ba120IncomeStatement,
 } from "../platform/reporting/ba-120-income-statement";
-import { generateBa610IncomeStatement } from "../platform/reporting/ba-120-income-statement";
+import { generateBa120IncomeStatement } from "../platform/reporting/ba-120-income-statement";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -79,7 +79,7 @@ const CCY = "ZAR";
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const BA300_CLASSIFICATIONS: Ba610ClassificationMap = [
+const BA300_CLASSIFICATIONS: Ba120ClassificationMap = [
   {
     leafAccountId: "ACC-ii-interbank",
     category: "interest-income",
@@ -140,7 +140,7 @@ const TRIAL_BALANCE: readonly TrialBalanceSnapshotRow[] = [
 //   opex = 8_000_000
 //   PBT = 60_000_000 + 3_000_000 + 5_000_000 - 8_000_000 = 60_000_000
 
-const BANDING_MAP: Ba610DetailBandingMap = [
+const BANDING_MAP: Ba120DetailBandingMap = [
   {
     leafAccountId: "ACC-ii-interbank",
     instrumentClass: "interbank",
@@ -161,7 +161,7 @@ const BANDING_MAP: Ba610DetailBandingMap = [
   },
 ];
 
-const FTP_RATES: Ba610DetailFtpRates = [
+const FTP_RATES: Ba120DetailFtpRates = [
   { maturityBand: "overnight", ftpRateBps: 50 },
   { maturityBand: "1-7d", ftpRateBps: 75 },
   { maturityBand: "8-30d", ftpRateBps: 90 },
@@ -178,8 +178,8 @@ const AVG_EARNING_ASSETS = 500_000_000;
 // Helper: build BA 610 output from the fixture trial balance.
 // ---------------------------------------------------------------------------
 
-function buildBa610(overrides?: Partial<Ba610GeneratorInput>) {
-  const input: Ba610GeneratorInput = {
+function buildBa610(overrides?: Partial<Ba120GeneratorInput>) {
+  const input: Ba120GeneratorInput = {
     entity: ENTITY_BANK,
     periodStart: PERIOD_START,
     periodEnd: PERIOD_END,
@@ -189,14 +189,14 @@ function buildBa610(overrides?: Partial<Ba610GeneratorInput>) {
     classifications: BA300_CLASSIFICATIONS,
     ...overrides,
   };
-  return generateBa610IncomeStatement(input);
+  return generateBa120IncomeStatement(input);
 }
 
 // Helper: build BA 610 detail input from a ba300 output.
 function buildBa610DetailInput(
   ba300 = buildBa610(),
-  overrides?: Partial<Ba610DetailGeneratorInput>,
-): Ba610DetailGeneratorInput {
+  overrides?: Partial<Ba120DetailGeneratorInput>,
+): Ba120DetailGeneratorInput {
   return {
     ba300Output: ba300,
     bandingMap: BANDING_MAP,
@@ -223,17 +223,17 @@ function findOrThrow<T>(arr: ReadonlyArray<T>, pred: (x: T) => boolean, label: s
 }
 
 // ---------------------------------------------------------------------------
-// Helper: build a minimal fake Ba610IncomeStatement for a non-bank entity,
+// Helper: build a minimal fake Ba120IncomeStatement for a non-bank entity,
 // bypassing the BA 610 guard so we can test the BA 610 detail guard directly.
 // ---------------------------------------------------------------------------
 
-function fakeBa610ForEntity(entity: string): Ba610IncomeStatement {
+function fakeBa610ForEntity(entity: string): Ba120IncomeStatement {
   const validOut = buildBa610();
   // Patch the meta to inject a non-bank entity — type-cast only for test isolation.
   return {
     ...validOut,
     meta: { ...validOut.meta, entity },
-  } as Ba610IncomeStatement;
+  } as Ba120IncomeStatement;
 }
 
 // =====================================================================
@@ -241,20 +241,20 @@ function fakeBa610ForEntity(entity: string): Ba610IncomeStatement {
 // =====================================================================
 
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail per-entity isolation", () => {
-  it("BA_610_DETAIL_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
-    expect(BA_610_DETAIL_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
+  it("BA_120_DETAIL_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
+    expect(BA_120_DETAIL_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
   });
 
   it("rejects LE-ZA-HOZ-SECURITIES (not bank-licence-bound)", () => {
     expect(() =>
-      generateBa610DetailIncomeDetail(buildBa610DetailInput(fakeBa610ForEntity(ENTITY_SECURITIES))),
-    ).toThrow(Ba610DetailGeneratorError);
+      generateBa120DetailIncomeDetail(buildBa610DetailInput(fakeBa610ForEntity(ENTITY_SECURITIES))),
+    ).toThrow(Ba120DetailGeneratorError);
   });
 
   it("rejects LE-ZA-HOZ-GROUP (consolidated not in scope)", () => {
     expect(() =>
-      generateBa610DetailIncomeDetail(buildBa610DetailInput(fakeBa610ForEntity(ENTITY_GROUP))),
-    ).toThrow(Ba610DetailGeneratorError);
+      generateBa120DetailIncomeDetail(buildBa610DetailInput(fakeBa610ForEntity(ENTITY_GROUP))),
+    ).toThrow(Ba120DetailGeneratorError);
   });
 });
 
@@ -263,8 +263,8 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail per-entity isolation",
 // =====================================================================
 
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail end-to-end", () => {
-  it("generates a valid Ba610DetailIncomeDetail from fixture inputs", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+  it("generates a valid Ba120DetailIncomeDetail from fixture inputs", () => {
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     expect(output.meta.form).toBe("BA 120 detail");
     expect(output.meta.entity).toBe(ENTITY_BANK);
     expect(output.meta.formVersion).toBe("v0.1-rehearsal");
@@ -273,10 +273,10 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail end-to-end", () => {
     expect(output.periodEnd).toBe(PERIOD_END);
   });
 
-  it("renders a valid Ba610DetailRender with correct $schema", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
-    const render = renderBa610DetailToJson(output, { renderedAt: "2026-05-17T12:00:00.000Z" });
-    expect(render.$schema).toBe(BA_610_DETAIL_SCHEMA_URL);
+  it("renders a valid Ba120DetailRender with correct $schema", () => {
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
+    const render = renderBa120DetailToJson(output, { renderedAt: "2026-05-17T12:00:00.000Z" });
+    expect(render.$schema).toBe(BA_120_DETAIL_SCHEMA_URL);
     expect(render.meta.form).toBe("BA 120 detail");
     expect(render.meta.rendererVersion).toBe("v0.1");
   });
@@ -288,7 +288,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail end-to-end", () => {
 
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail NII by instrument class", () => {
   it("interbank NII = interest income interbank − interest expense deposits", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     const interbank = findOrThrow(
       output.netInterestIncome.byInstrumentClass,
       (c) => c.instrumentClass === "interbank",
@@ -301,7 +301,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail NII by instrument clas
   });
 
   it("sovereign NII = 30_000_000 income − 0 expense", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     const sovereign = findOrThrow(
       output.netInterestIncome.byInstrumentClass,
       (c) => c.instrumentClass === "sovereign",
@@ -313,7 +313,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail NII by instrument clas
   });
 
   it("corporate + retail-placeholder are zero (no accounts mapped)", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     const corporate = findOrThrow(
       output.netInterestIncome.byInstrumentClass,
       (c) => c.instrumentClass === "corporate",
@@ -329,7 +329,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail NII by instrument clas
   });
 
   it("total NII across classes = ba300.netInterestIncomeMinor", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     const sumAcrossClasses = output.netInterestIncome.byInstrumentClass.reduce(
       (s, c) => s + c.netInterestIncomeMinor,
       0,
@@ -345,7 +345,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail NII by instrument clas
 
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail NII by maturity band", () => {
   it("overnight band holds only the interest expense (ACC-ie-deposits)", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     const overnight = findOrThrow(
       output.netInterestIncome.byMaturityBand,
       (b) => b.maturityBand === "overnight",
@@ -358,7 +358,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail NII by maturity band",
   });
 
   it("1-7d band holds interbank income (ACC-ii-interbank)", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     const band = findOrThrow(
       output.netInterestIncome.byMaturityBand,
       (b) => b.maturityBand === "1-7d",
@@ -371,7 +371,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail NII by maturity band",
   });
 
   it(">1y band holds sovereign income (ACC-ii-sovereign)", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     const band = findOrThrow(
       output.netInterestIncome.byMaturityBand,
       (b) => b.maturityBand === ">1y",
@@ -384,12 +384,12 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail NII by maturity band",
   });
 
   it("ALM banding section totalNetInterestIncomeMinor = aggregate NII", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     expect(output.almBanding.totalNetInterestIncomeMinor).toBe(60_000_000);
   });
 
   it("ALM banding section totalVolumeMinor = sum across bands", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     const sumVolume = output.almBanding.bands.reduce((s, b) => s + b.volumeMinor, 0);
     expect(output.almBanding.totalVolumeMinor).toBe(sumVolume);
     // 150_000_000 (overnight) + 200_000_000 (1-7d) + 300_000_000 (>1y) = 650_000_000
@@ -403,24 +403,24 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail NII by maturity band",
 
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail NIM calculation", () => {
   it("overall NIM = NII / AEA", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     // NII = 60_000_000; AEA = 500_000_000; NIM = 0.12
     expect(output.netInterestMargin.overallNim).toBeCloseTo(0.12, 10);
   });
 
   it("overallNimBps = NIM × 10000", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     expect(output.netInterestMargin.overallNimBps).toBe(1200);
   });
 
   it("averageEarningAssetsMinor is preserved in output", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     expect(output.netInterestMargin.averageEarningAssetsMinor).toBe(AVG_EARNING_ASSETS);
   });
 
   it("rendered NIM section passes schema validation", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
-    const render = renderBa610DetailToJson(output, { renderedAt: "2026-05-17T12:00:00.000Z" });
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
+    const render = renderBa120DetailToJson(output, { renderedAt: "2026-05-17T12:00:00.000Z" });
     expect(render.netInterestMargin.overallNim).toBe("0.120000");
     expect(render.netInterestMargin.overallNimPercent).toBe("12.0000%");
   });
@@ -432,14 +432,14 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail NIM calculation", () =
 
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail FTP split", () => {
   it("clientNim and structuralNim are non-null when FTP rates supplied", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     // At least one band with volume and FTP rate should produce a client/structural split.
     const hasClientNim = output.netInterestMargin.byBand.some((b) => b.clientNim !== null);
     expect(hasClientNim).toBe(true);
   });
 
   it("1-7d band: nim = 50_000_000 / 200_000_000 = 0.25; FTP = 75bps = 0.0075; clientNim = 0.25 − 0.0075", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     const band = findOrThrow(
       output.netInterestMargin.byBand,
       (b) => b.maturityBand === "1-7d",
@@ -458,7 +458,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail FTP split", () => {
 
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail NIM null at zero AEA", () => {
   it("overallNim is null when averageEarningAssetsMinor = 0", () => {
-    const output = generateBa610DetailIncomeDetail(
+    const output = generateBa120DetailIncomeDetail(
       buildBa610DetailInput(undefined, { averageEarningAssetsMinor: 0 }),
     );
     expect(output.netInterestMargin.overallNim).toBeNull();
@@ -466,10 +466,10 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail NIM null at zero AEA",
   });
 
   it("rendered overallNim is null when AEA is zero", () => {
-    const output = generateBa610DetailIncomeDetail(
+    const output = generateBa120DetailIncomeDetail(
       buildBa610DetailInput(undefined, { averageEarningAssetsMinor: 0 }),
     );
-    const render = renderBa610DetailToJson(output, { renderedAt: "2026-05-17T12:00:00.000Z" });
+    const render = renderBa120DetailToJson(output, { renderedAt: "2026-05-17T12:00:00.000Z" });
     expect(render.netInterestMargin.overallNim).toBeNull();
     expect(render.netInterestMargin.overallNimPercent).toBeNull();
   });
@@ -482,14 +482,14 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail NIM null at zero AEA",
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail non-interest income", () => {
   it("feeIncomeMinor matches BA 610 feeIncome total", () => {
     const ba300 = buildBa610();
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput(ba300));
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput(ba300));
     expect(output.nonInterestIncome.feeIncomeMinor).toBe(ba300.feeIncome.totalMinor);
     expect(output.nonInterestIncome.feeIncomeMinor).toBe(3_000_000);
   });
 
   it("tradingProfitLossMinor matches BA 610 tradingProfitLoss total", () => {
     const ba300 = buildBa610();
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput(ba300));
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput(ba300));
     expect(output.nonInterestIncome.tradingProfitLossMinor).toBe(
       ba300.tradingProfitLoss.totalMinor,
     );
@@ -498,7 +498,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail non-interest income", 
   });
 
   it("totalNonInterestIncomeMinor = fee + trading + otherIncome - otherExpense", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     const expected =
       output.nonInterestIncome.feeIncomeMinor +
       output.nonInterestIncome.tradingProfitLossMinor +
@@ -515,22 +515,22 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail non-interest income", 
 
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail operating efficiency", () => {
   it("operatingExpensesMinor = 8_000_000", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     expect(output.operatingEfficiency.operatingExpensesMinor).toBe(8_000_000);
   });
 
   it("totalOperatingIncomeMinor = NII + fee + trading = 60_000_000 + 3_000_000 + 5_000_000", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     expect(output.operatingEfficiency.totalOperatingIncomeMinor).toBe(68_000_000);
   });
 
   it("costToIncomeRatio = 8_000_000 / 68_000_000", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     expect(output.operatingEfficiency.costToIncomeRatio).toBeCloseTo(8_000_000 / 68_000_000, 10);
   });
 
   it("costToIncomePercent is formatted as a percentage string", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     expect(output.operatingEfficiency.costToIncomePercent).toMatch(/^\d+\.\d{2}%$/);
   });
 
@@ -540,7 +540,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail operating efficiency",
       { leafAccountId: "ACC-opex", amountMinor: 1_000_000, currency: CCY },
     ];
     const ba300 = buildBa610({ trialBalance: noIncomeTb });
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput(ba300));
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput(ba300));
     expect(output.operatingEfficiency.costToIncomeRatio).toBeNull();
   });
 });
@@ -555,7 +555,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail banding gaps", () => {
       ...TRIAL_BALANCE,
       { leafAccountId: "ACC-ii-corporate-unmapped", amountMinor: -1_000_000, currency: CCY },
     ];
-    const ba300Classifications: Ba610ClassificationMap = [
+    const ba300Classifications: Ba120ClassificationMap = [
       ...BA300_CLASSIFICATIONS,
       {
         leafAccountId: "ACC-ii-corporate-unmapped",
@@ -567,12 +567,12 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail banding gaps", () => {
       trialBalance: extraTb,
       classifications: ba300Classifications,
     });
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput(ba300));
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput(ba300));
     expect(output.netInterestIncome.bandingGaps).toContain("ACC-ii-corporate-unmapped");
   });
 
   it("accounts in banding map are not in bandingGaps", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     expect(output.netInterestIncome.bandingGaps).not.toContain("ACC-ii-interbank");
     expect(output.netInterestIncome.bandingGaps).not.toContain("ACC-ii-sovereign");
     expect(output.netInterestIncome.bandingGaps).not.toContain("ACC-ie-deposits");
@@ -590,12 +590,12 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail classification gaps un
       { leafAccountId: "ACC-unclassified-by-ba300", amountMinor: 500_000, currency: CCY },
     ];
     const ba300 = buildBa610({ trialBalance: tbWithExtra });
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput(ba300));
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput(ba300));
     expect(output.classificationGaps).toContain("ACC-unclassified-by-ba300");
   });
 
   it("classificationGaps is sorted", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     const sorted = [...output.classificationGaps].sort();
     expect(output.classificationGaps).toEqual(sorted);
   });
@@ -608,10 +608,10 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail classification gaps un
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail determinism", () => {
   it("same input produces byte-identical canonical JSON", () => {
     const ts = "2026-05-17T12:00:00.000Z";
-    const out1 = generateBa610DetailIncomeDetail(buildBa610DetailInput());
-    const out2 = generateBa610DetailIncomeDetail(buildBa610DetailInput());
-    const { canonicalJson: j1 } = renderBa610DetailCanonical(out1, { renderedAt: ts });
-    const { canonicalJson: j2 } = renderBa610DetailCanonical(out2, { renderedAt: ts });
+    const out1 = generateBa120DetailIncomeDetail(buildBa610DetailInput());
+    const out2 = generateBa120DetailIncomeDetail(buildBa610DetailInput());
+    const { canonicalJson: j1 } = renderBa120DetailCanonical(out1, { renderedAt: ts });
+    const { canonicalJson: j2 } = renderBa120DetailCanonical(out2, { renderedAt: ts });
     expect(j1).toBe(j2);
   });
 });
@@ -621,19 +621,19 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail determinism", () => {
 // =====================================================================
 
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail schema validation", () => {
-  it("rendered output passes Ba610DetailRenderSchema.parse without throwing", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
-    const render = renderBa610DetailToJson(output, { renderedAt: "2026-05-17T12:00:00.000Z" });
-    expect(() => Ba610DetailRenderSchema.parse(render)).not.toThrow();
+  it("rendered output passes Ba120DetailRenderSchema.parse without throwing", () => {
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
+    const render = renderBa120DetailToJson(output, { renderedAt: "2026-05-17T12:00:00.000Z" });
+    expect(() => Ba120DetailRenderSchema.parse(render)).not.toThrow();
   });
 
   it("canonical bytes decode to the same schema-valid JSON", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
-    const { render, canonicalBytes } = renderBa610DetailCanonical(output, {
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
+    const { render, canonicalBytes } = renderBa120DetailCanonical(output, {
       renderedAt: "2026-05-17T12:00:00.000Z",
     });
     const decoded = JSON.parse(new TextDecoder().decode(canonicalBytes)) as unknown;
-    const reparsed = Ba610DetailRenderSchema.parse(decoded);
+    const reparsed = Ba120DetailRenderSchema.parse(decoded);
     expect(reparsed.$schema).toBe(render.$schema);
     expect(reparsed.meta.entity).toBe(render.meta.entity);
   });
@@ -645,7 +645,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail schema validation", ()
 
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail boundary errors", () => {
   it("throws on duplicate banding-map entries", () => {
-    const dupBandingMap: Ba610DetailBandingMap = [
+    const dupBandingMap: Ba120DetailBandingMap = [
       ...BANDING_MAP,
       {
         leafAccountId: "ACC-ii-interbank",
@@ -655,22 +655,22 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail boundary errors", () =
       },
     ];
     expect(() =>
-      generateBa610DetailIncomeDetail(
+      generateBa120DetailIncomeDetail(
         buildBa610DetailInput(undefined, { bandingMap: dupBandingMap }),
       ),
-    ).toThrow(Ba610DetailGeneratorError);
+    ).toThrow(Ba120DetailGeneratorError);
   });
 
   it("throws on negative averageEarningAssetsMinor", () => {
     expect(() =>
-      generateBa610DetailIncomeDetail(
+      generateBa120DetailIncomeDetail(
         buildBa610DetailInput(undefined, { averageEarningAssetsMinor: -1 }),
       ),
-    ).toThrow(Ba610DetailGeneratorError);
+    ).toThrow(Ba120DetailGeneratorError);
   });
 
   it("throws on banding-map entry with negative volumeMinor", () => {
-    const badBandingMap: Ba610DetailBandingMap = [
+    const badBandingMap: Ba120DetailBandingMap = [
       {
         leafAccountId: "ACC-ii-interbank",
         instrumentClass: "interbank",
@@ -679,10 +679,10 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail boundary errors", () =
       },
     ];
     expect(() =>
-      generateBa610DetailIncomeDetail(
+      generateBa120DetailIncomeDetail(
         buildBa610DetailInput(undefined, { bandingMap: badBandingMap }),
       ),
-    ).toThrow(Ba610DetailGeneratorError);
+    ).toThrow(Ba120DetailGeneratorError);
   });
 });
 
@@ -692,7 +692,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail boundary errors", () =
 
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail FTP rates null", () => {
   it("clientNim and structuralNim are null in NimSection when ftpRates = null", () => {
-    const output = generateBa610DetailIncomeDetail(
+    const output = generateBa120DetailIncomeDetail(
       buildBa610DetailInput(undefined, { ftpRates: null }),
     );
     expect(output.netInterestMargin.clientNim).toBeNull();
@@ -700,7 +700,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail FTP rates null", () =>
   });
 
   it("per-band clientNim and structuralNim are null when ftpRates = null", () => {
-    const output = generateBa610DetailIncomeDetail(
+    const output = generateBa120DetailIncomeDetail(
       buildBa610DetailInput(undefined, { ftpRates: null }),
     );
     for (const band of output.netInterestMargin.byBand) {
@@ -710,14 +710,14 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail FTP rates null", () =>
   });
 
   it("overall NIM is still computed (not FTP-dependent)", () => {
-    const output = generateBa610DetailIncomeDetail(
+    const output = generateBa120DetailIncomeDetail(
       buildBa610DetailInput(undefined, { ftpRates: null }),
     );
     expect(output.netInterestMargin.overallNim).toBeCloseTo(0.12, 10);
   });
 
   it("placeholders include FTP-not-supplied marker when ftpRates = null", () => {
-    const output = generateBa610DetailIncomeDetail(
+    const output = generateBa120DetailIncomeDetail(
       buildBa610DetailInput(undefined, { ftpRates: null }),
     );
     const hasFtpPlaceholder = output.placeholders.some((p) => p.includes("FTP rates not supplied"));
@@ -732,34 +732,34 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail FTP rates null", () =>
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail provenance passthrough", () => {
   it("trialBalanceSnapshotEventId flows into meta when supplied", () => {
     const eventId = "evt:trial-balance:001";
-    const output = generateBa610DetailIncomeDetail(
+    const output = generateBa120DetailIncomeDetail(
       buildBa610DetailInput(undefined, { trialBalanceSnapshotEventId: eventId }),
     );
     expect(output.meta.trialBalanceSnapshotEventId).toBe(eventId);
   });
 
   it("trialBalanceSnapshotEventId absent from meta when not supplied", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     expect(output.meta.trialBalanceSnapshotEventId).toBeUndefined();
   });
 
   it("trialBalanceSnapshotEventId flows through to rendered output", () => {
     const eventId = "evt:trial-balance:002";
-    const output = generateBa610DetailIncomeDetail(
+    const output = generateBa120DetailIncomeDetail(
       buildBa610DetailInput(undefined, { trialBalanceSnapshotEventId: eventId }),
     );
-    const render = renderBa610DetailToJson(output, { renderedAt: "2026-05-17T12:00:00.000Z" });
+    const render = renderBa120DetailToJson(output, { renderedAt: "2026-05-17T12:00:00.000Z" });
     expect(render.meta.trialBalanceSnapshotEventId).toBe(eventId);
   });
 
   it("ba300ClassificationsFingerprint is forwarded into BA 610 detail meta", () => {
     const ba300 = buildBa610();
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput(ba300));
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput(ba300));
     expect(output.meta.ba300ClassificationsFingerprint).toBe(ba300.meta.classificationsFingerprint);
   });
 
   it("bandingMapFingerprint is a non-empty string", () => {
-    const output = generateBa610DetailIncomeDetail(buildBa610DetailInput());
+    const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     expect(output.meta.bandingMapFingerprint).toBeTruthy();
     expect(output.meta.bandingMapFingerprint.length).toBeGreaterThan(0);
   });

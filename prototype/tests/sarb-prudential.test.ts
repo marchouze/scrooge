@@ -23,7 +23,7 @@ import { describe, expect, it } from "bun:test";
 import { EventStore } from "../platform/event-store/store";
 import { generateBa300Lcr } from "../platform/reporting/ba-300-lcr";
 import { ba300LcrToXmlPayload } from "../platform/reporting/ba-300-lcr-xml-adapter";
-import { generateBa100Capital } from "../platform/reporting/ba-700-capital";
+import { generateBa700Capital } from "../platform/reporting/ba-700-capital";
 import { ba100ToXmlPayload } from "../platform/reporting/ba-700-xml-adapter";
 import type { SarbXmlReportPayload } from "../platform/reporting/xml-render";
 import { submitToSarbPortal } from "../simulators/sarb-prudential";
@@ -66,7 +66,7 @@ function makeValidBa300LcrPayload(): SarbXmlReportPayload {
 }
 
 function makeValidBa100Payload(): SarbXmlReportPayload {
-  const output = generateBa100Capital({
+  const output = generateBa700Capital({
     entity: ENTITY,
     asOf: AS_OF,
     periodId: PERIOD_ID,

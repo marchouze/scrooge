@@ -6,9 +6,9 @@
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN
 // (CEO-approved 2026-05-10), extended 2026-05-17 by Marc's directive.
 //
-// The render layer takes the typed `Ba610DetailIncomeDetail` from
+// The render layer takes the typed `Ba120DetailIncomeDetail` from
 // `ba-610-income-detail.ts` and produces a JSON document that:
-//   - validates against the declared `Ba610DetailRenderSchema` (Zod);
+//   - validates against the declared `Ba120DetailRenderSchema` (Zod);
 //   - is deterministic (same input → byte-identical bytes);
 //   - is hash-store-friendly (BLAKE3 over the bytes is the
 //     `ReportGenerated` event's `documentHash` per Slice 5);
@@ -17,7 +17,7 @@
 //
 // Architectural placement:
 //
-//   BA 610 detail PROJECTION (typed Ba610DetailIncomeDetail)
+//   BA 610 detail PROJECTION (typed Ba120DetailIncomeDetail)
 //      → THIS RENDERER  → Uint8Array of canonical JSON bytes
 //      → RMS DOC STORE (BLAKE3-hashed; PR #142 substrate)
 //      → REPORTGENERATED EVENT (cites the hash + the schema id)
@@ -36,13 +36,13 @@
 
 import { z } from "zod";
 
-import type { Ba610DetailIncomeDetail } from "./ba-120-income-detail";
+import type { Ba120DetailIncomeDetail } from "./ba-120-income-detail";
 
 // ---------------------------------------------------------------------------
 // JSON schema — Zod
 // ---------------------------------------------------------------------------
 
-const ba310LineItemSchema = z.object({
+const ba120LineItemSchema = z.object({
   lineId: z.string().min(1),
   lineLabel: z.string().min(1),
   amountMinor: z.number().int(),
@@ -52,41 +52,41 @@ const ba310LineItemSchema = z.object({
   note: z.string().optional(),
 });
 
-const ba310NiiByClassSchema = z.object({
+const ba120NiiByClassSchema = z.object({
   instrumentClass: z.enum(["interbank", "corporate", "sovereign", "retail-placeholder"]),
   interestIncomeMinor: z.number().int(),
   interestExpenseMinor: z.number().int(),
   netInterestIncomeMinor: z.number().int(),
-  lineItems: z.array(ba310LineItemSchema),
+  lineItems: z.array(ba120LineItemSchema),
 });
 
-const ba310NiiByBandSchema = z.object({
+const ba120NiiByBandSchema = z.object({
   maturityBand: z.enum(["overnight", "1-7d", "8-30d", "1-3m", "3-6m", "6-12m", ">1y"]),
   interestIncomeMinor: z.number().int(),
   interestExpenseMinor: z.number().int(),
   netInterestIncomeMinor: z.number().int(),
   volumeMinor: z.number().int().nonnegative(),
-  lineItems: z.array(ba310LineItemSchema),
+  lineItems: z.array(ba120LineItemSchema),
 });
 
-const ba310NiiBreakdownSchema = z.object({
+const ba120NiiBreakdownSchema = z.object({
   totalInterestIncomeMinor: z.number().int(),
   totalInterestExpenseMinor: z.number().int(),
   totalNetInterestIncomeMinor: z.number().int(),
-  byInstrumentClass: z.array(ba310NiiByClassSchema),
-  byMaturityBand: z.array(ba310NiiByBandSchema),
+  byInstrumentClass: z.array(ba120NiiByClassSchema),
+  byMaturityBand: z.array(ba120NiiByBandSchema),
   bandingGaps: z.array(z.string().min(1)),
 });
 
-const ba310AlmBandingSchema = z.object({
+const ba120AlmBandingSchema = z.object({
   totalVolumeMinor: z.number().int().nonnegative(),
   totalNetInterestIncomeMinor: z.number().int(),
-  bands: z.array(ba310NiiByBandSchema),
+  bands: z.array(ba120NiiByBandSchema),
 });
 
 const nimRatioString = z.string().min(1).nullable();
 
-const ba310NimBandSchema = z.object({
+const ba120NimBandSchema = z.object({
   maturityBand: z.enum(["overnight", "1-7d", "8-30d", "1-3m", "3-6m", "6-12m", ">1y"]),
   nim: nimRatioString,
   nimBps: z.number().nullable(),
@@ -95,26 +95,26 @@ const ba310NimBandSchema = z.object({
   volumeMinor: z.number().int().nonnegative(),
 });
 
-const ba310NimSectionSchema = z.object({
+const ba120NimSectionSchema = z.object({
   overallNim: nimRatioString,
   overallNimBps: z.number().nullable(),
   overallNimPercent: z.string().nullable(),
   averageEarningAssetsMinor: z.number().int().nonnegative(),
   clientNim: nimRatioString,
   structuralNim: nimRatioString,
-  byBand: z.array(ba310NimBandSchema),
+  byBand: z.array(ba120NimBandSchema),
 });
 
-const ba310NonInterestSectionSchema = z.object({
+const ba120NonInterestSectionSchema = z.object({
   feeIncomeMinor: z.number().int(),
   tradingProfitLossMinor: z.number().int(),
   otherIncomeMinor: z.number().int(),
   otherExpenseMinor: z.number().int(),
   totalNonInterestIncomeMinor: z.number().int(),
-  lineItems: z.array(ba310LineItemSchema),
+  lineItems: z.array(ba120LineItemSchema),
 });
 
-const ba310EfficiencySectionSchema = z.object({
+const ba120EfficiencySectionSchema = z.object({
   costToIncomeRatio: z.string().nullable(),
   costToIncomePercent: z.string().nullable(),
   operatingExpensesMinor: z.number().int(),
@@ -126,7 +126,7 @@ const ba310EfficiencySectionSchema = z.object({
  * (regulator-portal slice, PDF renderer, dashboard) validate inputs
  * against this shape.
  */
-export const Ba610DetailRenderSchema = z.object({
+export const Ba120DetailRenderSchema = z.object({
   $schema: z.literal("https://hoz.bank/schemas/ba-610-detail/v0.1-rehearsal.json"),
   meta: z.object({
     form: z.literal("BA 120 detail"),
@@ -143,12 +143,12 @@ export const Ba610DetailRenderSchema = z.object({
     bandingMapFingerprint: z.string().min(1),
     renderedAt: z.string().min(1),
   }),
-  netInterestIncome: ba310NiiBreakdownSchema,
-  almBanding: ba310AlmBandingSchema,
-  netInterestMargin: ba310NimSectionSchema,
-  nonInterestIncome: ba310NonInterestSectionSchema,
-  operatingEfficiency: ba310EfficiencySectionSchema,
-  lineItems: z.array(ba310LineItemSchema),
+  netInterestIncome: ba120NiiBreakdownSchema,
+  almBanding: ba120AlmBandingSchema,
+  netInterestMargin: ba120NimSectionSchema,
+  nonInterestIncome: ba120NonInterestSectionSchema,
+  operatingEfficiency: ba120EfficiencySectionSchema,
+  lineItems: z.array(ba120LineItemSchema),
   classificationGaps: z.array(z.string().min(1)),
   periodStart: z.string().min(1),
   periodEnd: z.string().min(1),
@@ -157,17 +157,17 @@ export const Ba610DetailRenderSchema = z.object({
   placeholders: z.array(z.string().min(1)),
 });
 
-export type Ba610DetailRender = z.infer<typeof Ba610DetailRenderSchema>;
+export type Ba120DetailRender = z.infer<typeof Ba120DetailRenderSchema>;
 
-export const BA_610_DETAIL_SCHEMA_URL =
+export const BA_120_DETAIL_SCHEMA_URL =
   "https://hoz.bank/schemas/ba-610-detail/v0.1-rehearsal.json";
-export const BA_610_DETAIL_RENDERER_VERSION = "v0.1" as const;
+export const BA_120_DETAIL_RENDERER_VERSION = "v0.1" as const;
 
 // ---------------------------------------------------------------------------
 // Rendering helpers
 // ---------------------------------------------------------------------------
 
-export interface RenderBa610DetailOptions {
+export interface RenderBa120DetailOptions {
   /**
    * ISO-8601 timestamp the render was produced at. Required — supplied by
    * the agent-runtime substrate from the scenario clock; CLI default is
@@ -190,12 +190,12 @@ function ctrToString(r: number | null): string | null {
 
 /**
  * Render the BA 610 detail projection to a typed JSON object validated against
- * `Ba610DetailRenderSchema`. Pure function; deterministic for fixed `renderedAt`.
+ * `Ba120DetailRenderSchema`. Pure function; deterministic for fixed `renderedAt`.
  */
-export function renderBa610DetailToJson(
-  output: Ba610DetailIncomeDetail,
-  opts: RenderBa610DetailOptions,
-): Ba610DetailRender {
+export function renderBa120DetailToJson(
+  output: Ba120DetailIncomeDetail,
+  opts: RenderBa120DetailOptions,
+): Ba120DetailRender {
   const nimSection = output.netInterestMargin;
 
   const renderedNim = {
@@ -222,8 +222,8 @@ export function renderBa610DetailToJson(
     totalOperatingIncomeMinor: output.operatingEfficiency.totalOperatingIncomeMinor,
   };
 
-  const candidate: Ba610DetailRender = {
-    $schema: BA_610_DETAIL_SCHEMA_URL,
+  const candidate: Ba120DetailRender = {
+    $schema: BA_120_DETAIL_SCHEMA_URL,
     meta: {
       form: output.meta.form,
       formVersion: output.meta.formVersion,
@@ -233,7 +233,7 @@ export function renderBa610DetailToJson(
       periodId: output.meta.periodId,
       functionalCurrency: output.meta.functionalCurrency,
       generatorVersion: output.meta.generatorVersion,
-      rendererVersion: BA_610_DETAIL_RENDERER_VERSION,
+      rendererVersion: BA_120_DETAIL_RENDERER_VERSION,
       ...(output.meta.trialBalanceSnapshotEventId
         ? { trialBalanceSnapshotEventId: output.meta.trialBalanceSnapshotEventId }
         : {}),
@@ -290,7 +290,7 @@ export function renderBa610DetailToJson(
     placeholders: [...output.placeholders],
   };
 
-  return Ba610DetailRenderSchema.parse(candidate);
+  return Ba120DetailRenderSchema.parse(candidate);
 }
 
 /**
@@ -299,7 +299,7 @@ export function renderBa610DetailToJson(
  * with the same input produce byte-identical output. The doc-store hash
  * is over these bytes.
  */
-export function canonicaliseBa610Detail(render: Ba610DetailRender): string {
+export function canonicaliseBa120Detail(render: Ba120DetailRender): string {
   return JSON.stringify(sortKeys(render), null, 2);
 }
 
@@ -321,16 +321,16 @@ function sortKeys(value: unknown): unknown {
  * One-shot helper: render + canonicalise. Returns the canonical JSON
  * string + Uint8Array bytes.
  */
-export function renderBa610DetailCanonical(
-  output: Ba610DetailIncomeDetail,
-  opts: RenderBa610DetailOptions,
+export function renderBa120DetailCanonical(
+  output: Ba120DetailIncomeDetail,
+  opts: RenderBa120DetailOptions,
 ): {
-  readonly render: Ba610DetailRender;
+  readonly render: Ba120DetailRender;
   readonly canonicalJson: string;
   readonly canonicalBytes: Uint8Array;
 } {
-  const render = renderBa610DetailToJson(output, opts);
-  const canonicalJson = canonicaliseBa610Detail(render);
+  const render = renderBa120DetailToJson(output, opts);
+  const canonicalJson = canonicaliseBa120Detail(render);
   const canonicalBytes = new TextEncoder().encode(canonicalJson);
   return { render, canonicalJson, canonicalBytes };
 }

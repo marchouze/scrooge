@@ -40,7 +40,7 @@ import {
   THRESHOLD_LEVERAGE_RED,
   computeLeverageRatioMetrics,
 } from "../platform/projections/leverage-ratio-metrics";
-import { generateBa100Capital } from "../platform/reporting/ba-700-capital";
+import { generateBa700Capital } from "../platform/reporting/ba-700-capital";
 import {
   BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM,
   BUILD_PHASE_LEVERAGE_BASELINE_TIER1_MINOR,
@@ -48,7 +48,7 @@ import {
   LeverageRatioGeneratorError,
   generateLeverageRatio,
 } from "../platform/reporting/ba-700-leverage-ratio";
-import { renderBa100ToJson } from "../platform/reporting/ba-700-render";
+import { renderBa700ToJson } from "../platform/reporting/ba-700-render";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const AS_OF = "2026-05-21T09:00:00.000Z";
@@ -280,7 +280,7 @@ describe("generateLeverageRatio — pure generator", () => {
 
 describe("BA 100 leverage ratio composition", () => {
   it("ships a leverageRatio section when leverageExposureMeasure is supplied", () => {
-    const out = generateBa100Capital({
+    const out = generateBa700Capital({
       entity: ENTITY,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -311,7 +311,7 @@ describe("BA 100 leverage ratio composition", () => {
   });
 
   it("omits the leverageRatio section when no exposure measure is supplied", () => {
-    const out = generateBa100Capital({
+    const out = generateBa700Capital({
       entity: ENTITY,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -330,8 +330,8 @@ describe("BA 100 leverage ratio composition", () => {
     expect(out.citations).not.toContain("BCBS Basel III §147–§165");
   });
 
-  it("renders the leverageRatio section through renderBa100ToJson", () => {
-    const out = generateBa100Capital({
+  it("renders the leverageRatio section through renderBa700ToJson", () => {
+    const out = generateBa700Capital({
       entity: ENTITY,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -353,7 +353,7 @@ describe("BA 100 leverage ratio composition", () => {
         source: "build-phase-baseline",
       },
     });
-    const render = renderBa100ToJson(out, { renderedAt: AS_OF });
+    const render = renderBa700ToJson(out, { renderedAt: AS_OF });
     expect(render.leverageRatio).toBeDefined();
     expect(render.leverageRatio?.leverageRatio).toBe("infinity");
     expect(render.leverageRatio?.leveragePercent).toBe("infinity");
@@ -362,7 +362,7 @@ describe("BA 100 leverage ratio composition", () => {
   });
 
   it("omits leverageRatio from render when not present in output", () => {
-    const out = generateBa100Capital({
+    const out = generateBa700Capital({
       entity: ENTITY,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -377,7 +377,7 @@ describe("BA 100 leverage ratio composition", () => {
         source: "test-fixture",
       },
     });
-    const render = renderBa100ToJson(out, { renderedAt: AS_OF });
+    const render = renderBa700ToJson(out, { renderedAt: AS_OF });
     expect(render.leverageRatio).toBeUndefined();
   });
 });

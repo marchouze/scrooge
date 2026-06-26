@@ -50,7 +50,7 @@ import {
   combineIrGeneralLadders,
 } from "../platform/reporting/ba-320-irs-events-adapter";
 import type { IrMaturityBandRow } from "../platform/reporting/ba-320-market-risk";
-import { ba310PeriodCloseSubscriber } from "../platform/returns/ba320/period-close-subscriber";
+import { ba320PeriodCloseSubscriber } from "../platform/returns/ba320/period-close-subscriber";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR = { type: "service" as const, id: "agent:Mira" };
@@ -491,7 +491,7 @@ describe("combined bond + IRS ladder — dimensional coherence", () => {
 // 14. Integration via the period-close subscriber
 // ---------------------------------------------------------------------------
 
-describe("ba310PeriodCloseSubscriber — IRS IR general-risk integration", () => {
+describe("ba320PeriodCloseSubscriber — IRS IR general-risk integration", () => {
   it("folds trading-book IRS legs into the IR general ladder and excludes banking-book", () => {
     const store = new EventStore(":memory:");
     appendSwap(store, {
@@ -508,7 +508,7 @@ describe("ba310PeriodCloseSubscriber — IRS IR general-risk integration", () =>
       nextResetDate: "2026-09-15",
     });
 
-    const result = ba310PeriodCloseSubscriber({
+    const result = ba320PeriodCloseSubscriber({
       closedPayload: {
         periodId: "period:hoz-bank:month:2026-06",
         closedAt: PERIOD_END,
@@ -521,7 +521,7 @@ describe("ba310PeriodCloseSubscriber — IRS IR general-risk integration", () =>
     });
 
     expect(result.skipped).toBe(false);
-    const ladder = result.ba310Output.interestRateGeneral.maturityLadder;
+    const ladder = result.ba320Output.interestRateGeneral.maturityLadder;
     const fixedLeg = Math.round(100_000_000 * RW_5_7Y);
     // 5-7y line reflects the trading-book swap's fixed leg (weighted nominal),
     // not the banking-book swap's notional.
@@ -534,7 +534,7 @@ describe("ba310PeriodCloseSubscriber — IRS IR general-risk integration", () =>
     const store = new EventStore(":memory:");
     appendSwap(store, { tradeId: "IRS-GAP" }); // no reset terms
 
-    const result = ba310PeriodCloseSubscriber({
+    const result = ba320PeriodCloseSubscriber({
       closedPayload: {
         periodId: "period:hoz-bank:month:2026-06",
         closedAt: PERIOD_END,
@@ -546,7 +546,7 @@ describe("ba310PeriodCloseSubscriber — IRS IR general-risk integration", () =>
       periodStart: "2026-06-01T00:00:00.000Z",
     });
 
-    const hasGap = result.ba310Output.placeholders.some(
+    const hasGap = result.ba320Output.placeholders.some(
       (p) => p.includes("substrate-gap") && p.includes("IRS-GAP"),
     );
     expect(hasGap).toBe(true);

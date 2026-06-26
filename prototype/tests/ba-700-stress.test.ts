@@ -22,11 +22,11 @@
 
 import { describe, expect, it } from "bun:test";
 
-import type { Ba100GeneratorInput } from "../platform/reporting/ba-700-capital";
+import type { Ba700GeneratorInput } from "../platform/reporting/ba-700-capital";
 import {
   BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
   computeRequiredMinimums,
-  generateBa100Capital,
+  generateBa700Capital,
 } from "../platform/reporting/ba-700-capital";
 import { ba100ToXmlPayload } from "../platform/reporting/ba-700-xml-adapter";
 
@@ -40,7 +40,7 @@ const PERIOD_ID = "period:hoz-bank:month:2026-05";
 const FUNCTIONAL_CURRENCY = "ZAR";
 
 /** Minimal generator input with no capital and no RWA. */
-function baseInput(overrides?: Partial<Ba100GeneratorInput>): Ba100GeneratorInput {
+function baseInput(overrides?: Partial<Ba700GeneratorInput>): Ba700GeneratorInput {
   return {
     entity: ENTITY,
     asOf: AS_OF,
@@ -69,7 +69,7 @@ describe("BA 100 stress — ST-1: CET1 ratio < 4.5% minimum", () => {
   it("cet1Ratio < 0.045 when CET1 capital is very small relative to RWA", () => {
     // CET1 net = 1_000 (minor units). Total RWA = 1_000_000_000 (1 billion).
     // Ratio = 1_000 / 1_000_000_000 = 0.000001 — far below 4.5%.
-    const output = generateBa100Capital(
+    const output = generateBa700Capital(
       baseInput({
         trialBalance: [
           {
@@ -93,7 +93,7 @@ describe("BA 100 stress — ST-1: CET1 ratio < 4.5% minimum", () => {
   });
 
   it("cet1Compliant = false and cet1Ratio value accessible from ratios section", () => {
-    const output = generateBa100Capital(
+    const output = generateBa700Capital(
       baseInput({
         trialBalance: [{ leafAccountId: "ACC-small-cet1", currency: "ZAR", amountMinor: -100_00 }],
         classifications: [{ leafAccountId: "ACC-small-cet1", capitalTier: "cet1" }],
@@ -133,7 +133,7 @@ describe("BA 100 stress — ST-2: Leverage ratio < 3% floor", () => {
   });
 
   it("generator with leverageExposureMeasure: leverageRatio < 0.03 is flagged non-compliant", () => {
-    const output = generateBa100Capital(
+    const output = generateBa700Capital(
       baseInput({
         trialBalance: [
           { leafAccountId: "ACC-cet1-small", currency: "ZAR", amountMinor: -1_000_00 }, // 1_000 ZAR net
@@ -172,7 +172,7 @@ describe("BA 100 stress — ST-2: Leverage ratio < 3% floor", () => {
 
 describe("BA 100 stress — ST-3: Zero RWA denominator", () => {
   it("all capital-adequacy ratios = Infinity when totalRwaMinor = 0", () => {
-    const output = generateBa100Capital(
+    const output = generateBa700Capital(
       baseInput({
         trialBalance: [{ leafAccountId: "ACC-cet1", currency: "ZAR", amountMinor: -50_000_000_00 }],
         classifications: [{ leafAccountId: "ACC-cet1", capitalTier: "cet1" }],
@@ -192,7 +192,7 @@ describe("BA 100 stress — ST-3: Zero RWA denominator", () => {
   });
 
   it("compliance flags = true when ratios = Infinity (no risk)", () => {
-    const output = generateBa100Capital(
+    const output = generateBa700Capital(
       baseInput({
         trialBalance: [
           { leafAccountId: "ACC-cet1-pos", currency: "ZAR", amountMinor: -1_000_000_00 },
@@ -208,7 +208,7 @@ describe("BA 100 stress — ST-3: Zero RWA denominator", () => {
   });
 
   it("ba100ToXmlPayload() serialises Infinity ratios as the string 'Infinity'", () => {
-    const output = generateBa100Capital(
+    const output = generateBa700Capital(
       baseInput({
         trialBalance: [
           { leafAccountId: "ACC-cet1-inf", currency: "ZAR", amountMinor: -500_000_00 },
@@ -232,7 +232,7 @@ describe("BA 100 stress — ST-3: Zero RWA denominator", () => {
 
 describe("BA 100 stress — ST-4: Zero capital", () => {
   it("all ratios = 0 when no capital accounts in trial balance", () => {
-    const output = generateBa100Capital(
+    const output = generateBa700Capital(
       baseInput({
         rwa: {
           creditRwaMinor: 1_000_000_000,
@@ -254,7 +254,7 @@ describe("BA 100 stress — ST-4: Zero capital", () => {
   });
 
   it("all compliance flags = false when all ratios = 0", () => {
-    const output = generateBa100Capital(
+    const output = generateBa700Capital(
       baseInput({
         rwa: {
           creditRwaMinor: 1_000_000_000,
@@ -272,7 +272,7 @@ describe("BA 100 stress — ST-4: Zero capital", () => {
 
   it("gross stock = 0 for all tiers when trial balance has no capital accounts", () => {
     // Trial balance rows for non-capital accounts should be ignored.
-    const output = generateBa100Capital(
+    const output = generateBa700Capital(
       baseInput({
         trialBalance: [
           { leafAccountId: "ACC-cash-nostro", currency: "ZAR", amountMinor: 1_000_000_00 },
@@ -313,7 +313,7 @@ describe("BA 100 stress — ST-5: Buffer requirements — conservation buffer", 
   });
 
   it("generator echoes buffer requirements in the output", () => {
-    const output = generateBa100Capital(baseInput());
+    const output = generateBa700Capital(baseInput());
     expect(output.bufferRequirements).toBeDefined();
     expect(output.bufferRequirements.capitalConservationBufferRatio).toBe(0.025);
     expect(output.bufferRequirements.baseCet1Ratio).toBe(0.045);
@@ -322,7 +322,7 @@ describe("BA 100 stress — ST-5: Buffer requirements — conservation buffer", 
 
   it("bank with exactly 7% CET1 ratio is compliant (at the all-in minimum)", () => {
     // Net CET1 = 7_000_000. Total RWA = 100_000_000. Ratio = 7%.
-    const output = generateBa100Capital(
+    const output = generateBa700Capital(
       baseInput({
         trialBalance: [
           {
@@ -347,7 +347,7 @@ describe("BA 100 stress — ST-5: Buffer requirements — conservation buffer", 
 
   it("bank with 6.9% CET1 ratio is non-compliant (just below all-in minimum)", () => {
     // Net CET1 = 6_900_000. Total RWA = 100_000_000. Ratio = 6.9% < 7%.
-    const output = generateBa100Capital(
+    const output = generateBa700Capital(
       baseInput({
         trialBalance: [
           {
@@ -377,13 +377,13 @@ describe("BA 100 stress — ST-5: Buffer requirements — conservation buffer", 
 
 describe("BA 100 stress — ST-6: ba100ToXmlPayload() round-trip", () => {
   it("formId = 'BA700'", () => {
-    const output = generateBa100Capital(baseInput());
+    const output = generateBa700Capital(baseInput());
     const payload = ba100ToXmlPayload(output);
     expect(payload.formId).toBe("BA700");
   });
 
   it("body has required top-level keys: Meta, CapitalStack, Rwa, BufferRequirements, Ratios", () => {
-    const output = generateBa100Capital(baseInput());
+    const output = generateBa700Capital(baseInput());
     const payload = ba100ToXmlPayload(output);
     expect(payload.body).toBeDefined();
     const body = payload.body as Record<string, unknown>;
@@ -395,14 +395,14 @@ describe("BA 100 stress — ST-6: ba100ToXmlPayload() round-trip", () => {
   });
 
   it("body.Meta.Entity echoes the entity from the generator input", () => {
-    const output = generateBa100Capital(baseInput());
+    const output = generateBa700Capital(baseInput());
     const payload = ba100ToXmlPayload(output);
     const meta = payload.body.Meta as Record<string, unknown>;
     expect(meta.Entity).toBe(ENTITY);
   });
 
   it("body.CapitalStack.Cet1 is present and has NetStockMinor", () => {
-    const output = generateBa100Capital(baseInput());
+    const output = generateBa700Capital(baseInput());
     const payload = ba100ToXmlPayload(output);
     const stack = payload.body.CapitalStack as Record<string, unknown>;
     expect(stack).toBeDefined();
@@ -412,14 +412,14 @@ describe("BA 100 stress — ST-6: ba100ToXmlPayload() round-trip", () => {
   });
 
   it("body.Rwa.TotalRwaMinor = 0 for zero RWA input", () => {
-    const output = generateBa100Capital(baseInput());
+    const output = generateBa700Capital(baseInput());
     const payload = ba100ToXmlPayload(output);
     const rwa = payload.body.Rwa as Record<string, unknown>;
     expect(rwa.TotalRwaMinor).toBe(0);
   });
 
   it("LeverageRatio section absent in body when no exposure measure supplied", () => {
-    const output = generateBa100Capital(baseInput());
+    const output = generateBa700Capital(baseInput());
     const payload = ba100ToXmlPayload(output);
     const body = payload.body as Record<string, unknown>;
     expect("LeverageRatio" in body).toBe(false);

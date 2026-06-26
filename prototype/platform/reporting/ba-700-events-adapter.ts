@@ -1,9 +1,9 @@
 // platform/reporting/ba-700-events-adapter.ts
 //
-// P1 fix (C-3) — BA 100 (Capital Adequacy Return) entry point that folds
+// P1 fix (C-3) — BA 700 (Capital Adequacy Return) entry point that folds
 // primary trade events directly, without routing through the trial balance.
 //
-// Principle 1 violation addressed: the original BA 100 generator accepts
+// Principle 1 violation addressed: the original BA 700 generator accepts
 // a `trialBalance: TrialBalanceSnapshotRow[]` input. A trial balance is a
 // *projection* of SubLedgerPostingEmitted events, not a primary event. A
 // capital position exists (CapitalContributionRecorded, SubLedgerPostingEmitted)
@@ -14,8 +14,8 @@
 // Correct input chain per Principles/1-events-are-truth.md:
 //   SubLedgerPostingEmitted (primary posting events)
 //     → fold by account → capital-classified accounts only
-//     → generateBa100Capital (pure generator)
-//     → Ba100Output
+//     → generateBa700Capital (pure generator)
+//     → Ba700Output
 //
 // Additionally, risk-weight events (RwaComputed, once the W2 Slice 3 engine
 // lands) feed the RWA denominator directly; until then the caller supplies a
@@ -44,8 +44,8 @@ import type {
   RegulatoryDeduction,
   RwaDecomposition,
 } from "./ba-700-capital";
-import { BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS, generateBa100Capital } from "./ba-700-capital";
-import type { Ba100Output, BufferRequirements } from "./ba-700-capital";
+import { BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS, generateBa700Capital } from "./ba-700-capital";
+import type { Ba700Output, BufferRequirements } from "./ba-700-capital";
 import type { LeverageExposureDecomposition } from "./ba-700-leverage-ratio";
 
 // ---------------------------------------------------------------------------
@@ -53,7 +53,7 @@ import type { LeverageExposureDecomposition } from "./ba-700-leverage-ratio";
 // ---------------------------------------------------------------------------
 
 /**
- * Input for `generateBa100CapitalFromEvents`.
+ * Input for `generateBa700CapitalFromEvents`.
  *
  * Capital stock is computed by folding `SubLedgerPostingEmitted` and
  * `CapitalContributionRecorded` events directly. The trial balance
@@ -69,7 +69,7 @@ import type { LeverageExposureDecomposition } from "./ba-700-leverage-ratio";
  *     `RwaComputed` event whose ID threads through `rwa.rwaComputationEventId`
  *     for chain-of-custody under Principle 1.
  */
-export interface Ba100FromEventsInput {
+export interface Ba700FromEventsInput {
   /** Legal entity short-id (`LE-ZA-HOZ-BANK`). Throws on non-bank. */
   readonly entity: string;
   /** ISO 8601 — period-end as-of date. */
@@ -310,10 +310,10 @@ export function buildLeverageExposureWithBa110(
  * Citations: Principles/1-events-are-truth.md, D-MARKETS-SCHEMA-FOUNDATION,
  * D-MARKETS-CAPITAL-TIME-SHAPE.
  */
-export function generateBa100CapitalFromEvents(
+export function generateBa700CapitalFromEvents(
   eventStore: EventStore,
-  input: Ba100FromEventsInput,
-): Ba100Output {
+  input: Ba700FromEventsInput,
+): Ba700Output {
   // Build the set of classified account IDs for fast lookup during fold.
   const classifiedAccountIds = new Set(input.classifications.map((c) => c.leafAccountId));
 
@@ -342,9 +342,9 @@ export function generateBa100CapitalFromEvents(
   }
 
   // Delegate to the pure generator with the folded rows in lieu of the
-  // trial-balance snapshot. The `trialBalance` field of Ba100GeneratorInput
+  // trial-balance snapshot. The `trialBalance` field of Ba700GeneratorInput
   // accepts the same row shape — we pass the directly-folded rows.
-  return generateBa100Capital({
+  return generateBa700Capital({
     entity: input.entity,
     asOf: input.asOf,
     periodId: input.periodId,
@@ -357,9 +357,9 @@ export function generateBa100CapitalFromEvents(
     ...(leverageExposureMeasure ? { leverageExposureMeasure } : {}),
     // No trialBalanceSnapshotEventId — capital stock came from primary events.
     // Provenance chain: SubLedgerPostingEmitted / CapitalContributionRecorded
-    //   → foldCapitalAccountBalances → generateBa100Capital.
+    //   → foldCapitalAccountBalances → generateBa700Capital.
   });
 }
 
 // Re-export for convenience at call-sites that import from this module.
-export type { Ba100Output };
+export type { Ba700Output };

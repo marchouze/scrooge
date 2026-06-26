@@ -15,9 +15,9 @@
 import { describe, expect, it } from "bun:test";
 
 import { computeIrGeneralDisallowances } from "./ba-320-ir-maturity-bands";
-import { type Ba310GeneratorInput, generateBa310MarketRisk } from "./ba-320-market-risk";
+import { type Ba320GeneratorInput, generateBa320MarketRisk } from "./ba-320-market-risk";
 
-const BASE: Omit<Ba310GeneratorInput, "irGeneralMaturityLadder"> = {
+const BASE: Omit<Ba320GeneratorInput, "irGeneralMaturityLadder"> = {
   entity: "LE-ZA-HOZ-BANK",
   asOf: "2026-06-30",
   periodId: "period:hoz-bank:month:2026-06",
@@ -35,12 +35,12 @@ const LADDER = [
   { band: "5-7y", weightedLongMinor: 2_000_000, weightedShortMinor: 0 },
 ] as const;
 
-describe("generateBa310MarketRisk — IR-general disallowances", () => {
+describe("generateBa320MarketRisk — IR-general disallowances", () => {
   it("computes disallowances from the ladder by default (NOT zero)", () => {
     const expected = computeIrGeneralDisallowances(LADDER).totalMinor;
     expect(expected).toBe(340_000); // sanity: the algebra is engaged
 
-    const out = generateBa310MarketRisk({ ...BASE, irGeneralMaturityLadder: LADDER });
+    const out = generateBa320MarketRisk({ ...BASE, irGeneralMaturityLadder: LADDER });
     expect(out.interestRateGeneral.disallowancesMinor).toBe(340_000);
 
     // The disallowance is genuinely folded into the IR-general capital charge.
@@ -52,13 +52,13 @@ describe("generateBa310MarketRisk — IR-general disallowances", () => {
   });
 
   it("REGRESSION GUARD: the old caller-supplied-zero path no longer applies — a non-trivially-matched ladder yields a positive disallowance", () => {
-    const out = generateBa310MarketRisk({ ...BASE, irGeneralMaturityLadder: LADDER });
+    const out = generateBa320MarketRisk({ ...BASE, irGeneralMaturityLadder: LADDER });
     // Before B-IRS-DISALLOWANCES this was silently 0 (caller never supplied it).
     expect(out.interestRateGeneral.disallowancesMinor).toBeGreaterThan(0);
   });
 
   it("an explicit caller override still wins (back-compat)", () => {
-    const out = generateBa310MarketRisk({
+    const out = generateBa320MarketRisk({
       ...BASE,
       irGeneralMaturityLadder: LADDER,
       irGeneralDisallowancesMinor: 12_345,
@@ -67,7 +67,7 @@ describe("generateBa310MarketRisk — IR-general disallowances", () => {
   });
 
   it("a non-canonical band is excluded from the algebra and surfaced as a placeholder", () => {
-    const out = generateBa310MarketRisk({
+    const out = generateBa320MarketRisk({
       ...BASE,
       irGeneralMaturityLadder: [
         { band: "weird-band", weightedLongMinor: 1_000_000, weightedShortMinor: 900_000 },

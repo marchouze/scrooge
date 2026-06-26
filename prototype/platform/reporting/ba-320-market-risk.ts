@@ -9,8 +9,9 @@
 // Assets (HQLA)". Re-numbered forward-only under
 // D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (CEO 2026-06-09), which supersedes
 // D-BA-RETURN-FORM-NUMBERING-RECON wholesale; see
-// Regulations/SARB-PA/ba-returns/_canonical-register.md. Internal `Ba310*`
-// symbol names retained pending a separate symbol-rename pass.
+// Regulations/SARB-PA/ba-returns/_canonical-register.md. Internal symbol names
+// aligned to `Ba320*` in the canonical symbol-rename pass (harden-only,
+// behaviour-identical).
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-
 // approved 2026-05-10), pack §6 Slice 4 (the BA 310 sub-scope) consolidated
@@ -56,7 +57,7 @@
 //   semantic-layer integration).
 
 // P1 fix note (C-2): the events-first entry point for BA 310 lives at
-// `ba-310-events-adapter.ts` → `generateBa310MarketRiskFromEvents()`. Callers
+// `ba-310-events-adapter.ts` → `generateBa320MarketRiskFromEvents()`. Callers
 // that have access to an EventStore should prefer that path to derive FX
 // positions directly from FxTradeExecuted events rather than from the trial
 // balance. Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
@@ -154,7 +155,7 @@ export interface CommodityPositionRow {
 /**
  * The complete generator input.
  */
-export interface Ba310GeneratorInput {
+export interface Ba320GeneratorInput {
   /** Legal entity short-id (`LE-ZA-HOZ-BANK`). Throws on non-bank. */
   readonly entity: string;
   /** ISO 8601 — period-end as-of date. */
@@ -189,7 +190,7 @@ export interface Ba310GeneratorInput {
    *
    * @deprecated — P1 violation (C-2): FX positions should be derived from
    * FxTradeExecuted primary trade events, not from the trial balance.
-   * Use `generateBa310MarketRiskFromEvents()` from `ba-310-events-adapter.ts`
+   * Use `generateBa320MarketRiskFromEvents()` from `ba-310-events-adapter.ts`
    * when an EventStore is available. This field is retained for backward
    * compatibility. Authority: Principles/1-events-are-truth.md,
    * D-MARKETS-CAPITAL-TIME-SHAPE.
@@ -201,7 +202,7 @@ export interface Ba310GeneratorInput {
 // Outputs
 // ---------------------------------------------------------------------------
 
-export interface Ba310LineItem {
+export interface Ba320LineItem {
   readonly lineId: string;
   readonly lineLabel: string;
   readonly amountMinor: number;
@@ -209,35 +210,35 @@ export interface Ba310LineItem {
   readonly note?: string;
 }
 
-export interface Ba310IrGeneralSection {
-  readonly maturityLadder: readonly Ba310LineItem[];
+export interface Ba320IrGeneralSection {
+  readonly maturityLadder: readonly Ba320LineItem[];
   readonly disallowancesMinor: number;
   readonly capitalMinor: number;
 }
 
-export interface Ba310IrSpecificSection {
-  readonly issuerLines: readonly Ba310LineItem[];
+export interface Ba320IrSpecificSection {
+  readonly issuerLines: readonly Ba320LineItem[];
   readonly capitalMinor: number;
 }
 
-export interface Ba310EquitySection {
-  readonly marketLines: readonly Ba310LineItem[];
+export interface Ba320EquitySection {
+  readonly marketLines: readonly Ba320LineItem[];
   readonly capitalMinor: number;
 }
 
-export interface Ba310FxSection {
-  readonly currencyLines: readonly Ba310LineItem[];
+export interface Ba320FxSection {
+  readonly currencyLines: readonly Ba320LineItem[];
   readonly sumNetLongsMinor: number;
   readonly sumNetShortsMinor: number;
   readonly capitalMinor: number;
 }
 
-export interface Ba310CommoditySection {
-  readonly commodityLines: readonly Ba310LineItem[];
+export interface Ba320CommoditySection {
+  readonly commodityLines: readonly Ba320LineItem[];
   readonly capitalMinor: number;
 }
 
-export interface Ba310Output {
+export interface Ba320Output {
   readonly meta: {
     readonly form: "BA 320";
     readonly formVersion: "v0.1-rehearsal";
@@ -248,11 +249,11 @@ export interface Ba310Output {
     readonly generatorVersion: "v0.1";
     readonly trialBalanceSnapshotEventId?: string;
   };
-  readonly interestRateGeneral: Ba310IrGeneralSection;
-  readonly interestRateSpecific: Ba310IrSpecificSection;
-  readonly equity: Ba310EquitySection;
-  readonly fx: Ba310FxSection;
-  readonly commodity: Ba310CommoditySection;
+  readonly interestRateGeneral: Ba320IrGeneralSection;
+  readonly interestRateSpecific: Ba320IrSpecificSection;
+  readonly equity: Ba320EquitySection;
+  readonly fx: Ba320FxSection;
+  readonly commodity: Ba320CommoditySection;
   /** Sum of all sub-charges. */
   readonly totalMarketRiskCapitalMinor: number;
   /** RWA = 12.5 × capital. */
@@ -265,10 +266,10 @@ export interface Ba310Output {
 // Errors
 // ---------------------------------------------------------------------------
 
-export class Ba310GeneratorError extends Error {
+export class Ba320GeneratorError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "Ba310GeneratorError";
+    this.name = "Ba320GeneratorError";
   }
 }
 
@@ -276,12 +277,12 @@ export class Ba310GeneratorError extends Error {
 // Per-entity scope guard
 // ---------------------------------------------------------------------------
 
-export const BA_310_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
+export const BA_320_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 
 function assertBankEntity(entity: string): void {
-  if (!BA_310_BANK_ENTITIES.includes(entity)) {
-    throw new Ba310GeneratorError(
-      `BA 310 (market risk) is bank-licence-bound; entity '${entity}' is not in BA_310_BANK_ENTITIES (${BA_310_BANK_ENTITIES.join(", ")}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER.`,
+  if (!BA_320_BANK_ENTITIES.includes(entity)) {
+    throw new Ba320GeneratorError(
+      `BA 310 (market risk) is bank-licence-bound; entity '${entity}' is not in BA_320_BANK_ENTITIES (${BA_320_BANK_ENTITIES.join(", ")}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER.`,
     );
   }
 }
@@ -294,22 +295,22 @@ function assertBankEntity(entity: string): void {
  * Generate the BA 310 (market-risk) projection. Pure function;
  * deterministic.
  */
-export function generateBa310MarketRisk(input: Ba310GeneratorInput): Ba310Output {
+export function generateBa320MarketRisk(input: Ba320GeneratorInput): Ba320Output {
   assertBankEntity(input.entity);
   if (!input.functionalCurrency || input.functionalCurrency.length !== 3) {
-    throw new Ba310GeneratorError(
+    throw new Ba320GeneratorError(
       `BA 310 generator: functionalCurrency must be ISO-4217 (3 chars), got '${input.functionalCurrency}'`,
     );
   }
   const ccy = input.functionalCurrency;
 
   // ---- IR general risk ---------------------------------------------------
-  const ladderLines: Ba310LineItem[] = [];
+  const ladderLines: Ba320LineItem[] = [];
   let irGeneralWeightedSum = 0;
   // Stable iteration — input order preserved.
   for (const row of input.irGeneralMaturityLadder) {
     if (row.weightedLongMinor < 0 || row.weightedShortMinor < 0) {
-      throw new Ba310GeneratorError(
+      throw new Ba320GeneratorError(
         `BA 310: maturity-band '${row.band}' weighted long/short must be non-negative (signed offsets are produced upstream)`,
       );
     }
@@ -358,11 +359,11 @@ export function generateBa310MarketRisk(input: Ba310GeneratorInput): Ba310Output
   const irGeneralCapital = irGeneralWeightedSum + disallowances;
 
   // ---- IR specific risk --------------------------------------------------
-  const irSpecificLines: Ba310LineItem[] = [];
+  const irSpecificLines: Ba320LineItem[] = [];
   let irSpecificCapital = 0;
   for (const row of input.irSpecificRisk) {
     if (row.specificRiskWeight < 0 || row.specificRiskWeight > 1) {
-      throw new Ba310GeneratorError(
+      throw new Ba320GeneratorError(
         `BA 310: specificRiskWeight on issuer '${row.issuerLabel}' must be in [0,1], got ${row.specificRiskWeight}`,
       );
     }
@@ -378,7 +379,7 @@ export function generateBa310MarketRisk(input: Ba310GeneratorInput): Ba310Output
   }
 
   // ---- Equity risk -------------------------------------------------------
-  const equityLines: Ba310LineItem[] = [];
+  const equityLines: Ba320LineItem[] = [];
   let equityCapital = 0;
   for (const row of input.equity) {
     const generalCharge = Math.round(0.08 * Math.abs(row.netLongMinusShortMinor));
@@ -396,7 +397,7 @@ export function generateBa310MarketRisk(input: Ba310GeneratorInput): Ba310Output
   }
 
   // ---- FX risk -----------------------------------------------------------
-  const fxLines: Ba310LineItem[] = [];
+  const fxLines: Ba320LineItem[] = [];
   let sumNetLongs = 0;
   let sumNetShorts = 0;
   for (const row of input.fxPositions) {
@@ -418,7 +419,7 @@ export function generateBa310MarketRisk(input: Ba310GeneratorInput): Ba310Output
   const fxCapital = Math.round(0.08 * Math.max(sumNetLongs, sumNetShorts));
 
   // ---- Commodity risk (simplified method) -------------------------------
-  const commodityLines: Ba310LineItem[] = [];
+  const commodityLines: Ba320LineItem[] = [];
   let commodityCapital = 0;
   for (const row of input.commodity) {
     const charge =

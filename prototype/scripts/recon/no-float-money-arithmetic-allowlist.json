@@ -507,17 +507,17 @@
     },
     {
       "file": "platform/reporting/ba-100-balance-sheet.ts",
-      "line": 667,
+      "line": 668,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/reporting/ba-120-income-detail.ts",
-      "line": 652,
+      "line": 654,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/reporting/ba-120-income-detail.ts",
-      "line": 756,
+      "line": 758,
       "pattern": "money-multiply/divide"
     },
     {
@@ -582,22 +582,22 @@
     },
     {
       "file": "platform/reporting/ba-320-market-risk.ts",
-      "line": 369,
+      "line": 370,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/reporting/ba-320-market-risk.ts",
-      "line": 384,
+      "line": 385,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/reporting/ba-320-market-risk.ts",
-      "line": 386,
+      "line": 387,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/reporting/ba-320-market-risk.ts",
-      "line": 425,
+      "line": 426,
       "pattern": "Math.round(money)"
     },
     {

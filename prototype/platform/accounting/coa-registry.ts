@@ -128,7 +128,7 @@ import type { CoaAccountEntry } from "../../v2-core/accounting/chart-of-accounts
  *
  * Scans all accounts in `COA_ACCOUNTS` for those with a `capitalTier` set,
  * and maps them to `AccountCapitalClassification` entries suitable for
- * passing directly to `generateBa100CapitalFromEvents` as the `classifications`
+ * passing directly to `generateBa700CapitalFromEvents` as the `classifications`
  * input.
  *
  * This provides the canonical T2 (and CET1/AT1) account set for the BA 100

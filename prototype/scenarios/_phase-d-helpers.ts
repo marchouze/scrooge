@@ -68,22 +68,22 @@ import type { Event } from "@platform/event-store/types";
 import {
   type AccountCapitalClassification,
   type AccountLiquidityClassification,
-  type Ba100Output,
   type Ba300LcrOutput,
-  type Ba300Output,
-  type Ba310Output,
+  type Ba320Output,
+  type Ba400Output,
+  type Ba700Output,
   type OpRiskGrossIncomeRow,
   type RegulatoryDeduction,
   type RwaDecomposition,
   ba300ToXmlPayload,
-  ba310ToXmlPayload,
-  generateBa100Capital,
-  generateBa100CapitalFromEvents,
+  ba320ToXmlPayload,
   generateBa300Lcr,
-  generateBa300OpRisk,
-  generateBa310MarketRisk,
-  renderBa100Canonical,
+  generateBa320MarketRisk,
+  generateBa400OpRisk,
+  generateBa700Capital,
+  generateBa700CapitalFromEvents,
   renderBa300LcrCanonical,
+  renderBa700Canonical,
   renderSarbXml,
 } from "@platform/reporting";
 
@@ -194,10 +194,10 @@ export const BA_300_LCR_FIXTURE_CLASSIFICATIONS: readonly AccountLiquidityClassi
 // non-trivially populated.
 // ---------------------------------------------------------------------------
 
-export const BA_100_FIXTURE_CLASSIFICATIONS: readonly AccountCapitalClassification[] = [
+export const BA_700_FIXTURE_CLASSIFICATIONS: readonly AccountCapitalClassification[] = [
   // P1-compliant path (C-3 fix): classify the account that actually appears
   // in Phase A's CapitalContributionRecorded event (ACC-ZAR-CAPITAL-001).
-  // The events-first adapter (`generateBa100CapitalFromEvents`) folds the
+  // The events-first adapter (`generateBa700CapitalFromEvents`) folds the
   // CapitalContributionRecorded event with this accountId to derive capital stock.
   // Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
   {
@@ -216,12 +216,12 @@ export const BA_100_FIXTURE_CLASSIFICATIONS: readonly AccountCapitalClassificati
   },
 ];
 
-export const BA_100_FIXTURE_DEDUCTIONS: readonly RegulatoryDeduction[] = [];
+export const BA_700_FIXTURE_DEDUCTIONS: readonly RegulatoryDeduction[] = [];
 
 /**
  * Fixture RWA — R1.5bn credit + R1.0bn market + R500m operational =
  * R3.0bn total (in minor units: 300_000_000_000). With a synthetic R300m
- * CET1 base (per `BA_100_SYNTHETIC_CET1_ROW` below), the resulting CET1
+ * CET1 base (per `BA_700_SYNTHETIC_CET1_ROW` below), the resulting CET1
  * ratio = R300m / R3bn = 10.00% — comfortably above the Reg 38(2) all-in
  * 7% minimum (4.5% base + 2.5% CCB) but below a "trivially compliant"
  * threshold so the rehearsal shows a meaningful headline metric. The
@@ -230,9 +230,9 @@ export const BA_100_FIXTURE_DEDUCTIONS: readonly RegulatoryDeduction[] = [];
  * Forward-link: the W2 Slice 3 RWA engine (PR #177 — `computeRwa`) produces
  * the same shape from typed `CreditExposure` / `TradingBookPosition` /
  * `BusinessIndicatorInput` inputs. Wiring is a future slice; the typed
- * input shape on `generateBa100Capital` is unchanged.
+ * input shape on `generateBa700Capital` is unchanged.
  */
-export const BA_100_FIXTURE_RWA: RwaDecomposition = {
+export const BA_700_FIXTURE_RWA: RwaDecomposition = {
   creditRwaMinor: 1_500_000_000_00, // R1.5bn
   marketRwaMinor: 1_000_000_000_00, // R1.0bn
   operationalRwaMinor: 500_000_000_00, // R500m
@@ -245,7 +245,7 @@ export const BA_100_FIXTURE_RWA: RwaDecomposition = {
  * generator's capital-stack projection produces a non-zero CET1 stock.
  * Substrate gap #1 (real classifications come from semantic-layer expansion).
  */
-export const BA_100_SYNTHETIC_CET1_ROW = {
+export const BA_700_SYNTHETIC_CET1_ROW = {
   leafAccountId: "ACC-equity-paid-up-capital-stub",
   currency: "ZAR",
   amountMinor: -300_000_000_00, // negative = credit-side (equity)
@@ -263,7 +263,7 @@ export const BA_100_SYNTHETIC_CET1_ROW = {
 
 const PHASE_D_FX_NET_USD_FUNCTIONAL_MINOR = 9_225_000_000; // R92.25m
 
-export const BA_310_FIXTURE_FX_POSITIONS = [
+export const BA_320_FIXTURE_FX_POSITIONS = [
   { currency: "USD", netPositionFunctionalMinor: PHASE_D_FX_NET_USD_FUNCTIONAL_MINOR },
 ] as const;
 
@@ -278,7 +278,7 @@ export const BA_310_FIXTURE_FX_POSITIONS = [
 // origin obvious).
 // ---------------------------------------------------------------------------
 
-export const BA_300_FIXTURE_GROSS_INCOME: readonly OpRiskGrossIncomeRow[] = [
+export const BA_400_FIXTURE_GROSS_INCOME: readonly OpRiskGrossIncomeRow[] = [
   // Single positive-year row — BIA capital = 15% × R10m = R1.5m.
   // Satisfies BIA's `nPositiveYears > 0` condition.
   { fiscalYear: "2024", businessLine: "trading-and-sales", grossIncomeMinor: 10_000_000_00 },
@@ -290,9 +290,9 @@ export const BA_300_FIXTURE_GROSS_INCOME: readonly OpRiskGrossIncomeRow[] = [
 
 export interface PhaseDGenerated {
   readonly ba110: Ba300LcrOutput;
-  readonly ba100: Ba100Output;
-  readonly ba310: Ba310Output;
-  readonly ba300: Ba300Output;
+  readonly ba100: Ba700Output;
+  readonly ba310: Ba320Output;
+  readonly ba300: Ba400Output;
 }
 
 export function generatePhaseDReports(inputs: PhaseDInputs): PhaseDGenerated {
@@ -318,41 +318,41 @@ export function generatePhaseDReports(inputs: PhaseDInputs): PhaseDGenerated {
   // CapitalContributionRecorded events directly when eventStore is available.
   // Falls back to augmented-trial-balance path (deprecated) when not.
   // Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
-  let ba100: Ba100Output;
+  let ba100: Ba700Output;
   if (inputs.eventStore && inputs.periodStart && inputs.periodEnd) {
-    ba100 = generateBa100CapitalFromEvents(inputs.eventStore, {
+    ba100 = generateBa700CapitalFromEvents(inputs.eventStore, {
       entity: inputs.entity,
       asOf: inputs.asOf,
       periodId: inputs.periodId,
       functionalCurrency: inputs.functionalCurrency,
       periodStart: inputs.periodStart,
       periodEnd: inputs.periodEnd,
-      classifications: BA_100_FIXTURE_CLASSIFICATIONS,
-      deductions: BA_100_FIXTURE_DEDUCTIONS,
-      rwa: BA_100_FIXTURE_RWA,
+      classifications: BA_700_FIXTURE_CLASSIFICATIONS,
+      deductions: BA_700_FIXTURE_DEDUCTIONS,
+      rwa: BA_700_FIXTURE_RWA,
     });
   } else {
     // Deprecated fallback: augment the trial balance with a synthetic CET1-equity
     // row so the capital-stack projection is non-trivially populated.
     // Substrate gap §1 above; real CET1 derivation comes from chart-of-accounts
     // capitalTier field at Reporting Slice 6+.
-    const augmentedTb = [...inputs.trialBalance, BA_100_SYNTHETIC_CET1_ROW];
-    ba100 = generateBa100Capital({
+    const augmentedTb = [...inputs.trialBalance, BA_700_SYNTHETIC_CET1_ROW];
+    ba100 = generateBa700Capital({
       entity: inputs.entity,
       asOf: inputs.asOf,
       periodId: inputs.periodId,
       functionalCurrency: inputs.functionalCurrency,
       trialBalance: augmentedTb,
-      classifications: BA_100_FIXTURE_CLASSIFICATIONS,
-      deductions: BA_100_FIXTURE_DEDUCTIONS,
-      rwa: BA_100_FIXTURE_RWA,
+      classifications: BA_700_FIXTURE_CLASSIFICATIONS,
+      deductions: BA_700_FIXTURE_DEDUCTIONS,
+      rwa: BA_700_FIXTURE_RWA,
       ...(inputs.trialBalanceSnapshotEventId
         ? { trialBalanceSnapshotEventId: inputs.trialBalanceSnapshotEventId }
         : {}),
     });
   }
 
-  const ba310 = generateBa310MarketRisk({
+  const ba310 = generateBa320MarketRisk({
     entity: inputs.entity,
     asOf: inputs.asOf,
     periodId: inputs.periodId,
@@ -360,19 +360,19 @@ export function generatePhaseDReports(inputs: PhaseDInputs): PhaseDGenerated {
     irGeneralMaturityLadder: [],
     irSpecificRisk: [],
     equity: [],
-    fxPositions: BA_310_FIXTURE_FX_POSITIONS,
+    fxPositions: BA_320_FIXTURE_FX_POSITIONS,
     commodity: [],
     ...(inputs.trialBalanceSnapshotEventId
       ? { trialBalanceSnapshotEventId: inputs.trialBalanceSnapshotEventId }
       : {}),
   });
 
-  const ba300 = generateBa300OpRisk({
+  const ba300 = generateBa400OpRisk({
     entity: inputs.entity,
     asOf: inputs.asOf,
     periodId: inputs.periodId,
     functionalCurrency: inputs.functionalCurrency,
-    grossIncome: BA_300_FIXTURE_GROSS_INCOME,
+    grossIncome: BA_400_FIXTURE_GROSS_INCOME,
     approach: "bia",
     ...(inputs.trialBalanceSnapshotEventId
       ? { trialBalanceSnapshotEventId: inputs.trialBalanceSnapshotEventId }
@@ -390,8 +390,8 @@ export function generatePhaseDReports(inputs: PhaseDInputs): PhaseDGenerated {
 export interface PhaseDRendered {
   readonly ba300LcrJson: string;
   readonly ba100Json: string;
-  readonly ba310Json: string;
-  readonly ba310Xml: string;
+  readonly ba320Json: string;
+  readonly ba320Xml: string;
   readonly ba300Json: string;
   readonly ba300Xml: string;
 }
@@ -399,15 +399,15 @@ export interface PhaseDRendered {
 export function renderPhaseDReports(generated: PhaseDGenerated): PhaseDRendered {
   // BA 110 + BA 100 have typed canonical-JSON renderers (Slice 3+4).
   const ba110 = renderBa300LcrCanonical(generated.ba110, { renderedAt: PHASE_D_RENDERED_AT });
-  const ba100 = renderBa100Canonical(generated.ba100, { renderedAt: PHASE_D_RENDERED_AT });
+  const ba100 = renderBa700Canonical(generated.ba100, { renderedAt: PHASE_D_RENDERED_AT });
 
   // BA 310 + BA 300 ship XML adapters (Slice 5). For JSON we serialise the
   // typed Output directly (deterministic via sorted-keys).
-  const ba310Json = canonicaliseAsJson(generated.ba310);
+  const ba320Json = canonicaliseAsJson(generated.ba310);
   const ba300Json = canonicaliseAsJson(generated.ba300);
 
-  const ba310XmlPayload = ba310ToXmlPayload(generated.ba310);
-  const ba310Xml = renderSarbXml(ba310XmlPayload, { renderedAt: PHASE_D_RENDERED_AT });
+  const ba320XmlPayload = ba320ToXmlPayload(generated.ba310);
+  const ba320Xml = renderSarbXml(ba320XmlPayload, { renderedAt: PHASE_D_RENDERED_AT });
 
   const ba300XmlPayload = ba300ToXmlPayload(generated.ba300);
   const ba300Xml = renderSarbXml(ba300XmlPayload, { renderedAt: PHASE_D_RENDERED_AT });
@@ -415,8 +415,8 @@ export function renderPhaseDReports(generated: PhaseDGenerated): PhaseDRendered 
   return {
     ba300LcrJson: ba110.canonicalJson,
     ba100Json: ba100.canonicalJson,
-    ba310Json,
-    ba310Xml,
+    ba320Json,
+    ba320Xml,
     ba300Json,
     ba300Xml,
   };
@@ -562,7 +562,7 @@ function canonicalForForm(form: PhaseDForm, rendered: PhaseDRendered): string {
     case "ba-700":
       return rendered.ba100Json; // capital adequacy (canonical BA 700)
     case "ba-320":
-      return rendered.ba310Json; // market risk (canonical BA 320)
+      return rendered.ba320Json; // market risk (canonical BA 320)
     case "ba-400":
       return rendered.ba300Json; // operational risk (canonical BA 400)
   }

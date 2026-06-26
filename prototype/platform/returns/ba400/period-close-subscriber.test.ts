@@ -23,11 +23,11 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { BA_300_SUBSCRIBER_ENTITIES, ba300PeriodCloseSubscriber } from "./period-close-subscriber";
+import { BA_400_SUBSCRIBER_ENTITIES, ba400PeriodCloseSubscriber } from "./period-close-subscriber";
 import {
-  BA_300_NAMESPACE,
-  BA_300_REQUIRED_ELEMENTS,
-  BA_300_XSD_URI,
+  BA_400_NAMESPACE,
+  BA_400_REQUIRED_ELEMENTS,
+  BA_400_XSD_URI,
   ba300ToXmlPayload,
   renderSarbXml,
   validateSarbXmlStructural,
@@ -57,19 +57,19 @@ const PERIOD_CLOSED_PAYLOAD = {
 // =====================================================================
 
 describe("BA400 period-close subscriber — per-entity guard", () => {
-  it("BA_300_SUBSCRIBER_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
-    expect(BA_300_SUBSCRIBER_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
+  it("BA_400_SUBSCRIBER_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
+    expect(BA_400_SUBSCRIBER_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
   });
 
   it("skips LE-ZA-HOZ-SECURITIES (not bank-licence-bound)", () => {
-    const result = ba300PeriodCloseSubscriber({
+    const result = ba400PeriodCloseSubscriber({
       closedPayload: { ...PERIOD_CLOSED_PAYLOAD, periodId: "period:hoz-sec:month:2026-05" },
       entity: ENTITY_SECURITIES,
       actor: ACTOR,
       grossIncome: [],
     });
     expect(result.skipped).toBe(true);
-    expect(result.skipReason).toContain("not in BA_300_SUBSCRIBER_ENTITIES");
+    expect(result.skipReason).toContain("not in BA_400_SUBSCRIBER_ENTITIES");
   });
 });
 
@@ -79,7 +79,7 @@ describe("BA400 period-close subscriber — per-entity guard", () => {
 
 describe("BA400 period-close subscriber — zero gross-income baseline", () => {
   it("generates BA 300 with zero capital for zero gross income", () => {
-    const result = ba300PeriodCloseSubscriber({
+    const result = ba400PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       actor: ACTOR,
@@ -95,7 +95,7 @@ describe("BA400 period-close subscriber — zero gross-income baseline", () => {
   });
 
   it("all numeric cells are non-NaN", () => {
-    const result = ba300PeriodCloseSubscriber({
+    const result = ba400PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       actor: ACTOR,
@@ -109,7 +109,7 @@ describe("BA400 period-close subscriber — zero gross-income baseline", () => {
   });
 
   it("placeholders populated (rehearsal-grade marker)", () => {
-    const result = ba300PeriodCloseSubscriber({
+    const result = ba400PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       actor: ACTOR,
@@ -127,7 +127,7 @@ describe("BA400 period-close subscriber — zero gross-income baseline", () => {
 
 describe("BA400 period-close subscriber — BIA arithmetic", () => {
   it("3 positive years ⇒ 15% × average; RWA = 12.5 × capital", () => {
-    const result = ba300PeriodCloseSubscriber({
+    const result = ba400PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       actor: ACTOR,
@@ -147,7 +147,7 @@ describe("BA400 period-close subscriber — BIA arithmetic", () => {
   });
 
   it("non-positive years excluded from BIA average", () => {
-    const result = ba300PeriodCloseSubscriber({
+    const result = ba400PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       actor: ACTOR,
@@ -167,7 +167,7 @@ describe("BA400 period-close subscriber — BIA arithmetic", () => {
   });
 
   it("BIA aggregates gross income across business lines per year", () => {
-    const result = ba300PeriodCloseSubscriber({
+    const result = ba400PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       actor: ACTOR,
@@ -184,7 +184,7 @@ describe("BA400 period-close subscriber — BIA arithmetic", () => {
   });
 
   it("default approach is BIA when not specified", () => {
-    const result = ba300PeriodCloseSubscriber({
+    const result = ba400PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       actor: ACTOR,
@@ -204,7 +204,7 @@ describe("BA400 period-close subscriber — BIA arithmetic", () => {
 
 describe("BA400 period-close subscriber — XML serialiser", () => {
   it("renders well-formed XML with declared SARB envelope", () => {
-    const result = ba300PeriodCloseSubscriber({
+    const result = ba400PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       actor: ACTOR,
@@ -218,13 +218,13 @@ describe("BA400 period-close subscriber — XML serialiser", () => {
 
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
     expect(xml.includes("<BA400")).toBe(true);
-    expect(xml.includes(`xmlns="${BA_300_NAMESPACE}"`)).toBe(true);
-    expect(xml.includes(`xsdUri="${BA_300_XSD_URI}"`)).toBe(true);
+    expect(xml.includes(`xmlns="${BA_400_NAMESPACE}"`)).toBe(true);
+    expect(xml.includes(`xsdUri="${BA_400_XSD_URI}"`)).toBe(true);
     expect(xml.includes("</BA400>")).toBe(true);
   });
 
   it("structural validator passes for all required elements", () => {
-    const result = ba300PeriodCloseSubscriber({
+    const result = ba400PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       actor: ACTOR,
@@ -236,8 +236,8 @@ describe("BA400 period-close subscriber — XML serialiser", () => {
     const validation = validateSarbXmlStructural({
       xml,
       formId: "BA400",
-      namespaceUri: BA_300_NAMESPACE,
-      requiredElements: [...BA_300_REQUIRED_ELEMENTS],
+      namespaceUri: BA_400_NAMESPACE,
+      requiredElements: [...BA_400_REQUIRED_ELEMENTS],
     });
 
     expect(validation.ok).toBe(true);
@@ -245,7 +245,7 @@ describe("BA400 period-close subscriber — XML serialiser", () => {
 
   it("XML is byte-identical across runs (determinism)", () => {
     const makeXml = (): string => {
-      const result = ba300PeriodCloseSubscriber({
+      const result = ba400PeriodCloseSubscriber({
         closedPayload: PERIOD_CLOSED_PAYLOAD,
         entity: ENTITY_BANK,
         actor: ACTOR,
@@ -263,7 +263,7 @@ describe("BA400 period-close subscriber — XML serialiser", () => {
   });
 
   it("XML contains OpRiskCapitalMinor element with expected value", () => {
-    const result = ba300PeriodCloseSubscriber({
+    const result = ba400PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       actor: ACTOR,

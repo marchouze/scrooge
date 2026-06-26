@@ -8,14 +8,14 @@
 import { describe, expect, it } from "bun:test";
 
 import {
-  BA_300_BANK_ENTITIES,
-  BA_300_NAMESPACE,
-  BA_300_REQUIRED_ELEMENTS,
-  BA_300_XSD_URI,
+  BA_400_BANK_ENTITIES,
+  BA_400_NAMESPACE,
+  BA_400_REQUIRED_ELEMENTS,
+  BA_400_XSD_URI,
   BUSINESS_LINE_BETA,
-  Ba300GeneratorError,
+  Ba400GeneratorError,
   ba300ToXmlPayload,
-  generateBa300OpRisk,
+  generateBa400OpRisk,
   renderSarbXml,
   validateSarbXmlStructural,
 } from "../platform/reporting";
@@ -103,19 +103,19 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — TSA β factors", () => {
 // =====================================================================
 
 describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 per-entity isolation", () => {
-  it("BA_300_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
-    expect(BA_300_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
+  it("BA_400_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
+    expect(BA_400_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
   });
 
   it("rejects LE-ZA-HOZ-SECURITIES", () => {
     expect(() =>
-      generateBa300OpRisk({
+      generateBa400OpRisk({
         ...COMMON,
         entity: ENTITY_SECURITIES,
         grossIncome: [],
         approach: "bia",
       }),
-    ).toThrow(Ba300GeneratorError);
+    ).toThrow(Ba400GeneratorError);
   });
 });
 
@@ -125,7 +125,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 per-entity isolation", () =>
 
 describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 BIA arithmetic", () => {
   it("zero years ⇒ zero capital + zero RWA + n=0 placeholder", () => {
-    const out = generateBa300OpRisk({ ...COMMON, grossIncome: [], approach: "bia" });
+    const out = generateBa400OpRisk({ ...COMMON, grossIncome: [], approach: "bia" });
     expect(out.bia?.nPositiveYears).toBe(0);
     expect(out.opRiskCapitalMinor).toBe(0);
     expect(out.opRiskRwaMinor).toBe(0);
@@ -133,7 +133,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 BIA arithmetic", () => {
   });
 
   it("3 positive years ⇒ 15% × average; n=3", () => {
-    const out = generateBa300OpRisk({
+    const out = generateBa400OpRisk({
       ...COMMON,
       grossIncome: [
         { fiscalYear: "2024", businessLine: "trading-and-sales", grossIncomeMinor: 1_000_000 },
@@ -150,7 +150,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 BIA arithmetic", () => {
   });
 
   it("non-positive years are excluded from average + denominator", () => {
-    const out = generateBa300OpRisk({
+    const out = generateBa400OpRisk({
       ...COMMON,
       grossIncome: [
         { fiscalYear: "2024", businessLine: "trading-and-sales", grossIncomeMinor: 1_000_000 },
@@ -166,7 +166,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 BIA arithmetic", () => {
   });
 
   it("BIA aggregates gross income across business lines per year", () => {
-    const out = generateBa300OpRisk({
+    const out = generateBa400OpRisk({
       ...COMMON,
       grossIncome: [
         { fiscalYear: "2024", businessLine: "trading-and-sales", grossIncomeMinor: 600_000 },
@@ -186,7 +186,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 BIA arithmetic", () => {
 
 describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 TSA arithmetic", () => {
   it("single trading-and-sales year (β=18%)", () => {
-    const out = generateBa300OpRisk({
+    const out = generateBa400OpRisk({
       ...COMMON,
       grossIncome: [
         { fiscalYear: "2024", businessLine: "trading-and-sales", grossIncomeMinor: 1_000_000 },
@@ -199,7 +199,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 TSA arithmetic", () => {
   });
 
   it("year with negative weighted sum is floored at zero before averaging", () => {
-    const out = generateBa300OpRisk({
+    const out = generateBa400OpRisk({
       ...COMMON,
       grossIncome: [
         // Year 2024 produces a negative aggregate via a single negative line.
@@ -214,7 +214,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 TSA arithmetic", () => {
   });
 
   it("RWA = 12.5 × selected approach", () => {
-    const out = generateBa300OpRisk({
+    const out = generateBa400OpRisk({
       ...COMMON,
       grossIncome: [
         { fiscalYear: "2024", businessLine: "trading-and-sales", grossIncomeMinor: 1_000_000 },
@@ -231,7 +231,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 TSA arithmetic", () => {
 
 describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 XML round-trip", () => {
   it("renders well-formed XML with declared envelope", () => {
-    const out = generateBa300OpRisk({
+    const out = generateBa400OpRisk({
       ...COMMON,
       grossIncome: [
         { fiscalYear: "2024", businessLine: "trading-and-sales", grossIncomeMinor: 1_000_000 },
@@ -242,13 +242,13 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 XML round-trip", () => {
     const xml = renderSarbXml(payload, { renderedAt: "2026-05-10T15:00:00.000Z" });
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
     expect(xml.includes("<BA400")).toBe(true);
-    expect(xml.includes(`xmlns="${BA_300_NAMESPACE}"`)).toBe(true);
-    expect(xml.includes(`xsdUri="${BA_300_XSD_URI}"`)).toBe(true);
+    expect(xml.includes(`xmlns="${BA_400_NAMESPACE}"`)).toBe(true);
+    expect(xml.includes(`xsdUri="${BA_400_XSD_URI}"`)).toBe(true);
     expect(xml.includes("</BA400>")).toBe(true);
   });
 
   it("structural validator passes when all required elements present", () => {
-    const out = generateBa300OpRisk({
+    const out = generateBa400OpRisk({
       ...COMMON,
       grossIncome: [],
       approach: "bia",
@@ -258,8 +258,8 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 XML round-trip", () => {
     const result = validateSarbXmlStructural({
       xml,
       formId: "BA400",
-      namespaceUri: BA_300_NAMESPACE,
-      requiredElements: [...BA_300_REQUIRED_ELEMENTS],
+      namespaceUri: BA_400_NAMESPACE,
+      requiredElements: [...BA_400_REQUIRED_ELEMENTS],
     });
     expect(result.ok).toBe(true);
   });
@@ -276,10 +276,10 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 XML round-trip", () => {
       ],
       approach: "bia" as const,
     };
-    const a = renderSarbXml(ba300ToXmlPayload(generateBa300OpRisk(input)), {
+    const a = renderSarbXml(ba300ToXmlPayload(generateBa400OpRisk(input)), {
       renderedAt: "2026-05-10T15:00:00.000Z",
     });
-    const b = renderSarbXml(ba300ToXmlPayload(generateBa300OpRisk(input)), {
+    const b = renderSarbXml(ba300ToXmlPayload(generateBa400OpRisk(input)), {
       renderedAt: "2026-05-10T15:00:00.000Z",
     });
     expect(a).toBe(b);

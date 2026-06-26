@@ -78,8 +78,8 @@ import type { EventStore } from "../../platform/event-store/store";
 import type { Actor, Event } from "../../platform/event-store/types";
 import { ba300ToXmlPayload } from "../../platform/reporting/ba-400-xml-adapter";
 import {
-  BA_300_SUBSCRIBER_ENTITIES,
-  ba300PeriodCloseSubscriber,
+  BA_400_SUBSCRIBER_ENTITIES,
+  ba400PeriodCloseSubscriber,
 } from "../../platform/returns/ba400/period-close-subscriber";
 import { submitToSarbPortal } from "../../simulators/sarb-prudential";
 import type { AgentRunContext, AgentRunOutput } from "../types";
@@ -137,7 +137,7 @@ export async function generateAndRecordBa400ForPeriod(args: {
   const periodId = closedPayload.periodId;
 
   // Scope guard: only bank-licence entities generate BA 400.
-  if (!BA_300_SUBSCRIBER_ENTITIES.includes(entity)) {
+  if (!BA_400_SUBSCRIBER_ENTITIES.includes(entity)) {
     return { submitted: false, periodId, status: "skipped-non-bank-entity" };
   }
 
@@ -149,7 +149,7 @@ export async function generateAndRecordBa400ForPeriod(args: {
   // Call the BA 400 subscriber. Gross-income rows are empty pre-commencement
   // (build-phase posture; zero IS the correct BIA value — see module header).
   // TODO(GAP-RETURNS-BA400-GROSS-INCOME): replace with event-derived rows.
-  const result = ba300PeriodCloseSubscriber({
+  const result = ba400PeriodCloseSubscriber({
     closedPayload,
     entity,
     actor: ACTOR,

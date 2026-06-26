@@ -145,7 +145,7 @@ export interface LeverageRatioGeneratorInput {
   readonly functionalCurrency: string;
   /**
    * Tier-1 capital in functional-currency minor units. Typically the
-   * `netTier1Minor` field of a `Ba100Output.capitalStack` — pass the
+   * `netTier1Minor` field of a `Ba700Output.capitalStack` — pass the
    * same number the BA 100 ratios are computed against to guarantee
    * consistency between the risk-based and leverage views.
    */
@@ -174,7 +174,7 @@ export const BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM = 0.03;
 
 /**
  * Exposure-measure section — per-component contribution and total.
- * Mirrors the `Ba100RwaSection` shape so the JSON render renders both
+ * Mirrors the `Ba700RwaSection` shape so the JSON render renders both
  * the risk-based denominator and the leverage denominator with the
  * same structural pattern.
  */
@@ -261,7 +261,7 @@ function assertBankEntity(entity: string): void {
  *
  * Divide-by-zero: zero total exposure measure ⇒ ratio = `Infinity`. The
  * compliance flag treats infinity as compliant (no exposure to leverage).
- * Mirrors the `generateBa100Capital` divide-by-zero treatment.
+ * Mirrors the `generateBa700Capital` divide-by-zero treatment.
  */
 export function generateLeverageRatio(input: LeverageRatioGeneratorInput): LeverageRatioOutput {
   assertBankEntity(input.entity);
