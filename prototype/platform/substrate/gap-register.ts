@@ -331,6 +331,46 @@ export const SUBSTRATE_GAP_REGISTER: readonly SubstrateGapRecord[] = [
     status: "planned",
     mitigation: "partial",
   },
+  // ---------------------------------------------------------------------------
+  // Deposit/funding/HQLA simulator-first slice (D-BA-RETURN-SIMULATOR-FIRST).
+  // Three named follow-ons surfaced by the slice — never silent.
+  // ---------------------------------------------------------------------------
+  {
+    id: "ba310-l1-breakdown-by-type",
+    title: "BA 310 held level-1 liquid-asset BREAKDOWN by instrument type: aggregate only",
+    description:
+      "BA 310 (Minimum Liquid Reserve Balance and Liquid Assets) is built by the deposit/funding simulator-first slice (D-BA-RETURN-SIMULATOR-FIRST): the fold (platform/reporting/ba-310-min-reserve.ts) drives the DERIVATION-CHAIN rows (R0010 liabilities base → R0040 reduced → R0090 adjusted → R0100 minimum reserve balance ×2.5% → R0140 level-1 required ×5% → R0150 level-1 held) to an oracle-validated figure over a simulated deposit/funding/HQLA book. R0150 (held level-1 stock) is sourced as an AGGREGATE from the CollateralInventorySnapshotted L1 tier. The granular BREAKDOWN rows (R0160 Reserve Bank notes/coin, R0170 gold, R0180 central-bank reserves, R0190 treasury bills, R0200 sec-66 PFMA securities, R0210 SARB securities, R0220 guaranteed securities, R0230 other) are NOT decomposed — the single-aggregate L1 snapshot carries one number, not a per-instrument-type split. Closing this needs a per-instrument-type HQLA fold (the SecurityMaster × unified-position path used by hqla-stock.ts, tagged with the BA-310 level-1 sub-type) rather than the aggregate snapshot. Those rows stay licence-day-data with their existing reason — never a fabricated split. Authority: D-BA-RETURN-SIMULATOR-FIRST; Engineering Charter cmd 5; Reg 27.",
+    severity: "medium",
+    status: "planned",
+    mitigation: "partial",
+  },
+  {
+    id: "ba300-lcr-nsfr-granular-cell-mapping",
+    title: "BA 300 LCR/NSFR granular published-schedule cell mapping: aggregate-ratio proven",
+    description:
+      "The BA 300 LCR (platform/reporting/ba-300-lcr.ts + platform/liquidity/lcr.ts) and NSFR (platform/reporting/ba-300-nsfr.ts + platform/liquidity/nsfr.ts) engines are DRIVEN + PROVEN at the AGGREGATE-ratio level by the deposit/funding simulator-first slice (D-BA-RETURN-SIMULATOR-FIRST): a simulated deposit/funding/HQLA book (scripts/sim/seed-deposit-funding-book-sim-v1.ts) drives HQLA total / net cash outflows / LCR ratio and ASF/RSF totals / NSFR ratio to hand-computed BCBS D295 / BCBS 295 / Reg 26 / Reg 26A oracles (recon:ba300-deposit-funding-sim-drive; deposit-funding-sim-golden.test.ts). However the BA 300 PUBLISHED CONTRACT (ba300-contract.json) is a 1,500+-cell granular per-counterparty / per-collateral-type / per-run-off-bucket schedule. The simulated book + the aggregate LCR/NSFR engines do NOT populate that schedule cell-by-cell — the book exercises the run-off buckets and ASF/RSF bands at the AGGREGATE level, not every published leaf line. Stamping the granular BA 300 cells 'driven' would be an overclaim, so they are deliberately NOT reclassified by this slice (they stay licence-day-data with their existing reason). Closing this needs the aggregate-ratio→granular-published-cell expansion mapping (the same class of work as ba350-maturity-ladder-cell-mapping) — a mechanical presentation follow-on gated on the published-schedule line enumeration, not on a missing engine. Authority: D-BA-RETURN-SIMULATOR-FIRST; Engineering Charter cmd 5 (no overclaim); Reg 26 / Reg 26A.",
+    severity: "medium",
+    status: "planned",
+    mitigation: "partial",
+  },
+  {
+    id: "ba300-deposit-funding-v1-flip",
+    title: "Deposit/funding/collateral event types still v1-only (consumed by V2 engines)",
+    description:
+      "The deposit/funding simulator-first slice (D-BA-RETURN-SIMULATOR-FIRST) CONSUMES the existing DepositTaken / DepositMatured / DepositWithdrawnEarly / FundingLineDrawn / FundingLineRepaid / InterbankLoanPlaced / CollateralInventorySnapshotted event types to drive the V2 LCR / NSFR / BA-310 engines. The slice introduces ZERO new event types (so the v1-only estate is NOT widened — V1-retirement directive rule 1 satisfied), but those CONSUMED types are still tagged `v1-only` in the event-type registry (they were born V1, with V1 GL-posting consumers). Flipping them v1-only → v2-parallel → v2-replaced requires confirming a V2 canonical home for each and that no remaining V1-only consumer depends on them (the V1 GL-posting chain) — a larger change than this slice, NOT feasible in-place here without dragging the bond/MM GL-posting retirement in. Tracked here as the named follow-on (V1-retirement directive rule 2: retire when feasible; here deferred-with-reason, not hidden). The provenance-capable factory extensions this slice added (provenance? on makeDepositTaken / makeFundingLineDrawn / makeInterbankLoanPlaced / makeCollateralInventorySnapshotted) are the first step toward a born-V2 simulated emission path. Authority: D-BA-RETURN-SIMULATOR-FIRST; D-V1-REMOVAL-PHASE-1; Engineering Charter cmd 5.",
+    severity: "medium",
+    status: "planned",
+    mitigation: "partial",
+  },
+  {
+    id: "ba300-deposit-funding-sim-gl",
+    title: "Deposit/funding sim book not live-seeded into the canonical store (GL coupling)",
+    description:
+      "The deposit/funding simulator-first slice (D-BA-RETURN-SIMULATOR-FIRST) drives BA 300 LCR + NSFR + BA 310 from a simulated deposit/funding/HQLA book, PROVEN end-to-end by a self-contained IN-MEMORY oracle (recon:ba300-deposit-funding-sim-drive leg A + deposit-funding-sim-golden.test.ts). The seed script (scripts/sim/seed-deposit-funding-book-sim-v1.ts) is DELIBERATELY NOT wired into `ci:migrate`: DepositTaken / FundingLineDrawn / InterbankLoanPlaced are V1-only LIFECYCLE-registered events (lifecycleIds mmd-deposit / funding-line / interbank-loan; trade-lifecycle-registry.ts), so `recon:gl-ledger-coverage` requires a matching GL posting for each opening event. Seeding them into the canonical store WITHOUT their postings trips that gate (6 uncovered-lifecycle violations); emitting the V1 GL postings would WIDEN the v1-only estate (V1-retirement directive — the V1 gl-posting path), and the born-V2 MM GL engine (gl-posting-engine-v2-mm.ts, PR-MMD-001-V2) keys on the V2-parallel DepositTakenV2 event type, NOT the V1 DepositTaken the simulator emits. So the live-store seed is a tracked follow-on gated on the born-V2 DepositTakenV2 / FundingLineDrawnV2 / InterbankLoanPlacedV2 emission path (+ their GL postings) — exactly the same GL-coupling deferral the trading-book IR oracle took (GAP-BA320-IR-SIM-GL). recon:ba300-deposit-funding-sim-drive leg B (live BA 310 production read = 0) still asserts on the clean store; leg C (live operating-book drive) is the dormant activation assertion for when the born-V2 live seed lands. Authority: D-BA-RETURN-SIMULATOR-FIRST; D-V1-REMOVAL-PHASE-1; Engineering Charter cmd 5 (no silent deferral); Reg 26 / Reg 26A / Reg 27.",
+    severity: "medium",
+    status: "planned",
+    mitigation: "partial",
+  },
 ];
 
 /** Open (not-yet-resolved) gaps — the inventory the substrate snapshot tracks. */
