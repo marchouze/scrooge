@@ -305,6 +305,23 @@ const filEconomicTermsObjectSchema = z.object({
    */
   fairValueDeltaSinceLastMeasurement: moneySchema.optional(),
   /**
+   * DAY-1 FAIR VALUE at trade-date recognition (D-FX-IFRS-REVIEW-FOUNDATION, F13).
+   * An AT-MARKET FX forward has fair value ≈ 0 at inception, so trade-date posts
+   * OBS-only (no on-balance-sheet gross-up — IFRS 9 §5.1.1, B3.1.2). An OFF-MARKET
+   * forward (an agreed rate away from the market forward — e.g. a day-1 premium /
+   * discount) has a NON-ZERO day-1 fair value that IFRS 9 §B5.1.2A requires to be
+   * recognised on-balance-sheet at inception, NOT silently treated as zero. This
+   * SIGNED Money carries that day-1 FV in the reporting/position currency when the
+   * trade is NOT at-market: positive = the contract is an asset to the bank at
+   * inception (Dr derivative asset / Cr P&L); negative = a liability (Cr derivative
+   * / Dr P&L). OPTIONAL + additive: ABSENT (the default) means an AT-MARKET trade
+   * (FV ≈ 0, OBS-only — the existing path); every existing event parses unchanged
+   * (replay-safe — Charter cmd 9). The initial-recognition rule reads it so an
+   * off-market forward is recognised at its real fair value rather than the silent
+   * FV=0 assumption (fail-closed against a dropped day-1 premium — Charter cmd 2).
+   */
+  dayOneFairValue: moneySchema.optional(),
+  /**
    * ZAR (reporting-currency) COST BASIS of the position
    * (D-FX-PNL-FCY-EXPOSURE-REVALUATION). Carried on a settled `cash` asset-class
    * FIL instance — the booked ZAR value GIVEN UP / RECEIVED to acquire the FCY

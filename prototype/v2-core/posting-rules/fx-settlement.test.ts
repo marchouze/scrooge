@@ -318,13 +318,29 @@ describe("FX_SETTLEMENT_DEFERRED_GAPS — tracked, well-formed deferrals", () =>
     }
   });
 
-  test("WS-FIL-FX-SETTLEMENT-EVENTS resolved all five — no OPEN deferred gap remains", () => {
-    // Every gap carries a resolvedBy marker; the active (still-open) subset is
-    // empty → the NPA-page badge renders every FX posting rule `active`.
+  test("no OPEN deferred gap remains: four resolved by wiring + FVOCI invalid-for-FX (F1)", () => {
+    // Four gaps are resolved by WS-FIL-FX-SETTLEMENT-EVENTS trigger-wiring; the
+    // FVOCI-reclass gap is closed by EXCLUSION (IFRS-invalid for FX, F1), NOT by
+    // wiring. Every gap is closed one way or the other, so the active (still-open)
+    // subset is empty → the NPA-page badge renders every LIVE FX posting rule
+    // `active` and the FVOCI rule is excluded as invalid-for-FX.
     for (const g of FX_SETTLEMENT_DEFERRED_GAPS) {
-      expect(g.resolvedBy).toBeDefined();
+      const closed = g.resolvedBy !== undefined || g.invalidForFx !== undefined;
+      expect(closed).toBe(true);
+      // Exactly one of the two closure markers, never both.
+      expect(g.resolvedBy !== undefined && g.invalidForFx !== undefined).toBe(false);
+    }
+    // The four wiring-resolved gaps cite the resolving event family.
+    const resolvedByWiring = FX_SETTLEMENT_DEFERRED_GAPS.filter((g) => g.resolvedBy !== undefined);
+    expect(resolvedByWiring.length).toBe(4);
+    for (const g of resolvedByWiring) {
       expect(g.resolvedBy).toContain("D-FIL-FX-SETTLEMENT-EVENTS");
     }
+    // The FVOCI-reclass gap is invalid-for-FX, not deferred (F1).
+    const fvoci = FX_SETTLEMENT_DEFERRED_GAPS.find((g) => g.gapId === "fx-fvoci-reclass-trigger");
+    expect(fvoci?.invalidForFx).toContain("D-FX-IFRS-REVIEW-FOUNDATION");
+    expect(fvoci?.resolvedBy).toBeUndefined();
+
     expect(activeFxSettlementDeferredGaps().length).toBe(0);
   });
 });

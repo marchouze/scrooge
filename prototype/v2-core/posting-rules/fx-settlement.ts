@@ -697,6 +697,15 @@ export interface FxDeferredPostingGap {
    * attestation re-emit drops the resolved gap latest-wins).
    */
   readonly resolvedBy?: string;
+  /**
+   * Set when the deferred rule is NOT merely un-triggered but IFRS-INVALID for the
+   * FX asset class — it can never legitimately fire (D-FX-IFRS-REVIEW-FOUNDATION,
+   * F1). Distinct from `resolvedBy`: a resolved gap's rule fires; an invalid-for-FX
+   * rule must NEVER fire. Carries the authority + reason. Like `activeFxSettlement
+   * DeferredGaps`, an invalid-for-FX gap is NOT an open deferral (it is closed by
+   * exclusion, not by wiring).
+   */
+  readonly invalidForFx?: string;
 }
 
 /** The WS-FIL-FX-SETTLEMENT-EVENTS resolution marker shared by all five gaps. */
@@ -743,20 +752,26 @@ export const FX_SETTLEMENT_DEFERRED_GAPS: readonly FxDeferredPostingGap[] = [
   {
     gapId: "fx-fvoci-reclass-trigger",
     title:
-      "PR-FX-FVOCI-RECLASS-V2 FVOCI→P&L reclassification: posting logic implemented + balanced, but FilInstrumentTerminated carries neither the FVOCI election nor the accumulated OCI reserve, so the fold cannot fire the recycle. Needs the election + accumulated OCI on the terminal event.",
+      "PR-FX-FVOCI-RECLASS-V2 FVOCI→P&L reclassification: INVALID-FOR-FX, not deferred. An FX derivative is FVTPL-only (IFRS 9 §5.7.1; the §5.7.5 OCI election is equity-only, §5.7.1(b); a derivative fails SPPI). No FX instrument can be FVOCI, so this recycle can never legitimately fire for FX. Retained as historical inventory only; the recycle leg function stays for any future equity-instrument FVOCI estate, but it is excluded from the FX lifecycle map.",
     owner: "Bea (Accounting & financial reporting engineer, engineering)",
-    targetTrigger: "FIL terminal event carries FVOCI election + accumulated OCI",
-    citations: ["IFRS-9-§5.7.10", "IFRS-9-§5.7.11", "D-ACCT-FX-IFRS-POSTING-COMPLETENESS"],
-    resolvedBy: `${FX_SETTLEMENT_RESOLUTION} — FilInstrumentTerminated.fvociReclassTerms`,
+    targetTrigger: "N/A — FVOCI is IFRS-invalid for FX (no trigger to wire)",
+    citations: ["IFRS-9-§5.7.1", "IFRS-9-§5.7.5", "D-FX-IFRS-REVIEW-FOUNDATION"],
+    invalidForFx:
+      "D-FX-IFRS-REVIEW-FOUNDATION (F1) — an FX derivative is FVTPL-only; the §5.7.5 OCI election is equity-only and an FX derivative is held-for-trading (IFRS 9 §5.7.1(b)). FVOCI cannot apply to FX, so PR-FX-FVOCI-RECLASS-V2 must NEVER fire for an FX instance. Closed by exclusion, not by trigger-wiring.",
   },
 ];
 
 /**
- * The FX settlement deferred gaps that are STILL OPEN (not yet resolved). The
- * NPA-page badge renders a rule `active` iff no open gap names it; the store-side
- * recorder records only open gaps onto the FX accounting attestation. After
- * WS-FIL-FX-SETTLEMENT-EVENTS this is empty — every rule fires at fold time.
+ * The FX settlement deferred gaps that are STILL OPEN (neither resolved by
+ * trigger-wiring NOR closed by exclusion as invalid-for-FX). The NPA-page badge
+ * renders a rule `active` iff no open gap names it; the store-side recorder records
+ * only open gaps onto the FX accounting attestation. After WS-FIL-FX-SETTLEMENT-
+ * EVENTS (resolution) + D-FX-IFRS-REVIEW-FOUNDATION F1 (FVOCI invalid-for-FX
+ * exclusion) this is empty — every remaining rule fires at fold time, and the
+ * FVOCI-reclass rule is excluded as IFRS-invalid for FX (never an open deferral).
  */
 export function activeFxSettlementDeferredGaps(): readonly FxDeferredPostingGap[] {
-  return FX_SETTLEMENT_DEFERRED_GAPS.filter((g) => g.resolvedBy === undefined);
+  return FX_SETTLEMENT_DEFERRED_GAPS.filter(
+    (g) => g.resolvedBy === undefined && g.invalidForFx === undefined,
+  );
 }

@@ -43,10 +43,10 @@
 //
 // ORACLE BLIND SPOTS (F9, stated for the reader). The IAS-21 oracle ingests
 // §8/§20/§21/§22/§23/§28/§29/§30/§32. It does NOT yet ingest §15A/§25/§26/§33/§48
-// (tracked SubstrateGap GAP-IAS21-ORACLE-COVERAGE in fx-settlement.ts) — none of
-// which bear on the FX-vanilla trading-book treatment these cases assert, but a
-// future treatment touching net-investment hedges (§32/§48) or change-of-
-// functional-currency (§35) must extend the oracle first.
+// (tracked SubstrateGap `ias21-oracle-coverage` in platform/substrate/gap-
+// register.ts) — none of which bear on the FX-vanilla trading-book treatment these
+// cases assert, but a future treatment touching net-investment hedges (§32/§48) or
+// change-of-functional-currency (§33) must extend the oracle first.
 //
 // Oracle source: Regulations/INTL/IASB/source-docs/{ias-21,ifrs-9}-structured.json
 // (the ingested standard text); IAS 21 §21/§23/§28/§29; IFRS 9 §5.1.1/§5.7.1/B3.1.2.
@@ -155,6 +155,67 @@ describe("CASE 1 — trade-date at-market forward FV≈0, OBS-only (IFRS 9 §5.1
   test("the SELL leg (ZAR 129,955,000) is a sold-commitment Cr against the contra Dr", () => {
     expectLeg(leg(legs, FX_OBS_SOLD_COMMITMENT_ACCOUNT, "ZAR"), "credit", "129955000.00");
     expectLeg(leg(legs, FX_OBS_COMMITMENT_CONTRA_ACCOUNT, "ZAR"), "debit", "129955000.00");
+  });
+});
+
+// ===========================================================================
+// CASE 1b — OFF-MARKET forward recognises its day-1 fair value ON-BALANCE-SHEET
+// at inception (IFRS 9 B5.1.2A; F13). An at-market trade is OBS-only (CASE 1);
+// an OFF-MARKET trade (agreed rate away from the market forward) has a NON-ZERO
+// day-1 FV that must be recognised on-BS, NOT silently treated as zero. The
+// instance carries `economicTerms.dayOneFairValue`; the rule posts the four OBS
+// legs PLUS a Dr position / Cr P&L pair for a positive (asset) day-1 FV.
+// ===========================================================================
+
+describe("CASE 1b — off-market forward recognises day-1 fair value on-BS (IFRS 9 B5.1.2A; F13)", () => {
+  const created = filInstrumentCreatedPayloadSchema.parse({
+    kind: "FilInstrumentCreated",
+    instance: INSTANCE,
+    type: "fil:type:fx:otc:vanilla-forward@1.0",
+    tenant: TENANT,
+    asOf: "2026-06-26T10:00:00.000Z",
+    originatingEvent: { eventType: "FxTradeExecuted", eventId: "fx:golden:1b" },
+    initialStage: "active",
+    economicTerms: {
+      assetClass: "fx",
+      notional: { currency: "USD", amount: "7000000.00" },
+      direction: "long",
+      counterpartyId: "urn:party:legal-entity:standard-bank-za",
+      nettingSetId: "NS-standard-bank-za-USD",
+      currency: "USD",
+      settlementDate: "2026-09-26",
+      hedgingSetTag: "USD/ZAR",
+      fxAgreement: {
+        buy: { currency: "USD", amount: "7000000.00" },
+        sell: { currency: "ZAR", amount: "129955000.00" },
+      },
+      // OFF-MARKET: a +R250,000 day-1 fair value (the contract is an asset to the
+      // bank at inception). IFRS 9 B5.1.2A => recognise on-BS, not silently zero.
+      dayOneFairValue: { currency: "ZAR", amount: "250000.00" },
+    },
+  });
+
+  const legs = postFxInitialRecognitionLegs(created);
+  const accounts = resolveFxAccountSet("ZAR");
+
+  test("posts the four OBS legs PLUS a balanced on-BS day-1 fair-value pair", () => {
+    expect(legs.length).toBe(6);
+    const obs = legs.filter((l) => l.accountCode.startsWith("ACC-9100-"));
+    expect(obs.length).toBe(4);
+    // A positive day-1 FV: Dr derivative position / Cr unrealised P&L, on-BS.
+    expectLeg(leg(legs, accounts.receivable, "ZAR"), "debit", "250000.00");
+    expectLeg(leg(legs, accounts.unrealisedPnl, "ZAR"), "credit", "250000.00");
+  });
+
+  test("an AT-MARKET trade (no dayOneFairValue) stays OBS-only — no on-BS day-1 FV", () => {
+    const atMarket = filInstrumentCreatedPayloadSchema.parse({
+      ...created,
+      instance: `${INSTANCE}-atm`,
+      economicTerms: { ...created.economicTerms, dayOneFairValue: undefined },
+    });
+    const atmLegs = postFxInitialRecognitionLegs(atMarket);
+    expect(atmLegs.length).toBe(4);
+    for (const l of atmLegs) expect(l.accountCode.startsWith("ACC-2100-")).toBe(false);
   });
 });
 

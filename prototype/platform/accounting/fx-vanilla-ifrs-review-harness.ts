@@ -27,9 +27,17 @@
 //       rule with an IFRS citation in the canonical registry (NPA dossier
 //       dimension 6, "accounting"), and no FX lifecycle event is unmapped.
 //   (5) Tracked gaps: any STILL-OPEN FX posting deferral is surfaced (not
-//       hidden) — sourced LIVE from activeFxSettlementDeferredGaps(), never a
-//       hardcoded list (Engineering Charter cmd 4 — source, don't hardcode;
-//       cmd 5 — no silent deferral).
+//       hidden), queried from activeFxSettlementDeferredGaps() at run time. NOTE
+//       (F12): that helper filters a MODULE-LEVEL constant inventory
+//       (FX_SETTLEMENT_DEFERRED_GAPS in fx-settlement.ts) for the still-open subset
+//       — it is NOT yet sourced from the event-sourced ProductDeferredGap stream.
+//       The constant is the canonical inventory today (append-only; each gap
+//       carries an explicit resolvedBy / invalidForFx closure marker), and the
+//       store-side recorder (npa-fx-accounting-deferred-gaps.ts) projects it onto
+//       the FX ProductDimensionAttested attestation. Migrating the read to the
+//       ProductDeferredGap event stream is tracked (Engineering Charter cmd 5 — no
+//       silent deferral). The check SURFACES open gaps for the CFO; surfacing is
+//       not a failure (hiding one would be), so check 5 is informational.
 //
 // The harness REUSES the production gate asserters (no forked logic, Charter
 // cmd 4): it imports each gate's pure `assert*` / `run` and aggregates their
@@ -100,21 +108,35 @@ function failMessages(r: ReconResult): string[] {
 }
 
 /**
- * Check 4 — lifecycle posting completeness. Every FX posting rule the model
- * exposes (FX_POSTING_RULE_IDS) must resolve to a registered rule in the
- * canonical POSTING_RULE_REGISTRY carrying an IFRS citation in its
- * conditionDetail. Sourced from the registry, not asserted against a literal
- * list (Charter cmd 4). Returns findings for any rule that is missing or
+ * Check 4 — lifecycle posting completeness. EVERY FX lifecycle posting rule the
+ * model exposes must resolve to a registered rule in the canonical
+ * POSTING_RULE_REGISTRY carrying an IFRS citation in its conditionDetail. This
+ * asserts the THREE core on-BS/P&L rules (initial recognition, revaluation,
+ * close) AND the settlement-family rules (settle, swap near/far, NDF fixing, OBS
+ * release, FCY→ZAR conversion) — so the harness's "every FX lifecycle posting
+ * rule" claim (PROC-FIN-12) is faithful, not narrowed to three (D-FX-IFRS-REVIEW-
+ * FOUNDATION, F10). The FVOCI-reclass rule (PR-FX-FVOCI-RECLASS-V2) is EXCLUDED:
+ * the FVOCI path is IFRS-invalid for FX (F1), so the rule is invalid-for-FX and is
+ * not part of the live FX lifecycle map. Sourced from the registry, not asserted
+ * against a literal list (Charter cmd 4). Returns findings for any rule missing or
  * uncited.
  */
 function assertLifecycleCompleteness(): { findings: string[]; asserted: number } {
   const findings: string[] = [];
   let asserted = 0;
-  // The IFRS-bearing on-balance-sheet/P&L rules the FVTPL+IAS-21 model turns on.
+  // EVERY IFRS-bearing FX lifecycle posting rule the FVTPL+IAS-21 model turns on:
+  // the three core on-BS/P&L rules + the settlement-family rules. PR-FX-FVOCI-
+  // RECLASS-V2 is deliberately NOT required — FVOCI is invalid for FX (F1).
   const requiredRuleIds = [
     FX_POSTING_RULE_IDS.initialRecognition, // PR-FX-001-V2 — trade-date OBS
     FX_POSTING_RULE_IDS.revaluation, // PR-FX-REVAL-V2 — closing-rate retranslation
     FX_POSTING_RULE_IDS.close, // PR-FX-CLOSE-V2 — derecognition
+    "PR-FX-SETTLE-V2", // spot / physical settlement (P&L-neutral)
+    "PR-FX-SWAP-NEAR-V2", // swap near-leg settlement
+    "PR-FX-SWAP-FAR-V2", // swap far-leg settlement
+    "PR-FX-NDF-FIX-V2", // NDF fixing cash-settled P&L
+    "PR-FX-OBS-RELEASE-V2", // trade-date OBS commitment release on settlement
+    "PR-FX-CONVERT-V2", // FCY→ZAR conversion (realisation)
   ] as const;
   for (const ruleId of requiredRuleIds) {
     asserted += 1;
@@ -186,7 +208,9 @@ export function runFxVanillaIfrsReview(): FxIfrsReviewVerdict {
     pass: completeness.findings.length === 0,
   };
 
-  // ── Premise 5 — tracked gaps surfaced (never hidden). Sourced LIVE. ──
+  // ── Premise 5 — tracked gaps surfaced (never hidden). Queried at run time from
+  // the module-level inventory's still-open subset (F12: not yet the event-sourced
+  // ProductDeferredGap stream — tracked). ──
   const openGaps = activeFxSettlementDeferredGaps().map((g) => ({
     gapId: g.gapId,
     title: g.title,

@@ -176,9 +176,18 @@ const CLOSURE_CITATIONS = [
   "dimension:accounting",
 ];
 
-/** The gap ids WS-FIL-FX-SETTLEMENT-EVENTS resolved (the now-fired rules). */
+/**
+ * The gap ids that are NO LONGER OPEN deferrals and must be dropped from the FX
+ * accounting attestation — those WS-FIL-FX-SETTLEMENT-EVENTS resolved by trigger-
+ * wiring (the now-fired rules) AND those closed by EXCLUSION as IFRS-invalid for FX
+ * (the FVOCI-reclass rule, D-FX-IFRS-REVIEW-FOUNDATION F1). Both are removed from
+ * the attestation: a resolved rule fires; an invalid-for-FX rule can never fire, so
+ * neither is a standing deferral on the FX product.
+ */
 export function resolvedFxAccountingGapIds(): readonly string[] {
-  return FX_SETTLEMENT_DEFERRED_GAPS.filter((g) => g.resolvedBy !== undefined).map((g) => g.gapId);
+  return FX_SETTLEMENT_DEFERRED_GAPS.filter(
+    (g) => g.resolvedBy !== undefined || g.invalidForFx !== undefined,
+  ).map((g) => g.gapId);
 }
 
 export interface FxAcctGapClosureResult {

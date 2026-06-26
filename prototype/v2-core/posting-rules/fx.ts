@@ -334,6 +334,17 @@ export function resolveFxElectionOverride(
 // legs — it NEVER falls back to the old self-cancelling on-balance-sheet pair (no
 // silent wrong gross-up — Charter cmd 2). Such an instance contributes to neither
 // the fold nor the golden; the fold surfaces it via its fail-closed skip channel.
+//
+// AT-MARKET / DAY-1-FAIR-VALUE PRECONDITION (D-FX-IFRS-REVIEW-FOUNDATION, F13).
+// The OBS-only treatment above is IFRS-correct ONLY for an AT-MARKET trade (FV ≈ 0
+// at inception). An OFF-MARKET forward — an agreed rate away from the market
+// forward — has a NON-ZERO day-1 fair value that IFRS 9 §B5.1.2A requires to be
+// recognised ON-BALANCE-SHEET at inception, NOT silently treated as zero. The
+// `economicTerms.dayOneFairValue` (born-V2, optional) carries that figure: ABSENT
+// ⇒ at-market (FV ≈ 0, OBS-only — the existing path); PRESENT + non-zero ⇒ the
+// off-market forward is recognised on-BS at its real fair value (Dr derivative
+// asset / Cr P&L for a positive day-1 FV; the sign flips for a liability). This
+// makes the off-market case REPRESENTABLE rather than a silently-dropped premium.
 // ---------------------------------------------------------------------------
 
 export function postFxInitialRecognitionLegs(payload: FilInstrumentCreatedPayload): FxPostingLeg[] {
@@ -357,7 +368,7 @@ export function postFxInitialRecognitionLegs(payload: FilInstrumentCreatedPayloa
 
   // Off-balance-sheet memorandum, self-balancing per currency. No on-balance-sheet
   // gross-up: an at-market trade has FV ≈ 0 at inception (IFRS 9 §5.1.1, B3.1.2).
-  return [
+  const legs: FxPostingLeg[] = [
     // BUY leg — what the bank will RECEIVE on settlement.
     {
       creditDebit: "debit",
@@ -405,6 +416,49 @@ export function postFxInitialRecognitionLegs(payload: FilInstrumentCreatedPayloa
       description,
     },
   ];
+
+  // DAY-1 FAIR VALUE — OFF-MARKET forward recognition (IFRS 9 §B5.1.2A, F13). When
+  // the trade is NOT at-market the day-1 FV is recognised ON-BALANCE-SHEET: it is
+  // not zero, so the OBS-only memo above is not the whole entry. A positive day-1
+  // FV is an asset to the bank (Dr derivative position / Cr P&L); a negative day-1
+  // FV is a liability (Cr position / Dr P&L). At-market (ABSENT or zero) keeps the
+  // OBS-only path unchanged.
+  const dayOne = t.dayOneFairValue;
+  if (dayOne !== undefined && !isZeroDecimal(dayOne.amount)) {
+    const accounts = resolveFxAccountSet(dayOne.currency);
+    const isAsset = !dayOne.amount.trim().startsWith("-");
+    const magnitude = toMoneyWire({
+      currency: dayOne.currency,
+      amount: decimalMagnitude(dayOne.amount),
+    });
+    const dayOneDescription = `FX Trade-date day-1 fair value (off-market, IFRS 9 §B5.1.2A) ${dayOne.currency} ${isAsset ? "asset" : "liability"}`;
+    legs.push(
+      {
+        creditDebit: isAsset ? "debit" : "credit",
+        accountCode: accounts.receivable,
+        amount: magnitude,
+        postingDate,
+        tenantId,
+        sourceEventId,
+        iasRule: "IFRS 9 §B5.1.2A — day-1 fair value of an off-market trade recognised on-BS at inception",
+        postingRuleId,
+        description: dayOneDescription,
+      },
+      {
+        creditDebit: isAsset ? "credit" : "debit",
+        accountCode: accounts.unrealisedPnl,
+        amount: magnitude,
+        postingDate,
+        tenantId,
+        sourceEventId,
+        iasRule: "IFRS 9 §B5.1.2A — day-1 fair value of an off-market trade recognised on-BS at inception",
+        postingRuleId,
+        description: dayOneDescription,
+      },
+    );
+  }
+
+  return legs;
 }
 
 // ---------------------------------------------------------------------------
@@ -530,13 +584,18 @@ export function postFxRevaluationLegs(
 // so this posts a ZERO-AMOUNT memo (Dr/Cr ACC-2100-005 ZAR 0), byte-identical to
 // gl-posting-engine-v2.postFxClose.
 //
-// SUBSTRATE GAP (tracked, NOT a silent omission — D-ACCT-FX-IFRS-POSTING-
-// COMPLETENESS): a proper derecognition reverses the prior recognition using the
-// prior notional from the Created/Amended events; settlement realised-P&L,
-// swap-leg, NDF-fixing and FVOCI→P&L reclassification all require economic terms
-// FilInstrumentTerminated does not carry. These refinements are recorded as
-// ProductDeferredGaps (see fx.ts FX_DEFERRED_POSTING_GAPS) pending a richer FIL
-// terminal event.
+// BARE-TERMINAL FALLBACK ONLY. This zero-amount memo is the path for a terminal
+// event that carries NO enriched economic terms. The settlement realised-P&L,
+// swap-leg, NDF-fixing and FVOCI→P&L-reclass refinements that once needed terms
+// FilInstrumentTerminated did not carry are NO LONGER deferred: WS-FIL-FX-
+// SETTLEMENT-EVENTS (D-FIL-FX-SETTLEMENT-EVENTS) landed the enriched FIL settlement
+// event family, and the fold now fires those rules at fold time (the gaps in
+// fx-settlement.FX_SETTLEMENT_DEFERRED_GAPS are marked `resolvedBy`). An enriched
+// terminal event takes the derecognition / FVOCI-reclass path in the fold
+// (postFxTerminationLegs), not this memo. NOTE: the FVOCI-reclass refinement is
+// retained in the gap inventory as historical record but is IFRS-INVALID for FX
+// (F1) — an FX derivative is FVTPL-only, so PR-FX-FVOCI-RECLASS-V2 cannot
+// legitimately fire for an FX instance.
 // ---------------------------------------------------------------------------
 
 export function postFxCloseLegs(payload: FilInstrumentTerminatedPayload): FxPostingLeg[] {
