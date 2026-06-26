@@ -25,8 +25,8 @@
 // ## Source events
 //
 // `IRRBBChecked` events are emitted by `ravi-alm-run.ts` (the Ravi ALM handler):
-//   - 6 EVE events per run (BCBS d365 §4 shock scenarios)
-//   - 4 NII events per run (BCBS d365 §5 parallel shocks)
+//   - 6 EVE events per run (BCBS d368 §4 shock scenarios)
+//   - 4 NII events per run (BCBS d368 §5 parallel shocks)
 //   - Total: 10 IRRBBChecked events per daily ALM run
 //
 // ## Principle 1 compliance
@@ -55,7 +55,7 @@
 //           D-TREASURER-WAVE2-SUBSTRATE (CEO-approved 2026-06-11);
 //           D-BA-330-REATTRIBUTION-IRRBB; D-BA-RETURN-NUMBERING-EXCEL-CANONICAL;
 //           Banks Act 94 of 1990 §70; Regulations Relating to Banks Reg 27;
-//           BCBS d365 ("Interest rate risk in the banking book", Apr 2016).
+//           BCBS d368 ("Interest rate risk in the banking book", Apr 2016).
 //
 // Author: Mira (Compliance / RegTech engineer, engineering — runtime wiring +
 //   returns submission surface; Wave 2 D-TREASURER-WAVE2-SUBSTRATE).
@@ -136,7 +136,7 @@ export interface Ba330PeriodCloseSubscriberResult {
  *   D-TREASURER-WAVE2-SUBSTRATE (CEO-approved 2026-06-11);
  *   D-BA-330-REATTRIBUTION-IRRBB; D-BA-RETURN-NUMBERING-EXCEL-CANONICAL;
  *   Banks Act 94 of 1990 §70; Regulations Relating to Banks Reg 27;
- *   BCBS d365 ("Interest rate risk in the banking book", Apr 2016).
+ *   BCBS d368 ("Interest rate risk in the banking book", Apr 2016).
  */
 export function ba330PeriodCloseSubscriber(
   input: Ba330PeriodCloseSubscriberInput,
@@ -157,7 +157,7 @@ export function ba330PeriodCloseSubscriber(
   // pair to avoid double-counting daily ALM runs within one accounting period.
   //
   // Authority: Principles/1-events-are-truth.md; D-TREASURER-WAVE2-SUBSTRATE;
-  //   BCBS d365 §4 (EVE) + §5 (NII).
+  //   BCBS d368 §4 (EVE) + §5 (NII).
   const ba330Output = generateBa330IrrbbReturn(input.eventStore, {
     entity: input.entity,
     periodId: input.closedPayload.periodId,

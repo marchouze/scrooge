@@ -28,7 +28,7 @@ export const RAVI_HANDLER_METADATA: readonly HandlerMetadata[] = [
     ],
   }),
   // Ravi: daily ALM run — repricing gap, ΔEVE, ΔNII sensitivities.
-  // Authority: D-TREASURY-GAPS-WAVE1; BCBS d365.
+  // Authority: D-TREASURY-GAPS-WAVE1; BCBS d368.
   entry("Ravi", "alm-run", "scheduled", {
     cadenceHours: 24,
     cronExpression: "50 5 * * *",

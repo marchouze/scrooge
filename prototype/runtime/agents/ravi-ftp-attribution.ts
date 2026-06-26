@@ -29,7 +29,7 @@ import { attributeTransaction } from "../../platform/ftp/attribution";
 import { FtpCurve } from "../../platform/ftp/curve";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
-const EVENT_CITATIONS = ["BANKS-ACT-94-1990", "BANKS-REG-26", "BCBS-D365-IRRBB"];
+const EVENT_CITATIONS = ["BANKS-ACT-94-1990", "BANKS-REG-26", "BCBS-D368-IRRBB"];
 
 /** Supported transaction event types for FTP attribution. */
 const TRADE_EVENT_TYPES = new Set([

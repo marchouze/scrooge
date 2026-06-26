@@ -7,7 +7,7 @@
 //   - status = "zero-positions"
 //   - All RSA, RSL, gap, and cumulative gap values = 0 across all 10 buckets
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BCBS d365; BCBS 319.
+// Authority: D-TREASURY-GAPS-WAVE1; BCBS d368; BCBS 319.
 // Author: Ravi (Treasury/ALM Engineer, engineering)
 
 import { describe, expect, it } from "bun:test";

@@ -19,7 +19,7 @@
 //   "no-positions". The handler still completes successfully — the pack is
 //   filed as a build-phase record documenting the zero-position baseline.
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d365;
+// Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d368;
 //   Banks Act 94 of 1990.
 // Author: Atlas (Core banking platform architect, engineering)
 
@@ -35,7 +35,7 @@ const EVENT_CITATIONS = [
   "BANKS-ACT-94-1990",
   "BA-110",
   "BA-120",
-  "BCBS-D365-IRRBB",
+  "BCBS-D368-IRRBB",
   "D-TREASURY-GAPS-WAVE1",
 ];
 

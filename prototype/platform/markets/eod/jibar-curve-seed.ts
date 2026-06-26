@@ -20,7 +20,7 @@
 //
 // Authority:
 //   D-MARKETS-SCHEMA-FOUNDATION (CEO-approved 2026-05-07)
-//   BCBS-D365-IRRBB              (IRRBB shock scenarios — JIBAR sensitivity)
+//   BCBS-D368-IRRBB              (IRRBB shock scenarios — JIBAR sensitivity)
 //   IFRS-9-§4.1                  (classification and measurement)
 //   ORG-PR-11                    (derivatives trading authority)
 //

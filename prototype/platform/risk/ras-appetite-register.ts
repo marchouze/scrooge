@@ -595,7 +595,7 @@ export const RAS_APPETITE_LINES: readonly RasAppetiteLine[] = [
   },
   {
     id: "appetite:irrbb:delta-eve-outlier",
-    label: "IRRBB δEVE outlier threshold — BCBS d365 §A-3.4 supervisory test",
+    label: "IRRBB δEVE outlier threshold — BCBS d368 §A-3.4 supervisory test",
     rasSection: "RAS §B4",
     category: "irrbb",
     tier: "tier-1",
@@ -620,14 +620,14 @@ export const RAS_APPETITE_LINES: readonly RasAppetiteLine[] = [
     // text named deltaEveMinor/tier1CapitalTargetMinor — fields the
     // IRRBBChecked event never carried).
     measurementBinding:
-      "getIrrbbDeltaEveMetric (platform/projections/irrbb-delta-eve.ts): max(abs(IRRBBChecked.deltaPct)) across the latest ALM run's BCBS d365 EVE shock scenarios — deltaPct = ΔEVE as % of Tier-1 capital, computed by Ravi's ALM run (runtime/agents/ravi-alm-run.ts)",
+      "getIrrbbDeltaEveMetric (platform/projections/irrbb-delta-eve.ts): max(abs(IRRBBChecked.deltaPct)) across the latest ALM run's BCBS d368 EVE shock scenarios — deltaPct = ΔEVE as % of Tier-1 capital, computed by Ravi's ALM run (runtime/agents/ravi-alm-run.ts)",
     measurementOwner: "Rohan (eng) → Helena (CRO, governance)",
-    citations: [D_RAS, "D-BOND-RAS-APPETITE", "BCBS-D365-IRRBB", "BANKS-REG-26"],
+    citations: [D_RAS, "D-BOND-RAS-APPETITE", "BCBS-D368-IRRBB", "BANKS-REG-26"],
     summary:
-      "Maximum |δEVE| under any BCBS d365 shock scenario as % of Tier-1 capital. " +
-      "BCBS d365 §A-3.4 supervisory outlier threshold is 15% of Tier-1; early-warning amber at 10%. " +
+      "Maximum |δEVE| under any BCBS d368 shock scenario as % of Tier-1 capital. " +
+      "BCBS d368 §A-3.4 supervisory outlier threshold is 15% of Tier-1; early-warning amber at 10%. " +
       "Build-phase Tier-1 target R300m (licence-day capital plan). " +
-      "Breach triggers ALCO escalation within 1 business day and PA notification pathway per BCBS d365 Principle 5; " +
+      "Breach triggers ALCO escalation within 1 business day and PA notification pathway per BCBS d368 Principle 5; " +
       "escalate to CEO if breach persists >5 business days.",
   },
   // ── Intraday-liquidity appetite line — added 2026-06-11 per D-INTRADAY-RAS-APPETITE ──

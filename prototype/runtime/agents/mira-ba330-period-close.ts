@@ -25,9 +25,9 @@
 //
 // `IRRBBChecked` events are the Principle-1 source for the BA 330 return:
 //   - Emitted by `ravi-alm-run.ts` on every daily ALM run.
-//   - 6 EVE events (BCBS d365 §4: parallel+200, parallel-200, short+300,
+//   - 6 EVE events (BCBS d368 §4: parallel+200, parallel-200, short+300,
 //     short-300, steepener, flattener).
-//   - 4 NII events (BCBS d365 §5: parallel+100, parallel-100, short+300,
+//   - 4 NII events (BCBS d368 §5: parallel+100, parallel-100, short+300,
 //     short-300).
 //   - The subscriber folds the most-recent run per metric/shockLabel within
 //     the period to avoid double-counting daily runs.
@@ -48,7 +48,7 @@
 // Authority: D-TREASURER-WAVE2-SUBSTRATE (CEO-approved 2026-06-11);
 //   D-BA-330-REATTRIBUTION-IRRBB; D-BA-RETURN-NUMBERING-EXCEL-CANONICAL;
 //   Banks Act 94 of 1990 §70; Regulations Relating to Banks Reg 27;
-//   BCBS d365 ("Interest rate risk in the banking book", Apr 2016);
+//   BCBS d368 ("Interest rate risk in the banking book", Apr 2016);
 //   Principle 1; Principle 6.
 // Author: Mira (Compliance / RegTech engineer, engineering — returns wiring +
 //   completeness recon; Wave 2 D-TREASURER-WAVE2-SUBSTRATE).

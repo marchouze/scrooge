@@ -725,7 +725,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
   // under Companies Act s.24 + ISDA-2002-MASTER audit trail).
   //
   // Authority: D-MARKETS-SCHEMA-FOUNDATION; ISDA-2002-MASTER; IFRS-9-§4.1;
-  //            ORG-PR-11; BCBS-D365-IRRBB.
+  //            ORG-PR-11; BCBS-D368-IRRBB.
   // Authors: Eitan (IRRBB / derivatives engineer, engineering)
   // ---------------------------------------------------------------------------
   {
@@ -790,7 +790,7 @@ export const MARKETS_EVENT_TYPES: readonly EventTypeMetadata[] = [
     issuer: "Eitan",
     subscribers: ["Bea", "Anya", "Rohan", "Vera"],
     replay: "append-only-audit",
-    citationsHint: ["IFRS-9-§4.1", "BCBS-D365-IRRBB", "D-MARKETS-SCHEMA-FOUNDATION"],
+    citationsHint: ["IFRS-9-§4.1", "BCBS-D368-IRRBB", "D-MARKETS-SCHEMA-FOUNDATION"],
     retention: RETENTION_GOVERNANCE_7Y,
     source:
       "platform/markets/cdm/ird.ts (Eitan M5 IRS lifecycle); platform/markets/eod/irs-revaluation.ts; scenarios/10-irs-trade.ts",
@@ -1164,7 +1164,7 @@ export const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     issuer: "Ravi",
     subscribers: ["Eitan", "Ravi", "Camille", "Vera", "dashboard"],
     replay: "latest-wins-per-key",
-    citationsHint: ["BANKS-ACT-94-1990", "BANKS-REG-26", "BANKS-REG-27", "BCBS-D365-IRRBB"],
+    citationsHint: ["BANKS-ACT-94-1990", "BANKS-REG-26", "BANKS-REG-27", "BCBS-D368-IRRBB"],
     // FTP curve: governance-grade 7y (ALCO decision record; NII-at-risk audit trail).
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/platform/ftp/; D-MARKETS-SCHEMA-FOUNDATION; Team/Ravi.md",
@@ -1177,7 +1177,7 @@ export const CUSTOMER_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     issuer: "Ravi",
     subscribers: ["Eitan", "Camille", "Rohan", "Vera", "dashboard"],
     replay: "append-only-audit",
-    citationsHint: ["BANKS-ACT-94-1990", "BANKS-REG-26", "BCBS-D365-IRRBB"],
+    citationsHint: ["BANKS-ACT-94-1990", "BANKS-REG-26", "BCBS-D368-IRRBB"],
     // Attribution record: governance-grade 7y (ALCO / NII-at-risk audit trail).
     retention: RETENTION_GOVERNANCE_7Y,
     source: "platform/ftp/attribution.ts; D-MARKETS-SCHEMA-FOUNDATION; Team/Ravi.md",
