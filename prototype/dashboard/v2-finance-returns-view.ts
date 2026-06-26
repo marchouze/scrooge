@@ -65,6 +65,10 @@
 import type { EventStore } from "../platform/event-store/store";
 import { anchorFunctionalCurrency } from "../platform/identity/functional-currency";
 import type { MarketDataStore } from "../platform/market-data/store";
+import {
+  defaultProvenanceFilter,
+  eventMatchesProvenanceFilter,
+} from "../platform/projections/filter";
 import { getSubstrateGap } from "../platform/substrate/gap-register";
 import type { ReturnForm } from "../v2-core/regulatory-returns/cell-contract";
 import {
@@ -99,6 +103,25 @@ export interface FinanceReturnRow {
   readonly readPath?: "v1" | "v2";
   /** Advisory gap markers carried through from the live return's projection. */
   readonly gaps?: readonly string[];
+  /**
+   * Filing lifecycle, folded from the BORN-V2 return-of-record + filing events
+   * (ReportGenerated / ReportFiled; D-BA-RETURN-OF-RECORD-EVENT-FAMILY). Present
+   * for a form once at least one ReportGenerated/ReportFiled exists; otherwise
+   * absent and the page renders "—" / "N/A" (honest, never fabricated).
+   */
+  readonly filing?: FinanceReturnFiling;
+}
+
+/** Filing-lifecycle render for one return, folded from the typed events. */
+export interface FinanceReturnFiling {
+  /** Reporting period of the latest return-of-record (e.g. period:...:2026-05). */
+  readonly reportingPeriod: string;
+  /** ISO 8601 — when the latest filing was filed; null when generated-not-filed. */
+  readonly lastFiled: string | null;
+  /** Submission mode of the latest filing ("simulator" | "live"); null if unfiled. */
+  readonly mode: "simulator" | "live" | null;
+  /** BLAKE3 content hash of the latest return-of-record. */
+  readonly contentHash: string;
 }
 
 export interface FinanceReturnsView {
@@ -172,6 +195,66 @@ function filingLifecycleGap(): { id: string; reason: string } {
 }
 
 // ---------------------------------------------------------------------------
+// Filing-lifecycle fold (D-BA-RETURN-OF-RECORD-EVENT-FAMILY). For a given form,
+// fold the born-V2 ReportGenerated (return-of-record) + ReportFiled events into
+// the reporting-period / last-filed / mode the page renders. The latest
+// (entity, form, period) wins; absent events ⇒ undefined ⇒ page renders "—".
+// SOURCE, don't fabricate (Charter cmd 4 / cmd 2).
+// ---------------------------------------------------------------------------
+
+function foldFiling(
+  eventStore: EventStore,
+  entity: string,
+  formId: string,
+): FinanceReturnFiling | undefined {
+  const provenanceFilter = defaultProvenanceFilter();
+
+  // Latest return-of-record (append-only; last wins) for this form.
+  let latestGenerated:
+    | { reportingPeriod: string; contentHash: string; generatedAt: string }
+    | undefined;
+  for (const ev of eventStore.replay({ entity, type: "ReportGenerated" })) {
+    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+    const p = ev.payload as {
+      formId?: string;
+      reportingPeriod?: string;
+      contentHash?: string;
+      generatedAt?: string;
+    };
+    if (p.formId !== formId || !p.reportingPeriod || !p.contentHash) continue;
+    latestGenerated = {
+      reportingPeriod: p.reportingPeriod,
+      contentHash: p.contentHash,
+      generatedAt: p.generatedAt ?? ev.as_of,
+    };
+  }
+  if (latestGenerated === undefined) return undefined;
+
+  // Latest filing for the SAME reporting period (the return-of-record's period).
+  let lastFiled: string | null = null;
+  let mode: "simulator" | "live" | null = null;
+  for (const ev of eventStore.replay({ entity, type: "ReportFiled" })) {
+    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+    const p = ev.payload as {
+      formId?: string;
+      reportingPeriod?: string;
+      filedAt?: string;
+      mode?: "simulator" | "live";
+    };
+    if (p.formId !== formId || p.reportingPeriod !== latestGenerated.reportingPeriod) continue;
+    lastFiled = p.filedAt ?? ev.as_of;
+    mode = p.mode ?? null;
+  }
+
+  return {
+    reportingPeriod: latestGenerated.reportingPeriod,
+    lastFiled,
+    mode,
+    contentHash: latestGenerated.contentHash,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Headline summaries for the two live returns (sourced figures only).
 // ---------------------------------------------------------------------------
 
@@ -207,6 +290,7 @@ export function buildFinanceReturnsView(
   const liveByForm = new Map<string, FinanceReturnRow>();
 
   const ba700Figures = ba700.figures as BA700ViewFigures;
+  const ba700Filing = foldFiling(eventStore, ba700.entity, "BA700");
   liveByForm.set("BA700", {
     form: "BA 700",
     name: loadReturnContract("BA700").formName,
@@ -215,9 +299,11 @@ export function buildFinanceReturnsView(
     figures: ba700Figures,
     readPath: ba700.readPath,
     gaps: ba700Figures.gaps,
+    ...(ba700Filing !== undefined ? { filing: ba700Filing } : {}),
   });
 
   const ba320Figures = ba320.figures as BA320ViewFigures;
+  const ba320Filing = foldFiling(eventStore, ba320.entity, "BA320");
   liveByForm.set("BA320", {
     form: "BA 320",
     name: loadReturnContract("BA320").formName,
@@ -226,6 +312,7 @@ export function buildFinanceReturnsView(
     figures: ba320Figures,
     readPath: ba320.readPath,
     gaps: ba320Figures.gaps,
+    ...(ba320Filing !== undefined ? { filing: ba320Filing } : {}),
   });
 
   // Build one row per canonical §1 return, in registry order. Live rows reuse

@@ -27,9 +27,13 @@ import {
   REPORT_GENERATED,
   REPORT_SUBMISSION_ACKNOWLEDGED,
   type ReportDuePayload,
+  type ReportDuePayloadInput,
   type ReportFiledPayload,
+  type ReportFiledPayloadInput,
   type ReportGeneratedPayload,
+  type ReportGeneratedPayloadInput,
   type ReportSubmissionAcknowledgedPayload,
+  type ReportSubmissionAcknowledgedPayloadInput,
   reportDuePayloadSchema,
   reportFiledPayloadSchema,
   reportGeneratedPayloadSchema,
@@ -52,9 +56,13 @@ export {
 };
 export type {
   ReportDuePayload,
+  ReportDuePayloadInput,
   ReportFiledPayload,
+  ReportFiledPayloadInput,
   ReportGeneratedPayload,
+  ReportGeneratedPayloadInput,
   ReportSubmissionAcknowledgedPayload,
+  ReportSubmissionAcknowledgedPayloadInput,
 };
 
 // ---------------------------------------------------------------------------
@@ -102,7 +110,7 @@ interface MakeArgs<P> {
 }
 
 /** ReportGenerated — the return-of-record (figures + content hash). */
-export function makeReportGenerated(args: MakeArgs<ReportGeneratedPayload>): Event {
+export function makeReportGenerated(args: MakeArgs<ReportGeneratedPayloadInput>): Event {
   return makeReturnOfRecordEvent({
     ...args,
     type: REPORT_GENERATED,
@@ -111,7 +119,7 @@ export function makeReportGenerated(args: MakeArgs<ReportGeneratedPayload>): Eve
 }
 
 /** ReportDue — a return becomes due for a period (reporting-calendar fact). */
-export function makeReportDue(args: MakeArgs<ReportDuePayload>): Event {
+export function makeReportDue(args: MakeArgs<ReportDuePayloadInput>): Event {
   return makeReturnOfRecordEvent({
     ...args,
     type: REPORT_DUE,
@@ -120,7 +128,7 @@ export function makeReportDue(args: MakeArgs<ReportDuePayload>): Event {
 }
 
 /** ReportFiled — the return was filed with the regulator. */
-export function makeReportFiled(args: MakeArgs<ReportFiledPayload>): Event {
+export function makeReportFiled(args: MakeArgs<ReportFiledPayloadInput>): Event {
   return makeReturnOfRecordEvent({
     ...args,
     type: REPORT_FILED,
@@ -130,7 +138,7 @@ export function makeReportFiled(args: MakeArgs<ReportFiledPayload>): Event {
 
 /** ReportSubmissionAcknowledged — the regulator acknowledged the filing. */
 export function makeReportSubmissionAcknowledged(
-  args: MakeArgs<ReportSubmissionAcknowledgedPayload>,
+  args: MakeArgs<ReportSubmissionAcknowledgedPayloadInput>,
 ): Event {
   return makeReturnOfRecordEvent({
     ...args,

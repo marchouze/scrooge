@@ -570,6 +570,7 @@
     "recon:regulatory-extraction-coverage": "bun run platform/recon/regulatory-extraction-coverage.ts",
     "recon:period-close-cursor-integrity": "bun run platform/recon/recon-period-close-cursor-integrity.ts",
     "recon:ba310-submission-completeness": "bun run platform/recon/recon-ba310-submission-completeness.ts",
+    "recon:ba700-filing-completeness": "bun run platform/recon/recon-ba700-filing-completeness.ts",
     "recon:ba-returns-vs-gl-balances": "bun run platform/recon/recon-ba-returns-vs-gl-balances.ts",
     "recon:liquidity-position-vs-settled-notional": "bun run platform/recon/recon-liquidity-position-vs-settled-notional.ts",
     "extract:regulations": "bun run scripts/extract-regulations.ts",

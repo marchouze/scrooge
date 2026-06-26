@@ -678,6 +678,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:money-tail-v2-parity",
     "recon:period-close-cursor-integrity",
     "recon:ba310-submission-completeness",
+    // D-BA-RETURN-OF-RECORD-EVENT-FAMILY — every closed bank period must carry a
+    // durable BA 700 return-of-record (ReportGenerated) + filing-lifecycle
+    // (ReportFiled) record. Principle-1 filing-lifecycle completeness; PASS-on-
+    // empty until a real period closes.
+    "recon:ba700-filing-completeness",
     "recon:ba-returns-vs-gl-balances",
     // D-V2-UI-VISIBILITY-REMEDIATION — GL ⇿ BA-700 capital coherence (ENFORCING,
     // fail-closed). Over the LIVE event store, the V2 GL Share Capital balance

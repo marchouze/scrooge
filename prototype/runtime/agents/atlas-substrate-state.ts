@@ -23,10 +23,7 @@ import {
   makeAgentEscalation,
   makeWorkstreamRegistered,
 } from "../../platform/event-store/event-types";
-import {
-  SUBSTRATE_GAP_REGISTER,
-  type SubstrateGapRecord,
-} from "../../platform/substrate/gap-register";
+import { type SubstrateGapRecord, openSubstrateGaps } from "../../platform/substrate/gap-register";
 import { HANDLERS_METADATA } from "../handlers-metadata";
 import { narrativeAvailable, narrativeSkippedNote, tryGenerateNarrative } from "../narrative";
 import type { AgentRunContext, AgentRunOutput } from "../types";
@@ -201,7 +198,7 @@ export interface SubstrateGapInventoryRow {
  * WorkstreamRegistered events.
  */
 export function buildGapInventory(
-  register: readonly SubstrateGapRecord[] = SUBSTRATE_GAP_REGISTER,
+  register: readonly SubstrateGapRecord[] = openSubstrateGaps(),
 ): SubstrateGapInventoryRow[] {
   return register.map((gap, i) => ({
     index: i + 1,
@@ -225,7 +222,7 @@ function buildState(ctx: AgentRunContext): SubstrateState {
     personas: personaCoverage(teamDir),
     runtimeHandlers: knownRuntimeHandlers(),
     recentDeliverablesCount: recentDeliverablesCount(ctx.ownerInboxDir),
-    knownSubstrateGaps: SUBSTRATE_GAP_REGISTER.map((g) => g.description),
+    knownSubstrateGaps: openSubstrateGaps().map((g) => g.description),
   };
 }
 
@@ -613,7 +610,10 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
             workstreamId: `workstream:atlas:substrate-gap-${gap.index}`,
             title: gap.description.split(".")[0]?.slice(0, 80) ?? `Substrate gap ${gap.index}`,
             owner: "Atlas",
-            status: gap.status,
+            // gapInventory excludes resolved gaps (openSubstrateGaps()), so only
+            // "planned" | "in-flight" reach here; map to the WorkstreamRegistered
+            // status vocabulary ("blocked" | "planned" | "in-flight").
+            status: gap.status === "resolved" ? "in-flight" : gap.status,
             summary: gap.description,
             scopedBy: "Owner Inbox/2026-05-07_atlas_substrate-state.md",
           },

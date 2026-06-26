@@ -19,8 +19,16 @@
 
 /** Planning-severity of a substrate gap — blast radius, not risk appetite. */
 export type SubstrateGapSeverity = "medium" | "high";
-/** Lifecycle status of the engineering work that closes the gap. */
-export type SubstrateGapStatus = "planned" | "in-flight";
+/**
+ * Lifecycle status of the engineering work that closes the gap.
+ *   - "planned"   — work identified, not started.
+ *   - "in-flight" — work underway.
+ *   - "resolved"  — the gap is CLOSED; the substrate now exists. The record is
+ *                   RETAINED (not deleted) for audit lineage — `closedBy` cites
+ *                   the closing event/decision. Resolved gaps are filtered out
+ *                   of the OPEN-gap inventory (they are no longer gaps).
+ */
+export type SubstrateGapStatus = "planned" | "in-flight" | "resolved";
 /** Whether an interim mitigation is in place while the gap is open. */
 export type SubstrateGapMitigation = "none" | "partial";
 
@@ -35,6 +43,12 @@ export interface SubstrateGapRecord {
   readonly severity: SubstrateGapSeverity;
   readonly status: SubstrateGapStatus;
   readonly mitigation: SubstrateGapMitigation;
+  /**
+   * When `status === "resolved"`: the closing event type / Decision / PR that
+   * closed the gap (Principle 1 — the closure cites its evidence). Absent on
+   * open gaps.
+   */
+  readonly closedBy?: string;
 }
 
 export const SUBSTRATE_GAP_REGISTER: readonly SubstrateGapRecord[] = [
@@ -189,10 +203,28 @@ export const SUBSTRATE_GAP_REGISTER: readonly SubstrateGapRecord[] = [
     id: "ba-returns-filing-lifecycle",
     title: "BA-return filing-lifecycle event family (ReportFiled / ReportDue)",
     description:
-      "No filing-lifecycle event (e.g. ReportFiled / ReportDue / ReportSubmissionAcknowledged) exists in the substrate, so a BA return's reporting period, last-filed date, and overdue status cannot be sourced. The V2 Finance Regulatory-Returns page (GET /api/v2/finance/returns) therefore renders those fields '—' / 'N/A' (fail-closed, never fabricated). Closing this gap = a typed filing-lifecycle event family per BA return + a projection that folds it into the register. Trigger: licence-day reporting calendar / SARB submission substrate. Authority: D-BANK-WIDE-V2-MIGRATION. Brief: brief:mira:wire-ba-returns-register-onto-v2-finance-regulat:2026-06-20.",
+      "RESOLVED (D-BA-RETURN-OF-RECORD-EVENT-FAMILY): the born-V2 filing-lifecycle event family now exists — ReportGenerated (return-of-record: attestable figures + BLAKE3 content hash) + ReportDue / ReportFiled / ReportSubmissionAcknowledged. The BA 700 period-close handler (bea:ba700-period-close) emits ReportGenerated + ReportFiled on every AccountingPeriodClosed (idempotent). The V2 Finance Regulatory-Returns page (GET /api/v2/finance/returns) folds these events for reporting-period / last-filed / overdue instead of rendering '—' / 'N/A'. Authority: D-BA-RETURN-OF-RECORD-EVENT-FAMILY; D-RMS-PHASE-1. Originally tracked under D-BANK-WIDE-V2-MIGRATION; brief:mira:wire-ba-returns-register-onto-v2-finance-regulat:2026-06-20.",
+    severity: "medium",
+    status: "resolved",
+    mitigation: "none",
+    closedBy: "ReportGenerated/ReportFiled (D-BA-RETURN-OF-RECORD-EVENT-FAMILY)",
+  },
+  // ---------------------------------------------------------------------------
+  // Follow-on (Charter cmd 5 — no silent deferral): the return-of-record EVENT
+  // carries the attestable figures + a BLAKE3 content hash; filing the FULL
+  // rendered return blob into the RMS content-addressed document store
+  // (RecordFiled) is deliberately NOT done in the first slice — the hash is the
+  // integrity anchor, and the full artefact is reproducible from the events
+  // (Principle 1). Tracked so it is not a silent omission.
+  // ---------------------------------------------------------------------------
+  {
+    id: "ba-return-of-record-document-store",
+    title: "BA-return rendered-artefact into RMS document store (RecordFiled)",
+    description:
+      "The BA-return-of-record ReportGenerated event carries the attestable figures + a BLAKE3 content hash of the rendered return, but the FULL rendered return artefact (the SARB XML envelope) is not yet filed into the RMS content-addressed document store via a RecordFiled event. The content hash is the integrity anchor and the full artefact is reproducible from the events (Principle 1), so this is a completeness follow-on, not a correctness gap. Closing it = render the return, put the blob into the document store, and emit RecordFiled referencing the ReportGenerated content hash. Trigger: RMS document-store integration for regulatory returns. Authority: D-BA-RETURN-OF-RECORD-EVENT-FAMILY; D-RMS-PHASE-1.",
     severity: "medium",
     status: "planned",
-    mitigation: "none",
+    mitigation: "partial",
   },
   // ---------------------------------------------------------------------------
   // IAS 21 oracle coverage (D-FX-IFRS-REVIEW-FOUNDATION, F9). The IAS-21 domain-
@@ -219,6 +251,11 @@ export const SUBSTRATE_GAP_REGISTER: readonly SubstrateGapRecord[] = [
     mitigation: "partial",
   },
 ];
+
+/** Open (not-yet-resolved) gaps — the inventory the substrate snapshot tracks. */
+export function openSubstrateGaps(): readonly SubstrateGapRecord[] {
+  return SUBSTRATE_GAP_REGISTER.filter((g) => g.status !== "resolved");
+}
 
 /** Look up a gap record by id. */
 export function getSubstrateGap(id: string): SubstrateGapRecord | undefined {

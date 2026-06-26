@@ -193,6 +193,8 @@ export const reportGeneratedPayloadSchema = z
     }
   });
 export type ReportGeneratedPayload = z.infer<typeof reportGeneratedPayloadSchema>;
+/** INPUT shape (pre-transform) — plain strings for the branded instant/citation fields. */
+export type ReportGeneratedPayloadInput = z.input<typeof reportGeneratedPayloadSchema>;
 
 // ---------------------------------------------------------------------------
 // Filing-lifecycle trio.
@@ -218,6 +220,7 @@ export const reportDuePayloadSchema = z
   })
   .strict();
 export type ReportDuePayload = z.infer<typeof reportDuePayloadSchema>;
+export type ReportDuePayloadInput = z.input<typeof reportDuePayloadSchema>;
 
 export const reportFiledPayloadSchema = z
   .object({
@@ -243,6 +246,7 @@ export const reportFiledPayloadSchema = z
   })
   .strict();
 export type ReportFiledPayload = z.infer<typeof reportFiledPayloadSchema>;
+export type ReportFiledPayloadInput = z.input<typeof reportFiledPayloadSchema>;
 
 export const reportSubmissionAcknowledgedPayloadSchema = z
   .object({
@@ -263,5 +267,8 @@ export const reportSubmissionAcknowledgedPayloadSchema = z
   })
   .strict();
 export type ReportSubmissionAcknowledgedPayload = z.infer<
+  typeof reportSubmissionAcknowledgedPayloadSchema
+>;
+export type ReportSubmissionAcknowledgedPayloadInput = z.input<
   typeof reportSubmissionAcknowledgedPayloadSchema
 >;
