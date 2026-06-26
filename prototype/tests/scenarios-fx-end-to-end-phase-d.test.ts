@@ -32,7 +32,7 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { type DocumentHash, LocalFsDocumentStore, hashContent } from "../platform/document-store";
 import { setDefaultProvenanceModeOverride } from "../platform/projections";
-import type { Ba700Output, Ba300LcrOutput, Ba400Output, Ba320Output } from "../platform/reporting";
+import type { Ba300LcrOutput, Ba320Output, Ba400Output, Ba700Output } from "../platform/reporting";
 import {
   PHASE_D_FORMS,
   PHASE_D_SOURCE_LINEAGE,

@@ -49,8 +49,8 @@ import {
   type AccountCapitalClassification,
   type RegulatoryDeduction,
   type RwaDecomposition,
-  generateBa700CapitalFromEvents,
   generateBa300Lcr,
+  generateBa700CapitalFromEvents,
 } from "../platform/reporting";
 import { ba300LcrToXmlPayload } from "../platform/reporting/ba-300-lcr-xml-adapter";
 import { ba100ToXmlPayload } from "../platform/reporting/ba-700-xml-adapter";
