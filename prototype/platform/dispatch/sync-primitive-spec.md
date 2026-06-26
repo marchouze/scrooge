@@ -208,8 +208,10 @@ Captured during this run and routed to separate workstreams:
 - `decisionId` regex extension for `§` — affects `recon:decision-id-hygiene`.
 - `recordedVia` enum extensibility — `scrooge:session-delegation` is the
   current sole value; future audit attributions need a registry.
-- `backfill-triage-log.md` timestamp churn — cache-in-commit-graph
-  anti-pattern; the file should move out of git.
+- ~~`backfill-triage-log.md` timestamp churn — cache-in-commit-graph
+  anti-pattern; the file should move out of git.~~ — **resolved:** the triage
+  log now writes to gitignored `.local/` (no wall-clock `Generated:` line), so
+  re-running `ci:migrate` is byte-stable (Engineering Charter cmd 9).
 
 ## 10. Acceptance criteria
 

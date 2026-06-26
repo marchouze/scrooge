@@ -270,8 +270,9 @@ Same hot files as every prior wave — coordinate / serialise:
   registry + event-types module + provenance-category.
 - `scripts/run-recon-suite.ts` (`platform/recon/run-recon-suite.ts`) — register the new gate.
 - `package.json` `ci:migrate` — append the backfill script.
-- `ci:migrate` may rewrite `scripts/migrate/backfill-triage-log.md` → `git checkout --` it before
-  commit.
+- ~~`ci:migrate` may rewrite `scripts/migrate/backfill-triage-log.md` → `git checkout --` it before
+  commit.~~ — **resolved:** the triage log now writes to gitignored `.local/` and is no longer
+  tracked, so `ci:migrate` cannot dirty the tree (Engineering Charter cmd 9).
 
 ### 5.6 Batching order for the rest of bucket A
 

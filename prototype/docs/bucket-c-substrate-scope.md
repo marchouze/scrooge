@@ -144,7 +144,7 @@ The 14 in §1.2. Within them, the run-lifecycle trio (`AgentRunStarted`/`AgentRu
 Parallel C batches that touch the same files collide deterministically (per Dispatch discipline "Concurrency on shared files"):
 - `v2-core/registry/index.ts` (`V2_EVENT_TYPE_REGISTRY`) — every batch edits it. Serialise registry edits or resolve manually + run `recon:runtime-handler-sync`.
 - `v1-removal-ratchet.json` — every flip lowers the baseline; concurrent flips race on the same JSON. One flip-PR at a time, or rebase-then-recompute.
-- `scripts/migrate/backfill-triage-log.md` — `ci:migrate` rewrites it; `git checkout --` before commit/push (known gotcha).
+- ~~`scripts/migrate/backfill-triage-log.md` — `ci:migrate` rewrites it; `git checkout --` before commit/push~~ — **resolved:** the triage log now writes to gitignored `.local/` and is no longer tracked, so `ci:migrate` cannot dirty the tree (Engineering Charter cmd 9).
 - `platform/event-store/v2-store-tee.ts` codec switch + `v2-core/registry` codec map — verbatim batches don't touch the codec map, so this collision is avoided in C (no money codecs).
 - provenance-category — control-plane events must be in `provenance-category.ts` or the seed marks them `simulated`/scenario-required (the S3 posture gotcha). Each new tee'd type must be confirmed present there before backfill, else parity passes vacuously on a mis-categorised seed.
 
