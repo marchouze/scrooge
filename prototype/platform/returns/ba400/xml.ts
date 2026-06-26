@@ -19,9 +19,9 @@
 //   Devon COO; render-layer infrastructure).
 
 export {
-  BA_300_NAMESPACE,
-  BA_300_REQUIRED_ELEMENTS,
-  BA_300_XSD_URI,
+  BA_400_NAMESPACE,
+  BA_400_REQUIRED_ELEMENTS,
+  BA_400_XSD_URI,
   ba300ToXmlPayload,
 } from "../../reporting/ba-400-xml-adapter";
 
@@ -33,4 +33,4 @@ export {
   validateSarbXmlStructural,
 } from "../../reporting/xml-render";
 
-export type { Ba300Output } from "../../reporting/ba-400-op-risk";
+export type { Ba400Output } from "../../reporting/ba-400-op-risk";

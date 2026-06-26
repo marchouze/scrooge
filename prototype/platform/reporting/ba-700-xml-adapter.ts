@@ -33,8 +33,8 @@
 import type { Ba700LineItem, Ba700Output } from "./ba-700-capital";
 import type { SarbXmlReportPayload, SarbXmlSection } from "./xml-render";
 
-export const BA_100_XSD_URI = "https://hoz.bank/xsd/ba-100/v0.1-rehearsal.xsd"; // [citation: TBC]
-export const BA_100_NAMESPACE = "https://hoz.bank/ns/ba-100/v0.1";
+export const BA_700_XSD_URI = "https://hoz.bank/xsd/ba-100/v0.1-rehearsal.xsd"; // [citation: TBC]
+export const BA_700_NAMESPACE = "https://hoz.bank/ns/ba-100/v0.1";
 
 function lineItem(it: Ba700LineItem): SarbXmlSection {
   return {
@@ -167,13 +167,13 @@ export function ba100ToXmlPayload(report: Ba700Output): SarbXmlReportPayload {
   return {
     formId: "BA700",
     formVersion: report.meta.formVersion,
-    xsdUri: BA_100_XSD_URI,
-    namespaceUri: BA_100_NAMESPACE,
+    xsdUri: BA_700_XSD_URI,
+    namespaceUri: BA_700_NAMESPACE,
     body,
   };
 }
 
-export const BA_100_REQUIRED_ELEMENTS: readonly string[] = [
+export const BA_700_REQUIRED_ELEMENTS: readonly string[] = [
   "Meta",
   "CapitalStack",
   "Rwa",

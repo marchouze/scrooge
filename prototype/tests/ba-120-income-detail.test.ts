@@ -43,13 +43,13 @@ import { describe, expect, it } from "bun:test";
 
 import type { TrialBalanceSnapshotRow } from "../platform/event-store/event-types";
 import {
-  BA_610_DETAIL_SCHEMA_URL,
+  BA_120_DETAIL_SCHEMA_URL,
   Ba120DetailRenderSchema,
   renderBa120DetailCanonical,
   renderBa120DetailToJson,
 } from "../platform/reporting/ba-120-detail-render";
 import {
-  BA_610_DETAIL_BANK_ENTITIES,
+  BA_120_DETAIL_BANK_ENTITIES,
   type Ba120DetailBandingMap,
   type Ba120DetailFtpRates,
   Ba120DetailGeneratorError,
@@ -241,8 +241,8 @@ function fakeBa610ForEntity(entity: string): Ba120IncomeStatement {
 // =====================================================================
 
 describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail per-entity isolation", () => {
-  it("BA_610_DETAIL_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
-    expect(BA_610_DETAIL_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
+  it("BA_120_DETAIL_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
+    expect(BA_120_DETAIL_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
   });
 
   it("rejects LE-ZA-HOZ-SECURITIES (not bank-licence-bound)", () => {
@@ -276,7 +276,7 @@ describe("WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail end-to-end", () => {
   it("renders a valid Ba120DetailRender with correct $schema", () => {
     const output = generateBa120DetailIncomeDetail(buildBa610DetailInput());
     const render = renderBa120DetailToJson(output, { renderedAt: "2026-05-17T12:00:00.000Z" });
-    expect(render.$schema).toBe(BA_610_DETAIL_SCHEMA_URL);
+    expect(render.$schema).toBe(BA_120_DETAIL_SCHEMA_URL);
     expect(render.meta.form).toBe("BA 120 detail");
     expect(render.meta.rendererVersion).toBe("v0.1");
   });

@@ -1,15 +1,15 @@
 // platform/reporting/ba-400-xml-adapter.ts
 //
-// Thin adapter that maps a typed `Ba300Output` to the generic
+// Thin adapter that maps a typed `Ba400Output` to the generic
 // `SarbXmlReportPayload` consumed by `xml-render.ts`. Slice 5.
 
-import type { Ba300LineItem, Ba300Output } from "./ba-400-op-risk";
+import type { Ba400LineItem, Ba400Output } from "./ba-400-op-risk";
 import type { SarbXmlReportPayload, SarbXmlSection } from "./xml-render";
 
-export const BA_300_XSD_URI = "https://hoz.bank/xsd/ba-300/v0.1-rehearsal.xsd"; // [citation: TBC]
-export const BA_300_NAMESPACE = "https://hoz.bank/ns/ba-300/v0.1";
+export const BA_400_XSD_URI = "https://hoz.bank/xsd/ba-300/v0.1-rehearsal.xsd"; // [citation: TBC]
+export const BA_400_NAMESPACE = "https://hoz.bank/ns/ba-300/v0.1";
 
-function lineItem(it: Ba300LineItem): SarbXmlSection {
+function lineItem(it: Ba400LineItem): SarbXmlSection {
   return {
     LineId: it.lineId,
     LineLabel: it.lineLabel,
@@ -19,7 +19,7 @@ function lineItem(it: Ba300LineItem): SarbXmlSection {
   };
 }
 
-export function ba300ToXmlPayload(out: Ba300Output): SarbXmlReportPayload {
+export function ba300ToXmlPayload(out: Ba400Output): SarbXmlReportPayload {
   const body: SarbXmlSection = {
     Meta: {
       Form: out.meta.form,
@@ -62,13 +62,13 @@ export function ba300ToXmlPayload(out: Ba300Output): SarbXmlReportPayload {
   return {
     formId: "BA400",
     formVersion: out.meta.formVersion,
-    xsdUri: BA_300_XSD_URI,
-    namespaceUri: BA_300_NAMESPACE,
+    xsdUri: BA_400_XSD_URI,
+    namespaceUri: BA_400_NAMESPACE,
     body,
   };
 }
 
-export const BA_300_REQUIRED_ELEMENTS: readonly string[] = [
+export const BA_400_REQUIRED_ELEMENTS: readonly string[] = [
   "Meta",
   "OpRiskCapitalMinor",
   "OpRiskRwaMinor",

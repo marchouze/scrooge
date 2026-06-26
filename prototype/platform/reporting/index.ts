@@ -75,19 +75,19 @@ export {
   type Ba100SectorSplit,
   type Ba100LineSectorBreakdown,
   type Ba100SectorBreakdown,
-  BA_600_BANK_ENTITIES,
+  BA_100_BANK_ENTITIES,
   generateBa100BalanceSheet,
 } from "./ba-100-balance-sheet";
 
 export {
   Ba100RenderSchema,
   type Ba100Render,
-  BA_600_SCHEMA_URL,
-  BA_600_RENDERER_VERSION,
-  canonicaliseBa600,
-  renderBa600Canonical,
-  renderBa600ToJson,
-  type RenderBa600Options,
+  BA_100_SCHEMA_URL,
+  BA_100_RENDERER_VERSION,
+  canonicaliseBa100,
+  renderBa100Canonical,
+  renderBa100ToJson,
+  type RenderBa100Options,
 } from "./ba-100-render";
 
 export {
@@ -100,17 +100,17 @@ export {
   type Ba120LineCategorySection,
   type Ba120LineClassification,
   type Ba120LineItem,
-  BA_610_BANK_ENTITIES,
+  BA_120_BANK_ENTITIES,
   generateBa120IncomeStatement,
 } from "./ba-120-income-statement";
 
 export {
   Ba120RenderSchema,
   type Ba120Render,
-  BA_610_SCHEMA_URL,
-  BA_610_RENDERER_VERSION,
+  BA_120_SCHEMA_URL,
+  BA_120_RENDERER_VERSION,
   canonicaliseBa120,
-  renderBa610Canonical,
+  renderBa120Canonical,
   renderBa120ToJson,
   type RenderBa120Options,
 } from "./ba-120-render";
@@ -133,15 +133,15 @@ export {
   type Ba120DetailNiiByClass,
   type Ba120DetailNimSection,
   type Ba120DetailNonInterestSection,
-  BA_610_DETAIL_BANK_ENTITIES,
+  BA_120_DETAIL_BANK_ENTITIES,
   generateBa120DetailIncomeDetail,
 } from "./ba-120-income-detail";
 
 export {
   Ba120DetailRenderSchema,
   type Ba120DetailRender,
-  BA_610_DETAIL_SCHEMA_URL,
-  BA_610_DETAIL_RENDERER_VERSION,
+  BA_120_DETAIL_SCHEMA_URL,
+  BA_120_DETAIL_RENDERER_VERSION,
   canonicaliseBa120Detail,
   renderBa120DetailCanonical,
   renderBa120DetailToJson,
@@ -164,7 +164,7 @@ export {
   type Ba700RwaSection,
   type BufferRequirements,
   BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
-  BA_100_BANK_ENTITIES,
+  BA_700_BANK_ENTITIES,
   type CapitalTier,
   computeRequiredMinimums,
   generateBa700Capital,
@@ -175,12 +175,12 @@ export {
 export {
   Ba700RenderSchema,
   type Ba700Render,
-  BA_100_SCHEMA_URL,
-  BA_100_RENDERER_VERSION,
-  canonicaliseBa100,
-  renderBa100Canonical,
-  renderBa100ToJson,
-  type RenderBa100Options,
+  BA_700_SCHEMA_URL,
+  BA_700_RENDERER_VERSION,
+  canonicaliseBa700,
+  renderBa700Canonical,
+  renderBa700ToJson,
+  type RenderBa700Options,
 } from "./ba-700-render";
 
 // Basel III leverage ratio (BCBS §147–§165) — separate primitive composed
@@ -218,7 +218,7 @@ export {
   type EquityRow,
   type FxPositionRow,
   type CommodityPositionRow,
-  BA_310_BANK_ENTITIES,
+  BA_320_BANK_ENTITIES,
   generateBa320MarketRisk,
 } from "./ba-320-market-risk";
 
@@ -231,7 +231,7 @@ export {
   type Ba400TsaSection,
   type BaselBusinessLine,
   type OpRiskGrossIncomeRow,
-  BA_300_BANK_ENTITIES,
+  BA_400_BANK_ENTITIES,
   BUSINESS_LINE_BETA,
   generateBa400OpRisk,
 } from "./ba-400-op-risk";
@@ -255,9 +255,9 @@ export {
 } from "./xml-render";
 
 export {
-  BA_310_NAMESPACE,
-  BA_310_REQUIRED_ELEMENTS,
-  BA_310_XSD_URI,
+  BA_320_NAMESPACE,
+  BA_320_REQUIRED_ELEMENTS,
+  BA_320_XSD_URI,
   ba320ToXmlPayload,
 } from "./ba-320-xml-adapter";
 
@@ -291,9 +291,9 @@ export {
 } from "./ba-700-events-adapter";
 
 export {
-  BA_300_NAMESPACE,
-  BA_300_REQUIRED_ELEMENTS,
-  BA_300_XSD_URI,
+  BA_400_NAMESPACE,
+  BA_400_REQUIRED_ELEMENTS,
+  BA_400_XSD_URI,
   ba300ToXmlPayload,
 } from "./ba-400-xml-adapter";
 
@@ -305,9 +305,9 @@ export {
 } from "./ba-300-lcr-xml-adapter";
 
 export {
-  BA_100_NAMESPACE,
-  BA_100_REQUIRED_ELEMENTS,
-  BA_100_XSD_URI,
+  BA_700_NAMESPACE,
+  BA_700_REQUIRED_ELEMENTS,
+  BA_700_XSD_URI,
   ba100ToXmlPayload,
 } from "./ba-700-xml-adapter";
 

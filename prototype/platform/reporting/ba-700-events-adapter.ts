@@ -1,9 +1,9 @@
 // platform/reporting/ba-700-events-adapter.ts
 //
-// P1 fix (C-3) — BA 100 (Capital Adequacy Return) entry point that folds
+// P1 fix (C-3) — BA 700 (Capital Adequacy Return) entry point that folds
 // primary trade events directly, without routing through the trial balance.
 //
-// Principle 1 violation addressed: the original BA 100 generator accepts
+// Principle 1 violation addressed: the original BA 700 generator accepts
 // a `trialBalance: TrialBalanceSnapshotRow[]` input. A trial balance is a
 // *projection* of SubLedgerPostingEmitted events, not a primary event. A
 // capital position exists (CapitalContributionRecorded, SubLedgerPostingEmitted)

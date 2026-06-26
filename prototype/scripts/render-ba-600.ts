@@ -39,7 +39,7 @@ import { eventStore } from "../platform/composition";
 import {
   type Ba100LineClassification,
   generateBa100BalanceSheet,
-  renderBa600Canonical,
+  renderBa100Canonical,
 } from "../platform/reporting";
 
 // ---------------------------------------------------------------------------
@@ -165,7 +165,7 @@ function main(argv: readonly string[]): number {
       : {}),
   });
 
-  const { canonicalJson } = renderBa600Canonical(output, {
+  const { canonicalJson } = renderBa100Canonical(output, {
     renderedAt: new Date().toISOString(),
   });
 

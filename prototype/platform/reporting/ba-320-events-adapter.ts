@@ -1,6 +1,6 @@
 // platform/reporting/ba-320-events-adapter.ts
 //
-// P1 fix (C-2) — BA 310 (market-risk return) entry point that folds
+// P1 fix (C-2) — BA 320 (market-risk return) entry point that folds
 // FxTradeExecuted primary trade events directly, without routing through the
 // trial balance.
 //
@@ -229,7 +229,7 @@ export function generateBa320MarketRiskFromEvents(
     asOf: input.asOf,
   });
 
-  // ---- Step 4: adapt positions to Ba310 FxPositionRow[]. ------------------
+  // ---- Step 4: adapt positions to Ba320 FxPositionRow[]. ------------------
   const fxPositions = fxPositionsToBa320Input(positions, input.functionalCurrency);
 
   // ---- Step 5: delegate to the pure generator. ----------------------------

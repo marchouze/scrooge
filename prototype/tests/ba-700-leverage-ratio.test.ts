@@ -48,7 +48,7 @@ import {
   LeverageRatioGeneratorError,
   generateLeverageRatio,
 } from "../platform/reporting/ba-700-leverage-ratio";
-import { renderBa100ToJson } from "../platform/reporting/ba-700-render";
+import { renderBa700ToJson } from "../platform/reporting/ba-700-render";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const AS_OF = "2026-05-21T09:00:00.000Z";
@@ -330,7 +330,7 @@ describe("BA 100 leverage ratio composition", () => {
     expect(out.citations).not.toContain("BCBS Basel III §147–§165");
   });
 
-  it("renders the leverageRatio section through renderBa100ToJson", () => {
+  it("renders the leverageRatio section through renderBa700ToJson", () => {
     const out = generateBa700Capital({
       entity: ENTITY,
       asOf: AS_OF,
@@ -353,7 +353,7 @@ describe("BA 100 leverage ratio composition", () => {
         source: "build-phase-baseline",
       },
     });
-    const render = renderBa100ToJson(out, { renderedAt: AS_OF });
+    const render = renderBa700ToJson(out, { renderedAt: AS_OF });
     expect(render.leverageRatio).toBeDefined();
     expect(render.leverageRatio?.leverageRatio).toBe("infinity");
     expect(render.leverageRatio?.leveragePercent).toBe("infinity");
@@ -377,7 +377,7 @@ describe("BA 100 leverage ratio composition", () => {
         source: "test-fixture",
       },
     });
-    const render = renderBa100ToJson(out, { renderedAt: AS_OF });
+    const render = renderBa700ToJson(out, { renderedAt: AS_OF });
     expect(render.leverageRatio).toBeUndefined();
   });
 });

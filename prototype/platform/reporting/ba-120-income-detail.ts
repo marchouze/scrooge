@@ -1,7 +1,9 @@
 // platform/reporting/ba-120-income-detail.ts
 //
-// WS-FINANCE-BA-RETURNS-QUINTET — BA 610 detail (Selected Income-Statement
+// WS-FINANCE-BA-RETURNS-QUINTET — BA 120 detail (Selected Income-Statement
 // Information / Profitability Detail) projection. Monthly SARB return.
+// (Canonical form: BA 120 = Income Statement; the "BA 610" label was a
+// fabricated numbering artefact — BA 610 = Foreign Operations.)
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN
 // (CEO-approved 2026-05-10), extended 2026-05-17 to add the BA-returns
@@ -377,12 +379,12 @@ export class Ba120DetailGeneratorError extends Error {
   }
 }
 
-export const BA_610_DETAIL_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
+export const BA_120_DETAIL_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 
 function assertBankEntity(entity: string): void {
-  if (!BA_610_DETAIL_BANK_ENTITIES.includes(entity)) {
+  if (!BA_120_DETAIL_BANK_ENTITIES.includes(entity)) {
     throw new Ba120DetailGeneratorError(
-      `BA 610 detail (Selected Income-Statement Information) is bank-licence-bound; entity '${entity}' is not in BA_610_DETAIL_BANK_ENTITIES (${BA_610_DETAIL_BANK_ENTITIES.join(", ")}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER. Group-consolidated BA 610 detail lands at a later slice.`,
+      `BA 610 detail (Selected Income-Statement Information) is bank-licence-bound; entity '${entity}' is not in BA_120_DETAIL_BANK_ENTITIES (${BA_120_DETAIL_BANK_ENTITIES.join(", ")}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER. Group-consolidated BA 610 detail lands at a later slice.`,
     );
   }
 }

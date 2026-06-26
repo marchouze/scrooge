@@ -358,7 +358,7 @@ export function renderIfrsBundle(
 // ---------------------------------------------------------------------------
 
 /**
- * Sort-keyed JSON serialisation. Mirrors `canonicaliseBa100` in
+ * Sort-keyed JSON serialisation. Mirrors `canonicaliseBa700` in
  * `ba-100-render.ts`. Two calls with the same input produce byte-identical
  * output.
  */

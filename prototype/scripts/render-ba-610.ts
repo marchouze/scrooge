@@ -23,7 +23,7 @@ import { eventStore } from "../platform/composition";
 import {
   type Ba120LineClassification,
   generateBa120IncomeStatement,
-  renderBa610Canonical,
+  renderBa120Canonical,
 } from "../platform/reporting";
 
 const BUILD_PHASE_DEFAULT_CLASSIFICATIONS: readonly Ba120LineClassification[] = [
@@ -124,7 +124,7 @@ function main(argv: readonly string[]): number {
     trialBalanceSnapshotEventId: close.trialBalanceSnapshotEvent.event_id,
   });
 
-  const { canonicalJson } = renderBa610Canonical(output, {
+  const { canonicalJson } = renderBa120Canonical(output, {
     renderedAt: new Date().toISOString(),
   });
 

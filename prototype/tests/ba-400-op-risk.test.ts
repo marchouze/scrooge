@@ -8,10 +8,10 @@
 import { describe, expect, it } from "bun:test";
 
 import {
-  BA_300_BANK_ENTITIES,
-  BA_300_NAMESPACE,
-  BA_300_REQUIRED_ELEMENTS,
-  BA_300_XSD_URI,
+  BA_400_BANK_ENTITIES,
+  BA_400_NAMESPACE,
+  BA_400_REQUIRED_ELEMENTS,
+  BA_400_XSD_URI,
   BUSINESS_LINE_BETA,
   Ba400GeneratorError,
   ba300ToXmlPayload,
@@ -103,8 +103,8 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — TSA β factors", () => {
 // =====================================================================
 
 describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 per-entity isolation", () => {
-  it("BA_300_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
-    expect(BA_300_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
+  it("BA_400_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
+    expect(BA_400_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
   });
 
   it("rejects LE-ZA-HOZ-SECURITIES", () => {
@@ -242,8 +242,8 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 XML round-trip", () => {
     const xml = renderSarbXml(payload, { renderedAt: "2026-05-10T15:00:00.000Z" });
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
     expect(xml.includes("<BA400")).toBe(true);
-    expect(xml.includes(`xmlns="${BA_300_NAMESPACE}"`)).toBe(true);
-    expect(xml.includes(`xsdUri="${BA_300_XSD_URI}"`)).toBe(true);
+    expect(xml.includes(`xmlns="${BA_400_NAMESPACE}"`)).toBe(true);
+    expect(xml.includes(`xsdUri="${BA_400_XSD_URI}"`)).toBe(true);
     expect(xml.includes("</BA400>")).toBe(true);
   });
 
@@ -258,8 +258,8 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 300 XML round-trip", () => {
     const result = validateSarbXmlStructural({
       xml,
       formId: "BA400",
-      namespaceUri: BA_300_NAMESPACE,
-      requiredElements: [...BA_300_REQUIRED_ELEMENTS],
+      namespaceUri: BA_400_NAMESPACE,
+      requiredElements: [...BA_400_REQUIRED_ELEMENTS],
     });
     expect(result.ok).toBe(true);
   });

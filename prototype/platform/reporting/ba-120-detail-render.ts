@@ -159,9 +159,9 @@ export const Ba120DetailRenderSchema = z.object({
 
 export type Ba120DetailRender = z.infer<typeof Ba120DetailRenderSchema>;
 
-export const BA_610_DETAIL_SCHEMA_URL =
+export const BA_120_DETAIL_SCHEMA_URL =
   "https://hoz.bank/schemas/ba-610-detail/v0.1-rehearsal.json";
-export const BA_610_DETAIL_RENDERER_VERSION = "v0.1" as const;
+export const BA_120_DETAIL_RENDERER_VERSION = "v0.1" as const;
 
 // ---------------------------------------------------------------------------
 // Rendering helpers
@@ -223,7 +223,7 @@ export function renderBa120DetailToJson(
   };
 
   const candidate: Ba120DetailRender = {
-    $schema: BA_610_DETAIL_SCHEMA_URL,
+    $schema: BA_120_DETAIL_SCHEMA_URL,
     meta: {
       form: output.meta.form,
       formVersion: output.meta.formVersion,
@@ -233,7 +233,7 @@ export function renderBa120DetailToJson(
       periodId: output.meta.periodId,
       functionalCurrency: output.meta.functionalCurrency,
       generatorVersion: output.meta.generatorVersion,
-      rendererVersion: BA_610_DETAIL_RENDERER_VERSION,
+      rendererVersion: BA_120_DETAIL_RENDERER_VERSION,
       ...(output.meta.trialBalanceSnapshotEventId
         ? { trialBalanceSnapshotEventId: output.meta.trialBalanceSnapshotEventId }
         : {}),

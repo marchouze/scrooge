@@ -8,10 +8,10 @@
 import { describe, expect, it } from "bun:test";
 
 import {
-  BA_310_BANK_ENTITIES,
-  BA_310_NAMESPACE,
-  BA_310_REQUIRED_ELEMENTS,
-  BA_310_XSD_URI,
+  BA_320_BANK_ENTITIES,
+  BA_320_NAMESPACE,
+  BA_320_REQUIRED_ELEMENTS,
+  BA_320_XSD_URI,
   Ba320GeneratorError,
   ba320ToXmlPayload,
   generateBa320MarketRisk,
@@ -85,8 +85,8 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — market-risk semantic entries", () =
 // =====================================================================
 
 describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 per-entity isolation", () => {
-  it("BA_310_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
-    expect(BA_310_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
+  it("BA_320_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
+    expect(BA_320_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
   });
 
   it("rejects LE-ZA-HOZ-SECURITIES", () => {
@@ -313,8 +313,8 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 XML render round-trip", () =
     const xml = renderSarbXml(payload, { renderedAt: "2026-05-10T15:00:00.000Z" });
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
     expect(xml.includes("<BA320")).toBe(true);
-    expect(xml.includes(`xmlns="${BA_310_NAMESPACE}"`)).toBe(true);
-    expect(xml.includes(`xsdUri="${BA_310_XSD_URI}"`)).toBe(true);
+    expect(xml.includes(`xmlns="${BA_320_NAMESPACE}"`)).toBe(true);
+    expect(xml.includes(`xsdUri="${BA_320_XSD_URI}"`)).toBe(true);
     expect(xml.includes("</BA320>")).toBe(true);
   });
 
@@ -332,8 +332,8 @@ describe("D-REPORTING-CAPABILITY-SLICE-5 — BA 320 XML render round-trip", () =
     const result = validateSarbXmlStructural({
       xml,
       formId: "BA320",
-      namespaceUri: BA_310_NAMESPACE,
-      requiredElements: [...BA_310_REQUIRED_ELEMENTS],
+      namespaceUri: BA_320_NAMESPACE,
+      requiredElements: [...BA_320_REQUIRED_ELEMENTS],
     });
     expect(result.ok).toBe(true);
   });

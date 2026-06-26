@@ -27,9 +27,9 @@ import { EventStore } from "../../event-store/store";
 import { setDefaultProvenanceModeOverride } from "../../projections/filter";
 import { BA_320_SUBSCRIBER_ENTITIES, ba320PeriodCloseSubscriber } from "./period-close-subscriber";
 import {
-  BA_310_NAMESPACE,
-  BA_310_REQUIRED_ELEMENTS,
-  BA_310_XSD_URI,
+  BA_320_NAMESPACE,
+  BA_320_REQUIRED_ELEMENTS,
+  BA_320_XSD_URI,
   ba320ToXmlPayload,
   renderSarbXml,
   validateSarbXmlStructural,
@@ -223,8 +223,8 @@ describe("BA320 period-close subscriber — XML serialiser", () => {
 
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
     expect(xml.includes("<BA320")).toBe(true);
-    expect(xml.includes(`xmlns="${BA_310_NAMESPACE}"`)).toBe(true);
-    expect(xml.includes(`xsdUri="${BA_310_XSD_URI}"`)).toBe(true);
+    expect(xml.includes(`xmlns="${BA_320_NAMESPACE}"`)).toBe(true);
+    expect(xml.includes(`xsdUri="${BA_320_XSD_URI}"`)).toBe(true);
     expect(xml.includes("</BA320>")).toBe(true);
   });
 
@@ -243,8 +243,8 @@ describe("BA320 period-close subscriber — XML serialiser", () => {
     const validation = validateSarbXmlStructural({
       xml,
       formId: "BA320",
-      namespaceUri: BA_310_NAMESPACE,
-      requiredElements: [...BA_310_REQUIRED_ELEMENTS],
+      namespaceUri: BA_320_NAMESPACE,
+      requiredElements: [...BA_320_REQUIRED_ELEMENTS],
     });
 
     expect(validation.ok).toBe(true);

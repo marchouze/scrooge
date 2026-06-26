@@ -80,7 +80,7 @@ import { BUILD_PHASE_TOTAL_RWA_MINOR } from "../../projections/capital-metrics";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../../projections/filter";
 import { computeRwaFromPositions, toRwaDecomposition } from "../../projections/rwa-from-positions";
 import {
-  BA_100_BANK_ENTITIES,
+  BA_700_BANK_ENTITIES,
   BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
   Ba700GeneratorError,
   computeRequiredMinimums,
@@ -101,7 +101,7 @@ import { readFilInstanceEvents } from "../../risk/sa-ccr/fil-instance-positions"
 export {
   generateBa700Capital,
   generateBa700CapitalFromEvents,
-  BA_100_BANK_ENTITIES,
+  BA_700_BANK_ENTITIES,
   Ba700GeneratorError,
   BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
   computeRequiredMinimums,

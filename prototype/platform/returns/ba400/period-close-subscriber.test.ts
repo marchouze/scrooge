@@ -25,9 +25,9 @@ import { describe, expect, it } from "bun:test";
 
 import { BA_400_SUBSCRIBER_ENTITIES, ba400PeriodCloseSubscriber } from "./period-close-subscriber";
 import {
-  BA_300_NAMESPACE,
-  BA_300_REQUIRED_ELEMENTS,
-  BA_300_XSD_URI,
+  BA_400_NAMESPACE,
+  BA_400_REQUIRED_ELEMENTS,
+  BA_400_XSD_URI,
   ba300ToXmlPayload,
   renderSarbXml,
   validateSarbXmlStructural,
@@ -218,8 +218,8 @@ describe("BA400 period-close subscriber — XML serialiser", () => {
 
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
     expect(xml.includes("<BA400")).toBe(true);
-    expect(xml.includes(`xmlns="${BA_300_NAMESPACE}"`)).toBe(true);
-    expect(xml.includes(`xsdUri="${BA_300_XSD_URI}"`)).toBe(true);
+    expect(xml.includes(`xmlns="${BA_400_NAMESPACE}"`)).toBe(true);
+    expect(xml.includes(`xsdUri="${BA_400_XSD_URI}"`)).toBe(true);
     expect(xml.includes("</BA400>")).toBe(true);
   });
 
@@ -236,8 +236,8 @@ describe("BA400 period-close subscriber — XML serialiser", () => {
     const validation = validateSarbXmlStructural({
       xml,
       formId: "BA400",
-      namespaceUri: BA_300_NAMESPACE,
-      requiredElements: [...BA_300_REQUIRED_ELEMENTS],
+      namespaceUri: BA_400_NAMESPACE,
+      requiredElements: [...BA_400_REQUIRED_ELEMENTS],
     });
 
     expect(validation.ok).toBe(true);

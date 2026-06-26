@@ -7,7 +7,8 @@
 // artefact: BA 610 is actually "Foreign Operations of South African Banks".
 // Re-numbered forward-only under D-BA-RETURN-NUMBERING-EXCEL-CANONICAL
 // (CEO 2026-06-09); see Regulations/SARB-PA/ba-returns/_canonical-register.md.
-// Internal `Ba610*` symbol names retained pending a separate symbol-rename pass.
+// Internal symbol names aligned to `Ba120*` in the canonical symbol-rename pass
+// (harden-only, behaviour-identical).
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN
 // (CEO-approved 2026-05-10), extended 2026-05-17 to add the BA-returns
@@ -212,12 +213,12 @@ export class Ba120GeneratorError extends Error {
   }
 }
 
-export const BA_610_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
+export const BA_120_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 
 function assertBankEntity(entity: string): void {
-  if (!BA_610_BANK_ENTITIES.includes(entity)) {
+  if (!BA_120_BANK_ENTITIES.includes(entity)) {
     throw new Ba120GeneratorError(
-      `BA 610 (Income Statement) is bank-licence-bound; entity '${entity}' is not in BA_610_BANK_ENTITIES (${BA_610_BANK_ENTITIES.join(
+      `BA 610 (Income Statement) is bank-licence-bound; entity '${entity}' is not in BA_120_BANK_ENTITIES (${BA_120_BANK_ENTITIES.join(
         ", ",
       )}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER.`,
     );

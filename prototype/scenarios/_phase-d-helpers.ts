@@ -82,7 +82,7 @@ import {
   generateBa300Lcr,
   generateBa400OpRisk,
   generateBa320MarketRisk,
-  renderBa100Canonical,
+  renderBa700Canonical,
   renderBa300LcrCanonical,
   renderSarbXml,
 } from "@platform/reporting";
@@ -194,7 +194,7 @@ export const BA_300_LCR_FIXTURE_CLASSIFICATIONS: readonly AccountLiquidityClassi
 // non-trivially populated.
 // ---------------------------------------------------------------------------
 
-export const BA_100_FIXTURE_CLASSIFICATIONS: readonly AccountCapitalClassification[] = [
+export const BA_700_FIXTURE_CLASSIFICATIONS: readonly AccountCapitalClassification[] = [
   // P1-compliant path (C-3 fix): classify the account that actually appears
   // in Phase A's CapitalContributionRecorded event (ACC-ZAR-CAPITAL-001).
   // The events-first adapter (`generateBa700CapitalFromEvents`) folds the
@@ -216,12 +216,12 @@ export const BA_100_FIXTURE_CLASSIFICATIONS: readonly AccountCapitalClassificati
   },
 ];
 
-export const BA_100_FIXTURE_DEDUCTIONS: readonly RegulatoryDeduction[] = [];
+export const BA_700_FIXTURE_DEDUCTIONS: readonly RegulatoryDeduction[] = [];
 
 /**
  * Fixture RWA — R1.5bn credit + R1.0bn market + R500m operational =
  * R3.0bn total (in minor units: 300_000_000_000). With a synthetic R300m
- * CET1 base (per `BA_100_SYNTHETIC_CET1_ROW` below), the resulting CET1
+ * CET1 base (per `BA_700_SYNTHETIC_CET1_ROW` below), the resulting CET1
  * ratio = R300m / R3bn = 10.00% — comfortably above the Reg 38(2) all-in
  * 7% minimum (4.5% base + 2.5% CCB) but below a "trivially compliant"
  * threshold so the rehearsal shows a meaningful headline metric. The
@@ -232,7 +232,7 @@ export const BA_100_FIXTURE_DEDUCTIONS: readonly RegulatoryDeduction[] = [];
  * `BusinessIndicatorInput` inputs. Wiring is a future slice; the typed
  * input shape on `generateBa700Capital` is unchanged.
  */
-export const BA_100_FIXTURE_RWA: RwaDecomposition = {
+export const BA_700_FIXTURE_RWA: RwaDecomposition = {
   creditRwaMinor: 1_500_000_000_00, // R1.5bn
   marketRwaMinor: 1_000_000_000_00, // R1.0bn
   operationalRwaMinor: 500_000_000_00, // R500m
@@ -245,7 +245,7 @@ export const BA_100_FIXTURE_RWA: RwaDecomposition = {
  * generator's capital-stack projection produces a non-zero CET1 stock.
  * Substrate gap #1 (real classifications come from semantic-layer expansion).
  */
-export const BA_100_SYNTHETIC_CET1_ROW = {
+export const BA_700_SYNTHETIC_CET1_ROW = {
   leafAccountId: "ACC-equity-paid-up-capital-stub",
   currency: "ZAR",
   amountMinor: -300_000_000_00, // negative = credit-side (equity)
@@ -263,7 +263,7 @@ export const BA_100_SYNTHETIC_CET1_ROW = {
 
 const PHASE_D_FX_NET_USD_FUNCTIONAL_MINOR = 9_225_000_000; // R92.25m
 
-export const BA_310_FIXTURE_FX_POSITIONS = [
+export const BA_320_FIXTURE_FX_POSITIONS = [
   { currency: "USD", netPositionFunctionalMinor: PHASE_D_FX_NET_USD_FUNCTIONAL_MINOR },
 ] as const;
 
@@ -278,7 +278,7 @@ export const BA_310_FIXTURE_FX_POSITIONS = [
 // origin obvious).
 // ---------------------------------------------------------------------------
 
-export const BA_300_FIXTURE_GROSS_INCOME: readonly OpRiskGrossIncomeRow[] = [
+export const BA_400_FIXTURE_GROSS_INCOME: readonly OpRiskGrossIncomeRow[] = [
   // Single positive-year row — BIA capital = 15% × R10m = R1.5m.
   // Satisfies BIA's `nPositiveYears > 0` condition.
   { fiscalYear: "2024", businessLine: "trading-and-sales", grossIncomeMinor: 10_000_000_00 },
@@ -327,25 +327,25 @@ export function generatePhaseDReports(inputs: PhaseDInputs): PhaseDGenerated {
       functionalCurrency: inputs.functionalCurrency,
       periodStart: inputs.periodStart,
       periodEnd: inputs.periodEnd,
-      classifications: BA_100_FIXTURE_CLASSIFICATIONS,
-      deductions: BA_100_FIXTURE_DEDUCTIONS,
-      rwa: BA_100_FIXTURE_RWA,
+      classifications: BA_700_FIXTURE_CLASSIFICATIONS,
+      deductions: BA_700_FIXTURE_DEDUCTIONS,
+      rwa: BA_700_FIXTURE_RWA,
     });
   } else {
     // Deprecated fallback: augment the trial balance with a synthetic CET1-equity
     // row so the capital-stack projection is non-trivially populated.
     // Substrate gap §1 above; real CET1 derivation comes from chart-of-accounts
     // capitalTier field at Reporting Slice 6+.
-    const augmentedTb = [...inputs.trialBalance, BA_100_SYNTHETIC_CET1_ROW];
+    const augmentedTb = [...inputs.trialBalance, BA_700_SYNTHETIC_CET1_ROW];
     ba100 = generateBa700Capital({
       entity: inputs.entity,
       asOf: inputs.asOf,
       periodId: inputs.periodId,
       functionalCurrency: inputs.functionalCurrency,
       trialBalance: augmentedTb,
-      classifications: BA_100_FIXTURE_CLASSIFICATIONS,
-      deductions: BA_100_FIXTURE_DEDUCTIONS,
-      rwa: BA_100_FIXTURE_RWA,
+      classifications: BA_700_FIXTURE_CLASSIFICATIONS,
+      deductions: BA_700_FIXTURE_DEDUCTIONS,
+      rwa: BA_700_FIXTURE_RWA,
       ...(inputs.trialBalanceSnapshotEventId
         ? { trialBalanceSnapshotEventId: inputs.trialBalanceSnapshotEventId }
         : {}),
@@ -360,7 +360,7 @@ export function generatePhaseDReports(inputs: PhaseDInputs): PhaseDGenerated {
     irGeneralMaturityLadder: [],
     irSpecificRisk: [],
     equity: [],
-    fxPositions: BA_310_FIXTURE_FX_POSITIONS,
+    fxPositions: BA_320_FIXTURE_FX_POSITIONS,
     commodity: [],
     ...(inputs.trialBalanceSnapshotEventId
       ? { trialBalanceSnapshotEventId: inputs.trialBalanceSnapshotEventId }
@@ -372,7 +372,7 @@ export function generatePhaseDReports(inputs: PhaseDInputs): PhaseDGenerated {
     asOf: inputs.asOf,
     periodId: inputs.periodId,
     functionalCurrency: inputs.functionalCurrency,
-    grossIncome: BA_300_FIXTURE_GROSS_INCOME,
+    grossIncome: BA_400_FIXTURE_GROSS_INCOME,
     approach: "bia",
     ...(inputs.trialBalanceSnapshotEventId
       ? { trialBalanceSnapshotEventId: inputs.trialBalanceSnapshotEventId }
@@ -399,7 +399,7 @@ export interface PhaseDRendered {
 export function renderPhaseDReports(generated: PhaseDGenerated): PhaseDRendered {
   // BA 110 + BA 100 have typed canonical-JSON renderers (Slice 3+4).
   const ba110 = renderBa300LcrCanonical(generated.ba110, { renderedAt: PHASE_D_RENDERED_AT });
-  const ba100 = renderBa100Canonical(generated.ba100, { renderedAt: PHASE_D_RENDERED_AT });
+  const ba100 = renderBa700Canonical(generated.ba100, { renderedAt: PHASE_D_RENDERED_AT });
 
   // BA 310 + BA 300 ship XML adapters (Slice 5). For JSON we serialise the
   // typed Output directly (deterministic via sorted-keys).

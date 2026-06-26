@@ -30,14 +30,14 @@ import { newEventId } from "../platform/core/types";
 import { EventStore } from "../platform/event-store/store";
 import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
 import {
-  BA_610_BANK_ENTITIES,
-  BA_610_SCHEMA_URL,
+  BA_120_BANK_ENTITIES,
+  BA_120_SCHEMA_URL,
   Ba120GeneratorError,
   type Ba120LineClassification,
   Ba120RenderSchema,
   canonicaliseBa120,
   generateBa120IncomeStatement,
-  renderBa610Canonical,
+  renderBa120Canonical,
   renderBa120ToJson,
 } from "../platform/reporting";
 
@@ -98,8 +98,8 @@ afterEach(() => setDefaultProvenanceModeOverride(undefined));
 // ---------------------------------------------------------------------------
 
 describe("BA 610 — per-entity isolation", () => {
-  it("BA_610_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
-    expect(BA_610_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
+  it("BA_120_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
+    expect(BA_120_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
   });
 
   it("rejects LE-ZA-HOZ-SECURITIES", () => {
@@ -291,7 +291,7 @@ describe("BA 610 — end-to-end", () => {
     const renderedAt = "2026-05-17T15:00:00.000Z";
     const render = renderBa120ToJson(out, { renderedAt });
     expect(() => Ba120RenderSchema.parse(render)).not.toThrow();
-    expect(render.$schema).toBe(BA_610_SCHEMA_URL);
+    expect(render.$schema).toBe(BA_120_SCHEMA_URL);
     expect(render.meta.renderedAt).toBe(renderedAt);
   });
 });
@@ -407,10 +407,10 @@ describe("BA 610 — canonicaliser determinism", () => {
         },
       ],
     };
-    const a = renderBa610Canonical(generateBa120IncomeStatement(input), {
+    const a = renderBa120Canonical(generateBa120IncomeStatement(input), {
       renderedAt: "2026-05-17T15:00:00.000Z",
     });
-    const b = renderBa610Canonical(generateBa120IncomeStatement(input), {
+    const b = renderBa120Canonical(generateBa120IncomeStatement(input), {
       renderedAt: "2026-05-17T15:00:00.000Z",
     });
     expect(a.canonicalJson).toBe(b.canonicalJson);

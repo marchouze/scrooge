@@ -9,7 +9,9 @@
 // Re-numbered forward-only under D-BA-RETURN-NUMBERING-EXCEL-CANONICAL
 // (CEO 2026-06-09), which supersedes D-BA-RETURN-FORM-NUMBERING-RECON
 // wholesale; see Regulations/SARB-PA/ba-returns/_canonical-register.md.
-// Internal `Ba300*` symbol names retained pending a separate symbol-rename pass.
+// Internal symbol names aligned to `Ba400*` in the canonical symbol-rename pass
+// (harden-only, behaviour-identical). The genuine BA 300 (LCR / liquidity-risk)
+// generator lives in ba-300-lcr.ts and retains its correct `Ba300Lcr*` symbols.
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-
 // approved 2026-05-10), pack §6 Slice 4 (BA 300 sub-scope) consolidated
@@ -174,12 +176,12 @@ export class Ba400GeneratorError extends Error {
 // Per-entity scope guard
 // ---------------------------------------------------------------------------
 
-export const BA_300_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
+export const BA_400_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 
 function assertBankEntity(entity: string): void {
-  if (!BA_300_BANK_ENTITIES.includes(entity)) {
+  if (!BA_400_BANK_ENTITIES.includes(entity)) {
     throw new Ba400GeneratorError(
-      `BA 300 (operational risk) is bank-licence-bound; entity '${entity}' is not in BA_300_BANK_ENTITIES (${BA_300_BANK_ENTITIES.join(", ")}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER.`,
+      `BA 300 (operational risk) is bank-licence-bound; entity '${entity}' is not in BA_400_BANK_ENTITIES (${BA_400_BANK_ENTITIES.join(", ")}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER.`,
     );
   }
 }

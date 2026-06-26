@@ -142,7 +142,7 @@ export interface PeriodCloseSubscriberResult {
 }
 
 // ---------------------------------------------------------------------------
-// Bank entity scope guard — mirrors BA_100_BANK_ENTITIES
+// Bank entity scope guard — mirrors BA_700_BANK_ENTITIES
 // ---------------------------------------------------------------------------
 
 /** Bank-licence-bound entity short-ids that trigger BA 100 generation. */

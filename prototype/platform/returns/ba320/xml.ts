@@ -19,9 +19,9 @@
 //   Devon COO; render-layer infrastructure).
 
 export {
-  BA_310_NAMESPACE,
-  BA_310_REQUIRED_ELEMENTS,
-  BA_310_XSD_URI,
+  BA_320_NAMESPACE,
+  BA_320_REQUIRED_ELEMENTS,
+  BA_320_XSD_URI,
   ba320ToXmlPayload,
 } from "../../reporting/ba-320-xml-adapter";
 

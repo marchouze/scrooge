@@ -25,9 +25,9 @@ import { describe, expect, it } from "bun:test";
 import type { Ba700Output } from "../platform/reporting/ba-700-capital";
 import { generateBa700Capital } from "../platform/reporting/ba-700-capital";
 import {
-  BA_100_NAMESPACE,
-  BA_100_REQUIRED_ELEMENTS,
-  BA_100_XSD_URI,
+  BA_700_NAMESPACE,
+  BA_700_REQUIRED_ELEMENTS,
+  BA_700_XSD_URI,
   ba100ToXmlPayload,
 } from "../platform/reporting/ba-700-xml-adapter";
 import { renderSarbXml, validateSarbXmlStructural } from "../platform/reporting/xml-render";
@@ -87,8 +87,8 @@ describe("ba100ToXmlPayload()", () => {
     const output = makeMinimalBa100Output();
     const payload = ba100ToXmlPayload(output);
     expect(payload.formVersion).toBe(output.meta.formVersion);
-    expect(payload.xsdUri).toBe(BA_100_XSD_URI);
-    expect(payload.namespaceUri).toBe(BA_100_NAMESPACE);
+    expect(payload.xsdUri).toBe(BA_700_XSD_URI);
+    expect(payload.namespaceUri).toBe(BA_700_NAMESPACE);
   });
 
   it("TC-3: body.Meta contains Form, Entity, PeriodId", () => {
@@ -196,7 +196,7 @@ describe("ba100ToXmlPayload() → renderSarbXml() round-trip", () => {
     expect(xml).toContain('<?xml version="1.0" encoding="UTF-8"?>');
     expect(xml).toContain("<BA700");
     expect(xml).toContain("</BA700>");
-    expect(xml).toContain(`xmlns="${BA_100_NAMESPACE}"`);
+    expect(xml).toContain(`xmlns="${BA_700_NAMESPACE}"`);
   });
 
   it("TC-11: validateSarbXmlStructural() passes for well-formed BA 100 XML", () => {
@@ -206,8 +206,8 @@ describe("ba100ToXmlPayload() → renderSarbXml() round-trip", () => {
     const result = validateSarbXmlStructural({
       xml,
       formId: "BA700",
-      namespaceUri: BA_100_NAMESPACE,
-      requiredElements: BA_100_REQUIRED_ELEMENTS,
+      namespaceUri: BA_700_NAMESPACE,
+      requiredElements: BA_700_REQUIRED_ELEMENTS,
     });
     expect(result.ok).toBe(true);
   });
@@ -219,8 +219,8 @@ describe("ba100ToXmlPayload() → renderSarbXml() round-trip", () => {
     const result = validateSarbXmlStructural({
       xml,
       formId: "BA700",
-      namespaceUri: BA_100_NAMESPACE,
-      requiredElements: [...BA_100_REQUIRED_ELEMENTS, "PhantomSection"],
+      namespaceUri: BA_700_NAMESPACE,
+      requiredElements: [...BA_700_REQUIRED_ELEMENTS, "PhantomSection"],
     });
     expect(result.ok).toBe(false);
     if (!result.ok) {

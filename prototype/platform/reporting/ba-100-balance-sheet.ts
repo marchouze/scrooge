@@ -6,8 +6,9 @@
 // (workbook tab A1). The prior "BA 600" label was a fabricated numbering
 // artefact: BA 600 is actually the Consolidated Return. Re-numbered
 // forward-only under D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (CEO 2026-06-09);
-// see Regulations/SARB-PA/ba-returns/_canonical-register.md. Internal `Ba600*`
-// symbol names retained pending a separate symbol-rename pass.
+// see Regulations/SARB-PA/ba-returns/_canonical-register.md. Internal symbol
+// names aligned to `Ba100*` in the canonical symbol-rename pass (harden-only,
+// behaviour-identical).
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN
 // (CEO-approved 2026-05-10), extended 2026-05-17 to add the BA-returns
@@ -342,12 +343,12 @@ export class Ba100GeneratorError extends Error {
  * BA 600 are out of scope at this slice — see `D-REGULATORY-PERIMETER`
  * (CEO-approved 2026-05-10).
  */
-export const BA_600_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
+export const BA_100_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 
 function assertBankEntity(entity: string): void {
-  if (!BA_600_BANK_ENTITIES.includes(entity)) {
+  if (!BA_100_BANK_ENTITIES.includes(entity)) {
     throw new Ba100GeneratorError(
-      `BA 600 (Balance Sheet) is bank-licence-bound; entity '${entity}' is not in BA_600_BANK_ENTITIES (${BA_600_BANK_ENTITIES.join(
+      `BA 600 (Balance Sheet) is bank-licence-bound; entity '${entity}' is not in BA_100_BANK_ENTITIES (${BA_100_BANK_ENTITIES.join(
         ", ",
       )}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER. Group-consolidated BA 600 lands at a downstream slice.`,
     );

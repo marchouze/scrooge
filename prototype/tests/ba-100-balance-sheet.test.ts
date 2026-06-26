@@ -8,7 +8,7 @@
 //   2. End-to-end: synthetic SubLedgerPostingEmitted events
 //        → openPeriod → closePeriod (Slice 2)
 //        → generateBa100BalanceSheet
-//        → renderBa600ToJson
+//        → renderBa100ToJson
 //   3. Balance invariant — assets = liabilities + equity (strict).
 //   4. Strict mode throws on imbalance; tolerance mode surfaces as placeholder.
 //   5. Sign-convention warnings for credit-balance assets / debit-balance
@@ -35,15 +35,15 @@ import { newEventId } from "../platform/core/types";
 import { EventStore } from "../platform/event-store/store";
 import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
 import {
-  BA_600_BANK_ENTITIES,
-  BA_600_SCHEMA_URL,
+  BA_100_BANK_ENTITIES,
+  BA_100_SCHEMA_URL,
   Ba100GeneratorError,
   type Ba100LineClassification,
   Ba100RenderSchema,
-  canonicaliseBa600,
+  canonicaliseBa100,
   generateBa100BalanceSheet,
-  renderBa600Canonical,
-  renderBa600ToJson,
+  renderBa100Canonical,
+  renderBa100ToJson,
 } from "../platform/reporting";
 
 const ENTITY_BANK = "LE-ZA-HOZ-BANK";
@@ -100,8 +100,8 @@ afterEach(() => setDefaultProvenanceModeOverride(undefined));
 // ---------------------------------------------------------------------------
 
 describe("BA 600 — per-entity isolation", () => {
-  it("BA_600_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
-    expect(BA_600_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
+  it("BA_100_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
+    expect(BA_100_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
   });
 
   it("rejects LE-ZA-HOZ-SECURITIES", () => {
@@ -248,9 +248,9 @@ describe("BA 600 — end-to-end (events → close → BA 600)", () => {
       trialBalanceSnapshotEventId,
     });
     const renderedAt = "2026-05-17T15:00:00.000Z";
-    const render = renderBa600ToJson(out, { renderedAt });
+    const render = renderBa100ToJson(out, { renderedAt });
     expect(() => Ba100RenderSchema.parse(render)).not.toThrow();
-    expect(render.$schema).toBe(BA_600_SCHEMA_URL);
+    expect(render.$schema).toBe(BA_100_SCHEMA_URL);
     expect(render.meta.rendererVersion).toBe("v0.1");
     expect(render.meta.renderedAt).toBe(renderedAt);
     expect(render.assets.section).toBe("assets");
@@ -389,10 +389,10 @@ describe("BA 600 — canonicaliser determinism", () => {
         },
       ],
     };
-    const a = renderBa600Canonical(generateBa100BalanceSheet(input), {
+    const a = renderBa100Canonical(generateBa100BalanceSheet(input), {
       renderedAt: "2026-05-17T15:00:00.000Z",
     });
-    const b = renderBa600Canonical(generateBa100BalanceSheet(input), {
+    const b = renderBa100Canonical(generateBa100BalanceSheet(input), {
       renderedAt: "2026-05-17T15:00:00.000Z",
     });
     expect(a.canonicalJson).toBe(b.canonicalJson);
@@ -403,7 +403,7 @@ describe("BA 600 — canonicaliser determinism", () => {
     expect(lines[1]?.trim().startsWith('"$schema"')).toBe(true);
   });
 
-  it("canonicaliseBa600 is idempotent on already-rendered output", () => {
+  it("canonicaliseBa100 is idempotent on already-rendered output", () => {
     const out = generateBa100BalanceSheet({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
@@ -418,8 +418,8 @@ describe("BA 600 — canonicaliser determinism", () => {
         { leafAccountId: "ACC-eq", section: "equity", lineLabel: "equity.share-capital" },
       ],
     });
-    const r = renderBa600ToJson(out, { renderedAt: "2026-05-17T15:00:00.000Z" });
-    expect(canonicaliseBa600(r)).toBe(canonicaliseBa600(r));
+    const r = renderBa100ToJson(out, { renderedAt: "2026-05-17T15:00:00.000Z" });
+    expect(canonicaliseBa100(r)).toBe(canonicaliseBa100(r));
   });
 });
 
@@ -592,7 +592,7 @@ describe("BA 600 — counterparty-sector decomposition", () => {
 
   it("sectorBreakdown carries through the canonical render + schema", () => {
     const out = generateBa100BalanceSheet(sectorInput());
-    const render = renderBa600ToJson(out, { renderedAt: "2026-05-31T15:00:00.000Z" });
+    const render = renderBa100ToJson(out, { renderedAt: "2026-05-31T15:00:00.000Z" });
     expect(() => Ba100RenderSchema.parse(render)).not.toThrow();
     expect(render.sectorBreakdown.reconciled).toBe(true);
     expect(render.sectorBreakdown.sectionTotals.assets.bank).toBe(100_000);

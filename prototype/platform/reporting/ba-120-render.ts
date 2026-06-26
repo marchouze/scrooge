@@ -82,8 +82,8 @@ export const Ba120RenderSchema = z.object({
 
 export type Ba120Render = z.infer<typeof Ba120RenderSchema>;
 
-export const BA_610_SCHEMA_URL = "https://hoz.bank/schemas/ba-610/v0.1-rehearsal.json";
-export const BA_610_RENDERER_VERSION = "v0.1" as const;
+export const BA_120_SCHEMA_URL = "https://hoz.bank/schemas/ba-610/v0.1-rehearsal.json";
+export const BA_120_RENDERER_VERSION = "v0.1" as const;
 
 // ---------------------------------------------------------------------------
 // Rendering
@@ -106,7 +106,7 @@ export function renderBa120ToJson(
     periodId: output.meta.periodId,
     functionalCurrency: output.meta.functionalCurrency,
     generatorVersion: output.meta.generatorVersion,
-    rendererVersion: BA_610_RENDERER_VERSION,
+    rendererVersion: BA_120_RENDERER_VERSION,
     ...(output.meta.trialBalanceSnapshotEventId
       ? { trialBalanceSnapshotEventId: output.meta.trialBalanceSnapshotEventId }
       : {}),
@@ -115,7 +115,7 @@ export function renderBa120ToJson(
   };
 
   const candidate = {
-    $schema: BA_610_SCHEMA_URL,
+    $schema: BA_120_SCHEMA_URL,
     meta,
     interestIncome: output.interestIncome,
     interestExpense: output.interestExpense,
@@ -152,7 +152,7 @@ function sortKeys(value: unknown): unknown {
   return value;
 }
 
-export function renderBa610Canonical(
+export function renderBa120Canonical(
   output: Ba120IncomeStatement,
   opts: RenderBa120Options,
 ): {

@@ -130,14 +130,14 @@ export const Ba100RenderSchema = z.object({
 
 export type Ba100Render = z.infer<typeof Ba100RenderSchema>;
 
-export const BA_600_SCHEMA_URL = "https://hoz.bank/schemas/ba-600/v0.1-rehearsal.json";
-export const BA_600_RENDERER_VERSION = "v0.1" as const;
+export const BA_100_SCHEMA_URL = "https://hoz.bank/schemas/ba-600/v0.1-rehearsal.json";
+export const BA_100_RENDERER_VERSION = "v0.1" as const;
 
 // ---------------------------------------------------------------------------
 // Rendering
 // ---------------------------------------------------------------------------
 
-export interface RenderBa600Options {
+export interface RenderBa100Options {
   /** ISO-8601 timestamp the render was produced at. Required. */
   readonly renderedAt: string;
 }
@@ -147,9 +147,9 @@ export interface RenderBa600Options {
  * `Ba100RenderSchema`. Pure function; deterministic for fixed
  * `renderedAt`.
  */
-export function renderBa600ToJson(
+export function renderBa100ToJson(
   output: Ba100BalanceSheet,
-  opts: RenderBa600Options,
+  opts: RenderBa100Options,
 ): Ba100Render {
   const meta: Ba100Render["meta"] = {
     form: output.meta.form,
@@ -159,7 +159,7 @@ export function renderBa600ToJson(
     periodId: output.meta.periodId,
     functionalCurrency: output.meta.functionalCurrency,
     generatorVersion: output.meta.generatorVersion,
-    rendererVersion: BA_600_RENDERER_VERSION,
+    rendererVersion: BA_100_RENDERER_VERSION,
     ...(output.meta.trialBalanceSnapshotEventId
       ? { trialBalanceSnapshotEventId: output.meta.trialBalanceSnapshotEventId }
       : {}),
@@ -168,7 +168,7 @@ export function renderBa600ToJson(
   };
 
   const candidate = {
-    $schema: BA_600_SCHEMA_URL,
+    $schema: BA_100_SCHEMA_URL,
     meta,
     assets: output.assets,
     liabilities: output.liabilities,
@@ -190,7 +190,7 @@ export function renderBa600ToJson(
  * with the same input produce byte-identical output regardless of object-
  * key insertion order. The doc-store hash is over these bytes.
  */
-export function canonicaliseBa600(render: Ba100Render): string {
+export function canonicaliseBa100(render: Ba100Render): string {
   return JSON.stringify(sortKeys(render), null, 2);
 }
 
@@ -209,16 +209,16 @@ function sortKeys(value: unknown): unknown {
 }
 
 /** One-shot helper: render + canonicalise. */
-export function renderBa600Canonical(
+export function renderBa100Canonical(
   output: Ba100BalanceSheet,
-  opts: RenderBa600Options,
+  opts: RenderBa100Options,
 ): {
   readonly render: Ba100Render;
   readonly canonicalJson: string;
   readonly canonicalBytes: Uint8Array;
 } {
-  const render = renderBa600ToJson(output, opts);
-  const canonicalJson = canonicaliseBa600(render);
+  const render = renderBa100ToJson(output, opts);
+  const canonicalJson = canonicaliseBa100(render);
   const canonicalBytes = new TextEncoder().encode(canonicalJson);
   return { render, canonicalJson, canonicalBytes };
 }

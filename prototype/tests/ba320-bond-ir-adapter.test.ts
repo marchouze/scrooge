@@ -34,7 +34,7 @@ import {
   buildBondIrGeneralLadder,
   buildBondIrSpecificRiskRows,
 } from "../platform/reporting/ba-320-bond-events-adapter";
-import { ba310PeriodCloseSubscriber } from "../platform/returns/ba320/period-close-subscriber";
+import { ba320PeriodCloseSubscriber } from "../platform/returns/ba320/period-close-subscriber";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR = { type: "service" as const, id: "agent:Mira" };
@@ -574,7 +574,7 @@ describe("buildBondIrSpecificRiskRows — derecognition", () => {
 // 10. Integration: subscriber derives bond IR from events (no override)
 // ---------------------------------------------------------------------------
 
-describe("ba310PeriodCloseSubscriber — bond IR event derivation", () => {
+describe("ba320PeriodCloseSubscriber — bond IR event derivation", () => {
   it("subscriber picks up trading-book bond into IR general capital when no override supplied", () => {
     const store = new EventStore(":memory:");
     // R2030 SA govt bond, 3.6 years to maturity → 3-4y band, weight 2.25%
@@ -587,7 +587,7 @@ describe("ba310PeriodCloseSubscriber — bond IR event derivation", () => {
       portfolio: "trading-book",
     });
 
-    const result = ba310PeriodCloseSubscriber({
+    const result = ba320PeriodCloseSubscriber({
       closedPayload: {
         periodId: "period:hoz-bank:month:2026-06",
         closedAt: PERIOD_END,
@@ -602,8 +602,8 @@ describe("ba310PeriodCloseSubscriber — bond IR event derivation", () => {
 
     expect(result.skipped).toBe(false);
     // IR general capital should be > 0 because we have a live trading-book bond.
-    expect(result.ba310Output.interestRateGeneral.capitalMinor).toBeGreaterThan(0);
-    expect(result.ba310Output.interestRateGeneral.maturityLadder.length).toBe(1);
+    expect(result.ba320Output.interestRateGeneral.capitalMinor).toBeGreaterThan(0);
+    expect(result.ba320Output.interestRateGeneral.maturityLadder.length).toBe(1);
   });
 
   it("subscriber IR capital = 0 when all bonds are banking-book", () => {
@@ -617,7 +617,7 @@ describe("ba310PeriodCloseSubscriber — bond IR event derivation", () => {
       portfolio: "banking-book", // banking-book → excluded from BA-310
     });
 
-    const result = ba310PeriodCloseSubscriber({
+    const result = ba320PeriodCloseSubscriber({
       closedPayload: {
         periodId: "period:hoz-bank:month:2026-06",
         closedAt: PERIOD_END,
@@ -630,7 +630,7 @@ describe("ba310PeriodCloseSubscriber — bond IR event derivation", () => {
       periodStart: "2026-06-01T00:00:00.000Z",
     });
 
-    expect(result.ba310Output.interestRateGeneral.capitalMinor).toBe(0);
+    expect(result.ba320Output.interestRateGeneral.capitalMinor).toBe(0);
   });
 
   it("caller-supplied irGeneralMaturityLadder override takes precedence over event-derived", () => {
@@ -644,7 +644,7 @@ describe("ba310PeriodCloseSubscriber — bond IR event derivation", () => {
       portfolio: "trading-book",
     });
 
-    const result = ba310PeriodCloseSubscriber({
+    const result = ba320PeriodCloseSubscriber({
       closedPayload: {
         periodId: "period:hoz-bank:month:2026-06",
         closedAt: PERIOD_END,
@@ -660,9 +660,9 @@ describe("ba310PeriodCloseSubscriber — bond IR event derivation", () => {
     });
 
     // Override value used, not event-derived.
-    expect(result.ba310Output.interestRateGeneral.capitalMinor).toBe(9_999);
-    expect(result.ba310Output.interestRateGeneral.maturityLadder.length).toBe(1);
-    expect(result.ba310Output.interestRateGeneral.maturityLadder.at(0)?.lineLabel).toContain(
+    expect(result.ba320Output.interestRateGeneral.capitalMinor).toBe(9_999);
+    expect(result.ba320Output.interestRateGeneral.maturityLadder.length).toBe(1);
+    expect(result.ba320Output.interestRateGeneral.maturityLadder.at(0)?.lineLabel).toContain(
       "0-1m",
     );
   });

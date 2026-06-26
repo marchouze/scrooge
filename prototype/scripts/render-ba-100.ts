@@ -48,7 +48,7 @@ import {
   type RegulatoryDeduction,
   type RwaDecomposition,
   generateBa700CapitalFromEvents,
-  renderBa100Canonical,
+  renderBa700Canonical,
 } from "../platform/reporting";
 import { readRwaDecompositionOfRecord } from "../platform/risk/rwa-computed-engine";
 
@@ -188,7 +188,7 @@ function main(argv: readonly string[]): number {
     deductions,
     rwa,
   });
-  const { canonicalJson } = renderBa100Canonical(output, {
+  const { canonicalJson } = renderBa700Canonical(output, {
     renderedAt: new Date().toISOString(),
   });
   if (args.outPath) {

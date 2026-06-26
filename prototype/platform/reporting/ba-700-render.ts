@@ -176,14 +176,14 @@ export const Ba700RenderSchema = z.object({
 
 export type Ba700Render = z.infer<typeof Ba700RenderSchema>;
 
-export const BA_100_SCHEMA_URL = "https://hoz.bank/schemas/ba-100/v0.1-rehearsal.json";
-export const BA_100_RENDERER_VERSION = "v0.1" as const;
+export const BA_700_SCHEMA_URL = "https://hoz.bank/schemas/ba-100/v0.1-rehearsal.json";
+export const BA_700_RENDERER_VERSION = "v0.1" as const;
 
 // ---------------------------------------------------------------------------
 // Rendering
 // ---------------------------------------------------------------------------
 
-export interface RenderBa100Options {
+export interface RenderBa700Options {
   /**
    * ISO-8601 timestamp the render was produced at. Required — supplied by
    * the agent-runtime substrate from the scenario clock; CLI default is
@@ -205,7 +205,7 @@ function ratioToPercent(r: number): string {
  * `Ba700RenderSchema`. Pure function; deterministic for fixed
  * `renderedAt`.
  */
-export function renderBa100ToJson(output: Ba700Output, opts: RenderBa100Options): Ba700Render {
+export function renderBa700ToJson(output: Ba700Output, opts: RenderBa700Options): Ba700Render {
   const meta: Ba700Render["meta"] = {
     form: output.meta.form,
     formVersion: output.meta.formVersion,
@@ -214,7 +214,7 @@ export function renderBa100ToJson(output: Ba700Output, opts: RenderBa100Options)
     periodId: output.meta.periodId,
     functionalCurrency: output.meta.functionalCurrency,
     generatorVersion: output.meta.generatorVersion,
-    rendererVersion: BA_100_RENDERER_VERSION,
+    rendererVersion: BA_700_RENDERER_VERSION,
     ...(output.meta.trialBalanceSnapshotEventId
       ? { trialBalanceSnapshotEventId: output.meta.trialBalanceSnapshotEventId }
       : {}),
@@ -240,7 +240,7 @@ export function renderBa100ToJson(output: Ba700Output, opts: RenderBa100Options)
     : undefined;
 
   const candidate = {
-    $schema: BA_100_SCHEMA_URL,
+    $schema: BA_700_SCHEMA_URL,
     meta,
     capitalStack: output.capitalStack,
     rwa: output.rwa,
@@ -277,7 +277,7 @@ export function renderBa100ToJson(output: Ba700Output, opts: RenderBa100Options)
  * output regardless of object-key insertion order. The doc-store hash
  * is over these bytes.
  */
-export function canonicaliseBa100(render: Ba700Render): string {
+export function canonicaliseBa700(render: Ba700Render): string {
   return JSON.stringify(sortKeys(render), null, 2);
 }
 
@@ -299,16 +299,16 @@ function sortKeys(value: unknown): unknown {
  * One-shot helper: render + canonicalise. Returns the canonical JSON
  * string (UTF-8 bytes by `new TextEncoder().encode(...)`).
  */
-export function renderBa100Canonical(
+export function renderBa700Canonical(
   output: Ba700Output,
-  opts: RenderBa100Options,
+  opts: RenderBa700Options,
 ): {
   readonly render: Ba700Render;
   readonly canonicalJson: string;
   readonly canonicalBytes: Uint8Array;
 } {
-  const render = renderBa100ToJson(output, opts);
-  const canonicalJson = canonicaliseBa100(render);
+  const render = renderBa700ToJson(output, opts);
+  const canonicalJson = canonicaliseBa700(render);
   const canonicalBytes = new TextEncoder().encode(canonicalJson);
   return { render, canonicalJson, canonicalBytes };
 }

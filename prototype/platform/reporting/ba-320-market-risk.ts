@@ -9,8 +9,9 @@
 // Assets (HQLA)". Re-numbered forward-only under
 // D-BA-RETURN-NUMBERING-EXCEL-CANONICAL (CEO 2026-06-09), which supersedes
 // D-BA-RETURN-FORM-NUMBERING-RECON wholesale; see
-// Regulations/SARB-PA/ba-returns/_canonical-register.md. Internal `Ba310*`
-// symbol names retained pending a separate symbol-rename pass.
+// Regulations/SARB-PA/ba-returns/_canonical-register.md. Internal symbol names
+// aligned to `Ba320*` in the canonical symbol-rename pass (harden-only,
+// behaviour-identical).
 //
 // Standing authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-
 // approved 2026-05-10), pack §6 Slice 4 (the BA 310 sub-scope) consolidated
@@ -276,12 +277,12 @@ export class Ba320GeneratorError extends Error {
 // Per-entity scope guard
 // ---------------------------------------------------------------------------
 
-export const BA_310_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
+export const BA_320_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 
 function assertBankEntity(entity: string): void {
-  if (!BA_310_BANK_ENTITIES.includes(entity)) {
+  if (!BA_320_BANK_ENTITIES.includes(entity)) {
     throw new Ba320GeneratorError(
-      `BA 310 (market risk) is bank-licence-bound; entity '${entity}' is not in BA_310_BANK_ENTITIES (${BA_310_BANK_ENTITIES.join(", ")}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER.`,
+      `BA 310 (market risk) is bank-licence-bound; entity '${entity}' is not in BA_320_BANK_ENTITIES (${BA_320_BANK_ENTITIES.join(", ")}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER.`,
     );
   }
 }

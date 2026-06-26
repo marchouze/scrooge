@@ -12,7 +12,7 @@
 //        synthetic SubLedgerPostingEmitted events
 //          → openPeriod → closePeriod (Slice 2)
 //          → generateBa700Capital (Slice 4)
-//          → renderBa100ToJson (Slice 4)
+//          → renderBa700ToJson (Slice 4)
 //        produces known capital ratios.
 //   4. Tier-stack arithmetic — netCET1 = grossCET1 − deductions; Tier 1 +
 //      Total composition.
@@ -50,19 +50,19 @@ import { EventStore } from "../platform/event-store/store";
 import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
 import {
   type AccountCapitalClassification,
-  BA_100_BANK_ENTITIES,
-  BA_100_SCHEMA_URL,
+  BA_700_BANK_ENTITIES,
+  BA_700_SCHEMA_URL,
   BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
   Ba700GeneratorError,
   Ba700RenderSchema,
   type BufferRequirements,
   type RegulatoryDeduction,
   type RwaDecomposition,
-  canonicaliseBa100,
+  canonicaliseBa700,
   computeRequiredMinimums,
   generateBa700Capital,
-  renderBa100Canonical,
-  renderBa100ToJson,
+  renderBa700Canonical,
+  renderBa700ToJson,
 } from "../platform/reporting";
 import {
   SLICE_1_ENTRIES,
@@ -206,8 +206,8 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — semantic entries register", () => {
 // =====================================================================
 
 describe("D-REPORTING-CAPABILITY-SLICE-4 — per-entity isolation", () => {
-  it("BA_100_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
-    expect(BA_100_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
+  it("BA_700_BANK_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
+    expect(BA_700_BANK_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
   });
 
   it("rejects LE-ZA-HOZ-SECURITIES (not bank-licence-bound)", () => {
@@ -467,10 +467,10 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — end-to-end (events → close → BA
       trialBalanceSnapshotEventId,
     });
     const renderedAt = "2026-05-10T15:00:00.000Z";
-    const render = renderBa100ToJson(out, { renderedAt });
+    const render = renderBa700ToJson(out, { renderedAt });
 
     expect(() => Ba700RenderSchema.parse(render)).not.toThrow();
-    expect(render.$schema).toBe(BA_100_SCHEMA_URL);
+    expect(render.$schema).toBe(BA_700_SCHEMA_URL);
     expect(render.meta.rendererVersion).toBe("v0.1");
     expect(render.meta.renderedAt).toBe(renderedAt);
     expect(render.capitalStack.cet1.tier).toBe("cet1");
@@ -500,10 +500,10 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — end-to-end (events → close → BA
       rwa: FIXTURE_RWA,
       trialBalanceSnapshotEventId,
     };
-    const a = renderBa100Canonical(generateBa700Capital(input), {
+    const a = renderBa700Canonical(generateBa700Capital(input), {
       renderedAt: "2026-05-10T15:00:00.000Z",
     });
-    const b = renderBa100Canonical(generateBa700Capital(input), {
+    const b = renderBa700Canonical(generateBa700Capital(input), {
       renderedAt: "2026-05-10T15:00:00.000Z",
     });
     expect(a.canonicalJson).toBe(b.canonicalJson);
@@ -628,7 +628,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — divide-by-zero RWA", () => {
     expect(out.ratios.totalRatio).toBe(Number.POSITIVE_INFINITY);
     expect(out.ratios.cet1Compliant).toBe(true);
 
-    const r = renderBa100ToJson(out, { renderedAt: "2026-05-10T15:00:00.000Z" });
+    const r = renderBa700ToJson(out, { renderedAt: "2026-05-10T15:00:00.000Z" });
     expect(r.ratios.cet1Ratio).toBe("infinity");
     expect(r.ratios.cet1Percent).toBe("infinity");
     expect(r.ratios.totalPercent).toBe("infinity");
@@ -651,9 +651,9 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — canonicaliser determinism", () => {
       deductions: [],
       rwa: FIXTURE_RWA,
     });
-    const r1 = renderBa100ToJson(out, { renderedAt: "2026-05-10T15:00:00.000Z" });
-    const c1 = canonicaliseBa100(r1);
-    const c2 = canonicaliseBa100(r1);
+    const r1 = renderBa700ToJson(out, { renderedAt: "2026-05-10T15:00:00.000Z" });
+    const c1 = canonicaliseBa700(r1);
+    const c2 = canonicaliseBa700(r1);
     expect(c1).toBe(c2);
 
     // Top-level: $schema first ($ < letters in ASCII).
@@ -780,7 +780,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — RWA provenance passthrough", () => 
     expect(out.rwa.rwaComputationEventId).toBe("ev-rwa-12345");
     expect(out.rwa.source).toBe("engine:w2-slice-3");
 
-    const r = renderBa100ToJson(out, { renderedAt: "2026-05-10T15:00:00.000Z" });
+    const r = renderBa700ToJson(out, { renderedAt: "2026-05-10T15:00:00.000Z" });
     expect(r.rwa.rwaComputationEventId).toBe("ev-rwa-12345");
   });
 });
