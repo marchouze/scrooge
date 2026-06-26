@@ -178,6 +178,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Gating the ephemeral oracle would require a fake policy resolver for zero
   // security benefit (the store is `:memory:` and never persisted).
   "platform/recon/ba320-trading-book-sim-drive.ts",
+  // BA 325 simulator-first selected-risk assembly gate (D-BA-RETURN-SIMULATOR-
+  // FIRST Phase 2a): builds throwaway `:memory:` EventStore + MarketDataStore
+  // fixtures (simulated equity/commodity/FX-cohort book + a controlled return
+  // path) to drive the BA 320 / BA 300 LCR / cohort-VaR source folds and prove
+  // the assembly reconciliation + the production=0 / simulated=values boundary.
+  // No production access path — same rationale as ba320-trading-book-sim-drive.
+  "platform/recon/ba325-selected-risk-sim-drive.ts",
   // Recon pipelines that read-only replay the live store. Wrapping the read
   // path with the gate is a no-op (the gate intercepts append, not replay).
   "platform/recon/dashboard-derivation-recon.ts",
@@ -763,6 +770,13 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
   // M3 Slice 5 BA 310 (market-risk) subscriber — per-module fixture test; same rationale.
   // Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, P4-SECURITY-DESIGNED-IN.
   "platform/returns/ba320/",
+  // BA 325 (Selected Risk Exposure — Trading & Treasury) simulator-first assembly
+  // golden test — per-module fixture test (same carve-out rationale as tests/ and
+  // platform/returns/ba320/): builds in-memory EventStore + MarketDataStore
+  // fixtures to drive the source folds (BA 320 / BA 300 LCR / cohort VaR) and
+  // prove the production=0 / simulated=values provenance split. No production
+  // access path. Citation: D-BA-RETURN-SIMULATOR-FIRST, P4-SECURITY-DESIGNED-IN.
+  "platform/returns/ba325/",
   // M3 Slice 8 CMS subscriber — per-module fixture test (same carve-out
   // rationale as tests/; builds in-memory stores for conduct scenario assertion).
   // Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, P4-SECURITY-DESIGNED-IN.

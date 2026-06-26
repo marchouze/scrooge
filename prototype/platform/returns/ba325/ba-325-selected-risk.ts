@@ -53,11 +53,25 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering —
 //   reports to Camille CFO; BA-form line-mapping owner).
 
-import type { FinancialInput } from "../../types/financial-input";
-import { absent, present } from "../../types/financial-input";
-import type { MarketRiskReport } from "../../market-risk/var-engine";
+import { ROUNDING, amountToMinorUnits, money, round } from "../../core/decimal-money";
+import type { Currency } from "../../core/types";
+import type { CohortVarResult } from "../../market-risk/eod-cohort-var-v2";
 import type { Ba300LcrOutput } from "../../reporting/ba-300-lcr";
 import type { Ba320Output } from "../../reporting/ba-320-market-risk";
+import type { FinancialInput } from "../../types/financial-input";
+import { absent, present } from "../../types/financial-input";
+
+/**
+ * Convert a reporting-currency MAJOR-unit figure (a float, as the VaR engine
+ * produces it) to integer minor units via the DECIMAL ENGINE — no float `× 100`
+ * money arithmetic (recon:no-float-money-arithmetic; D-DECIMAL-NATIVE-MONEY-
+ * ARITHMETIC). The float's string form is lifted to a decimal Money, rounded to
+ * the currency scale (HALF_UP), then lowered to exact minor units.
+ */
+function majorFloatToMinor(majorValue: number, currency: string): number {
+  const m = round(money(String(majorValue), currency as Currency), ROUNDING.SETTLEMENT);
+  return Number(amountToMinorUnits(m));
+}
 
 // ---------------------------------------------------------------------------
 // Inputs — the typed outputs of the four source folds (already computed).
@@ -89,8 +103,13 @@ export interface Ba325AssemblyInput {
   readonly ba320: Ba320Output;
   /** BA 300 LCR fold output. Source for R0150–R0170. */
   readonly ba300Lcr: Ba300LcrOutput;
-  /** VaR engine report over the trading book. Source for R0240–R0310. */
-  readonly varReport: MarketRiskReport;
+  /**
+   * Simulator-first cohort VaR result over the trading book — the V1-FREE VaR
+   * path (`computeCohortVar`, eod-cohort-var-v2). Source for R0240–R0310. Folds
+   * the born-V2 FIL cohort, NOT the V1 FxTradeExecuted stream (V1-retirement
+   * directive). Figures are in reporting MAJOR units; converted to minor here.
+   */
+  readonly cohortVar: CohortVarResult;
   /** SA-CCR-derived counterparty-risk-requirement memorandum. Source for R0070–R0100. */
   readonly counterparty: Ba325CounterpartyMemorandum;
   /**
@@ -189,9 +208,7 @@ const SARB_REPO_ABSENT_FROM = `gap-register: ${BA325_GAP_SARB_REPO} (SARB-repo l
  * to. The caller has already read every source fold under ONE provenance lens
  * (production OR simulated-inclusive) — BA 325 inherits that lens.
  */
-export function assembleBa325SelectedRisk(
-  input: Ba325AssemblyInput,
-): Ba325SelectedRiskOutput {
+export function assembleBa325SelectedRisk(input: Ba325AssemblyInput): Ba325SelectedRiskOutput {
   assertBankEntity(input.entity);
   if (!input.functionalCurrency || input.functionalCurrency.length !== 3) {
     throw new Ba325AssemblyError(
@@ -352,30 +369,43 @@ export function assembleBa325SelectedRisk(
     },
   ];
 
-  // ---- Internal-models-approach VaR / sVaR (R0240–R0310) — from VaR engine ----
-  const VAR_FOLD = "market-risk-var-engine";
-  const v = input.varReport;
-  const varLin =
-    v.status === "computed"
-      ? `VaR engine historical-simulation over ${v.exposures.length} risk factor(s)`
-      : `VaR engine status=${v.status}`;
-  // The engine reports ZAR MAJOR units; BA 325 money lines are ZAR minor. Convert
-  // the present figures to minor; carry the absent reasons verbatim.
-  const toMinor = (fi: FinancialInput<number>): FinancialInput<number> =>
-    fi.present ? present(Math.round(fi.value * 100), fi.lineage) : fi;
+  // ---- Internal-models-approach VaR / sVaR (R0240–R0310) — from cohort VaR ----
+  const VAR_FOLD = "market-risk-cohort-var";
+  const cv = input.cohortVar;
+  // NO SILENT ZEROS: the cohort engine zeroes its figures and reports a loud
+  // status (`no-positions` / `insufficient-history`) when it cannot compute. We
+  // mirror that as an explicit `absent` — never a numeric 0 that reads like a
+  // computed flat figure.
+  const cohortVarLine = (
+    majorValue: number,
+    measure: "VaR" | "sVaR" | "ES",
+  ): FinancialInput<number> => {
+    if (cv.status !== "computed") {
+      const reason =
+        cv.status === "no-positions"
+          ? "the trading book is flat — the cohort carries no standing net FX position per currency (NOP basis is zero)"
+          : `insufficient market-data return history — ${cv.minObservations} observation(s) for the thinnest risk factor, below the build-phase floor; a ${measure} from a too-short window understates tail risk`;
+      return absent(reason, `cohort VaR engine (status=${cv.status})`);
+    }
+    // computed: reporting MAJOR units → minor (decimal-engine, no float × 100).
+    return present(
+      majorFloatToMinor(majorValue, input.functionalCurrency),
+      `cohort VaR historical-simulation over ${cv.scenarioCount} scenario(s), ${cv.exposures.length} risk factor(s); ${measure}`,
+    );
+  };
 
   const internalModelsApproach: Ba325Line[] = [
     {
       cellRow: "R0240",
       label: "Internal models approach Position risk requirement: Total VaR amount",
-      value: toMinor(v.var),
+      value: cohortVarLine(cv.varReporting, "VaR"),
       valueType: "money",
       sourceFold: VAR_FOLD,
     },
     {
       cellRow: "R0310",
       label: "Memorandum items: Total VaR amount (stressed VaR / sVaR)",
-      value: toMinor(v.svar),
+      value: cohortVarLine(cv.svarReporting, "sVaR"),
       valueType: "money",
       sourceFold: VAR_FOLD,
     },
@@ -389,14 +419,18 @@ export function assembleBa325SelectedRisk(
     },
   ];
 
-  // Per-desk VaR memorandum (R0320–R0350).
+  // Per-desk VaR memorandum (R0320–R0350). The cohort engine reports a single
+  // aggregate VaR in the build phase (no per-desk decomposition); a caller that
+  // has per-desk figures supplies them (reporting MAJOR units → minor here).
   const perDesk = input.perDeskVar ?? new Map<string, FinancialInput<number>>();
   let deskRow = 320;
   for (const [deskLabel, deskVar] of perDesk) {
     internalModelsApproach.push({
       cellRow: `R0${deskRow}`,
-      label: `Memorandum items: Total VaR amount / ${deskLabel}`,
-      value: toMinor(deskVar),
+      label: `Memorandum items: ${deskLabel} — Total VaR amount`,
+      value: deskVar.present
+        ? present(majorFloatToMinor(deskVar.value, input.functionalCurrency), deskVar.lineage)
+        : deskVar,
       valueType: "money",
       sourceFold: VAR_FOLD,
     });
@@ -414,8 +448,6 @@ export function assembleBa325SelectedRisk(
     valueType: "money",
     sourceFold: "gap:ba325-sarb-repo-liquidity",
   });
-
-  void varLin;
 
   return {
     meta: {

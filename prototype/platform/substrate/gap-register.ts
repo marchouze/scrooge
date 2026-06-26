@@ -262,6 +262,33 @@ export const SUBSTRATE_GAP_REGISTER: readonly SubstrateGapRecord[] = [
     status: "planned",
     mitigation: "partial",
   },
+  {
+    id: "ba325-irc-engine",
+    title: "BA 325 IMA Incremental Risk Charge (IRC): no engine",
+    description:
+      "BA 325 (Selected Risk Exposure — Trading & Treasury) carries an internal-models-approach IRC column (C0040 on rows R0240/R0250/R0260/R0290). The bank has NO incremental-risk-charge engine — IRC requires a default + migration-risk model (a 1-year, 99.9% measure over the trading-book credit positions; Basel-2.5 MAR / BCBS d352 §718(xcvi)+) that the build-phase substrate does not implement. BA 325 Phase 2a (D-BA-RETURN-SIMULATOR-FIRST) ASSEMBLES the summary from the BA 320 / BA 300 LCR / SA-CCR / cohort-VaR folds; the IRC cells are surfaced as an explicit `absent` (reasoned, gap-tracked) — NOT a silent zero and NOT an overclaimed fold (the original BA 325 audit finding was an overclaimed fold). The IRC engine is the named follow-on, gated behind a real trading-book credit-position substrate. Authority: D-BA-RETURN-SIMULATOR-FIRST; Engineering Charter cmd 5 (no silent deferral); Reg 28; BCBS d352 §718.",
+    severity: "medium",
+    status: "planned",
+    mitigation: "partial",
+  },
+  {
+    id: "ba325-sarb-repo-liquidity",
+    title: "BA 325 SARB-repo-participation liquidity summary: no fold",
+    description:
+      "BA 325 carries a SARB-repo-participation liquidity summary (R0110 repo participation; R0120 liquid assets held on preceding day; R0130 month-to-date average held; R0140 requirement). This is a TREASURY banking-book liquidity line — none of the four BA 325 source folds (BA 320 market-risk, BA 300 LCR, SA-CCR, cohort VaR) derives it. BA 325 Phase 2a surfaces R0110 as an explicit `absent` (gap-tracked) rather than a silent zero. The repo-participation fold (preceding-day liquid-asset stock + SARB repo facility participation) is the named follow-on; it shares substrate with the BA 300 / BA 310 minimum-reserve liquidity folds. Authority: D-BA-RETURN-SIMULATOR-FIRST; Engineering Charter cmd 5; Reg 29 (daily selected-risk: trading & treasury).",
+    severity: "medium",
+    status: "planned",
+    mitigation: "partial",
+  },
+  {
+    id: "ba325-reg29-fx-residency-detail",
+    title: "BA 325 reg-29 foreign-currency residency-segmented detail block: no fold",
+    description:
+      "BA 325 carries a large reg-29(3) foreign-currency detail block (R0360–R0790): foreign-currency assets and liabilities, commitments to buy/sell, and the effective net-open-foreign-currency position, all segmented by counterparty RESIDENCY (residents / non-residents / authorised dealers / SARB) — ~430 cells. The AGGREGATE effective NOP (R0750) is driveable from the BA 320 FX sub-fold's net-open-position basis, but the by-residency / by-counterparty gross-detail segmentation is NOT folded — it requires a counterparty-residency-tagged FX position fold the build-phase substrate does not implement. BA 325 Phase 2a leaves this block licence-day-gated (residency-segmented detail only exists with real counterparties at licence-day) and tracks the missing fold here. The residency-segmented FX detail fold is the named follow-on. Authority: D-BA-RETURN-SIMULATOR-FIRST; Engineering Charter cmd 5; Reg 29(3).",
+    severity: "medium",
+    status: "planned",
+    mitigation: "partial",
+  },
 ];
 
 /** Open (not-yet-resolved) gaps — the inventory the substrate snapshot tracks. */
