@@ -46,14 +46,14 @@
 // Author: Camille (Chief Financial Officer, governance) — review-methodology
 //   PROC + CFO sign-off leg of WS-FX-IFRS-REVIEW-FOUNDATION.
 
-import { POSTING_RULE_REGISTRY } from "../../v2-core/posting-rules/registry";
 import { FX_POSTING_RULE_IDS } from "../../v2-core/posting-rules/fx";
 import { activeFxSettlementDeferredGaps } from "../../v2-core/posting-rules/fx-settlement";
-import { run as runObsMemorandum } from "../recon/fx-trade-date-obs-memorandum";
+import { POSTING_RULE_REGISTRY } from "../../v2-core/posting-rules/registry";
 import { run as runMonetaryClosingRate } from "../recon/fx-monetary-closing-rate-integrity";
 import { run as runPnlAccountCategory } from "../recon/fx-pnl-account-category-integrity";
 import { run as runPnlFcyExposure } from "../recon/fx-pnl-fcy-exposure-integrity";
 import { run as runSettlementFvtpl } from "../recon/fx-settlement-fvtpl-integrity";
+import { run as runObsMemorandum } from "../recon/fx-trade-date-obs-memorandum";
 import type { ReconResult } from "../recon/types";
 
 /** The five IFRS premises the FX-vanilla CFO sign-off rests on. */
