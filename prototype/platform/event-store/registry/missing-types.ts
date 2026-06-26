@@ -439,7 +439,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/kai.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when an anomaly is detected in order routing (e.g. unexpected
@@ -452,7 +457,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/kai.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when the surveillance feed from an exchange or data vendor has
@@ -465,7 +475,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/kai.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a market data feed is fully unavailable for a covered
@@ -478,7 +493,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/kai.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a JSE / exchange rule change is published that may affect
@@ -491,7 +511,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/kai.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when Rohan adjusts an open position record (e.g. after a
@@ -504,7 +529,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/rohan.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when the collateral register is updated (margin call received,
@@ -542,7 +572,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/rohan.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a portfolio classification changes (e.g. HFT → AFS, AFS → HTM
@@ -555,7 +590,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/rohan.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a loan is booked into the banking book.
@@ -594,7 +634,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/saskia.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a surveillance alert fires on trade or order data
@@ -607,7 +652,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/saskia.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when an anomaly is detected in a pricing / yield curve source
@@ -620,7 +670,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/saskia.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted by Saskia on a material counterparty event (default, rating
@@ -634,7 +689,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/saskia.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a RAS limit-schedule calibration change is approved and
@@ -647,7 +707,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/saskia.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a regulatory licence is granted (SARB banking licence,
@@ -660,7 +725,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "idempotent-terminal",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/saskia.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when accrual entries (interest, fee, dividend) are booked.
@@ -695,7 +765,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "platform/event-store/event-types/markets-trading-extended.ts; D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a confirmation field mismatches between bank and counterparty.
@@ -709,7 +784,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "platform/event-store/event-types/markets-trading-extended.ts; D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a scheduled settlement fails. Settlement was never posted,
@@ -723,7 +803,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "platform/event-store/event-types/fx-accounting.ts; D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a previously confirmed settlement is reversed (SWIFT recall
@@ -738,7 +823,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "platform/event-store/event-types/fx-accounting.ts; D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted to cancel an FX trade booked with incorrect data (e.g. wrong seed
@@ -754,7 +844,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "idempotent-terminal",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "platform/event-store/event-types/fx-accounting.ts; CEO instruction 2026-05-19",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // PROC-OPS-SFBCP-01 (Devon — Chief Operating Officer, governance; PR
@@ -774,7 +869,14 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "platform/event-store/event-types/fx-accounting.ts; Procedures/operations/settlement-failure-bcp.md (PR #636); Banks Act 94 Reg 39; BCBS d226",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // Code emitter exists but is dormant: fx-settlement-subscriber.ts (dormant, not on canonical path); re-home to the store-tee
+    // verbatim path when wired live at licence-day.
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // PROC-OPS-SFBCP-01 (Devon, PR #636) step 1 — emitted when the bank's
@@ -807,7 +909,14 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "platform/event-store/event-types/fx-accounting.ts; Procedures/operations/settlement-failure-bcp.md (PR #636) §2; ISDA 2002 Master Agreement §6",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // Code emitter exists but is dormant: fx-settlement-subscriber.ts (dormant, not on canonical path); re-home to the store-tee
+    // verbatim path when wired live at licence-day.
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted at the settlement-routing step when no designated correspondent
@@ -826,7 +935,14 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "platform/event-store/event-types/fx-accounting.ts; platform/markets/fx/nostro-routing-registry.ts; D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // Code emitter exists but is dormant: otc-failure-handlers.ts (dormant, not on canonical path); re-home to the store-tee
+    // verbatim path when wired live at licence-day.
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a counterparty defaults on a forward contract at or before
@@ -846,7 +962,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "platform/event-store/event-types/fx-accounting.ts; platform/markets/fx/otc-failure-handlers.ts; ISDA-2002-§6; BCBS-D226-§4; D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a counterparty requests an extension of a forward contract's
@@ -865,7 +986,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "platform/event-store/event-types/fx-accounting.ts; platform/markets/fx/otc-failure-handlers.ts; ISDA-2002-§2(c); D-FX-OTC-PRODUCT-APPROVAL-WITHDRAWAL",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a counterparty signs a master agreement (ISDA, GMRA,
@@ -913,7 +1039,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "platform/event-store/event-types/markets-trading-extended.ts; D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a trade parameter is amended post-booking. Rate/notional
@@ -928,7 +1059,12 @@ const MARKETS_TRADING_EVENT_TYPES: readonly EventTypeMetadata[] = [
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source:
       "platform/event-store/event-types/markets-trading-extended.ts; D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
 ];
 
@@ -960,7 +1096,14 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/ravi.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // Code emitter exists but is dormant: ravi-intraday-stress.ts / atlas-collateral-snapshot.ts (dormant); re-home to the store-tee
+    // verbatim path when wired live at licence-day.
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted by Ravi / Eitan when IRRBB sensitivity metrics exceed the
@@ -1010,7 +1153,12 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/eitan.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted by Eitan: projected NSFR ratio.
@@ -1022,7 +1170,12 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/eitan.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a capital action trigger fires (AT1 coupon skip,
@@ -1035,7 +1188,12 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/eitan.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted on a significant capital event (equity issuance, capital
@@ -1101,7 +1259,12 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/ravi.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   // NOTE (Bucket C prep, D-BANK-WIDE-V2-MIGRATION): the shadow row for
   // IntradayHQLAStressProjection was removed here — it duplicated the canonical
@@ -1120,7 +1283,12 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/camille.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when Camille proposes a financial restatement (error correction
@@ -1178,7 +1346,12 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/helena.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a SARB supervisory letter is received.
@@ -1202,7 +1375,14 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/helena.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // Code emitter exists but is dormant: atlas-ilaap-run.ts (dormant, not on canonical path); re-home to the store-tee
+    // verbatim path when wired live at licence-day.
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a risk policy change is proposed for CRO / Board approval.
@@ -1226,7 +1406,12 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/rohan.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Snapshot of risk-appetite metrics (VaR, stress PnL, concentration).
@@ -1238,7 +1423,12 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "latest-wins-per-key",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/helena.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a risk policy changes (approved version bump).
@@ -1262,7 +1452,14 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/nadia.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // Code emitter exists but is dormant: pricing-model-definitions.ts (dormant, not on canonical path); re-home to the store-tee
+    // verbatim path when wired live at licence-day.
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted by Rohan's backtest engine to trigger a model validation run.
@@ -1274,7 +1471,12 @@ const RISK_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/nadia.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
 ];
 
@@ -1381,7 +1583,12 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/mira.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a transaction is posted to the AML transaction monitoring
@@ -1422,7 +1629,12 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/zara.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a PEP match score exceeds the configured threshold.
@@ -1434,7 +1646,12 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/zara.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a suspected FAIS conduct breach is detected.
@@ -1446,7 +1663,12 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/zara.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a regulatory enquiry is received from a regulator.
@@ -1470,7 +1692,12 @@ const COMPLIANCE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/tomas.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted by Iris when a POPIA data breach or suspected compromise is detected.
@@ -2327,7 +2554,12 @@ const CLIENT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/niko.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a suitability assessment is required for a client.
@@ -2339,7 +2571,12 @@ const CLIENT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/niko.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when an advice record is required for a client interaction
@@ -2352,7 +2589,12 @@ const CLIENT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/niko.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when an onboarding process reaches the handoff point from
@@ -2365,7 +2607,12 @@ const CLIENT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "pair-coupled",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/niko.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted by Mira / Niko when a client candidate is registered in the
@@ -2378,7 +2625,14 @@ const CLIENT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/mira.ts; runtime/agents/metadata/yael.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // Code emitter exists but is dormant: kyc/orchestrator.ts (dormant, not on canonical path); re-home to the store-tee
+    // verbatim path when wired live at licence-day.
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
   {
     // Emitted when a periodic client review cycle is triggered.
@@ -2390,29 +2644,26 @@ const CLIENT_LIFECYCLE_EVENT_TYPES: readonly EventTypeMetadata[] = [
     replay: "append-only-audit",
     retention: RETENTION_CONSERVATIVE_DEFAULT,
     source: "runtime/agents/metadata/yael.ts",
-    v2Status: "v1-only",
+    // FLIP (D-V1-REMOVAL-MISSING-TYPES-TRIAGE) — v1-only → v2-replaced,
+    // RETIRED-BY-CONSTRUCTION. Money-free F-032 placeholder; not emitted on the
+    // canonical ci:migrate store (verified: SELECT type FROM events → absent).
+    // This registry row IS the type's canonical home; the ratchet counts it
+    // directly. Basis: D-V1-REMOVAL-FLIP-BASIS-RBC (no emitter on canonical path).
+    v2Status: "v2-replaced",
   },
 ];
 
 // ---------------------------------------------------------------------------
 // L — Model / quant validation events (Nadia)
 // ---------------------------------------------------------------------------
+//
+// The sole row here (a duplicate BacktestTriggered, identical to domain C's)
+// was a dead shadow: the addRows/SEEN dedup dropped it before export, so it
+// never reached EVENT_TYPE_REGISTRY and was never counted in the ratchet. It
+// was pruned under D-V1-REMOVAL-MISSING-TYPES-TRIAGE (Fate 3 — dead/shadow).
+// The live BacktestTriggered is domain C's row (flipped to v2-replaced).
 
-const MODEL_VALIDATION_EVENT_TYPES: readonly EventTypeMetadata[] = [
-  {
-    // Emitted by Nadia when a model backtest is triggered.
-    // (Distinct from BacktestRequested which Rohan consumes.)
-    type: "BacktestTriggered",
-    class: "markets",
-    payloadSchema: backtestTriggeredPayloadSchema,
-    issuer: "Nadia",
-    subscribers: ["Nadia"],
-    replay: "append-only-audit",
-    retention: RETENTION_CONSERVATIVE_DEFAULT,
-    source: "runtime/agents/metadata/nadia.ts",
-    v2Status: "v1-only",
-  },
-];
+const MODEL_VALIDATION_EVENT_TYPES: readonly EventTypeMetadata[] = [];
 
 // ---------------------------------------------------------------------------
 // M — Readiness snapshots (various — build-phase sentinel events)
@@ -2491,10 +2742,12 @@ const READINESS_SNAPSHOT_EXTENDED_EVENT_TYPES: readonly EventTypeMetadata[] = [
 // Combined export
 // ---------------------------------------------------------------------------
 
-// De-duplicate BacktestTriggered: it appears in both domains C and L with
-// the same definition. The registry requires unique type strings.
-// We keep domain C's entry (issuer: Nadia's trigger from Rohan) since that
-// is the higher-frequency consumer pattern. Domain L is the same row.
+// De-duplication guard. The registry requires unique type strings. The former
+// duplicate (BacktestTriggered, registered in both domains C and L) was pruned
+// under D-V1-REMOVAL-MISSING-TYPES-TRIAGE (the domain-L shadow was dead — never
+// exported, never counted). The SEEN guard is retained as a standing defence so
+// any future accidental duplicate is dropped rather than throwing at registry
+// assembly; domain C's row is the canonical BacktestTriggered.
 
 const SEEN = new Set<string>();
 const dedupedRows: EventTypeMetadata[] = [];
