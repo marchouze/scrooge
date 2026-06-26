@@ -106,6 +106,11 @@ export { TRADING_BOOK_POSITION_EVENT_TYPES_REGISTRY } from "./trading-book-posit
 // D-BA-RETURN-SIMULATOR-FIRST Phase 2b — born-V2 derivative-book position events
 // that feed the BA 350 (Derivatives Instruments) inventory + CVA capital folds.
 export { DERIVATIVE_BOOK_POSITION_EVENT_TYPES_REGISTRY } from "./derivative-book-positions";
+// D-BA-RETURN-SIMULATOR-FIRST Phase 2c — born-V2 banking-book equity-holding
+// events that feed the BA 340 (Equity Risk in the Banking Book) simple-risk-
+// weight engine. Distinct from the trading-book equity events above — banking-
+// book equity must NEVER enter BA 320 (the FRTB boundary).
+export { BANKING_BOOK_EQUITY_HOLDING_EVENT_TYPES_REGISTRY } from "./banking-book-equity-holdings";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE equity lifecycle accounting events.
 export { EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./equities";
 // D-TRADE-LIFECYCLE-IFRS-CHAIN — OTC IRD swap lifecycle accounting events.
@@ -342,6 +347,7 @@ import { AGENT_MEMORY_EVENT_TYPES_REGISTRY } from "./agent-memory";
 import { ALCO_EVENT_TYPES_REGISTRY } from "./alco";
 import { APPLICABILITY_ASSESSMENT_EVENT_TYPES_REGISTRY } from "./applicability-assessment";
 import { BALANCE_SHEET_EVENT_TYPES_REGISTRY } from "./balance-sheet";
+import { BANKING_BOOK_EQUITY_HOLDING_EVENT_TYPES_REGISTRY } from "./banking-book-equity-holdings";
 import { BOND_ACCOUNTING_V2_EVENT_TYPES_REGISTRY } from "./bond-accounting-v2";
 import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
 import { CAE_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./cae-governance";
@@ -527,6 +533,11 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // D-BA-RETURN-SIMULATOR-FIRST Phase 2b — born-V2 derivative-book position
   // events feeding the BA 350 (Derivatives Instruments) inventory + CVA folds.
   ...DERIVATIVE_BOOK_POSITION_EVENT_TYPES_REGISTRY,
+  // D-BA-RETURN-SIMULATOR-FIRST Phase 2c — born-V2 banking-book equity-holding
+  // events feeding the BA 340 (Equity Risk in the Banking Book) simple-risk-
+  // weight engine. Distinct event family from the trading-book equity events —
+  // banking-book equity must NEVER enter BA 320 (the FRTB boundary).
+  ...BANKING_BOOK_EQUITY_HOLDING_EVENT_TYPES_REGISTRY,
   // D-TRADE-LIFECYCLE-IFRS-CHAIN — JSE equity lifecycle accounting events.
   // Authority: D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18).
   ...EQUITY_ACCOUNTING_EVENT_TYPES_REGISTRY,

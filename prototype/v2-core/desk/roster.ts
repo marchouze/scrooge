@@ -178,6 +178,21 @@ export const SIM_TRADING_BOOK_DESK_IDS: readonly DeskId[] = CANONICAL_DESKS.filt
 ).map((d) => d.deskId);
 
 /**
+ * The banking-book (treasury) desks. Banking-book equity holdings (BA 340, the
+ * simple-risk-weight method) and other banking-book positions book HERE — never
+ * to a trading-book desk (the FRTB boundary; banking-book equity must NOT enter
+ * BA 320 trading-book equity risk). Authority: D-FRTB-TRADING-DESK-STRUCTURE;
+ * D-BA-RETURN-SIMULATOR-FIRST Phase 2c.
+ */
+export const SIM_BANKING_BOOK_DESK_IDS: readonly DeskId[] = CANONICAL_DESKS.filter(
+  (d) => d.bookType === "banking-treasury",
+).map((d) => d.deskId);
+
+/** The default banking-book desk the simulator books banking-book positions to. */
+export const DEFAULT_SIM_BANKING_BOOK_DESK_ID: DeskId =
+  SIM_BANKING_BOOK_DESK_IDS[0] ?? makeDeskId("treasury-desk", "treasury-desk-1");
+
+/**
  * Resolve a `deskId` to the canonical desk's `bookType`, or `null` if the id is
  * not a registered canonical desk. This is the store-free resolver the FX-trade
  * schema refinement uses to enforce the trading/banking-book boundary at parse
