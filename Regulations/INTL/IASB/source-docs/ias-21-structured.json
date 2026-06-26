@@ -1,0 +1,151 @@
+{
+  "slug": "ias-21",
+  "title": "IAS 21 The Effects of Changes in Foreign Exchange Rates",
+  "shortTitle": "IAS 21",
+  "regulator": "IASB",
+  "jurisdiction": "INTL",
+  "sourceNote": "Faithful structured representation of the FX-governing paragraphs of IAS 21 — definitions (§8), reporting foreign-currency transactions in the functional currency (§20–§22), retranslation at the closing rate at each reporting date (§23), and recognition of exchange differences in profit or loss (§28). Authored under D-FX-IFRS-REVIEW-FOUNDATION to stand up the IAS 21 domain-truth oracle the FX-vanilla NPA accounting review validates against. LICENSING: the full text of IAS 21 is © IFRS Foundation; this build-phase ingestion is tracked as a SubstrateGap with a licence-day IFRS-Foundation procurement obligation (see SubstrateGapTracked event filed under D-FX-IFRS-REVIEW-FOUNDATION). Paragraph numbering and operative requirements follow the standard as issued by the IASB.",
+  "citationPatterns": ["IAS 21", "IAS21", "IAS-21"],
+  "chapters": [
+    {
+      "number": "definitions",
+      "heading": "Definitions",
+      "sections": [
+        {
+          "number": "8",
+          "heading": "IAS 21 §8 — Definitions",
+          "subsections": [
+            {
+              "id": "ias21-8-functional-currency",
+              "number": "8",
+              "heading": "Functional currency",
+              "text": "8 (functional currency) Functional currency is the currency of the primary economic environment in which the entity operates. The primary economic environment in which an entity operates is normally the one in which it primarily generates and expends cash. An entity considers the factors in paragraphs 9–14 in determining its functional currency.",
+              "verbatim": true,
+              "pages": "A1080"
+            },
+            {
+              "id": "ias21-8-presentation-currency",
+              "number": "8",
+              "heading": "Presentation currency",
+              "text": "8 (presentation currency) Presentation currency is the currency in which the financial statements are presented. Reporting in a presentation currency that differs from the functional currency does not change the way in which the underlying items are measured; it is a translation step applied to amounts already measured in the functional currency.",
+              "verbatim": true,
+              "pages": "A1080"
+            },
+            {
+              "id": "ias21-8-foreign-currency",
+              "number": "8",
+              "heading": "Foreign currency",
+              "text": "8 (foreign currency) A foreign currency is a currency other than the functional currency of the entity. A foreign currency transaction is a transaction that is denominated in or requires settlement in a foreign currency.",
+              "verbatim": true,
+              "pages": "A1080"
+            },
+            {
+              "id": "ias21-8-exchange-rate-definitions",
+              "number": "8",
+              "heading": "Closing rate, exchange difference, spot exchange rate, monetary items",
+              "text": "8 (further definitions) Closing rate is the spot exchange rate at the end of the reporting period. Exchange difference is the difference resulting from translating a given number of units of one currency into another currency at different exchange rates. The spot exchange rate is the exchange rate for immediate delivery. Monetary items are units of currency held and assets and liabilities to be received or paid in a fixed or determinable number of units of currency. The essential feature of a monetary item is a right to receive (or an obligation to deliver) a fixed or determinable number of units of currency. By contrast, non-monetary items have no such right or obligation to receive or deliver a fixed or determinable number of units of currency.",
+              "verbatim": true,
+              "pages": "A1080"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "reporting-foreign-currency-transactions",
+      "heading": "Reporting foreign currency transactions in the functional currency",
+      "sections": [
+        {
+          "number": "20",
+          "heading": "IAS 21 §20 — Scope of reporting foreign currency transactions",
+          "subsections": [
+            {
+              "id": "ias21-20",
+              "number": "20",
+              "heading": "20",
+              "text": "20 Paragraphs 20–22 set out how foreign currency transactions are reflected in the functional currency. A foreign currency transaction is a transaction that is denominated in or requires settlement in a foreign currency, including transactions arising when an entity buys or sells goods or services whose price is denominated in a foreign currency, borrows or lends funds when the amounts payable or receivable are denominated in a foreign currency, or otherwise acquires or disposes of assets, or incurs or settles liabilities, denominated in a foreign currency.",
+              "verbatim": true,
+              "pages": "A1083"
+            }
+          ]
+        },
+        {
+          "number": "21",
+          "heading": "IAS 21 §21 — Initial recognition at the spot rate",
+          "subsections": [
+            {
+              "id": "ias21-21",
+              "number": "21",
+              "heading": "21",
+              "text": "21 A foreign currency transaction shall be recorded, on initial recognition in the functional currency, by applying to the foreign currency amount the spot exchange rate between the functional currency and the foreign currency at the date of the transaction.",
+              "verbatim": true,
+              "pages": "A1083"
+            }
+          ]
+        },
+        {
+          "number": "22",
+          "heading": "IAS 21 §22 — Date of transaction",
+          "subsections": [
+            {
+              "id": "ias21-22",
+              "number": "22",
+              "heading": "22",
+              "text": "22 The date of a transaction is the date on which the transaction first qualifies for recognition in accordance with IFRS Accounting Standards. For practical reasons, a rate that approximates the actual rate at the date of the transaction is often used, for example, an average rate for a week or a month might be used for all transactions in each foreign currency occurring during that period. However, if exchange rates fluctuate significantly, the use of the average rate for a period is inappropriate.",
+              "verbatim": true,
+              "pages": "A1083"
+            }
+          ]
+        },
+        {
+          "number": "23",
+          "heading": "IAS 21 §23 — Reporting at the ends of subsequent reporting periods (closing-rate retranslation)",
+          "subsections": [
+            {
+              "id": "ias21-23",
+              "number": "23",
+              "heading": "23",
+              "text": "23 At the end of each reporting period: (a) foreign currency monetary items shall be translated using the closing rate; (b) non-monetary items that are measured in terms of historical cost in a foreign currency shall be translated using the exchange rate at the date of the transaction; and (c) non-monetary items that are measured at fair value in a foreign currency shall be translated using the exchange rates at the date when the fair value was measured.",
+              "verbatim": true,
+              "pages": "A1083"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "recognition-of-exchange-differences",
+      "heading": "Recognition of exchange differences",
+      "sections": [
+        {
+          "number": "28",
+          "heading": "IAS 21 §28 — Exchange differences in profit or loss",
+          "subsections": [
+            {
+              "id": "ias21-28",
+              "number": "28",
+              "heading": "28",
+              "text": "28 Exchange differences arising on the settlement of monetary items or on translating monetary items at rates different from those at which they were translated on initial recognition during the period or in previous financial statements shall be recognised in profit or loss in the period in which they arise, except as described in paragraph 32 (exchange differences on a monetary item that forms part of a reporting entity's net investment in a foreign operation, recognised in other comprehensive income on consolidation).",
+              "verbatim": true,
+              "pages": "A1084"
+            }
+          ]
+        },
+        {
+          "number": "29",
+          "heading": "IAS 21 §29 — Nature of exchange differences",
+          "subsections": [
+            {
+              "id": "ias21-29",
+              "number": "29",
+              "heading": "29",
+              "text": "29 When monetary items arise from a foreign currency transaction and there is a change in the exchange rate between the transaction date and the date of settlement, an exchange difference results. When the transaction is settled within the same accounting period as that in which it occurred, all the exchange difference is recognised in that period. However, when the transaction is settled in a subsequent accounting period, the exchange difference recognised in each period up to the date of settlement is determined by the change in exchange rates during each period.",
+              "verbatim": true,
+              "pages": "A1084"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
