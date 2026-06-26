@@ -35,6 +35,7 @@ function leg(
     postingRuleId: over.postingRuleId,
     description: "test leg",
     filEventId: over.filEventId ?? "fil-evt-1",
+    ...(over.pnlKind !== undefined ? { pnlKind: over.pnlKind } : {}),
   };
 }
 
@@ -85,6 +86,51 @@ describe("recon:fx-pnl-account-category-integrity — direction invariant (IAS 2
       leg({
         accountCode: FX_UNREALISED_PNL_ACCOUNT,
         postingRuleId: FX_POSTING_RULE_IDS.revaluation,
+      }),
+    ]);
+    expect(r.ok).toBe(true);
+  });
+
+  test("FAILS a pnlKind=realised leg routed to a BALANCE-SHEET account (F7 — intent key, not account code)", () => {
+    // The F7 defect the old account-code branch could not catch: a rule emits a
+    // leg it MEANS as a realised exchange difference (pnlKind="realised") but
+    // routes it to a balance-sheet receivable (ACC-2100-001, category asset-*)
+    // instead of the realised-P&L account. Because the leg names a DIFFERENT
+    // account code than FX_REALISED_PNL_ACCOUNT, the old `accountCode ===
+    // FX_REALISED_PNL_ACCOUNT` branch skipped it entirely. Keyed off pnlKind it
+    // now fails closed (IAS 21 §28 — a realised exchange difference is P&L, never a
+    // balance-sheet line).
+    const r = assertFxPnlAccountCategory([
+      leg({
+        accountCode: "ACC-2100-001", // FX receivable — a balance-sheet asset account
+        postingRuleId: "PR-FX-CONVERT-V2",
+        pnlKind: "realised",
+      }),
+    ]);
+    expect(fails(r)).toBe(true);
+    expect(r.violations.some((v) => v.subject.includes("realised-on-non-pnl"))).toBe(true);
+  });
+
+  test("FAILS a pnlKind=unrealised leg routed to the OBS memorandum block (F7)", () => {
+    // An unrealised FVTPL movement marked pnlKind="unrealised" routed to an
+    // off-balance-sheet memorandum account (ACC-9100-001) — not P&L — fails closed.
+    const r = assertFxPnlAccountCategory([
+      leg({
+        accountCode: "ACC-9100-001",
+        postingRuleId: FX_POSTING_RULE_IDS.revaluation,
+        pnlKind: "unrealised",
+      }),
+    ]);
+    expect(fails(r)).toBe(true);
+    expect(r.violations.some((v) => v.subject.includes("unrealised-on-non-pnl"))).toBe(true);
+  });
+
+  test("PASSES a pnlKind=realised leg correctly on the realised-P&L account (F7 clean case)", () => {
+    const r = assertFxPnlAccountCategory([
+      leg({
+        accountCode: FX_REALISED_PNL_ACCOUNT,
+        postingRuleId: "PR-FX-CONVERT-V2",
+        pnlKind: "realised",
       }),
     ]);
     expect(r.ok).toBe(true);

@@ -50,6 +50,27 @@ export function isFxInstance(typeUrn: string): boolean {
 // In-memory FX posting leg — the pure-fold analogue of one GlPostingEmitted leg.
 // ---------------------------------------------------------------------------
 
+/**
+ * The P&L INTENT of a leg — the kind of profit-or-loss recognition the posting
+ * rule means the leg to be, INDEPENDENT of which account the leg names
+ * (D-FX-IFRS-REVIEW-FOUNDATION, F7).
+ *
+ * WHY THIS IS BORN-V2 AND SET BY THE RULE, NOT DERIVED FROM THE ACCOUNT CODE.
+ * The original direction gate (recon:fx-pnl-account-category-integrity, check A)
+ * keyed off the account code — it inspected legs whose `accountCode` already WAS
+ * the realised-P&L account, then asserted that same account resolves to a P&L
+ * category. Because the realised-P&L constant is proven P&L by a static check,
+ * that per-leg branch was a tautology that could never fire, and the real risk —
+ * a rule mistakenly routing a realised gain/loss to a BALANCE-SHEET account
+ * (which has a different account code and so was skipped) — was invisible. The
+ * `pnlKind` discriminator records the rule's INTENT at emission, so the gate can
+ * assert "every leg the rule MEANS as realised/unrealised P&L lands on a P&L
+ * account, wherever it points" — catching exactly the wrong-destination defect
+ * the account-code branch could not. Absent ⇒ the leg is not a P&L-recognition
+ * leg (cash, nostro, clearing, position, OBS memorandum, contra).
+ */
+export type FxPnlKind = "realised" | "unrealised";
+
 export interface FxPostingLeg {
   readonly accountCode: string;
   readonly creditDebit: "debit" | "credit";
@@ -60,6 +81,15 @@ export interface FxPostingLeg {
   readonly iasRule: string;
   readonly postingRuleId: string;
   readonly description: string;
+  /**
+   * The P&L recognition intent of this leg (F7). Set by the rule on a leg it
+   * means as a realised or unrealised exchange-difference / FVTPL-movement
+   * recognition; ABSENT on every non-P&L leg. The direction gate asserts a leg
+   * carrying this marker lands on a profit-or-loss account, independent of the
+   * account code it names — so a realised gain mis-routed to a balance-sheet
+   * account fails closed (it no longer slips through on a different account code).
+   */
+  readonly pnlKind?: FxPnlKind;
 }
 
 // ---------------------------------------------------------------------------
@@ -454,6 +484,8 @@ export function postFxInitialRecognitionLegs(payload: FilInstrumentCreatedPayloa
           "IFRS 9 §B5.1.2A — day-1 fair value of an off-market trade recognised on-BS at inception",
         postingRuleId,
         description: dayOneDescription,
+        // The day-1 FV P&L leg is an UNREALISED FVTPL recognition (F7).
+        pnlKind: "unrealised",
       },
     );
   }
@@ -537,6 +569,10 @@ export function postFxRevaluationLegs(
         iasRule,
         postingRuleId,
         description,
+        // The reval counter is the UNREALISED FVTPL movement (F7) — zero-amount
+        // here, but the intent marker is set regardless of magnitude so the gate
+        // asserts it lands in P&L wherever the rule points it.
+        pnlKind: "unrealised",
       },
     ];
   }
@@ -574,6 +610,8 @@ export function postFxRevaluationLegs(
       iasRule,
       postingRuleId,
       description,
+      // The reval counter leg is the UNREALISED FVTPL movement to P&L (F7).
+      pnlKind: "unrealised",
     },
   ];
 }
