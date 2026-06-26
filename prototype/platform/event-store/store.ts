@@ -413,14 +413,28 @@ export class EventStore {
     // WAL + NORMAL is durability-safe: a crash loses at most the last
     // uncommitted write, which the UNIQUE event_id constraint detects on
     // retry. busy_timeout lets concurrent agents queue rather than error.
+    //
+    // ORDERING IS LOAD-BEARING: `busy_timeout` MUST be set BEFORE
+    // `journal_mode = WAL`. Switching the journal mode takes a momentary
+    // database lock; if another connection (a concurrent dispatch CLI, the
+    // dashboard, a parallel agent, or — in the round-trip test — a
+    // still-open in-process EventStore) holds the file at that instant and
+    // busy_timeout is still the default 0, the WAL switch fails immediately
+    // with `SQLITE_BUSY: database is locked` and this constructor throws.
+    // Setting the busy-wait first makes the switch block-and-retry for up
+    // to 5s instead. Root cause of the intermittent rms-phase-2-roundtrip
+    // "idempotent re-emit" CI flake (2026-06-26): that test's parent
+    // process holds an EventStore open while the idempotency subprocess
+    // opens the same file. Authority: Engineering Charter cmd 1 (root-cause)
+    // + cmd 2 (fail-closed — wait for the lock, don't crash).
     if (path !== ":memory:") {
       this.db.exec(`
+        PRAGMA busy_timeout = 5000;
         PRAGMA journal_mode = WAL;
         PRAGMA synchronous  = NORMAL;
         PRAGMA mmap_size    = 268435456;
         PRAGMA cache_size   = -65536;
         PRAGMA temp_store   = MEMORY;
-        PRAGMA busy_timeout = 5000;
       `);
     }
     this.db.exec(DDL);
