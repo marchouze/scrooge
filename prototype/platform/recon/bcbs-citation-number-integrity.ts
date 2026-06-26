@@ -214,14 +214,22 @@ const SCAN_DIRS = [
   "Policies",
   "Procedures",
   "Regulations",
-  // Code surfaces that cite the liquidity / IRRBB / market-risk standards. Whole
-  // directories (not enumerated files) so newly-added BA-return / reporting /
-  // accounting code cannot reintroduce a mis-numbered BCBS citation unscanned —
-  // exactly what happened when a deposit-funding BA-300 build (PR #1568) shipped
-  // `BCBS D295` for the LCR after the register was already corrected.
-  "prototype/platform/reporting",
-  "prototype/platform/accounting",
-  "prototype/platform/returns",
+  // The whole prototype estate — every code surface that cites the liquidity /
+  // IRRBB / market-risk standards. Scanning whole directories (not enumerated
+  // files) is deliberate: it is the only way a newly-added BA-return / engine /
+  // registry / scenario / seed file cannot reintroduce a mis-numbered BCBS
+  // citation unscanned — exactly what happened when a deposit-funding BA-300
+  // build (PR #1568) shipped `BCBS D295` for the LCR after the register was
+  // already corrected, and what the full-tree sweep found across ~33 files.
+  // The gate's own source is excluded (it documents the numbers in prose).
+  "prototype/platform",
+  "prototype/runtime",
+  "prototype/v2-core",
+  "prototype/scripts",
+  "prototype/scenarios",
+  "prototype/seeds",
+  "prototype/tests",
+  "prototype/Procedures",
 ] as const;
 const SCAN_FILES: readonly string[] = [];
 
@@ -233,6 +241,19 @@ const SKIP_PATH_FRAGMENTS = [
   // pairings to record the correction (Charter cmd 5); it is a record OF the
   // fix, not a live mis-citation. Excluded like source-doc verbatim extracts.
   "_bcbs-citation-numbering-remediation-audit.md",
+  // This gate's own source documents the canonical numbers + the forbidden
+  // pairings in prose; it is the definition of the rule, not a citation.
+  "bcbs-citation-number-integrity.ts",
+  // platform/alm/* is owned by a separate concurrent task (d365 → d368 +
+  // the BCBS-D365-IRRBB constant). One-dispatch-path-per-scope: this gate must
+  // not bracket that change. The d365-in-alm sites are flagged in the audit.
+  "/platform/alm/",
+  // Generated, minified single-line BA-return contracts: the cell-data prose is
+  // GENERATED from `gen-return-contract.py` (which IS scanned, where apposition
+  // works). On one 1,500+-cell line the apposition heuristic cannot isolate a
+  // token, so the .json is validated via its generator source, not re-scanned.
+  "regulatory-returns/ba300-contract.json",
+  "regulatory-returns/ba310-contract.json",
 ];
 const SCAN_EXTS = [".md", ".html", ".ts", ".json", ".yml", ".yaml"];
 
@@ -292,6 +313,23 @@ function apposedTitleSnippet(text: string, idx: number, len: number): string {
   return (stop >= 0 ? raw.slice(0, stop) : raw).toLowerCase();
 }
 
+/**
+ * The title in IMMEDIATE apposition BEFORE the `BCBS` keyword of the token —
+ * `NSFR (BCBS d295)`, `NSFR BCBS d295`, `NSF BCBS 295`. Symmetric to the AFTER
+ * check: a number whose own canonical title directly precedes it is a correct
+ * citation and must not be flagged because a different title keyword sits
+ * earlier on the same multi-standard line. The `idx` is the start of the full
+ * `BCBS …` token; we look back from there to the previous citation delimiter.
+ */
+function precedingTitleSnippet(text: string, idx: number): string {
+  const start = Math.max(0, idx - 36);
+  const raw = text.slice(start, idx);
+  // Keep only the tail after the last delimiter, so it cannot bleed into the
+  // PREVIOUS standard's citation on a multi-standard line.
+  const delim = raw.search(/[;([\n][^;([\n]*$/);
+  return (delim >= 0 ? raw.slice(delim + 1) : raw).toLowerCase();
+}
+
 export function run(): ReconResult {
   const result = emptyResult(PIPELINE);
   const root = findRepoRoot(import.meta.dir);
@@ -322,8 +360,11 @@ export function run(): ReconResult {
       // that merely sits near another title on a multi-standard line).
       if (!isCorrectionContext(lineText)) {
         const apposed = apposedTitleSnippet(text, idx, len);
+        const preceding = precedingTitleSnippet(text, idx);
         const ownTitles = OWN_APPOSED_TITLE[num] ?? [];
-        const apposedToOwnTitle = ownTitles.some((k) => apposed.includes(k));
+        const apposedToOwnTitle =
+          ownTitles.some((k) => apposed.includes(k)) ||
+          ownTitles.some((k) => preceding.includes(k));
         if (!apposedToOwnTitle) {
           for (const fp of FORBIDDEN_PAIRINGS) {
             if (num === fp.number && nearbyHasKeyword(text, idx, len, fp.keywords)) {

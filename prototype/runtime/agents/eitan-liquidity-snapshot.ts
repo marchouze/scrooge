@@ -34,8 +34,8 @@ import { fmtDateUTC, frontmatter } from "./_shared";
 
 const EVENT_CITATIONS = [
   "BANKS-ACT-94-1990",
-  "BCBS-D295-LCR",
-  "BCBS-D335-NSFR",
+  "BCBS-D238-LCR",
+  "BCBS-D295-NSFR",
   "BCBS-248-INTRADAY",
   "BCBS-D368-IRRBB",
 ];

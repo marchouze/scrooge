@@ -159,7 +159,7 @@ export interface PhaseDInputs {
 //     rehearsal classification.
 //
 // Outflows: ZAR 50m fixture (rehearsal-grade — represents an unsecured
-//   wholesale outflow scenario per BCBS D295 §111-§115; the 100% run-off
+//   wholesale outflow scenario per BCBS D238 §111-§115; the 100% run-off
 //   rate matches non-operational wholesale deposits). This makes the LCR
 //   numerator binding rather than denominator-floor.
 // Inflows: ZAR 10m fixture from contractual maturities; capped at 75% of

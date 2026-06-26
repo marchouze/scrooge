@@ -4,7 +4,7 @@
 //
 // Authority: D-HQLA-COA-CLASSIFICATION (CEO-approved 2026-05-22)
 // Citations:
-//   BCBS D295 §II.A (Basel III LCR standard, Jan 2013)
+//   BCBS D238 §II.A (Basel III LCR standard, Jan 2013)
 //   SARB BA 110 — Liquidity Coverage Ratio return
 //   Regulations Relating to Banks Reg 26(7)
 //
@@ -104,7 +104,7 @@ describe("D-HQLA-COA-CLASSIFICATION — HQLA account tagging", () => {
 
   it("ACC-3100-001 (Bond Asset — Banking Book) is tagged level-1", () => {
     // Build-phase assumption: banking-book bonds are SA government bonds (0% RW).
-    // Per BCBS D295 §49(c) / Reg 26(7)(a)(ii).
+    // Per BCBS D238 §49(c) / Reg 26(7)(a)(ii).
     const account = COA_BY_ID.get("ACC-3100-001");
     expect(account).toBeDefined();
     expect(account?.hqlaLevel).toBe("level-1");
@@ -409,7 +409,7 @@ describe("D-HQLA-COA-CLASSIFICATION — Basel III haircut application by level",
   });
 
   it("level-2b accounts contribute at 75% (default 0.50 factor → 50% raw, but haircut is 25% on top)", () => {
-    // Per BCBS D295 §54 / generator logic: level-2b raw stock is weighted by
+    // Per BCBS D238 §54 / generator logic: level-2b raw stock is weighted by
     // assetSpecificFactor (default 0.50). The "75% haircut" per brief is the
     // gross haircut from original balance. In the generator:
     //   factor = assetSpecificFactor (default 0.5)
@@ -461,7 +461,7 @@ describe("D-HQLA-COA-CLASSIFICATION — Basel III haircut application by level",
   });
 
   it("level-2b with custom factor 0.75 — different haircut application", () => {
-    // RMBS-like asset: 25% haircut per BCBS D295 §54(b) → factor = 0.75.
+    // RMBS-like asset: 25% haircut per BCBS D238 §54(b) → factor = 0.75.
     const store = makeStore();
 
     const classifications = [

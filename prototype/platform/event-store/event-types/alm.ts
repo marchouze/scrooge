@@ -8,7 +8,7 @@
 //   IRRBBChecked    — emitted once per metric/shock combination; records the
 //     sensitivity result and whether it is within appetite.
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BCBS d365 (IRRBB, 2016);
+// Authority: D-TREASURY-GAPS-WAVE1; BCBS d368 (IRRBB, 2016);
 //   Banks Act 94 of 1990, Banks Act Regulations 26 and 27.
 // Author: Ravi (Treasury/ALM Engineer, engineering)
 
@@ -28,7 +28,7 @@ export const almRunCompletedPayloadSchema = z.object({
   asOf: z.string().min(1),
   /** Repricing gap computation status. */
   repricingGapStatus: z.enum(["computed", "zero-positions"]),
-  /** Worst-case ΔEVE across all six BCBS d365 shock scenarios (ZAR). */
+  /** Worst-case ΔEVE across all six BCBS d368 shock scenarios (ZAR). */
   eveWorstDeltaZar: z.number(),
   /** Worst-case ΔNII across all four parallel shocks (ZAR). */
   niiWorstDeltaZar: z.number(),
@@ -70,7 +70,7 @@ export const irrbBCheckedPayloadSchema = z.object({
   asOf: z.string().min(1),
   /** IRRBB metric type: EVE or NII. */
   metric: z.enum(["EVE", "NII"]),
-  /** Shock scenario label as specified in BCBS d365. */
+  /** Shock scenario label as specified in BCBS d368. */
   shockLabel: z.string().min(1),
   /**
    * Sensitivity delta as a percentage of Tier 1 capital.
@@ -79,7 +79,7 @@ export const irrbBCheckedPayloadSchema = z.object({
   deltaPct: z.number(),
   /**
    * Regulatory / appetite limit as a percentage of Tier 1 capital.
-   * BCBS d365 outlier threshold: 15% of Tier 1 for EVE.
+   * BCBS d368 outlier threshold: 15% of Tier 1 for EVE.
    */
   limitPct: z.number(),
   /** Check status: within appetite, warning, or breach. */

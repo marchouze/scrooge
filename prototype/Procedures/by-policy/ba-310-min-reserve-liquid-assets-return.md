@@ -49,7 +49,7 @@ BA 310 reports the bank's level-1 HQLA stock (gold, treasury bills, central-bank
 
 | Attribute | Why required | Clause |
 |---|---|---|
-| `hqlaLevel` | a "level one high-quality liquid assets" row cannot place an asset without the asset's level (BA 310 is a level-1 reserve/liquid-asset return) | SARB reg 26 / reg 27; Basel LCR BCBS D295 §24–§54 |
+| `hqlaLevel` | a "level one high-quality liquid assets" row cannot place an asset without the asset's level (BA 310 is a level-1 reserve/liquid-asset return) | SARB reg 26 / reg 27; Basel LCR BCBS D238 §24–§54 |
 
 Sliced / driver attributes (`hqlaEligibility`, `hqlaHaircut`, `repoEligibility` for the resale/repo-agreement rows) are attached `required:false` — the aggregate still folds. The deposit-funding attributes also appear `required:false` where a row mentions funding (the head-office / inter-branch funding adjustments), since they slice but do not populate-or-die. **The NPA gate binds** the future HQLA-eligible-asset product on its owed `required:true` attribute. The live FX product feeds NO BA 310 product-attribute cell and is therefore **not** blocked.
 

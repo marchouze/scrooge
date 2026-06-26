@@ -17,7 +17,7 @@
 //   Banks Act 94 of 1990 §§ 60–72;
 //   RRB Regulation 26 (liquidity-risk management); Regulation 26A (NSFR);
 //   PA D6/2015 (revised LCR); PA D1/2023 (NSFR); PA D4/2021 (stress);
-//   BCBS 144; BCBS D295 (LCR); BCBS D335 (NSFR); BCBS 248 (intraday);
+//   BCBS 144; BCBS D238 (LCR); BCBS D295 (NSFR); BCBS 248 (intraday);
 //   LRM Policy v1;
 //   Procedures/by-policy/liquidity-limit-management.md (PROC-RISK-LLM-01).
 //

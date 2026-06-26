@@ -146,6 +146,7 @@ const REGULATORY_TOKENS: readonly string[] = [
   "BCBS 239",
   "BCBS 248",
   "BCBS 295",
+  "D238",
   "D295",
   "D335",
   "D352",

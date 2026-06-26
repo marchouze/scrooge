@@ -126,7 +126,7 @@ describe("ba300LcrToXmlPayload()", () => {
   it("TC-7: LcrCompliant is mapped", () => {
     const output = makeMinimalBa300LcrOutput();
     const payload = ba300LcrToXmlPayload(output);
-    // lcrRatio = Infinity (compliant = true per BCBS D295 §22 / Reg 26(2)).
+    // lcrRatio = Infinity (compliant = true per BCBS D238 §22 / Reg 26(2)).
     expect(payload.body.LcrCompliant).toBe(true);
   });
 

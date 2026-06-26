@@ -30,7 +30,7 @@ system-capability: prototype/v2-core/regulatory-returns/cell-contract.ts · prot
 |---|---|
 | **Form** | **BA 300 — Liquidity Risk (includes the Liquidity Coverage Ratio (LCR) and the Net Stable Funding Ratio (NSFR) series)** (canonical SARB Excel A1 name; `Regulations/SARB-PA/ba-returns/_canonical-register.md` §2). |
 | **Obligation** | `ORG-PR-RETURNS-010` (post-#1451 corrected liquidity-risk return row; the verbatim §2.1.11 "operational risk" annotation is the documented fabrication the `D-BA-RETURN-NUMBERING-EXCEL-CANONICAL` correction supersedes — operational risk is BA 400). |
-| **Regulatory instruction** | SARB PA **Directive D5/2025 §2.1.11**: *"Complete form BA 300 … in accordance with the requirements specified in Annexure 10B … read with the relevant requirements specified in the Regulations."* Read with the **Regulations relating to Banks reg 26** (liquidity risk / minimum liquid assets and the LCR) and the **Basel III LCR (BCBS D295)** and **NSFR (BCBS D335)** standards. Enabling law: **Banks Act 94 of 1990 s.6(6)(a)**. |
+| **Regulatory instruction** | SARB PA **Directive D5/2025 §2.1.11**: *"Complete form BA 300 … in accordance with the requirements specified in Annexure 10B … read with the relevant requirements specified in the Regulations."* Read with the **Regulations relating to Banks reg 26** (liquidity risk / minimum liquid assets and the LCR) and the **Basel III LCR (BCBS D238)** and **NSFR (BCBS D295)** standards. Enabling law: **Banks Act 94 of 1990 s.6(6)(a)**. |
 | **Cell universe** | **1 567 cells** across the BA 300 main form and the `BA300_LCROutflows`, `BA300_OtherHQLA` and `BA300_Concentration` sub-forms. Authoritative source: `Regulations/SARB-PA/ba-returns/schemas/BA300.zip` → `BA300_v20260323.xsd` + `SARB-Return - BA300_v20260323.xlsx` (Elements sheet). Leaf types: `Monetary1000`/`Monetary1000NN` (money), `Percentage 19,9` and `Liquidity coverage ratio (LCR)` (ratio), `Numeric`, `Text`, `Specify concentration of deposit funding` (text), `IDType`. |
 | **Reporting unit / currency (P5)** | `Monetary1000`/`Monetary1000NN` — amounts in **thousands** of the functional currency (never literal ZAR). Liquidity is reported functional by default and **by significant currency** where the row/column names a currency axis — the cell's `currencyDimension` is `functional` or `by-currency`, never a literal. |
 
@@ -51,15 +51,15 @@ Unlike the financial family (GL-derived), BA 300 cells genuinely require attribu
 
 | Attribute | Why required | Clause |
 |---|---|---|
-| `fundingStability` | a "Stable"/"Less stable" deposit row cannot set its run-off / ASF factor without the deposit's stability | Basel LCR BCBS D295 §54–§84; NSFR BCBS D335 §22–§24; SARB reg 26 |
-| `operationalRelationship` | an operational-vs-non-operational deposit row selects a different run-off rate; populate-or-die on those rows | Basel LCR BCBS D295 §93–§104; SARB reg 26 |
+| `fundingStability` | a "Stable"/"Less stable" deposit row cannot set its run-off / ASF factor without the deposit's stability | Basel LCR BCBS D238 §54–§84; NSFR BCBS D295 §22–§24; SARB reg 26 |
+| `operationalRelationship` | an operational-vs-non-operational deposit row selects a different run-off rate; populate-or-die on those rows | Basel LCR BCBS D238 §93–§104; SARB reg 26 |
 
 **(B) HQLA-eligible-asset axis — `prd:bank:treasury:hqla-eligible-asset`** (LCR numerator):
 
 | Attribute | Why required | Clause |
 |---|---|---|
-| `hqlaLevel` | a row that names an HQLA level (1 / 2A / 2B) cannot place an asset without the asset's level | Basel LCR BCBS D295 §24–§54; SARB reg 26 |
-| `hqlaEligibility` | a liquid-asset row that does not pin a specific level still keys off whether the asset counts as HQLA at all | Basel LCR BCBS D295 §28–§47; SARB reg 26 |
+| `hqlaLevel` | a row that names an HQLA level (1 / 2A / 2B) cannot place an asset without the asset's level | Basel LCR BCBS D238 §24–§54; SARB reg 26 |
+| `hqlaEligibility` | a liquid-asset row that does not pin a specific level still keys off whether the asset counts as HQLA at all | Basel LCR BCBS D238 §28–§47; SARB reg 26 |
 
 Computed / sliced drivers (`depositCounterpartyCategory`, `maturityCallability`, `hqlaHaircut`) are attached `required:false` — the engine derives them or the aggregate still folds. **This is the binding the NPA gate enforces**: a future deposit product and a future HQLA-eligible-asset product cannot reach approval unless they capture — or track as a deferred gap — their owed `required:true` attributes (`recon:npa-return-data-obligation-integrity`). The live FX product (`prd:bank:fx:otc-vanilla`) feeds NO liquidity product-attribute cell and is therefore **not** blocked.
 
@@ -99,8 +99,8 @@ This is in addition to the build-time completeness guarantee enforced by `recon:
 
 | Invariant | Assertion |
 |---|---|
-| **LCR ≥ 100%** | `LCR = HQLA / total net cash outflows over 30 days ≥ 100%` (Basel LCR BCBS D295 §22; SARB reg 26). The reported LCR ratio cell equals `HQLA-stock-fold / 30-day-net-cash-outflow` from the same folds; a divergence, or an LCR below the regulatory minimum, is a control failure escalated to the Treasurer (and to the CEO on an approaching RAS-threshold or LCR breach, per the decision-authority routing standard). |
-| **NSFR ≥ 100%** | `NSFR = Available Stable Funding (ASF) / Required Stable Funding (RSF) ≥ 100%` (NSFR BCBS D335 §9; SARB reg 26). The Total ASF and Total RSF cells equal the NSFR fold's ASF/RSF aggregates; a ratio below the minimum is a control failure (Treasurer / ALCO). |
+| **LCR ≥ 100%** | `LCR = HQLA / total net cash outflows over 30 days ≥ 100%` (Basel LCR BCBS D238 §22; SARB reg 26). The reported LCR ratio cell equals `HQLA-stock-fold / 30-day-net-cash-outflow` from the same folds; a divergence, or an LCR below the regulatory minimum, is a control failure escalated to the Treasurer (and to the CEO on an approaching RAS-threshold or LCR breach, per the decision-authority routing standard). |
+| **NSFR ≥ 100%** | `NSFR = Available Stable Funding (ASF) / Required Stable Funding (RSF) ≥ 100%` (NSFR BCBS D295 §9; SARB reg 26). The Total ASF and Total RSF cells equal the NSFR fold's ASF/RSF aggregates; a ratio below the minimum is a control failure (Treasurer / ALCO). |
 | **HQLA cap integrity** | Level-2 assets ≤ 40% of total HQLA and Level-2B ≤ 15% (post-haircut), per the HQLA classifier's level + haircut; a stock that breaches the caps without the cap adjustment is a control failure. |
 | **Outflow/inflow roll-up integrity** | Each weighted outflow/inflow subtotal equals the sum of its constituent run-off-weighted rows per `derivation.expression`; total net cash outflow = stressed outflows − min(inflows, 75% × outflows). |
 | **Significant-currency completeness (P5)** | Where the bank has aggregate liabilities ≥ 5% of total in a currency, the by-currency LCR cells for that currency are populated; a missing significant-currency breakdown is a control failure. |

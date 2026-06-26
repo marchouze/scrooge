@@ -55,7 +55,7 @@
 //   D-BA300-LCR-FX-ENRICHMENT;
 //   Regulations Relating to Banks Reg 26 (LCR) / Reg 26A (NSFR) / Reg 27
 //   (minimum liquid reserve); SARB Act 90 of 1989 (cash-reserve requirement);
-//   BCBS D295 (LCR) / BCBS 295 (NSFR); Principle 1; Principle 5.
+//   BCBS D238 (LCR) / BCBS 295 (NSFR); Principle 1; Principle 5.
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { eventStore } from "../../platform/composition";
