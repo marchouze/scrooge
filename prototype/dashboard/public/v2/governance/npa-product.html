@@ -589,9 +589,12 @@
       // Valuation domains relevant to Finance (GL + product control).
       renderValuationCards(grid, lenses.valuation, ["general-ledger", "product-control"]);
 
-      // Accounting treatment summary + the lifecycle posting-rule journal —
-      // folded here (the old governance "Accounting treatment" + "Lifecycle
-      // event journal" tables). Deep posting-rule treatment is Slice 2.
+      // Accounting treatment summary — the LIVE, family-scoped posting rules
+      // with active/deferred status. The old standalone "Lifecycle event
+      // journal" table is RETIRED (D-FX-ACCOUNTING-RENDER-COHERENCE): it
+      // rendered the superseded pre-FIL event family and read a retired rule as
+      // "present" off a static registry lookup. The deep per-stage posting-rule
+      // legs are the Accounting / CFO perspective block below.
       const at = d.accountingTreatment;
       if (at) {
         panel.insertAdjacentHTML("beforeend", `<h3 class="np-subhead">Accounting treatment</h3>`);
@@ -604,17 +607,6 @@
             cells: [
               `<strong>${esc(r.postingRuleId)}</strong>`, esc(r.triggerEventType), esc(r.lifecycleStage), esc(r.ifrs),
               r.deferred ? `<span class="v2-badge v2-badge-warning">deferred: ${esc(r.deferredTargetTrigger || "tracked gap")}</span>` : `<span class="v2-badge v2-badge-success">active</span>`,
-            ],
-          })),
-        });
-        panel.insertAdjacentHTML("beforeend", `<h4 class="np-subhead" style="font-size:13px">Lifecycle event journal</h4>`);
-        renderTable(panel, {
-          columns: ["Event type", "Posting rule"],
-          emptyMsg: "No lifecycle events mapped.",
-          rows: (d.journalEntries || []).map((j) => ({
-            cells: [
-              `<a href="/v2/operations/schemas.html?type=${encodeURIComponent(j.eventType)}">${esc(j.eventType)}</a>`,
-              j.status === "present" ? esc(j.rule ? j.rule.ruleId || "mapped" : "mapped") : `<span class="v2-badge v2-badge-warning">no posting rule</span>`,
             ],
           })),
         });

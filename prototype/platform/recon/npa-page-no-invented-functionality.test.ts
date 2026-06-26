@@ -214,7 +214,6 @@ function accountingPerspectiveBlock(): AccountingPerspectiveView {
 
 // A minimal ProductDetailView carrying only the fields the gate inspects.
 function detailView(over: {
-  journalEntries?: ProductDetailView["journalEntries"];
   dimensions?: DimensionCard[];
   valuation?: ValuationDomainLens[];
   family?: string;
@@ -222,7 +221,6 @@ function detailView(over: {
   accountingPerspective?: AccountingPerspectiveView;
 }): ProductDetailView {
   return {
-    journalEntries: over.journalEntries ?? [],
     dimensions: over.dimensions ?? [],
     ...(over.valuation ? { lenses: { valuation: over.valuation } } : {}),
     ...(over.family ? { product: { family: over.family } } : {}),
@@ -240,27 +238,6 @@ describe("recon:npa-page-no-invented-functionality", () => {
     expect(r.asserted).toBeGreaterThan(0);
   });
 
-  it("FAILS on a fabricated posting-rule mapping (present row, no registry entry)", () => {
-    const view = detailView({
-      journalEntries: [
-        {
-          eventType: "TotallyInventedEventXYZ",
-          status: "present",
-          rule: {
-            ruleId: "PR-FAKE-999",
-            module: "v2-core/posting-rules/registry.ts",
-            legs: "invented",
-            lifecycleStage: "opening",
-            condition: "always",
-          },
-        },
-      ],
-    });
-    const violations = assertNoInvention("prd:test", ["TotallyInventedEventXYZ"], view);
-    expect(violations.length).toBeGreaterThan(0);
-    expect(violations.some((v) => v.message.includes("invented posting rule"))).toBe(true);
-  });
-
   it("FAILS on a fabricated dimension event type that is not gap-surfaced", () => {
     const view = detailView({
       dimensions: [
@@ -270,7 +247,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
         }),
       ],
     });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.length).toBeGreaterThan(0);
     expect(violations.some((v) => v.message.includes("silent invented assertion"))).toBe(true);
   });
@@ -284,7 +261,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
         }),
       ],
     });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations).toHaveLength(0);
   });
 
@@ -298,7 +275,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
         }),
       ],
     });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.some((v) => v.message.includes("false gap"))).toBe(true);
   });
 
@@ -316,7 +293,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
         }),
       ],
     });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations).toHaveLength(0);
   });
 
@@ -324,7 +301,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
     const view = detailView({
       valuation: [valLens({ postingRuleIds: ["PR-FAKE-999"] })],
     });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.some((v) => v.message.includes("fabricated rule id"))).toBe(true);
   });
 
@@ -337,7 +314,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
         }),
       ],
     });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations).toHaveLength(0);
   });
 
@@ -349,7 +326,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
         }),
       ],
     });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.some((v) => v.message.includes("false gap"))).toBe(true);
   });
 
@@ -357,7 +334,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
     const view = detailView({
       valuation: [valLens({ eventTypes: ["NotARealEventType123"] })],
     });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.some((v) => v.message.includes("silent invented assertion"))).toBe(true);
   });
 
@@ -365,7 +342,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
     const view = detailView({
       valuation: [valLens({ domain: "liquidity-risk", status: "planned-with-gap" })],
     });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.some((v) => v.message.includes("no backing gap is a silent deferral"))).toBe(
       true,
     );
@@ -387,7 +364,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
         }),
       ],
     });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations).toHaveLength(0);
   });
 
@@ -395,7 +372,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
 
   it("PASSES an FX product whose fxLifecycle event types all resolve", () => {
     const view = detailView({ family: "fx", fxLifecycle: fxLifecycleBlock() });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations).toHaveLength(0);
   });
 
@@ -408,7 +385,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
       ),
     };
     const view = detailView({ family: "fx", fxLifecycle: broken });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.some((v) => v.message.includes("invented lifecycle event"))).toBe(true);
   });
 
@@ -423,7 +400,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
       ),
     };
     const view = detailView({ family: "fx", fxLifecycle: broken });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.some((v) => v.message.includes("invented Level-3 FIL-leg fact"))).toBe(true);
   });
 
@@ -438,7 +415,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
       ),
     };
     const view = detailView({ family: "fx", fxLifecycle: broken });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.some((v) => v.message.includes("invented ownership-tier event"))).toBe(true);
   });
 
@@ -451,32 +428,32 @@ describe("recon:npa-page-no-invented-functionality", () => {
     expect(payment?.materialises?.sign).toBe("-");
     expect(receipt?.materialises?.sign).toBe("+");
     const view = detailView({ family: "fx", fxLifecycle: block });
-    expect(assertNoInvention("prd:test", [], view)).toHaveLength(0);
+    expect(assertNoInvention("prd:test", view)).toHaveLength(0);
   });
 
   it("FAILS when the fxLifecycle stages are not the four ordered stages", () => {
     const block = fxLifecycleBlock();
     const broken: FxLifecycleView = { ...block, stages: block.stages.slice(0, 3) };
     const view = detailView({ family: "fx", fxLifecycle: broken });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.some((v) => v.subject.endsWith(":fx-lifecycle:stages"))).toBe(true);
   });
 
   it("FAILS when an FX product carries NO fxLifecycle block", () => {
     const view = detailView({ family: "fx" });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.some((v) => v.subject.endsWith(":fx-lifecycle:missing"))).toBe(true);
   });
 
   it("FAILS when a non-FX product carries an fxLifecycle block", () => {
     const view = detailView({ family: "listed-bond", fxLifecycle: fxLifecycleBlock() });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.some((v) => v.subject.endsWith(":fx-lifecycle:non-fx"))).toBe(true);
   });
 
   it("does NOT require fxLifecycle on a non-FX product", () => {
     const view = detailView({ family: "listed-bond" });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations).toHaveLength(0);
   });
 
@@ -516,7 +493,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
       fxLifecycle: fxLifecycleBlock(),
       accountingPerspective: accountingPerspectiveBlock(),
     });
-    expect(assertNoInvention("prd:test", [], view)).toHaveLength(0);
+    expect(assertNoInvention("prd:test", view)).toHaveLength(0);
   });
 
   it("FAILS on a fabricated accountingPerspective posting-rule id", () => {
@@ -524,7 +501,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
       family: "fx",
       accountingPerspective: apWith({ postingRuleId: "PR-FAKE-999" }),
     });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.some((v) => v.message.includes("fabricated rule id"))).toBe(true);
   });
 
@@ -533,7 +510,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
       family: "fx",
       accountingPerspective: apWith({ triggerEventType: "NotARealEvent999" }),
     });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.some((v) => v.message.includes("invented trigger"))).toBe(true);
   });
 
@@ -542,7 +519,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
       family: "fx",
       accountingPerspective: apWith({}, { accountCode: "ACC-9999-999" }),
     });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.some((v) => v.message.includes("invented GL account"))).toBe(true);
   });
 
@@ -554,7 +531,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
         "ACC-9999-999",
       ]),
     });
-    expect(assertNoInvention("prd:test", [], view)).toHaveLength(0);
+    expect(assertNoInvention("prd:test", view)).toHaveLength(0);
   });
 
   it("FAILS on a FALSE account-code gap (a real CoA code flagged unbacked)", () => {
@@ -562,7 +539,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
       family: "fx",
       accountingPerspective: apWith({}, {}, ["ACC-2100-001"]),
     });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.some((v) => v.message.includes("false gap"))).toBe(true);
   });
 
@@ -571,7 +548,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
       family: "fx",
       accountingPerspective: apWith({ deferred: true }),
     });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.some((v) => v.message.includes("no backing gap is a silent deferral"))).toBe(
       true,
     );
@@ -582,7 +559,7 @@ describe("recon:npa-page-no-invented-functionality", () => {
       family: "listed-bond",
       accountingPerspective: accountingPerspectiveBlock(),
     });
-    const violations = assertNoInvention("prd:test", [], view);
+    const violations = assertNoInvention("prd:test", view);
     expect(violations.some((v) => v.subject.endsWith(":accounting-perspective:non-fx"))).toBe(true);
   });
 });

@@ -89,6 +89,18 @@ export const postingRuleEntrySchema = z.object({
   condition: postingConditionSchema,
   /** Human-readable reason for the condition (IFRS citation or plain text). */
   conditionDetail: z.string().optional(),
+  /**
+   * STRUCTURED retirement flag. `true` iff this rule is superseded and MUST NOT
+   * be rendered as a live posting rule on any product / accounting surface. The
+   * row stays registered (append-only; replay of historical events still
+   * resolves it) but every read-path that renders "which rules are LIVE" filters
+   * `deprecated === true` out. Sourced as a typed boolean — NOT parsed from the
+   * free-text `conditionDetail` prose (Charter cmd 4, source-don't-hardcode).
+   * When set, `supersededBy` names the live rule(s) that replaced it.
+   */
+  deprecated: z.boolean().optional(),
+  /** The live posting-rule id(s) that supersede a `deprecated` rule (audit trail). */
+  supersededBy: z.array(z.string().min(1)).optional(),
 });
 
 /** Capitalised alias matching the canonical-home schema naming convention used
@@ -114,6 +126,8 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "trade-booking",
     condition: "always",
     conditionDetail: "IFRS 9 §3.1.1 — recognition on trade date",
+    deprecated: true,
+    supersededBy: ["PR-FX-001-V2"],
   },
   {
     triggerEventType: "FxPositionRevalued",
@@ -124,6 +138,8 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "revaluation",
     condition: "non-zero-delta",
     conditionDetail: "IFRS 9 §5.7.1 — only changes in fair value recognised",
+    deprecated: true,
+    supersededBy: ["PR-FX-REVAL-V2"],
   },
   {
     triggerEventType: "FxSettlementInstructed",
@@ -145,6 +161,8 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "fx-principal-payment",
     condition: "always",
     conditionDetail: "IAS 21 §23 — settlement-date cash leg recognition",
+    deprecated: true,
+    supersededBy: ["PR-FX-SETTLE-V2"],
   },
   {
     triggerEventType: "TradeReportSubmitted",
@@ -165,6 +183,8 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "fx-lifecycle-close",
     condition: "non-zero-pnl",
     conditionDetail: "IAS 21 §28 — realised P&L on settlement date; zero-P&L trades skipped",
+    deprecated: true,
+    supersededBy: ["PR-FX-CLOSE-V2"],
   },
   {
     triggerEventType: "FxTradeCancelled",
@@ -196,7 +216,9 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "settlement",
     condition: "non-zero-pnl",
     conditionDetail:
-      "DEPRECATED 2026-05-20 — superseded by PR-FX-PRIN + PR-FX-LIFECYCLE-CLOSE; kept for legacy test fixture back-compat",
+      "DEPRECATED 2026-05-20 — superseded by the V2 FIL fold (PR-FX-SETTLE-V2 + PR-FX-CLOSE-V2); kept for legacy test fixture back-compat",
+    deprecated: true,
+    supersededBy: ["PR-FX-SETTLE-V2", "PR-FX-CLOSE-V2"],
   },
 
   // ══════════════════════════════════════════════════════════════════════════
