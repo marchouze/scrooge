@@ -77,12 +77,7 @@ describe("assertBa700ArtefactsFiled", () => {
   });
 
   it("BITES (fail) when the filed blob resolves in NO store", () => {
-    const r = assertBa700ArtefactsFiled(
-      [RETURN],
-      [filedRecord(HASH)],
-      stubStore(new Set()),
-      null,
-    );
+    const r = assertBa700ArtefactsFiled([RETURN], [filedRecord(HASH)], stubStore(new Set()), null);
     expect(r.violations.some((v) => v.severity === "fail")).toBe(true);
     expect(r.violations[0]?.message).toContain("resolves in NO document store");
   });

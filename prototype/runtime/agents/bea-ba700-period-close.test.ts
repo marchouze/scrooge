@@ -32,9 +32,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { closePeriod, openPeriod } from "../../platform/accounting/period-close";
+import { newEventId } from "../../platform/core/types";
 import { LocalFsDocumentStore } from "../../platform/document-store/local-fs";
 import type { DocumentHash } from "../../platform/document-store/types";
-import { newEventId } from "../../platform/core/types";
 import type { AccountingPeriodClosedPayload } from "../../platform/event-store/event-types";
 import { makeRwaComputed } from "../../platform/event-store/event-types/regulatory-reporting";
 import { EventStore } from "../../platform/event-store/store";
