@@ -1236,7 +1236,7 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     // Emitted at the end of Ravi's daily ALM run. Summarises repricing gap
     // status, worst-case ΔEVE, and worst-case ΔNII across all shock scenarios.
-    // D-TREASURY-GAPS-WAVE1; BCBS d365; Banks Act Reg 26/27.
+    // D-TREASURY-GAPS-WAVE1; BCBS d368; Banks Act Reg 26/27.
     type: "ALMRunCompleted",
     class: "markets",
     payloadSchema: almRunCompletedPayloadSchema,
@@ -1250,7 +1250,7 @@ const ALM_TREASURY_EVENT_TYPES: readonly EventTypeMetadata[] = [
   {
     // Emitted once per IRRBB metric/shock combination in each ALM run.
     // Records EVE or NII sensitivity delta and appetite-check status.
-    // D-TREASURY-GAPS-WAVE1; BCBS d365 §4 (outlier threshold 15% Tier 1).
+    // D-TREASURY-GAPS-WAVE1; BCBS d368 §4 (outlier threshold 15% Tier 1).
     type: "IRRBBChecked",
     class: "markets",
     payloadSchema: irrbBCheckedPayloadSchema,

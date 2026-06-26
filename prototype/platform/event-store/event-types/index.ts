@@ -175,7 +175,7 @@ export * from "./climate-risk";
 // D-TREASURY-GAPS-WAVE1 — ALM engine event types.
 // ALMRunCompleted — daily ALM run summary (repricing gap, ΔEVE, ΔNII).
 // IRRBBChecked — per-metric/shock IRRBB sensitivity check.
-// Authority: D-TREASURY-GAPS-WAVE1; BCBS d365; Banks Act Reg 26/27.
+// Authority: D-TREASURY-GAPS-WAVE1; BCBS d368; Banks Act Reg 26/27.
 export * from "./alm";
 // D-TREASURY-GAPS-WAVE1 — collateral inventory substrate (HQLA tracking).
 // CollateralInventorySnapshotted (daily HQLA buffer snapshot + cap checks),
@@ -224,7 +224,7 @@ export * from "./ilaap";
 // D-TREASURY-GAPS-WAVE1 — ALCO pack event types.
 // ALCOPackGenerated — monthly ALCO pack generation event (8 sections).
 // IntradayHQLAStressProjection — intraday HQLA stress-scenario output.
-// Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d365.
+// Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d368.
 export * from "./alco";
 // Product Control — daily FX P&L report event.
 // DailyPnLReportGenerated — aggregated unrealised + realised P&L by pair/counterparty/book.
@@ -596,7 +596,7 @@ export const TYPED_EVENT_TYPES = [
   // Authority: D-RAS-CLIMATE-SCENARIO-FRAMEWORK (CEO-approved 2026-05-19).
   ...CLIMATE_RISK_TYPED_EVENT_TYPES,
   // D-TREASURY-GAPS-WAVE1 — ALM engine event types (repricing gap, ΔEVE, ΔNII).
-  // Authority: D-TREASURY-GAPS-WAVE1; BCBS d365; Banks Act Reg 26/27.
+  // Authority: D-TREASURY-GAPS-WAVE1; BCBS d368; Banks Act Reg 26/27.
   ...ALM_TYPED_EVENT_TYPES,
   // D-TREASURY-GAPS-WAVE1 — collateral inventory substrate (HQLA tracking).
   // Authority: BA 110 Annex 1; Banks Act Reg 26; D-TREASURY-GAPS-WAVE1.
@@ -625,7 +625,7 @@ export const TYPED_EVENT_TYPES = [
   ...ILAAP_TYPED_EVENT_TYPES,
   // D-TREASURY-GAPS-WAVE1 — ALCO pack event types.
   // ALCOPackGenerated, IntradayHQLAStressProjection.
-  // Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d365.
+  // Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d368.
   ...ALCO_TYPED_EVENT_TYPES,
   // Product Control — daily FX P&L report, attribution, sign-off & commentary.
   // DailyPnLReportGenerated, PnLAttributionGenerated, PnLAttributionExceptionRaised,

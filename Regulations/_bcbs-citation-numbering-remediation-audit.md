@@ -100,10 +100,10 @@ The defect was **systemic across the whole `prototype/` codebase**, not just the
 
 Per Charter cmd 5 (no silent deferral), the following are recorded rather than silently dropped:
 
-- **`BCBS-D365-IRRBB` citation constant + `platform/alm/*` d365 prose** — the constant (`prototype/platform/event-store/registry/markets.ts`, `…/alco.ts`, `prototype/platform/markets/eod/irs-revaluation.ts`/`jibar-curve-seed.ts`, `prototype/platform/risk/ras-appetite-register.ts`, `prototype/platform/collateral/hqla-classifier.ts`, projection tests, and the `daily-alm-run.md:78` doc that mirrors it) is a replay-sensitive event-citation identity that should become `BCBS-D368-IRRBB`; and `prototype/platform/alm/eve.ts:236` still carries `BCBS d365 §4` IRRBB prose. **Coupled to `platform/alm/*` (chip `task_0946bdf9`).** PR #1574 (merged mid-remediation) corrected only `repricing-gap.ts` prose — the cross-cutting constant + `eve.ts` remain. Left untouched here to avoid a one-dispatch-path-per-scope collision; the new recon gate excludes `platform/alm/*` and ignores the hyphenated constant form. **Recommendation:** a successor alm-scope task should rename `BCBS-D365-IRRBB → BCBS-D368-IRRBB` across the registries, fix `eve.ts:236`, and update `daily-alm-run.md:78` in the same change. (All non-alm d365-IRRBB prose — `event-types/{ftp,alm,repo-mmd-ibl}.ts`, `runtime/agents/ravi-alm-*`, `helena-risk-appetite-watch.ts`, `scripts/decisions/helena-bond-ras-appetite-approve.ts` — WAS corrected here.)
-- **`Team/Eitan.md` and `Team/Rohan.md`** carry `BCBS d365` IRRBB references — out of scope (only `Team/Ravi.md` was in scope; other ADC-wave specs land independently). **Flag** for the owning dispatches.
+- **`BCBS-D365-IRRBB` citation constant + `platform/alm/*` d365 prose** — ✅ **RESOLVED in the Rohan finisher pass (§6 below).** The constant was renamed `BCBS-D365-IRRBB → BCBS-D368-IRRBB` across all 16 sites; the alm/engine/registry/projection prose was corrected `d365 → d368`; the recon gate's `platform/alm/*` exclusion was lifted and the gate was extended to also catch the hyphenated constant form. (The original recommendation below is retained for trail.) Original flag: the constant is a replay-sensitive event-citation identity that should become `BCBS-D368-IRRBB`; `eve.ts:236` carried `BCBS d365 §4` IRRBB prose; coupled to `platform/alm/*` (chip `task_0946bdf9`); PR #1574 had corrected only `repricing-gap.ts`.
+- **`Team/Eitan.md` and `Team/Rohan.md`** — ✅ **RESOLVED in the Rohan finisher pass (§6 below).** `Team/Eitan.md:165` and `Team/Ravi.md:157` carried the WRONG assertion "6 BCBS d365 shocks" (fixed → d368). `Team/Rohan.md` carries **no** d365. The CORRECT explanatory d365 mentions in both specs ("d365 is not the NSFR/IRRBB" challenge notes) were preserved verbatim.
 - **`.github/workflows/agent-runtime-ravi-balance-sheet-projector.yml:14`** — comment cites `BCBS D295/D396` and `Reg 26A`. Both BCBS numbers are correct for NSFR here (d295 = NSFR standard; d396 = NSFR FAQs). Only `Reg 26A` is stale — it was already flagged non-existent in the register v1.45 correction (correct provision: Reg 26(14)/(14)(d)). Left as a non-citation CI comment; **flag** for a Reg-numbering tidy (out of d-number scope).
-- **`prototype/platform/accounting/*` and `Regulations/SARB-PA/ba-returns/ba-300.md` — `BCBS D196 §645–§654` for BIA operational risk.** d196 is the AMA supervisory guidelines (Jun 2011); the §645–§654 BIA paragraphs are from the consolidated Basel II framework (bcbs128, Jun 2006). This is a possible operational-risk-domain mis-number, but it requires op-risk domain co-authority to confirm the intended source and is outside the liquidity/IRRBB remediation scope. **Flag** for an op-risk-domain follow-on.
+- **`BCBS D196 §645–§654` (BIA op-risk) — CONFIRMED MIS-CITED against the BIS source (Rohan finisher pass); recorded, NOT fixed here — see §6.B.** Validated against bis.org: **BCBS d196 = *"Operational Risk – Supervisory Guidelines for the Advanced Measurement Approaches"* (AMA), 30 Jun 2011** (`bis.org/publ/bcbs196.pdf`). d196 is about the **AMA** and does **not** define the Basic Indicator Approach (BIA), the α = 15% factor, the business-line β factors, or the gross-income definition. Those — paragraphs **§644–§654** — originate from **Basel II: International Convergence of Capital Measurement and Capital Standards (bcbs128, Jun 2006)**, whose operational-risk section runs §644 onward (BIA at §649–§651). The repo therefore mis-attributes the BIA computation (§645–§654) and the seven loss-event categories (§644) to d196 when the correct source is **bcbs128** (and, in the consolidated framework, **OPE20** BIA / **OPE25** TSA). This is a **23-file / 63-token** cross-cutting op-RWA change including **11 emitted-citation-constant sites** (`BCBS-D196-§644`) — the same replay-sensitive class as the d365 constant. It is **out of the IRRBB/d365 dispatch scope** and requires **Helena (CRO) op-RWA co-authority decider sign-off** + a scoped replay-safety pass. **Recommendation:** a successor op-risk-scope dispatch under a fresh Decision should rename `BCBS-D196-§644 → BCBS-D128-§644` (or the OPE-chapter URN) and correct the §645–§654 prose to bcbs128/OPE, mirroring the d365 method here.
 
 ## 5. Definition of Done
 
@@ -113,3 +113,49 @@ Per Charter cmd 5 (no silent deferral), the following are recorded rather than s
 - [x] New fail-closed `recon:bcbs-citation-number-integrity` gate, green + proven to catch the defect.
 - [x] Ravi §18–20 re-landed with corrected numbers + §20 note.
 - [x] Findings outside scope flagged, not dropped (§4).
+
+## 6. Finisher pass — IRRBB d365 → d368 tail (Rohan)
+
+**Author:** Rohan (Risk engineer — market & counterparty-credit risk, engineering). **Domain co-authority:** Helena (Chief Risk Officer) for the op-risk d196 call.
+**Brief:** `brief:rohan:irrbb-d365-to-d368-finisher-team-specs-alm-const:2026-06-26`. **Authority:** `D-BCBS-CITATION-NUMBERING-REMEDIATION`.
+
+This pass closes the `platform/alm/*` + constant tail that the original remediation excluded (one-dispatch-path-per-scope), plus the Team-spec IRRBB mis-assertions, and verifies the op-risk d196 flag against the BIS source.
+
+### Premise re-validation (BIS oracle, bis.org)
+- **d368** = *Interest rate risk in the banking book* (IRRBB standard, 21 Apr 2016) — `bis.org/bcbs/publ/d368.pdf`. ✓
+- **d365** = *Revisions to the Basel III leverage ratio framework* — **consultative** (6 Apr 2016); **NOT** IRRBB — `bis.org/bcbs/publ/d365.htm`. ✓
+- Premise **CONFIRMED.** Every d365-as-IRRBB assertion is wrong; the IRRBB standard is d368. The bank's own registered URN was already correct: `BCBS-D368-IRRBB-2016` (`runtime/agents/mira-m1-regulator-citation-urns.ts`, ORG-PR-11).
+
+### A. Changes made
+
+**A.1 — Event-citation CONSTANT renamed `BCBS-D365-IRRBB → BCBS-D368-IRRBB` (16 files, replay-safe — see A.4):**
+`Procedures/by-policy/daily-alm-run.md`; `prototype/platform/collateral/hqla-classifier.ts`; `prototype/platform/event-store/registry/{alco.ts, markets.ts (×4)}`; `prototype/platform/markets/eod/{irs-revaluation.ts (×2), jibar-curve-seed.ts}`; `prototype/platform/projections/irrbb-delta-eve.test.ts`; `prototype/platform/risk/ras-appetite-register.ts`; `prototype/runtime/agents/{atlas-alco-pack.ts, ravi-alm-readiness.ts, ravi-alm-run.ts, ravi-ftp-attribution.ts, ravi-ftp-curve-publish.ts, rohan-daily-mtm.ts}`; `prototype/scripts/{decisions/helena-bond-ras-appetite-approve.ts, seed-v2-helena-ras-postures.ts}`. Plus the lowercase `citationsHint` variant `"BCBS-d365"` in `prototype/platform/event-store/registry/repo-mmd-ibl.ts` normalised to `"BCBS-D368-IRRBB"`.
+
+**A.2 — IRRBB PROSE `d365 → d368` across the live tree (engine + registries + projections + returns + runtime + scripts):**
+`prototype/platform/alm/{eve.ts (×2: §185, §236), nii.ts (×2), index.ts (×2), __tests__/{repricing-gap.test.ts, nii.test.ts}}`; `prototype/platform/alco/pack.ts`; `prototype/platform/event-store/event-types/{alco.ts, index.ts (×4)}`; `prototype/platform/event-store/registry/{alco.ts, index.ts (×3), missing-types.ts (×2), repo-mmd-ibl.ts}`; `prototype/platform/projections/{irrbb-delta-eve.ts (×6), irrbb-delta-eve.test.ts (§A-3.4 prose ×2)}`; `prototype/platform/recon/liquidity-appetite-snapshot-coverage.ts`; `prototype/platform/returns/ba330/period-close-subscriber.ts (×5)`; `prototype/platform/risk/ras-appetite-register.ts (prose ×4)`; `prototype/runtime/agents/{atlas-alco-pack.ts, metadata/{atlas.ts, ravi.ts}, mira-ba330-period-close.ts (×3)}`; `prototype/scripts/seed-v2-helena-ras-postures.ts (×3)`. (The brief's named subset was a floor — the defect was wider; swept the whole live tree.)
+
+**A.3 — Team specs (surgical — wrong assertions fixed, correct explanatory mentions preserved):**
+- `Team/Eitan.md:165` — "ΔEVE (6 BCBS d365 shocks)" → **d368**. Preserved verbatim: §191 + §244 challenge notes (which correctly explain *d365 is NOT the NSFR/IRRBB*).
+- `Team/Ravi.md:157` — "ΔEVE (6 BCBS d365 shocks)" → **d368**. Preserved verbatim: §181 / §233 / §234 challenge notes (*d365 is not IRRBB*). Updated the now-stale §237 live-code finding to RESOLVED (repricing-gap.ts fixed in #1574; the alm tail fixed here).
+- `Team/Rohan.md` — no d365 present.
+
+**A.4 — Recon gate extended** (`prototype/platform/recon/bcbs-citation-number-integrity.ts`): the `platform/alm/*` exclusion is **lifted** (alm now scanned), and a dedicated `CONSTANT_RE` was added so the hyphenated `BCBS-D<nnn>-<TAG>` constant form is checked too (the TAG is the title in apposition). Re-injecting `BCBS d365` IRRBB prose **and** a `BCBS-D365-IRRBB` constant into `platform/alm/eve.ts` was proven to FAIL the gate (2 findings); reverting returns green. Token count 2600 → 2747.
+
+### A.4 (replay-safety determination on the constant) — **SAFE**
+The `BCBS-D365-IRRBB` rename is **replay-safe**; it is a citation LABEL, not an event discriminator/type or hash-key:
+- Event identity (`event_id`) is **not** derived from citation content; `citations`/`citationsHint` are free `string[]` metadata passed straight through `makeIRRBBChecked` etc. (the discriminator is `type: "IRRBBChecked"`).
+- The only gate over `citations` (`platform/citation/gate.ts`) asserts **non-emptiness** only — no exact-string/hash parity against the stored log.
+- No parity/snapshot recon compares the literal `BCBS-D365-IRRBB` against persisted home-store events; tests using it (`irrbb-delta-eve.test.ts`) seed their **own in-memory** store, so input and expectation move together.
+- The canonical registered URN was already `BCBS-D368-IRRBB-2016`; the `D365` label never matched it — the rename moves the loose label **toward** canonical.
+- **Principle 1 (append-only):** historical events already in the store are **NOT** rewritten; the rename is "correct going forward" only. The `archive/owner-inbox/*` rendered records that mirror old emissions are left untouched.
+
+### B. Op-risk d196 / BIA §645–§654 — VERDICT: **CONFIRMED MIS-CITED; flagged, not fixed (out of scope)**
+Validated against the BIS source (Helena co-authority domain call):
+- **BCBS d196** = *"Operational Risk – Supervisory Guidelines for the Advanced Measurement Approaches"*, **30 Jun 2011** (`bis.org/publ/bcbs196.pdf`) — an **AMA** guideline. It does **NOT** define the BIA, the α = 15% factor, business-line β factors, or the gross-income definition.
+- The **§644–§654** paragraphs (seven loss-event categories §644; BIA computation, α, β, gross income §645–§654) are from **Basel II: International Convergence (bcbs128, Jun 2006)** — operational risk §644 onward; in the consolidated framework, **OPE20** (BIA) / **OPE25** (TSA).
+- **Conclusion:** the repo's `BCBS D196 §645–§654` / `BCBS-D196-§644` citations are **mis-attributed** — the correct source is **bcbs128 / OPE**.
+- **Not fixed here.** Per flag-don't-invent + one-dispatch-path-per-scope: this is a **23-file / 63-token** op-RWA change including **11 emitted-citation-constant sites** (`BCBS-D196-§644`, same replay-sensitive class), outside the IRRBB/d365 dispatch scope, and it needs **Helena (CRO) op-RWA decider sign-off** under a fresh Decision. Recommendation recorded in §4.
+
+### C. Verification
+- `recon:bcbs-citation-number-integrity` — **green** (2747 tokens), re-injection-proven (prose + constant, in alm).
+- Full `bun run ci` (full `tsc --noEmit` + recon suite) — green. `bun run citation-gate` — zero violations.

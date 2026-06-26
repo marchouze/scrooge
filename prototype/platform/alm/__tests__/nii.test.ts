@@ -5,7 +5,7 @@
 // In build phase the event store has no positions. All ΔNII values should
 // be 0 across all four parallel shock scenarios.
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BCBS d365 §4.
+// Authority: D-TREASURY-GAPS-WAVE1; BCBS d368 §4.
 // Author: Ravi (Treasury/ALM Engineer, engineering)
 
 import { describe, expect, it } from "bun:test";

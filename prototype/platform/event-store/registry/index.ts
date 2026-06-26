@@ -233,7 +233,7 @@ export { FINANCIAL_INSTRUMENT_EVENT_TYPES_REGISTRY } from "./financial-instrumen
 // WS1-PR1a — Repo / Money Market Deposit / Funding Line / Interbank Loan
 // event types (20 events across 4 treasury instrument families).
 // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION; IFRS 9; IAS 39 §27;
-//   Banks Act 94/1990 Reg 26/27; BA 110; BA 120; BCBS d365.
+//   Banks Act 94/1990 Reg 26/27; BA 110; BA 120; BCBS d368.
 export { REPO_MMD_IBL_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl";
 // D-V1-REMOVAL-PHASE-3B — V2-parallel money-market lifecycle events (Atlas).
 export { REPO_MMD_IBL_V2_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl-v2";
@@ -572,7 +572,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // Authority: D-TREASURY-GAPS-WAVE1; Banks Act 94/1990; BA 110; PA ILAAP guidance.
   ...ILAAP_EVENT_TYPES_REGISTRY,
   // D-TREASURY-GAPS-WAVE1 — ALCO pack event types.
-  // Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d365.
+  // Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d368.
   ...ALCO_EVENT_TYPES_REGISTRY,
   // Product Control — daily FX P&L report event.
   // Authority: D-FX-SALES-TRADING-FRONTEND; IFRS 9 §5.7.1.
@@ -669,7 +669,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   // WS1-PR1a — Repo / Money Market Deposit / Funding Line / Interbank Loan
   // event types (20 events across 4 treasury instrument families).
   // Authority: WS1-PR1a; D-MARKETS-SCHEMA-FOUNDATION (CEO-approved);
-  //   IFRS 9; IAS 39 §27; Banks Act 94/1990 Reg 26/27; BA 110; BA 120; BCBS d365.
+  //   IFRS 9; IAS 39 §27; Banks Act 94/1990 Reg 26/27; BA 110; BA 120; BCBS d368.
   ...REPO_MMD_IBL_EVENT_TYPES_REGISTRY,
   // D-V1-REMOVAL-PHASE-3B — 14 V2-parallel money-market lifecycle event types
   // (Repo / MMD / Funding Line / IBL). MoneyWire decimal-native + tenantId +

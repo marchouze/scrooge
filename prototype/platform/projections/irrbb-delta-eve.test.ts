@@ -8,7 +8,7 @@
 // engineering)'s ALM run emits them (`runtime/agents/ravi-alm-run.ts`).
 //
 // Authority: D-IRRBB-DELTA-EVE-OUTLIER-MEASUREMENT (CEO-approved 2026-06-12);
-//   RAS §B4; BCBS d365 §A-3.4.
+//   RAS §B4; BCBS d368 §A-3.4.
 // Author: Rohan (Risk engineer, engineering)
 
 import { describe, expect, it } from "bun:test";
@@ -33,7 +33,7 @@ function seedCheck(
       asOf: args.asOf,
       entity: ENTITY,
       actor: { type: "service", id: "agent:ravi:alm-run" },
-      citations: ["BCBS-D365-IRRBB"],
+      citations: ["BCBS-D368-IRRBB"],
       payload: {
         checkId: `IRRBB-${args.metric}-${args.shockLabel}-${args.asOf.slice(0, 10)}`,
         asOf: args.asOf,
@@ -79,7 +79,7 @@ describe("getIrrbbDeltaEveMetric — RAS §B4 ΔEVE supervisory-outlier projecti
     expect(m.status).toBe("amber");
   });
 
-  it("worst |deltaPct| ≥ 15% → red (BCBS d365 §A-3.4 outlier threshold)", () => {
+  it("worst |deltaPct| ≥ 15% → red (BCBS d368 §A-3.4 outlier threshold)", () => {
     const store = new EventStore(":memory:");
     const asOf = "2026-06-12T05:00:00.000Z";
     seedCheck(store, { asOf, metric: "EVE", shockLabel: "parallel+200", deltaPct: -16.5 });

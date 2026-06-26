@@ -41,7 +41,7 @@ import { fmtDateUTC, frontmatter } from "./_shared";
 // Constants
 // ---------------------------------------------------------------------------
 
-const EVENT_CITATIONS = ["BANKS-ACT-94-1990", "BANKS-REG-26", "BANKS-REG-27", "BCBS-D365-IRRBB"];
+const EVENT_CITATIONS = ["BANKS-ACT-94-1990", "BANKS-REG-26", "BANKS-REG-27", "BCBS-D368-IRRBB"];
 
 /**
  * BCBS d368 outlier threshold: if |ΔEVE| > 15% of Tier 1 capital, the bank

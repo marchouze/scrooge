@@ -182,7 +182,7 @@ export const BUCKET_MID_YEARS: Record<(typeof REPRICING_BUCKETS)[number], number
 // ---------------------------------------------------------------------------
 
 /**
- * Compute ΔEVE sensitivities for the six BCBS d365 shock scenarios.
+ * Compute ΔEVE sensitivities for the six BCBS d368 shock scenarios.
  *
  * In build phase (zero positions) all results are zero. When positions land,
  * the engine discounts each repricing bucket's gap under shocked rates.
@@ -233,7 +233,7 @@ export function computeEVE(eventStore: EventStore, asOf: string): EVEReport {
       baseNpvZar: baseNpv,
       shockedNpvZar: shockedNpv,
       deltaEveZar: deltaEve,
-      // ΔEVE as percentage of Tier 1 capital (BCBS d365 §4 / BA 327 IRRBB metric).
+      // ΔEVE as percentage of Tier 1 capital (BCBS d368 §4 / BA 327 IRRBB metric).
       // Null when Tier 1 capital is zero (degenerate case only; ICAAP baseline is R300m).
       deltaEvePctTier1: tier1Zar > 0 ? deltaEve / tier1Zar : null,
     });
