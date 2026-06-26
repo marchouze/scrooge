@@ -43,7 +43,7 @@
 import { z } from "zod";
 
 import { newEventId } from "../../core/types";
-import { type Actor, type Event, eventSchema } from "../types";
+import { type Actor, type Event, type ProvenanceTag, eventSchema } from "../types";
 
 // ---------------------------------------------------------------------------
 // Repo event schemas
@@ -317,6 +317,7 @@ export function makeDepositTaken(args: {
   citations: string[];
   payload: DepositTakenPayload;
   eventId?: string;
+  provenance?: ProvenanceTag;
 }): Event {
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
@@ -326,6 +327,7 @@ export function makeDepositTaken(args: {
     actor: args.actor,
     citations: args.citations,
     payload: depositTakenPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
 
@@ -491,6 +493,7 @@ export function makeFundingLineDrawn(args: {
   citations: string[];
   payload: FundingLineDrawnPayload;
   eventId?: string;
+  provenance?: ProvenanceTag;
 }): Event {
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
@@ -500,6 +503,7 @@ export function makeFundingLineDrawn(args: {
     actor: args.actor,
     citations: args.citations,
     payload: fundingLineDrawnPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
 
@@ -587,6 +591,7 @@ export function makeInterbankLoanPlaced(args: {
   citations: string[];
   payload: InterbankLoanPlacedPayload;
   eventId?: string;
+  provenance?: ProvenanceTag;
 }): Event {
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
@@ -596,6 +601,7 @@ export function makeInterbankLoanPlaced(args: {
     actor: args.actor,
     citations: args.citations,
     payload: interbankLoanPlacedPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
 

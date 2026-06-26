@@ -16,7 +16,7 @@
 import { z } from "zod";
 
 import { newEventId } from "../../core/types";
-import { type Actor, type Event, eventSchema } from "../types";
+import { type Actor, type Event, type ProvenanceTag, eventSchema } from "../types";
 
 // ---------------------------------------------------------------------------
 // CollateralInventorySnapshotted
@@ -46,6 +46,7 @@ export function makeCollateralInventorySnapshotted(args: {
   citations: string[];
   payload: CollateralInventorySnapshotPayload;
   eventId?: string;
+  provenance?: ProvenanceTag;
 }): Event {
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
@@ -55,6 +56,7 @@ export function makeCollateralInventorySnapshotted(args: {
     actor: args.actor,
     citations: args.citations,
     payload: collateralInventorySnapshotPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
 
