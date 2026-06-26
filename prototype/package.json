@@ -27,6 +27,8 @@
     "recon:fx-trade-date-obs-memorandum": "bun run platform/recon/fx-trade-date-obs-memorandum.ts",
     "recon:fx-settlement-fvtpl-integrity": "bun run platform/recon/fx-settlement-fvtpl-integrity.ts",
     "recon:fx-pnl-fcy-exposure-integrity": "bun run platform/recon/fx-pnl-fcy-exposure-integrity.ts",
+    "recon:fx-pnl-account-category-integrity": "bun run platform/recon/fx-pnl-account-category-integrity.ts",
+    "recon:fx-monetary-closing-rate-integrity": "bun run platform/recon/fx-monetary-closing-rate-integrity.ts",
     "recon:fil-state-surface-isolation": "bun run platform/recon/fil-state-surface-isolation.ts",
     "recon:gl-fold-election-provenance": "bun run platform/recon/gl-fold-election-provenance.ts",
     "recon:tb-snapshot-reproducible": "bun run platform/recon/tb-snapshot-reproducible.ts",

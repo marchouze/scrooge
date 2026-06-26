@@ -348,6 +348,22 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // (PR-FX-CONVERT-V2) or a terminal derecognition / FVOCI reclass. Vacuous-pass
     // on a clean store. Authority: D-FX-PNL-FCY-EXPOSURE-REVALUATION.
     "recon:fx-pnl-fcy-exposure-integrity",
+    // D-FX-IFRS-REVIEW-FOUNDATION (ENFORCING) — IFRS domain-truth direction gate.
+    // The COA-category counterpart to the rule-id gates above: every realised /
+    // unrealised FX gain or loss lands on a profit-or-loss account (income-*/
+    // expense-*), never a balance-sheet account (the direction invariant the
+    // settlement-realisation bug violated, IAS 21 §28); the FVTPL revaluation
+    // movement lands only on the position account, a P&L account, or the governed
+    // FVOCI OCI reserve (IFRS 9 §5.7.1, §5.7.5). Sourced from the canonical chart
+    // of accounts, not hardcoded. Authority: D-FX-IFRS-REVIEW-FOUNDATION.
+    "recon:fx-pnl-account-category-integrity",
+    // D-FX-IFRS-REVIEW-FOUNDATION (ENFORCING) — IAS 21 §23/§28 monetary-item gate.
+    // An open FX position is a monetary item (IAS 21 §8) retranslated at the
+    // closing rate each reporting date, the exchange difference recognised in the
+    // functional currency. Asserts every FVTPL revaluation / realisation
+    // exchange-difference leg is functional-denominated and the exchange-difference
+    // P&L accounts carry the functional currency. Authority: D-FX-IFRS-REVIEW-FOUNDATION.
+    "recon:fx-monetary-closing-rate-integrity",
     // D-FIL-CONSUMER-SURFACE-ARCHITECTURE (Step D, ENFORCING) — FIL consumer-surface
     // isolation gate. Static scan: the accounting / GL surface (platform/accounting/**
     // + gl-projection-v2.ts) may replay FilInstrument* FOR STATE only through the

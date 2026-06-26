@@ -2,6 +2,27 @@
 //
 // recon:fx-trade-date-obs-memorandum — ENFORCING trade-date FX shape gate.
 //
+// IFRS BASIS — THE AT-MARKET INVARIANT (re-documented under D-FX-IFRS-REVIEW-
+// FOUNDATION, 2026-06-26; the gate's assertion logic is UNCHANGED — this is a
+// re-documentation that makes the standard-text basis explicit, not a weakening;
+// Engineering Charter cmd 3, ratchets harden only). The standards this gate
+// encodes:
+//   - IFRS 9 §5.1.1 + B3.1.2 — a financial instrument is recognised initially at
+//     FAIR VALUE. For an AT-MARKET FX forward/spot, the transaction price IS fair
+//     value (IFRS 13 — an exit price in the principal market), and an at-market
+//     forward has fair value ≈ 0 at inception (the present value of the two
+//     contractual legs offsets). Therefore there is NO on-balance-sheet gross-up
+//     at trade date — booking the gross notionals would overstate assets and
+//     liabilities by an amount that is not yet a recognised position.
+//   - IAS 32 / the IFRS 9 derivative model — the contractual right to receive one
+//     currency and obligation to deliver another is a derivative; its on-BS
+//     carrying value is the FVTPL position that accrues via subsequent
+//     revaluation (PR-FX-REVAL-V2, IFRS 9 §5.7.1), not a trade-date gross-up.
+//   - The contractual notionals are a COMMITMENT — recorded off-balance-sheet as
+//     a memorandum (a disclosure of the standing obligation to exchange), not an
+//     on-balance-sheet asset/liability.
+// This is the at-market invariant: at-market FV ≈ 0 ⇒ OBS-only at trade date.
+//
 // THE INVARIANT (D-FX-TRADE-DATE-FVTPL-OBS, CEO-approved 2026-06-24, Policy A):
 // a trading-book FX spot/forward is an IFRS 9 derivative recognised at FAIR VALUE
 // on trade date. For an at-market trade FV ≈ 0 → the trade-date recognition rule
@@ -34,9 +55,11 @@
 // READ-ONLY: applies the pure rule to the v2 FIL-instance event stream; values
 // nothing, touches no v1 number.
 //
-// Authority: D-FX-TRADE-DATE-FVTPL-OBS (CEO-approved 2026-06-24); citing
-//   D-FX-INSTRUMENT-BUYSELL-QUAD; D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD; Engineering
-//   Charter (fail-closed, no-green-by-concealment). Principle 1; Principle 2.
+// Authority: D-FX-TRADE-DATE-FVTPL-OBS (CEO-approved 2026-06-24); IFRS basis
+//   re-documented under D-FX-IFRS-REVIEW-FOUNDATION (CEO-approved 2026-06-26);
+//   citing D-FX-INSTRUMENT-BUYSELL-QUAD; D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD;
+//   Engineering Charter (fail-closed, no-green-by-concealment, ratchets harden
+//   only). Principle 1; Principle 2. IFRS 9 §5.1.1, B3.1.2; IFRS 13; IAS 32.
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
 import type { FilInstrumentCreatedPayload } from "../../v2-core/fil-instances/events";
