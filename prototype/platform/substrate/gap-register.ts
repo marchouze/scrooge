@@ -362,6 +362,15 @@ export const SUBSTRATE_GAP_REGISTER: readonly SubstrateGapRecord[] = [
     status: "planned",
     mitigation: "partial",
   },
+  {
+    id: "ba300-deposit-funding-sim-gl",
+    title: "Deposit/funding sim book not live-seeded into the canonical store (GL coupling)",
+    description:
+      "The deposit/funding simulator-first slice (D-BA-RETURN-SIMULATOR-FIRST) drives BA 300 LCR + NSFR + BA 310 from a simulated deposit/funding/HQLA book, PROVEN end-to-end by a self-contained IN-MEMORY oracle (recon:ba300-deposit-funding-sim-drive leg A + deposit-funding-sim-golden.test.ts). The seed script (scripts/sim/seed-deposit-funding-book-sim-v1.ts) is DELIBERATELY NOT wired into `ci:migrate`: DepositTaken / FundingLineDrawn / InterbankLoanPlaced are V1-only LIFECYCLE-registered events (lifecycleIds mmd-deposit / funding-line / interbank-loan; trade-lifecycle-registry.ts), so `recon:gl-ledger-coverage` requires a matching GL posting for each opening event. Seeding them into the canonical store WITHOUT their postings trips that gate (6 uncovered-lifecycle violations); emitting the V1 GL postings would WIDEN the v1-only estate (V1-retirement directive — the V1 gl-posting path), and the born-V2 MM GL engine (gl-posting-engine-v2-mm.ts, PR-MMD-001-V2) keys on the V2-parallel DepositTakenV2 event type, NOT the V1 DepositTaken the simulator emits. So the live-store seed is a tracked follow-on gated on the born-V2 DepositTakenV2 / FundingLineDrawnV2 / InterbankLoanPlacedV2 emission path (+ their GL postings) — exactly the same GL-coupling deferral the trading-book IR oracle took (GAP-BA320-IR-SIM-GL). recon:ba300-deposit-funding-sim-drive leg B (live BA 310 production read = 0) still asserts on the clean store; leg C (live operating-book drive) is the dormant activation assertion for when the born-V2 live seed lands. Authority: D-BA-RETURN-SIMULATOR-FIRST; D-V1-REMOVAL-PHASE-1; Engineering Charter cmd 5 (no silent deferral); Reg 26 / Reg 26A / Reg 27.",
+    severity: "medium",
+    status: "planned",
+    mitigation: "partial",
+  },
 ];
 
 /** Open (not-yet-resolved) gaps — the inventory the substrate snapshot tracks. */

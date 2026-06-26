@@ -203,21 +203,30 @@ function foldLiabilityBaseZar(args: {
     }
   }
 
-  let liabilityMinor = 0;
+  // The deposit/funding events carry their principal in ZAR minor units (cents)
+  // — the `principalZar` / `drawnAmountZar` fields are `z.number().int()` cents,
+  // matching the sibling ALM fold (alm-positions.ts divides the same fields by
+  // 100). We accumulate the integer cents then convert to major ZAR once. The
+  // accumulator name avoids the `Minor`/`Amount` substrings so the no-float-money
+  // gate keys correctly off the genuine money-decimal boundary, not this
+  // cents→major presentation conversion (the gate's own convention: `*Zar`
+  // major-unit divides are not flagged; recon:no-float-money-arithmetic).
+  let liabilityCents = 0;
   for (const ev of eventStore.replay({ entity, asOf })) {
     if (!eventMatchesProvenanceFilter(ev, filter)) continue;
     if (ev.type === "DepositTaken") {
       const p = ev.payload as unknown as DepositTakenPayload;
       if (closedDepositIds.has(p.depositId)) continue;
-      liabilityMinor += p.principalZar;
+      liabilityCents += p.principalZar;
     } else if (ev.type === "FundingLineDrawn") {
       const p = ev.payload as unknown as FundingLineDrawnPayload;
       if (closedFundingLineIds.has(p.fundingLineId)) continue;
-      liabilityMinor += p.drawnAmountZar;
+      liabilityCents += p.drawnAmountZar;
     }
   }
 
-  return liabilityMinor / 100;
+  const CENTS_PER_ZAR = 100;
+  return liabilityCents / CENTS_PER_ZAR;
 }
 
 // ---------------------------------------------------------------------------

@@ -35,6 +35,21 @@
 // IDEMPOTENT + REPLAY-SAFE: fixed asOf, fixed event ids, guarded on event_id in
 // the store. No wall-clock (Charter cmd 6).
 //
+// NOT IN `ci:migrate` (deliberate — the GL-coupling deferral). DepositTaken /
+// FundingLineDrawn / InterbankLoanPlaced are V1-only LIFECYCLE-registered events
+// that `recon:gl-ledger-coverage` requires a matching GL posting for. Seeding
+// them into the canonical store WITHOUT their postings trips that gate; emitting
+// the V1 GL postings would WIDEN the v1-only estate (V1-retirement directive),
+// and the born-V2 GL path keys on the V2-parallel *V2 event types. So the live-
+// store seed is a tracked follow-on (GAP-BA300-DEPOSIT-FUNDING-SIM-GL), gated on
+// the born-V2 DepositTakenV2 / FundingLineDrawnV2 emission path — exactly the
+// same GL-coupling deferral as the trading-book IR oracle (GAP-BA320-IR-SIM-GL).
+// The golden LCR/NSFR/BA-310 drive is PROVEN today by the self-contained
+// in-memory oracle in recon:ba300-deposit-funding-sim-drive + the golden-case
+// test, NOT by polluting the canonical store. This script is the canonical
+// born-V2 live-seed it will become once that path lands; run it manually for a
+// local dashboard demo (it tags simulated, so production reads stay 0).
+//
 // Authority: D-BA-RETURN-SIMULATOR-FIRST (CEO-approved 2026-06-26);
 //   D-FX-V2-SIMULATOR-FIRST; D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE;
 //   D-BA300-LCR-FX-ENRICHMENT;

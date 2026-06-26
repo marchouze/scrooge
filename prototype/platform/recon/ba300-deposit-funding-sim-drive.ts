@@ -24,10 +24,21 @@
 //       guard). A non-zero production liabilities base / held-L1 is a FAIL.
 //
 //   (C) BA 310 OPERATING-BOOK READ DRIVES THE LIVE STORE (data-dependent). When
-//       the seeded book IS present in the live store (after `ci:migrate` runs
-//       `seed-deposit-funding-book-sim-v1`), the operating-book BA 310 read must
-//       be non-zero AND reproduce the golden BA 310 figures. Dormant (no
-//       manufactured green) on a clean store with no seed.
+//       the seeded book IS present in the live store, the operating-book BA 310
+//       read must be non-zero AND reproduce the golden BA 310 figures. Dormant
+//       (no manufactured green) on a clean store with no seed — which is the
+//       canonical state TODAY: the live `ci:migrate` does NOT seed the deposit/
+//       funding book, because DepositTaken / FundingLineDrawn / InterbankLoanPlaced
+//       are V1-only LIFECYCLE-registered events that `recon:gl-ledger-coverage`
+//       requires a matching GL posting for — and emitting V1 GL postings would
+//       WIDEN the v1-only estate (V1-retirement directive), while the born-V2 GL
+//       path keys on the V2-parallel *V2 event types. So the live-store seed is a
+//       tracked follow-on (GAP-BA300-DEPOSIT-FUNDING-SIM-GL) gated on the born-V2
+//       DepositTakenV2 / FundingLineDrawnV2 emission path — exactly the same
+//       GL-coupling deferral as the trading-book IR oracle (GAP-BA320-IR-SIM-GL).
+//       The golden drive is therefore PROVEN by the self-contained in-memory
+//       oracle (leg A), not by live-store pollution; leg C remains as the
+//       activation assertion for when the born-V2 live seed lands.
 //
 //   (D) PROVENANCE BOUNDARY — STRUCTURAL (always asserts). Every event of the
 //       in-memory simulated book is EXCLUDED by a production-only provenance
