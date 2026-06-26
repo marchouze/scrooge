@@ -55,6 +55,7 @@ import { run as runPnlFcyExposure } from "../recon/fx-pnl-fcy-exposure-integrity
 import { run as runSettlementFvtpl } from "../recon/fx-settlement-fvtpl-integrity";
 import { run as runObsMemorandum } from "../recon/fx-trade-date-obs-memorandum";
 import type { ReconResult } from "../recon/types";
+import { utcNow } from "../types/time";
 
 /** The five IFRS premises the FX-vanilla CFO sign-off rests on. */
 export type FxIfrsPremise =
@@ -218,7 +219,7 @@ export function runFxVanillaIfrsReview(): FxIfrsReviewVerdict {
     // passes. Check 5 (gap surfacing) is informational and always passes once
     // the gaps are surfaced.
     pass: checks.every((c) => c.pass),
-    asOf: new Date().toISOString(), // wall-clock: review-run timestamp
+    asOf: utcNow(), // review-run timestamp via the approved clock helper
   };
 }
 
