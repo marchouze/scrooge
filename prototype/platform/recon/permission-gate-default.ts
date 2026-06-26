@@ -171,6 +171,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // defeat the read-surface probe. Citation: D-AGENT-MEMORY-PERSISTENCE,
   // P4-SECURITY-DESIGNED-IN.
   "platform/recon/agent-memory-dual-vocabulary.ts",
+  // BA 320 simulator-first trading-book drive gate (D-BA-RETURN-SIMULATOR-FIRST):
+  // reads the LIVE store read-only for the equity/commodity legs, and builds a
+  // throwaway `:memory:` EventStore for the IR oracle (one trading-book bond +
+  // one banking-book bond, appended + discarded — no production access path).
+  // Gating the ephemeral oracle would require a fake policy resolver for zero
+  // security benefit (the store is `:memory:` and never persisted).
+  "platform/recon/ba320-trading-book-sim-drive.ts",
   // Recon pipelines that read-only replay the live store. Wrapping the read
   // path with the gate is a no-op (the gate intercepts append, not replay).
   "platform/recon/dashboard-derivation-recon.ts",

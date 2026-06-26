@@ -9,12 +9,14 @@
 // adapters.
 //
 // WHAT IT EMITS (all `provenance: simulated`, scenario "trading-book-sim-v1"):
-//   - Equity (JSE, single-name + an index) → EquityTradingPositionOpened
-//   - Equity (LSE, single-name) → EquityTradingPositionOpened
+//   - Equity (JSE, single-name + an index; LSE single-name) → EquityTradingPositionOpened
 //   - Commodity (platinum, brent, maize) → CommodityTradingPositionOpened
-//   - IR trading-book bond (SA gov + a corporate) → BondTradeExecuted
-//       (portfolio="trading-book"), which the existing bond adapter folds into
-//       the BA 320 IR general + specific ladders.
+//
+// IR is NOT seeded here — that risk class is already driven by the existing bond /
+// IRS adapters, and a live BondTradeExecuted requires its GL posting (PR-BOND-001)
+// or recon:gl-ledger-coverage flags an uncovered lifecycle. The IR trading-book
+// designation is proven by the golden-case test + the recon's in-memory IR oracle
+// (tracked-deferred GAP-BA320-IR-SIM-GL). See the IR section below.
 //
 // All positions are allocated to a TRADING-BOOK FRTB desk (Trading Desk 1 or
 // Hedging Desk 1 — both `bookType: "trading"`). Banking-book positions are OUT
@@ -40,13 +42,11 @@
 import { eventStore } from "../../platform/composition";
 import { money } from "../../platform/core/decimal-money";
 import { encodeMoney } from "../../platform/core/money-codec";
-import { makeBondTradeExecuted } from "../../platform/event-store/event-types/bond-accounting";
 import {
   makeCommodityTradingPositionOpened,
   makeEquityTradingPositionOpened,
 } from "../../platform/event-store/event-types/trading-book-positions";
 import { simulatedTag } from "../../platform/event-store/provenance";
-import { eventSchema } from "../../platform/event-store/types";
 import { DEFAULT_SIM_DESK_ID, SIM_TRADING_BOOK_DESK_IDS } from "../../v2-core/desk/roster";
 
 // ---------------------------------------------------------------------------
@@ -106,16 +106,6 @@ interface CommoditySpec {
   quantity: number;
   marketValueMajor: string;
   deskId: string;
-}
-
-interface BondSpec {
-  tradeId: string;
-  bondIsin: string;
-  side: "buy" | "sell";
-  nominalMajor: string; // ZAR major; converted to nominalMinor (cents)
-  couponRate: number;
-  maturityDate: string;
-  counterpartyLei: string;
 }
 
 // EQUITY — JSE market (golden case): long R10m + short R4m single-names (NOT
@@ -219,29 +209,26 @@ const COMMODITY_BOOK: readonly CommoditySpec[] = [
   },
 ];
 
-// IR — trading-book bonds. SA gov bond (golden case): R100m nominal, ~6y residual
-// → band 5-7y (riskWeight 0.0325) → weighted R3,250,000; SA gov specific weight 0.
-// Plus a corporate bond (qualifying-issuer 0.25% specific). Both trading-book.
-const BOND_BOOK: readonly BondSpec[] = [
-  {
-    tradeId: "TBSIM-BOND-RSA-R2032",
-    bondIsin: "ZAG000150001", // ZAG prefix → SA gov → 0% specific
-    side: "buy",
-    nominalMajor: "100000000", // R100,000,000
-    couponRate: 0.085,
-    maturityDate: "2032-06-26", // ~6y → 5-7y band (weight 0.0325)
-    counterpartyLei: "SIM00000000000000RSA1",
-  },
-  {
-    tradeId: "TBSIM-BOND-CORP-XYZ",
-    bondIsin: "ZAE000corpXYZ2030", // non-ZAG → qualifying-issuer 0.25% specific
-    side: "buy",
-    nominalMajor: "40000000", // R40,000,000
-    couponRate: 0.105,
-    maturityDate: "2030-06-26", // ~4y → 4-5y band (weight 0.0275)
-    counterpartyLei: "SIM00000000000000CRP1",
-  },
-];
+// IR — DELIBERATELY NOT SEEDED into the live store (tracked-deferred, see below).
+//
+// The interest-rate trading-book risk class is ALREADY driven by the existing
+// `BondTradeExecuted` / `IrdSwapTradeExecuted` event adapters
+// (ba-320-bond-events-adapter / ba-320-irs-events-adapter), which already filter
+// `portfolio === "trading-book"`. The brief's IR scope is "ensure trading-book
+// designation" — that designation is honoured by the adapters and PROVEN
+// end-to-end (trading-book in, banking-book excluded) by the golden-case test
+// `platform/returns/ba320/trading-book-sim-golden.test.ts` against an in-memory
+// store + the Reg 28(3)(a) Table A oracle (R100m SA-gov @ 5-7y → R3,250,000).
+//
+// Seeding a NEW live BondTradeExecuted here would require its matching V1
+// SubLedgerPostingEmitted (posting rule PR-BOND-001) or `recon:gl-ledger-coverage`
+// flags an uncovered lifecycle — i.e. it would drag the whole bond GL-posting
+// chain into this slice. The equity / commodity gap is the genuine "folds-to-zero"
+// gap (no GL-posting coupling); IR is already wired. So the IR live-store seed is
+// a TRACKED-DEFERRED gap (GAP-BA320-IR-SIM-GL), to be seeded WITH its GL postings
+// in a follow-on once the trading-book bond GL fold is exercised on the sim path.
+// Authority: Engineering Charter cmd 1 (root-cause, don't widen scope); cmd 5
+// (no silent deferral — this is a named, tracked gap, not a hidden one).
 
 // ---------------------------------------------------------------------------
 // Idempotency helper.
@@ -258,11 +245,6 @@ const EXISTING_EVENT_IDS = collectExistingEventIds();
 
 function alreadyEmitted(eventId: string): boolean {
   return EXISTING_EVENT_IDS.has(eventId);
-}
-
-function majorToMinorCents(major: string): number {
-  // ZAR scale 2; exact integer cents for the round seed values.
-  return Math.round(Number(money(major, "ZAR").amount) * 100);
 }
 
 // ---------------------------------------------------------------------------
@@ -333,55 +315,11 @@ function emitCommodity(): number {
   return n;
 }
 
-function emitBonds(): number {
-  let n = 0;
-  for (const b of BOND_BOOK) {
-    const eventId = `EV-${b.tradeId}`;
-    if (alreadyEmitted(eventId)) continue;
-    // The v1 BondTradeExecuted maker validates the payload but does not carry a
-    // provenance param. Build via the typed maker (payload validation), then
-    // stamp the simulated envelope provenance by re-parsing through the event
-    // schema — so the bond is excluded from the production BA 320 read exactly
-    // like the equity / commodity events. (No new v1 dependency; reuses the
-    // existing maker. The BA 320 bond adapter's provenance filter is what makes
-    // this seed production-invisible.)
-    const base = makeBondTradeExecuted({
-      asOf: AS_OF,
-      entity: ENTITY,
-      actor: ACTOR,
-      citations: CITATIONS,
-      eventId,
-      payload: {
-        tradeId: b.tradeId,
-        bondIsin: b.bondIsin,
-        side: b.side,
-        nominalMinor: majorToMinorCents(b.nominalMajor),
-        cleanPricePercent: 100,
-        accruedInterestMinor: 0,
-        dirtyPricePercent: 100,
-        settlementDate: OPENED_DATE,
-        portfolio: "trading-book",
-        couponRate: b.couponRate,
-        maturityDate: b.maturityDate,
-        currency: FUNCTIONAL,
-        counterpartyLei: b.counterpartyLei,
-        executedAt: AS_OF,
-        bookDesignation: "trading",
-      },
-    });
-    const ev = eventSchema.parse({ ...base, provenance: SIM_PROVENANCE });
-    eventStore.append(ev);
-    n += 1;
-  }
-  return n;
-}
-
 function main(): number {
   const eq = emitEquity();
   const cm = emitCommodity();
-  const bd = emitBonds();
   console.log(
-    `[seed-trading-book-sim-v1] emitted equity=${eq} commodity=${cm} bonds=${bd} (scenario=trading-book-sim-v1, provenance=simulated, entity=${ENTITY}). Production BA 320 read stays 0; simulated read drives the engine.`,
+    `[seed-trading-book-sim-v1] emitted equity=${eq} commodity=${cm} (scenario=trading-book-sim-v1, provenance=simulated, entity=${ENTITY}). IR risk class is already driven by the existing bond/IRS adapters (trading-book designation proven by the golden-case test; live IR seed tracked-deferred GAP-BA320-IR-SIM-GL). Production BA 320 read stays 0; simulated read drives the engine.`,
   );
   return 0;
 }
