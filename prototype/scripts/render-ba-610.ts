@@ -21,12 +21,12 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { closePeriod, openPeriod } from "../platform/accounting/period-close";
 import { eventStore } from "../platform/composition";
 import {
-  type Ba610LineClassification,
-  generateBa610IncomeStatement,
+  type Ba120LineClassification,
+  generateBa120IncomeStatement,
   renderBa610Canonical,
 } from "../platform/reporting";
 
-const BUILD_PHASE_DEFAULT_CLASSIFICATIONS: readonly Ba610LineClassification[] = [
+const BUILD_PHASE_DEFAULT_CLASSIFICATIONS: readonly Ba120LineClassification[] = [
   {
     leafAccountId: "ACC-pl-revenue-stub",
     category: "interest-income",
@@ -84,7 +84,7 @@ function loadJson<T>(path: string, label: string): T {
 function main(argv: readonly string[]): number {
   const args = parseArgs(argv);
   const classifications = args.classificationsPath
-    ? loadJson<readonly Ba610LineClassification[]>(args.classificationsPath, "classifications")
+    ? loadJson<readonly Ba120LineClassification[]>(args.classificationsPath, "classifications")
     : BUILD_PHASE_DEFAULT_CLASSIFICATIONS;
 
   const ACTOR = { type: "service" as const, id: "agent:Bea" };
@@ -113,7 +113,7 @@ function main(argv: readonly string[]): number {
     citations: CITATIONS,
   });
 
-  const output = generateBa610IncomeStatement({
+  const output = generateBa120IncomeStatement({
     entity: args.entity,
     periodStart: args.periodStart,
     periodEnd: args.periodEnd,

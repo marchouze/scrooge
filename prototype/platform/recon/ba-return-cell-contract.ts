@@ -97,7 +97,7 @@ const KNOWN_PROJECTIONS = new Set([
   "ba340-equity-risk-banking-book-fold",
   "ba350-derivatives-instruments-fold",
   // Phase C batch 5 — capital-family report folds (one per form). BA 700's fold
-  // is the live ba-700-capital.ts capital projection (generateBa100Capital —
+  // is the live ba-700-capital.ts capital projection (generateBa700Capital —
   // CET1/AT1/T2 tiers, RWA decomposition, ratios) + the ba-700-leverage-ratio.ts
   // leverage projection; the regulatory minimum-required ratios + buffer add-ons
   // + the specified minimum leverage ratio are computed from BCBS / Reg-38
@@ -107,7 +107,7 @@ const KNOWN_PROJECTIONS = new Set([
   "ba700-capital-adequacy-fold",
   "ba701-regulatory-vs-economic-capital-fold",
   // Phase C batch 6 — operational-family report folds (one per form). BA 400's
-  // fold is the live ba-400-op-risk.ts op-risk projection (generateBa300OpRisk —
+  // fold is the live ba-400-op-risk.ts op-risk projection (generateBa400OpRisk —
   // BIA / TSA gross-income → op-capital, op-RWA = 12.5 × op-capital); the
   // regulatory α / β / 12.5× constants are sourced. BA 410 / BA 420 fold from
   // their named operational-loss projections over the OperationalLossEvent stream

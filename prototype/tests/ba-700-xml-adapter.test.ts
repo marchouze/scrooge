@@ -22,8 +22,8 @@
 
 import { describe, expect, it } from "bun:test";
 
-import type { Ba100Output } from "../platform/reporting/ba-700-capital";
-import { generateBa100Capital } from "../platform/reporting/ba-700-capital";
+import type { Ba700Output } from "../platform/reporting/ba-700-capital";
+import { generateBa700Capital } from "../platform/reporting/ba-700-capital";
 import {
   BA_100_NAMESPACE,
   BA_100_REQUIRED_ELEMENTS,
@@ -42,8 +42,8 @@ const PERIOD_ID = "period:hoz-bank:month:2026-05";
 const FUNCTIONAL_CURRENCY = "ZAR";
 
 /** Minimal BA 100 output using the pure generator (no EventStore required). */
-function makeMinimalBa100Output(): Ba100Output {
-  return generateBa100Capital({
+function makeMinimalBa100Output(): Ba700Output {
+  return generateBa700Capital({
     entity: ENTITY,
     asOf: AS_OF,
     periodId: PERIOD_ID,
@@ -138,7 +138,7 @@ describe("ba100ToXmlPayload()", () => {
 
   it("TC-7: infinite ratios serialise as the string 'Infinity'", () => {
     // With non-zero capital and zero RWA, ratios would be Infinity.
-    const output = generateBa100Capital({
+    const output = generateBa700Capital({
       entity: ENTITY,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -171,7 +171,7 @@ describe("ba100ToXmlPayload()", () => {
   });
 
   it("TC-9: trialBalanceSnapshotEventId forwarded when supplied", () => {
-    const output = generateBa100Capital({
+    const output = generateBa700Capital({
       entity: ENTITY,
       asOf: AS_OF,
       periodId: PERIOD_ID,

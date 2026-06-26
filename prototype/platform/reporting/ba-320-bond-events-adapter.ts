@@ -2,7 +2,7 @@
 //
 // Derives BA-310 IR general risk maturity-ladder from BondTradeExecuted events
 // (minus BondMatured / BondSold derecognitions). Fills the
-// Ba310PeriodCloseSubscriberInput.irGeneralMaturityLadder field which was
+// Ba320PeriodCloseSubscriberInput.irGeneralMaturityLadder field which was
 // previously a caller-supplied placeholder (zeros, per D-MARKETS-CAPITAL-TIME-SHAPE).
 //
 // Only trading-book positions incur BA-310 IR general risk.

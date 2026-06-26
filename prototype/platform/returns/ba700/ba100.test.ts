@@ -35,7 +35,7 @@ import { setDefaultProvenanceModeOverride } from "../../projections/filter";
 import type { RwaDecomposition } from "../../reporting/ba-700-capital";
 import { generateBA700Return } from "./generator";
 import {
-  BA_100_SUBSCRIBER_ENTITIES,
+  BA_700_SUBSCRIBER_ENTITIES,
   onAccountingPeriodClosed,
   replayAndGenerate,
 } from "./period-close-subscriber";
@@ -314,8 +314,8 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 returns/ba700 — status", () => {
 // ---------------------------------------------------------------------------
 
 describe("D-REPORTING-CAPABILITY-SLICE-4 returns/ba700 — onAccountingPeriodClosed", () => {
-  it("BA_100_SUBSCRIBER_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
-    expect(BA_100_SUBSCRIBER_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
+  it("BA_700_SUBSCRIBER_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
+    expect(BA_700_SUBSCRIBER_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
   });
 
   it("processes LE-ZA-HOZ-BANK and returns processed=true with a BA700Return", () => {

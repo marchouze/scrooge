@@ -23,7 +23,7 @@ import {
   generateBa110OffBalanceSheetFromEvents,
 } from "./ba-110-off-balance-sheet";
 import { renderBa110ObsCanonical } from "./ba-110-render";
-import { generateBa100CapitalFromEvents } from "./ba-700-events-adapter";
+import { generateBa700CapitalFromEvents } from "./ba-700-events-adapter";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const ASOF = "2026-05-31T00:00:00.000Z";
@@ -307,8 +307,8 @@ describe("BA 700 leverage ratio reflects BA 110 off-balance-sheet exposure", () 
     // Off-balance-sheet: committed-undrawn R20m × 0.50 CCF = R10m post-CCF.
     store.append(recordCommitment("FAC-001", 20_000_000_00, 0.5));
 
-    const withoutObs = generateBa100CapitalFromEvents(store, baseCapitalInput(false));
-    const withObs = generateBa100CapitalFromEvents(store, baseCapitalInput(true));
+    const withoutObs = generateBa700CapitalFromEvents(store, baseCapitalInput(false));
+    const withObs = generateBa700CapitalFromEvents(store, baseCapitalInput(true));
 
     const denomWithout = withoutObs.leverageRatio?.exposureMeasure.totalExposureMeasureMinor ?? 0;
     const denomWith = withObs.leverageRatio?.exposureMeasure.totalExposureMeasureMinor ?? 0;

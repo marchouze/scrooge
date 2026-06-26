@@ -30,8 +30,8 @@
 //      are surfaced as a substrate-gap placeholder (not dropped, not fabricated).
 //   3. Uses caller-supplied equity / commodity inputs (build-phase:
 //      placeholder zeros; post-trading-book milestone: event-derived).
-//   4. Calls `generateBa310MarketRiskFromEvents` with the composed input.
-//   5. Returns the typed `Ba310Output` for the caller to render / store.
+//   4. Calls `generateBa320MarketRiskFromEvents` with the composed input.
+//   5. Returns the typed `Ba320Output` for the caller to render / store.
 //
 // ## Principle 1 compliance
 //
@@ -63,9 +63,9 @@ import {
   buildBondIrSpecificRiskRows,
 } from "../../reporting/ba-320-bond-events-adapter";
 import {
-  type Ba310FromEventsInput,
-  type Ba310Output,
-  generateBa310MarketRiskFromEvents,
+  type Ba320FromEventsInput,
+  type Ba320Output,
+  generateBa320MarketRiskFromEvents,
 } from "../../reporting/ba-320-events-adapter";
 import {
   buildIrsIrGeneralLadder,
@@ -82,7 +82,7 @@ import type {
 // Per-entity scope guard
 // ---------------------------------------------------------------------------
 
-export const BA_310_SUBSCRIBER_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
+export const BA_320_SUBSCRIBER_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 
 // ---------------------------------------------------------------------------
 // Subscriber input / output
@@ -91,10 +91,10 @@ export const BA_310_SUBSCRIBER_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 /**
  * Input to the `AccountingPeriodClosed` → BA 310 subscriber.
  */
-export interface Ba310PeriodCloseSubscriberInput {
+export interface Ba320PeriodCloseSubscriberInput {
   /** The `AccountingPeriodClosed` event payload that triggered the subscriber. */
   readonly closedPayload: AccountingPeriodClosedPayload;
-  /** The entity the period was closed for. Must be in `BA_310_SUBSCRIBER_ENTITIES`. */
+  /** The entity the period was closed for. Must be in `BA_320_SUBSCRIBER_ENTITIES`. */
   readonly entity: string;
   /**
    * Event store — provides access to `FxTradeExecuted` and
@@ -147,11 +147,11 @@ export interface Ba310PeriodCloseSubscriberInput {
 /**
  * Result of the `AccountingPeriodClosed` → BA 310 subscriber.
  */
-export interface Ba310PeriodCloseSubscriberResult {
+export interface Ba320PeriodCloseSubscriberResult {
   /** The generated BA 310 projection. Caller renders + stores this. */
-  readonly ba310Output: Ba310Output;
+  readonly ba320Output: Ba320Output;
   /**
-   * True if the entity was not in `BA_310_SUBSCRIBER_ENTITIES` and the
+   * True if the entity was not in `BA_320_SUBSCRIBER_ENTITIES` and the
    * subscriber skipped generation.
    */
   readonly skipped: boolean;
@@ -170,7 +170,7 @@ export interface Ba310PeriodCloseSubscriberResult {
  * silently skipped (`result.skipped = true`).
  *
  * **Principle 1 compliance**: FX positions are derived from `FxTradeExecuted`
- * primary events via `generateBa310MarketRiskFromEvents`, NOT from the trial
+ * primary events via `generateBa320MarketRiskFromEvents`, NOT from the trial
  * balance. Bond IR general and IR specific-risk are derived from
  * `BondTradeExecuted` events via `buildBondIrGeneralLadder` and
  * `buildBondIrSpecificRiskRows`. Equity / commodity remain caller-supplied
@@ -184,15 +184,15 @@ export interface Ba310PeriodCloseSubscriberResult {
  *   Banks Act 94 of 1990 §70; Regulations Relating to Banks Reg 28;
  *   BCBS D352.
  */
-export function ba310PeriodCloseSubscriber(
-  input: Ba310PeriodCloseSubscriberInput,
-): Ba310PeriodCloseSubscriberResult {
+export function ba320PeriodCloseSubscriber(
+  input: Ba320PeriodCloseSubscriberInput,
+): Ba320PeriodCloseSubscriberResult {
   // Guard: only bank-licence entities generate BA 310.
-  if (!BA_310_SUBSCRIBER_ENTITIES.includes(input.entity)) {
+  if (!BA_320_SUBSCRIBER_ENTITIES.includes(input.entity)) {
     return {
-      ba310Output: null as unknown as Ba310Output,
+      ba320Output: null as unknown as Ba320Output,
       skipped: true,
-      skipReason: `entity '${input.entity}' is not in BA_310_SUBSCRIBER_ENTITIES (${BA_310_SUBSCRIBER_ENTITIES.join(", ")}); BA 310 not generated`,
+      skipReason: `entity '${input.entity}' is not in BA_320_SUBSCRIBER_ENTITIES (${BA_320_SUBSCRIBER_ENTITIES.join(", ")}); BA 310 not generated`,
     };
   }
 
@@ -252,7 +252,7 @@ export function ba310PeriodCloseSubscriber(
         ]
       : [];
 
-  const fromEventsInput: Ba310FromEventsInput = {
+  const fromEventsInput: Ba320FromEventsInput = {
     entity: input.entity,
     asOf: periodEnd,
     periodId: input.closedPayload.periodId,
@@ -274,10 +274,10 @@ export function ba310PeriodCloseSubscriber(
     ...(extraPlaceholders.length > 0 ? { extraPlaceholders } : {}),
   };
 
-  const ba310Output = generateBa310MarketRiskFromEvents(input.eventStore, fromEventsInput);
+  const ba320Output = generateBa320MarketRiskFromEvents(input.eventStore, fromEventsInput);
 
   return {
-    ba310Output,
+    ba320Output,
     skipped: false,
   };
 }

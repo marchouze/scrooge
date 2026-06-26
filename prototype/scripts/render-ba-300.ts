@@ -29,7 +29,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import {
   type OpRiskGrossIncomeRow,
   ba300ToXmlPayload,
-  generateBa300OpRisk,
+  generateBa400OpRisk,
   renderSarbXml,
 } from "../platform/reporting";
 
@@ -87,7 +87,7 @@ function loadGrossIncome(path: string | undefined): readonly OpRiskGrossIncomeRo
 function main(argv: readonly string[]): number {
   const args = parseArgs(argv);
   const grossIncome = loadGrossIncome(args.grossIncomePath);
-  const out = generateBa300OpRisk({
+  const out = generateBa400OpRisk({
     entity: args.entity,
     asOf: args.asOf,
     periodId: args.periodId,

@@ -37,8 +37,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { closePeriod, openPeriod } from "../platform/accounting/period-close";
 import { eventStore } from "../platform/composition";
 import {
-  type Ba600LineClassification,
-  generateBa600BalanceSheet,
+  type Ba100LineClassification,
+  generateBa100BalanceSheet,
   renderBa600Canonical,
 } from "../platform/reporting";
 
@@ -48,7 +48,7 @@ import {
 // the SARB BA 600 published-schema mapping.
 // ---------------------------------------------------------------------------
 
-const BUILD_PHASE_DEFAULT_CLASSIFICATIONS: readonly Ba600LineClassification[] = [
+const BUILD_PHASE_DEFAULT_CLASSIFICATIONS: readonly Ba100LineClassification[] = [
   {
     leafAccountId: "ACC-1100-001",
     section: "assets",
@@ -123,7 +123,7 @@ function loadJson<T>(path: string, label: string): T {
 function main(argv: readonly string[]): number {
   const args = parseArgs(argv);
   const classifications = args.classificationsPath
-    ? loadJson<readonly Ba600LineClassification[]>(args.classificationsPath, "classifications")
+    ? loadJson<readonly Ba100LineClassification[]>(args.classificationsPath, "classifications")
     : BUILD_PHASE_DEFAULT_CLASSIFICATIONS;
 
   // Open + close the period to produce a trial balance.
@@ -152,7 +152,7 @@ function main(argv: readonly string[]): number {
     citations: CITATIONS,
   });
 
-  const output = generateBa600BalanceSheet({
+  const output = generateBa100BalanceSheet({
     entity: args.entity,
     asOf: args.asOf,
     periodId: args.periodId,

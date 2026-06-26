@@ -12,9 +12,9 @@
 // The subscriber wires the BA 300 generator to the period-close event stream.
 // When `AccountingPeriodClosed` fires for `LE-ZA-HOZ-BANK`, the subscriber:
 //   1. Uses caller-supplied annual gross-income rows per business line.
-//   2. Calls `generateBa300OpRisk` with the basic indicator approach (BIA)
+//   2. Calls `generateBa400OpRisk` with the basic indicator approach (BIA)
 //      at 15% of 3-year average positive gross income.
-//   3. Returns the typed `Ba300Output` for the caller to render / store.
+//   3. Returns the typed `Ba400Output` for the caller to render / store.
 //
 // ## Build-phase posture
 //
@@ -46,17 +46,17 @@
 import type { AccountingPeriodClosedPayload } from "../../event-store/event-types";
 import type { Actor } from "../../event-store/types";
 import {
-  type Ba300GeneratorInput,
-  type Ba300Output,
+  type Ba400GeneratorInput,
+  type Ba400Output,
   type OpRiskGrossIncomeRow,
-  generateBa300OpRisk,
+  generateBa400OpRisk,
 } from "../../reporting/ba-400-op-risk";
 
 // ---------------------------------------------------------------------------
 // Per-entity scope guard
 // ---------------------------------------------------------------------------
 
-export const BA_300_SUBSCRIBER_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
+export const BA_400_SUBSCRIBER_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 
 // ---------------------------------------------------------------------------
 // Subscriber input / output
@@ -65,10 +65,10 @@ export const BA_300_SUBSCRIBER_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 /**
  * Input to the `AccountingPeriodClosed` → BA 300 subscriber.
  */
-export interface Ba300PeriodCloseSubscriberInput {
+export interface Ba400PeriodCloseSubscriberInput {
   /** The `AccountingPeriodClosed` event payload that triggered the subscriber. */
   readonly closedPayload: AccountingPeriodClosedPayload;
-  /** The entity the period was closed for. Must be in `BA_300_SUBSCRIBER_ENTITIES`. */
+  /** The entity the period was closed for. Must be in `BA_400_SUBSCRIBER_ENTITIES`. */
   readonly entity: string;
   /** Actor running the subscriber (typically the Bea agent). */
   readonly actor: Actor;
@@ -94,11 +94,11 @@ export interface Ba300PeriodCloseSubscriberInput {
 /**
  * Result of the `AccountingPeriodClosed` → BA 300 subscriber.
  */
-export interface Ba300PeriodCloseSubscriberResult {
+export interface Ba400PeriodCloseSubscriberResult {
   /** The generated BA 300 projection. Caller renders + stores this. */
-  readonly ba300Output: Ba300Output;
+  readonly ba300Output: Ba400Output;
   /**
-   * True if the entity was not in `BA_300_SUBSCRIBER_ENTITIES` and the
+   * True if the entity was not in `BA_400_SUBSCRIBER_ENTITIES` and the
    * subscriber skipped generation.
    */
   readonly skipped: boolean;
@@ -128,15 +128,15 @@ export interface Ba300PeriodCloseSubscriberResult {
  *   Banks Act 94 of 1990 §70; Regulations Relating to Banks Reg 33;
  *   BCBS D196 §645–§654.
  */
-export function ba300PeriodCloseSubscriber(
-  input: Ba300PeriodCloseSubscriberInput,
-): Ba300PeriodCloseSubscriberResult {
+export function ba400PeriodCloseSubscriber(
+  input: Ba400PeriodCloseSubscriberInput,
+): Ba400PeriodCloseSubscriberResult {
   // Guard: only bank-licence entities generate BA 300.
-  if (!BA_300_SUBSCRIBER_ENTITIES.includes(input.entity)) {
+  if (!BA_400_SUBSCRIBER_ENTITIES.includes(input.entity)) {
     return {
-      ba300Output: null as unknown as Ba300Output,
+      ba300Output: null as unknown as Ba400Output,
       skipped: true,
-      skipReason: `entity '${input.entity}' is not in BA_300_SUBSCRIBER_ENTITIES (${BA_300_SUBSCRIBER_ENTITIES.join(", ")}); BA 300 not generated`,
+      skipReason: `entity '${input.entity}' is not in BA_400_SUBSCRIBER_ENTITIES (${BA_400_SUBSCRIBER_ENTITIES.join(", ")}); BA 300 not generated`,
     };
   }
 
@@ -144,7 +144,7 @@ export function ba300PeriodCloseSubscriber(
   const periodEnd = input.closedPayload.closedAt;
   const approach = input.approach ?? "bia";
 
-  const generatorInput: Ba300GeneratorInput = {
+  const generatorInput: Ba400GeneratorInput = {
     entity: input.entity,
     asOf: periodEnd,
     periodId: input.closedPayload.periodId,
@@ -153,7 +153,7 @@ export function ba300PeriodCloseSubscriber(
     approach,
   };
 
-  const ba300Output = generateBa300OpRisk(generatorInput);
+  const ba300Output = generateBa400OpRisk(generatorInput);
 
   return {
     ba300Output,

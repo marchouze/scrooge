@@ -3,13 +3,13 @@
 // Adapter: FX position calculator output → BA 310 FX section input.
 //
 // Bridges the fxPositionCalculator (platform/accounting/fx-calculators.ts)
-// output to the FxPositionRow[] shape that Ba310GeneratorInput.fxPositions
+// output to the FxPositionRow[] shape that Ba320GeneratorInput.fxPositions
 // expects. Pure function; no side-effects.
 //
 // Usage:
 //   const positions = fxPositionCalculator({ trades, settledTradeIds, zarRates, asOf });
-//   const ba310FxPositions = fxPositionsToBa310Input(positions);
-//   const ba310 = generateBa310MarketRisk({ ..., fxPositions: ba310FxPositions });
+//   const ba320FxPositions = fxPositionsToBa320Input(positions);
+//   const ba310 = generateBa320MarketRisk({ ..., fxPositions: ba320FxPositions });
 //
 // Authority:
 //   - D-MARKETS-SCHEMA-FOUNDATION (CEO-approved)
@@ -37,7 +37,7 @@ import type { FxPositionRow } from "./ba-320-market-risk";
  * @param positions - Output from fxPositionCalculator
  * @param functionalCurrency - ISO 4217 functional currency (default "ZAR")
  */
-export function fxPositionsToBa310Input(
+export function fxPositionsToBa320Input(
   positions: ReadonlyArray<FxPositionResult>,
   functionalCurrency = "ZAR",
 ): FxPositionRow[] {

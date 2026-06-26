@@ -7,9 +7,9 @@
 // (CEO-approved 2026-05-10), pack §6 Slice 4, Marc's Q5 default
 // (JSON-first; PDF / HTML / SARB-XML are downstream rendering slices).
 //
-// The render layer takes the typed `Ba100Output` from `ba-100-capital.ts`
+// The render layer takes the typed `Ba700Output` from `ba-100-capital.ts`
 // and produces a JSON document that:
-//   - validates against the declared `Ba100RenderSchema` (Zod);
+//   - validates against the declared `Ba700RenderSchema` (Zod);
 //   - is deterministic (same input → byte-identical bytes);
 //   - is hash-store-friendly (BLAKE3 over the bytes is the
 //     `ReportGenerated` event's `documentHash` per Slice 5);
@@ -18,7 +18,7 @@
 //
 // Architectural placement:
 //
-//   BA 100 PROJECTION (typed Ba100Output)
+//   BA 100 PROJECTION (typed Ba700Output)
 //      → THIS RENDERER  → Uint8Array of canonical JSON bytes
 //      → RMS DOC STORE (BLAKE3-hashed; PR #142 substrate)
 //      → REPORTGENERATED EVENT (Slice 5; cites the hash + the schema id)
@@ -37,7 +37,7 @@
 
 import { z } from "zod";
 
-import type { Ba100Output } from "./ba-700-capital";
+import type { Ba700Output } from "./ba-700-capital";
 
 // ---------------------------------------------------------------------------
 // JSON schema — Zod
@@ -77,7 +77,7 @@ const ba100BufferRequirementsSchema = z.object({
  * (regulator-portal slice, PDF renderer, dashboard pixel-perfect view)
  * validate inputs against this shape.
  */
-export const Ba100RenderSchema = z.object({
+export const Ba700RenderSchema = z.object({
   $schema: z.literal("https://hoz.bank/schemas/ba-100/v0.1-rehearsal.json"),
   meta: z.object({
     form: z.literal("BA 700"),
@@ -174,7 +174,7 @@ export const Ba100RenderSchema = z.object({
   placeholders: z.array(z.string().min(1)),
 });
 
-export type Ba100Render = z.infer<typeof Ba100RenderSchema>;
+export type Ba700Render = z.infer<typeof Ba700RenderSchema>;
 
 export const BA_100_SCHEMA_URL = "https://hoz.bank/schemas/ba-100/v0.1-rehearsal.json";
 export const BA_100_RENDERER_VERSION = "v0.1" as const;
@@ -202,11 +202,11 @@ function ratioToPercent(r: number): string {
 
 /**
  * Render the BA 100 projection to a typed JSON object validated against
- * `Ba100RenderSchema`. Pure function; deterministic for fixed
+ * `Ba700RenderSchema`. Pure function; deterministic for fixed
  * `renderedAt`.
  */
-export function renderBa100ToJson(output: Ba100Output, opts: RenderBa100Options): Ba100Render {
-  const meta: Ba100Render["meta"] = {
+export function renderBa100ToJson(output: Ba700Output, opts: RenderBa100Options): Ba700Render {
+  const meta: Ba700Render["meta"] = {
     form: output.meta.form,
     formVersion: output.meta.formVersion,
     entity: output.meta.entity,
@@ -267,7 +267,7 @@ export function renderBa100ToJson(output: Ba100Output, opts: RenderBa100Options)
     placeholders: [...output.placeholders],
   };
 
-  return Ba100RenderSchema.parse(candidate);
+  return Ba700RenderSchema.parse(candidate);
 }
 
 /**
@@ -277,7 +277,7 @@ export function renderBa100ToJson(output: Ba100Output, opts: RenderBa100Options)
  * output regardless of object-key insertion order. The doc-store hash
  * is over these bytes.
  */
-export function canonicaliseBa100(render: Ba100Render): string {
+export function canonicaliseBa100(render: Ba700Render): string {
   return JSON.stringify(sortKeys(render), null, 2);
 }
 
@@ -300,10 +300,10 @@ function sortKeys(value: unknown): unknown {
  * string (UTF-8 bytes by `new TextEncoder().encode(...)`).
  */
 export function renderBa100Canonical(
-  output: Ba100Output,
+  output: Ba700Output,
   opts: RenderBa100Options,
 ): {
-  readonly render: Ba100Render;
+  readonly render: Ba700Render;
   readonly canonicalJson: string;
   readonly canonicalBytes: Uint8Array;
 } {

@@ -40,7 +40,7 @@ import {
   THRESHOLD_LEVERAGE_RED,
   computeLeverageRatioMetrics,
 } from "../platform/projections/leverage-ratio-metrics";
-import { generateBa100Capital } from "../platform/reporting/ba-700-capital";
+import { generateBa700Capital } from "../platform/reporting/ba-700-capital";
 import {
   BCBS_LEVERAGE_RATIO_REGULATORY_MINIMUM,
   BUILD_PHASE_LEVERAGE_BASELINE_TIER1_MINOR,
@@ -280,7 +280,7 @@ describe("generateLeverageRatio — pure generator", () => {
 
 describe("BA 100 leverage ratio composition", () => {
   it("ships a leverageRatio section when leverageExposureMeasure is supplied", () => {
-    const out = generateBa100Capital({
+    const out = generateBa700Capital({
       entity: ENTITY,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -311,7 +311,7 @@ describe("BA 100 leverage ratio composition", () => {
   });
 
   it("omits the leverageRatio section when no exposure measure is supplied", () => {
-    const out = generateBa100Capital({
+    const out = generateBa700Capital({
       entity: ENTITY,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -331,7 +331,7 @@ describe("BA 100 leverage ratio composition", () => {
   });
 
   it("renders the leverageRatio section through renderBa100ToJson", () => {
-    const out = generateBa100Capital({
+    const out = generateBa700Capital({
       entity: ENTITY,
       asOf: AS_OF,
       periodId: PERIOD_ID,
@@ -362,7 +362,7 @@ describe("BA 100 leverage ratio composition", () => {
   });
 
   it("omits leverageRatio from render when not present in output", () => {
-    const out = generateBa100Capital({
+    const out = generateBa700Capital({
       entity: ENTITY,
       asOf: AS_OF,
       periodId: PERIOD_ID,

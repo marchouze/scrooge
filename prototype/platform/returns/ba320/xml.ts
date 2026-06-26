@@ -22,7 +22,7 @@ export {
   BA_310_NAMESPACE,
   BA_310_REQUIRED_ELEMENTS,
   BA_310_XSD_URI,
-  ba310ToXmlPayload,
+  ba320ToXmlPayload,
 } from "../../reporting/ba-320-xml-adapter";
 
 export {
@@ -33,4 +33,4 @@ export {
   validateSarbXmlStructural,
 } from "../../reporting/xml-render";
 
-export type { Ba310Output } from "../../reporting/ba-320-market-risk";
+export type { Ba320Output } from "../../reporting/ba-320-market-risk";

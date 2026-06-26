@@ -299,7 +299,7 @@ export const regulatoryCapitalDeductions: SemanticEntry = {
  *   - Operational RWA — Standardised Measurement Approach per BCBS Basel
  *     III §148 / Reg 38 BSA.
  *
- * v0 BA 100 generator accepts RWA inputs via the `Ba100GeneratorInput.rwa`
+ * v0 BA 100 generator accepts RWA inputs via the `Ba700GeneratorInput.rwa`
  * field — fixture constants per asset-class for the build-phase rehearsal.
  * The W2 Slice 3 RWA engine wires in once it lands; the generator's
  * downstream contract is unchanged (the engine produces a typed RWA

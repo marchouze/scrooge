@@ -11,7 +11,7 @@
 //   3. End-to-end:
 //        synthetic SubLedgerPostingEmitted events
 //          → openPeriod → closePeriod (Slice 2)
-//          → generateBa100Capital (Slice 4)
+//          → generateBa700Capital (Slice 4)
 //          → renderBa100ToJson (Slice 4)
 //        produces known capital ratios.
 //   4. Tier-stack arithmetic — netCET1 = grossCET1 − deductions; Tier 1 +
@@ -21,11 +21,11 @@
 //   6. Compliance flags — strictly compares actual ≥ all-in-required.
 //   7. Determinism — same generator output ⇒ byte-identical canonical JSON.
 //   8. Schema validation — rendered output validates against
-//      Ba100RenderSchema.
+//      Ba700RenderSchema.
 //   9. Divide-by-zero — zero RWA ⇒ ratios = Infinity, render encodes
 //      "infinity"; compliant by convention.
 //  10. Provenance passthrough — TrialBalanceSnapshotted.event_id flows
-//      into Ba100Output.meta.trialBalanceSnapshotEventId; RWA computation
+//      into Ba700Output.meta.trialBalanceSnapshotEventId; RWA computation
 //      event_id flows into the render.
 //  11. Generator boundary errors — duplicate classifications; deduction
 //      currency mismatch; negative deduction; invalid buffer ratio; base-
@@ -53,14 +53,14 @@ import {
   BA_100_BANK_ENTITIES,
   BA_100_SCHEMA_URL,
   BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
-  Ba100GeneratorError,
-  Ba100RenderSchema,
+  Ba700GeneratorError,
+  Ba700RenderSchema,
   type BufferRequirements,
   type RegulatoryDeduction,
   type RwaDecomposition,
   canonicaliseBa100,
   computeRequiredMinimums,
-  generateBa100Capital,
+  generateBa700Capital,
   renderBa100Canonical,
   renderBa100ToJson,
 } from "../platform/reporting";
@@ -212,7 +212,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — per-entity isolation", () => {
 
   it("rejects LE-ZA-HOZ-SECURITIES (not bank-licence-bound)", () => {
     expect(() =>
-      generateBa100Capital({
+      generateBa700Capital({
         entity: ENTITY_SECURITIES,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
@@ -222,12 +222,12 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — per-entity isolation", () => {
         deductions: [],
         rwa: FIXTURE_RWA,
       }),
-    ).toThrow(Ba100GeneratorError);
+    ).toThrow(Ba700GeneratorError);
   });
 
   it("rejects LE-ZA-HOZ-GROUP (consolidated lands at Slice 7)", () => {
     expect(() =>
-      generateBa100Capital({
+      generateBa700Capital({
         entity: ENTITY_GROUP,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
@@ -237,12 +237,12 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — per-entity isolation", () => {
         deductions: [],
         rwa: FIXTURE_RWA,
       }),
-    ).toThrow(Ba100GeneratorError);
+    ).toThrow(Ba700GeneratorError);
   });
 
   it("rejects an invalid functional currency", () => {
     expect(() =>
-      generateBa100Capital({
+      generateBa700Capital({
         entity: ENTITY_BANK,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
@@ -257,7 +257,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — per-entity isolation", () => {
 
   it("rejects negative RWA components", () => {
     expect(() =>
-      generateBa100Capital({
+      generateBa700Capital({
         entity: ENTITY_BANK,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
@@ -396,7 +396,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — end-to-end (events → close → BA
       },
     ];
 
-    const out = generateBa100Capital({
+    const out = generateBa700Capital({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: PERIOD_OPEN.periodId,
@@ -447,9 +447,9 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — end-to-end (events → close → BA
     expect(out.citations).toContain("BCBS Basel III §50–§90");
   });
 
-  it("renders to canonical JSON validating against Ba100RenderSchema", () => {
+  it("renders to canonical JSON validating against Ba700RenderSchema", () => {
     const { trialBalanceSnapshotEventId, rows } = setupClose();
-    const out = generateBa100Capital({
+    const out = generateBa700Capital({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: PERIOD_OPEN.periodId,
@@ -469,7 +469,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — end-to-end (events → close → BA
     const renderedAt = "2026-05-10T15:00:00.000Z";
     const render = renderBa100ToJson(out, { renderedAt });
 
-    expect(() => Ba100RenderSchema.parse(render)).not.toThrow();
+    expect(() => Ba700RenderSchema.parse(render)).not.toThrow();
     expect(render.$schema).toBe(BA_100_SCHEMA_URL);
     expect(render.meta.rendererVersion).toBe("v0.1");
     expect(render.meta.renderedAt).toBe(renderedAt);
@@ -500,10 +500,10 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — end-to-end (events → close → BA
       rwa: FIXTURE_RWA,
       trialBalanceSnapshotEventId,
     };
-    const a = renderBa100Canonical(generateBa100Capital(input), {
+    const a = renderBa100Canonical(generateBa700Capital(input), {
       renderedAt: "2026-05-10T15:00:00.000Z",
     });
-    const b = renderBa100Canonical(generateBa100Capital(input), {
+    const b = renderBa100Canonical(generateBa700Capital(input), {
       renderedAt: "2026-05-10T15:00:00.000Z",
     });
     expect(a.canonicalJson).toBe(b.canonicalJson);
@@ -512,7 +512,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — end-to-end (events → close → BA
 
   it("placeholders array is populated per Q1 (rehearsal-grade)", () => {
     const { rows } = setupClose();
-    const out = generateBa100Capital({
+    const out = generateBa700Capital({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: PERIOD_OPEN.periodId,
@@ -529,7 +529,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — end-to-end (events → close → BA
   });
 
   it("does NOT fire RWA-source placeholder when source is supplied (non-fixture)", () => {
-    const out = generateBa100Capital({
+    const out = generateBa700Capital({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
@@ -549,7 +549,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — end-to-end (events → close → BA
 
 describe("D-REPORTING-CAPABILITY-SLICE-4 — full three-tier stack", () => {
   it("AT1 + T2 contribute to tier1 / total respectively", () => {
-    const out = generateBa100Capital({
+    const out = generateBa700Capital({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
@@ -590,7 +590,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — full three-tier stack", () => {
   });
 
   it("net tier amount floored at 0 — deductions exceed gross stock", () => {
-    const out = generateBa100Capital({
+    const out = generateBa700Capital({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
@@ -613,7 +613,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — full three-tier stack", () => {
 
 describe("D-REPORTING-CAPABILITY-SLICE-4 — divide-by-zero RWA", () => {
   it("zero RWA ⇒ infinite ratios; render encodes 'infinity'; compliant", () => {
-    const out = generateBa100Capital({
+    const out = generateBa700Capital({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
@@ -641,7 +641,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — divide-by-zero RWA", () => {
 
 describe("D-REPORTING-CAPABILITY-SLICE-4 — canonicaliser determinism", () => {
   it("sorts object keys lexically; identical inputs ⇒ identical bytes", () => {
-    const out = generateBa100Capital({
+    const out = generateBa700Capital({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
@@ -670,7 +670,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — canonicaliser determinism", () => {
 describe("D-REPORTING-CAPABILITY-SLICE-4 — generator boundary errors", () => {
   it("rejects duplicate classifications for the same account", () => {
     expect(() =>
-      generateBa100Capital({
+      generateBa700Capital({
         entity: ENTITY_BANK,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
@@ -688,7 +688,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — generator boundary errors", () => {
 
   it("rejects deduction in a non-functional currency", () => {
     expect(() =>
-      generateBa100Capital({
+      generateBa700Capital({
         entity: ENTITY_BANK,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
@@ -705,7 +705,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — generator boundary errors", () => {
 
   it("rejects negative deduction amount", () => {
     expect(() =>
-      generateBa100Capital({
+      generateBa700Capital({
         entity: ENTITY_BANK,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
@@ -722,7 +722,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — generator boundary errors", () => {
 
   it("rejects buffer ratio outside [0,1]", () => {
     expect(() =>
-      generateBa100Capital({
+      generateBa700Capital({
         entity: ENTITY_BANK,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
@@ -741,7 +741,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — generator boundary errors", () => {
 
   it("rejects base-ratio ordering violation", () => {
     expect(() =>
-      generateBa100Capital({
+      generateBa700Capital({
         entity: ENTITY_BANK,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
@@ -767,7 +767,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-4 — generator boundary errors", () => {
 
 describe("D-REPORTING-CAPABILITY-SLICE-4 — RWA provenance passthrough", () => {
   it("rwaComputationEventId flows from input through render", () => {
-    const out = generateBa100Capital({
+    const out = generateBa700Capital({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",

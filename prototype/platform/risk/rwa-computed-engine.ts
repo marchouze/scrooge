@@ -27,7 +27,7 @@
 //     Cite Reg 23 / CRE20. Standard approach — no novel calibration.
 //
 //   MARKET RWA — REAL (event-sourced).
-//     The engine takes a BA 320 market-risk return (`Ba310Output`) and uses
+//     The engine takes a BA 320 market-risk return (`Ba320Output`) and uses
 //     its `totalMarketRiskRwaMinor` directly. That figure is already
 //     12.5 × market-risk capital and already folds the Reg 28(3)(a) IR-general
 //     disallowance algebra (PR #1131). Taking it whole avoids any double-count
@@ -65,7 +65,7 @@ import {
   defaultProvenanceFilter,
   eventMatchesProvenanceFilter,
 } from "../projections/filter";
-import type { Ba310Output } from "../reporting/ba-320-market-risk";
+import type { Ba320Output } from "../reporting/ba-320-market-risk";
 import type { RwaDecomposition } from "../reporting/ba-700-capital";
 import {
   type CounterpartyType,
@@ -211,7 +211,7 @@ export interface ComputeRwaComputedInput {
    * re-derivation, no double-count. Mira owns the disallowance logic; this
    * engine never touches it.
    */
-  readonly marketRisk: Ba310Output;
+  readonly marketRisk: Ba320Output;
   /** Provenance filter — defaults to the standard production filter. */
   readonly provenanceFilter?: ProvenanceFilter;
 }
@@ -221,7 +221,7 @@ export interface ComputeRwaComputedInput {
  *
  * Credit RWA is REAL (event-sourced): `readDebtExposures` → CRE20 weights.
  * Market RWA is REAL (event-sourced): 12.5 × BA 320 market-risk capital,
- *   taken whole from the supplied `Ba310Output.totalMarketRiskRwaMinor`.
+ *   taken whole from the supplied `Ba320Output.totalMarketRiskRwaMinor`.
  * Operational RWA is an EXPLICIT placeholder (zero; gross-income-blocked).
  *
  * Pure function over (store, marketRisk) — no event side-effects. The emit

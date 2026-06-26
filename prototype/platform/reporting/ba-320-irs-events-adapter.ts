@@ -347,7 +347,7 @@ export function buildIrsIrGeneralLadder(input: IrsIrAdapterInput): IrsIrGeneralL
  * same invariant at the source-code level.
  *
  * Used by the BA 320 period-close subscriber to feed both bond and IRS
- * contributions into the same `generateBa310MarketRisk` IR general-risk ladder.
+ * contributions into the same `generateBa320MarketRisk` IR general-risk ladder.
  */
 export function combineIrGeneralLadders(
   ...ladders: readonly (readonly IrMaturityBandRow[])[]

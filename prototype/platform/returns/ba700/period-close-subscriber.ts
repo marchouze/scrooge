@@ -45,7 +45,7 @@ import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../../pro
 import type {
   AccountCapitalClassification,
   BA700Return,
-  Ba100Output,
+  Ba700Output,
   BufferRequirements,
   RegulatoryDeduction,
   RwaDecomposition,
@@ -126,13 +126,13 @@ export interface PeriodCloseSubscriberResult {
    */
   readonly ba100Return?: BA700Return;
   /**
-   * The full generator output (`Ba100Output`) — the audit/forensic shape and
+   * The full generator output (`Ba700Output`) — the audit/forensic shape and
    * the input to the SARB XML adapter (`ba100ToXmlPayload`). Present when
    * `processed` is true. Added for the runtime wiring (WS-RETURNS-SUBMISSION-
    * WIRING Wave B) so the period-close handler can render + submit without
    * re-generating.
    */
-  readonly rawOutput?: Ba100Output;
+  readonly rawOutput?: Ba700Output;
   /**
    * Substrate gap note — the event-bus trigger wiring is not yet built.
    * This string surfaces in the subscriber result for the recon pipeline
@@ -146,7 +146,7 @@ export interface PeriodCloseSubscriberResult {
 // ---------------------------------------------------------------------------
 
 /** Bank-licence-bound entity short-ids that trigger BA 100 generation. */
-export const BA_100_SUBSCRIBER_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
+export const BA_700_SUBSCRIBER_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 
 // ---------------------------------------------------------------------------
 // Subscriber
@@ -163,7 +163,7 @@ export const BA_100_SUBSCRIBER_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
  *
  * **Non-bank entities:**
  *   Returns `{ processed: false }` for entities outside
- *   `BA_100_SUBSCRIBER_ENTITIES`.  The caller must not pass a non-bank
+ *   `BA_700_SUBSCRIBER_ENTITIES`.  The caller must not pass a non-bank
  *   entity to the BA 100 generator; the subscriber enforces this by
  *   returning early.
  *
@@ -188,7 +188,7 @@ export function onAccountingPeriodClosed(
     "Documented in D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN Slice 4 substrate gaps.";
 
   // Non-bank entities are out of scope.
-  if (!BA_100_SUBSCRIBER_ENTITIES.includes(input.entity)) {
+  if (!BA_700_SUBSCRIBER_ENTITIES.includes(input.entity)) {
     return { processed: false, substrateGap: SUBSTRATE_GAP };
   }
 
@@ -255,7 +255,7 @@ export function replayAndGenerate(args: {
   readonly deductionFactory?: (entity: string, periodId: string) => readonly RegulatoryDeduction[];
   readonly bufferRequirements?: BufferRequirements;
 }): PeriodCloseSubscriberResult[] {
-  if (!BA_100_SUBSCRIBER_ENTITIES.includes(args.entity)) return [];
+  if (!BA_700_SUBSCRIBER_ENTITIES.includes(args.entity)) return [];
 
   const provenanceFilter = defaultProvenanceFilter();
   const results: PeriodCloseSubscriberResult[] = [];

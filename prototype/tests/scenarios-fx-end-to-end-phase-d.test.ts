@@ -32,7 +32,7 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { type DocumentHash, LocalFsDocumentStore, hashContent } from "../platform/document-store";
 import { setDefaultProvenanceModeOverride } from "../platform/projections";
-import type { Ba100Output, Ba300LcrOutput, Ba300Output, Ba310Output } from "../platform/reporting";
+import type { Ba700Output, Ba300LcrOutput, Ba400Output, Ba320Output } from "../platform/reporting";
 import {
   PHASE_D_FORMS,
   PHASE_D_SOURCE_LINEAGE,
@@ -199,7 +199,7 @@ describe("scenarios/03-fx-end-to-end-rehearsal — Phase D end-to-end", () => {
     expect((ba110.meta as { entity: string }).entity).toBe("LE-ZA-HOZ-BANK");
     expect((ba110.meta as { periodId: string }).periodId).toBe("2026-Q1-M01");
 
-    // BA 100 — Slice-4 typed render (`Ba100Render`).
+    // BA 100 — Slice-4 typed render (`Ba700Render`).
     const ba100 = JSON.parse(readFileSync(byForm["ba-700"] as string, "utf8")) as Record<
       string,
       unknown
@@ -210,13 +210,13 @@ describe("scenarios/03-fx-end-to-end-rehearsal — Phase D end-to-end", () => {
     );
 
     // BA 310 — Slice-5 generator output (no typed JSON renderer; emitted as
-    // sorted-keys canonical JSON of `Ba310Output`).
-    const ba310 = JSON.parse(readFileSync(byForm["ba-320"] as string, "utf8")) as Ba310Output;
+    // sorted-keys canonical JSON of `Ba320Output`).
+    const ba310 = JSON.parse(readFileSync(byForm["ba-320"] as string, "utf8")) as Ba320Output;
     expect(ba310.meta.form).toBe("BA 320");
     expect(ba310.totalMarketRiskCapitalMinor).toBe(738_000_000);
 
     // BA 300 — same shape pattern as BA 310.
-    const ba300 = JSON.parse(readFileSync(byForm["ba-400"] as string, "utf8")) as Ba300Output;
+    const ba300 = JSON.parse(readFileSync(byForm["ba-400"] as string, "utf8")) as Ba400Output;
     expect(ba300.meta.form).toBe("BA 400");
     expect(ba300.opRiskCapitalMinor).toBe(150_000_000);
     expect(ba300.meta.approach).toBe("bia");
@@ -236,6 +236,6 @@ describe("scenarios/03-fx-end-to-end-rehearsal — Phase D end-to-end", () => {
 // generator API change, remove them then. Bun's typecheck flags unused
 // type-only imports under noUnusedLocals=false (project default), so they
 // remain harmless even if unused.
-const _typeKeepalive: Ba300LcrOutput | Ba100Output | Ba310Output | Ba300Output | undefined =
+const _typeKeepalive: Ba300LcrOutput | Ba700Output | Ba320Output | Ba400Output | undefined =
   undefined;
 void _typeKeepalive;

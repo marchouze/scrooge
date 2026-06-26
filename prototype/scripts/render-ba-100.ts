@@ -26,7 +26,7 @@
 //   5. Renders to canonical JSON (deterministic, schema-validated).
 //   6. Writes to stdout (default) or `--out`.
 //
-// P1 fix (C-3): this script now uses `generateBa100CapitalFromEvents()` which
+// P1 fix (C-3): this script now uses `generateBa700CapitalFromEvents()` which
 // folds primary posting events directly, bypassing the trial-balance routing.
 // Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
 //
@@ -47,7 +47,7 @@ import {
   type AccountCapitalClassification,
   type RegulatoryDeduction,
   type RwaDecomposition,
-  generateBa100CapitalFromEvents,
+  generateBa700CapitalFromEvents,
   renderBa100Canonical,
 } from "../platform/reporting";
 import { readRwaDecompositionOfRecord } from "../platform/risk/rwa-computed-engine";
@@ -177,7 +177,7 @@ function main(argv: readonly string[]): number {
 
   // P1-compliant: fold SubLedgerPostingEmitted + CapitalContributionRecorded
   // events directly — no trial-balance routing.
-  const output = generateBa100CapitalFromEvents(eventStore, {
+  const output = generateBa700CapitalFromEvents(eventStore, {
     entity: args.entity,
     asOf: args.asOf,
     periodId: args.periodId,

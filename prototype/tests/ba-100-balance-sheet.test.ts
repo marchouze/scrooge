@@ -7,7 +7,7 @@
 //   1. Per-entity isolation — Hoz Securities + Hoz Group rejected.
 //   2. End-to-end: synthetic SubLedgerPostingEmitted events
 //        → openPeriod → closePeriod (Slice 2)
-//        → generateBa600BalanceSheet
+//        → generateBa100BalanceSheet
 //        → renderBa600ToJson
 //   3. Balance invariant — assets = liabilities + equity (strict).
 //   4. Strict mode throws on imbalance; tolerance mode surfaces as placeholder.
@@ -15,9 +15,9 @@
 //      liabilities + equity.
 //   6. Classification gaps surface (not fatal).
 //   7. Determinism — same generator output ⇒ byte-identical canonical JSON.
-//   8. Schema validation — rendered output validates against Ba600RenderSchema.
+//   8. Schema validation — rendered output validates against Ba100RenderSchema.
 //   9. Provenance passthrough — TrialBalanceSnapshotted.event_id flows
-//      into Ba600BalanceSheet.meta.trialBalanceSnapshotEventId.
+//      into Ba100BalanceSheet.meta.trialBalanceSnapshotEventId.
 //  10. Generator boundary errors — duplicate classifications; bad currency.
 //
 // Authority: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved
@@ -37,11 +37,11 @@ import { setDefaultProvenanceModeOverride } from "../platform/projections/filter
 import {
   BA_600_BANK_ENTITIES,
   BA_600_SCHEMA_URL,
-  Ba600GeneratorError,
-  type Ba600LineClassification,
-  Ba600RenderSchema,
+  Ba100GeneratorError,
+  type Ba100LineClassification,
+  Ba100RenderSchema,
   canonicaliseBa600,
-  generateBa600BalanceSheet,
+  generateBa100BalanceSheet,
   renderBa600Canonical,
   renderBa600ToJson,
 } from "../platform/reporting";
@@ -106,7 +106,7 @@ describe("BA 600 — per-entity isolation", () => {
 
   it("rejects LE-ZA-HOZ-SECURITIES", () => {
     expect(() =>
-      generateBa600BalanceSheet({
+      generateBa100BalanceSheet({
         entity: ENTITY_SECURITIES,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
@@ -114,12 +114,12 @@ describe("BA 600 — per-entity isolation", () => {
         trialBalance: [],
         classifications: [],
       }),
-    ).toThrow(Ba600GeneratorError);
+    ).toThrow(Ba100GeneratorError);
   });
 
   it("rejects LE-ZA-HOZ-GROUP (consolidated lands at downstream slice)", () => {
     expect(() =>
-      generateBa600BalanceSheet({
+      generateBa100BalanceSheet({
         entity: ENTITY_GROUP,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
@@ -127,12 +127,12 @@ describe("BA 600 — per-entity isolation", () => {
         trialBalance: [],
         classifications: [],
       }),
-    ).toThrow(Ba600GeneratorError);
+    ).toThrow(Ba100GeneratorError);
   });
 
   it("rejects invalid functional currency", () => {
     expect(() =>
-      generateBa600BalanceSheet({
+      generateBa100BalanceSheet({
         entity: ENTITY_BANK,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
@@ -192,7 +192,7 @@ describe("BA 600 — end-to-end (events → close → BA 600)", () => {
 
   it("produces a balanced BA 600 from synthetic events", () => {
     const { trialBalanceSnapshotEventId, rows } = setupClose();
-    const classifications: Ba600LineClassification[] = [
+    const classifications: Ba100LineClassification[] = [
       {
         leafAccountId: "ACC-1100-001",
         section: "assets",
@@ -204,7 +204,7 @@ describe("BA 600 — end-to-end (events → close → BA 600)", () => {
         lineLabel: "equity.share-capital",
       },
     ];
-    const out = generateBa600BalanceSheet({
+    const out = generateBa100BalanceSheet({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: PERIOD_OPEN.periodId,
@@ -225,9 +225,9 @@ describe("BA 600 — end-to-end (events → close → BA 600)", () => {
     expect(out.citations).toContain("IAS 1 — Presentation of Financial Statements");
   });
 
-  it("renders to canonical JSON validating against Ba600RenderSchema", () => {
+  it("renders to canonical JSON validating against Ba100RenderSchema", () => {
     const { trialBalanceSnapshotEventId, rows } = setupClose();
-    const out = generateBa600BalanceSheet({
+    const out = generateBa100BalanceSheet({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: PERIOD_OPEN.periodId,
@@ -249,7 +249,7 @@ describe("BA 600 — end-to-end (events → close → BA 600)", () => {
     });
     const renderedAt = "2026-05-17T15:00:00.000Z";
     const render = renderBa600ToJson(out, { renderedAt });
-    expect(() => Ba600RenderSchema.parse(render)).not.toThrow();
+    expect(() => Ba100RenderSchema.parse(render)).not.toThrow();
     expect(render.$schema).toBe(BA_600_SCHEMA_URL);
     expect(render.meta.rendererVersion).toBe("v0.1");
     expect(render.meta.renderedAt).toBe(renderedAt);
@@ -287,11 +287,11 @@ describe("BA 600 — balance invariant", () => {
   };
 
   it("strict mode (default) throws on imbalance", () => {
-    expect(() => generateBa600BalanceSheet(unbalanced)).toThrow(/invariant violated/);
+    expect(() => generateBa100BalanceSheet(unbalanced)).toThrow(/invariant violated/);
   });
 
   it("tolerateImbalanceMinor surfaces imbalance as placeholder, no throw", () => {
-    const out = generateBa600BalanceSheet({
+    const out = generateBa100BalanceSheet({
       ...unbalanced,
       tolerateImbalanceMinor: 100_000,
     });
@@ -301,7 +301,7 @@ describe("BA 600 — balance invariant", () => {
 
   it("tolerance smaller than imbalance still throws", () => {
     expect(() =>
-      generateBa600BalanceSheet({
+      generateBa100BalanceSheet({
         ...unbalanced,
         tolerateImbalanceMinor: 0,
       }),
@@ -310,7 +310,7 @@ describe("BA 600 — balance invariant", () => {
 
   it("negative tolerance is rejected", () => {
     expect(() =>
-      generateBa600BalanceSheet({
+      generateBa100BalanceSheet({
         ...unbalanced,
         tolerateImbalanceMinor: -1,
       }),
@@ -324,7 +324,7 @@ describe("BA 600 — balance invariant", () => {
 
 describe("BA 600 — sign-convention warnings + classification gaps", () => {
   it("flags asset accounts with credit balances", () => {
-    const out = generateBa600BalanceSheet({
+    const out = generateBa100BalanceSheet({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
@@ -343,7 +343,7 @@ describe("BA 600 — sign-convention warnings + classification gaps", () => {
   });
 
   it("classification gaps surface for unmapped rows", () => {
-    const out = generateBa600BalanceSheet({
+    const out = generateBa100BalanceSheet({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
@@ -389,10 +389,10 @@ describe("BA 600 — canonicaliser determinism", () => {
         },
       ],
     };
-    const a = renderBa600Canonical(generateBa600BalanceSheet(input), {
+    const a = renderBa600Canonical(generateBa100BalanceSheet(input), {
       renderedAt: "2026-05-17T15:00:00.000Z",
     });
-    const b = renderBa600Canonical(generateBa600BalanceSheet(input), {
+    const b = renderBa600Canonical(generateBa100BalanceSheet(input), {
       renderedAt: "2026-05-17T15:00:00.000Z",
     });
     expect(a.canonicalJson).toBe(b.canonicalJson);
@@ -404,7 +404,7 @@ describe("BA 600 — canonicaliser determinism", () => {
   });
 
   it("canonicaliseBa600 is idempotent on already-rendered output", () => {
-    const out = generateBa600BalanceSheet({
+    const out = generateBa100BalanceSheet({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",
@@ -430,7 +430,7 @@ describe("BA 600 — canonicaliser determinism", () => {
 describe("BA 600 — boundary errors", () => {
   it("rejects duplicate classifications", () => {
     expect(() =>
-      generateBa600BalanceSheet({
+      generateBa100BalanceSheet({
         entity: ENTITY_BANK,
         asOf: "2026-05-31T23:59:59.999Z",
         periodId: "x",
@@ -522,7 +522,7 @@ describe("BA 600 — counterparty-sector decomposition", () => {
   }
 
   it("decomposes each line by counterparty sector (IBL=bank, bond/SARB=sovereign, deposits=retail/corporate)", () => {
-    const out = generateBa600BalanceSheet(sectorInput());
+    const out = generateBa100BalanceSheet(sectorInput());
     const byLine = new Map(out.sectorBreakdown.lines.map((l) => [l.lineId, l.bySector]));
 
     expect(byLine.get("assets.ACC-7100-001")?.bank).toBe(100_000);
@@ -535,7 +535,7 @@ describe("BA 600 — counterparty-sector decomposition", () => {
   });
 
   it("section sector splits reconcile exactly to section totals", () => {
-    const out = generateBa600BalanceSheet(sectorInput());
+    const out = generateBa100BalanceSheet(sectorInput());
     const { sectionTotals } = out.sectorBreakdown;
 
     const sumSplit = (s: {
@@ -561,14 +561,14 @@ describe("BA 600 — counterparty-sector decomposition", () => {
   });
 
   it("form total reconciles to assets + liabilities + equity magnitudes", () => {
-    const out = generateBa600BalanceSheet(sectorInput());
+    const out = generateBa100BalanceSheet(sectorInput());
     const ft = out.sectorBreakdown.formTotal;
     const total = ft.bank + ft.corporate + ft.sovereign + ft.retail + ft.other;
     expect(total).toBe(out.assets.totalMinor + out.liabilities.totalMinor + out.equity.totalMinor);
   });
 
   it("unmappable accounts surface in `other`, never hidden", () => {
-    const out = generateBa600BalanceSheet({
+    const out = generateBa100BalanceSheet({
       ...COMMON,
       trialBalance: [
         { leafAccountId: "ACC-unknown-account", currency: "ZAR", amountMinor: 100 },
@@ -591,9 +591,9 @@ describe("BA 600 — counterparty-sector decomposition", () => {
   });
 
   it("sectorBreakdown carries through the canonical render + schema", () => {
-    const out = generateBa600BalanceSheet(sectorInput());
+    const out = generateBa100BalanceSheet(sectorInput());
     const render = renderBa600ToJson(out, { renderedAt: "2026-05-31T15:00:00.000Z" });
-    expect(() => Ba600RenderSchema.parse(render)).not.toThrow();
+    expect(() => Ba100RenderSchema.parse(render)).not.toThrow();
     expect(render.sectorBreakdown.reconciled).toBe(true);
     expect(render.sectorBreakdown.sectionTotals.assets.bank).toBe(100_000);
   });
@@ -605,7 +605,7 @@ describe("BA 600 — counterparty-sector decomposition", () => {
 
 describe("BA 600 — per-currency totals", () => {
   it("rolls up assets/liabilities/equity per currency across all rows", () => {
-    const out = generateBa600BalanceSheet({
+    const out = generateBa100BalanceSheet({
       entity: ENTITY_BANK,
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "x",

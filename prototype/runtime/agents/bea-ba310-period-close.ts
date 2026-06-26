@@ -6,9 +6,9 @@
 // ## Why this exists (FX functionality domain review gap #1)
 //
 // The BA-310 FX-NOP return generator (`platform/reporting/ba-310-events-
-// adapter.ts → generateBa310MarketRiskFromEvents`) and the period-close
+// adapter.ts → generateBa320MarketRiskFromEvents`) and the period-close
 // subscriber (`platform/returns/ba320/period-close-subscriber.ts →
-// ba310PeriodCloseSubscriber`) are built + tested, but were NOT wired into the
+// ba320PeriodCloseSubscriber`) are built + tested, but were NOT wired into the
 // runtime: zero non-test importers, no handler invoked them when a period
 // closed. The figure was computable but never GENERATED on the live event
 // flow, so there was no automated SARB FX-NOP submission path.
@@ -36,8 +36,8 @@
 // ## FX position source (Principle 1)
 //
 // FX NOP is folded directly from `FxTradeExecuted` primary trade events (minus
-// `TradeMatured` settled trades) by `ba310PeriodCloseSubscriber` →
-// `generateBa310MarketRiskFromEvents` → `fxPositionCalculator`. This is the
+// `TradeMatured` settled trades) by `ba320PeriodCloseSubscriber` →
+// `generateBa320MarketRiskFromEvents` → `fxPositionCalculator`. This is the
 // live, interpreter-derived FX-position path — NOT the trial balance and NOT
 // any retired legacy/SLA path. IR / equity / commodity sub-charges remain
 // caller-supplied zero placeholders until their event streams land
@@ -71,10 +71,10 @@ import { resolveMarketDataDbPath } from "../../platform/market-data/resolve-mark
 import { MarketDataStore } from "../../platform/market-data/store";
 import { deriveZarRatesFromMarketData } from "../../platform/market-risk/var-engine";
 import {
-  BA_310_SUBSCRIBER_ENTITIES,
-  ba310PeriodCloseSubscriber,
+  BA_320_SUBSCRIBER_ENTITIES,
+  ba320PeriodCloseSubscriber,
 } from "../../platform/returns/ba320/period-close-subscriber";
-import { ba310ToXmlPayload } from "../../platform/returns/ba320/xml";
+import { ba320ToXmlPayload } from "../../platform/returns/ba320/xml";
 import { submitToSarbPortal } from "../../simulators/sarb-prudential";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
@@ -151,7 +151,7 @@ export async function generateAndRecordBa310ForPeriod(args: {
   const periodId = closedPayload.periodId;
 
   // Scope guard: only bank-licence entities generate BA 310.
-  if (!BA_310_SUBSCRIBER_ENTITIES.includes(entity)) {
+  if (!BA_320_SUBSCRIBER_ENTITIES.includes(entity)) {
     return { submitted: false, periodId, status: "skipped-non-bank-entity" };
   }
 
@@ -167,7 +167,7 @@ export async function generateAndRecordBa310ForPeriod(args: {
   // from FxTradeExecuted / TradeMatured). The subscriber threads the frozen
   // close cursor (closedPayload.eventSequence) so the fold is bounded to the
   // same window as the rest of period close.
-  const result = ba310PeriodCloseSubscriber({
+  const result = ba320PeriodCloseSubscriber({
     closedPayload,
     entity,
     eventStore: store,
@@ -185,7 +185,7 @@ export async function generateAndRecordBa310ForPeriod(args: {
   // transport in build phase). The simulator appends a SarbSubmissionAttempted
   // event (formId "BA310"), which is the canonical, queryable submission record
   // the completeness recon asserts.
-  const payload = ba310ToXmlPayload(result.ba310Output);
+  const payload = ba320ToXmlPayload(result.ba320Output);
   const submission = await submitToSarbPortal(payload, store);
 
   return {
@@ -193,7 +193,7 @@ export async function generateAndRecordBa310ForPeriod(args: {
     periodId,
     accepted: submission.ok,
     ...(submission.referenceNumber ? { referenceNumber: submission.referenceNumber } : {}),
-    fxCapitalMinor: result.ba310Output.fx.capitalMinor,
+    fxCapitalMinor: result.ba320Output.fx.capitalMinor,
     status: submission.ok ? "submitted-accepted" : "submitted-rejected",
   };
 }

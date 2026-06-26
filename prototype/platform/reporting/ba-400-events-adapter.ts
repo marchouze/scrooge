@@ -6,7 +6,7 @@
 // rather than accepting a caller-supplied `OpRiskGrossIncomeRow[]`.
 //
 // Principle 1 (events-are-truth): gross income is a *query* over the GL posting
-// stream, not stored state. The caller-supplied `generateBa300OpRisk` accepts a
+// stream, not stored state. The caller-supplied `generateBa400OpRisk` accepts a
 // hand-built gross-income table; this adapter computes that table from the
 // postings that produced it. Authority for the underlying event field:
 // `SubLedgerPostingEmitted.baselBusinessLine` (merged PR #1118) — the SLA
@@ -42,7 +42,7 @@
 // `placeholders` entry so a consumer can see exactly what the capital excludes.
 //
 // Per-entity. Bank-licence-bound; only Hoz Bank LE-ZA-HOZ-BANK is in scope —
-// the per-entity guard is inherited from `generateBa300OpRisk`.
+// the per-entity guard is inherited from `generateBa400OpRisk`.
 //
 // Authority: D-BA-RETURNS-FOLLOWON-BATCH; brief
 //   brief:mira:ws-ba-returns-followon-ba-400-op-risk-events-fir:2026-06-09.
@@ -59,10 +59,10 @@ import type { EventStore } from "../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 import {
   BUSINESS_LINE_BETA,
-  type Ba300Output,
+  type Ba400Output,
   type BaselBusinessLine,
   type OpRiskGrossIncomeRow,
-  generateBa300OpRisk,
+  generateBa400OpRisk,
 } from "./ba-400-op-risk";
 
 // ---------------------------------------------------------------------------
@@ -255,11 +255,11 @@ export interface Ba400FoldedGrossIncomeLine {
 }
 
 /**
- * Events-first BA 400 output. Extends the pure `Ba300Output` with the folded
+ * Events-first BA 400 output. Extends the pure `Ba400Output` with the folded
  * gross-income table (for audit / transparency) and an explicit
  * `unattributedGrossIncomeMinor` total surfacing postings with no business line.
  */
-export interface Ba400FromEventsOutput extends Ba300Output {
+export interface Ba400FromEventsOutput extends Ba400Output {
   /** The per-(business-line, fiscal-year) gross income folded from postings. */
   readonly foldedGrossIncome: readonly Ba400FoldedGrossIncomeLine[];
   /**
@@ -277,7 +277,7 @@ export interface Ba400FromEventsOutput extends Ba300Output {
 /**
  * Generate the BA 400 (Operational Risk) projection by folding primary
  * `SubLedgerPostingEmitted` events directly to derive the gross-income table,
- * then delegating to the unchanged `generateBa300OpRisk` BIA / TSA engine.
+ * then delegating to the unchanged `generateBa400OpRisk` BIA / TSA engine.
  *
  * @param eventStore          the event store to replay
  * @param asOf                ISO 8601 period-end as-of date (inclusive bound)
@@ -354,7 +354,7 @@ export function generateBa400OpRiskFromEvents(
   // (bank-aggregate) and TSA (per-business-line β-weighted) are therefore
   // computed from real, β-mappable attributions. The unattributed total is
   // surfaced separately rather than folded into either capital figure.
-  const base = generateBa300OpRisk({
+  const base = generateBa400OpRisk({
     entity,
     asOf,
     periodId: opts?.periodId ?? `period:hoz-bank:asof:${asOf.slice(0, 10)}`,

@@ -40,7 +40,7 @@
 //   capitalAdequacy.tier2Capital is fed from SubLedgerPostingEmitted events
 //   on T2-classified GL accounts (ACC-5200-001 subordinated debt,
 //   ACC-5200-002 qualifying general provisions) via the
-//   generateBa100CapitalFromEvents path.  The canonical T2 account set comes
+//   generateBa700CapitalFromEvents path.  The canonical T2 account set comes
 //   from coaToCapitalClassifications() in coa-registry.ts.  At build-phase
 //   both T2 accounts are placeholder entries (no real T2 instruments
 //   outstanding); tier2Capital will be 0 until posting rules for T2
@@ -82,33 +82,33 @@ import { computeRwaFromPositions, toRwaDecomposition } from "../../projections/r
 import {
   BA_100_BANK_ENTITIES,
   BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
-  Ba100GeneratorError,
+  Ba700GeneratorError,
   computeRequiredMinimums,
-  generateBa100Capital,
+  generateBa700Capital,
 } from "../../reporting/ba-700-capital";
 import type {
   AccountCapitalClassification,
-  Ba100Output,
+  Ba700Output,
   BufferRequirements,
   RegulatoryDeduction,
   RwaDecomposition,
 } from "../../reporting/ba-700-capital";
-import { generateBa100CapitalFromEvents } from "../../reporting/ba-700-events-adapter";
+import { generateBa700CapitalFromEvents } from "../../reporting/ba-700-events-adapter";
 import { readRwaDecompositionOfRecord } from "../../risk/rwa-computed-engine";
 import { readFilInstanceEvents } from "../../risk/sa-ccr/fil-instance-positions";
 
 // Re-export for consumers that import from this package.
 export {
-  generateBa100Capital,
-  generateBa100CapitalFromEvents,
+  generateBa700Capital,
+  generateBa700CapitalFromEvents,
   BA_100_BANK_ENTITIES,
-  Ba100GeneratorError,
+  Ba700GeneratorError,
   BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS,
   computeRequiredMinimums,
 };
 export type {
   AccountCapitalClassification,
-  Ba100Output,
+  Ba700Output,
   BufferRequirements,
   RegulatoryDeduction,
   RwaDecomposition,
@@ -121,9 +121,9 @@ export type {
 /**
  * BA 100 Capital Adequacy return — mission-spec typed shape.
  *
- * This shape is intentionally simpler than `Ba100Output` (the full
+ * This shape is intentionally simpler than `Ba700Output` (the full
  * generator output) — it exposes the four key sections required by the
- * mission spec in a flat, report-friendly form.  The full `Ba100Output`
+ * mission spec in a flat, report-friendly form.  The full `Ba700Output`
  * is available from the underlying generator for audit/forensic use.
  *
  * Semantic cross-links (Principle 2):
@@ -283,7 +283,7 @@ export interface BA700Return {
  *
  * The generator queries `TrialBalanceSnapshotted` (for the trial balance)
  * and `AccountingPeriodClosed` (for the period metadata) from the event
- * store and delegates to `generateBa100CapitalFromEvents`.
+ * store and delegates to `generateBa700CapitalFromEvents`.
  *
  * v0 build-phase: capital-classification map, regulatory deductions, and
  * RWA decomposition are all caller-supplied (fixture-grade rehearsal).
@@ -360,11 +360,11 @@ export interface GenerateBA700ReturnInput {
  *     balance snapshot for the period.
  *   - `AccountingPeriodClosed` to confirm the period is closed.
  *
- * Then delegates to `generateBa100CapitalFromEvents` (P1-compliant
+ * Then delegates to `generateBa700CapitalFromEvents` (P1-compliant
  * events-first entry point).
  *
  * Returns a `BA700Return` — the mission-spec typed shape — plus the
- * full `Ba100Output` for forensic / audit use.
+ * full `Ba700Output` for forensic / audit use.
  *
  * Principle 1 compliance:
  *   - Capital stock: folded from SubLedgerPostingEmitted +
@@ -388,7 +388,7 @@ export interface GenerateBA700ReturnInput {
  */
 export function generateBA700Return(input: GenerateBA700ReturnInput): {
   readonly return: BA700Return;
-  readonly rawOutput: Ba100Output;
+  readonly rawOutput: Ba700Output;
 } {
   const provenanceFilter = defaultProvenanceFilter();
   // Resolve classifications: caller override or canonical COA-derived set.
@@ -491,7 +491,7 @@ export function generateBA700Return(input: GenerateBA700ReturnInput): {
   // -------------------------------------------------------------------------
   // Step 3b: generate the capital-adequacy section via the events-first adapter.
   // -------------------------------------------------------------------------
-  const rawOutput = generateBa100CapitalFromEvents(input.eventStore, {
+  const rawOutput = generateBa700CapitalFromEvents(input.eventStore, {
     entity: input.entityId,
     asOf: input.reportingDate,
     periodId: input.periodId,

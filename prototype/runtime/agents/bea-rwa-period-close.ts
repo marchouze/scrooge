@@ -21,7 +21,7 @@
 //     BA 200 uses (Reg 23 / CRE20).
 //   - MARKET RWA — REAL (event-sourced): 12.5 × BA 320 market-risk capital,
 //     taken whole from the period's BA 320 return generated via
-//     `ba310PeriodCloseSubscriber` → `generateBa310MarketRiskFromEvents`. The
+//     `ba320PeriodCloseSubscriber` → `generateBa320MarketRiskFromEvents`. The
 //     Reg 28(3)(a) IR-general disallowances (PR #1131) flow through untouched.
 //   - OPERATIONAL RWA — EXPLICIT placeholder (zero; gross-income-blocked until
 //     licence-day — no RevenueRecognitionEmitted feed pre-licence).
@@ -52,7 +52,7 @@ import type { Actor, Event } from "../../platform/event-store/types";
 import { resolveMarketDataDbPath } from "../../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../../platform/market-data/store";
 import { deriveZarRatesFromMarketData } from "../../platform/market-risk/var-engine";
-import { ba310PeriodCloseSubscriber } from "../../platform/returns/ba320/period-close-subscriber";
+import { ba320PeriodCloseSubscriber } from "../../platform/returns/ba320/period-close-subscriber";
 import { emitRwaComputedV2, rwaComputedV2Exists } from "../../platform/risk/rwa-computed-engine-v2";
 import { RWA_BANK_ENTITIES } from "../../platform/risk/rwa-engine";
 import type { AgentRunContext, AgentRunOutput } from "../types";
@@ -123,7 +123,7 @@ export function generateAndEmitRwaComputedForPeriod(args: {
   // Market RWA — generate the BA 320 return from the live event flow (FX NOP +
   // bond/IRS IR-general ladder + Reg 28(3)(a) disallowances). The engine reads
   // its totalMarketRiskRwaMinor whole — no re-derivation of the disallowances.
-  const marketResult = ba310PeriodCloseSubscriber({
+  const marketResult = ba320PeriodCloseSubscriber({
     closedPayload,
     entity,
     eventStore: store,
@@ -144,8 +144,8 @@ export function generateAndEmitRwaComputedForPeriod(args: {
     entityId: entity,
     asOf: closedPayload.closedAt,
     periodId,
-    functionalCurrency: marketResult.ba310Output.meta.functionalCurrency,
-    marketRisk: marketResult.ba310Output,
+    functionalCurrency: marketResult.ba320Output.meta.functionalCurrency,
+    marketRisk: marketResult.ba320Output,
   });
 
   return {

@@ -23,7 +23,7 @@ import { makeInterbankLoanPlaced } from "../event-store/event-types/repo-mmd-ibl
 import { productionTag } from "../event-store/provenance";
 import { EventStore } from "../event-store/store";
 import type { Actor } from "../event-store/types";
-import type { Ba310Output } from "../reporting/ba-320-market-risk";
+import type { Ba320Output } from "../reporting/ba-320-market-risk";
 import { generateBA700Return } from "../returns/ba700/generator";
 import {
   RWA_COMPUTED_BUILD_PHASE_SOURCE,
@@ -112,7 +112,7 @@ function appendIbl(store: EventStore, args: { principalZar: number }): string {
 }
 
 /** A minimal valid BA 320 market-risk return fixture with a chosen total RWA. */
-function makeMarketRiskFixture(totalMarketRiskRwaMinor: number): Ba310Output {
+function makeMarketRiskFixture(totalMarketRiskRwaMinor: number): Ba320Output {
   const capitalChargeMinor = Math.round(totalMarketRiskRwaMinor / 12.5);
   return {
     meta: {

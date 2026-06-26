@@ -93,7 +93,7 @@ interface PeriodResult {
   entityId: string;
   eventSequence: number | undefined;
   glTier2Minor: number;
-  ba100Tier2Minor: number | undefined;
+  ba700Tier2Minor: number | undefined;
   deltaMinor: number | undefined;
   withinTolerance: boolean | undefined;
   substrateGapNote: string | undefined;
@@ -166,7 +166,7 @@ function foldGlTier2(entity: string, asOf: string, untilSequence: number | undef
  *
  * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
  */
-function lookupBa100Tier2(
+function lookupBa700Tier2(
   _entity: string,
   _periodId: string,
   _untilSequence: number | undefined,
@@ -206,17 +206,17 @@ for (const ev of eventStore.replay({ type: "AccountingPeriodClosed" })) {
   const glTier2Minor = foldGlTier2(entity, closedAt, eventSequence);
 
   // Step 2: attempt BA-100 lookup.
-  const ba100Tier2Minor = lookupBa100Tier2(entity, periodId, eventSequence);
+  const ba700Tier2Minor = lookupBa700Tier2(entity, periodId, eventSequence);
 
   // Step 3: assert if both values available.
   let deltaMinor: number | undefined;
   let withinTolerance: boolean | undefined;
   let substrateGapNote: string | undefined;
 
-  if (ba100Tier2Minor === undefined) {
+  if (ba700Tier2Minor === undefined) {
     substrateGapNote = `BA-100 tier2Capital not available as an event for period ${periodId} (entity=${entity}). Substrate gap: BA-100 outputs not yet persisted as typed events. Full GL↔BA-100 assertion deferred until ReportGenerated (or equivalent BA700ReturnRecorded) event lands. Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.`;
   } else {
-    deltaMinor = Math.abs(glTier2Minor - ba100Tier2Minor);
+    deltaMinor = Math.abs(glTier2Minor - ba700Tier2Minor);
     withinTolerance = deltaMinor <= TOLERANCE_MINOR_UNITS;
   }
 
@@ -225,7 +225,7 @@ for (const ev of eventStore.replay({ type: "AccountingPeriodClosed" })) {
     entityId: entity,
     eventSequence,
     glTier2Minor,
-    ba100Tier2Minor,
+    ba700Tier2Minor,
     deltaMinor,
     withinTolerance,
     substrateGapNote,
@@ -250,12 +250,12 @@ for (const r of periodResults) {
     findings++;
     assertedCount++;
     console.error(
-      `[FINDING] period=${r.periodId} entity=${r.entityId} glTier2=${r.glTier2Minor} ba100Tier2=${r.ba100Tier2Minor} delta=${r.deltaMinor} > tolerance=${TOLERANCE_MINOR_UNITS}. GL T2 balance does not reconcile to BA-100 tier2Capital. Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1; Reg 38(8)(b)–(c); BCBS §58–§60.`,
+      `[FINDING] period=${r.periodId} entity=${r.entityId} glTier2=${r.glTier2Minor} ba100Tier2=${r.ba700Tier2Minor} delta=${r.deltaMinor} > tolerance=${TOLERANCE_MINOR_UNITS}. GL T2 balance does not reconcile to BA-100 tier2Capital. Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1; Reg 38(8)(b)–(c); BCBS §58–§60.`,
     );
   } else if (r.withinTolerance === true) {
     assertedCount++;
     console.log(
-      `[ok] period=${r.periodId} entity=${r.entityId} glTier2=${r.glTier2Minor} ba100Tier2=${r.ba100Tier2Minor} delta=${r.deltaMinor} within tolerance=${TOLERANCE_MINOR_UNITS}`,
+      `[ok] period=${r.periodId} entity=${r.entityId} glTier2=${r.glTier2Minor} ba100Tier2=${r.ba700Tier2Minor} delta=${r.deltaMinor} within tolerance=${TOLERANCE_MINOR_UNITS}`,
     );
   }
 }

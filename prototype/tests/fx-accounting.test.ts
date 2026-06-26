@@ -12,7 +12,7 @@
 //      (b) unrealisedPnlCalculator — mark-to-market P&L
 //      (c) realisedPnlCalculator — settlement P&L
 //      (d) fxRwaCalculator — standardised-approach capital charge
-//   5. BA-310 FX adapter — fxPositionsToBa310Input + generateBa310MarketRisk
+//   5. BA-310 FX adapter — fxPositionsToBa320Input + generateBa320MarketRisk
 //      with live FX positions.
 //
 // Authority: D-MARKETS-SCHEMA-FOUNDATION + D-MARKETS-CAPITAL-TIME-SHAPE
@@ -53,9 +53,9 @@ import {
   unrealisedPnlCalculator,
 } from "../platform/accounting/fx-calculators";
 
-import { fxPositionsToBa310Input } from "../platform/reporting/ba-320-fx-adapter";
+import { fxPositionsToBa320Input } from "../platform/reporting/ba-320-fx-adapter";
 
-import { generateBa310MarketRisk } from "../platform/reporting/ba-320-market-risk";
+import { generateBa320MarketRisk } from "../platform/reporting/ba-320-market-risk";
 
 // ---------------------------------------------------------------------------
 // Test fixtures
@@ -894,7 +894,7 @@ describe("fxRwaCalculator", () => {
 // 5. BA-310 FX section integration
 // ---------------------------------------------------------------------------
 
-describe("BA-310 FX section — fxPositionsToBa310Input + generateBa310MarketRisk", () => {
+describe("BA-310 FX section — fxPositionsToBa320Input + generateBa320MarketRisk", () => {
   it("seeds one open USD position into BA 310 FX section", () => {
     const positions = [
       {
@@ -908,12 +908,12 @@ describe("BA-310 FX section — fxPositionsToBa310Input + generateBa310MarketRis
       },
     ];
 
-    const fxRows = fxPositionsToBa310Input(positions, "ZAR");
+    const fxRows = fxPositionsToBa320Input(positions, "ZAR");
     expect(fxRows).toHaveLength(1);
     expect(fxRows[0]?.currency).toBe("USD");
     expect(fxRows[0]?.netPositionFunctionalMinor).toBe(1_900_000_000);
 
-    const ba310 = generateBa310MarketRisk({
+    const ba310 = generateBa320MarketRisk({
       entity: "LE-ZA-HOZ-BANK",
       asOf: "2026-05-31T23:59:59.999Z",
       periodId: "period:hoz-bank:month:2026-05",
@@ -945,7 +945,7 @@ describe("BA-310 FX section — fxPositionsToBa310Input + generateBa310MarketRis
       },
     ];
 
-    const fxRows = fxPositionsToBa310Input(positions, "ZAR");
+    const fxRows = fxPositionsToBa320Input(positions, "ZAR");
     expect(fxRows).toHaveLength(0);
   });
 });

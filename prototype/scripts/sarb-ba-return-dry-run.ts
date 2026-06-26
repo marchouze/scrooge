@@ -49,7 +49,7 @@ import {
   type AccountCapitalClassification,
   type RegulatoryDeduction,
   type RwaDecomposition,
-  generateBa100CapitalFromEvents,
+  generateBa700CapitalFromEvents,
   generateBa300Lcr,
 } from "../platform/reporting";
 import { ba300LcrToXmlPayload } from "../platform/reporting/ba-300-lcr-xml-adapter";
@@ -230,7 +230,7 @@ async function main(argv: readonly string[]): Promise<number> {
 
   console.log("--- BA 100 (Capital Adequacy) ---");
   try {
-    const ba100Output = generateBa100CapitalFromEvents(eventStore, {
+    const ba100Output = generateBa700CapitalFromEvents(eventStore, {
       entity: args.entity,
       asOf: args.asOf,
       periodId: args.periodId,

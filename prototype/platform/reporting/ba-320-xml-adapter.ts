@@ -1,15 +1,15 @@
 // platform/reporting/ba-320-xml-adapter.ts
 //
-// Thin adapter that maps a typed `Ba310Output` to the generic
+// Thin adapter that maps a typed `Ba320Output` to the generic
 // `SarbXmlReportPayload` consumed by `xml-render.ts`. Slice 5.
 
-import type { Ba310LineItem, Ba310Output } from "./ba-320-market-risk";
+import type { Ba320LineItem, Ba320Output } from "./ba-320-market-risk";
 import type { SarbXmlReportPayload, SarbXmlSection } from "./xml-render";
 
 export const BA_310_XSD_URI = "https://hoz.bank/xsd/ba-320/v0.1-rehearsal.xsd"; // [citation: TBC]
 export const BA_310_NAMESPACE = "https://hoz.bank/ns/ba-320/v0.1";
 
-function lineItem(it: Ba310LineItem): SarbXmlSection {
+function lineItem(it: Ba320LineItem): SarbXmlSection {
   return {
     LineId: it.lineId,
     LineLabel: it.lineLabel,
@@ -19,7 +19,7 @@ function lineItem(it: Ba310LineItem): SarbXmlSection {
   };
 }
 
-export function ba310ToXmlPayload(out: Ba310Output): SarbXmlReportPayload {
+export function ba320ToXmlPayload(out: Ba320Output): SarbXmlReportPayload {
   const body: SarbXmlSection = {
     Meta: {
       Form: out.meta.form,

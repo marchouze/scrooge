@@ -25,12 +25,12 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { newEventId } from "../../core/types";
 import { EventStore } from "../../event-store/store";
 import { setDefaultProvenanceModeOverride } from "../../projections/filter";
-import { BA_310_SUBSCRIBER_ENTITIES, ba310PeriodCloseSubscriber } from "./period-close-subscriber";
+import { BA_320_SUBSCRIBER_ENTITIES, ba320PeriodCloseSubscriber } from "./period-close-subscriber";
 import {
   BA_310_NAMESPACE,
   BA_310_REQUIRED_ELEMENTS,
   BA_310_XSD_URI,
-  ba310ToXmlPayload,
+  ba320ToXmlPayload,
   renderSarbXml,
   validateSarbXmlStructural,
 } from "./xml";
@@ -52,17 +52,17 @@ beforeEach(() => setDefaultProvenanceModeOverride("combined"));
 afterEach(() => setDefaultProvenanceModeOverride(undefined));
 
 // =====================================================================
-// 1. Per-entity guard — BA_310_SUBSCRIBER_ENTITIES
+// 1. Per-entity guard — BA_320_SUBSCRIBER_ENTITIES
 // =====================================================================
 
 describe("BA320 period-close subscriber — per-entity guard", () => {
-  it("BA_310_SUBSCRIBER_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
-    expect(BA_310_SUBSCRIBER_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
+  it("BA_320_SUBSCRIBER_ENTITIES contains only LE-ZA-HOZ-BANK", () => {
+    expect(BA_320_SUBSCRIBER_ENTITIES).toEqual(["LE-ZA-HOZ-BANK"]);
   });
 
   it("skips LE-ZA-HOZ-SECURITIES (not bank-licence-bound)", () => {
     const store = new EventStore(":memory:");
-    const result = ba310PeriodCloseSubscriber({
+    const result = ba320PeriodCloseSubscriber({
       closedPayload: { ...PERIOD_CLOSED_PAYLOAD, periodId: "period:hoz-sec:month:2026-05" },
       entity: ENTITY_SECURITIES,
       eventStore: store,
@@ -70,7 +70,7 @@ describe("BA320 period-close subscriber — per-entity guard", () => {
       periodStart: PERIOD_START,
     });
     expect(result.skipped).toBe(true);
-    expect(result.skipReason).toContain("not in BA_310_SUBSCRIBER_ENTITIES");
+    expect(result.skipReason).toContain("not in BA_320_SUBSCRIBER_ENTITIES");
   });
 });
 
@@ -81,7 +81,7 @@ describe("BA320 period-close subscriber — per-entity guard", () => {
 describe("BA320 period-close subscriber — zero-position baseline", () => {
   it("generates a BA 320 with zero capital for empty event store", () => {
     const store = new EventStore(":memory:");
-    const result = ba310PeriodCloseSubscriber({
+    const result = ba320PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       eventStore: store,
@@ -90,18 +90,18 @@ describe("BA320 period-close subscriber — zero-position baseline", () => {
     });
 
     expect(result.skipped).toBe(false);
-    expect(result.ba310Output).toBeDefined();
-    expect(result.ba310Output.meta.form).toBe("BA 320");
-    expect(result.ba310Output.meta.entity).toBe(ENTITY_BANK);
+    expect(result.ba320Output).toBeDefined();
+    expect(result.ba320Output.meta.form).toBe("BA 320");
+    expect(result.ba320Output.meta.entity).toBe(ENTITY_BANK);
 
     // Zero positions ⇒ zero capital + zero RWA.
-    expect(result.ba310Output.totalMarketRiskCapitalMinor).toBe(0);
-    expect(result.ba310Output.totalMarketRiskRwaMinor).toBe(0);
+    expect(result.ba320Output.totalMarketRiskCapitalMinor).toBe(0);
+    expect(result.ba320Output.totalMarketRiskRwaMinor).toBe(0);
   });
 
   it("all numeric cells are non-NaN", () => {
     const store = new EventStore(":memory:");
-    const result = ba310PeriodCloseSubscriber({
+    const result = ba320PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       eventStore: store,
@@ -109,18 +109,18 @@ describe("BA320 period-close subscriber — zero-position baseline", () => {
       periodStart: PERIOD_START,
     });
 
-    expect(Number.isNaN(result.ba310Output.totalMarketRiskCapitalMinor)).toBe(false);
-    expect(Number.isNaN(result.ba310Output.totalMarketRiskRwaMinor)).toBe(false);
-    expect(Number.isNaN(result.ba310Output.fx.capitalMinor)).toBe(false);
-    expect(Number.isNaN(result.ba310Output.interestRateGeneral.capitalMinor)).toBe(false);
-    expect(Number.isNaN(result.ba310Output.interestRateSpecific.capitalMinor)).toBe(false);
-    expect(Number.isNaN(result.ba310Output.equity.capitalMinor)).toBe(false);
-    expect(Number.isNaN(result.ba310Output.commodity.capitalMinor)).toBe(false);
+    expect(Number.isNaN(result.ba320Output.totalMarketRiskCapitalMinor)).toBe(false);
+    expect(Number.isNaN(result.ba320Output.totalMarketRiskRwaMinor)).toBe(false);
+    expect(Number.isNaN(result.ba320Output.fx.capitalMinor)).toBe(false);
+    expect(Number.isNaN(result.ba320Output.interestRateGeneral.capitalMinor)).toBe(false);
+    expect(Number.isNaN(result.ba320Output.interestRateSpecific.capitalMinor)).toBe(false);
+    expect(Number.isNaN(result.ba320Output.equity.capitalMinor)).toBe(false);
+    expect(Number.isNaN(result.ba320Output.commodity.capitalMinor)).toBe(false);
   });
 
   it("placeholders populated (rehearsal-grade marker)", () => {
     const store = new EventStore(":memory:");
-    const result = ba310PeriodCloseSubscriber({
+    const result = ba320PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       eventStore: store,
@@ -128,12 +128,12 @@ describe("BA320 period-close subscriber — zero-position baseline", () => {
       periodStart: PERIOD_START,
     });
 
-    expect(result.ba310Output.placeholders.length).toBeGreaterThanOrEqual(1);
+    expect(result.ba320Output.placeholders.length).toBeGreaterThanOrEqual(1);
     // BA 320 line-numbering is now SOURCED from the typed per-cell contract — the
     // bare "[citation: TBC … pending WS-INSTRUMENT-ANALYSES]" stub is retired
     // (D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING).
     expect(
-      result.ba310Output.placeholders.some((p) =>
+      result.ba320Output.placeholders.some((p) =>
         p.includes("exact line-numbering sourced from the typed per-cell"),
       ),
     ).toBe(true);
@@ -147,7 +147,7 @@ describe("BA320 period-close subscriber — zero-position baseline", () => {
 describe("BA320 period-close subscriber — caller-supplied inputs", () => {
   it("IR general maturity ladder flows into output", () => {
     const store = new EventStore(":memory:");
-    const result = ba310PeriodCloseSubscriber({
+    const result = ba320PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       eventStore: store,
@@ -159,14 +159,14 @@ describe("BA320 period-close subscriber — caller-supplied inputs", () => {
     // Weighted-net |1000-400| = 600, plus the Reg 28(3)(a) vertical disallowance
     // of 10% × matched (min(1000,400)=400) = 40 → IR-general capital = 640.
     // (Pre-B-IRS-DISALLOWANCES this was 600 with disallowances silently zero.)
-    expect(result.ba310Output.interestRateGeneral.disallowancesMinor).toBe(40);
-    expect(result.ba310Output.interestRateGeneral.capitalMinor).toBe(640);
-    expect(result.ba310Output.totalMarketRiskCapitalMinor).toBe(640);
+    expect(result.ba320Output.interestRateGeneral.disallowancesMinor).toBe(40);
+    expect(result.ba320Output.interestRateGeneral.capitalMinor).toBe(640);
+    expect(result.ba320Output.totalMarketRiskCapitalMinor).toBe(640);
   });
 
   it("equity rows flow into output (8% net + 4% gross for liquid/diversified)", () => {
     const store = new EventStore(":memory:");
-    const result = ba310PeriodCloseSubscriber({
+    const result = ba320PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       eventStore: store,
@@ -183,12 +183,12 @@ describe("BA320 period-close subscriber — caller-supplied inputs", () => {
     });
 
     // 0.08*100k + 0.04*200k = 8000 + 8000 = 16000
-    expect(result.ba310Output.equity.capitalMinor).toBe(16_000);
+    expect(result.ba320Output.equity.capitalMinor).toBe(16_000);
   });
 
   it("RWA = 12.5 × total capital across sub-charges", () => {
     const store = new EventStore(":memory:");
-    const result = ba310PeriodCloseSubscriber({
+    const result = ba320PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       eventStore: store,
@@ -197,8 +197,8 @@ describe("BA320 period-close subscriber — caller-supplied inputs", () => {
       irGeneralMaturityLadder: [{ band: "0-1m", weightedLongMinor: 1000, weightedShortMinor: 0 }],
     });
 
-    expect(result.ba310Output.totalMarketRiskCapitalMinor).toBe(1000);
-    expect(result.ba310Output.totalMarketRiskRwaMinor).toBe(12_500);
+    expect(result.ba320Output.totalMarketRiskCapitalMinor).toBe(1000);
+    expect(result.ba320Output.totalMarketRiskRwaMinor).toBe(12_500);
   });
 });
 
@@ -209,7 +209,7 @@ describe("BA320 period-close subscriber — caller-supplied inputs", () => {
 describe("BA320 period-close subscriber — XML serialiser", () => {
   it("renders well-formed XML with declared SARB envelope", () => {
     const store = new EventStore(":memory:");
-    const result = ba310PeriodCloseSubscriber({
+    const result = ba320PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       eventStore: store,
@@ -218,7 +218,7 @@ describe("BA320 period-close subscriber — XML serialiser", () => {
       irGeneralMaturityLadder: [{ band: "0-1m", weightedLongMinor: 500, weightedShortMinor: 0 }],
     });
 
-    const payload = ba310ToXmlPayload(result.ba310Output);
+    const payload = ba320ToXmlPayload(result.ba320Output);
     const xml = renderSarbXml(payload, { renderedAt: "2026-06-01T00:00:00.000Z" });
 
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
@@ -230,7 +230,7 @@ describe("BA320 period-close subscriber — XML serialiser", () => {
 
   it("structural validator passes for all required elements", () => {
     const store = new EventStore(":memory:");
-    const result = ba310PeriodCloseSubscriber({
+    const result = ba320PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       eventStore: store,
@@ -238,7 +238,7 @@ describe("BA320 period-close subscriber — XML serialiser", () => {
       periodStart: PERIOD_START,
     });
 
-    const payload = ba310ToXmlPayload(result.ba310Output);
+    const payload = ba320ToXmlPayload(result.ba320Output);
     const xml = renderSarbXml(payload, { renderedAt: "2026-06-01T00:00:00.000Z" });
     const validation = validateSarbXmlStructural({
       xml,
@@ -253,7 +253,7 @@ describe("BA320 period-close subscriber — XML serialiser", () => {
   it("XML is byte-identical across runs (determinism)", () => {
     const store = new EventStore(":memory:");
     const makeXml = (): string => {
-      const result = ba310PeriodCloseSubscriber({
+      const result = ba320PeriodCloseSubscriber({
         closedPayload: PERIOD_CLOSED_PAYLOAD,
         entity: ENTITY_BANK,
         eventStore: store,
@@ -263,7 +263,7 @@ describe("BA320 period-close subscriber — XML serialiser", () => {
           { band: "0-1m", weightedLongMinor: 1000, weightedShortMinor: 200 },
         ],
       });
-      return renderSarbXml(ba310ToXmlPayload(result.ba310Output), {
+      return renderSarbXml(ba320ToXmlPayload(result.ba320Output), {
         renderedAt: "2026-06-01T00:00:00.000Z",
       });
     };
@@ -273,7 +273,7 @@ describe("BA320 period-close subscriber — XML serialiser", () => {
 
   it("XML contains TotalMarketRiskCapitalMinor element with expected value", () => {
     const store = new EventStore(":memory:");
-    const result = ba310PeriodCloseSubscriber({
+    const result = ba320PeriodCloseSubscriber({
       closedPayload: PERIOD_CLOSED_PAYLOAD,
       entity: ENTITY_BANK,
       eventStore: store,
@@ -284,7 +284,7 @@ describe("BA320 period-close subscriber — XML serialiser", () => {
       ],
     });
 
-    const payload = ba310ToXmlPayload(result.ba310Output);
+    const payload = ba320ToXmlPayload(result.ba320Output);
     const xml = renderSarbXml(payload, { renderedAt: "2026-06-01T00:00:00.000Z" });
 
     // Weighted-net |2000-1000| = 1000, plus the Reg 28(3)(a) vertical disallowance

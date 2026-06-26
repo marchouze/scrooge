@@ -98,7 +98,7 @@ import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
  * preserved (negate the trial-balance amount: credit = profit → flip
  * sign so profit reads positive in the output).
  */
-export type Ba610LineCategory =
+export type Ba120LineCategory =
   | "interest-income"
   | "interest-expense"
   | "fee-income"
@@ -107,9 +107,9 @@ export type Ba610LineCategory =
   | "other-income"
   | "other-expense";
 
-export interface Ba610LineClassification {
+export interface Ba120LineClassification {
   readonly leafAccountId: string;
-  readonly category: Ba610LineCategory;
+  readonly category: Ba120LineCategory;
   /**
    * Free-form sub-line label for the BA 610 form (e.g.
    * `interest-income.loans-and-advances`,
@@ -120,7 +120,7 @@ export interface Ba610LineClassification {
   readonly subCategory?: string;
 }
 
-export type Ba610ClassificationMap = readonly Ba610LineClassification[];
+export type Ba120ClassificationMap = readonly Ba120LineClassification[];
 
 /**
  * The complete generator input. The trial balance is the period-delta
@@ -129,7 +129,7 @@ export type Ba610ClassificationMap = readonly Ba610LineClassification[];
  * sheet accounts on the floor; unmatched rows surface in
  * `classificationGaps`).
  */
-export interface Ba610GeneratorInput {
+export interface Ba120GeneratorInput {
   /** Legal entity short-id (`LE-ZA-HOZ-BANK`). */
   readonly entity: string;
   /** Period-start ISO 8601. */
@@ -143,7 +143,7 @@ export interface Ba610GeneratorInput {
   /** Trial-balance rows (period-delta — P&L). */
   readonly trialBalance: readonly TrialBalanceSnapshotRow[];
   /** Per-account BA 610 classifications. */
-  readonly classifications: Ba610ClassificationMap;
+  readonly classifications: Ba120ClassificationMap;
   /** Optional citation to source `TrialBalanceSnapshotted.event_id`. */
   readonly trialBalanceSnapshotEventId?: string;
 }
@@ -152,7 +152,7 @@ export interface Ba610GeneratorInput {
 // Outputs
 // ---------------------------------------------------------------------------
 
-export interface Ba610LineItem {
+export interface Ba120LineItem {
   readonly lineId: string;
   readonly lineLabel: string;
   readonly amountMinor: number;
@@ -162,19 +162,19 @@ export interface Ba610LineItem {
   readonly note?: string;
 }
 
-export interface Ba610LineCategorySection {
-  readonly category: Ba610LineCategory;
+export interface Ba120LineCategorySection {
+  readonly category: Ba120LineCategory;
   readonly totalMinor: number;
-  readonly lineItems: readonly Ba610LineItem[];
+  readonly lineItems: readonly Ba120LineItem[];
 }
 
-export interface Ba610ClassificationGap {
+export interface Ba120ClassificationGap {
   readonly leafAccountId: string;
   readonly currency: string;
   readonly amountMinor: number;
 }
 
-export interface Ba610IncomeStatement {
+export interface Ba120IncomeStatement {
   readonly meta: {
     readonly form: "BA 120";
     readonly formVersion: "v0.1-rehearsal";
@@ -187,16 +187,16 @@ export interface Ba610IncomeStatement {
     readonly trialBalanceSnapshotEventId?: string;
     readonly classificationsFingerprint: string;
   };
-  readonly interestIncome: Ba610LineCategorySection;
-  readonly interestExpense: Ba610LineCategorySection;
+  readonly interestIncome: Ba120LineCategorySection;
+  readonly interestExpense: Ba120LineCategorySection;
   readonly netInterestIncomeMinor: number;
-  readonly feeIncome: Ba610LineCategorySection;
-  readonly tradingProfitLoss: Ba610LineCategorySection;
-  readonly operatingExpenses: Ba610LineCategorySection;
-  readonly otherIncome: Ba610LineCategorySection;
-  readonly otherExpenses: Ba610LineCategorySection;
+  readonly feeIncome: Ba120LineCategorySection;
+  readonly tradingProfitLoss: Ba120LineCategorySection;
+  readonly operatingExpenses: Ba120LineCategorySection;
+  readonly otherIncome: Ba120LineCategorySection;
+  readonly otherExpenses: Ba120LineCategorySection;
   readonly profitBeforeTaxMinor: number;
-  readonly classificationGaps: readonly Ba610ClassificationGap[];
+  readonly classificationGaps: readonly Ba120ClassificationGap[];
   readonly citations: readonly string[];
   readonly placeholders: readonly string[];
 }
@@ -205,10 +205,10 @@ export interface Ba610IncomeStatement {
 // Errors + scope guard
 // ---------------------------------------------------------------------------
 
-export class Ba610GeneratorError extends Error {
+export class Ba120GeneratorError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "Ba610GeneratorError";
+    this.name = "Ba120GeneratorError";
   }
 }
 
@@ -216,7 +216,7 @@ export const BA_610_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 
 function assertBankEntity(entity: string): void {
   if (!BA_610_BANK_ENTITIES.includes(entity)) {
-    throw new Ba610GeneratorError(
+    throw new Ba120GeneratorError(
       `BA 610 (Income Statement) is bank-licence-bound; entity '${entity}' is not in BA_610_BANK_ENTITIES (${BA_610_BANK_ENTITIES.join(
         ", ",
       )}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER.`,
@@ -233,25 +233,25 @@ function assertBankEntity(entity: string): void {
  * trial balance + a caller-supplied line-classification map. Pure
  * function; deterministic.
  */
-export function generateBa610IncomeStatement(input: Ba610GeneratorInput): Ba610IncomeStatement {
+export function generateBa120IncomeStatement(input: Ba120GeneratorInput): Ba120IncomeStatement {
   assertBankEntity(input.entity);
   if (!input.functionalCurrency || input.functionalCurrency.length !== 3) {
-    throw new Ba610GeneratorError(
+    throw new Ba120GeneratorError(
       `BA 610 generator: functionalCurrency must be ISO-4217 (3 chars), got '${input.functionalCurrency}'`,
     );
   }
   if (!(input.periodStart < input.periodEnd)) {
-    throw new Ba610GeneratorError(
+    throw new Ba120GeneratorError(
       `BA 610 generator: periodStart (${input.periodStart}) must precede periodEnd (${input.periodEnd})`,
     );
   }
 
   const ccy = input.functionalCurrency;
 
-  const classMap = new Map<string, Ba610LineClassification>();
+  const classMap = new Map<string, Ba120LineClassification>();
   for (const c of input.classifications) {
     if (classMap.has(c.leafAccountId)) {
-      throw new Ba610GeneratorError(
+      throw new Ba120GeneratorError(
         `BA 610 generator: duplicate classification for account '${c.leafAccountId}'`,
       );
     }
@@ -261,8 +261,8 @@ export function generateBa610IncomeStatement(input: Ba610GeneratorInput): Ba610I
   const tbInCurrency = input.trialBalance.filter((r) => r.currency === ccy);
 
   // Per-category line buckets.
-  type Bucket = { lines: Ba610LineItem[]; total: number };
-  const buckets: Record<Ba610LineCategory, Bucket> = {
+  type Bucket = { lines: Ba120LineItem[]; total: number };
+  const buckets: Record<Ba120LineCategory, Bucket> = {
     "interest-income": { lines: [], total: 0 },
     "interest-expense": { lines: [], total: 0 },
     "fee-income": { lines: [], total: 0 },
@@ -272,7 +272,7 @@ export function generateBa610IncomeStatement(input: Ba610GeneratorInput): Ba610I
     "other-expense": { lines: [], total: 0 },
   };
 
-  const classificationGaps: Ba610ClassificationGap[] = [];
+  const classificationGaps: Ba120ClassificationGap[] = [];
 
   const sorted = [...tbInCurrency].sort((a, b) =>
     a.leafAccountId < b.leafAccountId ? -1 : a.leafAccountId > b.leafAccountId ? 1 : 0,
@@ -295,7 +295,7 @@ export function generateBa610IncomeStatement(input: Ba610GeneratorInput): Ba610I
     const signedContribution =
       c.category === "trading-pnl" ? -row.amountMinor : Math.abs(row.amountMinor);
     const note = signWarningForCategory(row.amountMinor, c.category);
-    const lineItem: Ba610LineItem = {
+    const lineItem: Ba120LineItem = {
       lineId: `${c.category}.${row.leafAccountId}`,
       lineLabel: c.lineLabel,
       amountMinor: signedContribution,
@@ -348,7 +348,7 @@ export function generateBa610IncomeStatement(input: Ba610GeneratorInput): Ba610I
 
   const classificationsFingerprint = fingerprintClassifications(input.classifications);
 
-  const section = (cat: Ba610LineCategory): Ba610LineCategorySection => ({
+  const section = (cat: Ba120LineCategory): Ba120LineCategorySection => ({
     category: cat,
     totalMinor: buckets[cat].total,
     lineItems: buckets[cat].lines,
@@ -396,7 +396,7 @@ export function generateBa610IncomeStatement(input: Ba610GeneratorInput): Ba610I
 
 function signWarningForCategory(
   amountMinor: number,
-  category: Ba610LineCategory,
+  category: Ba120LineCategory,
 ): string | undefined {
   if (amountMinor === 0) return undefined;
   // income / fee-income / other-income : credit-typical (negative)
@@ -422,7 +422,7 @@ function signWarningForCategory(
   }
 }
 
-function fingerprintClassifications(classifications: Ba610ClassificationMap): string {
+function fingerprintClassifications(classifications: Ba120ClassificationMap): string {
   const sorted = [...classifications].sort((a, b) =>
     a.leafAccountId < b.leafAccountId ? -1 : a.leafAccountId > b.leafAccountId ? 1 : 0,
   );

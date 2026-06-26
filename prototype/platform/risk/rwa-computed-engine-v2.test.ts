@@ -22,7 +22,7 @@ import { makeRwaComputed } from "../event-store/event-types/regulatory-reporting
 import { productionTag } from "../event-store/provenance";
 import { EventStore } from "../event-store/store";
 import type { Actor } from "../event-store/types";
-import type { Ba310Output } from "../reporting/ba-320-market-risk";
+import type { Ba320Output } from "../reporting/ba-320-market-risk";
 import { computeRwaComputed } from "./rwa-computed-engine";
 import {
   emitRwaComputedV2,
@@ -69,7 +69,7 @@ function appendBond(store: EventStore, nominalMinor: number): void {
 }
 
 /** A zero-market-risk BA 320 return for the period (full structural shape). */
-function zeroMarketRisk(): Ba310Output {
+function zeroMarketRisk(): Ba320Output {
   return {
     meta: {
       form: "BA 320",

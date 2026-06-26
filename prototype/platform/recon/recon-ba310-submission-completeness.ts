@@ -18,7 +18,7 @@
 //
 // ## Scope
 //
-//   - Only bank-licence entities (`BA_310_SUBSCRIBER_ENTITIES`, i.e.
+//   - Only bank-licence entities (`BA_320_SUBSCRIBER_ENTITIES`, i.e.
 //     `LE-ZA-HOZ-BANK`) are in scope; non-bank entities do not file BA 310.
 //   - Build-phase-fixture closed periods are excluded via the default
 //     provenance filter (seeded rehearsal periods are not real closes); only
@@ -40,18 +40,18 @@
 
 import { eventStore } from "../composition";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
-import { BA_310_SUBSCRIBER_ENTITIES } from "../returns/ba320/period-close-subscriber";
+import { BA_320_SUBSCRIBER_ENTITIES } from "../returns/ba320/period-close-subscriber";
 
 const provenanceFilter = defaultProvenanceFilter();
 
 // 1. Collect the set of periodIds that have a BA-310 submission record.
-const ba310Periods = new Set<string>();
+const ba320Periods = new Set<string>();
 for (const ev of eventStore.replay({ type: "SarbSubmissionAttempted" })) {
   const p = ev.payload as { formId?: string; reportingPeriod?: string };
   // Market-risk return formId is canonically "BA320" (D-BA-RETURN-NUMBERING-EXCEL-CANONICAL);
   // legacy "BA310" submissions are still counted (historical events immutable).
   if ((p.formId === "BA320" || p.formId === "BA310") && typeof p.reportingPeriod === "string") {
-    ba310Periods.add(p.reportingPeriod);
+    ba320Periods.add(p.reportingPeriod);
   }
 }
 
@@ -62,7 +62,7 @@ let findings = 0;
 
 for (const ev of eventStore.replay({ type: "AccountingPeriodClosed" })) {
   // Only bank-licence entities file BA 310.
-  if (!BA_310_SUBSCRIBER_ENTITIES.includes(ev.entity)) continue;
+  if (!BA_320_SUBSCRIBER_ENTITIES.includes(ev.entity)) continue;
   // Exclude seeded build-phase-fixture closes — only real closes are asserted.
   if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
 
@@ -71,7 +71,7 @@ for (const ev of eventStore.replay({ type: "AccountingPeriodClosed" })) {
   if (!periodId) continue;
 
   asserted++;
-  if (!ba310Periods.has(periodId)) {
+  if (!ba320Periods.has(periodId)) {
     console.error(
       `FINDING: closed period ${periodId} (entity ${ev.entity}) has no BA-310 submission record (SarbSubmissionAttempted{formId:BA310}) — the BA-310 FX-NOP generation/submission path did not fire for this close.`,
     );

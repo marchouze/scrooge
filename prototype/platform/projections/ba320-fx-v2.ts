@@ -4,7 +4,7 @@
 //
 // Reads `FilInstrumentCreated` + `FilInstrumentTerminated` (both v2-parallel)
 // to derive net open FX positions per currency pair. Produces a `BA320FxSectionV2`
-// comparable to the V1 BA-310 FX section from `generateBa310MarketRisk`.
+// comparable to the V1 BA-310 FX section from `generateBa320MarketRisk`.
 //
 // ## V2 data source
 //
@@ -100,7 +100,7 @@ export interface BA320FxPositionV2 {
   readonly hasRateConversion: boolean;
 }
 
-/** V2 BA-320 FX section — the comparable output to V1's Ba310FxSection. */
+/** V2 BA-320 FX section — the comparable output to V1's Ba320FxSection. */
 export interface BA320FxSectionV2 {
   readonly positions: readonly BA320FxPositionV2[];
   /**

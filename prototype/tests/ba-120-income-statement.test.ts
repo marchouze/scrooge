@@ -32,13 +32,13 @@ import { setDefaultProvenanceModeOverride } from "../platform/projections/filter
 import {
   BA_610_BANK_ENTITIES,
   BA_610_SCHEMA_URL,
-  Ba610GeneratorError,
-  type Ba610LineClassification,
-  Ba610RenderSchema,
-  canonicaliseBa610,
-  generateBa610IncomeStatement,
+  Ba120GeneratorError,
+  type Ba120LineClassification,
+  Ba120RenderSchema,
+  canonicaliseBa120,
+  generateBa120IncomeStatement,
   renderBa610Canonical,
-  renderBa610ToJson,
+  renderBa120ToJson,
 } from "../platform/reporting";
 
 const ENTITY_BANK = "LE-ZA-HOZ-BANK";
@@ -104,7 +104,7 @@ describe("BA 610 — per-entity isolation", () => {
 
   it("rejects LE-ZA-HOZ-SECURITIES", () => {
     expect(() =>
-      generateBa610IncomeStatement({
+      generateBa120IncomeStatement({
         entity: ENTITY_SECURITIES,
         periodStart: PERIOD_START,
         periodEnd: PERIOD_END,
@@ -113,12 +113,12 @@ describe("BA 610 — per-entity isolation", () => {
         trialBalance: [],
         classifications: [],
       }),
-    ).toThrow(Ba610GeneratorError);
+    ).toThrow(Ba120GeneratorError);
   });
 
   it("rejects LE-ZA-HOZ-GROUP", () => {
     expect(() =>
-      generateBa610IncomeStatement({
+      generateBa120IncomeStatement({
         entity: ENTITY_GROUP,
         periodStart: PERIOD_START,
         periodEnd: PERIOD_END,
@@ -127,12 +127,12 @@ describe("BA 610 — per-entity isolation", () => {
         trialBalance: [],
         classifications: [],
       }),
-    ).toThrow(Ba610GeneratorError);
+    ).toThrow(Ba120GeneratorError);
   });
 
   it("rejects invalid functional currency", () => {
     expect(() =>
-      generateBa610IncomeStatement({
+      generateBa120IncomeStatement({
         entity: ENTITY_BANK,
         periodStart: PERIOD_START,
         periodEnd: PERIOD_END,
@@ -146,7 +146,7 @@ describe("BA 610 — per-entity isolation", () => {
 
   it("rejects period inversion (start ≥ end)", () => {
     expect(() =>
-      generateBa610IncomeStatement({
+      generateBa120IncomeStatement({
         entity: ENTITY_BANK,
         periodStart: PERIOD_END,
         periodEnd: PERIOD_START,
@@ -231,7 +231,7 @@ describe("BA 610 — end-to-end", () => {
 
   it("computes NII + profit-before-tax correctly", () => {
     const { trialBalanceSnapshotEventId, rows } = setupClose();
-    const classifications: Ba610LineClassification[] = [
+    const classifications: Ba120LineClassification[] = [
       {
         leafAccountId: "ACC-interest-income",
         category: "interest-income",
@@ -248,7 +248,7 @@ describe("BA 610 — end-to-end", () => {
         lineLabel: "operating-expense.staff-costs",
       },
     ];
-    const out = generateBa610IncomeStatement({
+    const out = generateBa120IncomeStatement({
       entity: ENTITY_BANK,
       periodStart: PERIOD_START,
       periodEnd: PERIOD_END,
@@ -270,9 +270,9 @@ describe("BA 610 — end-to-end", () => {
     expect(out.citations).toContain("IAS 1 §82–§87 — Statement of Comprehensive Income");
   });
 
-  it("renders to canonical JSON validating against Ba610RenderSchema", () => {
+  it("renders to canonical JSON validating against Ba120RenderSchema", () => {
     const { trialBalanceSnapshotEventId, rows } = setupClose();
-    const out = generateBa610IncomeStatement({
+    const out = generateBa120IncomeStatement({
       entity: ENTITY_BANK,
       periodStart: PERIOD_START,
       periodEnd: PERIOD_END,
@@ -289,8 +289,8 @@ describe("BA 610 — end-to-end", () => {
       trialBalanceSnapshotEventId,
     });
     const renderedAt = "2026-05-17T15:00:00.000Z";
-    const render = renderBa610ToJson(out, { renderedAt });
-    expect(() => Ba610RenderSchema.parse(render)).not.toThrow();
+    const render = renderBa120ToJson(out, { renderedAt });
+    expect(() => Ba120RenderSchema.parse(render)).not.toThrow();
     expect(render.$schema).toBe(BA_610_SCHEMA_URL);
     expect(render.meta.renderedAt).toBe(renderedAt);
   });
@@ -302,7 +302,7 @@ describe("BA 610 — end-to-end", () => {
 
 describe("BA 610 — trading-pnl sign preservation", () => {
   it("credit balance on trading account ⇒ positive profit", () => {
-    const out = generateBa610IncomeStatement({
+    const out = generateBa120IncomeStatement({
       entity: ENTITY_BANK,
       periodStart: PERIOD_START,
       periodEnd: PERIOD_END,
@@ -325,7 +325,7 @@ describe("BA 610 — trading-pnl sign preservation", () => {
   });
 
   it("debit balance on trading account ⇒ negative (loss)", () => {
-    const out = generateBa610IncomeStatement({
+    const out = generateBa120IncomeStatement({
       entity: ENTITY_BANK,
       periodStart: PERIOD_START,
       periodEnd: PERIOD_END,
@@ -351,7 +351,7 @@ describe("BA 610 — trading-pnl sign preservation", () => {
 
 describe("BA 610 — sign warnings + gaps", () => {
   it("flags income account with debit balance", () => {
-    const out = generateBa610IncomeStatement({
+    const out = generateBa120IncomeStatement({
       entity: ENTITY_BANK,
       periodStart: PERIOD_START,
       periodEnd: PERIOD_END,
@@ -371,7 +371,7 @@ describe("BA 610 — sign warnings + gaps", () => {
   });
 
   it("classification gaps surface", () => {
-    const out = generateBa610IncomeStatement({
+    const out = generateBa120IncomeStatement({
       entity: ENTITY_BANK,
       periodStart: PERIOD_START,
       periodEnd: PERIOD_END,
@@ -407,10 +407,10 @@ describe("BA 610 — canonicaliser determinism", () => {
         },
       ],
     };
-    const a = renderBa610Canonical(generateBa610IncomeStatement(input), {
+    const a = renderBa610Canonical(generateBa120IncomeStatement(input), {
       renderedAt: "2026-05-17T15:00:00.000Z",
     });
-    const b = renderBa610Canonical(generateBa610IncomeStatement(input), {
+    const b = renderBa610Canonical(generateBa120IncomeStatement(input), {
       renderedAt: "2026-05-17T15:00:00.000Z",
     });
     expect(a.canonicalJson).toBe(b.canonicalJson);
@@ -418,8 +418,8 @@ describe("BA 610 — canonicaliser determinism", () => {
     expect(lines[1]?.trim().startsWith('"$schema"')).toBe(true);
   });
 
-  it("canonicaliseBa610 idempotent", () => {
-    const out = generateBa610IncomeStatement({
+  it("canonicaliseBa120 idempotent", () => {
+    const out = generateBa120IncomeStatement({
       entity: ENTITY_BANK,
       periodStart: PERIOD_START,
       periodEnd: PERIOD_END,
@@ -434,8 +434,8 @@ describe("BA 610 — canonicaliser determinism", () => {
         },
       ],
     });
-    const r = renderBa610ToJson(out, { renderedAt: "2026-05-17T15:00:00.000Z" });
-    expect(canonicaliseBa610(r)).toBe(canonicaliseBa610(r));
+    const r = renderBa120ToJson(out, { renderedAt: "2026-05-17T15:00:00.000Z" });
+    expect(canonicaliseBa120(r)).toBe(canonicaliseBa120(r));
   });
 });
 
@@ -446,7 +446,7 @@ describe("BA 610 — canonicaliser determinism", () => {
 describe("BA 610 — boundary errors", () => {
   it("rejects duplicate classifications", () => {
     expect(() =>
-      generateBa610IncomeStatement({
+      generateBa120IncomeStatement({
         entity: ENTITY_BANK,
         periodStart: PERIOD_START,
         periodEnd: PERIOD_END,

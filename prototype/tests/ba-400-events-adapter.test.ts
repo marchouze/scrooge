@@ -10,7 +10,7 @@
 //      `unattributed` line + `unattributedGrossIncomeMinor`, and is excluded
 //      from BIA / TSA capital (never dropped, never fabricated into a line).
 //   3. Provision / impairment postings are NOT folded into gross income (§650).
-//   4. The caller-supplied `generateBa300OpRisk` is unchanged and still usable.
+//   4. The caller-supplied `generateBa400OpRisk` is unchanged and still usable.
 //
 // Authority: D-BA-RETURNS-FOLLOWON-BATCH; brief
 //   brief:mira:ws-ba-returns-followon-ba-400-op-risk-events-fir:2026-06-09.
@@ -27,7 +27,7 @@ import { EventStore } from "../platform/event-store/store";
 import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
 import {
   UNATTRIBUTED_BUSINESS_LINE,
-  generateBa300OpRisk,
+  generateBa400OpRisk,
   generateBa400OpRiskFromEvents,
 } from "../platform/reporting";
 
@@ -207,7 +207,7 @@ describe("BA 400 events-first — multi-line, multi-year fold", () => {
       { periodId: "period:hoz-bank:year:2024" },
     );
 
-    const pureOut = generateBa300OpRisk({
+    const pureOut = generateBa400OpRisk({
       entity: ENTITY_BANK,
       asOf: "2024-12-31T23:59:59.999Z",
       periodId: "period:hoz-bank:year:2024",
@@ -380,8 +380,8 @@ describe("BA 400 events-first — gross-income definition", () => {
 // ---------------------------------------------------------------------------
 
 describe("BA 400 — caller-supplied generator retained", () => {
-  it("generateBa300OpRisk still computes from a hand-built table", () => {
-    const out = generateBa300OpRisk({
+  it("generateBa400OpRisk still computes from a hand-built table", () => {
+    const out = generateBa400OpRisk({
       entity: ENTITY_BANK,
       asOf: "2024-12-31T23:59:59.999Z",
       periodId: "period:hoz-bank:year:2024",

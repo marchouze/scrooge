@@ -98,7 +98,7 @@ import {
 } from "./ba-700-leverage-ratio";
 
 // P1 fix note (C-3): the events-first entry point for BA 100 lives at
-// `ba-100-events-adapter.ts` → `generateBa100CapitalFromEvents()`. Callers
+// `ba-100-events-adapter.ts` → `generateBa700CapitalFromEvents()`. Callers
 // that have access to an EventStore should prefer that path.
 // Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
 
@@ -236,7 +236,7 @@ export const BUILD_PHASE_DEFAULT_BUFFER_REQUIREMENTS: BufferRequirements = {
  * the caller. The currency to render in is the entity's functional
  * currency from `AccountingPeriodOpened.functionalCurrency`.
  */
-export interface Ba100GeneratorInput {
+export interface Ba700GeneratorInput {
   /** Legal entity short-id (`LE-ZA-HOZ-BANK`). The generator throws on non-bank entities. */
   readonly entity: string;
   /** ISO 8601 — the period-end as-of date the BA 100 is reported at. */
@@ -252,7 +252,7 @@ export interface Ba100GeneratorInput {
    * posting events, not a primary event. Capital positions exist in the event
    * stream (SubLedgerPostingEmitted, CapitalContributionRecorded) before a
    * TrialBalanceSnapshotted event is produced by the period-close orchestration.
-   * Use `generateBa100CapitalFromEvents()` from `ba-100-events-adapter.ts` when
+   * Use `generateBa700CapitalFromEvents()` from `ba-100-events-adapter.ts` when
    * an EventStore is available. This field is retained for backward compatibility
    * with tests and for callers that do not have direct EventStore access.
    * Authority: Principles/1-events-are-truth.md, D-MARKETS-CAPITAL-TIME-SHAPE.
@@ -302,7 +302,7 @@ export interface Ba100GeneratorInput {
  * markers on `lineId` indicate the line numbering is awaiting Mira's
  * `WS-INSTRUMENT-ANALYSES` publication.
  */
-export interface Ba100LineItem {
+export interface Ba700LineItem {
   readonly lineId: string;
   readonly lineLabel: string;
   readonly amountMinor: number;
@@ -319,22 +319,22 @@ export interface Ba100LineItem {
  * One tier of the capital stack — gross stock, deductions applied, net
  * stock, and the per-account contributing line items.
  */
-export interface Ba100CapitalTierSection {
+export interface Ba700CapitalTierSection {
   readonly tier: CapitalTier;
   readonly grossStockMinor: number;
   readonly totalDeductionsMinor: number;
   readonly netStockMinor: number;
-  readonly stockLineItems: readonly Ba100LineItem[];
-  readonly deductionLineItems: readonly Ba100LineItem[];
+  readonly stockLineItems: readonly Ba700LineItem[];
+  readonly deductionLineItems: readonly Ba700LineItem[];
 }
 
 /**
  * The capital-stack section. Three tiers + their derived totals.
  */
-export interface Ba100CapitalStackSection {
-  readonly cet1: Ba100CapitalTierSection;
-  readonly at1: Ba100CapitalTierSection;
-  readonly t2: Ba100CapitalTierSection;
+export interface Ba700CapitalStackSection {
+  readonly cet1: Ba700CapitalTierSection;
+  readonly at1: Ba700CapitalTierSection;
+  readonly t2: Ba700CapitalTierSection;
   readonly netTier1Minor: number;
   readonly netTotalCapitalMinor: number;
 }
@@ -342,7 +342,7 @@ export interface Ba100CapitalStackSection {
 /**
  * The RWA-denominator section. Decomposition by risk type + total.
  */
-export interface Ba100RwaSection {
+export interface Ba700RwaSection {
   readonly creditRwaMinor: number;
   readonly marketRwaMinor: number;
   readonly operationalRwaMinor: number;
@@ -355,7 +355,7 @@ export interface Ba100RwaSection {
  * The capital-adequacy ratios — three ratios + their per-bank required
  * minimums (base + buffers + Pillar-2A) + compliance flags.
  */
-export interface Ba100RatiosSection {
+export interface Ba700RatiosSection {
   readonly cet1Ratio: number;
   readonly cet1RatioRequiredMinimum: number;
   readonly cet1Compliant: boolean;
@@ -380,7 +380,7 @@ export interface Ba100RatiosSection {
  * show "minimum-required CET1 ratio = 7.0% (4.5% + 2.5% CCB)" on the face
  * of the return.
  */
-export interface Ba100Output {
+export interface Ba700Output {
   readonly meta: {
     readonly form: "BA 700";
     readonly formVersion: "v0.1-rehearsal";
@@ -394,10 +394,10 @@ export interface Ba100Output {
     readonly deductionsFingerprint: string;
     readonly rwaFingerprint: string;
   };
-  readonly capitalStack: Ba100CapitalStackSection;
-  readonly rwa: Ba100RwaSection;
+  readonly capitalStack: Ba700CapitalStackSection;
+  readonly rwa: Ba700RwaSection;
   readonly bufferRequirements: BufferRequirements;
-  readonly ratios: Ba100RatiosSection;
+  readonly ratios: Ba700RatiosSection;
   /**
    * Basel III leverage-ratio section (BCBS §147–§165). Present when
    * the caller supplies `leverageExposureMeasure` in the input;
@@ -427,10 +427,10 @@ export interface Ba100Output {
 // Errors
 // ---------------------------------------------------------------------------
 
-export class Ba100GeneratorError extends Error {
+export class Ba700GeneratorError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "Ba100GeneratorError";
+    this.name = "Ba700GeneratorError";
   }
 }
 
@@ -449,7 +449,7 @@ export const BA_100_BANK_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 
 function assertBankEntity(entity: string): void {
   if (!BA_100_BANK_ENTITIES.includes(entity)) {
-    throw new Ba100GeneratorError(
+    throw new Ba700GeneratorError(
       `BA 100 (Capital Adequacy) is bank-licence-bound; entity '${entity}' is not in BA_100_BANK_ENTITIES (${BA_100_BANK_ENTITIES.join(", ")}). See Regulations/_legal-entity-tree.md + D-REGULATORY-PERIMETER. Group-consolidated BA 100 lands at Slice 7.`,
     );
   }
@@ -524,10 +524,10 @@ export function computeRequiredMinimums(b: BufferRequirements): {
  * is the consolidated functional-currency view per the strategic-
  * foundation single-branch posture).
  */
-export function generateBa100Capital(input: Ba100GeneratorInput): Ba100Output {
+export function generateBa700Capital(input: Ba700GeneratorInput): Ba700Output {
   assertBankEntity(input.entity);
   if (!input.functionalCurrency || input.functionalCurrency.length !== 3) {
-    throw new Ba100GeneratorError(
+    throw new Ba700GeneratorError(
       `BA 100 generator: functionalCurrency must be ISO-4217 (3 chars), got '${input.functionalCurrency}'`,
     );
   }
@@ -536,7 +536,7 @@ export function generateBa100Capital(input: Ba100GeneratorInput): Ba100Output {
     input.rwa.marketRwaMinor < 0 ||
     input.rwa.operationalRwaMinor < 0
   ) {
-    throw new Ba100GeneratorError(
+    throw new Ba700GeneratorError(
       `BA 100 generator: RWA components must be non-negative; got credit=${input.rwa.creditRwaMinor}, market=${input.rwa.marketRwaMinor}, operational=${input.rwa.operationalRwaMinor}`,
     );
   }
@@ -549,7 +549,7 @@ export function generateBa100Capital(input: Ba100GeneratorInput): Ba100Output {
   const classMap = new Map<string, AccountCapitalClassification>();
   for (const c of input.classifications) {
     if (classMap.has(c.leafAccountId)) {
-      throw new Ba100GeneratorError(
+      throw new Ba700GeneratorError(
         `BA 100 generator: duplicate classification for account '${c.leafAccountId}'`,
       );
     }
@@ -560,9 +560,9 @@ export function generateBa100Capital(input: Ba100GeneratorInput): Ba100Output {
   const tbInCurrency = input.trialBalance.filter((r) => r.currency === ccy);
 
   // Bucket trial-balance rows by tier.
-  const cet1Lines: Ba100LineItem[] = [];
-  const at1Lines: Ba100LineItem[] = [];
-  const t2Lines: Ba100LineItem[] = [];
+  const cet1Lines: Ba700LineItem[] = [];
+  const at1Lines: Ba700LineItem[] = [];
+  const t2Lines: Ba700LineItem[] = [];
   let cet1Gross = 0;
   let at1Gross = 0;
   let t2Gross = 0;
@@ -579,7 +579,7 @@ export function generateBa100Capital(input: Ba100GeneratorInput): Ba100Output {
     const note =
       row.amountMinor > 0 ? "warning: capital-classified account has debit balance" : undefined;
     const amount = moneyFromMinorUnits(BigInt(stockMinor), ccy);
-    const lineItem: Ba100LineItem = {
+    const lineItem: Ba700LineItem = {
       lineId: `${c.capitalTier}.${row.leafAccountId}`,
       lineLabel: c.subCategory ?? `Capital ${c.capitalTier.toUpperCase()} — ${row.leafAccountId}`,
       amountMinor: stockMinor,
@@ -604,9 +604,9 @@ export function generateBa100Capital(input: Ba100GeneratorInput): Ba100Output {
   }
 
   // Bucket deductions by tier.
-  const cet1DeductLines: Ba100LineItem[] = [];
-  const at1DeductLines: Ba100LineItem[] = [];
-  const t2DeductLines: Ba100LineItem[] = [];
+  const cet1DeductLines: Ba700LineItem[] = [];
+  const at1DeductLines: Ba700LineItem[] = [];
+  const t2DeductLines: Ba700LineItem[] = [];
   let cet1DeductTotal = 0;
   let at1DeductTotal = 0;
   let t2DeductTotal = 0;
@@ -619,17 +619,17 @@ export function generateBa100Capital(input: Ba100GeneratorInput): Ba100Output {
 
   for (const d of sortedDeductions) {
     if (d.currency !== ccy) {
-      throw new Ba100GeneratorError(
+      throw new Ba700GeneratorError(
         `BA 100 generator: deduction '${d.category}' is in '${d.currency}', expected functional currency '${ccy}'. Multi-currency deductions land at Slice 6+.`,
       );
     }
     if (d.amountMinor < 0) {
-      throw new Ba100GeneratorError(
+      throw new Ba700GeneratorError(
         `BA 100 generator: deduction '${d.category}' amountMinor must be non-negative, got ${d.amountMinor}. Deductions are reported as positive magnitudes; the generator subtracts them.`,
       );
     }
     const deductAmount = moneyFromMinorUnits(BigInt(d.amountMinor), ccy);
-    const lineItem: Ba100LineItem = {
+    const lineItem: Ba700LineItem = {
       lineId: `deduction.${d.deductionTier}.${d.category}`,
       lineLabel: `Deduction (${d.deductionTier.toUpperCase()}) — ${d.category}`,
       amountMinor: d.amountMinor,
@@ -671,7 +671,7 @@ export function generateBa100Capital(input: Ba100GeneratorInput): Ba100Output {
 
   const minimums = computeRequiredMinimums(buffers);
 
-  const ratios: Ba100RatiosSection = {
+  const ratios: Ba700RatiosSection = {
     cet1Ratio,
     cet1RatioRequiredMinimum: minimums.cet1,
     cet1Compliant: cet1Ratio >= minimums.cet1,
@@ -810,13 +810,13 @@ function validateBuffers(b: BufferRequirements): void {
   ];
   for (const [name, value] of fields) {
     if (!Number.isFinite(value) || value < 0 || value > 1) {
-      throw new Ba100GeneratorError(
+      throw new Ba700GeneratorError(
         `BA 100 generator: buffer-requirement '${String(name)}' must be a finite ratio in [0,1], got ${value}`,
       );
     }
   }
   if (b.baseCet1Ratio > b.baseTier1Ratio || b.baseTier1Ratio > b.baseTotalRatio) {
-    throw new Ba100GeneratorError(
+    throw new Ba700GeneratorError(
       `BA 100 generator: buffer-requirement base-ratio ordering violated; expected baseCet1Ratio ≤ baseTier1Ratio ≤ baseTotalRatio, got ${b.baseCet1Ratio} ≤ ${b.baseTier1Ratio} ≤ ${b.baseTotalRatio}`,
     );
   }
