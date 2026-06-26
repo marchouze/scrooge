@@ -227,25 +227,31 @@ export const SUBSTRATE_GAP_REGISTER: readonly SubstrateGapRecord[] = [
   // IAS 21 oracle coverage (D-FX-IFRS-REVIEW-FOUNDATION, F9). The IAS-21 domain-
   // truth oracle (Regulations/INTL/IASB/source-docs/ias-21-structured.json) the
   // FX-vanilla review validates against ingests the FX-vanilla-bearing paragraphs:
-  // §8 (definitions), §20–§23 (reporting + closing-rate retranslation), §28–§30,
-  // §32 (recognition of exchange differences, incl. the net-investment exclusion
-  // §28 cross-references). It does NOT yet ingest §15A (long-term net-investment
-  // monetary items), §25/§26 (cash-flow / multiple-rate mechanics), §33 (change of
-  // functional currency for the net-investment difference) or §48 (reclassification
-  // on disposal of a foreign operation). None bear on the FX trading-book treatment
-  // the foundation asserts today, so this is forward coverage, not a live defect —
-  // a future treatment touching net-investment hedges or change-of-functional-
-  // currency must extend the oracle first. Full IAS 21 text is © IFRS Foundation;
-  // ingestion completes at licence-day procurement (see ias-21 sourceNote).
+  // RESOLVED (FX-vanilla full-closure tail, 2026-06-26). The oracle now ingests
+  // the full FX-vanilla-bearing set §8, §15, §15A, §20–§23, §25, §26, §28–§30, §32,
+  // §33, §48 — every paragraph this gap previously named as un-ingested (§15A net-
+  // investment monetary-item holder; §25 carrying-amount-by-comparison; §26 several-
+  // rates / temporary-non-exchangeability; §33 where the net-investment difference
+  // arises; §48 reclassification on disposal) is now in ias-21-structured.json,
+  // verbatim. Nothing FX-vanilla-relevant remains un-ingested, so the gap is CLOSED
+  // (not merely narrowed). The only IAS 21 material deliberately still excluded is
+  // the translation-to-a-presentation-currency machinery §38–§47 and §49–§57, which
+  // is a CONSOLIDATION concern (presentation currency ≠ functional currency), not an
+  // FX trading-book treatment — it sits in a SEPARATE, not-yet-opened scope, never a
+  // blind spot of the FX-vanilla oracle. Full IAS 21 text is © IFRS Foundation; the
+  // licence-day procurement obligation is tracked separately (file-ias-21-licensing-
+  // flag), independent of this coverage gap.
   // ---------------------------------------------------------------------------
   {
     id: "ias21-oracle-coverage",
-    title: "IAS 21 oracle: §15A/§25/§26/§33/§48 not yet ingested",
+    title: "IAS 21 oracle: §15A/§25/§26/§33/§48 ingested — FX-vanilla coverage complete",
     description:
-      "The IAS-21 domain-truth oracle ingests the FX-vanilla-bearing paragraphs (§8, §20–§23, §28–§30, §32 — including the net-investment exclusion §28 cross-references). It does NOT yet ingest §15A (long-term net-investment monetary items), §25/§26 (settlement / multiple-rate mechanics), §33 (change of functional currency) or §48 (reclassification on disposal of a foreign operation). None bear on the FX trading-book treatment the FX-vanilla review asserts today — this is forward coverage, NOT a live defect. A future treatment touching net-investment hedges or change-of-functional-currency must extend the oracle first. The golden-case test header (fx-ifrs-golden-cases.test.ts) and the FX-vanilla review PROC state these blind spots for the reader. Full IAS 21 text is © IFRS Foundation; ingestion completes at licence-day procurement. Authority: D-FX-IFRS-REVIEW-FOUNDATION (F9).",
+      "RESOLVED (2026-06-26, FX-vanilla full-closure). The IAS-21 domain-truth oracle now ingests the complete FX-vanilla-bearing set (§8, §15, §15A, §20–§23, §25, §26, §28–§30, §32, §33, §48) in Regulations/INTL/IASB/source-docs/ias-21-structured.json, verbatim. The previously-named tail — §15A (net-investment monetary-item holder), §25 (carrying-amount-by-comparison), §26 (several rates / temporary non-exchangeability), §33 (where the net-investment difference arises), §48 (reclassification on disposal) — is fully ingested. Nothing FX-vanilla-relevant is un-ingested. The translation-to-a-presentation-currency paragraphs (§38–§47, §49–§57) remain out of scope by design — they are a CONSOLIDATION concern (presentation ≠ functional currency), not an FX trading-book treatment, and belong to a separate not-yet-opened scope rather than a blind spot of this oracle. The golden-case test header (fx-ifrs-golden-cases.test.ts) is updated to record the closed coverage. Full IAS 21 text is © IFRS Foundation; the licence-day procurement obligation is tracked separately. Authority: D-FX-IFRS-REVIEW-FOUNDATION (F9).",
     severity: "medium",
-    status: "planned",
-    mitigation: "partial",
+    status: "resolved",
+    mitigation: "none",
+    closedBy:
+      "FX-vanilla full-closure run (D-FX-IFRS-REVIEW-FOUNDATION F9); ias-21-structured.json §15/§15A/§25/§26/§33/§48 ingestion.",
   },
   {
     id: "ba320-ir-sim-gl",

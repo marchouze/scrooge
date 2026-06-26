@@ -41,12 +41,14 @@
 //
 // Each case names its governing IFRS paragraph in the test title and a comment.
 //
-// ORACLE BLIND SPOTS (F9, stated for the reader). The IAS-21 oracle ingests
-// §8/§20/§21/§22/§23/§28/§29/§30/§32. It does NOT yet ingest §15A/§25/§26/§33/§48
-// (tracked SubstrateGap `ias21-oracle-coverage` in platform/substrate/gap-
-// register.ts) — none of which bear on the FX-vanilla trading-book treatment these
-// cases assert, but a future treatment touching net-investment hedges (§32/§48) or
-// change-of-functional-currency (§33) must extend the oracle first.
+// ORACLE COVERAGE (F9, stated for the reader). The IAS-21 oracle now ingests the
+// FULL FX-vanilla-bearing set §8/§15/§15A/§20/§21/§22/§23/§25/§26/§28/§29/§30/§32/
+// §33/§48 (SubstrateGap `ias21-oracle-coverage` RESOLVED in platform/substrate/
+// gap-register.ts — the §15A/§25/§26/§33/§48 tail is now ingested verbatim). The
+// only IAS 21 material deliberately still outside the oracle is the translation-to-
+// a-PRESENTATION-currency machinery (§38–§47, §49–§57) — a CONSOLIDATION concern
+// (presentation ≠ functional currency), not an FX trading-book treatment, in a
+// separate not-yet-opened scope rather than a blind spot of these cases.
 //
 // Oracle source: Regulations/INTL/IASB/source-docs/{ias-21,ifrs-9}-structured.json
 // (the ingested standard text); IAS 21 §21/§23/§28/§29; IFRS 9 §5.1.1/§5.7.1/B3.1.2.

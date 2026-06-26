@@ -109,6 +109,19 @@ export interface CashMaterialisationInput {
   readonly originatingEvent: { readonly eventType: string; readonly eventId: string };
   /** The FIL TYPE URN of the cash instances. Defaults to the canonical Cash type. */
   readonly cashTypeUrn?: string;
+  /**
+   * EXPLICIT settlement-date ZAR (reporting-currency) carrying amount per leg side,
+   * in positive MAJOR units — the IAS 21 §21 spot-rate ZAR value at the settlement
+   * date. Supplied by the caller ONLY when a settled FCY leg has NO reporting-
+   * currency counter leg in `legs` (an FX cross with no reporting leg), where the
+   * cost basis cannot be read off the legs and must come from the settlement-date
+   * market rate × notional. For the FX-vanilla two-leg spot/forward (FCY received ⇄
+   * reporting paid) this is ABSENT — the counter leg is the exact cost basis.
+   * Absent AND no reporting counter leg for an FCY leg ⇒ the builder FAILS CLOSED
+   * (an FCY monetary item with no ZAR carrying amount is an IAS 21 violation, never
+   * a silently-omitted field — Engineering Charter cmd 2).
+   */
+  readonly zarCostBasisOverrideBySide?: Partial<Record<"received" | "paid", number>>;
 }
 
 /** One built cash-instance creation payload + its deterministic leg URN. */
@@ -136,15 +149,20 @@ export function buildSettledCashPayloads(input: CashMaterialisationInput): Built
       instanceId: `${input.tradeId}-cash-${leg.side}`,
     });
     const direction: "long" | "short" = leg.signedMajor >= 0 ? "long" : "short";
-    // ZAR (reporting-ccy) COST BASIS of this FCY cash leg
-    // (D-FX-PNL-FCY-EXPOSURE-REVALUATION): the booked ZAR value GIVEN UP / RECEIVED
-    // to acquire it = the reporting-currency magnitude of the COUNTER leg of the
-    // spot. A reporting-currency leg's own cost basis is its own magnitude (rate 1).
-    // Resolved from the settled legs (no rate lookup — the counter leg's reporting
-    // amount IS the cost basis); `undefined` when no reporting-ccy counter leg
-    // exists (a cross with no reporting leg) so the field is simply omitted (the
-    // reval engine then falls back to full retranslation — fail-soft, never wrong).
-    const zarCostBasisMajor = costBasisMajorFor(leg, input.legs, input.reporting);
+    // ZAR (reporting-ccy) COST BASIS of this cash leg, ALWAYS resolved — never a
+    // silent omission (D-FX-PNL-FCY-EXPOSURE-REVALUATION; Engineering Charter cmd 2,
+    // fail-closed). A reporting-currency leg's cost basis is its own magnitude
+    // (rate 1). An FCY leg's cost basis is the IAS 21 §21 spot-rate ZAR value at the
+    // settlement date: read EXACTLY off the reporting-currency COUNTER leg of the
+    // spot (the ZAR given up / received — no rate lookup needed) when one exists, or
+    // from the caller's explicit `zarCostBasisOverrideBySide` (the settlement-date
+    // market rate × notional) for a cross with no reporting leg. An FCY leg with
+    // NEITHER FAILS CLOSED — an FCY monetary item with no ZAR carrying amount is an
+    // IAS 21 violation, and the reval engine (daily-pnl-v2) SKIPS a cash leg with no
+    // `zarCostBasis` rather than retranslating, so a silently-omitted basis would
+    // drop the settled FCY exposure out of the revalued set (the exact defect
+    // recon:fx-pnl-fcy-exposure-integrity guards).
+    const zarCostBasisMajor = resolveZarCostBasisMajor(leg, input);
     const payload = filInstrumentCreatedPayloadSchema.parse({
       kind: "FilInstrumentCreated",
       instance,
@@ -163,9 +181,7 @@ export function buildSettledCashPayloads(input: CashMaterialisationInput): Built
         settlementDate: input.settledAsOf,
         hedgingSetTag: `${leg.currency}/${input.reporting}`,
         originatingInstrument: input.fxInstance,
-        ...(zarCostBasisMajor !== undefined
-          ? { zarCostBasis: majorNumberToCashMoney(zarCostBasisMajor, input.reporting) }
-          : {}),
+        zarCostBasis: majorNumberToCashMoney(zarCostBasisMajor, input.reporting),
       },
     });
     out.push({ instance, payload });
@@ -176,23 +192,35 @@ export function buildSettledCashPayloads(input: CashMaterialisationInput): Built
 /**
  * The ZAR (reporting-currency) COST BASIS magnitude of one settled cash leg
  * (D-FX-PNL-FCY-EXPOSURE-REVALUATION) — positive major units in the reporting
- * currency. A reporting-currency leg's cost basis is its own magnitude (rate 1).
- * An FCY leg's cost basis is the reporting-currency magnitude of the COUNTER leg of
- * the spot (the ZAR given up / received). Returns `undefined` when no
- * reporting-currency counter leg exists (a cross with no reporting leg), so the
- * caller omits the field and the reval engine falls back to full retranslation.
+ * currency, ALWAYS resolved (never `undefined`/omitted; Engineering Charter cmd 2).
+ *
+ * Resolution precedence (an FCY leg, in order):
+ *   1. the EXPLICIT `zarCostBasisOverrideBySide[leg.side]` the caller supplies (the
+ *      settlement-date market rate × notional) — used for a cross with no reporting
+ *      leg, where the basis cannot be read off the legs;
+ *   2. the reporting-currency COUNTER leg of the spot (the ZAR given up / received
+ *      — the exact IAS 21 §21 cost basis, no rate lookup) for the FX-vanilla
+ *      two-leg spot/forward.
+ * A reporting-currency leg's own cost basis is its own magnitude (rate 1).
+ *
+ * THROWS (fail-closed) for an FCY leg with neither an explicit override nor a
+ * reporting-currency counter leg: an FCY monetary item with no ZAR carrying amount
+ * is an IAS 21 violation, and the reval engine SKIPS a cash leg with no cost basis
+ * (it does NOT retranslate), so silently omitting the basis would drop the settled
+ * FCY exposure out of the revalued set. The caller MUST supply the settlement-date
+ * cost basis or not settle this leg.
  */
-function costBasisMajorFor(
-  leg: SettledCashLeg,
-  legs: readonly SettledCashLeg[],
-  reporting: string,
-): number | undefined {
-  if (leg.currency === reporting) return Math.abs(leg.signedMajor);
-  const reportingCounter = legs.find(
-    (l) => l.side !== leg.side && l.currency === reporting && l.signedMajor !== 0,
+function resolveZarCostBasisMajor(leg: SettledCashLeg, input: CashMaterialisationInput): number {
+  if (leg.currency === input.reporting) return Math.abs(leg.signedMajor);
+  const override = input.zarCostBasisOverrideBySide?.[leg.side];
+  if (override !== undefined) return Math.abs(override);
+  const reportingCounter = input.legs.find(
+    (l) => l.side !== leg.side && l.currency === input.reporting && l.signedMajor !== 0,
   );
-  if (reportingCounter === undefined) return undefined;
-  return Math.abs(reportingCounter.signedMajor);
+  if (reportingCounter !== undefined) return Math.abs(reportingCounter.signedMajor);
+  throw new Error(
+    `cash-materialisation: cannot resolve ZAR cost basis for FCY settled cash leg (trade ${input.tradeId}, ${leg.currency} ${leg.side}). No reporting-currency (${input.reporting}) counter leg exists and no zarCostBasisOverrideBySide.${leg.side} was supplied. An FCY monetary item MUST carry an IAS 21 §21 settlement-date ZAR carrying amount — supply the settlement-date market rate × notional via zarCostBasisOverrideBySide, or do not materialise this leg (fail-closed, Engineering Charter cmd 2; D-FX-PNL-FCY-EXPOSURE-REVALUATION).`,
+  );
 }
 
 /**

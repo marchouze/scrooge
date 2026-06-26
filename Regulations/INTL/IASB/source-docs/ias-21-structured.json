@@ -4,7 +4,7 @@
  "shortTitle": "IAS 21",
  "regulator": "IASB",
  "jurisdiction": "INTL",
- "sourceNote": "Faithful structured representation of the FX-governing paragraphs of IAS 21 — definitions (§8), reporting foreign-currency transactions in the functional currency (§20–§22), retranslation at the closing rate at each reporting date (§23), and recognition of exchange differences in profit or loss (§28–§30, §32 — including the net-investment-in-a-foreign-operation exclusion §28 cross-references). Authored under D-FX-IFRS-REVIEW-FOUNDATION to stand up the IAS 21 domain-truth oracle the FX-vanilla NPA accounting review validates against. LICENSING: the full text of IAS 21 is © IFRS Foundation; this build-phase ingestion is tracked as a SubstrateGap with a licence-day IFRS-Foundation procurement obligation (see SubstrateGapTracked event filed under D-FX-IFRS-REVIEW-FOUNDATION). Paragraph numbering and operative requirements follow the standard as issued by the IASB.",
+ "sourceNote": "Faithful structured representation of the FX-governing paragraphs of IAS 21 — definitions (§8), the net-investment-in-a-foreign-operation monetary items (§15, §15A), reporting foreign-currency transactions in the functional currency (§20–§22), the carrying-amount-by-comparison case (§25) and the several-rates / temporary-non-exchangeability rule (§26), retranslation at the closing rate at each reporting date (§23), recognition of exchange differences in profit or loss (§28–§30), and the net-investment difference (§32, §33) plus its reclassification on disposal (§48). The oracle now covers the full FX-vanilla-bearing set AND the net-investment paragraphs the §28/§32 exclusions cross-reference. Authored under D-FX-IFRS-REVIEW-FOUNDATION to stand up the IAS 21 domain-truth oracle the FX-vanilla NPA accounting review validates against. LICENSING: the full text of IAS 21 is © IFRS Foundation; this build-phase ingestion is tracked as a SubstrateGap with a licence-day IFRS-Foundation procurement obligation (see SubstrateGapTracked event filed under D-FX-IFRS-REVIEW-FOUNDATION). Paragraph numbering and operative requirements follow the standard as issued by the IASB.",
  "citationPatterns": [
   "IAS 21",
   "IAS21",
@@ -50,6 +50,40 @@
        "text": "8 (further definitions) Closing rate is the spot exchange rate at the end of the reporting period. Exchange difference is the difference resulting from translating a given number of units of one currency into another currency at different exchange rates. The spot exchange rate is the exchange rate for immediate delivery. Monetary items are units of currency held and assets and liabilities to be received or paid in a fixed or determinable number of units of currency. The essential feature of a monetary item is a right to receive (or an obligation to deliver) a fixed or determinable number of units of currency. By contrast, non-monetary items have no such right or obligation to receive or deliver a fixed or determinable number of units of currency.",
        "verbatim": true,
        "pages": "A1080"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "number": "net-investment-in-a-foreign-operation",
+   "heading": "Net investment in a foreign operation",
+   "sections": [
+    {
+     "number": "15",
+     "heading": "IAS 21 §15 — Monetary items that form part of the net investment",
+     "subsections": [
+      {
+       "id": "ias21-15",
+       "number": "15",
+       "heading": "15",
+       "text": "15 An entity may have a monetary item that is receivable from or payable to a foreign operation. An item for which settlement is neither planned nor likely to occur in the foreseeable future is, in substance, a part of the entity's net investment in that foreign operation, and is accounted for in accordance with paragraphs 32 and 33. Such monetary items may include long-term receivables or loans. They do not include trade receivables or trade payables.",
+       "verbatim": true,
+       "pages": "A1082"
+      }
+     ]
+    },
+    {
+     "number": "15A",
+     "heading": "IAS 21 §15A — The holder of a net-investment monetary item may be any group subsidiary",
+     "subsections": [
+      {
+       "id": "ias21-15a",
+       "number": "15A",
+       "heading": "15A",
+       "text": "15A The entity that has a monetary item receivable from or payable to a foreign operation described in paragraph 15 may be any subsidiary of the group. For example, an entity has two subsidiaries, A and B. Subsidiary B is a foreign operation. Subsidiary A grants a loan to Subsidiary B. Subsidiary A's loan receivable from Subsidiary B would be part of the entity's net investment in Subsidiary B if settlement of the loan is neither planned nor likely to occur in the foreseeable future. This would also be true if Subsidiary A were itself a foreign operation.",
+       "verbatim": true,
+       "pages": "A1082"
       }
      ]
     }
@@ -114,6 +148,34 @@
        "pages": "A1083"
       }
      ]
+    },
+    {
+     "number": "25",
+     "heading": "IAS 21 §25 — Carrying amount determined by comparing two or more amounts in a foreign currency",
+     "subsections": [
+      {
+       "id": "ias21-25",
+       "number": "25",
+       "heading": "25",
+       "text": "25 The carrying amount of some items is determined by comparing two or more amounts. For example, the carrying amount of inventories is the lower of cost and net realisable value in accordance with IAS 2 Inventories. Similarly, in accordance with IAS 36 Impairment of Assets, the carrying amount of an asset for which there is an indication of impairment is the lower of its carrying amount before considering possible impairment losses and its recoverable amount. When such an asset is non-monetary and is measured in a foreign currency, the carrying amount is determined by comparing: (a) the cost or carrying amount, as appropriate, translated at the exchange rate at the date when that amount was determined (ie the rate at the date of the transaction for an item measured in terms of historical cost); and (b) the net realisable value or recoverable amount, as appropriate, translated at the exchange rate at the date when that value was determined (eg the closing rate at the end of the reporting period). The effect of this comparison may be that an impairment loss is recognised in the functional currency but would not be recognised in the foreign currency, or vice versa.",
+       "verbatim": true,
+       "pages": "A1083"
+      }
+     ]
+    },
+    {
+     "number": "26",
+     "heading": "IAS 21 §26 — Several exchange rates available / temporary lack of exchangeability",
+     "subsections": [
+      {
+       "id": "ias21-26",
+       "number": "26",
+       "heading": "26",
+       "text": "26 When several exchange rates are available, the rate used is that at which the future cash flows represented by the transaction or balance could have been settled if those cash flows had occurred at the measurement date. If exchangeability between two currencies is temporarily lacking, the rate used is the first subsequent rate at which exchanges could be made.",
+       "verbatim": true,
+       "pages": "A1083"
+      }
+     ]
     }
    ]
   },
@@ -174,6 +236,40 @@
        "text": "32 Exchange differences arising on a monetary item that forms part of a reporting entity's net investment in a foreign operation (see paragraph 15) shall be recognised in profit or loss in the separate financial statements of the reporting entity or the individual financial statements of the foreign operation, as appropriate. In the financial statements that include the foreign operation and the reporting entity (eg consolidated financial statements when the foreign operation is a subsidiary), such exchange differences shall be recognised initially in other comprehensive income and reclassified from equity to profit or loss on disposal of the net investment, in accordance with paragraph 48.",
        "verbatim": true,
        "pages": "A1084"
+      }
+     ]
+    },
+    {
+     "number": "33",
+     "heading": "IAS 21 §33 — Where the net-investment exchange difference arises (separate vs consolidated statements)",
+     "subsections": [
+      {
+       "id": "ias21-33",
+       "number": "33",
+       "heading": "33",
+       "text": "33 When a monetary item forms part of a reporting entity's net investment in a foreign operation and is denominated in the functional currency of the reporting entity, an exchange difference arises in the foreign operation's individual financial statements in accordance with paragraph 28. If such an item is denominated in the functional currency of the foreign operation, an exchange difference arises in the reporting entity's separate financial statements in accordance with paragraph 28. If such an item is denominated in a currency other than the functional currency of either the reporting entity or the foreign operation, an exchange difference arises in the reporting entity's separate financial statements and in the foreign operation's individual financial statements in accordance with paragraph 28. Such exchange differences are recognised in other comprehensive income in the financial statements that include the foreign operation and the reporting entity (ie financial statements in which the foreign operation is consolidated or accounted for using the equity method).",
+       "verbatim": true,
+       "pages": "A1084"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "number": "disposal-of-a-foreign-operation",
+   "heading": "Disposal or partial disposal of a foreign operation",
+   "sections": [
+    {
+     "number": "48",
+     "heading": "IAS 21 §48 — Reclassification of the cumulative exchange difference on disposal",
+     "subsections": [
+      {
+       "id": "ias21-48",
+       "number": "48",
+       "heading": "48",
+       "text": "48 On the disposal of a foreign operation, the cumulative amount of the exchange differences relating to that foreign operation, recognised in other comprehensive income and accumulated in the separate component of equity, shall be reclassified from equity to profit or loss (as a reclassification adjustment) when the gain or loss on disposal is recognised (see IAS 1 Presentation of Financial Statements (as revised in 2007)).",
+       "verbatim": true,
+       "pages": "A1087"
       }
      ]
     }

@@ -42,6 +42,17 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { formatInstanceUrn } from "../../v2-core/fil-core/urn";
+import type { FilInstrumentCreatedPayload } from "../../v2-core/fil-instances/events";
+import {
+  FX_OTC_VANILLA_PRODUCT,
+  FX_TREATMENT_MODULES,
+} from "../../v2-core/reporting-treatments/fx-fold-standing-data";
+import { postFxInitialRecognitionLegs } from "../accounting/posting-rules-v2/fx";
+import { foldFxContributionLegs } from "../accounting/posting-rules-v2/fx-fold";
+import { makeReportingTreatmentDeclared } from "../event-store/event-types/reporting-treatments";
+import { makeV2ProductRegistered } from "../event-store/event-types/v2-banking";
+import { productionTag } from "../event-store/provenance";
+import type { EventStore } from "../event-store/store";
 import { computeCohortVar } from "../market-risk/eod-cohort-var-v2";
 import { provisionCounterparty } from "../markets/counterparty/provision-counterparty";
 import { bookAffirmedFxTrade } from "../markets/products/book-affirmed-fx-trade";
@@ -62,6 +73,10 @@ import {
 } from "../simulation-v2/sim-modules/market-data-feed-v2";
 import { emitSettlementLifecycle } from "../simulation-v2/sim-modules/settlement-lifecycle";
 import { emitCounterpartyConfirmation } from "../simulation-v2/sim-modules/trade-confirmation";
+import { assertFxFairValueHierarchy } from "./fx-fair-value-hierarchy-integrity";
+import { assertFxPnlAccountCategory } from "./fx-pnl-account-category-integrity";
+import { assertFxSettlementShape } from "./fx-settlement-fvtpl-integrity";
+import { assertFxTradeDateObsShape } from "./fx-trade-date-obs-memorandum";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "fx-v2-sim-oracle";
@@ -119,6 +134,178 @@ function buildManifest(): ScenarioManifest {
     ],
     days,
   };
+}
+
+/**
+ * THE IFRS-POSTING-SHAPE BRIDGE (Scope C, D-FX-IFRS-REVIEW-FOUNDATION full-closure).
+ *
+ * The numbered oracle assertions above check the simulated cohort's measured
+ * OUTPUTS (P&L, VaR, cash materialisation, SA-CCR) against closed-form figures —
+ * they prove the NUMBERS are right. They do NOT check that each simulated trade's
+ * GL POSTINGS obey the IFRS posting-shape invariants. This bridge closes that link:
+ * "the rule is right (the FX-IFRS gates) / does every live (simulated) trade obey
+ * it?". It REUSES the SAME pure asserters the standalone FX-IFRS gates run (the
+ * functions #1561 extracted) — no forked logic (Charter cmd 4) — over the simulated
+ * cohort's lifted posting legs, so a simulated trade whose postings drift from the
+ * IFRS shape fails the simulator oracle exactly as it would the standalone gate.
+ *
+ * It asserts, over the simulated cohort in `simStore`:
+ *   (5a) TRADE-DATE OBS SHAPE — every simulated trade-date FX instance's
+ *        `postFxInitialRecognitionLegs` legs pass `assertFxTradeDateObsShape`
+ *        (Policy A: at-market trades post NO on-BS gross-up; the contractual
+ *        notionals sit in the OBS memorandum block spanning the two quad
+ *        currencies, self-balancing — D-FX-TRADE-DATE-FVTPL-OBS);
+ *   (5b) SETTLEMENT / REALISED-DIRECTION — the folded cohort legs pass
+ *        `assertFxSettlementShape` (no gross FX receivable/payable; settlement
+ *        strikes no realised P&L; OBS released on full settlement) and
+ *   (5c) P&L ACCOUNT-CATEGORY / DIRECTION — `assertFxPnlAccountCategory` (every
+ *        realised/unrealised-P&L leg lands on a P&L-category account with the
+ *        correct Dr/Cr direction);
+ *   (5d) FV-HIERARCHY — `assertFxFairValueHierarchy` (the FX model + treatment
+ *        module declare the IFRS-13 level the observable inputs actually derive).
+ *
+ * Pure over an explicit store (no `composition` import) so it is unit-testable
+ * with an injected violating store. The fold uses a `combined` provenance lens so
+ * it admits the scenario's FX flows whatever provenance the active category policy
+ * stamps them with (production or simulated) — the same lens an oversight surface
+ * uses (consistent GL provenance).
+ */
+export function assertSimCohortIfrsPostingShape(simStore: EventStore): {
+  violations: ReconViolation[];
+  asserted: number;
+  fxInstancesChecked: number;
+} {
+  const violations: ReconViolation[] = [];
+  let asserted = 0;
+
+  // The fold resolves each FX instance's reporting treatment from the store's
+  // ReportingTreatmentDeclared / V2ProductRegistered register. The in-memory
+  // scenario store carries no treatment register (the live home store does), so we
+  // seed the CANONICAL FX product + treatment modules (the SAME standing data the
+  // production seed `seed-fx-product-treatment-fold-colocation` writes — sourced,
+  // not invented; Charter cmd 4) before folding. This makes the bridge exercise the
+  // REAL production treatment-resolution + posting-rule path, not a forked shortcut.
+  seedFxTreatmentRegister(simStore);
+
+  // Fold the simulated cohort's FX contribution legs (combined lens — admit the
+  // scenario's FX flows regardless of the category-policy provenance stamp).
+  const fold = foldFxContributionLegs({
+    eventStore: simStore,
+    periodStart: "2026-01-01",
+    periodEnd: "2099-12-31",
+    filter: { mode: "combined" },
+  });
+  const admitted = new Set(fold.legs.map((l) => l.filEventId));
+
+  // (5a) Trade-date OBS shape — per admitted simulated FX instance.
+  let fxInstancesChecked = 0;
+  for (const e of simStore.replay({ type: "FilInstrumentCreated" })) {
+    if (!admitted.has(e.event_id)) continue;
+    const payload = e.payload as unknown as FilInstrumentCreatedPayload;
+    if (payload.economicTerms.assetClass !== "fx") continue;
+    const legs = postFxInitialRecognitionLegs(payload);
+    if (legs.length === 0) continue; // fail-closed skip (the fold surfaces it)
+    fxInstancesChecked += 1;
+    const isOffMarket =
+      payload.economicTerms.dayOneFairValue !== undefined &&
+      !/^-?0*(?:\.0+)?$/.test(payload.economicTerms.dayOneFairValue.amount.trim());
+    const shape = assertFxTradeDateObsShape(payload.instance, legs, isOffMarket);
+    asserted += shape.asserted;
+    violations.push(...shape.violations);
+  }
+
+  // (5b) Settlement / realised-direction shape — over the folded cohort legs.
+  // Whether any FX instance is still OPEN (created, no terminal event): the OBS
+  // net-zero assertion only binds once the book is fully settled.
+  const createdFx = new Set<string>();
+  for (const e of simStore.replay({ type: "FilInstrumentCreated" })) {
+    const p = e.payload as { instance?: string; economicTerms?: { assetClass?: string } };
+    if (p.economicTerms?.assetClass !== "fx") continue;
+    if (p.instance) createdFx.add(p.instance);
+  }
+  const terminalFx = new Set<string>();
+  for (const e of simStore.replay({ type: "FilInstrumentTerminated" })) {
+    const p = e.payload as { instance?: string };
+    if (p.instance) terminalFx.add(p.instance);
+  }
+  let openFxInstanceExists = false;
+  for (const inst of createdFx) {
+    if (!terminalFx.has(inst)) {
+      openFxInstanceExists = true;
+      break;
+    }
+  }
+  const settle = assertFxSettlementShape(fold.legs, openFxInstanceExists);
+  asserted += settle.asserted;
+  violations.push(...settle.violations);
+
+  // (5c) P&L account-category + per-leg direction — over the folded cohort legs.
+  const pnl = assertFxPnlAccountCategory(fold.legs);
+  asserted += pnl.asserted;
+  violations.push(...pnl.violations.filter((v) => v.severity === "fail"));
+
+  // (5d) FV-hierarchy — structural (the FX model + treatment module declare the
+  // level the observable inputs derive). Same asserter the standalone gate runs.
+  const fvh = assertFxFairValueHierarchy();
+  asserted += fvh.asserted;
+  violations.push(...fvh.violations.filter((v) => v.severity === "fail"));
+
+  return { violations, asserted, fxInstancesChecked };
+}
+
+/**
+ * Seed the canonical FX product + treatment modules into a store so the FX fold can
+ * resolve treatment for the simulated cohort. Idempotent (skips already-present
+ * ids). Sourced from `v2-core/reporting-treatments/fx-fold-standing-data` — the
+ * SAME constants the production seed writes (no forked treatment definition).
+ */
+function seedFxTreatmentRegister(store: EventStore): void {
+  const provenance = productionTag({ sourceLineage: "category:governance" });
+  const actor = { type: "service" as const, id: "agent:bea:fx-v2-sim-oracle-bridge" };
+  const citations = ["D-FX-IFRS-REVIEW-FOUNDATION", "D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD"];
+  const asOf = "2026-01-01T00:00:00.000Z";
+
+  const productSeen = new Set<string>();
+  for (const e of store.replay({ type: "V2ProductRegistered" })) {
+    const p = e.payload as { productId?: string };
+    if (p.productId) productSeen.add(p.productId);
+  }
+  if (!productSeen.has(FX_OTC_VANILLA_PRODUCT.productId)) {
+    store.append({
+      ...makeV2ProductRegistered({
+        asOf,
+        entity: TENANT,
+        actor,
+        citations,
+        // `FX_OTC_VANILLA_PRODUCT` is typed against v2-core's `V2ProductRegistered`
+        // (branded `FilScopePattern[]`); the platform factory's `parse` validates
+        // the same runtime shape. The cast bridges the two nominally-distinct (but
+        // structurally identical) type declarations — the parse is the real gate.
+        payload: FX_OTC_VANILLA_PRODUCT as Parameters<typeof makeV2ProductRegistered>[0]["payload"],
+      }),
+      provenance,
+    });
+  }
+
+  const treatmentSeen = new Set<string>();
+  for (const e of store.replay({ type: "ReportingTreatmentDeclared" })) {
+    const p = e.payload as { treatmentId?: string };
+    if (p.treatmentId) treatmentSeen.add(p.treatmentId);
+  }
+  for (const m of FX_TREATMENT_MODULES) {
+    const treatmentId = (m as { treatmentId: string }).treatmentId;
+    if (treatmentSeen.has(treatmentId)) continue;
+    store.append({
+      ...makeReportingTreatmentDeclared({
+        asOf,
+        entity: TENANT,
+        actor,
+        citations,
+        payload: m as Parameters<typeof makeReportingTreatmentDeclared>[0]["payload"],
+      }),
+      provenance,
+    });
+  }
 }
 
 export function run(): ReconResult {
@@ -398,6 +585,26 @@ export function run(): ReconResult {
           severity: "fail",
         });
       }
+    }
+
+    // ---- (5) IFRS POSTING-SHAPE BRIDGE: the simulated cohort's GL postings obey
+    //          the SAME FX-IFRS posting-shape gates the standalone gates enforce
+    //          (reusing #1561's pure asserters — Scope C, full-closure). ---------
+    const bridge = assertSimCohortIfrsPostingShape(sim.eventStore);
+    result.asserted += bridge.asserted;
+    violations.push(...bridge.violations);
+    // Non-vacuity: the scenario books exactly one FX spot, so the bridge MUST have
+    // asserted ≥1 trade-date FX instance — a zero means the fold admitted nothing
+    // (a broken provenance lens / window), which would make the bridge a silent
+    // no-op (Charter cmd 3 — no green by concealment).
+    result.asserted += 1;
+    if (bridge.fxInstancesChecked < 1) {
+      violations.push({
+        subject: "fx-v2-sim-oracle:bridge-vacuous",
+        message:
+          "SIMULATOR ORACLE BREACH: the IFRS posting-shape bridge asserted ZERO simulated FX instances — the FX fold admitted no legs from the simulated cohort, so the bridge ran vacuously. The scenario books one FX spot; expected ≥1. Authority: D-FX-IFRS-REVIEW-FOUNDATION (Scope C); Engineering Charter cmd 3.",
+        severity: "fail",
+      });
     }
   } finally {
     sim.close();
