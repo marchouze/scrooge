@@ -12,7 +12,7 @@
 //
 // Author: Atlas (Core banking platform architect, engineering)
 
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -619,7 +619,10 @@ function writeTriage(
   const lines: string[] = [
     "# Backfill triage log — D-DECISIONS-FRAMEWORK-REDESIGN Slice C",
     "",
-    `Generated: ${new Date().toISOString()}`,
+    "_Ephemeral diagnostic render of the decisions backfill. The canonical record is the",
+    "event store (Principle 1); this file is regenerated on every `ci:migrate` run and",
+    "written under gitignored `.local/`, so re-running the migration is byte-stable and",
+    "never dirties the tracked tree (Engineering Charter cmd 9 — replay-safe & append-only)._",
     "",
     "---",
     "",
@@ -657,7 +660,12 @@ function writeTriage(
   lines.push(`- Reference-only IDs (b): ${refOnly.length}`);
   lines.push(`- Emitted backfill events: ${emittedIds.length}`);
 
-  const logPath = resolve(REPO_ROOT, "prototype", "scripts", "migrate", "backfill-triage-log.md");
+  // Write under gitignored `.local/` — the triage log is a regenerated diagnostic,
+  // not a tracked artefact. Writing to a tracked path re-dirtied the working tree on
+  // every `ci:migrate` run (Engineering Charter cmd 9 violation); `.local/` is replay-safe.
+  const logDir = resolve(REPO_ROOT, "prototype", ".local");
+  mkdirSync(logDir, { recursive: true });
+  const logPath = resolve(logDir, "backfill-triage-log.md");
   writeFileSync(logPath, `${lines.join("\n")}\n`, "utf8");
 }
 
@@ -667,9 +675,10 @@ function writeTriage(
 // Detects Decision IDs where the head event is `requested` (written by this
 // script via backfill:decisions-framework-cutover) but a prior `approved`
 // event already exists in the store — meaning the ID was accidentally
-// re-opened. Emits a fresh `approved` event with today's as_of to restore
-// the correct state. Safe to re-run: the normal backfill idempotency check
-// skips IDs whose `approved` phase is already covered.
+// re-opened. Emits a fresh `approved` event whose as_of is derived from the
+// wrongly-reopened head (+1ms) — replay-safe, no wall-clock — to restore the
+// correct state. Safe to re-run: the normal backfill idempotency check skips
+// IDs whose `approved` phase is already covered.
 // ---------------------------------------------------------------------------
 
 export interface RepairStats {
@@ -718,8 +727,11 @@ export function runRepair(opts: { dryRun?: boolean } = {}): RepairStats {
     repaired.push(id);
     if (dryRun) continue;
 
-    // Emit a new approved event with today's as_of so it sorts after the
-    // bad `requested` event and becomes the new head.
+    // Emit a new approved event whose as_of is the wrongly-reopened head's own
+    // as_of + 1ms, so it deterministically sorts after the bad `requested` event
+    // and becomes the new head. Derived from data (not wall-clock) → replay-safe
+    // (Engineering Charter cmd 9); mirrors the opener-asOf pattern above.
+    const repairAsOf = new Date(new Date(row.asOf).getTime() + 1).toISOString();
     const event = buildDecisionEvent({
       decisionId: id,
       canonicalId: id,
@@ -727,7 +739,7 @@ export function runRepair(opts: { dryRun?: boolean } = {}): RepairStats {
       phase: "approved",
       authority: "CEO",
       authorityRef: "marc@tgv.co.za",
-      asOf: new Date().toISOString(),
+      asOf: repairAsOf,
       filePath: "(repair: re-closed by runRepair)",
       isReferenceOnly: false,
     });
