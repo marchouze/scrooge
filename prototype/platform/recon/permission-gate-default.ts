@@ -689,6 +689,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // T-01 carve-out.
   // Citation: D-MODEL-REGISTRY-SCOPE-CLOSURE-V1, P4-SECURITY-DESIGNED-IN.
   "platform/market-risk/cva-engine.test.ts",
+  // CVA over the simulated derivative book — Phase 2b golden test
+  // (D-BA-RETURN-SIMULATOR-FIRST). Co-located per-module test; raw
+  // EventStore(":memory:") is a build-phase fixture driving computeCva +
+  // computeCvaRwaLeg over a simulated OTC counterparty book to a BCBS golden
+  // case + proving the production=0 boundary. No production access path.
+  // Citation: D-BA-RETURN-SIMULATOR-FIRST, P4-SECURITY-DESIGNED-IN.
+  "platform/market-risk/cva-derivative-book-sim-golden.test.ts",
   // Valuation-adjustment / prudent-valuation reserve engine unit tests
   // (WS-PRODUCT-CONTROL; Camille CFO R2). Co-located per-module test convention.
   // Raw EventStore(":memory:") is a build-phase fixture for the close-out /
@@ -790,6 +797,14 @@ const CONSTRUCTION_CARVE_OUT_DIRS: ReadonlyArray<string> = [
   // prove the production=0 / simulated=values provenance split. No production
   // access path. Citation: D-BA-RETURN-SIMULATOR-FIRST, P4-SECURITY-DESIGNED-IN.
   "platform/returns/ba325/",
+  // BA 350 (Derivatives Instruments) simulator-first inventory golden test
+  // (D-BA-RETURN-SIMULATOR-FIRST Phase 2b) — per-module fixture test (same
+  // carve-out rationale as platform/returns/ba320/ and ba325/): builds an
+  // in-memory EventStore with a simulated derivative book to drive the BA 350
+  // notional + fair-value fold to a hand-computed oracle and prove the
+  // production=0 / simulated=values provenance split. No production access path.
+  // Citation: D-BA-RETURN-SIMULATOR-FIRST, P4-SECURITY-DESIGNED-IN.
+  "platform/returns/ba350/",
   // M3 Slice 8 CMS subscriber — per-module fixture test (same carve-out
   // rationale as tests/; builds in-memory stores for conduct scenario assertion).
   // Citation: D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN, P4-SECURITY-DESIGNED-IN.
