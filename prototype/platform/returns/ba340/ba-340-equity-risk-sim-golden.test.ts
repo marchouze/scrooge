@@ -33,12 +33,12 @@ import { makeBankingBookEquityHoldingOpened } from "../../event-store/event-type
 import { simulatedTag } from "../../event-store/provenance";
 import { EventStore } from "../../event-store/store";
 import type { Actor } from "../../event-store/types";
+import { setDefaultProvenanceModeOverride } from "../../projections/filter";
 import { buildEquityRows } from "../../reporting/ba-320-equity-events-adapter";
 import {
-  foldBa340EquityRiskBankingBook,
   ba340MeasuresForClass,
+  foldBa340EquityRiskBankingBook,
 } from "../../reporting/ba-340-equity-risk-banking-book";
-import { setDefaultProvenanceModeOverride } from "../../projections/filter";
 import { BA340_GAP_IMA_ENGINE, assembleBa340EquityRisk } from "./ba-340-equity-risk-banking-book";
 
 const ENTITY = "LE-ZA-HOZ-BANK";

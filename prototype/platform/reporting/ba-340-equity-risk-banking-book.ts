@@ -45,10 +45,12 @@
 // ── DECIMAL-NATIVE ──────────────────────────────────────────────────────────
 // Event payloads carry MoneyWire (major-unit decimal); this fold converts to
 // minor-unit `number` at the fold boundary via `minorFromMoneyWire` (the same
-// boundary the BA 320 / BA 350 adapters cross). Minor figures are summed with
-// integer addition; the risk-weight multiply is an integer-basis-points multiply
-// (riskWeightBps / 100) then capital is `× 8 / 100` with an integer round — no
-// float-money arithmetic (recon:no-float-money-arithmetic).
+// boundary the BA 320 / BA 350 adapters cross). Exposure figures are summed with
+// integer addition; the risk-weight + capital-ratio multiplies run through the
+// DECIMAL ENGINE — `mulScalar(money, "3"|"4")` for the 300%/400% risk weight and
+// `mulScalar(rwe, "0.08")` for the 8% capital ratio, each rounded once at the RWA
+// boundary (`ROUNDING.RWA`, HALF_UP at the currency scale) — NO float-money
+// arithmetic (recon:no-float-money-arithmetic; D-DECIMAL-NATIVE-MONEY-ARITHMETIC).
 //
 // Pure read — no appends. Per-entity; bank-licence-bound (LE-ZA-HOZ-BANK).
 //
@@ -68,9 +70,9 @@ import {
   mulScalar,
   round,
 } from "../core/decimal-money";
+import { minorFromMoneyWire } from "../core/money-codec";
 import type { Currency } from "../core/types";
 import { ZAR } from "../core/types";
-import { minorFromMoneyWire } from "../core/money-codec";
 import type {
   BankingBookEquityHoldingClass,
   BankingBookEquityHoldingClosedPayload,

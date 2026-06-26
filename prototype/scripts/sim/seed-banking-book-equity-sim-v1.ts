@@ -197,10 +197,7 @@ function emitHoldings(): number {
 function main(): number {
   const holdings = emitHoldings();
   console.log(
-    `[seed-banking-book-equity-sim-v1] emitted banking-book-equity holdings=${holdings} ` +
-      `(scenario=banking-book-equity-sim-v1, provenance=simulated, entity=${ENTITY}, desk=${BANKING_DESK}). ` +
-      "Listed R25m exp → R75m RWE → R6m cap; unlisted R10m exp → R40m RWE → R3.2m cap; " +
-      "speculative R3m exp (not Table-1-charged). Production BA 340 read stays 0; simulated read drives the engine.",
+    `[seed-banking-book-equity-sim-v1] emitted banking-book-equity holdings=${holdings} (scenario=banking-book-equity-sim-v1, provenance=simulated, entity=${ENTITY}, desk=${BANKING_DESK}). Listed R25m exp → R75m RWE → R6m cap; unlisted R10m exp → R40m RWE → R3.2m cap; speculative R3m exp (not Table-1-charged). Production BA 340 read stays 0; simulated read drives the engine.`,
   );
   return 0;
 }
