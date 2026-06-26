@@ -329,22 +329,27 @@ describe("deriveFxInstanceLegs — state-driven net == event-fold net (byte-equi
     expect(stateNet.size).toBeGreaterThan(0);
   });
 
-  test("FVOCI-elected amendment — election override reproduced + deviation recorded", () => {
+  test("FVOCI-elected FX amendment is REJECTED fail-closed in BOTH folds, byte-equal (F1)", () => {
     const store = new EventStore(":memory:");
     seedTreatmentModules(store);
     store.append(fxCreated("FX-OCI", "long", "5000000", "2026-06-01T10:00:00.000Z"));
     store.append(fxAmended("FX-OCI", "5200000", "2026-06-02T10:00:00.000Z"));
     store.append(fvociElection("FX-OCI", "2026-06-02T09:00:00.000Z"));
 
-    const { stateFold } = expectStateNetMatchesEventNet(store);
-    // The OCI reserve account carries the revaluation credit (election applied).
-    const ociCredit = stateFold.legs.find(
-      (l) => l.postingRuleId === "PR-FX-REVAL-V2" && l.creditDebit === "credit",
-    );
-    expect(ociCredit?.accountCode).toBe("ACC-2100-008");
-    // Deviation recorded once with its citation.
-    expect(stateFold.deviations.length).toBe(1);
-    expect(stateFold.deviations[0]?.cites).toContain("IFRS-9-§5.7.5");
+    // The state derivation and the event fold both reject the IFRS-invalid FVOCI
+    // election (an FX derivative is FVTPL-only, IFRS 9 §5.7.1/§5.7.5) — the
+    // instance is skipped fail-closed in BOTH, so their nets stay byte-equal.
+    const { stateFold, eventFold } = expectStateNetMatchesEventNet(store);
+    // NO leg routes to the OCI reserve in either fold.
+    expect(stateFold.legs.some((l) => l.accountCode === "ACC-2100-008")).toBe(false);
+    expect(eventFold.legs.some((l) => l.accountCode === "ACC-2100-008")).toBe(false);
+    // Both surface the instance as a skip with the precise fail-closed reason.
+    for (const fold of [stateFold, eventFold]) {
+      const skip = fold.skipped.find((s) => s.reason === "fx-election-invalid-non-fvtpl");
+      expect(skip).toBeDefined();
+    }
+    // No deviation — there is no legitimate FX treatment deviation.
+    expect(stateFold.deviations.length).toBe(0);
   });
 
   test("fail-closed: an instance with no resolvable treatment is skipped in BOTH folds", () => {

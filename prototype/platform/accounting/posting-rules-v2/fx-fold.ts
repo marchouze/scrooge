@@ -92,6 +92,7 @@ import {
   postFxInitialRecognitionLegs,
   postFxObsCommitmentReleaseLegs,
   postFxRevaluationLegs,
+  resolveFxElectionOverride,
 } from "./fx";
 
 // ---------------------------------------------------------------------------
@@ -145,7 +146,8 @@ interface FilLifecyclePayloadMinimal {
 
 export type FxFoldSkipReason =
   | "treatment-unresolved" // product binding absent AND fallback ambiguous/empty → fail closed
-  | "fx-posting-rules-not-applicable"; // resolved treatment does not apply the FX posting rules
+  | "fx-posting-rules-not-applicable" // resolved treatment does not apply the FX posting rules
+  | "fx-election-invalid-non-fvtpl"; // a recorded election names a non-FVTPL IFRS category for an FX derivative — IFRS-invalid (F1/F2), fail closed
 
 export interface FxFoldSkip {
   readonly instance: string;
@@ -603,9 +605,13 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
 
   const legs: FxFoldLeg[] = [];
   const skipped: FxFoldSkip[] = [];
+  // FX treatment deviations: an FX derivative is FVTPL-only, so a VALID election
+  // (FVTPL) is never a deviation from the product default and a non-FVTPL election
+  // is rejected (skipped) rather than applied (F1/F2). This list is therefore
+  // always empty for FX — retained for result-contract stability + the
+  // election-provenance recon, which now vacuous-passes on FX (correctly: there
+  // is no legitimate FX treatment deviation to surface).
   const deviations: FxFoldDeviation[] = [];
-  // De-dup deviation records per (instance, facet) — one election, one deviation.
-  const recordedDeviations = new Set<string>();
 
   // Instances with a BARE cancellation anywhere in the stream (provenance-
   // independent — see findBareCancellations). After producing the normal legs we
@@ -711,30 +717,29 @@ export function foldFxContributionLegs(args: FxFoldArgs): FxFoldResult {
       continue;
     }
 
-    // Per-instance election override (FX3). An election on this instance for the
-    // `ifrs-classification` facet (e.g. an FVOCI election, IFRS 9 §5.7.5) overrides
-    // the product-default treatment for the facet — here it reroutes the
-    // revaluation's fair-value leg to OCI. Absent an election the product default
-    // binds (the byte-identical engine behaviour). The deviation is RECORDED with
-    // its backing citations, never applied silently.
+    // Per-instance election override (FX3), VALIDATED against the FX asset class
+    // (F1/F2). An FX derivative is FVTPL-only (IFRS 9 §5.7.1); the §5.7.5 OCI
+    // election is equity-only and amortised cost is unreachable (a derivative
+    // fails SPPI). `resolveFxElectionOverride` enforces that:
+    //   - no election → product default (FVTPL) binds, byte-identical engine output;
+    //   - "fvtpl"     → accepted (a redundant re-affirmation of the FX default);
+    //   - any other category → REJECTED, fail-closed. The instance is SKIPPED with
+    //     a loud typed reason — never silently routed to OCI nor fallen through to
+    //     P&L (Charter cmd 2). A skipped instance contributes to neither the fold
+    //     nor the golden; the skip surfaces it for the recon gate to fail on.
     const ifrsElection = findInstanceElection(electionRegister, instance, "ifrs-classification");
-    let electionOverride: FxElectionOverride | undefined;
-    if (ifrsElection?.ifrsCategory !== undefined) {
-      electionOverride = { ifrsCategory: ifrsElection.ifrsCategory };
-      // Record the deviation ONCE per (instance, facet) — an election applies to
-      // the whole instance, not per lifecycle event (multiple lifecycle events
-      // for one instance must not double-count the deviation).
-      const devKey = `${instance}::ifrs-classification`;
-      if (!recordedDeviations.has(devKey)) {
-        recordedDeviations.add(devKey);
-        deviations.push({
-          instance,
-          facet: "ifrs-classification",
-          detail: `IFRS classification elected to ${ifrsElection.ifrsCategory} (overrides product default)`,
-          cites: ifrsElection.cites,
-        });
-      }
+    const resolution = resolveFxElectionOverride(ifrsElection?.ifrsCategory);
+    if (resolution.outcome === "rejected") {
+      skipped.push({
+        instance,
+        kind: p.kind,
+        reason: "fx-election-invalid-non-fvtpl",
+        detail: `recorded ifrs-classification election "${resolution.electedCategory}" rejected for FX instance ${instance}: ${resolution.reason}`,
+      });
+      continue;
     }
+    const electionOverride: FxElectionOverride | undefined =
+      resolution.outcome === "accepted" ? resolution.override : undefined;
 
     // Apply the lifted FX rule for this trigger kind.
     let ruleLegs: FxPostingLeg[];

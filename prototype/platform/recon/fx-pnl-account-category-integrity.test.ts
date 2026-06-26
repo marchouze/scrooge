@@ -77,17 +77,29 @@ describe("recon:fx-pnl-account-category-integrity — direction invariant (IAS 2
     expect(r.violations.some((v) => v.subject.includes("reval-unknown-account"))).toBe(true);
   });
 
-  test("PASSES the revaluation movement to the position account or the FVOCI OCI reserve", () => {
+  test("PASSES the revaluation movement to the position account (B/S carrying side)", () => {
     const r = assertFxPnlAccountCategory([
       // position account (asset-receivable) — the B/S carrying side.
       leg({ accountCode: "ACC-2100-001", postingRuleId: FX_POSTING_RULE_IDS.revaluation }),
-      // FVOCI OCI reserve under a §5.7.5 election (equity).
+      // P&L account — the FVTPL movement destination.
+      leg({ accountCode: FX_UNREALISED_PNL_ACCOUNT, postingRuleId: FX_POSTING_RULE_IDS.revaluation }),
+    ]);
+    expect(r.ok).toBe(true);
+  });
+
+  test("FAILS when an FX revaluation leg routes to the OCI reserve (FVOCI is IFRS-invalid for FX — F1)", () => {
+    // ACC-2100-008 is the FX OCI reserve. An FX derivative is FVTPL-only (IFRS 9
+    // §5.7.1; the §5.7.5 OCI election is equity-only), so a PR-FX-REVAL-V2 leg
+    // landing on the OCI reserve is the IFRS-wrong FVOCI routing the removed carve-
+    // out used to bless — it must now FAIL with a precise OCI-routing finding.
+    const r = assertFxPnlAccountCategory([
       leg({
         accountCode: FX_FVOCI_OCI_RESERVE_ACCOUNT,
         postingRuleId: FX_POSTING_RULE_IDS.revaluation,
       }),
     ]);
-    expect(r.ok).toBe(true);
+    expect(fails(r)).toBe(true);
+    expect(r.violations.some((v) => v.subject.includes("reval-routed-to-oci"))).toBe(true);
   });
 });
 
