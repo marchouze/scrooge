@@ -512,6 +512,19 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // by production-only, admitted by operating-book). Self-contained golden +
     // structural legs always assert.
     "recon:ba300-deposit-funding-sim-drive",
+    // D-BA-RETURN-SIMULATOR-FIRST — ENFORCING: the simulated credit (loans-and-
+    // advances) book drives the BA 200 credit-risk projection AND the BA 700
+    // credit-RWA leg (the dominant capital denominator). Asserts (A) a self-
+    // contained in-memory oracle lands on the hand-computed Reg 23 / IFRS 9
+    // golden figures (total gross R3,100m; total ECL R56.2m [Stage-1 12-month
+    // R4.2m / Stage-2 lifetime R2.0m / Stage-3 lifetime R50.0m]; NPL 3.2258%;
+    // coverage 50%; six SA-CR exposure classes); (B) the CRE20 standardised
+    // credit RWA lands on R1,235m (sovereign 0% / bank 75% / corporate-ig 65% /
+    // retail 75% / mortgage 30%+40%); (C) the BA 700 credit-RWA leg = the
+    // oracle under the operating-book lens AND 0 under production-only (the
+    // includeSimulated-into-Prod regression guard); (D) the per-event provenance
+    // boundary holds. Self-contained — always asserts.
+    "recon:ba200-credit-sim-drive",
     // WS-V2-AUTHORITATIVE S6 — ALM-snapshot-SHAPE V2 parity gate (advisory).
     // Structural-compares V1 getALMPositionSnapshot vs V2 getALMPositionSnapshotV2
     // (HQLA / funding / ASF / RSF arrays) for the anchor bank entity — the
