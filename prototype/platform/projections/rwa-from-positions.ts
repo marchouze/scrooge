@@ -77,6 +77,7 @@ import type {
 } from "../event-store/event-types/repo-mmd-ibl";
 import type { EventStore } from "../event-store/store";
 import { isLiveInstance, resolveTradeLifecycle } from "../lifecycle/trade-lifecycle-state";
+import { computeCvaRwaLeg } from "../market-risk/cva-rwa-leg";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import type { IrsTradeBookedPayload } from "../markets/cdm/ird";
 import { resolveNettingSet } from "../markets/netting-sets";
@@ -562,6 +563,22 @@ export function computeRwaFromPositions(
   // Build RwaEngineInput and call the engine
   // -------------------------------------------------------------------------
 
+  // CVA RWA leg (D-BA-RETURN-SIMULATOR-FIRST Phase 2b): the RWA engine's
+  // `cvaRwaMinor` input was a documented ZERO placeholder. It now sources the
+  // REAL standardised CVA charge over the OTC counterparty book (computeCva →
+  // capital × 12.5), provenance-filtered through the SAME `provenanceFilter` the
+  // rest of this fold applies — so a production-only read of a simulated-only
+  // book → computeCva `no-otc-exposure` → cvaRwaMinor 0 (production stays zero
+  // pre-licence-day), and the simulated/operating-book read drives it non-zero.
+  // No market-data store is threaded here, so CVA uses its documented fallback
+  // PD weights by counterparty class (store-free) — live credit spreads are a
+  // licence-day enrichment.
+  const cvaLeg = computeCvaRwaLeg({
+    eventStore,
+    asOf,
+    derivativeProvenanceFilter: provenanceFilter,
+  });
+
   const output = computeRwa({
     entityId: ENTITY_ID,
     asOf,
@@ -580,6 +597,7 @@ export function computeRwaFromPositions(
       eurToFunctionalRate: EUR_TO_ZAR_MINOR_RATE,
       ilm: 1,
     },
+    cvaRwaMinor: cvaLeg.cvaRwaMinor,
     sourceEventIds,
   });
 

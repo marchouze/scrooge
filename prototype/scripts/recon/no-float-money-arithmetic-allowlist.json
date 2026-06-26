@@ -187,17 +187,17 @@
     },
     {
       "file": "platform/market-risk/cva-engine.ts",
-      "line": 349,
+      "line": 394,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/market-risk/cva-engine.ts",
-      "line": 352,
+      "line": 397,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/market-risk/cva-engine.ts",
-      "line": 382,
+      "line": 427,
       "pattern": "money-multiply/divide"
     },
     {

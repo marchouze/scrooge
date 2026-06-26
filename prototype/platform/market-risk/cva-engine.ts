@@ -83,11 +83,19 @@
 //   validated by Nadia (Independent-validation engineer), with counterparty
 //   credit-spread inputs supplied by Ravi (market-data infrastructure engineer).
 
+import { absD, addD, mulD, toCanonicalString, toDecimal } from "../core/decimal-engine";
+import { decodeMoney } from "../core/money-codec";
+import type { DerivativePositionOpenedPayload } from "../event-store/event-types/derivative-book-positions";
 import type { IrdSwapPositionRevaluedPayload } from "../event-store/event-types/ird-accounting";
 import type { EventStore } from "../event-store/store";
 import type { MarketDataStore } from "../market-data/store";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import type { IrsTradeBookedPayload } from "../markets/cdm/ird";
+import {
+  type ProvenanceFilter,
+  defaultProvenanceFilter,
+  eventMatchesProvenanceFilter,
+} from "../projections/filter";
 import { type FinancialInput, absent, present, requireWeight } from "../types/financial-input";
 
 // ---------------------------------------------------------------------------
@@ -129,6 +137,26 @@ export const IRS_PFE_ADDON_FRACTION = 0.005;
  * 1% of notional is a conservative FX add-on.
  */
 export const FX_PFE_ADDON_FRACTION = 0.01;
+
+/**
+ * PFE add-on by derivative ASSET CLASS, as a fraction of notional — applied to
+ * the born-V2 derivative book (DerivativeTradingPositionOpened; the BA 350 /
+ * D-BA-RETURN-SIMULATOR-FIRST Phase 2b book). These are DOCUMENTED build-phase
+ * substitutes for the SA-CCR supervisory factors (which are PRESCRIBED inputs,
+ * explicitly out of scope per the Slice-5 exclusions), with magnitudes that
+ * track the Basel SA-CCR supervisory-factor ordering (interest-rate lowest;
+ * equity / commodity highest; credit / FX in between). A LOUD requireWeight
+ * lookup — an unrecognised asset class fails, never a silent 0% add-on that
+ * would understate the EAD. Authority: BCBS d424 MAR50 / SA-CCR analogue.
+ */
+const DERIVATIVE_PFE_ADDON_BY_ASSET_CLASS: Readonly<Record<string, number>> = {
+  "interest-rate": 0.005, // 0.5% — short-dated IR
+  "foreign-exchange": 0.01, // 1% — FX
+  equity: 0.08, // 8% — equity
+  commodity: 0.1, // 10% — commodity
+  credit: 0.05, // 5% — credit derivative
+  other: 0.015, // 1.5% — other / unclassified (conservative)
+};
 
 /**
  * Fallback standardised PD-equivalent weight by counterparty class, used ONLY
@@ -288,8 +316,25 @@ interface PartyRef {
 export function deriveCounterpartyExposures(args: {
   readonly eventStore: EventStore;
   readonly asOf: string;
+  /**
+   * Provenance filter applied to the BORN-V2 derivative book
+   * (DerivativeTradingPositionOpened) — the BA 350 / D-BA-RETURN-SIMULATOR-FIRST
+   * Phase 2b counterparty source. Defaults to the canonical production-only
+   * filter (`defaultProvenanceFilter()`), so a production read of a simulated-
+   * only book yields NO exposure (the engine then surfaces `no-otc-exposure` —
+   * the R300m-into-Prod boundary). The simulated read passes a simulated-
+   * inclusive filter explicitly.
+   *
+   * NB: the legacy IRS / FX loops below still rely on STORE SEPARATION rather
+   * than this filter (their callers pass a production store). Threading the
+   * filter through those legacy loops is the same hardening tracked as
+   * `cohort-var-provenance-filter` in the gap-register; it is OUT of scope for
+   * this slice, which only needs the derivative-book leg to be provenance-clean.
+   */
+  readonly derivativeProvenanceFilter?: ProvenanceFilter;
 }): Map<string, { party: PartyRef; currentExposureZar: number; pfeAddonZar: number }> {
   const { eventStore, asOf } = args;
+  const derivativeFilter = args.derivativeProvenanceFilter ?? defaultProvenanceFilter();
 
   // Closed trades (settled / matured) are excluded from open exposure.
   const closedTradeIds = new Set<string>();
@@ -387,6 +432,61 @@ export function deriveCounterpartyExposures(args: {
     acc.pfeAddonZar += zarNotional * FX_PFE_ADDON_FRACTION;
   }
 
+  // ---- Born-V2 derivative book (DerivativeTradingPositionOpened) -----------
+  // The BA 350 / D-BA-RETURN-SIMULATOR-FIRST Phase 2b book. OTC positions carry
+  // a counterparty → they are the counterparty-credit exposure CVA charges.
+  // ETD (exchange-traded, CCP-cleared) positions carry no counterparty and are
+  // excluded (CCP exposure is not bilateral OTC CVA). The fold is provenance-
+  // filtered through eventStore.replay (the same lens the IRS / FX folds use),
+  // so a production read of a simulated-only book yields no exposure → the
+  // engine surfaces `no-otc-exposure` (loud zero), and the simulated read drives
+  // it. CVA applies to OTC counterparty exposure REGARDLESS of trading/banking
+  // book — counterparty credit risk is book-agnostic — so banking-book OTC
+  // positions are included.
+  const closedDerivIds = new Set<string>();
+  for (const ev of eventStore.replay({ type: "DerivativeTradingPositionClosed", asOf })) {
+    if (!eventMatchesProvenanceFilter(ev, derivativeFilter)) continue;
+    const p = ev.payload as { positionId?: unknown };
+    if (typeof p.positionId === "string") closedDerivIds.add(p.positionId);
+  }
+  for (const ev of eventStore.replay({ type: "DerivativeTradingPositionOpened", asOf })) {
+    if (!eventMatchesProvenanceFilter(ev, derivativeFilter)) continue;
+    const d = ev.payload as unknown as DerivativePositionOpenedPayload;
+    if (d.venue !== "over-the-counter") continue; // bilateral OTC only
+    if (d.counterpartyId === undefined) continue; // no counterparty → no CVA
+    if (closedDerivIds.has(d.positionId)) continue;
+    const party: PartyRef = {
+      partyId: d.counterpartyId,
+      name: d.counterpartyName ?? d.counterpartyId,
+      ...(d.counterpartyJurisdiction !== undefined
+        ? { jurisdiction: d.counterpartyJurisdiction }
+        : {}),
+    };
+    const acc = accFor(party);
+    // Current exposure: positive fair value only (CVA is on the bank's positive
+    // exposure to the counterparty; a negative fair value is the counterparty's
+    // exposure to us). MoneyWire is decimal-native MAJOR units — read the major
+    // value directly via the decimal engine (no float minor/100 round-trip).
+    const fvMajor = toDecimal(decodeMoney(d.fairValue).amount);
+    if (fvMajor.gt(0)) {
+      acc.currentExposureZar = Number(
+        toCanonicalString(addD(toDecimal(String(acc.currentExposureZar)), fvMajor)),
+      );
+    }
+    // PFE add-on: documented fraction of notional by asset class (loud lookup).
+    // notional (major, absolute) × addon fraction, all via the decimal engine.
+    const notionalMajorAbs = absD(toDecimal(decodeMoney(d.notional).amount));
+    const addonFraction = requireWeight(
+      DERIVATIVE_PFE_ADDON_BY_ASSET_CLASS,
+      d.assetClass,
+      "CVA derivative PFE add-on",
+    );
+    const addonContribution = mulD(notionalMajorAbs, toDecimal(String(addonFraction)));
+    acc.pfeAddonZar = Number(
+      toCanonicalString(addD(toDecimal(String(acc.pfeAddonZar)), addonContribution)),
+    );
+  }
+
   return byParty;
 }
 
@@ -405,9 +505,21 @@ export function computeCva(args: {
   readonly eventStore: EventStore;
   readonly marketData: MarketDataStore;
   readonly asOf: string;
+  /**
+   * Provenance filter for the born-V2 derivative book (defaults to production-
+   * only). The simulator-first proof passes a simulated-inclusive filter for the
+   * simulated read and the default (production-only) for the production read.
+   */
+  readonly derivativeProvenanceFilter?: ProvenanceFilter;
 }): CvaReport {
   const { eventStore, marketData, asOf } = args;
-  const exposureMap = deriveCounterpartyExposures({ eventStore, asOf });
+  const exposureMap = deriveCounterpartyExposures({
+    eventStore,
+    asOf,
+    ...(args.derivativeProvenanceFilter !== undefined
+      ? { derivativeProvenanceFilter: args.derivativeProvenanceFilter }
+      : {}),
+  });
 
   // Build the per-counterparty breakdown, resolving PD for each exposed party.
   const counterparties: CounterpartyExposure[] = [];
