@@ -443,6 +443,13 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // vacuous on the clean store (no FX book — awaiting licence-day data).
     // Authority: D-FX-OTC-CLOSURE-BACKLOG; D-BANK-WIDE-V2-MIGRATION; D-V1-REMOVAL-PHASE-3E.
     "recon:ba320-fx-v2-parity",
+    // D-BA-RETURN-SIMULATOR-FIRST — ENFORCING: the simulated trading book drives
+    // the BA 320 equity + commodity folds to the hand-computed Reg 28 / BCBS D352
+    // golden-case charges (simulated read) AND the production read stays zero (the
+    // R300m-into-Prod regression guard). Golden legs are data-dependent (dormant
+    // on a store with no trading-book sim); the production-zero + born-V2
+    // registration legs are clean-store-provable and always assert.
+    "recon:ba320-trading-book-sim-drive",
     // WS-V2-AUTHORITATIVE S6 — ALM-snapshot-SHAPE V2 parity gate (advisory).
     // Structural-compares V1 getALMPositionSnapshot vs V2 getALMPositionSnapshotV2
     // (HQLA / funding / ASF / RSF arrays) for the anchor bank entity — the
