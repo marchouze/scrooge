@@ -61,6 +61,15 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering —
 //   reports to Camille CFO; BA-form line-mapping owner).
 
+import {
+  ROUNDING,
+  amountToMinorUnits,
+  moneyFromMinorUnits,
+  mulScalar,
+  round,
+} from "../core/decimal-money";
+import type { Currency } from "../core/types";
+import { ZAR } from "../core/types";
 import { minorFromMoneyWire } from "../core/money-codec";
 import type {
   BankingBookEquityHoldingClass,
@@ -79,23 +88,33 @@ import {
 // ---------------------------------------------------------------------------
 
 /**
- * Simple-risk-weight Table-1 risk weights, in BASIS POINTS of exposure
- * (300% = 30000bps, 400% = 40000bps), so the risk-weighted-exposure multiply is
- * `exposureMinor × bps / 100` — an integer-basis-points multiply with no float.
+ * Simple-risk-weight Table-1 risk weights as DECIMAL-STRING multipliers (the
+ * risk-weighted-exposure scalar): 300% = "3", 400% = "4". Decimal strings so the
+ * money math runs through the decimal engine (`mulScalar`) — no float (D-DECIMAL-
+ * NATIVE-MONEY-ARITHMETIC). For reporting we also surface the weight in BASIS
+ * POINTS (10000bps = 100%) on the output for human-readable lineage.
  *
  * Only `listed` + `unlisted` are Table-1 classes the engine charges.
  * `speculative-unlisted` is NOT in this map — it routes to the deduction/250%
  * regime (a separate licence-day fold), so the engine does not Table-1-charge it.
  */
+export const BA340_TABLE1_RISK_WEIGHT_SCALAR: Readonly<
+  Partial<Record<BankingBookEquityHoldingClass, string>>
+> = {
+  listed: "3", // 300% — publicly-traded equity on a licensed exchange (R0040)
+  unlisted: "4", // 400% — other equity positions (R0050)
+};
+
+/** The same Table-1 weights in basis points (10000bps = 100%), for lineage. */
 export const BA340_TABLE1_RISK_WEIGHT_BPS: Readonly<
   Partial<Record<BankingBookEquityHoldingClass, number>>
 > = {
-  listed: 30_000, // 300% — publicly-traded equity on a licensed exchange (R0040)
-  unlisted: 40_000, // 400% — other equity positions (R0050)
+  listed: 30_000, // 300%
+  unlisted: 40_000, // 400%
 };
 
-/** SARB Reg 38 minimum total capital ratio — 8%, in basis points (800bps). */
-export const BA340_MIN_CAPITAL_RATIO_BPS = 800;
+/** SARB Reg 38 minimum total capital ratio — 8%, as a decimal-string scalar. */
+export const BA340_MIN_CAPITAL_RATIO_SCALAR = "0.08";
 
 // ---------------------------------------------------------------------------
 // Output contract
@@ -167,20 +186,28 @@ export interface Ba340FoldInput {
 
 /**
  * Compute the Table-1 risk-weighted exposure + capital requirement for one
- * holding class from a total exposure value (minor units). Pure, integer
- * arithmetic — no float-money. Returns 0/0/null for a non-Table-1 class
- * (speculative-unlisted), which routes to the deduction regime, not charged here.
+ * holding class from a total exposure value (minor units), in the given currency.
+ *
+ * Money arithmetic runs through the DECIMAL ENGINE (no float — D-DECIMAL-NATIVE-
+ * MONEY-ARITHMETIC): the minor exposure is lifted to a `Money`, multiplied by the
+ * risk-weight scalar (3 / 4) then the 8% capital scalar via `mulScalar`, each
+ * rounded once at the RWA boundary (HALF_UP at the currency scale — the
+ * `ROUNDING.RWA` preset), and lowered back to exact minor units. Returns 0/0/null
+ * for a non-Table-1 class (speculative-unlisted), which routes to the deduction
+ * regime, not charged here.
  */
 export function ba340ChargeForClass(
   holdingClass: BankingBookEquityHoldingClass,
   exposureValueMinor: number,
+  currency: Currency = ZAR,
 ): {
   riskWeightedExposureMinor: number;
   capitalRequirementMinor: number;
   riskWeightBps: number | null;
 } {
+  const riskWeightScalar = BA340_TABLE1_RISK_WEIGHT_SCALAR[holdingClass];
   const riskWeightBps = BA340_TABLE1_RISK_WEIGHT_BPS[holdingClass];
-  if (riskWeightBps === undefined) {
+  if (riskWeightScalar === undefined || riskWeightBps === undefined) {
     // Not a Table-1 class (speculative-unlisted) — the simple-risk-weight engine
     // does not charge it (it routes to the Reg-38(5) deduction/250% regime).
     return {
@@ -189,13 +216,13 @@ export function ba340ChargeForClass(
       riskWeightBps: null,
     };
   }
-  // RWE = exposure × riskWeight; riskWeight is in bps-of-100% so /100.
-  // Integer basis-points multiply (exposure is integer minor; bps is integer).
-  const riskWeightedExposureMinor = Math.round((exposureValueMinor * riskWeightBps) / 100);
-  // Capital = RWE × 8% = RWE × 800bps / 10000.
-  const capitalRequirementMinor = Math.round(
-    (riskWeightedExposureMinor * BA340_MIN_CAPITAL_RATIO_BPS) / 10_000,
-  );
+  // RWE = exposure × riskWeight (decimal engine; round once at the RWA boundary).
+  const exposureMoney = moneyFromMinorUnits(BigInt(exposureValueMinor), currency);
+  const rweMoney = round(mulScalar(exposureMoney, riskWeightScalar), ROUNDING.RWA);
+  const riskWeightedExposureMinor = Number(amountToMinorUnits(rweMoney));
+  // Capital = RWE × 8% (decimal engine; round once at the RWA boundary).
+  const capitalMoney = round(mulScalar(rweMoney, BA340_MIN_CAPITAL_RATIO_SCALAR), ROUNDING.RWA);
+  const capitalRequirementMinor = Number(amountToMinorUnits(capitalMoney));
   return { riskWeightedExposureMinor, capitalRequirementMinor, riskWeightBps };
 }
 
@@ -254,6 +281,11 @@ export function foldBa340EquityRiskBankingBook(input: Ba340FoldInput): Ba340Equi
   // 2 + 4. Fold opens.
   const byClass = new Map<BankingBookEquityHoldingClass, ClassAccumulator>();
   let totalHoldings = 0;
+  // The functional currency the exposures are denominated in. Captured from the
+  // first folded holding's MoneyWire; the BA 340 charge is a single-currency
+  // (functional) charge (FX of the holding is captured in the FX risk class, not
+  // here). Defaults to ZAR (the bank's functional currency).
+  let currency: Currency = ZAR;
 
   for (const ev of eventStore.replay({
     type: "BankingBookEquityHoldingOpened",
@@ -264,6 +296,7 @@ export function foldBa340EquityRiskBankingBook(input: Ba340FoldInput): Ba340Equi
     const p = ev.payload as unknown as BankingBookEquityHoldingOpenedPayload;
     if (closed.has(p.holdingId)) continue;
 
+    currency = p.exposureValue.currency as Currency;
     let acc = byClass.get(p.holdingClass);
     if (!acc) {
       acc = { exposureValueMinor: 0, holdingCount: 0 };
@@ -284,7 +317,7 @@ export function foldBa340EquityRiskBankingBook(input: Ba340FoldInput): Ba340Equi
   for (const holdingClass of CLASS_ORDER) {
     const acc = byClass.get(holdingClass);
     if (!acc || acc.holdingCount === 0) continue;
-    const charge = ba340ChargeForClass(holdingClass, acc.exposureValueMinor);
+    const charge = ba340ChargeForClass(holdingClass, acc.exposureValueMinor, currency);
     measures.push({
       holdingClass,
       exposureValueMinor: acc.exposureValueMinor,
