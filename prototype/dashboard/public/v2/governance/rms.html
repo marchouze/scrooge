@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RMS Registers — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    .rms-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:var(--space-4); }
+    .rms-tab { padding:5px 12px; border:1px solid var(--color-border); border-radius:999px; background:var(--color-surface);
+      color:var(--color-text-secondary); cursor:pointer; font-size:0.82em; }
+    .rms-tab.active { background:var(--color-accent); color:#fff; border-color:var(--color-accent); }
+    .rms-tab .n { opacity:.7; margin-left:5px; font-variant-numeric:tabular-nums; }
+    .rms-controls { display:flex; gap:var(--space-3); align-items:center; flex-wrap:wrap; margin-bottom:var(--space-4); }
+    .rms-controls input, .rms-controls select { padding:6px 10px; border:1px solid var(--color-border);
+      border-radius:var(--radius-sm); background:var(--color-surface); color:var(--color-text-primary); font:var(--text-body); }
+    .rms-controls input { flex:1; min-width:180px; max-width:340px; }
+    .rms-controls .v2-count { color:var(--color-text-secondary); font:var(--text-caption); margin-left:auto; }
+    .rms-blurb { color:var(--color-text-secondary); font-size:0.86em; margin:0 0 var(--space-3); }
+    .rms-lens { display:inline-flex; align-items:center; padding:2px 10px; border-radius:12px;
+      font-size:0.76em; font-weight:600; background:var(--color-surface-raised); color:var(--color-text-secondary); }
+    details.rms-row > summary { cursor:pointer; color:var(--color-accent); font-size:0.82em; }
+    details.rms-row pre { margin:6px 0 0; padding:8px; background:var(--color-surface-raised);
+      border-radius:var(--radius-sm); overflow:auto; font-size:0.78em; max-height:320px; }
+    .rms-cell { max-width:340px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  </style>
+</head>
+<body data-provenance-content="none">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <span class="rms-lens" id="lens">records substrate</span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Governance", href: "/v2/governance/index.html" },
+        { label: "RMS Registers" },
+      ],
+      title: "Records Management Substrate",
+      seat: "The nine canonical registers — every decision, brief, run, record and document, projection-derived from the event log (D-RMS-PHASE-1).",
+    });
+
+    const stateHost = document.createElement("div"); main.appendChild(stateHost);
+    const tabsHost = document.createElement("div"); tabsHost.className = "rms-tabs"; main.appendChild(tabsHost);
+    const section = document.createElement("div"); section.className = "v2-section"; main.appendChild(section);
+    const blurb = document.createElement("p"); blurb.className = "rms-blurb"; section.appendChild(blurb);
+    const controls = document.createElement("div"); controls.className = "rms-controls";
+    controls.innerHTML = `
+      <input type="search" id="q" placeholder="Search this register…" aria-label="Search register">
+      <select id="status" aria-label="Filter by status"><option value="">All statuses</option></select>
+      <span class="v2-count" id="count"></span>`;
+    section.appendChild(controls);
+    const tableHost = document.createElement("div"); section.appendChild(tableHost);
+
+    let catalogue = [];     // [{key, title, blurb, statusTaxonomy}]
+    let active = "decisions";
+    let rows = [];
+
+    // Column priority — id-ish, then title/name, then status/category/owner, then dates.
+    const PRIORITY = [
+      "decisionId","briefId","runId","workstreamId","feedbackId","documentHash","id",
+      "title","name","agent","subject","category","owner","classification","status","outcome",
+      "registerKey","requestedAt","issuedAt","startedAt","completedAt","resolvedAt","filedAt","createdAt",
+    ];
+    function priorityIndex(k) {
+      const i = PRIORITY.indexOf(k);
+      return i === -1 ? PRIORITY.length + (k.toLowerCase().includes("id") ? -0.5 : 0) : i;
+    }
+    function isScalar(v) { return v === null || ["string","number","boolean"].includes(typeof v); }
+    function fmt(v) {
+      if (v === null || v === undefined) return "—";
+      if (typeof v === "boolean") return v ? "yes" : "no";
+      const s = String(v);
+      return /^\d{4}-\d{2}-\d{2}T/.test(s) ? s.replace("T", " ").slice(0, 19) : s;
+    }
+
+    function deriveColumns(data) {
+      const keys = new Set();
+      for (const r of data.slice(0, 80)) {
+        if (r && typeof r === "object") for (const [k, v] of Object.entries(r)) if (isScalar(v)) keys.add(k);
+      }
+      return [...keys].sort((a, b) => priorityIndex(a) - priorityIndex(b) || a.localeCompare(b)).slice(0, 6);
+    }
+
+    function render() {
+      const q = document.getElementById("q").value.trim().toLowerCase();
+      const status = document.getElementById("status").value;
+      const cols = deriveColumns(rows);
+      const hasStatus = rows.some((r) => r && typeof r === "object" && "status" in r);
+      const filtered = rows.filter((r) =>
+        (!status || (r && r.status === status)) &&
+        (!q || JSON.stringify(r).toLowerCase().includes(q)));
+      tableHost.innerHTML = "";
+      const wrap = document.createElement("div"); wrap.className = "v2-table-wrapper";
+      const table = document.createElement("table"); table.className = "v2-table";
+      table.innerHTML = `<thead><tr>${cols.map((c) => `<th>${v2Esc(c)}</th>`).join("")}<th>Full record</th></tr></thead>`;
+      const tbody = document.createElement("tbody");
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="${cols.length + 1}" class="v2-table-empty">No records match.</td></tr>`;
+      } else {
+        for (const r of filtered) {
+          const tr = document.createElement("tr");
+          const cells = cols.map((c) => {
+            const val = fmt(r ? r[c] : undefined);
+            return `<td class="rms-cell" title="${v2Esc(val)}">${v2Esc(val)}</td>`;
+          }).join("");
+          tr.innerHTML = `${cells}<td><details class="rms-row"><summary>view</summary><pre>${v2Esc(JSON.stringify(r, null, 2))}</pre></details></td>`;
+          tbody.appendChild(tr);
+        }
+      }
+      table.appendChild(tbody); wrap.appendChild(table); tableHost.appendChild(wrap);
+      document.getElementById("count").textContent = `${filtered.length} of ${rows.length} record(s)`;
+      document.getElementById("status").style.display = hasStatus ? "" : "none";
+    }
+
+    async function loadRegister(key) {
+      active = key;
+      for (const t of tabsHost.children) t.classList.toggle("active", t.dataset.key === key);
+      const desc = catalogue.find((c) => c.key === key);
+      blurb.textContent = desc ? desc.blurb : "";
+      tableHost.innerHTML = "";
+      let d;
+      try {
+        const res = await fetch(`/api/rms/${encodeURIComponent(key)}`, { headers: { Accept: "application/json" } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        d = await res.json();
+      } catch (err) { v2RenderError(tableHost, v2Esc(err.message)); return; }
+      rows = d.rows || [];
+      if (d.pageProvenance && d.pageProvenance.mode) {
+        document.getElementById("lens").textContent = `lens: ${d.pageProvenance.mode}`;
+      }
+      // Reset + repopulate status filter from this register's data.
+      const sel = document.getElementById("status");
+      while (sel.options.length > 1) sel.remove(1);
+      const statuses = [...new Set(rows.map((r) => r && r.status).filter(Boolean))].sort();
+      for (const s of statuses) { const o = document.createElement("option"); o.value = s; o.textContent = s; sel.appendChild(o); }
+      document.getElementById("q").value = "";
+      render();
+    }
+
+    async function load() {
+      let cat;
+      try {
+        const res = await fetch("/api/rms", { headers: { Accept: "application/json" } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        cat = await res.json();
+      } catch (err) { v2RenderError(stateHost, v2Esc(err.message)); return; }
+
+      catalogue = cat.catalogue || [];
+      const counts = cat.counts || {};
+      document.getElementById("as-of").textContent = cat.asOf ? `as of ${new Date(cat.asOf).toLocaleString()}` : "—";
+
+      // Map register key → count key (catalogue keys are kebab; counts are camel).
+      const countKey = { "decisions":"decisions","correspondence":"correspondence","agent-runs":"agentRuns",
+        "document":"document","feedback":"feedback","briefs-dispatches":"briefsDispatches",
+        "workstreams":"workstreams","policies":"policies","procedures":"procedures" };
+
+      tabsHost.innerHTML = "";
+      for (const c of catalogue) {
+        const n = counts[countKey[c.key]] ?? "";
+        const tab = document.createElement("button");
+        tab.className = "rms-tab"; tab.dataset.key = c.key;
+        tab.innerHTML = `${v2Esc(c.title)}<span class="n">${n}</span>`;
+        tab.addEventListener("click", () => loadRegister(c.key));
+        tabsHost.appendChild(tab);
+      }
+
+      document.getElementById("q").addEventListener("input", render);
+      document.getElementById("status").addEventListener("change", render);
+
+      const first = catalogue.find((c) => c.key === "decisions") ? "decisions" : (catalogue[0] && catalogue[0].key);
+      if (first) await loadRegister(first);
+    }
+
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", load);
+    else load();
+  </script>
+</body>
+</html>

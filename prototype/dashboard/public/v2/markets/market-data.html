@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Market Data — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    .md-controls { display:flex; gap:var(--space-3); align-items:center; flex-wrap:wrap; margin-bottom:var(--space-4); }
+    .md-controls input, .md-controls select { padding:6px 10px; border:1px solid var(--color-border);
+      border-radius:var(--radius-sm); background:var(--color-surface); color:var(--color-text-primary); font:var(--text-body); }
+    .md-controls input { flex:1; min-width:160px; max-width:300px; }
+    .md-controls .v2-count { color:var(--color-text-secondary); font:var(--text-caption); margin-left:auto; }
+    .md-lens { display:inline-flex; align-items:center; gap:6px; padding:2px 10px; border-radius:12px;
+      font-size:0.76em; font-weight:600; background:var(--color-surface-raised); color:var(--color-text-secondary); }
+    .md-cls { display:inline-flex; padding:1px 8px; border-radius:10px; font-size:0.72em; font-weight:700; }
+    .md-cls--fx { background:var(--color-info-bg); color:var(--color-info); }
+    .md-cls--rates { background:var(--color-success-bg); color:var(--color-success); }
+    .md-cls--bonds { background:var(--color-warning-bg); color:var(--color-warning); }
+    .md-cls--other { background:var(--color-surface-raised); color:var(--color-text-secondary); }
+    .md-prov { font-size:0.74em; font-weight:600; }
+    .md-prov--production { color:var(--color-success); }
+    .md-prov--simulated { color:var(--color-warning); }
+    details.md-payload > summary { cursor:pointer; color:var(--color-accent); font-size:0.82em; }
+    details.md-payload pre { margin:6px 0 0; padding:8px; background:var(--color-surface-raised);
+      border-radius:var(--radius-sm); overflow:auto; font-size:0.78em; max-height:240px; }
+  </style>
+</head>
+<body data-provenance-content="none">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <span class="md-lens" id="lens">lens: all</span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Markets", href: "/v2/markets/index.html" },
+        { label: "Market Data" },
+      ],
+      title: "Market Data",
+      seat: "Reference & time-series feeds — FX · rates · bonds · news. Stored outside the event log (MarketDataStore, Principle 1).",
+    });
+
+    const stateHost = document.createElement("div"); main.appendChild(stateHost);
+    const tilesHost = document.createElement("div"); main.appendChild(tilesHost);
+
+    const section = document.createElement("div"); section.className = "v2-section"; main.appendChild(section);
+    const controls = document.createElement("div"); controls.className = "md-controls";
+    controls.innerHTML = `
+      <input type="search" id="q" placeholder="Search instrument · source…" aria-label="Search market data">
+      <select id="provenance" aria-label="Filter by provenance">
+        <option value="all">All provenance</option>
+        <option value="production">Production only</option>
+        <option value="simulated">Simulated only</option>
+      </select>
+      <select id="assetClass" aria-label="Filter by asset class">
+        <option value="">All classes</option>
+        <option value="fx">FX</option>
+        <option value="rates">Rates</option>
+        <option value="bonds">Bonds</option>
+        <option value="other">Other</option>
+      </select>
+      <select id="source" aria-label="Filter by source"><option value="">All sources</option></select>
+      <select id="instrument" aria-label="Filter by instrument"><option value="">All instruments</option></select>
+      <select id="dataType" aria-label="Filter by data type"><option value="">All types</option></select>
+      <select id="limit" aria-label="Tick feed size">
+        <option value="100">100 ticks</option>
+        <option value="200" selected>200 ticks</option>
+        <option value="500">500 ticks</option>
+        <option value="1000">1000 ticks</option>
+      </select>
+      <span class="v2-count" id="count"></span>`;
+    section.appendChild(controls);
+
+    const snapTitle = document.createElement("h2"); snapTitle.className = "v2-section-title";
+    snapTitle.textContent = "Latest snapshot — one tick per instrument"; section.appendChild(snapTitle);
+    const snapHost = document.createElement("div"); section.appendChild(snapHost);
+
+    const feedSection = document.createElement("div"); feedSection.className = "v2-section"; main.appendChild(feedSection);
+    const feedTitle = document.createElement("h2"); feedTitle.className = "v2-section-title";
+    feedTitle.textContent = "Tick feed — most recent first"; feedSection.appendChild(feedTitle);
+    const feedHost = document.createElement("div"); feedSection.appendChild(feedHost);
+
+    const refsHost = document.createElement("div"); main.appendChild(refsHost);
+
+    const ASSET_CLASS = {
+      "fx-quote": "fx", "zaronia-rate": "rates", "jibar-fixing": "rates",
+      "swap-curve-snapshot": "rates", "repo-prime-rate": "rates", "bond-price": "bonds",
+    };
+    const classOf = (dt) => ASSET_CLASS[dt] || "other";
+    const clsChip = (c) => `<span class="md-cls md-cls--${c}">${c}</span>`;
+    const provTag = (p) => `<span class="md-prov md-prov--${p}">${v2Esc(p)}</span>`;
+
+    function num(v) { return typeof v === "number" ? v.toLocaleString(undefined, { maximumFractionDigits: 6 }) : v2Esc(String(v)); }
+    function summary(tick) {
+      const p = tick.payload || {};
+      switch (tick.dataType) {
+        case "fx-quote": return `mid ${num(p.mid)}${p.bid != null ? ` · bid ${num(p.bid)} / ask ${num(p.ask)}` : ""}`;
+        case "zaronia-rate": return `${num(p.rate)}%`;
+        case "jibar-fixing": return `${num(p.rate)}% (${v2Esc(p.tenor || "")})`;
+        case "swap-curve-snapshot": return `${Array.isArray(p.tenors) ? p.tenors.length : "?"} tenors`;
+        case "repo-prime-rate": return `repo ${num(p.repoRate)}% · prime ${num(p.primeRate)}%`;
+        case "bond-price": return `clean ${num(p.cleanPrice)} · ytm ${num(p.yieldToMaturity)}`;
+        case "equity-quote": return `${num(p.mid ?? p.last)} ${v2Esc(p.currency || "")}`;
+        case "sens-announcement": return v2Esc(p.headline || p.category || "announcement");
+        case "news": return v2Esc(p.headline || "news");
+        default: { const k = Object.keys(p)[0]; return k ? `${v2Esc(k)}: ${num(p[k])}` : "—"; }
+      }
+    }
+
+    let byClassFlat = [];   // latest-per-instrument across all classes (each tick carries .provenance)
+    let facets = { sources: [], instruments: [], dataTypes: [] };
+
+    function controlVals() {
+      return {
+        q: document.getElementById("q").value.trim().toLowerCase(),
+        provenance: document.getElementById("provenance").value,
+        assetClass: document.getElementById("assetClass").value,
+        source: document.getElementById("source").value,
+        instrument: document.getElementById("instrument").value,
+        dataType: document.getElementById("dataType").value,
+        limit: document.getElementById("limit").value,
+      };
+    }
+
+    function renderSnapshot() {
+      const c = controlVals();
+      document.getElementById("lens").textContent = `lens: ${c.provenance}`;
+      const rows = byClassFlat.filter((t) =>
+        (c.provenance === "all" || t.provenance === c.provenance) &&
+        (!c.assetClass || classOf(t.dataType) === c.assetClass) &&
+        (!c.source || t.source === c.source) &&
+        (!c.instrument || t.instrument === c.instrument) &&
+        (!c.dataType || t.dataType === c.dataType) &&
+        (!c.q || `${t.instrument} ${t.source} ${t.dataType}`.toLowerCase().includes(c.q)));
+      snapHost.innerHTML = "";
+      renderTable(snapHost, {
+        columns: ["Class", "Instrument", "Source", "Type", "Latest value", "As of", "Provenance"],
+        emptyMsg: "No instruments match the active filters.",
+        rows: rows.map((t) => ({
+          cells: [
+            clsChip(classOf(t.dataType)),
+            `<strong>${v2Esc(t.instrument)}</strong>`,
+            v2Esc(t.source),
+            `<code>${v2Esc(t.dataType)}</code>`,
+            summary(t),
+            v2Esc((t.asOf || "").replace("T", " ").slice(0, 19)),
+            provTag(t.provenance),
+          ],
+        })),
+      });
+      document.getElementById("count").textContent = `${rows.length} instrument(s)`;
+    }
+
+    async function renderFeed() {
+      const c = controlVals();
+      const params = new URLSearchParams();
+      if (c.source) params.set("source", c.source);
+      if (c.instrument) params.set("instrument", c.instrument);
+      if (c.dataType) params.set("dataType", c.dataType);
+      if (c.provenance !== "all") params.set("provenance", c.provenance);
+      params.set("limit", c.limit);
+      feedHost.innerHTML = "";
+      let data;
+      try {
+        const res = await fetch(`/api/market-data?${params.toString()}`, { headers: { Accept: "application/json" } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        data = await res.json();
+      } catch (err) { v2RenderError(feedHost, v2Esc(err.message)); return; }
+      let ticks = data.ticks || [];
+      if (c.assetClass) ticks = ticks.filter((t) => classOf(t.dataType) === c.assetClass);
+      if (c.q) ticks = ticks.filter((t) => `${t.instrument} ${t.source} ${t.dataType}`.toLowerCase().includes(c.q));
+      const wrap = document.createElement("div"); wrap.className = "v2-table-wrapper";
+      const table = document.createElement("table"); table.className = "v2-table";
+      table.innerHTML = `<thead><tr><th>Time</th><th>Instrument</th><th>Source</th><th>Type</th><th>Provenance</th><th>Value</th><th>Payload</th></tr></thead>`;
+      const tbody = document.createElement("tbody");
+      if (!ticks.length) {
+        tbody.innerHTML = `<tr><td colspan="7" class="v2-table-empty">No ticks match the active filters.</td></tr>`;
+      } else {
+        for (const t of ticks) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${v2Esc((t.asOf || "").replace("T", " ").slice(0, 19))}</td>
+            <td><strong>${v2Esc(t.instrument)}</strong></td>
+            <td>${v2Esc(t.source)}</td>
+            <td><code>${v2Esc(t.dataType)}</code></td>
+            <td>${provTag(t.provenance)}</td>
+            <td>${summary(t)}</td>
+            <td><details class="md-payload"><summary>view</summary><pre>${v2Esc(JSON.stringify(t.payload, null, 2))}</pre></details></td>`;
+          tbody.appendChild(tr);
+        }
+      }
+      table.appendChild(tbody); wrap.appendChild(table); feedHost.appendChild(wrap);
+    }
+
+    function fillSelect(id, values) {
+      const sel = document.getElementById(id);
+      for (const v of values) { const o = document.createElement("option"); o.value = v; o.textContent = v; sel.appendChild(o); }
+    }
+
+    async function load() {
+      stateHost.replaceChildren(); tilesHost.replaceChildren();
+      let byClass;
+      try {
+        const [bcRes, fRes] = await Promise.all([
+          fetch("/api/market-data/by-class", { headers: { Accept: "application/json" } }),
+          fetch("/api/market-data/facets", { headers: { Accept: "application/json" } }),
+        ]);
+        if (!bcRes.ok || !fRes.ok) throw new Error(`HTTP ${bcRes.status}/${fRes.status}`);
+        byClass = await bcRes.json();
+        facets = await fRes.json();
+      } catch (err) { v2RenderError(stateHost, v2Esc(err.message)); return; }
+
+      byClassFlat = [
+        ...(byClass.fx || []), ...(byClass.rates || []), ...(byClass.bonds || []), ...(byClass.other || []),
+      ];
+      const latest = byClassFlat.reduce((m, t) => (t.asOf > m ? t.asOf : m), "");
+      document.getElementById("as-of").textContent = latest ? `latest ${latest.replace("T", " ").slice(0, 19)}` : "—";
+
+      renderTileGroup(tilesHost, { tiles: [
+        { label: "Instruments", value: String(byClassFlat.length), unit: "Distinct feeds" },
+        { label: "FX", value: String((byClass.fx || []).length), unit: "fx-quote", variant: "info" },
+        { label: "Rates", value: String((byClass.rates || []).length), unit: "JIBAR · ZARONIA · repo · swap", variant: "success" },
+        { label: "Bonds", value: String((byClass.bonds || []).length), unit: "bond-price", variant: "warning" },
+        { label: "Other", value: String((byClass.other || []).length), unit: "equity · SENS · news" },
+      ]});
+
+      fillSelect("source", facets.sources || []);
+      fillSelect("instrument", facets.instruments || []);
+      fillSelect("dataType", facets.dataTypes || []);
+
+      const onChange = () => { renderSnapshot(); renderFeed(); };
+      document.getElementById("q").oninput = onChange;
+      for (const id of ["provenance", "assetClass", "source", "instrument", "dataType", "limit"]) {
+        document.getElementById(id).onchange = onChange;
+      }
+      renderSnapshot();
+      await renderFeed();
+
+      renderRefs(refsHost, { refs: [
+        { label: "World Simulator (drives the sim feeds)", href: "/v2/markets/world-simulator.html" },
+        { label: "FX desk", href: "/v2/markets/fx.html" },
+        { label: "Event log (market data is NOT an event)", href: "/v2/operations/events.html" },
+      ]});
+    }
+
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", load);
+    else load();
+  </script>
+</body>
+</html>

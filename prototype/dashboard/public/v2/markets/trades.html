@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>All Trades — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    .tb-controls { display:flex; gap:var(--space-3); align-items:center; flex-wrap:wrap; margin-bottom:var(--space-4); }
+    .tb-controls input, .tb-controls select { padding:6px 10px; border:1px solid var(--color-border);
+      border-radius:var(--radius-sm); background:var(--color-surface); color:var(--color-text-primary); font:var(--text-body); }
+    .tb-controls input { flex:1; min-width:160px; max-width:320px; }
+    .tb-controls .v2-count { color:var(--color-text-secondary); font:var(--text-caption); margin-left:auto; }
+    .tb-fam { display:inline-flex; align-items:center; padding:1px 8px; border-radius:10px; font-size:0.74em; font-weight:700; letter-spacing:.02em; }
+    .tb-fam--fx { background:var(--color-info-bg); color:var(--color-info); }
+    .tb-fam--equity { background:var(--color-success-bg); color:var(--color-success); }
+    .tb-fam--bond { background:var(--color-warning-bg); color:var(--color-warning); }
+    .tb-fam--irs { background:var(--color-surface-raised); color:var(--color-text-secondary); }
+    .tb-note { font-size:0.78rem; color:var(--color-text-secondary); margin-top:var(--space-2); }
+  </style>
+</head>
+<body data-provenance-source="/api/v2/markets/trades">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <div class="v2-prov-control">
+        <button class="v2-prov-btn" data-mode="prod">Prod</button>
+        <button class="v2-prov-btn" data-mode="prod+sim">+ Sim</button>
+      </div>
+      <span data-provenance-badge="page-top"></span>
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html"><span class="v2-errors-icon">⚠</span><span id="errors-count">…</span></a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    renderPageHeader(main, {
+      crumbs: [
+        { label: "Executive", href: "/v2/index.html" },
+        { label: "Markets", href: "/v2/markets/index.html" },
+        { label: "All Trades" },
+      ],
+      title: "All Trades",
+      seat: "Every trade across FX · Equity · Bond · IRS — cross-family blotter, newest first",
+    });
+
+    const stateHost = document.createElement("div"); main.appendChild(stateHost);
+    const tilesHost = document.createElement("div"); main.appendChild(tilesHost);
+    const section = document.createElement("div"); section.className = "v2-section"; main.appendChild(section);
+    const controls = document.createElement("div"); controls.className = "tb-controls";
+    controls.innerHTML = `
+      <input type="search" id="q" placeholder="Search id · instrument · counterparty…" aria-label="Search trades">
+      <select id="family" aria-label="Filter by family">
+        <option value="">All families</option>
+        <option value="fx">FX</option>
+        <option value="equity">Equity</option>
+        <option value="bond">Bond</option>
+        <option value="irs">IRS</option>
+      </select>
+      <select id="side" aria-label="Filter by side"><option value="">All sides</option></select>
+      <select id="status" aria-label="Filter by status"><option value="">All statuses</option></select>
+      <select id="entity" aria-label="Filter by entity"><option value="">All entities</option></select>
+      <span class="v2-count" id="count"></span>`;
+    section.appendChild(controls);
+    const tableHost = document.createElement("div"); section.appendChild(tableHost);
+    const noteHost = document.createElement("div"); section.appendChild(noteHost);
+    const refsHost = document.createElement("div"); main.appendChild(refsHost);
+
+    let allRows = [];
+    const famChip = (f, label) => `<span class="tb-fam tb-fam--${f}">${v2Esc(label)}</span>`;
+    const sideBadge = (s) =>
+      /sell|pay/.test(s)
+        ? `<span class="v2-badge v2-badge-warning">${v2Esc(s)}</span>`
+        : `<span class="v2-badge v2-badge-success">${v2Esc(s)}</span>`;
+    const statusBadge = (s) => {
+      const cls = s === "open" ? "info" : s === "settled" ? "success"
+        : s === "cancelled" ? "danger" : s === "booked" ? "info" : "warning";
+      return `<span class="v2-badge v2-badge-${cls}">${v2Esc(s)}</span>`;
+    };
+
+    function render() {
+      const q = document.getElementById("q").value.trim().toLowerCase();
+      const family = document.getElementById("family").value;
+      const side = document.getElementById("side").value;
+      const status = document.getElementById("status").value;
+      const entity = document.getElementById("entity").value;
+      const rows = allRows.filter((r) =>
+        (!family || r.family === family) &&
+        (!side || r.side === side) &&
+        (!status || r.status === status) &&
+        (!entity || r.entity === entity) &&
+        (!q || `${r.tradeId} ${r.instrument} ${r.counterpartyId} ${r.familyLabel}`.toLowerCase().includes(q)));
+      tableHost.innerHTML = "";
+      renderTable(tableHost, {
+        columns: ["Family", "Trade", "Date", "Instrument", "Side", "Size", "Price / rate", "Counterparty", "Status"],
+        emptyMsg: "No trades match the active filters.",
+        rows: rows.map((r) => ({
+          href: r.drillHref || undefined,
+          cells: [
+            famChip(r.family, r.familyLabel),
+            `<code>${v2Esc(r.tradeId)}</code>`,
+            v2Esc((r.tradeDate || "").slice(0, 10)),
+            `<strong>${v2Esc(r.instrument)}</strong>`,
+            sideBadge(r.side),
+            v2Esc(r.quantityLabel),
+            v2Esc(r.priceLabel),
+            v2Esc(r.counterpartyId),
+            statusBadge(r.status),
+          ],
+        })),
+      });
+      document.getElementById("count").textContent = `${rows.length} of ${allRows.length} trade(s)`;
+    }
+
+    function fillSelect(id, values, current) {
+      const sel = document.getElementById(id);
+      for (const v of values) { const o = document.createElement("option"); o.value = v; o.textContent = v; sel.appendChild(o); }
+      if (current) sel.value = current;
+    }
+
+    v2WireLoader(async () => {
+      stateHost.replaceChildren(); tilesHost.replaceChildren();
+      let d;
+      try { d = await v2Fetch("/api/v2/markets/trades"); }
+      catch (err) { v2RenderError(stateHost, v2Esc(err.message)); return; }
+      document.getElementById("as-of").textContent = d.asOf ? `as of ${new Date(d.asOf).toLocaleString()}` : "—";
+      allRows = d.rows || [];
+
+      if (d.dataState !== "live") {
+        const banner = document.createElement("div"); banner.className = "v2-section";
+        banner.innerHTML = `<div class="v2-empty"><div class="v2-empty-icon">○</div>
+          <div class="v2-empty-msg"><strong>No trades under this lens.</strong><br>${v2Esc(d.reason)}</div></div>`;
+        stateHost.appendChild(banner);
+      }
+
+      const bf = d.byFamily || {};
+      renderTileGroup(tilesHost, { tiles: [
+        { label: "Total trades", value: String(d.count), unit: "All families" },
+        { label: "FX", value: String(bf.fx ?? 0), unit: "Currency trades", variant: (bf.fx ?? 0) > 0 ? "info" : "muted" },
+        { label: "Equity", value: String(bf.equity ?? 0), unit: "Listed shares", variant: (bf.equity ?? 0) > 0 ? "success" : "muted" },
+        { label: "Bond", value: String(bf.bond ?? 0), unit: "Listed bonds", variant: (bf.bond ?? 0) > 0 ? "warning" : "muted" },
+        { label: "IRS", value: String(bf.irs ?? 0), unit: "OTC swaps", variant: (bf.irs ?? 0) > 0 ? "info" : "muted" },
+      ]});
+
+      // Reset filter dropdowns to the freshly-fetched facets (toggling provenance re-runs this).
+      for (const id of ["side", "status", "entity"]) {
+        const sel = document.getElementById(id);
+        while (sel.options.length > 1) sel.remove(1);
+      }
+      const sides = [...new Set(allRows.map((r) => r.side))].sort();
+      fillSelect("side", sides);
+      fillSelect("status", d.statuses || []);
+      fillSelect("entity", d.entities || []);
+
+      for (const id of ["q", "family", "side", "status", "entity"]) {
+        const el = document.getElementById(id);
+        el.oninput = render; el.onchange = render;
+      }
+      render();
+
+      noteHost.innerHTML = `<p class="tb-note">${v2Esc(d.mmNote)}</p>`;
+      renderRefs(refsHost, { refs: [
+        { label: "FX trade history (FX only)", href: "/v2/markets/trade-history.html" },
+        { label: "Live FIL positions", href: "/v2/markets/positions.html" },
+        { label: "Event log (raw trade events)", href: "/v2/operations/events.html" },
+      ]});
+    });
+  </script>
+</body>
+</html>
