@@ -839,7 +839,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
   // IrdSwapPositionRevalued) fresh after each booking. Gated on !dryRun — the
   // engine appends directly.
   // Authority: D-IRS-FAMILY-CONVERGE-ACCOUNTING; D-MARKETS-SCHEMA-FOUNDATION;
-  // IFRS-9-§4.1; BCBS-D365-IRRBB.
+  // IFRS-9-§4.1; BCBS-D368-IRRBB.
   if (!ctx.dryRun) {
     try {
       const irsReval = runEodIrsRevaluation(eventStore, dateStr);

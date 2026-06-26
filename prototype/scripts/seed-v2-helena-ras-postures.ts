@@ -136,9 +136,9 @@ const PILOT_POSTURES: PilotPostureSpec[] = [
     postureId: "posture:risk-appetite:irrbb-delta-eve",
     rasLineId: "appetite:irrbb:delta-eve-outlier",
     description:
-      "IRRBB δEVE outlier threshold posture (RAS §B4, BCBS d365 §A-3.4 supervisory test). " +
-      "Maximum |δEVE| under any BCBS d365 shock scenario as % of Tier-1 capital. " +
-      "Green <10% Tier-1 / amber 10-15% / red ≥15% (the BCBS d365 §A-3.4 supervisory outlier threshold). " +
+      "IRRBB δEVE outlier threshold posture (RAS §B4, BCBS d368 §A-3.4 supervisory test). " +
+      "Maximum |δEVE| under any BCBS d368 shock scenario as % of Tier-1 capital. " +
+      "Green <10% Tier-1 / amber 10-15% / red ≥15% (the BCBS d368 §A-3.4 supervisory outlier threshold). " +
       "Breach triggers ALCO escalation and PA notification pathway. " +
       "Measurement: IRRBBChecked.deltaPct from Ravi's ALM run.",
     appliesToScope: {
@@ -155,7 +155,7 @@ const PILOT_POSTURES: PilotPostureSpec[] = [
       "D-RAS-STRUCTURED-REGISTER",
       "D-BOND-RAS-APPETITE",
       "D-IRRBB-DELTA-EVE-OUTLIER-MEASUREMENT",
-      "BCBS-D365-IRRBB",
+      "BCBS-D368-IRRBB",
     ],
   },
   // ── LCR floor (RAS §B3) ──────────────────────────────────────────────────

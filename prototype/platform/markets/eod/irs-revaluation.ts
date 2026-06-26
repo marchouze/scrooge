@@ -46,7 +46,7 @@
 //   D-MARKETS-SCHEMA-FOUNDATION (CEO-approved 2026-05-07)
 //   ISDA-2002-MASTER            (swap documentation)
 //   IFRS-9-§4.1                 (classification and measurement; FVTPL)
-//   BCBS-D365-IRRBB             (IRRBB sensitivity metrics — DV01)
+//   BCBS-D368-IRRBB             (IRRBB sensitivity metrics — DV01)
 //   ORG-PR-11                   (derivatives trading authority)
 //
 // Authors: Eitan (IRRBB / derivatives engineer, engineering)
@@ -90,7 +90,7 @@ export type EodIrsRevaluationResult = {
 const RECON_CITATIONS = [
   "IFRS-9-§4.1",
   "D-MARKETS-SCHEMA-FOUNDATION",
-  "BCBS-D365-IRRBB",
+  "BCBS-D368-IRRBB",
   "ISDA-2002-MASTER",
   "ORG-PR-11",
 ];

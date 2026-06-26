@@ -34,7 +34,7 @@ import type { FtpTenorRate } from "../../platform/event-store/event-types/ftp";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 import { fmtDateUTC, frontmatter } from "./_shared";
 
-const EVENT_CITATIONS = ["BANKS-ACT-94-1990", "BANKS-REG-26", "BANKS-REG-27", "BCBS-D365-IRRBB"];
+const EVENT_CITATIONS = ["BANKS-ACT-94-1990", "BANKS-REG-26", "BANKS-REG-27", "BCBS-D368-IRRBB"];
 
 /**
  * Build the indicative ZAR FTP tenor grid for the given date.

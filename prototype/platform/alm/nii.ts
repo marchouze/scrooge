@@ -50,7 +50,7 @@ import { type REPRICING_BUCKETS, computeRepricingGap } from "./repricing-gap";
 // Types
 // ---------------------------------------------------------------------------
 
-/** NII shock scenario labels (parallel only, per BCBS d365). */
+/** NII shock scenario labels (parallel only, per BCBS d368). */
 export type NIIShockLabel = "parallel+200" | "parallel+100" | "parallel-100" | "parallel-200";
 
 export const NII_SHOCK_LABELS: readonly NIIShockLabel[] = [
@@ -129,7 +129,7 @@ export const BUCKET_YEAR_FRACTION: Record<(typeof REPRICING_BUCKETS)[number], nu
 // ---------------------------------------------------------------------------
 
 /**
- * Compute NII sensitivities for the four BCBS d365 parallel shock scenarios.
+ * Compute NII sensitivities for the four BCBS d368 parallel shock scenarios.
  *
  * In build phase (zero positions) all results are zero. When positions land:
  *   Base NII = Σ_bucket [ (RSA_t − RSL_t) × base_rate × year_fraction_t ]

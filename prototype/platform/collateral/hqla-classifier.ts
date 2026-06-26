@@ -13,7 +13,7 @@
 //         BBB- to A+ → haircut 25–50%
 //   non-HQLA: everything else → not eligible (haircut 100%)
 //
-// Authority: BA 110 Annex 1; Banks Act Reg 26; BCBS-D365-IRRBB.
+// Authority: BA 110 Annex 1; Banks Act Reg 26; BCBS-D368-IRRBB.
 // Author: Atlas (Core banking platform architect, engineering)
 
 // ---------------------------------------------------------------------------

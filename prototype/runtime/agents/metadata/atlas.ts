@@ -49,7 +49,7 @@ export const ATLAS_HANDLER_METADATA: readonly HandlerMetadata[] = [
   // Assembles all 8 ALCO pack sections from live projection events, serialises
   // to structured markdown, files via RecordFiled, emits ALCOPackGenerated.
   // Closes Eitan's substrate gap "Auto-generated ALCO pack — not yet built."
-  // Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d365.
+  // Authority: D-TREASURY-GAPS-WAVE1; BA 110; BA 120; BCBS d368.
   entry("Atlas", "alco-pack", "scheduled", {
     cadenceHours: 24 * 30, // monthly
     cronExpression: "0 7 1 * *",
