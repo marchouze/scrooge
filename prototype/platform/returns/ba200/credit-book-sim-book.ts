@@ -47,6 +47,7 @@
 //   reports to Camille CFO; BA-form line-mapping owner)
 //   + Helena (Chief Risk Officer, governance — IFRS 9 staging + RWA methodology).
 
+import { computeEcl } from "../../accounting/ifrs9-staging";
 import type {
   CounterpartyType,
   CreditExposure,
@@ -125,9 +126,14 @@ export interface CreditBookSimBook {
 
 const toMinor = (major: number): number => Math.round(major * 100);
 
-/** ECL provision in minor units = round(grossMinor × eclBps / 10_000). */
+/**
+ * ECL provision in minor units = round(grossMinor × eclBps / 10_000).
+ * Delegates to the canonical IFRS 9 `computeEcl` (the staging-engine source of
+ * truth) rather than re-implementing the arithmetic (Charter cmd 4 — source,
+ * don't hardcode; the engine owns the money rounding).
+ */
 export function simLoanEclMinor(loan: SimLoanSpec): number {
-  return Math.round((loan.grossMinor * loan.eclBasisPoints) / 10_000);
+  return computeEcl(loan.grossMinor, loan.eclBasisPoints);
 }
 
 const AS_OF = "2026-06-26T00:00:00.000Z";
