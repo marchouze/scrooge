@@ -77,8 +77,11 @@ Every BCBS document number was validated against the BIS source (bis.org), **not
 ### Agent spec (Ravi only — other Team/*.md excluded)
 - `Team/Ravi.md` §18–§20 re-landed from `origin/worktree-agent-a8045cbc3ea547f25` with number-only corrections: LCR `d295 → d238`, NSFR `d335 → d295` (oracle table, taxonomy-cross-check row, golden-case row, §20 challenges, v1.8 change-log). Added one §20 note recording that the upstream ADC oracle carried the wrong numbers, corrected under this decision. Ravi's domain content otherwise unchanged. Clears Ravi from `recon:agent-spec-domain-competence`.
 
+### Platform code — deposit-funding BA-300 (PR #1568, landed on main mid-remediation)
+- `prototype/platform/returns/ba300/consolidated-lcr.ts`, `deposit-funding-sim-book.ts`, `period-close-subscriber.ts`, `deposit-funding-sim-golden.test.ts`, `period-close-subscriber.test.ts` — all LCR `BCBS D295 → BCBS D238` (§142/§47/§69/§50/§31/§17 HQLA paragraphs, LCR golden case). The NSFR `BCBS 295` (no-D form) tokens are **correct** and preserved. This BA-300 build shipped the same LCR=d295 defect AFTER the register was corrected — caught because the rebase pulled it in; the new recon gate's scan was widened to `platform/returns` so this class cannot recur unscanned.
+
 ### New control
-- `prototype/platform/recon/bcbs-citation-number-integrity.ts` — fail-closed, harden-only gate (registered in `package.json` + the `domain` recon suite). Pins each cited BCBS number to its canonical title via high-precision forbidden-pairing apposition checks; proven to catch the d295=LCR, d335=NSFR, d335=IRRBB, d295=stress-testing defects and green on the corrected tree (535 tokens checked).
+- `prototype/platform/recon/bcbs-citation-number-integrity.ts` — fail-closed, harden-only gate (registered in `package.json` + the `domain` recon suite). Pins each cited BCBS number to its canonical title via high-precision forbidden-pairing apposition checks; scans `Policies`, `Procedures`, `Regulations`, and the code dirs `platform/reporting`, `platform/accounting`, `platform/returns`. Proven to catch the d295=LCR, d335=NSFR, d335=IRRBB, d295=stress-testing defects (incl. the returns-code form) and green on the corrected tree (678 tokens checked).
 
 ## 4. Flagged findings — NOT fixed here (scope exclusions / coordination)
 

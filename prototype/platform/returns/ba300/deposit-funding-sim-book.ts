@@ -22,7 +22,7 @@
 // (`l1Zar` etc. are folded into `amountZar` without a /100 in alm-positions.ts).
 //
 // Authority: D-BA-RETURN-SIMULATOR-FIRST; Reg 26 (LCR) / Reg 26A (NSFR) /
-//   Reg 27 (minimum liquid reserve); SARB Act 90 of 1989; BCBS D295 / BCBS 295.
+//   Reg 27 (minimum liquid reserve); SARB Act 90 of 1989; BCBS D238 / BCBS 295.
 // Author: Atlas (Core banking platform architect, engineering).
 
 export const DEPOSIT_FUNDING_SIM_SCENARIO = "deposit-funding-book-sim-v1" as const;
@@ -183,7 +183,7 @@ export const DEPOSIT_FUNDING_SIM_BOOK: DepositFundingSimBook = {
 // ---------------------------------------------------------------------------
 // HAND-COMPUTED ORACLE FIGURES (domain truth — derived from the regulation).
 //
-// === LCR (BCBS D295 / Reg 26) ===
+// === LCR (BCBS D238 / Reg 26) ===
 // HQLA (post-haircut, post-cap):
 //   L1  = 800m × (1 − 0.00)            = 800,000,000
 //   L2A = 150m × (1 − 0.15)            = 127,500,000

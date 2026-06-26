@@ -210,12 +210,20 @@ function findRepoRoot(start: string): string {
 }
 
 /** Citation surfaces this gate scans. Source-doc verbatim extracts are excluded. */
-const SCAN_DIRS = ["Policies", "Procedures", "Regulations"] as const;
-const SCAN_FILES = [
-  "prototype/platform/reporting/ba-300-lcr.ts",
-  "prototype/platform/reporting/ba-330-irrbb.ts",
-  "prototype/platform/accounting/coa-registry.ts",
+const SCAN_DIRS = [
+  "Policies",
+  "Procedures",
+  "Regulations",
+  // Code surfaces that cite the liquidity / IRRBB / market-risk standards. Whole
+  // directories (not enumerated files) so newly-added BA-return / reporting /
+  // accounting code cannot reintroduce a mis-numbered BCBS citation unscanned —
+  // exactly what happened when a deposit-funding BA-300 build (PR #1568) shipped
+  // `BCBS D295` for the LCR after the register was already corrected.
+  "prototype/platform/reporting",
+  "prototype/platform/accounting",
+  "prototype/platform/returns",
 ] as const;
+const SCAN_FILES: readonly string[] = [];
 
 const SKIP_PATH_FRAGMENTS = [
   "/source-docs/",
