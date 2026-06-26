@@ -17,7 +17,7 @@
 //      build-state of the projection / engine / connector behind it.
 //   2. Walks Ravi-owned obligations from `_obligations-register.md`:
 //      LCR (BA 110 / Banks Act Reg 26), NSFR (BA 120 / Banks Act Reg 27),
-//      IRRBB (BCBS d365), intraday liquidity (BCBS 248), Excon FX
+//      IRRBB (BCBS d368), intraday liquidity (BCBS 248), Excon FX
 //      position (Currency & Exchanges Manual). Includes ORG-PR-06 / -07
 //      / -08 / -11 / -14 / -15 and ORG-MK-08.
 //   3. For each ALM pipeline, reports engineer-side readiness state:
@@ -74,7 +74,7 @@ Your task is to write a written narrative — one to three short paragraphs — 
 - Picks the 1–3 most consequential observations: a pipeline where the projection substrate is one engineering ticket away from green, an obligation in PARTIAL state that gates a downstream procedure, an ALM-domain event-type the daily expectation watches that a deferred connector blocks (correspondent-bank API for SAMOS; market-rate feeds for FTP curves).
 - Names the next engineering move. Be concrete: a specific projection to wire (e.g., HQLA-classification rules per Banks Act Reg 26 against synthetic balance), a specific feed to ingest (e.g., ZARONIA / JIBAR curve sources for FTP), a specific connector contract to draft (correspondent-bank SAMOS-mediation API).
 
-Cite Banks Act 94 of 1990, Banks Act Regulations 26 and 27, BCBS d365 (IRRBB), BCBS 248 (intraday), and the Currency & Exchanges Manual where they bind. Cite obligation IDs (\`ORG-PR-06\` / \`-07\` / \`-08\` / \`-11\` / \`-14\` / \`-15\`; \`ORG-MK-08\`) when calling out specifics. Eitan's snapshot and the obligations register are canonical authoring locations; your narrative is engineer interpretation, not new appetite or obligation substance.
+Cite Banks Act 94 of 1990, Banks Act Regulations 26 and 27, BCBS d368 (IRRBB), BCBS 248 (intraday), and the Currency & Exchanges Manual where they bind. Cite obligation IDs (\`ORG-PR-06\` / \`-07\` / \`-08\` / \`-11\` / \`-14\` / \`-15\`; \`ORG-MK-08\`) when calling out specifics. Eitan's snapshot and the obligations register are canonical authoring locations; your narrative is engineer interpretation, not new appetite or obligation substance.
 
 Do not include a markdown header for your section — the calling pipeline wraps your output under "## Ravi's narrative". Just produce the prose.
 
@@ -217,7 +217,7 @@ function buildPipelineReadiness(): readonly PipelineReadiness[] {
       label: "30-day net cash outflow + LCR ratio",
       engineerSideState: "specified",
       substrateRequired:
-        "30-day stressed cash-outflow model (run-off rates per Banks Act Reg 26 / BCBS D295) + LCR ratio engine consuming HQLA inventory. Owner: Ravi + Anya (projection runtime).",
+        "30-day stressed cash-outflow model (run-off rates per Banks Act Reg 26 / BCBS D238) + LCR ratio engine consuming HQLA inventory. Owner: Ravi + Anya (projection runtime).",
       nextEngineeringStep:
         "Wait for HQLA inventory projection (above); first `LCRComputed` event fires once inventory + outflow model both wired.",
     },
@@ -226,7 +226,7 @@ function buildPipelineReadiness(): readonly PipelineReadiness[] {
       label: "Available stable funding (NSFR numerator)",
       engineerSideState: "specified",
       substrateRequired:
-        "ASF factor table per Banks Act Reg 27 / BCBS D335, applied to liabilities by tenor / counterparty type. Owner: Ravi + Anya.",
+        "ASF factor table per Banks Act Reg 27 / BCBS D295, applied to liabilities by tenor / counterparty type. Owner: Ravi + Anya.",
       nextEngineeringStep:
         "Specify ASF factor table; first ASF projection fires once synthetic liability book exists in the event log.",
     },
@@ -235,7 +235,7 @@ function buildPipelineReadiness(): readonly PipelineReadiness[] {
       label: "Required stable funding (NSFR denominator)",
       engineerSideState: "specified",
       substrateRequired:
-        "RSF factor table per Banks Act Reg 27 / BCBS D335, applied to assets by tenor / encumbrance / quality. Owner: Ravi + Anya.",
+        "RSF factor table per Banks Act Reg 27 / BCBS D295, applied to assets by tenor / encumbrance / quality. Owner: Ravi + Anya.",
       nextEngineeringStep:
         "Specify RSF factor table alongside ASF; same projection runtime; first `NSFRComputed` event fires once both wired.",
     },
@@ -244,9 +244,9 @@ function buildPipelineReadiness(): readonly PipelineReadiness[] {
       label: "Repricing-gap engine (IRRBB / EVE / NII)",
       engineerSideState: "specified",
       substrateRequired:
-        "Repricing-gap projection per BCBS d365 — bucket banking-book positions by repricing tenor; compute EVE shock and NII sensitivity. Owner: Ravi joint with Rohan (measurement).",
+        "Repricing-gap projection per BCBS d368 — bucket banking-book positions by repricing tenor; compute EVE shock and NII sensitivity. Owner: Ravi joint with Rohan (measurement).",
       nextEngineeringStep:
-        "Specify EVE shock scenarios per BCBS d365; build first-cut against synthetic banking-book positions; emit `IRRBBChecked`.",
+        "Specify EVE shock scenarios per BCBS d368; build first-cut against synthetic banking-book positions; emit `IRRBBChecked`.",
     },
     {
       id: "alm:fx-position",
@@ -496,7 +496,7 @@ function buildReportMarkdown(
     "- **Liquidity / ALM projection runtime (Anya + Ravi)** — pre-condition for `LCRComputed` and `NSFRComputed` events. HQLA inventory + ASF / RSF factor tables specified per Banks Act Reg 26 / Reg 27; not yet wired to the postable-event stream.",
   );
   lines.push(
-    "- **Repricing-gap engine (Ravi joint with Rohan)** — pre-condition for `IRRBBChecked` events. EVE shocks per BCBS d365 specified; first run blocks on synthetic banking-book positions in the event log.",
+    "- **Repricing-gap engine (Ravi joint with Rohan)** — pre-condition for `IRRBBChecked` events. EVE shocks per BCBS d368 specified; first run blocks on synthetic banking-book positions in the event log.",
   );
   lines.push(
     "- **FX position projection (Ravi joint with Mira)** — pre-condition for `FXPositionReported`. Excon position categories per Currency & Exchanges Manual specified; first event fires on first FX-denominated postable.",

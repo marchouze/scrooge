@@ -35,7 +35,7 @@
 //            D-MARKETS-SCHEMA-FOUNDATION (CEO-approved);
 //            IFRS 9 §3.1.1, §4.1.1, §5.4.1, §5.7.1;
 //            Banks Act 94 of 1990 — Reg 26/27 (LCR/NSFR);
-//            BCBS d365 (IRRBB); BA 110 / BA 120.
+//            BCBS d368 (IRRBB); BA 110 / BA 120.
 //
 // Authors: Ravi (Treasury/ALM Engineer, engineering),
 //          Eitan (Treasurer, governance)

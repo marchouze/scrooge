@@ -16,7 +16,7 @@
 //                                    30 calendar days (denominator gross).
 //   LcrCashInflows30D              — Stressed cash inflows over the next
 //                                    30 calendar days, capped at 75% of
-//                                    outflows per BCBS D295 / Reg 26(11).
+//                                    outflows per BCBS D238 / Reg 26(11).
 //   LiquidityCoverageRatio         — derived ratio (HQLA stock / net cash
 //                                    outflows). Exit-criterion quantity for
 //                                    the BA 110 form.
@@ -24,7 +24,7 @@
 // Per pack §6 Slice 3 + Marc's Q1 default (rehearsal-grade with placeholders),
 // each entry carries:
 //   - one resolved citation chain (Banks Act 94/1990 + Regulations Relating
-//     to Banks Reg 26 + BCBS D295), and
+//     to Banks Reg 26 + BCBS D238), and
 //   - a `[citation: TBC]` marker pointing at Mira's WS-INSTRUMENT-ANALYSES
 //     workstream which will resolve the precise SARB BA 110 line numbers
 //     once the published schema is fully analysed.
@@ -57,14 +57,14 @@ const FIRST_AUTHORED = "2026-05-10T00:00:00.000Z";
  * (subject to drawdown criteria), and Level-1 sovereign / supranational
  * securities. 100% factor in the LCR numerator (no haircut).
  *
- * Per BCBS D295 §50(a)–(c) and Regulations Relating to Banks Reg 26(7)(a):
+ * Per BCBS D238 §50(a)–(c) and Regulations Relating to Banks Reg 26(7)(a):
  * Level-1 assets carry no cap relative to total HQLA.
  */
 export const hqlaLevel1: SemanticEntry = {
   id: "HqlaLevel1",
   version: "v0.1",
   description:
-    "Stock of High-Quality Liquid Assets — Level 1 (BCBS D295 / Reg 26(7)(a)). Cash, central-bank reserves (drawdown-eligible portion), Level-1 sovereign / supranational securities. 100% factor in LCR numerator; no concentration cap.",
+    "Stock of High-Quality Liquid Assets — Level 1 (BCBS D238 / Reg 26(7)(a)). Cash, central-bank reserves (drawdown-eligible portion), Level-1 sovereign / supranational securities. 100% factor in LCR numerator; no concentration cap.",
   units: "money-minor",
   dimensions: ["currency", "account", "hqlaLevel"],
   projection: "liquidity-projection",
@@ -87,7 +87,7 @@ export const hqlaLevel1: SemanticEntry = {
     {
       type: "regulation",
       regulationId: "ORG-PR-06",
-      note: "BCBS D295 / Regulations Relating to Banks Reg 26(7)(a) — Level-1 HQLA composition + 100% factor.",
+      note: "BCBS D238 / Regulations Relating to Banks Reg 26(7)(a) — Level-1 HQLA composition + 100% factor.",
     },
     {
       type: "tbc",
@@ -105,8 +105,8 @@ export const hqlaLevel1: SemanticEntry = {
 
 /**
  * `HqlaLevel2A` — money-units stock of Level-2A HQLA. 85% factor (15%
- * haircut) per BCBS D295 §52 / Reg 26(7)(b). Capped at 40% of total HQLA
- * (Level 1 + Level 2A + Level 2B) per BCBS D295 §47 / Reg 26(7).
+ * haircut) per BCBS D238 §52 / Reg 26(7)(b). Capped at 40% of total HQLA
+ * (Level 1 + Level 2A + Level 2B) per BCBS D238 §47 / Reg 26(7).
  *
  * Eligibility: 20% risk-weight sovereign / PSE / multilateral-development-bank
  * securities; corporate debt + covered bonds rated AA- or higher and meeting
@@ -116,7 +116,7 @@ export const hqlaLevel2A: SemanticEntry = {
   id: "HqlaLevel2A",
   version: "v0.1",
   description:
-    "Stock of High-Quality Liquid Assets — Level 2A. 85% factor (15% haircut). Subject to the 40%-of-total-HQLA cap per BCBS D295 §47 / Reg 26(7).",
+    "Stock of High-Quality Liquid Assets — Level 2A. 85% factor (15% haircut). Subject to the 40%-of-total-HQLA cap per BCBS D238 §47 / Reg 26(7).",
   units: "money-minor",
   dimensions: ["currency", "account", "hqlaLevel"],
   projection: "liquidity-projection",
@@ -139,7 +139,7 @@ export const hqlaLevel2A: SemanticEntry = {
     {
       type: "regulation",
       regulationId: "ORG-PR-06",
-      note: "BCBS D295 §52 / Regulations Relating to Banks Reg 26(7)(b) — Level-2A HQLA composition + 85% factor + 40% cap.",
+      note: "BCBS D238 §52 / Regulations Relating to Banks Reg 26(7)(b) — Level-2A HQLA composition + 85% factor + 40% cap.",
     },
     {
       type: "tbc",
@@ -158,14 +158,14 @@ export const hqlaLevel2A: SemanticEntry = {
 /**
  * `HqlaLevel2B` — money-units stock of Level-2B HQLA. Asset-specific factors
  * (50% lower bound for corporate debt rated A+ to BBB-; 50% for common
- * equities; 25% for qualifying RMBS) per BCBS D295 §54 / Reg 26(7)(c).
- * Capped at 15% of total HQLA per BCBS D295 §47 / Reg 26(7).
+ * equities; 25% for qualifying RMBS) per BCBS D238 §54 / Reg 26(7)(c).
+ * Capped at 15% of total HQLA per BCBS D238 §47 / Reg 26(7).
  */
 export const hqlaLevel2B: SemanticEntry = {
   id: "HqlaLevel2B",
   version: "v0.1",
   description:
-    "Stock of High-Quality Liquid Assets — Level 2B. Asset-specific factors (50% lower bound; 25% RMBS). Subject to the 15%-of-total-HQLA cap per BCBS D295 §47 / Reg 26(7).",
+    "Stock of High-Quality Liquid Assets — Level 2B. Asset-specific factors (50% lower bound; 25% RMBS). Subject to the 15%-of-total-HQLA cap per BCBS D238 §47 / Reg 26(7).",
   units: "money-minor",
   dimensions: ["currency", "account", "hqlaLevel"],
   projection: "liquidity-projection",
@@ -188,7 +188,7 @@ export const hqlaLevel2B: SemanticEntry = {
     {
       type: "regulation",
       regulationId: "ORG-PR-06",
-      note: "BCBS D295 §54 / Regulations Relating to Banks Reg 26(7)(c) — Level-2B HQLA composition, asset-specific factors, + 15% cap.",
+      note: "BCBS D238 §54 / Regulations Relating to Banks Reg 26(7)(c) — Level-2B HQLA composition, asset-specific factors, + 15% cap.",
     },
     {
       type: "tbc",
@@ -209,7 +209,7 @@ export const hqlaLevel2B: SemanticEntry = {
  * calendar days, before any inflow offset. Drives the LCR denominator's
  * gross outflow component.
  *
- * Per BCBS D295 §69–§141 / Reg 26(8): outflow categories include retail
+ * Per BCBS D238 §69–§141 / Reg 26(8): outflow categories include retail
  * deposits (5–10%), unsecured wholesale funding (5–100% by counterparty
  * type), secured funding (0–100% by collateral level), derivatives (100%
  * outflows + valuation-change-on-collateral), other contingent funding
@@ -219,7 +219,7 @@ export const lcrCashOutflows30D: SemanticEntry = {
   id: "LcrCashOutflows30D",
   version: "v0.1",
   description:
-    "Stressed cash outflows over the next 30 calendar days (LCR denominator, gross). Aggregated across retail / wholesale / secured-funding / derivatives / contingent-funding categories per BCBS D295 §69–§141 / Reg 26(8).",
+    "Stressed cash outflows over the next 30 calendar days (LCR denominator, gross). Aggregated across retail / wholesale / secured-funding / derivatives / contingent-funding categories per BCBS D238 §69–§141 / Reg 26(8).",
   units: "money-minor",
   dimensions: ["currency"],
   projection: "liquidity-projection",
@@ -242,7 +242,7 @@ export const lcrCashOutflows30D: SemanticEntry = {
     {
       type: "regulation",
       regulationId: "ORG-PR-06",
-      note: "BCBS D295 §69–§141 / Regulations Relating to Banks Reg 26(8) — outflow category run-off rates.",
+      note: "BCBS D238 §69–§141 / Regulations Relating to Banks Reg 26(8) — outflow category run-off rates.",
     },
     {
       type: "tbc",
@@ -259,7 +259,7 @@ export const lcrCashOutflows30D: SemanticEntry = {
 
 /**
  * `LcrCashInflows30D` — total stressed cash inflows over the next 30
- * calendar days, capped at 75% of LcrCashOutflows30D per BCBS D295 §142 /
+ * calendar days, capped at 75% of LcrCashOutflows30D per BCBS D238 §142 /
  * Reg 26(11).
  *
  * The cap means the LCR denominator (`net cash outflows`) is bounded below
@@ -270,7 +270,7 @@ export const lcrCashInflows30D: SemanticEntry = {
   id: "LcrCashInflows30D",
   version: "v0.1",
   description:
-    "Stressed cash inflows over the next 30 calendar days, capped at 75% of LcrCashOutflows30D per BCBS D295 §142 / Reg 26(11). LCR denominator inflow-offset component.",
+    "Stressed cash inflows over the next 30 calendar days, capped at 75% of LcrCashOutflows30D per BCBS D238 §142 / Reg 26(11). LCR denominator inflow-offset component.",
   units: "money-minor",
   dimensions: ["currency"],
   projection: "liquidity-projection",
@@ -293,7 +293,7 @@ export const lcrCashInflows30D: SemanticEntry = {
     {
       type: "regulation",
       regulationId: "ORG-PR-06",
-      note: "BCBS D295 §142 / Regulations Relating to Banks Reg 26(11) — inflow categories + 75% cap.",
+      note: "BCBS D238 §142 / Regulations Relating to Banks Reg 26(11) — inflow categories + 75% cap.",
     },
     {
       type: "tbc",
@@ -310,7 +310,7 @@ export const lcrCashInflows30D: SemanticEntry = {
 
 /**
  * `LiquidityCoverageRatio` — the derived ratio (HQLA stock / net cash
- * outflows over 30 days). Required to be ≥ 100% per BCBS D295 §22 / Reg
+ * outflows over 30 days). Required to be ≥ 100% per BCBS D238 §22 / Reg
  * 26(2). Exit-criterion quantity for the BA 110 form: the cell that the
  * supervisor reads to assess compliance.
  *
@@ -329,7 +329,7 @@ export const liquidityCoverageRatio: SemanticEntry = {
   id: "LiquidityCoverageRatio",
   version: "v0.1",
   description:
-    "Liquidity Coverage Ratio — stock of HQLA divided by total net cash outflows over a 30-day stress period. Required ≥ 100% per BCBS D295 §22 / Reg 26(2). Reported on BA 110.",
+    "Liquidity Coverage Ratio — stock of HQLA divided by total net cash outflows over a 30-day stress period. Required ≥ 100% per BCBS D238 §22 / Reg 26(2). Reported on BA 110.",
   units: "ratio",
   dimensions: ["currency"],
   projection: "liquidity-projection",
@@ -352,7 +352,7 @@ export const liquidityCoverageRatio: SemanticEntry = {
     {
       type: "regulation",
       regulationId: "ORG-PR-06",
-      note: "BCBS D295 §22 / Regulations Relating to Banks Reg 26(2) — LCR ≥ 100% requirement.",
+      note: "BCBS D238 §22 / Regulations Relating to Banks Reg 26(2) — LCR ≥ 100% requirement.",
     },
     {
       type: "tbc",

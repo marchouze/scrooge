@@ -47,7 +47,7 @@
 //            D-V1-REMOVAL-PHASE-3B (CEO-approved 2026-06-16);
 //            D-ENGINEERING-INTEGRITY-CHARTER;
 //            WS-MULTI-BASE-CURRENCY / D-MULTI-BASE-CURRENCY-FOUNDATION;
-//            RRTB Regulation 26 (LCR) · 26A (NSFR) · BCBS D295 · D396 ·
+//            RRTB Regulation 26 (LCR) · 26A (NSFR) · BCBS D238 · D396 ·
 //            BA 110 · BA 120.
 // Author: Atlas (Core banking platform architect, engineering).
 

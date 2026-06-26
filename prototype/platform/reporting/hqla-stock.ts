@@ -18,10 +18,10 @@
 //   every individual security held. The unified-position projection provides
 //   the mark-to-market value for each holding.
 //
-// BCBS D295 haircuts applied here:
-//   Level 1:  0%  (factor 1.00) — per BCBS D295 §50.
-//   Level 2A: 15% (factor 0.85) — per BCBS D295 §52.
-//   Level 2B: 25% default (factor 0.75) — per BCBS D295 §54; assetSpecificHaircut
+// BCBS D238 haircuts applied here:
+//   Level 1:  0%  (factor 1.00) — per BCBS D238 §50.
+//   Level 2A: 15% (factor 0.85) — per BCBS D238 §52.
+//   Level 2B: 25% default (factor 0.75) — per BCBS D238 §54; assetSpecificHaircut
 //             overrides the default when provided by the caller.
 //
 // Currency handling:
@@ -38,7 +38,7 @@
 // Citations:
 //   D-FINANCIAL-INSTRUMENT-ENTITY (CEO-approved 2026-05-22) — instrument entity
 //     + per-instrument classification via FinancialInstrumentClassified.
-//   BCBS D295 — Basel III Liquidity Coverage Ratio and liquidity risk monitoring
+//   BCBS D238 — Basel III Liquidity Coverage Ratio and liquidity risk monitoring
 //     tools (Jan 2013) §50–§54: HQLA eligibility criteria and haircuts.
 //   Regulations Relating to Banks Reg 26(7) — LCR numerator / HQLA stock.
 //   Principles/1-events-are-truth.md — projection-derived inputs only.
@@ -58,7 +58,7 @@ import type { UnifiedPositionState } from "../projections/markets/unified-positi
  * HQLA tier as recorded on SecurityMasterRow.hqlaLevel.
  * "non-hqla" is the explicit opt-out; undefined means unclassified (also excluded).
  *
- * Authority: D-FINANCIAL-INSTRUMENT-ENTITY; BCBS D295 §50–§54.
+ * Authority: D-FINANCIAL-INSTRUMENT-ENTITY; BCBS D238 §50–§54.
  */
 export type HqlaLevel = "level-1" | "level-2a" | "level-2b" | "non-hqla";
 
@@ -69,7 +69,7 @@ export type HqlaLevel = "level-1" | "level-2a" | "level-2b" | "non-hqla";
  * `adjustedMinor` is the post-haircut value (= nominalMinor × (1 − haircut)).
  * `haircut` is expressed as a fraction (0.0 = no haircut; 0.15 = 15% Level-2A haircut).
  *
- * Authority: D-FINANCIAL-INSTRUMENT-ENTITY; BCBS D295 §50–§54.
+ * Authority: D-FINANCIAL-INSTRUMENT-ENTITY; BCBS D238 §50–§54.
  */
 export interface HqlaStockLine {
   readonly instrumentId: string;
@@ -79,7 +79,7 @@ export interface HqlaStockLine {
   readonly currency: string;
   /** Gross market value (pre-haircut) in minor units of the functional currency. */
   readonly nominalMinor: number;
-  /** BCBS D295 haircut fraction: 0.00 (L1) / 0.15 (L2A) / 0.25 default (L2B). */
+  /** BCBS D238 haircut fraction: 0.00 (L1) / 0.15 (L2A) / 0.25 default (L2B). */
   readonly haircut: number;
   /** Post-haircut value in minor units: nominalMinor × (1 − haircut). */
   readonly adjustedMinor: number;
@@ -94,7 +94,7 @@ export interface HqlaStockLine {
  * This interface is also the type consumed by `generateBa300Lcr()` as
  * `Ba300LcrGeneratorInput.hqlaStock`.
  *
- * Authority: D-FINANCIAL-INSTRUMENT-ENTITY; BCBS D295; Reg 26(7).
+ * Authority: D-FINANCIAL-INSTRUMENT-ENTITY; BCBS D238; Reg 26(7).
  */
 export interface HqlaStockInput {
   /** Folded state of the unified-position projection (markets.unified-position). */
@@ -112,18 +112,18 @@ export interface HqlaStockInput {
   /**
    * Optional per-instrument override for Level-2B haircut fraction.
    * Key: instrumentId. Value: haircut fraction in [0, 1].
-   * Unspecified instruments use the BCBS D295 §54 default of 0.25.
+   * Unspecified instruments use the BCBS D238 §54 default of 0.25.
    *
-   * Authority: BCBS D295 §54; Reg 26(7)(c).
+   * Authority: BCBS D238 §54; Reg 26(7)(c).
    */
   readonly level2bHaircutOverrides?: ReadonlyMap<string, number>;
   /**
    * ISINs of securities pledged as repo collateral (encumbered).
    * Encumbered bonds are excluded from the HQLA stock: they are not
-   * freely available to be monetised under stress (BCBS D295 §30).
+   * freely available to be monetised under stress (BCBS D238 §30).
    *
    * Build: pass the set of `collateralIsin` values from open
-   * `RepoTradeOpened` events. Authority: BCBS D295 §30;
+   * `RepoTradeOpened` events. Authority: BCBS D238 §30;
    * D-BA-RETURN-NUMBERING-EXCEL-CANONICAL.
    */
   readonly encumberedIsins?: ReadonlySet<string>;
@@ -132,7 +132,7 @@ export interface HqlaStockInput {
 /**
  * The computed HQLA stock broken down by tier.
  *
- * Note: caps (BCBS D295 §47 — 40% Level-2A cap, 15% Level-2B cap) are NOT
+ * Note: caps (BCBS D238 §47 — 40% Level-2A cap, 15% Level-2B cap) are NOT
  * applied here. The caps are applied inside `generateBa300Lcr()` via the
  * existing `applyHqlaCaps()` function, which operates on the pre-cap tier
  * totals. This separation keeps the instrument-level computation and the
@@ -160,13 +160,13 @@ export interface HqlaStockResult {
 }
 
 // ---------------------------------------------------------------------------
-// BCBS D295 default haircuts per tier
+// BCBS D238 default haircuts per tier
 // ---------------------------------------------------------------------------
 
 const HAIRCUT: Record<"level-1" | "level-2a" | "level-2b", number> = {
-  "level-1": 0.0, // BCBS D295 §50 — Level 1 assets: 0% haircut.
-  "level-2a": 0.15, // BCBS D295 §52 — Level 2A assets: 15% haircut.
-  "level-2b": 0.25, // BCBS D295 §54 — Level 2B assets: 25% default haircut.
+  "level-1": 0.0, // BCBS D238 §50 — Level 1 assets: 0% haircut.
+  "level-2a": 0.15, // BCBS D238 §52 — Level 2A assets: 15% haircut.
+  "level-2b": 0.25, // BCBS D238 §54 — Level 2B assets: 25% default haircut.
 };
 
 // ---------------------------------------------------------------------------
@@ -184,14 +184,14 @@ const HAIRCUT: Record<"level-1" | "level-2a" | "level-2b", number> = {
  *      `quantity × lastObservedPrice` when markToMarket is 0 or null.
  *   4. Skip positions denominated in a non-functional currency (surfaced in
  *      `excludedFxPositions`).
- *   5. Apply BCBS D295 haircut for the tier.
+ *   5. Apply BCBS D238 haircut for the tier.
  *   6. Accumulate into level1Lines / level2aLines / level2bLines.
  *
- * BCBS D295 caps (§47) are NOT applied here — they are applied by the BA 110
+ * BCBS D238 caps (§47) are NOT applied here — they are applied by the BA 110
  * generator via `applyHqlaCaps()`.
  *
  * Citations:
- *   D-FINANCIAL-INSTRUMENT-ENTITY; BCBS D295 §50–§54; Reg 26(7);
+ *   D-FINANCIAL-INSTRUMENT-ENTITY; BCBS D238 §50–§54; Reg 26(7);
  *   Principles/1-events-are-truth.md; Principles/5-multi-currency-entity-country.md.
  */
 export function computeHqlaStockFromPositions(input: HqlaStockInput): HqlaStockResult {
@@ -229,7 +229,7 @@ export function computeHqlaStockFromPositions(input: HqlaStockInput): HqlaStockR
     if (!rawHqlaLevel || rawHqlaLevel === "non-hqla") continue;
 
     // Step 2b: Encumbrance check — bonds pledged as repo collateral are not
-    // freely available under stress (BCBS D295 §30). Skip if ISIN is in
+    // freely available under stress (BCBS D238 §30). Skip if ISIN is in
     // the encumbered set.
     if (smRow.isin && encumberedIsins?.has(smRow.isin)) continue;
 
@@ -267,7 +267,7 @@ export function computeHqlaStockFromPositions(input: HqlaStockInput): HqlaStockR
     // Skip zero-value positions — they contribute nothing to the stock.
     if (nominalMinor === 0) continue;
 
-    // Step 5: Apply BCBS D295 haircut.
+    // Step 5: Apply BCBS D238 haircut.
     let haircut = HAIRCUT[hqlaLevel];
     if (hqlaLevel === "level-2b" && level2bHaircutOverrides) {
       const override = level2bHaircutOverrides.get(instrumentId);
@@ -367,7 +367,7 @@ export interface CashHqlaFromCustodianInput {
  * classification.
  *
  *   - Cash held at the central bank (custodian classified `central-bank`) is
- *     Level-1 HQLA — Reg 26(7)(a)(i); BCBS D295 §50(a).
+ *     Level-1 HQLA — Reg 26(7)(a)(i); BCBS D238 §50(a).
  *   - Cash held at a correspondent commercial bank is generally NOT HQLA
  *     (it is an unsecured claim on a private institution) — undefined tier.
  *
@@ -394,9 +394,9 @@ function deriveCashHqlaTier(classifications: ReadonlySet<string>): "level-1" | u
  *     Slice-6+ step; Principle 5).
  *   - Only **positive** (debit) balances contribute. A negative balance is an
  *     overdrawn reserve account (a borrowing), not HQLA.
- *   - Level-1 assets carry a 0% haircut (BCBS D295 §50).
+ *   - Level-1 assets carry a 0% haircut (BCBS D238 §50).
  *
- * Authority: BCBS D295 §50; Reg 26(7)(a)(i); custodian-derived rework
+ * Authority: BCBS D238 §50; Reg 26(7)(a)(i); custodian-derived rework
  * 2026-05-29 (removes the authored COA `hqlaLevel` tag — the tier is now a
  * query over the event-sourced Party register, not stored state).
  */

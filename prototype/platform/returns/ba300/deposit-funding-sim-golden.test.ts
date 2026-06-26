@@ -6,7 +6,7 @@
 // Drives the BA 300 LCR + NSFR engines AND the new BA 310 minimum-liquid-reserve
 // fold to NON-ZERO outputs via the simulated deposit / funding / HQLA book, and
 // asserts each lands on HAND-COMPUTED golden-case figures derived from the
-// regulation (BCBS D295 LCR / BCBS 295 NSFR / SARB Reg 27 + SARB Act 90/1989) —
+// regulation (BCBS D238 LCR / BCBS 295 NSFR / SARB Reg 27 + SARB Act 90/1989) —
 // a domain-truth oracle, NOT internal consistency. A consistent-but-wrong figure
 // is a finding.
 //
@@ -19,7 +19,7 @@
 //
 // Authority: D-BA-RETURN-SIMULATOR-FIRST (CEO-approved 2026-06-26);
 //   Reg 26 (LCR) / Reg 26A (NSFR) / Reg 27 (minimum liquid reserve); SARB Act 90
-//   of 1989; BCBS D295 / BCBS 295; D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE.
+//   of 1989; BCBS D238 / BCBS 295; D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE.
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
@@ -159,11 +159,11 @@ beforeEach(() => setDefaultProvenanceModeOverride("operating-book"));
 afterEach(() => setDefaultProvenanceModeOverride(undefined));
 
 // ===========================================================================
-// LCR golden case (BCBS D295 / Reg 26)
+// LCR golden case (BCBS D238 / Reg 26)
 //   HQLA = 950m ; net cash outflows = 170m ; LCR = 558.82%
 // ===========================================================================
 
-describe("BA300 sim — LCR golden case (BCBS D295 / Reg 26)", () => {
+describe("BA300 sim — LCR golden case (BCBS D238 / Reg 26)", () => {
   it("folds the simulated book to the hand-computed HQLA / net-outflow / ratio", () => {
     const store = new EventStore(":memory:");
     seedBook(store);

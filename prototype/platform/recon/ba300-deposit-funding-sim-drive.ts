@@ -9,7 +9,7 @@
 //   (A) GOLDEN CASE — IN-MEMORY ORACLE (always asserts). A self-contained
 //       in-memory book (the canonical `DEPOSIT_FUNDING_SIM_BOOK`) is folded and
 //       must produce the HAND-COMPUTED oracle figures derived from the regulation
-//       (BCBS D295 LCR / BCBS 295 NSFR / SARB Reg 27 + SARB Act 90/1989) — a
+//       (BCBS D238 LCR / BCBS 295 NSFR / SARB Reg 27 + SARB Act 90/1989) — a
 //       domain-truth oracle, not internal consistency:
 //         LCR : HQLA R950m / net-outflow R170m → 558.82%
 //         NSFR: ASF R1,005m / RSF R89.5m       → 1122.91%
@@ -60,7 +60,7 @@
 // Authority: D-BA-RETURN-SIMULATOR-FIRST (CEO-approved 2026-06-26);
 //   D-BA-RETURN-NUMBERING-EXCEL-CANONICAL; D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE;
 //   D-PROVENANCE-FILTER-ENFORCEMENT; Reg 26 (LCR) / Reg 26A (NSFR) / Reg 27
-//   (minimum liquid reserve); SARB Act 90 of 1989; BCBS D295 / BCBS 295.
+//   (minimum liquid reserve); SARB Act 90 of 1989; BCBS D238 / BCBS 295.
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { eventStore } from "../composition";
@@ -219,7 +219,7 @@ export function run(): ReconResult {
     violations.push({
       subject: `${PIPELINE}:lcr-golden-mismatch`,
       severity: "fail",
-      message: `LCR golden mismatch: HQLA=${lcr.hqlaZar} (expected ${oracle.lcr.hqlaZar}), net-outflows=${lcr.netCashOutflowsZar} (expected ${oracle.lcr.netCashOutflowsZar}), ratio%=${lcr.lcrRatioPct} (expected ${oracle.lcr.lcrRatioPct}). A consistent-but-wrong figure is a finding. Authority: BCBS D295; Reg 26.`,
+      message: `LCR golden mismatch: HQLA=${lcr.hqlaZar} (expected ${oracle.lcr.hqlaZar}), net-outflows=${lcr.netCashOutflowsZar} (expected ${oracle.lcr.netCashOutflowsZar}), ratio%=${lcr.lcrRatioPct} (expected ${oracle.lcr.lcrRatioPct}). A consistent-but-wrong figure is a finding. Authority: BCBS D238; Reg 26.`,
     });
   }
 

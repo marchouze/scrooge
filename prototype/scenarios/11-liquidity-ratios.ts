@@ -18,7 +18,7 @@
 //
 // Authority:
 //   D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN (CEO-approved 2026-05-10)
-//   REG-26-LCR; REG-26A-NSFR; BCBS-D295; BCBS-295
+//   REG-26-LCR; REG-26A-NSFR; BCBS-D238; BCBS-295
 //
 // Run: `bun run scenario:liquidity-ratios`
 //

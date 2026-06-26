@@ -3,10 +3,10 @@
 // ALM (Asset-Liability Management) position projection.
 //
 // Folds events into the four input sets that drive LCR / NSFR computation:
-//   - HQLAPosition[]   — Level 1 / Level 2A / Level 2B classification per BCBS D295.
-//   - FundingPosition[] — outflow / inflow buckets per BCBS D295 (30-day stress).
-//   - ASFItem[]        — Available Stable Funding per BCBS D295/D396.
-//   - RSFItem[]        — Required Stable Funding per BCBS D295/D396.
+//   - HQLAPosition[]   — Level 1 / Level 2A / Level 2B classification per BCBS D238.
+//   - FundingPosition[] — outflow / inflow buckets per BCBS D238 (30-day stress).
+//   - ASFItem[]        — Available Stable Funding per BCBS D238/D396.
+//   - RSFItem[]        — Required Stable Funding per BCBS D238/D396.
 //
 // Source events (when they exist):
 //   HQLA:
@@ -41,7 +41,7 @@
 //
 // Authority: D-RAS (CEO-approved 2026-05-06) · D-MARKETS-CAPITAL-TIME-SHAPE
 //   (CEO-approved 2026-05-12) · RRTB Regulation 26 (LCR) · RRTB Regulation
-//   26A (NSFR) · BCBS D295 · BCBS D396 · BA 110 · BA 120.
+//   26A (NSFR) · BCBS D238 · BCBS D396 · BA 110 · BA 120.
 //
 // Author: Ravi (Treasury and ALM engineer, engineering)
 
@@ -354,7 +354,7 @@ function readHQLAFromEventStore(
   // rating on the booking event → non-HQLA (conservative; a rating-bearing
   // SecurityMaster feed would reclassify them). Sells / matured / sold positions
   // are excluded. Market value = nominalMinor × cleanPricePercent / 100, in major
-  // ZAR. Authority: BA 110 Annex 1; BCBS D295 §50.
+  // ZAR. Authority: BA 110 Annex 1; BCBS D238 §50.
   const closedBondTradeIds = new Set<string>();
   for (const evType of ["BondSold", "BondMatured"] as const) {
     for (const ev of eventStore.replay({ type: evType })) {

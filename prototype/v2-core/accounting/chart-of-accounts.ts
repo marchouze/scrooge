@@ -54,7 +54,7 @@ import { z } from "zod";
 // preserved so the v1 reporting consumers continue to type-check.
 // ---------------------------------------------------------------------------
 
-/** Basel III HQLA tier per BCBS D295 §49–§54 / Reg 26(7). */
+/** Basel III HQLA tier per BCBS D238 §49–§54 / Reg 26(7). */
 export type CoaHqlaLevel = "level-1" | "level-2a" | "level-2b";
 
 /** Basel III capital tier per Reg 38(8) / BCBS Basel III §50–§57. */
@@ -69,7 +69,7 @@ export type CoaCapitalTier = "cet1" | "at1" | "t2";
  * per-field doc comments for the full semantics (HQLA tagging, custodian-derived
  * HQLA, currency decoupling, capital tiers).
  *
- * Citations: D-HQLA-COA-CLASSIFICATION; BCBS D295 §II.A; SARB BA 110; Reg 26(7);
+ * Citations: D-HQLA-COA-CLASSIFICATION; BCBS D238 §II.A; SARB BA 110; Reg 26(7);
  *            D-COA-CURRENCY-DECOUPLING; D-DATA-QUALITY-CROSS-DOMAIN-V1.
  */
 export interface CoaAccountEntry {
@@ -86,13 +86,13 @@ export interface CoaAccountEntry {
    */
   readonly currency?: string;
   /**
-   * HQLA tier per BCBS D295 §49–§54 / Reg 26(7). Absent = not HQLA-eligible.
-   * Authority: D-HQLA-COA-CLASSIFICATION; BCBS D295 §II.A; SARB BA 110; Reg 26(7).
+   * HQLA tier per BCBS D238 §49–§54 / Reg 26(7). Absent = not HQLA-eligible.
+   * Authority: D-HQLA-COA-CLASSIFICATION; BCBS D238 §II.A; SARB BA 110; Reg 26(7).
    */
   readonly hqlaLevel?: CoaHqlaLevel;
   /** Sub-category label for BA 110 line rendering. Only meaningful with `hqlaLevel`. */
   readonly hqlaSubCategory?: string;
-  /** Per-asset haircut factor for level-2b accounts (BCBS D295 §54). */
+  /** Per-asset haircut factor for level-2b accounts (BCBS D238 §54). */
   readonly hqlaAssetSpecificFactor?: number;
   /** Basel III capital tier per Reg 38(8) / BCBS Basel III §50–§57. */
   readonly capitalTier?: CoaCapitalTier;

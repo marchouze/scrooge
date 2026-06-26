@@ -101,7 +101,7 @@ export const CFP_TRIGGER_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: lcrRatioBreachPayloadSchema,
     source: "platform/event-store/event-types/cfp-triggers.ts",
-    citationsHint: [...CFP_TRIGGER_CITATIONS_HINT, "BCBS-D295"],
+    citationsHint: [...CFP_TRIGGER_CITATIONS_HINT, "BCBS-D238"],
     v2Status: "v1-only",
   },
   {
@@ -113,7 +113,7 @@ export const CFP_TRIGGER_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = [
     retention: RETENTION_BANKING_5Y,
     payloadSchema: nsfrRatioBreachPayloadSchema,
     source: "platform/event-store/event-types/cfp-triggers.ts",
-    citationsHint: [...CFP_TRIGGER_CITATIONS_HINT, "BCBS-D335", "RRB-REG-26A"],
+    citationsHint: [...CFP_TRIGGER_CITATIONS_HINT, "BCBS-D295", "RRB-REG-26A"],
     v2Status: "v1-only",
   },
   {

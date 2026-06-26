@@ -4,7 +4,7 @@
 //
 // Authority: D-HQLA-COA-CLASSIFICATION (CEO-approved 2026-05-22)
 // Citations:
-//   BCBS D295 (Basel III LCR standard, Jan 2013) §II.A — HQLA tiers
+//   BCBS D238 (Basel III LCR standard, Jan 2013) §II.A — HQLA tiers
 //   SARB BA 110 — Liquidity Coverage Ratio return
 //   Regulations Relating to Banks Reg 26 — LCR
 //   Principle 2 — single-graph discipline (policy → procedure → system capability)
@@ -16,8 +16,8 @@
 // `hqlaLevel` field ("level-1" | "level-2a" | "level-2b") that the BA 110
 // generator reads dynamically, applying Basel III haircuts by level:
 //   - level-1:  0% haircut  (100% contribution)
-//   - level-2a: 15% haircut (85% contribution)  per BCBS D295 §52 / Reg 26(7)(b)
-//   - level-2b: 25–50% haircut (75–50% contribution) per BCBS D295 §54 / Reg 26(7)(c)
+//   - level-2a: 15% haircut (85% contribution)  per BCBS D238 §52 / Reg 26(7)(b)
+//   - level-2b: 25–50% haircut (75–50% contribution) per BCBS D238 §54 / Reg 26(7)(c)
 //
 // ## Design
 //
@@ -32,7 +32,7 @@
 //
 // ## HQLA account tagging rationale
 //
-// Per BCBS D295 §49–§54 and Reg 26(7):
+// Per BCBS D238 §49–§54 and Reg 26(7):
 //
 //   Level 1 (0% haircut, no cap):
 //     - Coins and banknotes (cash)
@@ -55,7 +55,7 @@
 //       This annotation point is preserved for licence-day parameterisation.
 //
 //   Level 2B (25–50% haircut, ≤ 15% of HQLA stock):
-//     - Qualifying RMBS, equities, corporate bonds rated A+/A per BCBS D295 §54.
+//     - Qualifying RMBS, equities, corporate bonds rated A+/A per BCBS D238 §54.
 //     → No accounts tagged level-2b at build phase.
 //
 //   NOT HQLA (no tag):
@@ -288,7 +288,7 @@ export function sectorForAccountId(accountId: string): CounterpartySector {
  * function only constructs the typed mapping.
  *
  * Authority: D-HQLA-COA-CLASSIFICATION (CEO-approved 2026-05-22).
- * Citations: BCBS D295 §II.A; SARB BA 110; Reg 26(7).
+ * Citations: BCBS D238 §II.A; SARB BA 110; Reg 26(7).
  */
 export function coaToHqlaClassifications(): readonly AccountLiquidityClassification[] {
   return COA_ACCOUNTS.filter(

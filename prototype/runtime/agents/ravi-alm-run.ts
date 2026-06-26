@@ -4,7 +4,7 @@
 //
 // Each daily run:
 //   1. Calls the repricing gap engine (BCBS 319 buckets).
-//   2. Calls the ΔEVE engine (six BCBS d365 shock scenarios).
+//   2. Calls the ΔEVE engine (six BCBS d368 shock scenarios).
 //   3. Calls the ΔNII engine (four parallel shocks, 12-month horizon).
 //   4. Emits one `ALMRunCompleted` event summarising the run.
 //   5. Emits `IRRBBChecked` events for each metric/shock combination
@@ -19,7 +19,7 @@
 //   The handler produces a structurally complete run regardless of position
 //   count — it is ready to produce non-zero outputs when trades land.
 //
-// Authority: D-TREASURY-GAPS-WAVE1; BCBS d365 (IRRBB, 2016);
+// Authority: D-TREASURY-GAPS-WAVE1; BCBS d368 (IRRBB, 2016);
 //   Banks Act 94 of 1990, Banks Act Regulations 26 and 27.
 // Author: Ravi (Treasury/ALM Engineer, engineering)
 
@@ -44,7 +44,7 @@ import { fmtDateUTC, frontmatter } from "./_shared";
 const EVENT_CITATIONS = ["BANKS-ACT-94-1990", "BANKS-REG-26", "BANKS-REG-27", "BCBS-D365-IRRBB"];
 
 /**
- * BCBS d365 outlier threshold: if |ΔEVE| > 15% of Tier 1 capital, the bank
+ * BCBS d368 outlier threshold: if |ΔEVE| > 15% of Tier 1 capital, the bank
  * is classified as an "outlier institution". Build phase: Tier 1 not yet
  * measured; limit stored as a placeholder 15%.
  */
@@ -199,7 +199,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     lines.push(`# Ravi — Daily ALM Run, ${date}`);
     lines.push("");
     lines.push(`**Run ID:** ${runId}`);
-    lines.push("**Authority:** D-TREASURY-GAPS-WAVE1 | BCBS d365 (IRRBB) | Banks Act Reg 26/27");
+    lines.push("**Authority:** D-TREASURY-GAPS-WAVE1 | BCBS d368 (IRRBB) | Banks Act Reg 26/27");
     lines.push("");
 
     // Repricing gap summary
@@ -217,7 +217,7 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     lines.push("");
 
     // EVE summary
-    lines.push("## ΔEVE sensitivities (BCBS d365 §4)");
+    lines.push("## ΔEVE sensitivities (BCBS d368 §4)");
     lines.push("");
     lines.push(
       `**Status:** \`${eveReport.status}\` | Worst-case ΔEVE: ZAR ${eveReport.worstCaseDeltaEveZar.toFixed(0)}`,

@@ -127,6 +127,7 @@
     "recon:rwa-computed-sourcing": "bun run platform/recon/recon-rwa-computed-sourcing.ts",
     "recon:extraction-provenance": "bun run platform/recon/extraction-provenance.ts",
     "recon:obligations-seed-parity": "bun run platform/recon/obligations-seed-parity.ts",
+    "recon:bcbs-citation-number-integrity": "bun run platform/recon/bcbs-citation-number-integrity.ts",
     "recon:obligation-urn-coverage": "bun run platform/recon/obligation-urn-coverage.ts",
     "recon:obligation-divergence": "bun run platform/recon/obligation-divergence.ts",
     "recon:regulator-mandate-coverage": "bun run platform/recon/regulator-mandate-coverage.ts",

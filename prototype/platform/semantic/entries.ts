@@ -208,7 +208,7 @@ export const cashAndBalancesAtSARB: SemanticEntry = {
       form: "BA 110",
       line: "HQLA Level 1 — central-bank reserves (LCR)",
       side: "positive",
-      note: "LCR HQLA contribution per BCBS D295 / BA 110; canonical first-end-to-end return per pack §6 Slice 3.",
+      note: "LCR HQLA contribution per BCBS D238 / BA 110; canonical first-end-to-end return per pack §6 Slice 3.",
     },
     {
       form: "BA 600",
@@ -245,7 +245,7 @@ export const cashAndBalancesAtSARB: SemanticEntry = {
     {
       type: "regulation",
       regulationId: "ORG-PR-06",
-      note: "BCBS D295 / BA 110 — LCR HQLA composition (central-bank reserves rank as Level 1).",
+      note: "BCBS D238 / BA 110 — LCR HQLA composition (central-bank reserves rank as Level 1).",
     },
     {
       type: "policy",

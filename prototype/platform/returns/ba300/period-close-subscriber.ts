@@ -26,7 +26,7 @@
 //   3. Derives the additive cash HQLA contribution from each cash account's
 //      custodian Party classification (`computeCashHqlaFromCustodian`): cash
 //      held with a `central-bank`-classified custodian (the SARB) is Level-1
-//      (Reg 26(7)(a)(i); BCBS D295 §50(a)). The tier is a query over the
+//      (Reg 26(7)(a)(i); BCBS D238 §50(a)). The tier is a query over the
 //      event-sourced Party register, never an authored COA tag.
 //   4. Calls `generateBa300Lcr` with the event store, trial balance, the
 //      instrument-level `hqlaStock`, and the custodian-derived `cashHqlaLines`.
@@ -57,7 +57,7 @@
 //           D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN;
 //           D-FINANCIAL-INSTRUMENT-ENTITY;
 //           D-HQLA-CASH-CUSTODIAN-DERIVED (CEO-approved 2026-05-29);
-//           BCBS D295 §50; Reg 26(7)(a)(i).
+//           BCBS D238 §50; Reg 26(7)(a)(i).
 //
 // Authors: Bea (Accounting & financial reporting engineer, engineering —
 //   reports to Camille CFO; BA-form line mapping + subscriber owner)
@@ -119,7 +119,7 @@ const FUNCTIONAL_CURRENCY = "ZAR";
  * code paths agree.
  *
  * Authority: D-HQLA-CASH-CUSTODIAN-DERIVED (CEO-approved 2026-05-29);
- * BCBS D295 §50; Reg 26(7)(a)(i).
+ * BCBS D238 §50; Reg 26(7)(a)(i).
  */
 const CASH_CUSTODIAN_ACCOUNTS: readonly CashHqlaCustodianAccount[] = COA_ACCOUNTS.filter(
   (a): a is typeof a & { custodianPartyId: string } =>
@@ -158,7 +158,7 @@ export interface Ba300LcrPeriodCloseSubscriberInput {
   readonly classifications?: readonly AccountLiquidityClassification[];
   /**
    * ISO 8601 — start of the 30-day stress window for cash-flow folding.
-   * Per BCBS D295 §31 the window is the 30 calendar days from the
+   * Per BCBS D238 §31 the window is the 30 calendar days from the
    * reporting date. Convention: `AccountingPeriodOpened.periodStart`.
    */
   readonly periodStart: string;
@@ -283,7 +283,7 @@ function foldPositionProjections(
  *   D-HQLA-CASH-CUSTODIAN-DERIVED (CEO-approved 2026-05-29);
  *   D-MARKETS-SCHEMA-FOUNDATION;
  *   Banks Act 94 of 1990 §70; Regulations Relating to Banks Reg 26;
- *   BCBS D295.
+ *   BCBS D238.
  */
 export function ba300LcrPeriodCloseSubscriber(
   input: Ba300LcrPeriodCloseSubscriberInput,

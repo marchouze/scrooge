@@ -49,7 +49,7 @@ baReturnLines:
   - form: "BA 325"
     line: "HQLA Level 1 — central-bank reserves (LCR)"
     side: positive
-    note: "LCR HQLA contribution per BCBS D295 / BA 325."
+    note: "LCR HQLA contribution per BCBS D238 / BA 325."
 version: v0.1
 status: draft
 citations:

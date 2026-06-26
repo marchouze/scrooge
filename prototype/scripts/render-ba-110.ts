@@ -78,7 +78,7 @@ import {
 // ---------------------------------------------------------------------------
 // Build-phase default classifications — derived from the COA registry.
 // Authority: D-HQLA-COA-CLASSIFICATION (CEO-approved 2026-05-22).
-// Citations: BCBS D295 §II.A; SARB BA 110; Reg 26(7).
+// Citations: BCBS D238 §II.A; SARB BA 110; Reg 26(7).
 //
 // Dynamically derived from COA_ACCOUNTS.hqlaLevel tags. This is the
 // DEPRECATED legacy classifications path (the generator's `else` branch);
@@ -244,7 +244,7 @@ function main(argv: readonly string[]): number {
   // GL account. Cash-nature accounts that carry a custodianPartyId
   // (category "asset-cash" + custodianPartyId set) are resolved against the
   // event-sourced Party register: cash held with a `central-bank`-classified
-  // custodian (the SARB) is Level-1 (Reg 26(7)(a)(i); BCBS D295 §50(a)).
+  // custodian (the SARB) is Level-1 (Reg 26(7)(a)(i); BCBS D238 §50(a)).
   // Securities accounts are owned by the instrument path above.
   const cashAccounts: readonly CashHqlaCustodianAccount[] = COA_ACCOUNTS.filter(
     (a): a is typeof a & { custodianPartyId: string } =>

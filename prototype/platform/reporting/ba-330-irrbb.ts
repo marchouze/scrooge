@@ -6,14 +6,14 @@
 // BA 330 covers Interest Rate Risk in the Banking Book (IRRBB). The SARB
 // requires quarterly BA 330 returns per Regulation 27 (interest rate risk in
 // the banking book). The return captures:
-//   - ΔEVE shock scenarios (6 BCBS d365 scenarios) — sensitivity of the
+//   - ΔEVE shock scenarios (6 BCBS d368 scenarios) — sensitivity of the
 //     economic value of equity to parallel and non-parallel interest rate shocks
 //   - ΔNII shock scenarios (4 parallel shocks) — sensitivity of net interest
 //     income to interest rate changes over a 12-month horizon
 //   - Outlier-institution test result (|ΔEVE| > 15% Tier 1 capital)
 //
 // Regulatory basis:
-//   - BCBS "Interest rate risk in the banking book" (d365, Apr 2016)
+//   - BCBS "Interest rate risk in the banking book" (d368, Apr 2016)
 //   - Regulations Relating to Banks Regulation 27 (IRRBB)
 //   - SARB BA 330 form (IRRBB return — confirmed per D-BA-330-REATTRIBUTION-IRRBB)
 //   - D-BA-RETURN-NUMBERING-EXCEL-CANONICAL confirms BA 330 = IRRBB (not
@@ -74,7 +74,7 @@ export const BA_330_SUBSCRIBER_ENTITIES: readonly string[] = ["LE-ZA-HOZ-BANK"];
 export interface IrRiskRow {
   /** EVE or NII. */
   readonly metric: "EVE" | "NII";
-  /** BCBS d365 shock label (e.g. "parallel+200", "short+300"). */
+  /** BCBS d368 shock label (e.g. "parallel+200", "short+300"). */
   readonly shockLabel: string;
   /** Sensitivity delta as a percentage of Tier 1 capital. */
   readonly deltaPct: number;
@@ -97,7 +97,7 @@ export interface Ba330Output {
     readonly formId: "BA330";
     readonly formVersion: string;
   };
-  /** EVE shock rows (6 scenarios per BCBS d365). */
+  /** EVE shock rows (6 scenarios per BCBS d368). */
   readonly eveRows: readonly IrRiskRow[];
   /** NII shock rows (4 scenarios). */
   readonly niiRows: readonly IrRiskRow[];
@@ -126,7 +126,7 @@ export interface Ba330Output {
  * sensitivity inputs).
  *
  * Citations:
- *   BCBS d365 §4 (EVE six scenarios); BCBS d365 §5 (NII four scenarios);
+ *   BCBS d368 §4 (EVE six scenarios); BCBS d368 §5 (NII four scenarios);
  *   Regulations Relating to Banks Reg 27;
  *   D-TREASURER-WAVE2-SUBSTRATE (CEO-approved 2026-06-11);
  *   D-BA-330-REATTRIBUTION-IRRBB; Principles/1-events-are-truth.md.
@@ -186,7 +186,7 @@ export function generateBa330IrrbbReturn(
   niiRows.sort((a, b) => a.shockLabel.localeCompare(b.shockLabel));
 
   // Outlier test: any EVE row where |deltaPct| > limitPct makes the bank
-  // an outlier institution (BCBS d365 §4.3 — 15% Tier 1 threshold).
+  // an outlier institution (BCBS d368 §4.3 — 15% Tier 1 threshold).
   const isOutlier = eveRows.some((r) => Math.abs(r.deltaPct) > r.limitPct);
 
   // Build-phase substrate gap note: Tier 1 capital is not yet measured, so

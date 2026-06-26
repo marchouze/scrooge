@@ -5,7 +5,7 @@
 ## Citation
 
 - **Title:** Basel Framework — NSF (Net Stable Funding Ratio).
-- **Issuer:** Basel Committee on Banking Supervision (BCBS) — d335 lineage.
+- **Issuer:** Basel Committee on Banking Supervision (BCBS) — d295 lineage (*Basel III: the net stable funding ratio*, October 2014, https://www.bis.org/bcbs/publ/d295.htm). `[correction (Mira, D-BCBS-CITATION-NUMBERING-REMEDIATION): BCBS document number corrected d335 → d295 — d335 is the RCAP Saudi Arabia assessment (September 2015), not the NSFR; validated against the BIS source.]`
 - **Source:** [bis.org/basel_framework](https://www.bis.org/basel_framework/) — standard group NSF.
 - **Applicability:** `transposed` — binds via SARB Reg 26A and BA 326.
 

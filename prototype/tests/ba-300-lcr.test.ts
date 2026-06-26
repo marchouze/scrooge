@@ -530,7 +530,7 @@ describe("D-REPORTING-CAPABILITY-SLICE-3 — end-to-end (events → close → BA
     // Citations include the regulatory anchors + P1-fix citations.
     expect(out.citations).toContain("Banks Act 94 of 1990 §70");
     expect(out.citations).toContain("Regulations Relating to Banks Reg 26");
-    expect(out.citations).toContain("BCBS D295");
+    expect(out.citations).toContain("BCBS D238");
     expect(out.citations).toContain("Principles/1-events-are-truth.md");
   });
 
