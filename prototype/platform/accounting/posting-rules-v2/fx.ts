@@ -20,6 +20,8 @@ export {
   resolveFxAccountSet,
   FX_FVOCI_OCI_RESERVE_ACCOUNT,
   type FxElectionOverride,
+  type FxElectionResolution,
+  resolveFxElectionOverride,
   postFxInitialRecognitionLegs,
   postFxRevaluationLegs,
   postFxCloseLegs,

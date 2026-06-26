@@ -95,6 +95,7 @@ import {
   postFxInitialRecognitionLegs,
   postFxObsCommitmentReleaseLegs,
   postFxRevaluationLegs,
+  resolveFxElectionOverride,
 } from "./fx";
 import {
   type FxFoldDeviation,
@@ -435,8 +436,10 @@ export function deriveFxInstanceLegs(args: FxInstanceFoldArgs): FxFoldResult {
 
   const legs: FxFoldLeg[] = [];
   const skipped: FxFoldSkip[] = [];
+  // Always empty for FX — FVTPL is the only valid classification, so a valid
+  // election is never a deviation and a non-FVTPL one is rejected (F1/F2).
+  // Retained for result-contract parity with the event fold.
   const deviations: FxFoldDeviation[] = [];
-  const recordedDeviations = new Set<string>();
 
   // (2) Iterate the REGISTER. The register's insertion order follows creation
   // order; that is the stable per-instance walk the entry-level views expect.
@@ -472,22 +475,25 @@ export function deriveFxInstanceLegs(args: FxInstanceFoldArgs): FxFoldResult {
       continue;
     }
 
-    // Per-instance election override (FX3) — identical to the event fold.
+    // Per-instance election override (FX3), VALIDATED against the FX asset class
+    // (F1/F2) — identical to the event fold via the SHARED resolver. A non-FVTPL
+    // election for an FX derivative is IFRS-invalid (IFRS 9 §5.7.1/§5.7.5) and is
+    // REJECTED, fail-closed: the instance is skipped with a loud typed reason
+    // rather than routed to OCI or fallen through to P&L (Charter cmd 2).
     const ifrsElection = findInstanceElection(electionRegister, instanceUrn, "ifrs-classification");
-    let electionOverride: FxElectionOverride | undefined;
-    if (ifrsElection?.ifrsCategory !== undefined) {
-      electionOverride = { ifrsCategory: ifrsElection.ifrsCategory };
-      const devKey = `${instanceUrn}::ifrs-classification`;
-      if (!recordedDeviations.has(devKey)) {
-        recordedDeviations.add(devKey);
-        deviations.push({
-          instance: instanceUrn,
-          facet: "ifrs-classification",
-          detail: `IFRS classification elected to ${ifrsElection.ifrsCategory} (overrides product default)`,
-          cites: ifrsElection.cites,
-        });
-      }
+    const resolution = resolveFxElectionOverride(ifrsElection?.ifrsCategory);
+    if (resolution.outcome === "rejected") {
+      const firstKind = grouped[0]?.payload.kind ?? "FilInstrumentCreated";
+      skipped.push({
+        instance: instanceUrn,
+        kind: firstKind,
+        reason: "fx-election-invalid-non-fvtpl",
+        detail: `recorded ifrs-classification election "${resolution.electedCategory}" rejected for FX instance ${instanceUrn}: ${resolution.reason}`,
+      });
+      continue;
     }
+    const electionOverride: FxElectionOverride | undefined =
+      resolution.outcome === "accepted" ? resolution.override : undefined;
 
     // Accumulated window-passing OPENING legs (recognition + revaluation) — needed
     // for the state-driven cancellation reversal below.

@@ -194,6 +194,30 @@ export const SUBSTRATE_GAP_REGISTER: readonly SubstrateGapRecord[] = [
     status: "planned",
     mitigation: "none",
   },
+  // ---------------------------------------------------------------------------
+  // IAS 21 oracle coverage (D-FX-IFRS-REVIEW-FOUNDATION, F9). The IAS-21 domain-
+  // truth oracle (Regulations/INTL/IASB/source-docs/ias-21-structured.json) the
+  // FX-vanilla review validates against ingests the FX-vanilla-bearing paragraphs:
+  // §8 (definitions), §20–§23 (reporting + closing-rate retranslation), §28–§30,
+  // §32 (recognition of exchange differences, incl. the net-investment exclusion
+  // §28 cross-references). It does NOT yet ingest §15A (long-term net-investment
+  // monetary items), §25/§26 (cash-flow / multiple-rate mechanics), §33 (change of
+  // functional currency for the net-investment difference) or §48 (reclassification
+  // on disposal of a foreign operation). None bear on the FX trading-book treatment
+  // the foundation asserts today, so this is forward coverage, not a live defect —
+  // a future treatment touching net-investment hedges or change-of-functional-
+  // currency must extend the oracle first. Full IAS 21 text is © IFRS Foundation;
+  // ingestion completes at licence-day procurement (see ias-21 sourceNote).
+  // ---------------------------------------------------------------------------
+  {
+    id: "ias21-oracle-coverage",
+    title: "IAS 21 oracle: §15A/§25/§26/§33/§48 not yet ingested",
+    description:
+      "The IAS-21 domain-truth oracle ingests the FX-vanilla-bearing paragraphs (§8, §20–§23, §28–§30, §32 — including the net-investment exclusion §28 cross-references). It does NOT yet ingest §15A (long-term net-investment monetary items), §25/§26 (settlement / multiple-rate mechanics), §33 (change of functional currency) or §48 (reclassification on disposal of a foreign operation). None bear on the FX trading-book treatment the FX-vanilla review asserts today — this is forward coverage, NOT a live defect. A future treatment touching net-investment hedges or change-of-functional-currency must extend the oracle first. The golden-case test header (fx-ifrs-golden-cases.test.ts) and the FX-vanilla review PROC state these blind spots for the reader. Full IAS 21 text is © IFRS Foundation; ingestion completes at licence-day procurement. Authority: D-FX-IFRS-REVIEW-FOUNDATION (F9).",
+    severity: "medium",
+    status: "planned",
+    mitigation: "partial",
+  },
 ];
 
 /** Look up a gap record by id. */

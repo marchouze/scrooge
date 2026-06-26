@@ -600,18 +600,21 @@ describe("FX fold — in-test provenance cohort + reversibility", () => {
 });
 
 // ===========================================================================
-// FX3 — per-instance accounting elections (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD).
+// FX3 — per-instance accounting elections (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD;
+// D-FX-IFRS-REVIEW-FOUNDATION F1/F2).
 //
-// The product treatment is the DEFAULT. A genuine per-instance election the law
-// leaves open (FVOCI election IFRS 9 §5.7.5) OVERRIDES it for the elected facet:
-//   - FVOCI-elected instance → revaluation fair-value leg routes to OCI (a
-//     deviation, RECORDED with its citation);
+// An FX derivative is FVTPL-only (IFRS 9 §5.7.1): the §5.7.5 OCI election is
+// equity-only and an FX derivative is held-for-trading, and amortised cost is
+// unreachable (a derivative fails SPPI). So:
+//   - FVOCI-elected (or any non-FVTPL) FX instance → REJECTED, fail-closed: the
+//     instance is SKIPPED with reason "fx-election-invalid-non-fvtpl" — NEVER
+//     routed to OCI nor fallen through to P&L (F1/F2);
 //   - no-election instance → product default (revaluation → FVTPL P&L);
 //   - an election missing its citation → REJECTED (fail-closed) at parse.
 // ===========================================================================
 
-describe("FX3 — per-instance elections override the product-default treatment", () => {
-  test("FVOCI-elected instance folds the revaluation leg to OCI (deviation recorded)", () => {
+describe("FX3 — per-instance elections are validated against the FX asset class (FVTPL-only)", () => {
+  test("FVOCI-elected FX instance is REJECTED fail-closed (no OCI leg; instance skipped) — F1", () => {
     const store = new EventStore(":memory:");
     seedTreatmentModules(store);
     // Created + amended (revaluation) for an FVOCI-elected instance.
@@ -638,19 +641,25 @@ describe("FX3 — per-instance elections override the product-default treatment"
 
     const fold = foldFxContributionLegs(args(store));
 
-    // The revaluation credit leg routes to the OCI reserve, NOT the FVTPL P&L
-    // account (ACC-2100-005). Proves the election re-routed the leg.
-    const revalLegs = fold.legs.filter((l) => l.postingRuleId === "PR-FX-REVAL-V2");
-    expect(revalLegs.length).toBe(2); // Dr receivable + Cr OCI
-    const creditLeg = revalLegs.find((l) => l.creditDebit === "credit");
-    expect(creditLeg?.accountCode).toBe(FX_FVOCI_OCI_RESERVE_ACCOUNT);
-    expect(revalLegs.some((l) => l.accountCode === "ACC-2100-005")).toBe(false);
+    // The FVOCI election is IFRS-invalid for an FX derivative → the instance is
+    // skipped fail-closed: NO reval leg is produced at all, and CRITICALLY none
+    // routes to the OCI reserve (ACC-2100-008). The old behaviour (routing to OCI)
+    // was IFRS-wrong (F1).
+    const ociInstance = instanceUrn("FX-OCI");
+    expect(fold.legs.some((l) => l.accountCode === FX_FVOCI_OCI_RESERVE_ACCOUNT)).toBe(false);
+    expect(
+      fold.legs.some(
+        (l) => l.sourceEventId === ociInstance && l.postingRuleId === "PR-FX-REVAL-V2",
+      ),
+    ).toBe(false);
 
-    // The deviation is recorded with its backing citation (not silent).
-    expect(fold.deviations.length).toBe(1);
-    expect(fold.deviations[0]?.instance).toBe(instanceUrn("FX-OCI"));
-    expect(fold.deviations[0]?.facet).toBe("ifrs-classification");
-    expect(fold.deviations[0]?.cites).toContain("IFRS-9-§5.7.5");
+    // The instance is surfaced as a skip with the precise fail-closed reason —
+    // not swallowed, not silently posted (Charter cmd 2/5).
+    const skip = fold.skipped.find((s) => s.instance === ociInstance);
+    expect(skip?.reason).toBe("fx-election-invalid-non-fvtpl");
+
+    // No deviation is recorded — there is no legitimate FX treatment deviation.
+    expect(fold.deviations.length).toBe(0);
   });
 
   test("no-election instance folds the revaluation leg to the product default (FVTPL P&L)", () => {
@@ -844,14 +853,14 @@ describe("WS-FIL-FX-SETTLEMENT-EVENTS — the five rules fire at fold time + bal
   test("PR-FX-SETTLE-V2: P&L-neutral spot settlement fires (cash vs clearing) + balances per currency", () => {
     const store = new EventStore(":memory:");
     seedTreatmentModules(store);
-    // Bought USD: booked 1,000,000 / settled 1,010,000 (gain 10k USD).
-    // Sold  ZAR: booked 18,500,000 / settled 18,400,000 (gain 100k ZAR).
+    // Deliverable spot: the contractual notional is exchanged, so settled == booked
+    // per currency (F3 — a same-currency booked≠settled difference fails closed).
     store.append(
       settlementConfirmed("FX-S1", "spot", "2026-06-10T10:00:00.000Z", {
         boughtBooked: "1000000",
-        boughtSettled: "1010000",
+        boughtSettled: "1000000",
         soldBooked: "18500000",
-        soldSettled: "18400000",
+        soldSettled: "18500000",
       }),
     );
     const fold = foldFxContributionLegs(args(store));
@@ -864,20 +873,21 @@ describe("WS-FIL-FX-SETTLEMENT-EVENTS — the five rules fire at fold time + bal
   test("PR-FX-SWAP-NEAR-V2 + PR-FX-SWAP-FAR-V2: both swap legs fire + balance", () => {
     const store = new EventStore(":memory:");
     seedTreatmentModules(store);
+    // Deliverable swap legs: settled == booked per currency (F3).
     store.append(
       settlementConfirmed("FX-SW", "swap-near", "2026-06-10T10:00:00.000Z", {
         boughtBooked: "500000",
-        boughtSettled: "505000",
+        boughtSettled: "500000",
         soldBooked: "9250000",
-        soldSettled: "9240000",
+        soldSettled: "9250000",
       }),
     );
     store.append(
       settlementConfirmed("FX-SW", "swap-far", "2026-06-20T10:00:00.000Z", {
         boughtBooked: "500000",
-        boughtSettled: "498000",
+        boughtSettled: "500000",
         soldBooked: "9300000",
-        soldSettled: "9310000",
+        soldSettled: "9300000",
       }),
     );
     const fold = foldFxContributionLegs(args(store));

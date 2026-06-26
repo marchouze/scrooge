@@ -201,7 +201,6 @@ const FX_IAS_RULES = {
   initialRecognition:
     "IFRS 9 §3.1.1, §5.1.1, B3.1.2 — trade-date FVTPL recognition (at-market FV≈0 on-BS; notionals off-balance-sheet)",
   revaluation: "IFRS 9 §5.7.1 — FVTPL revaluation (fair-value delta to P&L)",
-  revaluationFvoci: "IFRS 9 §5.7.5 — FVOCI election: fair-value movement to OCI",
   close: "IFRS 9 §3.2.3 — derecognition on settlement/cancellation",
 } as const;
 
@@ -227,8 +226,19 @@ export const FX_OBS_BOUGHT_COMMITMENT_ACCOUNT = "ACC-9100-001";
 export const FX_OBS_SOLD_COMMITMENT_ACCOUNT = "ACC-9100-002";
 export const FX_OBS_COMMITMENT_CONTRA_ACCOUNT = "ACC-9100-003";
 
-/** OCI reserve account a per-instrument FVOCI election (IFRS 9 §5.7.5) routes the
- * fair-value movement to, INSTEAD of the FVTPL unrealised-P&L account. */
+/**
+ * OCI reserve account that, for an EQUITY instrument under a §5.7.5 election,
+ * would carry the fair-value movement. It is NOT a valid destination for an FX
+ * derivative's revaluation movement: IFRS 9 §5.7.5 restricts the OCI election to
+ * "an investment in an equity instrument … that is neither held for trading nor
+ * contingent consideration", and §5.7.1(b) confirms the OCI election applies only
+ * to an equity instrument. An FX derivative is not an equity instrument and is
+ * held-for-trading, so its FVTPL movement MUST go to P&L (IFRS 9 §5.7.1). The
+ * account is retained in the chart of accounts for the equity-instrument FVOCI
+ * estate; the FX posting rules NEVER route a revaluation leg here (enforced by
+ * `recon:fx-pnl-account-category-integrity`). Authority: D-FX-IFRS-REVIEW-
+ * FOUNDATION (adversarial-panel finding F1).
+ */
 export const FX_FVOCI_OCI_RESERVE_ACCOUNT = "ACC-2100-008";
 
 /**
@@ -236,10 +246,62 @@ export const FX_FVOCI_OCI_RESERVE_ACCOUNT = "ACC-2100-008";
  * treatment for ONE facet (D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD). `undefined`
  * (the default) means NO election → product default → byte-identical to the
  * engine's leg output (the golden reference).
+ *
+ * FX SCOPE: the ONLY IFRS classification an FX derivative can carry is `"fvtpl"`
+ * (it fails the SPPI test and the FVOCI election is equity-only — IFRS 9 §5.7.1,
+ * §5.7.5). The type therefore admits only `"fvtpl"`. A recorded election naming
+ * any OTHER category for an FX instance is IFRS-WRONG and is REJECTED at the
+ * resolution point (`resolveFxElectionOverride`), fail-closed — never silently
+ * routed to OCI or fallen through to P&L (D-FX-IFRS-REVIEW-FOUNDATION, F1/F2).
  */
 export interface FxElectionOverride {
-  /** Elected IFRS classification, e.g. `"fvoci"`. */
-  readonly ifrsCategory?: "fvtpl" | "fvoci" | "amortised-cost";
+  /** Elected IFRS classification — FX admits only `"fvtpl"`. */
+  readonly ifrsCategory?: "fvtpl";
+}
+
+/**
+ * The OUTCOME of validating a recorded per-instance IFRS-classification election
+ * against the FX asset class. An FX derivative is FVTPL-only (IFRS 9 §5.7.1; the
+ * FVOCI election is equity-only, §5.7.5; an FX derivative fails SPPI so
+ * amortised-cost is unreachable). So the only ACCEPTED election is one that
+ * (redundantly) re-affirms FVTPL; anything else is REJECTED, fail-closed.
+ */
+export type FxElectionResolution =
+  | { readonly outcome: "no-election" }
+  | { readonly outcome: "accepted"; readonly override: FxElectionOverride }
+  | { readonly outcome: "rejected"; readonly electedCategory: string; readonly reason: string };
+
+/**
+ * Validate a recorded `ifrs-classification` election for an FX instance.
+ *
+ * The single source of the FX-election rule (Charter cmd 4 — source, don't
+ * duplicate): BOTH the event fold (`fx-fold.ts`) and the state derivation
+ * (`fx-instance-fold.ts`) resolve their `FxElectionOverride` through this
+ * function, so the fail-closed behaviour is identical by construction.
+ *
+ *   - `undefined`  → no election; product default (FVTPL) binds.
+ *   - `"fvtpl"`    → accepted (a redundant re-affirmation of the FX default).
+ *   - anything else (`"fvoci"`, `"amortised-cost"`, …) → REJECTED. IFRS 9 §5.7.5
+ *     restricts the OCI election to an investment in an EQUITY instrument that is
+ *     neither held-for-trading nor contingent consideration; an FX derivative is
+ *     neither equity nor non-held-for-trading, so it cannot be FVOCI. Amortised
+ *     cost is equally unreachable (a derivative fails the SPPI test, §4.1.2/§4.1.4).
+ *     The caller fails the instance closed (a loud skip / finding) rather than
+ *     posting to OCI or silently falling through to P&L (Charter cmd 2).
+ */
+export function resolveFxElectionOverride(ifrsCategory: string | undefined): FxElectionResolution {
+  if (ifrsCategory === undefined) return { outcome: "no-election" };
+  if (ifrsCategory === "fvtpl") {
+    return { outcome: "accepted", override: { ifrsCategory: "fvtpl" } };
+  }
+  return {
+    outcome: "rejected",
+    electedCategory: ifrsCategory,
+    reason:
+      ifrsCategory === "fvoci"
+        ? "FVOCI election is IFRS-invalid for an FX derivative: IFRS 9 §5.7.5 restricts the OCI election to an investment in an equity instrument that is neither held-for-trading nor contingent consideration, and §5.7.1(b) confirms it applies only to an equity instrument. An FX derivative is neither — it is held-for-trading and is not equity — so its fair-value movement MUST be recognised in P&L (IFRS 9 §5.7.1)."
+        : `IFRS classification "${ifrsCategory}" is invalid for an FX derivative: an FX derivative is measured at FVTPL (IFRS 9 §5.7.1) — it fails the SPPI test so amortised cost / FVOCI-debt do not apply (§4.1.2/§4.1.4).`,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -270,6 +332,17 @@ export interface FxElectionOverride {
 // legs — it NEVER falls back to the old self-cancelling on-balance-sheet pair (no
 // silent wrong gross-up — Charter cmd 2). Such an instance contributes to neither
 // the fold nor the golden; the fold surfaces it via its fail-closed skip channel.
+//
+// AT-MARKET / DAY-1-FAIR-VALUE PRECONDITION (D-FX-IFRS-REVIEW-FOUNDATION, F13).
+// The OBS-only treatment above is IFRS-correct ONLY for an AT-MARKET trade (FV ≈ 0
+// at inception). An OFF-MARKET forward — an agreed rate away from the market
+// forward — has a NON-ZERO day-1 fair value that IFRS 9 §B5.1.2A requires to be
+// recognised ON-BALANCE-SHEET at inception, NOT silently treated as zero. The
+// `economicTerms.dayOneFairValue` (born-V2, optional) carries that figure: ABSENT
+// ⇒ at-market (FV ≈ 0, OBS-only — the existing path); PRESENT + non-zero ⇒ the
+// off-market forward is recognised on-BS at its real fair value (Dr derivative
+// asset / Cr P&L for a positive day-1 FV; the sign flips for a liability). This
+// makes the off-market case REPRESENTABLE rather than a silently-dropped premium.
 // ---------------------------------------------------------------------------
 
 export function postFxInitialRecognitionLegs(payload: FilInstrumentCreatedPayload): FxPostingLeg[] {
@@ -293,7 +366,7 @@ export function postFxInitialRecognitionLegs(payload: FilInstrumentCreatedPayloa
 
   // Off-balance-sheet memorandum, self-balancing per currency. No on-balance-sheet
   // gross-up: an at-market trade has FV ≈ 0 at inception (IFRS 9 §5.1.1, B3.1.2).
-  return [
+  const legs: FxPostingLeg[] = [
     // BUY leg — what the bank will RECEIVE on settlement.
     {
       creditDebit: "debit",
@@ -341,6 +414,51 @@ export function postFxInitialRecognitionLegs(payload: FilInstrumentCreatedPayloa
       description,
     },
   ];
+
+  // DAY-1 FAIR VALUE — OFF-MARKET forward recognition (IFRS 9 §B5.1.2A, F13). When
+  // the trade is NOT at-market the day-1 FV is recognised ON-BALANCE-SHEET: it is
+  // not zero, so the OBS-only memo above is not the whole entry. A positive day-1
+  // FV is an asset to the bank (Dr derivative position / Cr P&L); a negative day-1
+  // FV is a liability (Cr position / Dr P&L). At-market (ABSENT or zero) keeps the
+  // OBS-only path unchanged.
+  const dayOne = t.dayOneFairValue;
+  if (dayOne !== undefined && !isZeroDecimal(dayOne.amount)) {
+    const accounts = resolveFxAccountSet(dayOne.currency);
+    const isAsset = !dayOne.amount.trim().startsWith("-");
+    const magnitude = toMoneyWire({
+      currency: dayOne.currency,
+      amount: decimalMagnitude(dayOne.amount),
+    });
+    const dayOneDescription = `FX Trade-date day-1 fair value (off-market, IFRS 9 §B5.1.2A) ${dayOne.currency} ${isAsset ? "asset" : "liability"}`;
+    legs.push(
+      {
+        creditDebit: isAsset ? "debit" : "credit",
+        accountCode: accounts.receivable,
+        amount: magnitude,
+        postingDate,
+        tenantId,
+        sourceEventId,
+        iasRule:
+          "IFRS 9 §B5.1.2A — day-1 fair value of an off-market trade recognised on-BS at inception",
+        postingRuleId,
+        description: dayOneDescription,
+      },
+      {
+        creditDebit: isAsset ? "credit" : "debit",
+        accountCode: accounts.unrealisedPnl,
+        amount: magnitude,
+        postingDate,
+        tenantId,
+        sourceEventId,
+        iasRule:
+          "IFRS 9 §B5.1.2A — day-1 fair value of an off-market trade recognised on-BS at inception",
+        postingRuleId,
+        description: dayOneDescription,
+      },
+    );
+  }
+
+  return legs;
 }
 
 // ---------------------------------------------------------------------------
@@ -355,8 +473,17 @@ export function postFxInitialRecognitionLegs(payload: FilInstrumentCreatedPayloa
 // The signed delta is read from `economicTerms.fairValueDeltaSinceLastMeasurement`
 // (born-V2, additive). A positive delta is a GAIN: Dr derivative asset / Cr
 // unrealised P&L. A negative delta is a LOSS: the sign flips the Dr/Cr so the
-// position falls and the loss hits P&L. FVOCI election (IFRS 9 §5.7.5) routes the
-// movement to the OCI reserve instead of P&L.
+// position falls and the loss hits P&L.
+//
+// FVTPL-ONLY (D-FX-IFRS-REVIEW-FOUNDATION, F1). An FX derivative is measured at
+// FVTPL (IFRS 9 §5.7.1) and the fair-value movement is recognised in P&L. There
+// is NO FVOCI routing: the §5.7.5 OCI election is equity-only and an FX
+// derivative is held-for-trading (§5.7.1(b)), so this rule NEVER posts the
+// movement to the OCI reserve. The `election` parameter is retained for signature
+// stability and so the fold can pass the validated FX override (which can only be
+// FVTPL); it does not change the counter account. A non-FVTPL election is rejected
+// upstream at the resolution point (`resolveFxElectionOverride`), fail-closed, so
+// it never reaches this function.
 //
 // FAIL-CLOSED on a missing/zero delta (the current DARK state — no
 // FilInstrumentAmended is emitted in production): post a ZERO-AMOUNT memo rather
@@ -367,7 +494,7 @@ export function postFxInitialRecognitionLegs(payload: FilInstrumentCreatedPayloa
 
 export function postFxRevaluationLegs(
   payload: FilInstrumentAmendedPayload,
-  election?: FxElectionOverride,
+  _election?: FxElectionOverride,
 ): FxPostingLeg[] {
   const t = payload.economicTerms;
   const accounts = resolveFxAccountSet(t.currency);
@@ -376,10 +503,12 @@ export function postFxRevaluationLegs(
   const sourceEventId = payload.instance;
   const postingRuleId = FX_POSTING_RULE_IDS.revaluation;
 
-  const isFvoci = election?.ifrsCategory === "fvoci";
+  // FVTPL-only: the fair-value movement ALWAYS lands in unrealised P&L. An FX
+  // derivative cannot be FVOCI (the §5.7.5 election is equity-only) — so the
+  // counter is never the OCI reserve (F1).
   const positionAccount = accounts.receivable;
-  const counterAccount = isFvoci ? FX_FVOCI_OCI_RESERVE_ACCOUNT : accounts.unrealisedPnl;
-  const iasRule = isFvoci ? FX_IAS_RULES.revaluationFvoci : FX_IAS_RULES.revaluation;
+  const counterAccount = accounts.unrealisedPnl;
+  const iasRule = FX_IAS_RULES.revaluation;
 
   const delta = t.fairValueDeltaSinceLastMeasurement;
   // Un-measured / absent delta ⇒ zero-amount memo (no spurious notional posting).
@@ -417,12 +546,11 @@ export function postFxRevaluationLegs(
     amount: decimalMagnitude(delta.amount),
   });
   const isGain = !delta.amount.trim().startsWith("-");
-  // Gain: Dr position / Cr P&L (or OCI). Loss: Cr position / Dr P&L (or OCI).
+  // Gain: Dr position / Cr P&L. Loss: Cr position / Dr P&L. FVTPL-only — the
+  // movement always hits P&L, never OCI (F1).
   const positionSide: "debit" | "credit" = isGain ? "debit" : "credit";
   const counterSide: "debit" | "credit" = isGain ? "credit" : "debit";
-  const description = isFvoci
-    ? `FX Revaluation ${delta.currency} ${isGain ? "gain" : "loss"} (V2 FVOCI election, OCI)`
-    : `FX Revaluation ${delta.currency} ${isGain ? "gain" : "loss"} (V2 FVTPL delta)`;
+  const description = `FX Revaluation ${delta.currency} ${isGain ? "gain" : "loss"} (V2 FVTPL delta)`;
 
   return [
     {
@@ -456,13 +584,18 @@ export function postFxRevaluationLegs(
 // so this posts a ZERO-AMOUNT memo (Dr/Cr ACC-2100-005 ZAR 0), byte-identical to
 // gl-posting-engine-v2.postFxClose.
 //
-// SUBSTRATE GAP (tracked, NOT a silent omission — D-ACCT-FX-IFRS-POSTING-
-// COMPLETENESS): a proper derecognition reverses the prior recognition using the
-// prior notional from the Created/Amended events; settlement realised-P&L,
-// swap-leg, NDF-fixing and FVOCI→P&L reclassification all require economic terms
-// FilInstrumentTerminated does not carry. These refinements are recorded as
-// ProductDeferredGaps (see fx.ts FX_DEFERRED_POSTING_GAPS) pending a richer FIL
-// terminal event.
+// BARE-TERMINAL FALLBACK ONLY. This zero-amount memo is the path for a terminal
+// event that carries NO enriched economic terms. The settlement realised-P&L,
+// swap-leg, NDF-fixing and FVOCI→P&L-reclass refinements that once needed terms
+// FilInstrumentTerminated did not carry are NO LONGER deferred: WS-FIL-FX-
+// SETTLEMENT-EVENTS (D-FIL-FX-SETTLEMENT-EVENTS) landed the enriched FIL settlement
+// event family, and the fold now fires those rules at fold time (the gaps in
+// fx-settlement.FX_SETTLEMENT_DEFERRED_GAPS are marked `resolvedBy`). An enriched
+// terminal event takes the derecognition / FVOCI-reclass path in the fold
+// (postFxTerminationLegs), not this memo. NOTE: the FVOCI-reclass refinement is
+// retained in the gap inventory as historical record but is IFRS-INVALID for FX
+// (F1) — an FX derivative is FVTPL-only, so PR-FX-FVOCI-RECLASS-V2 cannot
+// legitimately fire for an FX instance.
 // ---------------------------------------------------------------------------
 
 export function postFxCloseLegs(payload: FilInstrumentTerminatedPayload): FxPostingLeg[] {

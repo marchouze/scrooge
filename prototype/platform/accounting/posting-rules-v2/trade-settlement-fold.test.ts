@@ -148,14 +148,14 @@ describe("D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL Slice 1 — decomposition byte-equ
     expectByteIdenticalNet(golden, decomposed);
   });
 
-  test("P&L-neutral clearing (settled != booked on BOTH legs): N settlements net == single FX settlement", () => {
-    // Bought USD: booked 1,000,000 / settled 1,010,000.
-    // Sold  ZAR: booked 18,500,000 / settled 18,400,000.
+  test("P&L-neutral clearing (deliverable: settled == booked): N settlements net == single FX settlement", () => {
+    // Deliverable settlement exchanges the contractual notional → settled == booked
+    // per currency (F3: a same-currency booked≠settled difference fails closed).
     const s = fxSpotSettlement({
       boughtBooked: "1000000",
-      boughtSettled: "1010000",
+      boughtSettled: "1000000",
       soldBooked: "18500000",
-      soldSettled: "18400000",
+      soldSettled: "18500000",
     });
     const golden = referenceLegs(s);
     const decomposed = postTradeSettlementListLegs(
@@ -169,22 +169,21 @@ describe("D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL Slice 1 — decomposition byte-equ
     expectByteIdenticalNet(golden, decomposed);
   });
 
-  test("P&L-neutral clearing (settled < booked): N settlements net == single FX settlement", () => {
-    // Bought USD: booked 1,000,000 / settled 990,000.
-    // Sold  ZAR: booked 18,500,000 / settled 18,600,000.
+  test("BOTH paths fail closed identically on a same-currency booked≠settled difference (F3)", () => {
+    // A same-currency settled≠booked is an IAS 21 §28/§29 exchange difference the
+    // P&L-neutral rule cannot represent. The two-leg reference path and the
+    // single-asset decomposition both bottom out on the same primitive, so both
+    // throw — fail-closed by construction (Charter cmd 2/4).
     const s = fxSpotSettlement({
       boughtBooked: "1000000",
       boughtSettled: "990000",
       soldBooked: "18500000",
       soldSettled: "18600000",
     });
-    const golden = referenceLegs(s);
-    const decomposed = postTradeSettlementListLegs(
-      decomposeFxSettlementToTradeSettlements({ settlement: s }),
-    );
-    expect(golden.some((l) => l.accountCode === "ACC-2100-006")).toBe(false);
-    expect(golden.some((l) => l.accountCode === "ACC-2100-027")).toBe(true);
-    expectByteIdenticalNet(golden, decomposed);
+    expect(() => referenceLegs(s)).toThrow(/settled amount .* ≠ booked amount/);
+    expect(() =>
+      postTradeSettlementListLegs(decomposeFxSettlementToTradeSettlements({ settlement: s })),
+    ).toThrow(/settled amount .* ≠ booked amount/);
   });
 });
 

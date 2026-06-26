@@ -121,16 +121,29 @@ export function run(): ReconResult {
       const postingDate = payload.asOf.substring(0, 10);
       if (postingDate < V2_PERIOD_START || postingDate > V2_PERIOD_END) continue;
 
-      const legs = postFxInitialRecognitionLegs(payload);
+      const allLegs = postFxInitialRecognitionLegs(payload);
       // A fail-closed skip (no fxAgreement) yields no legs — not a shape violation
       // here (the fold surfaces it). Only assert shape when legs exist.
-      if (legs.length === 0) continue;
+      if (allLegs.length === 0) continue;
       tradeDateInstances += 1;
       const instance = payload.instance;
 
-      // (1) NO on-balance-sheet FX gross-up.
+      // OFF-MARKET DAY-1 FAIR VALUE carve-out (D-FX-IFRS-REVIEW-FOUNDATION, F13). An
+      // OFF-MARKET forward (the instance carries `dayOneFairValue`) legitimately
+      // recognises a NON-ZERO day-1 FV ON-BALANCE-SHEET at inception (IFRS 9
+      // §B5.1.2A) — Dr/Cr the position (asset-*) + P&L. The OBS-only invariants below
+      // apply to the OBS subset; the day-1-FV legs are validated separately (they may
+      // land on the on-BS position/P&L block, but NOWHERE else). An AT-MARKET trade
+      // (no dayOneFairValue) keeps the strict OBS-only shape — ALL legs must be OBS.
+      const isOffMarket =
+        payload.economicTerms.dayOneFairValue !== undefined &&
+        !/^-?0*(?:\.0+)?$/.test(payload.economicTerms.dayOneFairValue.amount.trim());
+      const obsLegs = allLegs.filter((l) => OBS_ACCOUNTS.has(l.accountCode));
+      const dayOneFvLegs = allLegs.filter((l) => !OBS_ACCOUNTS.has(l.accountCode));
+
+      // (1) NO on-balance-sheet FX gross-up — EXCEPT a legitimate off-market day-1 FV.
       result.asserted += 1;
-      const onBsLegs = legs.filter((l) => l.accountCode.startsWith(FX_ONBS_ACCOUNT_PREFIX));
+      const onBsLegs = obsLegs.filter((l) => l.accountCode.startsWith(FX_ONBS_ACCOUNT_PREFIX));
       if (onBsLegs.length > 0) {
         violations.push({
           subject: `${PIPELINE}:on-bs-gross-up:${instance}`,
@@ -139,21 +152,57 @@ export function run(): ReconResult {
         });
       }
 
-      // (2) Every leg lands on an OBS memorandum account.
+      // (2) Every NON-day-1-FV leg lands on an OBS memorandum account. For an
+      // at-market trade there are no day-1-FV legs, so every leg must be OBS (the
+      // strict invariant). For an off-market trade the day-1-FV legs are carved out
+      // and validated in (4).
       result.asserted += 1;
-      const nonObsLegs = legs.filter((l) => !OBS_ACCOUNTS.has(l.accountCode));
-      if (nonObsLegs.length > 0) {
+      if (!isOffMarket && dayOneFvLegs.length > 0) {
         violations.push({
           subject: `${PIPELINE}:non-obs-leg:${instance}`,
-          message: `Trade-date FX instance ${instance} posted leg(s) outside the OBS memorandum block on accounts [${nonObsLegs.map((l) => l.accountCode).join(", ")}]. Every trade-date leg must land on an off-balance-sheet memorandum account (${[...OBS_ACCOUNTS].join(", ")}). Authority: D-FX-TRADE-DATE-FVTPL-OBS.`,
+          message: `Trade-date FX instance ${instance} posted leg(s) outside the OBS memorandum block on accounts [${dayOneFvLegs.map((l) => l.accountCode).join(", ")}] but carries NO dayOneFairValue (an at-market trade is OBS-only). Every at-market trade-date leg must land on an off-balance-sheet memorandum account (${[...OBS_ACCOUNTS].join(", ")}). Authority: D-FX-TRADE-DATE-FVTPL-OBS.`,
           severity: "fail",
         });
+      }
+
+      // (4) OFF-MARKET day-1-FV legs land ONLY on the on-BS position (asset-*) + P&L
+      // block, balance in their currency, and exist only when the instance is
+      // off-market. A day-1-FV leg anywhere else is a wrong-destination defect (F13).
+      if (isOffMarket) {
+        result.asserted += 1;
+        const allowedDayOne = (code: string) => code.startsWith(FX_ONBS_ACCOUNT_PREFIX); // position (ACC-2100-00x) + unrealised P&L (ACC-2100-005)
+        const stray = dayOneFvLegs.filter((l) => !allowedDayOne(l.accountCode));
+        if (stray.length > 0) {
+          violations.push({
+            subject: `${PIPELINE}:day1-fv-wrong-destination:${instance}`,
+            message: `Off-market trade-date FX instance ${instance} posted day-1 fair-value leg(s) on [${stray.map((l) => l.accountCode).join(", ")}], outside the on-BS position/P&L block (ACC-2100-*). A day-1 FV is recognised on the derivative position + P&L only (IFRS 9 §B5.1.2A). Authority: D-FX-IFRS-REVIEW-FOUNDATION (F13).`,
+            severity: "fail",
+          });
+        }
+        // Day-1-FV legs balance in their currency (Dr position == Cr P&L).
+        const dayOneNet = new Map<string, number>();
+        for (const leg of dayOneFvLegs) {
+          const m = legMinor(leg);
+          dayOneNet.set(
+            leg.amount.currency,
+            (dayOneNet.get(leg.amount.currency) ?? 0) + (leg.creditDebit === "debit" ? m : -m),
+          );
+        }
+        for (const [ccy, net] of dayOneNet) {
+          if (net !== 0) {
+            violations.push({
+              subject: `${PIPELINE}:day1-fv-imbalance:${instance}:${ccy}`,
+              message: `Off-market trade-date FX instance ${instance} day-1 fair-value legs do not self-balance in ${ccy} (net ${net} minor, expected 0). Authority: D-FX-IFRS-REVIEW-FOUNDATION (F13).`,
+              severity: "fail",
+            });
+          }
+        }
       }
 
       // (3) OBS legs span the two distinct quad currencies and self-balance per ccy.
       result.asserted += 1;
       const netByCcy = new Map<string, number>();
-      for (const leg of legs) {
+      for (const leg of obsLegs) {
         const m = legMinor(leg);
         netByCcy.set(
           leg.amount.currency,

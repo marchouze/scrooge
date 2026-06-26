@@ -69,18 +69,23 @@ const COMMON = {
 };
 
 describe("PR-FX-SETTLE-V2 — P&L-neutral settlement (IAS 21 §23; D-FX-PNL-FCY-EXPOSURE-REVALUATION)", () => {
-  test("balances per currency even when the settled amount differs from booked", () => {
-    const legs = postFxSettlementLegs({
-      ...COMMON,
-      boughtCurrency: "USD",
-      boughtBookedAmount: "1000000.00",
-      boughtSettledAmount: "1005000.00", // received more than booked
-      soldCurrency: "ZAR",
-      soldBookedAmount: "18000000.00",
-      soldSettledAmount: "18000000.00",
-    });
-    expect(legs.length).toBeGreaterThan(0);
-    expectBalanced(legs);
+  test("FAILS CLOSED when a settled amount differs from booked in the same currency (F3)", () => {
+    // A deliverable FX settlement exchanges the contractual notional, so settled ==
+    // booked PER CURRENCY. A same-currency difference is an IAS 21 §28/§29 exchange
+    // difference the P&L-neutral rule cannot represent — it must NOT be silently
+    // dropped (it would net to zero by construction). The rule fails closed
+    // (D-FX-IFRS-REVIEW-FOUNDATION, F3) rather than absorbing it.
+    expect(() =>
+      postFxSettlementLegs({
+        ...COMMON,
+        boughtCurrency: "USD",
+        boughtBookedAmount: "1000000.00",
+        boughtSettledAmount: "1005000.00", // received more than booked → exchange difference
+        soldCurrency: "ZAR",
+        soldBookedAmount: "18000000.00",
+        soldSettledAmount: "18000000.00",
+      }),
+    ).toThrow(/settled amount .* ≠ booked amount/);
   });
 
   test("balances when both legs settle exactly at the booked rate", () => {
@@ -231,11 +236,13 @@ describe("PR-FX-CLOSE-V2 — derecognition reversal (IFRS 9 §3.2.3)", () => {
 });
 
 describe("PR-FX-SWAP-NEAR/FAR-V2 — swap-leg settlement (IAS 21 §23)", () => {
+  // Deliverable swap legs exchange the contractual notional → settled == booked per
+  // currency (F3: a same-currency booked≠settled difference fails closed).
   const swapInput = {
     ...COMMON,
     boughtCurrency: "GBP",
     boughtBookedAmount: "800000.00",
-    boughtSettledAmount: "802000.00",
+    boughtSettledAmount: "800000.00",
     soldCurrency: "ZAR",
     soldBookedAmount: "19000000.00",
     soldSettledAmount: "19000000.00",
@@ -311,13 +318,29 @@ describe("FX_SETTLEMENT_DEFERRED_GAPS — tracked, well-formed deferrals", () =>
     }
   });
 
-  test("WS-FIL-FX-SETTLEMENT-EVENTS resolved all five — no OPEN deferred gap remains", () => {
-    // Every gap carries a resolvedBy marker; the active (still-open) subset is
-    // empty → the NPA-page badge renders every FX posting rule `active`.
+  test("no OPEN deferred gap remains: four resolved by wiring + FVOCI invalid-for-FX (F1)", () => {
+    // Four gaps are resolved by WS-FIL-FX-SETTLEMENT-EVENTS trigger-wiring; the
+    // FVOCI-reclass gap is closed by EXCLUSION (IFRS-invalid for FX, F1), NOT by
+    // wiring. Every gap is closed one way or the other, so the active (still-open)
+    // subset is empty → the NPA-page badge renders every LIVE FX posting rule
+    // `active` and the FVOCI rule is excluded as invalid-for-FX.
     for (const g of FX_SETTLEMENT_DEFERRED_GAPS) {
-      expect(g.resolvedBy).toBeDefined();
+      const closed = g.resolvedBy !== undefined || g.invalidForFx !== undefined;
+      expect(closed).toBe(true);
+      // Exactly one of the two closure markers, never both.
+      expect(g.resolvedBy !== undefined && g.invalidForFx !== undefined).toBe(false);
+    }
+    // The four wiring-resolved gaps cite the resolving event family.
+    const resolvedByWiring = FX_SETTLEMENT_DEFERRED_GAPS.filter((g) => g.resolvedBy !== undefined);
+    expect(resolvedByWiring.length).toBe(4);
+    for (const g of resolvedByWiring) {
       expect(g.resolvedBy).toContain("D-FIL-FX-SETTLEMENT-EVENTS");
     }
+    // The FVOCI-reclass gap is invalid-for-FX, not deferred (F1).
+    const fvoci = FX_SETTLEMENT_DEFERRED_GAPS.find((g) => g.gapId === "fx-fvoci-reclass-trigger");
+    expect(fvoci?.invalidForFx).toContain("D-FX-IFRS-REVIEW-FOUNDATION");
+    expect(fvoci?.resolvedBy).toBeUndefined();
+
     expect(activeFxSettlementDeferredGaps().length).toBe(0);
   });
 });
