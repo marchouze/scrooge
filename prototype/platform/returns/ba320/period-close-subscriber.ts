@@ -28,8 +28,12 @@
 //      and IRS ladders are combined per-band. Live trading-book swaps that
 //      cannot be decomposed (non-vanilla role, or missing next-reset terms)
 //      are surfaced as a substrate-gap placeholder (not dropped, not fabricated).
-//   3. Uses caller-supplied equity / commodity inputs (build-phase:
-//      placeholder zeros; post-trading-book milestone: event-derived).
+//   3. Folds `EquityTradingPositionOpened` / `CommodityTradingPositionOpened`
+//      (minus their Closed derecognitions) to derive the equity + commodity
+//      position-risk rows (P1-compliant path; see
+//      `ba-320-equity-events-adapter.ts` + `ba-320-commodity-events-adapter.ts`).
+//      Only trading-book positions are folded — banking-book equity is BA 340.
+//      Authority: D-BA-RETURN-SIMULATOR-FIRST.
 //   4. Calls `generateBa320MarketRiskFromEvents` with the composed input.
 //   5. Returns the typed `Ba320Output` for the caller to render / store.
 //
@@ -42,9 +46,11 @@
 // balance. This is the P1-compliant architecture per
 // `Principles/1-events-are-truth.md`, P1 fix C-2, and D-MARKETS-CAPITAL-TIME-SHAPE.
 //
-// Equity and commodity sub-charges remain caller-supplied placeholders
-// (zero by default) until the respective trading-book event streams are
-// implemented (substrate gap, roadmap item D-MARKETS-CAPITAL-TIME-SHAPE).
+// Equity and commodity sub-charges are folded directly from the born-V2
+// `EquityTradingPositionOpened` / `CommodityTradingPositionOpened` events
+// (minus their Closed derecognitions) — not from the trial balance. This closes
+// the former D-MARKETS-CAPITAL-TIME-SHAPE substrate gap (caller-supplied zeros);
+// authority: D-BA-RETURN-SIMULATOR-FIRST.
 //
 // Citation: Principles/1-events-are-truth.md; D-MARKETS-SCHEMA-FOUNDATION;
 //           D-REPORTING-CAPABILITY-M2-M3-BUILD-PLAN;
@@ -62,6 +68,8 @@ import {
   buildBondIrGeneralLadder,
   buildBondIrSpecificRiskRows,
 } from "../../reporting/ba-320-bond-events-adapter";
+import { buildCommodityRows } from "../../reporting/ba-320-commodity-events-adapter";
+import { buildEquityRows } from "../../reporting/ba-320-equity-events-adapter";
 import {
   type Ba320FromEventsInput,
   type Ba320Output,
@@ -132,12 +140,22 @@ export interface Ba320PeriodCloseSubscriberInput {
    */
   readonly irSpecificRisk?: readonly IrSpecificRiskRow[];
   /**
-   * Equity position rows (caller-supplied). Build-phase default: [].
-   * // TODO: derive from EquityPositionOpened events.
+   * Equity position rows (optional override). When omitted, the subscriber
+   * derives rows from EquityTradingPositionOpened events via `buildEquityRows`
+   * (P1-compliant path; D-BA-RETURN-SIMULATOR-FIRST). Only trading-book equity
+   * enters BA 320 (banking-book equity → BA 340). Supply an explicit value only
+   * in tests or when overriding event-derived output.
+   *
+   * Authority: Reg 28(3)(a); BCBS D352 §718(xi)–(xii); D-BA-RETURN-SIMULATOR-FIRST.
    */
   readonly equity?: readonly EquityRow[];
   /**
-   * Commodity positions (caller-supplied). Build-phase default: [].
+   * Commodity positions (optional override). When omitted, the subscriber
+   * derives rows from CommodityTradingPositionOpened events via
+   * `buildCommodityRows` (P1-compliant path; D-BA-RETURN-SIMULATOR-FIRST).
+   * Supply an explicit value only in tests or overrides.
+   *
+   * Authority: Reg 28(3)(a); BCBS D352 §718(xv); D-BA-RETURN-SIMULATOR-FIRST.
    */
   readonly commodity?: readonly CommodityPositionRow[];
   /** Optional IR disallowances override. */
@@ -243,6 +261,15 @@ export function ba320PeriodCloseSubscriber(
   const derivedIrSpecificRisk =
     input.irSpecificRisk ?? buildBondIrSpecificRiskRows(bondAdapterInput);
 
+  // Equity + commodity rows are folded events-first from the born-V2 trading-book
+  // position streams (EquityTradingPositionOpened / CommodityTradingPositionOpened,
+  // minus their Closed derecognitions). Only trading-book positions are folded
+  // (banking-book equity → BA 340; the FRTB desk boundary the adapters honour).
+  // Caller-supplied overrides take precedence (tests / edge cases).
+  // Authority: Reg 28(3)(a); BCBS D352 §718(xi)–(xv); D-BA-RETURN-SIMULATOR-FIRST.
+  const derivedEquity = input.equity ?? buildEquityRows(bondAdapterInput);
+  const derivedCommodity = input.commodity ?? buildCommodityRows(bondAdapterInput);
+
   // Substrate-gap placeholders: live trading-book swaps that cannot be
   // maturity-method-decomposed (non-vanilla role, or missing next-reset terms).
   const extraPlaceholders: string[] =
@@ -262,8 +289,8 @@ export function ba320PeriodCloseSubscriber(
     zarRates: input.zarRates ?? new Map(),
     irGeneralMaturityLadder: derivedIrGeneralMaturityLadder,
     irSpecificRisk: derivedIrSpecificRisk,
-    equity: input.equity ?? [],
-    commodity: input.commodity ?? [],
+    equity: derivedEquity,
+    commodity: derivedCommodity,
     ...(input.irGeneralDisallowancesMinor !== undefined
       ? { irGeneralDisallowancesMinor: input.irGeneralDisallowancesMinor }
       : {}),
