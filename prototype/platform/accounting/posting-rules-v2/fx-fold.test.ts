@@ -853,14 +853,14 @@ describe("WS-FIL-FX-SETTLEMENT-EVENTS — the five rules fire at fold time + bal
   test("PR-FX-SETTLE-V2: P&L-neutral spot settlement fires (cash vs clearing) + balances per currency", () => {
     const store = new EventStore(":memory:");
     seedTreatmentModules(store);
-    // Bought USD: booked 1,000,000 / settled 1,010,000 (gain 10k USD).
-    // Sold  ZAR: booked 18,500,000 / settled 18,400,000 (gain 100k ZAR).
+    // Deliverable spot: the contractual notional is exchanged, so settled == booked
+    // per currency (F3 — a same-currency booked≠settled difference fails closed).
     store.append(
       settlementConfirmed("FX-S1", "spot", "2026-06-10T10:00:00.000Z", {
         boughtBooked: "1000000",
-        boughtSettled: "1010000",
+        boughtSettled: "1000000",
         soldBooked: "18500000",
-        soldSettled: "18400000",
+        soldSettled: "18500000",
       }),
     );
     const fold = foldFxContributionLegs(args(store));
@@ -873,20 +873,21 @@ describe("WS-FIL-FX-SETTLEMENT-EVENTS — the five rules fire at fold time + bal
   test("PR-FX-SWAP-NEAR-V2 + PR-FX-SWAP-FAR-V2: both swap legs fire + balance", () => {
     const store = new EventStore(":memory:");
     seedTreatmentModules(store);
+    // Deliverable swap legs: settled == booked per currency (F3).
     store.append(
       settlementConfirmed("FX-SW", "swap-near", "2026-06-10T10:00:00.000Z", {
         boughtBooked: "500000",
-        boughtSettled: "505000",
+        boughtSettled: "500000",
         soldBooked: "9250000",
-        soldSettled: "9240000",
+        soldSettled: "9250000",
       }),
     );
     store.append(
       settlementConfirmed("FX-SW", "swap-far", "2026-06-20T10:00:00.000Z", {
         boughtBooked: "500000",
-        boughtSettled: "498000",
+        boughtSettled: "500000",
         soldBooked: "9300000",
-        soldSettled: "9310000",
+        soldSettled: "9300000",
       }),
     );
     const fold = foldFxContributionLegs(args(store));

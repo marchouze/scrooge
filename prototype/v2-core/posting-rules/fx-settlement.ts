@@ -67,6 +67,11 @@ function isZeroDecimal(s: string): boolean {
   return p.digits === 0n;
 }
 
+/** True iff two decimal strings are numerically equal (scale-independent). */
+function decimalEquals(a: string, b: string): boolean {
+  return isZeroDecimal(subtractDecimal(a, b));
+}
+
 /** Exact decimal subtract `a − b` via common-scale BigInt — never IEEE-754. */
 function subtractDecimal(a: string, b: string): string {
   const pa = parseDecimal(a);
@@ -139,10 +144,13 @@ export const FX_SETTLEMENT_CLEARING_ACCOUNT = "ACC-2100-027";
 // cash FIL instance + revalued daily exactly like the open contract). The OBS
 // trade-date commitment is released separately (PR-FX-OBS-RELEASE-V2).
 //
-// `bookedAmount` is RETAINED in the input shape (the OBS commitment carrying at
-// the booked rate) for the deferred swap-leg permutations + traceability; the
-// settlement leg recognises cash at the SETTLED amount and the balancing clearing
-// leg matches it in the same currency — so the per-currency entry closes at zero
+// `bookedAmount` is the settlement-date §23 retranslation PRECONDITION operand
+// (F3): the settlement leg recognises cash at the SETTLED amount, and for a
+// deliverable settlement the settled cash EQUALS the booked carrying amount in the
+// same currency. A same-currency booked≠settled difference is an IAS 21 §28/§29
+// exchange difference this P&L-neutral rule CANNOT represent (it would net to zero
+// and be silently dropped), so the rule FAILS CLOSED on it rather than absorbing it
+// (Charter cmd 2). With settled == booked the per-currency entry closes at zero
 // with NO realised P&L.
 // ---------------------------------------------------------------------------
 
@@ -216,11 +224,12 @@ export interface SettlementMovementInput {
   /** Cash actually moved at the SETTLEMENT rate (positive magnitude). */
   readonly settledAmount: string;
   /**
-   * Carrying amount of the OBS commitment leg at the BOOKED rate (positive).
-   * RETAINED for traceability + the deferred swap-leg permutations; the P&L-neutral
-   * settlement recognises cash at the SETTLED amount and balances it with the
-   * clearing leg in the same currency, so this no longer drives an obligation
-   * relief.
+   * Carrying amount of the OBS commitment leg at the BOOKED rate (positive). The
+   * P&L-neutral settlement recognises cash at the SETTLED amount; this amount is the
+   * settlement-date §23 retranslation PRECONDITION operand (F3): for a deliverable
+   * settlement it MUST equal `settledAmount` in the same currency, else the rule
+   * fails closed (a same-currency booked≠settled difference is an IAS 21 §28/§29
+   * exchange difference this P&L-neutral rule cannot represent).
    */
   readonly bookedAmount: string;
   /** `receive` recognises bought-leg cash (Dr cash); `pay` recognises sold-leg cash (Cr cash). */
@@ -254,6 +263,23 @@ export function postSettlementMovementLegs(
   movement: SettlementMovementInput,
 ): FxPostingLeg[] {
   if (isZeroDecimal(movement.settledAmount)) return [];
+  // SETTLEMENT-DATE §23 RETRANSLATION PRECONDITION (D-FX-IFRS-REVIEW-FOUNDATION,
+  // F3). For a DELIVERABLE FX settlement the cash exchanged in a given currency IS
+  // the contractual notional, so the SETTLED amount EQUALS the BOOKED carrying
+  // amount in that SAME currency — the booked/settled distinction is a CROSS-
+  // currency (rate) concept, not a same-currency amount difference. The P&L-neutral
+  // rule recognises cash at the settled amount and balances it with the clearing
+  // leg at the SAME settled amount, so a same-currency booked≠settled residual would
+  // be SILENTLY DROPPED (it nets to zero by construction) — masking a real IAS 21
+  // §28/§29 exchange difference. That is the settlement-realisation failure mode in
+  // a different guise. Fail closed (Charter cmd 2): a same-currency booked≠settled
+  // movement is NOT representable by this P&L-neutral rule and must be routed
+  // through an explicit exchange-difference treatment, never absorbed silently.
+  if (!decimalEquals(movement.settledAmount, movement.bookedAmount)) {
+    throw new Error(
+      `postSettlementMovementLegs: settled amount (${movement.settledAmount} ${movement.currency}) ≠ booked amount (${movement.bookedAmount} ${movement.currency}) for the SAME currency. A deliverable FX settlement exchanges the contractual notional, so settled == booked per currency; a difference is an IAS 21 §28/§29 exchange difference the P&L-neutral settlement rule cannot represent (it would net to zero and be silently dropped). Route it through an explicit exchange-difference / conversion treatment (PR-FX-CONVERT-V2). Authority: D-FX-IFRS-REVIEW-FOUNDATION (F3); D-FX-PNL-FCY-EXPOSURE-REVALUATION.`,
+    );
+  }
   const cashSide: "debit" | "credit" = movement.side === "receive" ? "debit" : "credit";
   // The clearing leg is the OPPOSITE side of the cash leg, in the SAME currency,
   // for the SAME amount — so the movement balances in its own currency with no

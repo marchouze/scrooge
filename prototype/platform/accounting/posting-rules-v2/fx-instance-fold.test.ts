@@ -468,12 +468,14 @@ describe("deriveFxInstanceLegs — DUAL-READ settlement (Slice 2: TradeSettlemen
     expect([...oldNet.keys()].some((k) => k.startsWith("ACC-1200-"))).toBe(true);
   });
 
-  test("P&L-neutral clearing (settled != booked both legs): N TradeSettlementExecuted net == single FilFxSettlementConfirmed", () => {
+  test("P&L-neutral clearing (deliverable: settled == booked): N TradeSettlementExecuted net == single FilFxSettlementConfirmed", () => {
+    // Deliverable settlement exchanges the contractual notional → settled == booked
+    // per currency (F3: a same-currency booked≠settled difference fails closed).
     const s = fxSettlementConfirmed("FX-SETTLE-B", "2026-06-10T10:00:00.000Z", {
       boughtBooked: "1000000",
-      boughtSettled: "1010000",
+      boughtSettled: "1000000",
       soldBooked: "18500000",
-      soldSettled: "18400000",
+      soldSettled: "18500000",
     });
     const oldNet = netByAccountCurrency(
       deriveFxInstanceLegs(args(storeWithOldSettlement("FX-SETTLE-B", s))).legs,
@@ -492,9 +494,9 @@ describe("deriveFxInstanceLegs — DUAL-READ settlement (Slice 2: TradeSettlemen
   test("the new-path settlement legs attach to the TRADE instance (grouping id), not the holding", () => {
     const s = fxSettlementConfirmed("FX-SETTLE-C", "2026-06-10T10:00:00.000Z", {
       boughtBooked: "1000000",
-      boughtSettled: "1010000",
+      boughtSettled: "1000000",
       soldBooked: "18500000",
-      soldSettled: "18400000",
+      soldSettled: "18500000",
     });
     const fold = deriveFxInstanceLegs(args(storeWithNewSettlement("FX-SETTLE-C", s)));
     const settleLegs = fold.legs.filter((l) => l.postingRuleId === "PR-FX-SETTLE-V2");
