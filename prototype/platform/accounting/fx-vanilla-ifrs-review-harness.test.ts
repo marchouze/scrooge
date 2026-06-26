@@ -108,14 +108,14 @@ describe("FX-vanilla IFRS review harness — structure (PROC-FIN-12)", () => {
   });
 
   test("F5 — the harness reports an FX-leg non-vacuity count, and nonVacuous tracks it", () => {
-    expect(typeof verdict.assertedFxLegCount).toBe("number");
-    expect(verdict.assertedFxLegCount).toBeGreaterThanOrEqual(0);
-    expect(verdict.nonVacuous).toBe(verdict.assertedFxLegCount > 0);
+    expect(typeof verdict.assertedFxInstanceCount).toBe("number");
+    expect(verdict.assertedFxInstanceCount).toBeGreaterThanOrEqual(0);
+    expect(verdict.nonVacuous).toBe(verdict.assertedFxInstanceCount > 0);
     // The store-dependent checks' assertedCount mirrors the fold leg count.
     const c1 = verdict.checks.find(
       (x) => x.premise === "fvtpl-classification-at-market-trade-date-obs",
     );
-    expect(c1?.assertedCount).toBe(verdict.assertedFxLegCount);
+    expect(c1?.assertedCount).toBe(verdict.assertedFxInstanceCount);
   });
 
   test("F5 — when the review is non-vacuous, a clean store cannot have produced a vacuous PASS", () => {

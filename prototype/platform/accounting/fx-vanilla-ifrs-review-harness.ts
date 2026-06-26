@@ -14,10 +14,11 @@
 // §4 — validate against domain-truth oracles, not internal consistency).
 //
 // NON-VACUITY (F5). A review of an empty / FX-free store is RED, never a vacuous
-// PASS. The harness counts the asserted FX legs the production fold emits; a zero
-// count makes the verdict non-vacuous=false / pass=false, and every store-dependent
-// premise (1–3) carries pass=false because it evidenced nothing. A review of
-// nothing cannot be signed (Engineering Charter cmd 3 — no green by concealment).
+// PASS. The harness counts the in-window FX instances the store carries (a plain
+// FilInstrumentCreated replay — NOT the oracle-only event fold); a zero count makes
+// the verdict non-vacuous=false / pass=false, and every store-dependent premise
+// (1–3) carries pass=false because it evidenced nothing. A review of nothing cannot
+// be signed (Engineering Charter cmd 3 — no green by concealment).
 //
 // THE SIX CHECKS — each maps to an IFRS premise + its executable evidence:
 //
@@ -68,11 +69,13 @@
 // Author: Camille (Chief Financial Officer, governance) — review-methodology
 //   PROC + CFO sign-off leg of WS-FX-IFRS-REVIEW-FOUNDATION.
 
+import type { FilInstrumentCreatedPayload } from "../../v2-core/fil-instances/events";
 import { FX_POSTING_RULE_IDS } from "../../v2-core/posting-rules/fx";
 import { activeFxSettlementDeferredGaps } from "../../v2-core/posting-rules/fx-settlement";
 import { POSTING_RULE_REGISTRY } from "../../v2-core/posting-rules/registry";
 import { eventStore } from "../composition";
-import { V2_PERIOD_END, V2_PERIOD_START } from "../projections/v2-read-window";
+import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
+import { V2_ANCHOR_ENTITY, V2_PERIOD_END, V2_PERIOD_START } from "../projections/v2-read-window";
 import { run as runExchangeDifferenceFunctionalCurrency } from "../recon/exchange-difference-functional-currency-integrity";
 import { run as runFairValueHierarchy } from "../recon/fx-fair-value-hierarchy-integrity";
 import { run as runPnlAccountCategory } from "../recon/fx-pnl-account-category-integrity";
@@ -81,7 +84,6 @@ import { run as runSettlementFvtpl } from "../recon/fx-settlement-fvtpl-integrit
 import { run as runObsMemorandum } from "../recon/fx-trade-date-obs-memorandum";
 import type { ReconResult } from "../recon/types";
 import { utcNow } from "../types/time";
-import { foldFxContributionLegs } from "./posting-rules-v2/fx-fold";
 
 /** The six IFRS premises the FX-vanilla CFO sign-off rests on. */
 export type FxIfrsPremise =
@@ -133,8 +135,8 @@ export interface FxIfrsReviewVerdict {
    * review run against a store with ZERO FX legs is a REVIEW OF NOTHING and the
    * verdict is RED — a non-vacuity guard, so checks 1–3 cannot pass vacuously.
    */
-  readonly assertedFxLegCount: number;
-  /** True iff the store carried real FX activity to review (assertedFxLegCount > 0). */
+  readonly assertedFxInstanceCount: number;
+  /** True iff the store carried real FX activity to review (assertedFxInstanceCount > 0). */
   readonly nonVacuous: boolean;
   /** True iff every premise check passes AND the review was non-vacuous (the sign-off precondition). */
   readonly pass: boolean;
@@ -203,22 +205,33 @@ function assertLifecycleCompleteness(): { findings: string[]; asserted: number }
 }
 
 /**
- * Count the asserted FX legs the production fold produces over the canonical store
- * (F5). This is the harness's NON-VACUITY measure: a store with zero FX legs is a
- * review of NOTHING, and the gates' checks 1–3 would pass vacuously (no leg to
- * violate). The count is the number of in-window FX contribution legs the fold
- * emits — > 0 iff the store carries real FX activity to review. Read-only.
+ * Count the FX instances the production store carries in the read window (F5).
+ * This is the harness's NON-VACUITY measure: a store with zero FX instances is a
+ * review of NOTHING, and the store-dependent gates' checks 1–3 would pass
+ * vacuously (no leg to violate). Counted by a PLAIN replay of in-window FX
+ * `FilInstrumentCreated` events under the operating-book lens — NOT via the retired
+ * `foldFxContributionLegs` (that event fold is oracle-only, enforced by
+ * recon:fil-state-surface-isolation; a production importer is a violation). Read-only.
  */
-function countAssertedFxLegs(): number {
+function countAssertedFxInstances(): number {
   try {
-    return foldFxContributionLegs({
-      eventStore,
-      periodStart: V2_PERIOD_START,
-      periodEnd: V2_PERIOD_END,
-    }).legs.length;
+    const filter = defaultProvenanceFilter();
+    let count = 0;
+    for (const e of eventStore.replay({
+      entity: V2_ANCHOR_ENTITY,
+      type: "FilInstrumentCreated",
+    })) {
+      if (!eventMatchesProvenanceFilter(e, filter)) continue;
+      const payload = e.payload as unknown as FilInstrumentCreatedPayload;
+      if (payload.economicTerms.assetClass !== "fx") continue;
+      const postingDate = payload.asOf.substring(0, 10);
+      if (postingDate < V2_PERIOD_START || postingDate > V2_PERIOD_END) continue;
+      count += 1;
+    }
+    return count;
   } catch {
-    // A fold failure is itself a review-blocking condition — return 0 so the
-    // non-vacuity guard fails closed (a review that cannot even fold the FX book
+    // A replay failure is itself a review-blocking condition — return 0 so the
+    // non-vacuity guard fails closed (a review that cannot even read the FX book
     // has asserted nothing).
     return 0;
   }
@@ -248,18 +261,19 @@ export function runFxVanillaIfrsReview(): FxIfrsReviewVerdict {
   const fairValueHierarchy = runFairValueHierarchy();
 
   // F5 — the non-vacuity measure: real FX legs in the production fold.
-  const assertedFxLegCount = countAssertedFxLegs();
-  const nonVacuous = assertedFxLegCount > 0;
-  // A store-dependent check is non-vacuous iff the fold produced ≥1 FX leg. The
-  // vacuity finding the check surfaces when the store is empty (so the CFO sees the
-  // verdict is RED *because* there was nothing to review, not because a gate fired).
+  const assertedFxInstanceCount = countAssertedFxInstances();
+  const nonVacuous = assertedFxInstanceCount > 0;
+  // A store-dependent check is non-vacuous iff the store carries ≥1 in-window FX
+  // instance. The vacuity finding the check surfaces when the store is empty (so the
+  // CFO sees the verdict is RED *because* there was nothing to review, not because a
+  // gate fired).
   const vacuityFinding = nonVacuous
     ? []
     : [
-        "NON-VACUITY: the FX production fold produced 0 asserted FX legs — this is a review of NOTHING and CANNOT pass. The store carries no FX activity to validate against IFRS (F5). A clean-store run is RED, never a vacuous PASS.",
+        "NON-VACUITY: the production store carries 0 in-window FX instances — this is a review of NOTHING and CANNOT pass. There is no FX activity to validate against IFRS (F5). A clean-store run is RED, never a vacuous PASS.",
       ];
   // A store-dependent premise passes only if its gates are clean AND the review is
-  // non-vacuous (it actually asserted against FX legs).
+  // non-vacuous (it actually asserted against FX activity).
   const storeCheck = (premise: FxIfrsPremise, paras: string[], evidence: ReconResult[]) => {
     const gateFindings = evidence.flatMap(failMessages);
     const gatesClean = evidence.every((r) => !hasFail(r));
@@ -269,7 +283,7 @@ export function runFxVanillaIfrsReview(): FxIfrsReviewVerdict {
       evidence,
       findings: [...gateFindings, ...vacuityFinding],
       evidenceKind: "store-fx-activity" as const,
-      assertedCount: assertedFxLegCount,
+      assertedCount: assertedFxInstanceCount,
       pass: gatesClean && nonVacuous,
     };
   };
@@ -356,7 +370,7 @@ export function runFxVanillaIfrsReview(): FxIfrsReviewVerdict {
     subject: "fx-vanilla-ifrs-accounting",
     checks,
     openTrackedGaps: openGaps,
-    assertedFxLegCount,
+    assertedFxInstanceCount,
     nonVacuous,
     // The sign-off precondition: every premise check that gates correctness passes
     // AND the review was non-vacuous (F5 — a review of nothing is RED). Check 6
@@ -369,7 +383,7 @@ export function runFxVanillaIfrsReview(): FxIfrsReviewVerdict {
 if (import.meta.main) {
   const verdict = runFxVanillaIfrsReview();
   process.stdout.write(
-    `Non-vacuity: ${verdict.nonVacuous ? `OK — ${verdict.assertedFxLegCount} asserted FX legs reviewed` : "RED — 0 asserted FX legs (review of nothing — F5)"}\n\n`,
+    `Non-vacuity: ${verdict.nonVacuous ? `OK — ${verdict.assertedFxInstanceCount} in-window FX instance(s) reviewed` : "RED — 0 in-window FX instances (review of nothing — F5)"}\n\n`,
   );
   for (const c of verdict.checks) {
     process.stdout.write(
