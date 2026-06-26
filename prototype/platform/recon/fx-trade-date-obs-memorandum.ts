@@ -170,8 +170,7 @@ export function run(): ReconResult {
       // off-market. A day-1-FV leg anywhere else is a wrong-destination defect (F13).
       if (isOffMarket) {
         result.asserted += 1;
-        const allowedDayOne = (code: string) =>
-          code.startsWith(FX_ONBS_ACCOUNT_PREFIX); // position (ACC-2100-00x) + unrealised P&L (ACC-2100-005)
+        const allowedDayOne = (code: string) => code.startsWith(FX_ONBS_ACCOUNT_PREFIX); // position (ACC-2100-00x) + unrealised P&L (ACC-2100-005)
         const stray = dayOneFvLegs.filter((l) => !allowedDayOne(l.accountCode));
         if (stray.length > 0) {
           violations.push({

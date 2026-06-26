@@ -82,7 +82,10 @@ describe("recon:fx-pnl-account-category-integrity — direction invariant (IAS 2
       // position account (asset-receivable) — the B/S carrying side.
       leg({ accountCode: "ACC-2100-001", postingRuleId: FX_POSTING_RULE_IDS.revaluation }),
       // P&L account — the FVTPL movement destination.
-      leg({ accountCode: FX_UNREALISED_PNL_ACCOUNT, postingRuleId: FX_POSTING_RULE_IDS.revaluation }),
+      leg({
+        accountCode: FX_UNREALISED_PNL_ACCOUNT,
+        postingRuleId: FX_POSTING_RULE_IDS.revaluation,
+      }),
     ]);
     expect(r.ok).toBe(true);
   });

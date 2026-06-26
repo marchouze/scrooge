@@ -289,9 +289,7 @@ export type FxElectionResolution =
  *     The caller fails the instance closed (a loud skip / finding) rather than
  *     posting to OCI or silently falling through to P&L (Charter cmd 2).
  */
-export function resolveFxElectionOverride(
-  ifrsCategory: string | undefined,
-): FxElectionResolution {
+export function resolveFxElectionOverride(ifrsCategory: string | undefined): FxElectionResolution {
   if (ifrsCategory === undefined) return { outcome: "no-election" };
   if (ifrsCategory === "fvtpl") {
     return { outcome: "accepted", override: { ifrsCategory: "fvtpl" } };
@@ -440,7 +438,8 @@ export function postFxInitialRecognitionLegs(payload: FilInstrumentCreatedPayloa
         postingDate,
         tenantId,
         sourceEventId,
-        iasRule: "IFRS 9 §B5.1.2A — day-1 fair value of an off-market trade recognised on-BS at inception",
+        iasRule:
+          "IFRS 9 §B5.1.2A — day-1 fair value of an off-market trade recognised on-BS at inception",
         postingRuleId,
         description: dayOneDescription,
       },
@@ -451,7 +450,8 @@ export function postFxInitialRecognitionLegs(payload: FilInstrumentCreatedPayloa
         postingDate,
         tenantId,
         sourceEventId,
-        iasRule: "IFRS 9 §B5.1.2A — day-1 fair value of an off-market trade recognised on-BS at inception",
+        iasRule:
+          "IFRS 9 §B5.1.2A — day-1 fair value of an off-market trade recognised on-BS at inception",
         postingRuleId,
         description: dayOneDescription,
       },

@@ -57,6 +57,7 @@ import {
   filInstrumentAmendedPayloadSchema,
   filInstrumentCreatedPayloadSchema,
 } from "../fil-instances/events";
+import { forwardMtmValue } from "../fil-models/fx-valuation/methodology";
 import {
   FX_OBS_BOUGHT_COMMITMENT_ACCOUNT,
   FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
@@ -73,7 +74,6 @@ import {
   postFxConversionLegs,
   postFxSettlementLegs,
 } from "./fx-settlement";
-import { forwardMtmValue } from "../fil-models/fx-valuation/methodology";
 
 const TENANT = "LE-ZA-HOZ-BANK";
 const INSTANCE = "fil:inst:LE-ZA-HOZ-BANK:fx-golden-1";
