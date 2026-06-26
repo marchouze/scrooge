@@ -603,6 +603,11 @@ const handler = async (ctx: AgentRunContext): Promise<AgentRunOutput> => {
     // as "planned".
     const atlasActor = { type: "service" as const, id: "agent:atlas:substrate-state" };
     for (const gap of gapInventory) {
+      // A resolved gap is no longer open engineering work — register a
+      // WorkstreamRegistered only for OPEN gaps (planned / in-flight). The
+      // resolved row still appears in the snapshot `gaps[]` inventory above
+      // (with status "resolved") for audit lineage.
+      if (gap.status === "resolved") continue;
       eventStore.append(
         makeWorkstreamRegistered({
           asOf: ctx.asOf,

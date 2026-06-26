@@ -281,3 +281,103 @@ describe("bea:ba700-period-close — per-entity scope", () => {
     expect(ba700Submissions(store)).toHaveLength(0);
   });
 });
+
+describe("bea:ba700-period-close — return-of-record + filing-lifecycle (D-BA-RETURN-OF-RECORD-EVENT-FAMILY)", () => {
+  function reportGenerated(store: EventStore) {
+    return [...store.replay({ type: "ReportGenerated" })].filter(
+      (e) => (e.payload as { formId?: string }).formId === "BA700",
+    );
+  }
+  function reportFiled(store: EventStore) {
+    return [...store.replay({ type: "ReportFiled" })].filter(
+      (e) => (e.payload as { formId?: string }).formId === "BA700",
+    );
+  }
+
+  it("emits ReportGenerated (figures + content hash) and ReportFiled on the golden path", async () => {
+    const store = new EventStore(":memory:");
+    const closedPayload = seedClosedPeriod(store);
+    seedRwaComputed(store);
+
+    await generateAndRecordBa700ForPeriod({ store, entity: ENTITY_BANK, closedPayload });
+
+    const generated = reportGenerated(store);
+    expect(generated).toHaveLength(1);
+    const gp = generated[0]?.payload as {
+      formId: string;
+      reportingPeriod: string;
+      contentHash: string;
+      ba700Figures: {
+        cet1Capital: { currency: string; amount: string };
+        tier2Capital: { currency: string; amount: string };
+        totalRwa: { currency: string; amount: string };
+        totalRatio: string;
+      };
+    };
+    expect(gp.formId).toBe("BA700");
+    expect(gp.reportingPeriod).toBe(PERIOD_ID);
+    // BLAKE3 content hash, well-formed.
+    expect(gp.contentHash).toMatch(/^blake3:[0-9a-f]{64}$/);
+    // Decimal-native MAJOR units (NOT minor): R2.5m CET1 share capital → "2500000".
+    expect(gp.ba700Figures.cet1Capital).toEqual({ currency: "ZAR", amount: "2500000" });
+    // Total RWA R20m (credit 15m + market 5m) major units.
+    expect(gp.ba700Figures.totalRwa).toEqual({ currency: "ZAR", amount: "20000000" });
+    // Total capital ratio 2.5m / 20m = 0.125.
+    expect(Number(gp.ba700Figures.totalRatio)).toBeCloseTo(0.125, 10);
+
+    // Filing-lifecycle ReportFiled emitted, linked to the return-of-record.
+    const filed = reportFiled(store);
+    expect(filed).toHaveLength(1);
+    const fp = filed[0]?.payload as {
+      reportingPeriod: string;
+      mode: string;
+      contentHash: string;
+      reportGeneratedEventId: string;
+    };
+    expect(fp.reportingPeriod).toBe(PERIOD_ID);
+    expect(fp.mode).toBe("simulator");
+    expect(fp.contentHash).toBe(gp.contentHash);
+    expect(fp.reportGeneratedEventId).toBe(generated[0]?.event_id);
+  });
+
+  it("is replay-idempotent — re-running the closed period emits NO duplicate ReportGenerated/ReportFiled", async () => {
+    const store = new EventStore(":memory:");
+    const closedPayload = seedClosedPeriod(store);
+    seedRwaComputed(store);
+
+    await generateAndRecordBa700ForPeriod({ store, entity: ENTITY_BANK, closedPayload });
+    // Replay the SAME AccountingPeriodClosed twice more.
+    await generateAndRecordBa700ForPeriod({ store, entity: ENTITY_BANK, closedPayload });
+    await generateAndRecordBa700ForPeriod({ store, entity: ENTITY_BANK, closedPayload });
+
+    expect(reportGenerated(store)).toHaveLength(1);
+    expect(reportFiled(store)).toHaveLength(1);
+    // The SARB submission also stays single (existing idempotency preserved).
+    expect(ba700Submissions(store)).toHaveLength(1);
+  });
+
+  it("content hash is deterministic across independent runs (replay-stable, not wall-clock)", async () => {
+    const storeA = new EventStore(":memory:");
+    const storeB = new EventStore(":memory:");
+    const closedA = seedClosedPeriod(storeA);
+    const closedB = seedClosedPeriod(storeB);
+    seedRwaComputed(storeA);
+    seedRwaComputed(storeB);
+
+    await generateAndRecordBa700ForPeriod({
+      store: storeA,
+      entity: ENTITY_BANK,
+      closedPayload: closedA,
+    });
+    await generateAndRecordBa700ForPeriod({
+      store: storeB,
+      entity: ENTITY_BANK,
+      closedPayload: closedB,
+    });
+
+    const hashA = (reportGenerated(storeA)[0]?.payload as { contentHash: string }).contentHash;
+    const hashB = (reportGenerated(storeB)[0]?.payload as { contentHash: string }).contentHash;
+    // Same return content → same hash, independent of when it was generated.
+    expect(hashA).toBe(hashB);
+  });
+});

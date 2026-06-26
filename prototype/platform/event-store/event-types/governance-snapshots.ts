@@ -145,7 +145,10 @@ export const substrateStateSnapshotPayloadSchema = z
           id: z.string().min(1).optional(),
           description: z.string().min(1),
           severity: z.enum(["medium", "high"]),
-          status: z.enum(["planned", "in-flight"]),
+          // "resolved" added (D-BA-RETURN-OF-RECORD-EVENT-FAMILY): a gap can be
+          // closed — the resolved row is retained for audit lineage and renders
+          // in the snapshot inventory with status "resolved".
+          status: z.enum(["planned", "in-flight", "resolved"]),
           mitigation: z.enum(["none", "partial"]),
         }),
       )

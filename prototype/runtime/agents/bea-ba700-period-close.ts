@@ -87,6 +87,10 @@ import {
   BA_700_SUBSCRIBER_ENTITIES,
   onAccountingPeriodClosed,
 } from "../../platform/returns/ba700/period-close-subscriber";
+import {
+  persistBa700ReportFiled,
+  persistBa700ReportGenerated,
+} from "../../platform/returns/ba700/report-of-record";
 import { submitToSarbPortal } from "../../simulators/sarb-prudential";
 import type { AgentRunContext, AgentRunOutput } from "../types";
 
@@ -166,11 +170,6 @@ export async function generateAndRecordBa700ForPeriod(args: {
     return { submitted: false, periodId, status: "skipped-non-bank-entity" };
   }
 
-  // Idempotency: one BA 700 submission per period.
-  if (ba700SubmissionExists(store, periodId)) {
-    return { submitted: false, periodId, status: "skipped-idempotent" };
-  }
-
   const meta = resolvePeriodMeta(store, entity, periodId);
 
   // Generate from the live event flow. `rwa` is deliberately omitted so the
@@ -178,6 +177,12 @@ export async function generateAndRecordBa700ForPeriod(args: {
   // live-positions projection → build-phase constant). `untilSequence` is
   // deliberately NOT threaded (see module header — the RwaComputed event of
   // record post-dates the close cursor).
+  //
+  // Generated UNCONDITIONALLY (before the submission idempotency check) so the
+  // return-of-record (ReportGenerated) + filing-lifecycle (ReportFiled) events
+  // can be (idempotently) emitted even on a replay where the SARB submission
+  // already exists — including periods that submitted BEFORE the return-of-
+  // record family landed. Each emit guards its own idempotency.
   const result = onAccountingPeriodClosed({
     entity,
     periodId,
@@ -192,11 +197,63 @@ export async function generateAndRecordBa700ForPeriod(args: {
     return { submitted: false, periodId, status: "skipped-subscriber-not-processed" };
   }
 
+  // Persist the return-of-record (Principle 1): the generated return's
+  // attestable figures + a BLAKE3 content hash as a born-V2 `ReportGenerated`
+  // event. Idempotent — one per (entity, formId, period).
+  const reportOfRecord = persistBa700ReportGenerated({
+    store,
+    entity,
+    reportingPeriod: periodId,
+    output: result.rawOutput,
+  });
+
+  // Idempotency: one BA 700 SARB submission per period. When a submission
+  // already exists, do NOT re-submit — but still back-emit the filing-lifecycle
+  // `ReportFiled` (idempotent) so the filing-lifecycle register reflects the
+  // pre-existing submission.
+  const alreadySubmitted = ba700SubmissionExists(store, periodId);
+  if (alreadySubmitted) {
+    const filedNow = persistBa700ReportFiled({
+      store,
+      entity,
+      reportingPeriod: periodId,
+      contentHash: reportOfRecord.contentHash,
+      reportGeneratedEventId: reportOfRecord.reportGeneratedEventId,
+      filedAt: closedPayload.closedAt,
+      mode: "simulator",
+    });
+    return {
+      submitted: false,
+      periodId,
+      carRatio: result.rawOutput.ratios.totalRatio,
+      rwaSource: result.rawOutput.rwa.source,
+      ...(result.rawOutput.rwa.rwaComputationEventId
+        ? { rwaComputationEventId: result.rawOutput.rwa.rwaComputationEventId }
+        : {}),
+      status: filedNow ? "skipped-idempotent-submission-backfilled-filed" : "skipped-idempotent",
+    };
+  }
+
   // Render to the SARB XML envelope + record the submission attempt via the
   // local SARB prudential portal simulator (mode: "simulator"). The simulator
   // appends the canonical SarbSubmissionAttempted{formId:"BA700"} event.
   const payload = ba100ToXmlPayload(result.rawOutput);
   const submission = await submitToSarbPortal(payload, store);
+
+  // On a successful submission, emit the filing-lifecycle `ReportFiled` event
+  // (idempotent), linking the filing to the return-of-record by event id +
+  // content hash (chain-of-custody, Principle 1).
+  if (submission.ok) {
+    persistBa700ReportFiled({
+      store,
+      entity,
+      reportingPeriod: periodId,
+      contentHash: reportOfRecord.contentHash,
+      reportGeneratedEventId: reportOfRecord.reportGeneratedEventId,
+      filedAt: submission.submittedAt,
+      mode: "simulator",
+    });
+  }
 
   return {
     submitted: true,

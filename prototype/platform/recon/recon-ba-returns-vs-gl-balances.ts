@@ -51,8 +51,10 @@
 // Author: Atlas (Core banking platform architect, engineering — Gap 3 recon).
 
 import { eventStore } from "../composition";
-import { amountToMinorUnits } from "../core/decimal-money";
+import { amountToMinorUnits, money } from "../core/decimal-money";
 import { legAmountMoney } from "../core/money-codec";
+import type { Currency } from "../core/types";
+import type { EventStore } from "../event-store/store";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 
 // ---------------------------------------------------------------------------
@@ -112,14 +114,19 @@ interface PeriodResult {
  * Sign: T2 liabilities are credit-side; a credit increases T2 capital,
  * a debit decreases it (e.g. redemption of subordinated debt).
  */
-function foldGlTier2(entity: string, asOf: string, untilSequence: number | undefined): number {
+function foldGlTier2(
+  store: EventStore,
+  entity: string,
+  asOf: string,
+  untilSequence: number | undefined,
+): number {
   const provenanceFilter = defaultProvenanceFilter();
   const frozenCursorOpts = untilSequence !== undefined ? { untilSequence } : {};
 
   let credits = 0;
   let debits = 0;
 
-  for (const ev of eventStore.replay({
+  for (const ev of store.replay({
     entity,
     type: "SubLedgerPostingEmitted",
     asOf,
@@ -154,116 +161,156 @@ function foldGlTier2(entity: string, asOf: string, untilSequence: number | undef
 // ---------------------------------------------------------------------------
 
 /**
- * Attempt to retrieve the BA-100 tier2Capital for a given (entity, periodId)
- * from the event store.
+ * Retrieve the BA 700 tier2Capital for a given (entity, periodId) from the
+ * persisted `ReportGenerated` return-of-record event (the Principle-1 home of
+ * the generated return; D-BA-RETURN-OF-RECORD-EVENT-FAMILY).
  *
- * Substrate gap: BA-100 outputs are not yet stored as typed events. This
- * function currently returns `undefined` for all periods, triggering a
- * non-blocking substrate-gap note in the recon output.
+ * The event carries `ba700Figures.tier2Capital` as decimal-native MAJOR units
+ * (Money). This recon compares against the GL T2 fold in MINOR units, so the
+ * figure is converted via `amountToMinorUnits`. Returns `undefined` only when
+ * NO `ReportGenerated{formId:"BA700"}` exists for the period (the period
+ * pre-dates the return-of-record substrate) — that path stays a non-blocking
+ * substrate-gap note rather than a hard finding.
  *
- * When the substrate lands (a ReportGenerated event carrying tier2Capital
- * or similar), this function should be updated to fold those events.
- *
- * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.
+ * Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1; D-BA-RETURN-OF-RECORD-EVENT-FAMILY.
  */
 function lookupBa700Tier2(
-  _entity: string,
-  _periodId: string,
+  store: EventStore,
+  entity: string,
+  periodId: string,
   _untilSequence: number | undefined,
 ): number | undefined {
-  // Substrate gap: BA-100 outputs not persisted as events yet.
-  // Returns undefined until a typed ReportGenerated (or BA700ReturnRecorded)
-  // event is emitted by the ba100 period-close subscriber.
-  return undefined;
+  const provFilter = defaultProvenanceFilter();
+  // Latest ReportGenerated wins per (entity, formId, period) — append-only.
+  let latest: number | undefined;
+  for (const ev of store.replay({ entity, type: "ReportGenerated" })) {
+    if (!eventMatchesProvenanceFilter(ev, provFilter)) continue;
+    const p = ev.payload as {
+      formId?: string;
+      reportingPeriod?: string;
+      ba700Figures?: { tier2Capital?: { currency?: string; amount?: string } };
+    };
+    if (p.formId !== "BA700" || p.reportingPeriod !== periodId) continue;
+    const t2 = p.ba700Figures?.tier2Capital;
+    if (t2?.amount === undefined || t2.currency === undefined) continue;
+    // Decimal-native MAJOR units → minor units for the GL comparison.
+    latest = Number(amountToMinorUnits(money(t2.amount, t2.currency as Currency)));
+  }
+  return latest;
 }
 
 // ---------------------------------------------------------------------------
-// Main recon loop
+// Recon — testable over an explicit store
 // ---------------------------------------------------------------------------
 
-const provenanceFilter = defaultProvenanceFilter();
+export interface Ba700GlReconResult {
+  /** Per-period reconciliation outcomes. */
+  readonly periodResults: readonly PeriodResult[];
+  /** Periods where both GL + BA 700 figures were available and asserted. */
+  readonly assertedCount: number;
+  /** Periods where BA 700 figures were not yet persisted (non-blocking). */
+  readonly substrateGapCount: number;
+  /** Hard reconciliation findings (|glTier2 - ba700Tier2| > tolerance). */
+  readonly findings: number;
+}
 
-const periodResults: PeriodResult[] = [];
+/**
+ * Reconcile, for every closed period, the GL T2 fold against the persisted
+ * BA 700 `ReportGenerated.ba700Figures.tier2Capital` (within tolerance).
+ * Pure over `store` — the CLI passes the composition singleton; tests inject a
+ * fixture store.
+ */
+export function run(store: EventStore = eventStore): Ba700GlReconResult {
+  const provenanceFilter = defaultProvenanceFilter();
+  const periodResults: PeriodResult[] = [];
 
-for (const ev of eventStore.replay({ type: "AccountingPeriodClosed" })) {
-  if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+  for (const ev of store.replay({ type: "AccountingPeriodClosed" })) {
+    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
 
-  const payload = ev.payload as {
-    periodId?: string;
-    closedAt?: string;
-    eventSequence?: number;
-  };
+    const payload = ev.payload as {
+      periodId?: string;
+      closedAt?: string;
+      eventSequence?: number;
+    };
 
-  const periodId = payload.periodId;
-  const closedAt = payload.closedAt ?? ev.as_of;
-  const eventSequence =
-    typeof payload.eventSequence === "number" ? payload.eventSequence : undefined;
-  const entity = ev.entity;
+    const periodId = payload.periodId;
+    const closedAt = payload.closedAt ?? ev.as_of;
+    const eventSequence =
+      typeof payload.eventSequence === "number" ? payload.eventSequence : undefined;
+    const entity = ev.entity;
 
-  if (!periodId) continue;
+    if (!periodId) continue;
 
-  // Step 1: fold GL T2 balance bounded by the frozen cursor.
-  const glTier2Minor = foldGlTier2(entity, closedAt, eventSequence);
+    // Step 1: fold GL T2 balance bounded by the frozen cursor.
+    const glTier2Minor = foldGlTier2(store, entity, closedAt, eventSequence);
 
-  // Step 2: attempt BA-100 lookup.
-  const ba700Tier2Minor = lookupBa700Tier2(entity, periodId, eventSequence);
+    // Step 2: read the persisted BA 700 tier2Capital (return-of-record).
+    const ba700Tier2Minor = lookupBa700Tier2(store, entity, periodId, eventSequence);
 
-  // Step 3: assert if both values available.
-  let deltaMinor: number | undefined;
-  let withinTolerance: boolean | undefined;
-  let substrateGapNote: string | undefined;
+    // Step 3: assert if both values available.
+    let deltaMinor: number | undefined;
+    let withinTolerance: boolean | undefined;
+    let substrateGapNote: string | undefined;
 
-  if (ba700Tier2Minor === undefined) {
-    substrateGapNote = `BA-100 tier2Capital not available as an event for period ${periodId} (entity=${entity}). Substrate gap: BA-100 outputs not yet persisted as typed events. Full GL↔BA-100 assertion deferred until ReportGenerated (or equivalent BA700ReturnRecorded) event lands. Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1.`;
-  } else {
-    deltaMinor = Math.abs(glTier2Minor - ba700Tier2Minor);
-    withinTolerance = deltaMinor <= TOLERANCE_MINOR_UNITS;
+    if (ba700Tier2Minor === undefined) {
+      substrateGapNote = `BA 700 tier2Capital not available as an event for period ${periodId} (entity=${entity}). Substrate gap: no ReportGenerated{formId:"BA700"} for this period (it pre-dates the return-of-record substrate). Full GL↔BA 700 assertion deferred until the return-of-record lands. Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1; D-BA-RETURN-OF-RECORD-EVENT-FAMILY.`;
+    } else {
+      deltaMinor = Math.abs(glTier2Minor - ba700Tier2Minor);
+      withinTolerance = deltaMinor <= TOLERANCE_MINOR_UNITS;
+    }
+
+    periodResults.push({
+      periodId,
+      entityId: entity,
+      eventSequence,
+      glTier2Minor,
+      ba700Tier2Minor,
+      deltaMinor,
+      withinTolerance,
+      substrateGapNote,
+    });
   }
 
-  periodResults.push({
-    periodId,
-    entityId: entity,
-    eventSequence,
-    glTier2Minor,
-    ba700Tier2Minor,
-    deltaMinor,
-    withinTolerance,
-    substrateGapNote,
-  });
-}
-
-// ---------------------------------------------------------------------------
-// Report
-// ---------------------------------------------------------------------------
-
-let findings = 0;
-let substrateGapCount = 0;
-let assertedCount = 0;
-
-for (const r of periodResults) {
-  if (r.substrateGapNote) {
-    substrateGapCount++;
-    console.log(
-      `[substrate-gap] period=${r.periodId} entity=${r.entityId} glTier2=${r.glTier2Minor} ba100Tier2=<not-available> note: ${r.substrateGapNote}`,
-    );
-  } else if (r.withinTolerance === false) {
-    findings++;
-    assertedCount++;
-    console.error(
-      `[FINDING] period=${r.periodId} entity=${r.entityId} glTier2=${r.glTier2Minor} ba100Tier2=${r.ba700Tier2Minor} delta=${r.deltaMinor} > tolerance=${TOLERANCE_MINOR_UNITS}. GL T2 balance does not reconcile to BA-100 tier2Capital. Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1; Reg 38(8)(b)–(c); BCBS §58–§60.`,
-    );
-  } else if (r.withinTolerance === true) {
-    assertedCount++;
-    console.log(
-      `[ok] period=${r.periodId} entity=${r.entityId} glTier2=${r.glTier2Minor} ba100Tier2=${r.ba700Tier2Minor} delta=${r.deltaMinor} within tolerance=${TOLERANCE_MINOR_UNITS}`,
-    );
+  let findings = 0;
+  let substrateGapCount = 0;
+  let assertedCount = 0;
+  for (const r of periodResults) {
+    if (r.substrateGapNote) substrateGapCount++;
+    else if (r.withinTolerance === false) {
+      findings++;
+      assertedCount++;
+    } else if (r.withinTolerance === true) assertedCount++;
   }
+
+  return { periodResults, assertedCount, substrateGapCount, findings };
 }
 
-console.log(
-  `${PIPELINE}: ${periodResults.length} periods checked, ${assertedCount} asserted (full GL↔BA-100), ${substrateGapCount} substrate-gap (BA-100 output not yet persisted), ${findings} findings`,
-);
+// ---------------------------------------------------------------------------
+// CLI
+// ---------------------------------------------------------------------------
 
-// Non-blocking: substrate gaps do not fail CI.
-// Only hard GL↔BA-100 reconciliation failures exit non-zero.
-process.exit(findings > 0 ? 1 : 0);
+if (import.meta.main) {
+  const result = run();
+  for (const r of result.periodResults) {
+    if (r.substrateGapNote) {
+      console.log(
+        `[substrate-gap] period=${r.periodId} entity=${r.entityId} glTier2=${r.glTier2Minor} ba700Tier2=<not-available> note: ${r.substrateGapNote}`,
+      );
+    } else if (r.withinTolerance === false) {
+      console.error(
+        `[FINDING] period=${r.periodId} entity=${r.entityId} glTier2=${r.glTier2Minor} ba700Tier2=${r.ba700Tier2Minor} delta=${r.deltaMinor} > tolerance=${TOLERANCE_MINOR_UNITS}. GL T2 balance does not reconcile to BA 700 tier2Capital. Authority: D-DATA-QUALITY-CROSS-DOMAIN-V1; Reg 38(8)(b)–(c); BCBS §58–§60.`,
+      );
+    } else if (r.withinTolerance === true) {
+      console.log(
+        `[ok] period=${r.periodId} entity=${r.entityId} glTier2=${r.glTier2Minor} ba700Tier2=${r.ba700Tier2Minor} delta=${r.deltaMinor} within tolerance=${TOLERANCE_MINOR_UNITS}`,
+      );
+    }
+  }
+
+  console.log(
+    `${PIPELINE}: ${result.periodResults.length} periods checked, ${result.assertedCount} asserted (full GL↔BA 700), ${result.substrateGapCount} substrate-gap (BA 700 output not yet persisted), ${result.findings} findings`,
+  );
+
+  // Non-blocking on substrate gaps; only hard reconciliation failures exit non-zero.
+  process.exit(result.findings > 0 ? 1 : 0);
+}

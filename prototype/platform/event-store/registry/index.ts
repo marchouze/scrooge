@@ -68,6 +68,9 @@ export {
 } from "./governance";
 export { REGULATORY_EVENT_TYPES } from "./regulatory";
 export { REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory-reporting";
+// D-BA-RETURN-OF-RECORD-EVENT-FAMILY — born-V2 BA-return-of-record + filing
+// lifecycle (ReportGenerated / ReportDue / ReportFiled / ReportSubmissionAcknowledged).
+export { RETURN_OF_RECORD_EVENT_TYPES_REGISTRY } from "./return-of-record";
 export { INTRANET_EVENT_TYPES_REGISTRY } from "./intranet";
 export { MISSING_EVENT_TYPES } from "./missing-types";
 export { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
@@ -417,6 +420,7 @@ import { REGULATORY_REPORTING_EVENT_TYPES } from "./regulatory-reporting";
 import { REPO_MMD_IBL_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl";
 import { REPO_MMD_IBL_V2_EVENT_TYPES_REGISTRY } from "./repo-mmd-ibl-v2";
 import { REPORTING_TREATMENT_EVENT_TYPES_REGISTRY } from "./reporting-treatments";
+import { RETURN_OF_RECORD_EVENT_TYPES_REGISTRY } from "./return-of-record";
 import {
   AGENT_DECISION_REQUEST_EVENT_TYPES,
   AGENT_OPS_EVENT_TYPES,
@@ -458,6 +462,10 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...CUSTOMER_LIFECYCLE_EVENT_TYPES,
   ...REGULATORY_EVENT_TYPES,
   ...REGULATORY_REPORTING_EVENT_TYPES,
+  // D-BA-RETURN-OF-RECORD-EVENT-FAMILY — born-V2 BA-return-of-record + filing
+  // lifecycle. ReportGenerated carries attestable figures + BLAKE3 content hash;
+  // ReportDue/ReportFiled/ReportSubmissionAcknowledged are the filing lifecycle.
+  ...RETURN_OF_RECORD_EVENT_TYPES_REGISTRY,
   ...PERFORMANCE_EVENT_TYPES,
   ...ANALYTICS_EVENT_TYPES,
   ...INTRANET_EVENT_TYPES_REGISTRY,
