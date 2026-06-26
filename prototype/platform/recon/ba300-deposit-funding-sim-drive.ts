@@ -263,7 +263,11 @@ export function run(): ReconResult {
     if (eventMatchesProvenanceFilter(ev, PRODUCTION_ONLY)) admittedByProduction += 1;
     if (eventMatchesProvenanceFilter(ev, OPERATING_BOOK)) admittedByOperatingBook += 1;
   }
-  if (oracleCandidates === 0 || admittedByProduction !== 0 || admittedByOperatingBook !== oracleCandidates) {
+  if (
+    oracleCandidates === 0 ||
+    admittedByProduction !== 0 ||
+    admittedByOperatingBook !== oracleCandidates
+  ) {
     violations.push({
       subject: `${PIPELINE}:provenance-boundary-broken`,
       severity: "fail",
