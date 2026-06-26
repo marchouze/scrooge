@@ -683,6 +683,14 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // (ReportFiled) record. Principle-1 filing-lifecycle completeness; PASS-on-
     // empty until a real period closes.
     "recon:ba700-filing-completeness",
+    // D-BA-RETURN-OF-RECORD-DOCUMENT-STORE — every BA 700 return-of-record's FULL
+    // rendered SARB XML envelope must be filed into the RMS document store AND
+    // resolve in the store the regulator-reproduction / dashboard read path reads
+    // (home-default-ENABLED, NOT the per-worktree singleton — the documented
+    // rms-document-blob-integrity read-path blind spot). Principle-1 completeness;
+    // PASS-on-empty until a real return is generated. Authority:
+    // D-BA-RETURN-OF-RECORD-DOCUMENT-STORE; D-RMS-PHASE-1.
+    "recon:ba700-document-store-completeness",
     "recon:ba-returns-vs-gl-balances",
     // D-V2-UI-VISIBILITY-REMEDIATION — GL ⇿ BA-700 capital coherence (ENFORCING,
     // fail-closed). Over the LIVE event store, the V2 GL Share Capital balance

@@ -27,14 +27,25 @@
 //   (Accounting & financial reporting engineer, engineering) return surface.
 
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import { closePeriod, openPeriod } from "../../platform/accounting/period-close";
+import { LocalFsDocumentStore } from "../../platform/document-store/local-fs";
+import type { DocumentHash } from "../../platform/document-store/types";
 import { newEventId } from "../../platform/core/types";
 import type { AccountingPeriodClosedPayload } from "../../platform/event-store/event-types";
 import { makeRwaComputed } from "../../platform/event-store/event-types/regulatory-reporting";
 import { EventStore } from "../../platform/event-store/store";
 import { setDefaultProvenanceModeOverride } from "../../platform/projections/filter";
+import { ba700ArtefactRecordId } from "../../platform/returns/ba700/report-of-record";
 import { ba700SubmissionExists, generateAndRecordBa700ForPeriod } from "./bea-ba700-period-close";
+
+/** A tmpdir-backed document store so the filing tests have no FS side-effects. */
+function tmpDocumentStore(): LocalFsDocumentStore {
+  return new LocalFsDocumentStore({ root: mkdtempSync(join(tmpdir(), "ba700-doc-store-")) });
+}
 
 // Provenance override — test events are untagged (simulated).
 beforeEach(() => setDefaultProvenanceModeOverride("combined"));
@@ -379,5 +390,94 @@ describe("bea:ba700-period-close — return-of-record + filing-lifecycle (D-BA-R
     const hashB = (reportGenerated(storeB)[0]?.payload as { contentHash: string }).contentHash;
     // Same return content → same hash, independent of when it was generated.
     expect(hashA).toBe(hashB);
+  });
+});
+
+describe("bea:ba700-period-close — rendered-artefact filing into RMS document store (D-BA-RETURN-OF-RECORD-DOCUMENT-STORE)", () => {
+  function recordFiledDocuments(store: EventStore) {
+    return [...store.replay({ type: "RecordFiled" })].filter(
+      (e) => (e.payload as { registerKey?: string }).registerKey === "documents",
+    );
+  }
+  function reportGeneratedBa700(store: EventStore) {
+    return [...store.replay({ type: "ReportGenerated" })].filter(
+      (e) => (e.payload as { formId?: string }).formId === "BA700",
+    );
+  }
+
+  it("files the rendered envelope blob + emits a linked RecordFiled, blob resolvable", async () => {
+    const store = new EventStore(":memory:");
+    const docStore = tmpDocumentStore();
+    const closedPayload = seedClosedPeriod(store);
+    seedRwaComputed(store);
+
+    await generateAndRecordBa700ForPeriod({
+      store,
+      entity: ENTITY_BANK,
+      closedPayload,
+      documentStore: docStore,
+    });
+
+    const filed = recordFiledDocuments(store);
+    expect(filed).toHaveLength(1);
+    const fp = filed[0]?.payload as {
+      recordId: string;
+      registerKey: string;
+      documentHash: string;
+      classification: string;
+      metadata: { category: string; contentType?: string };
+    };
+    // Stable recordId keyed on entity+period (the idempotency key).
+    expect(fp.recordId).toBe(ba700ArtefactRecordId(ENTITY_BANK, PERIOD_ID));
+    expect(fp.registerKey).toBe("documents");
+    expect(fp.classification).toBe("governance-seat");
+    expect(fp.metadata.category).toBe("regulatory-return");
+    expect(fp.metadata.contentType).toBe("application/xml");
+
+    // The filed envelope blob RESOLVES in the document store the reader reads.
+    expect(docStore.exists(fp.documentHash as DocumentHash)).toBe(true);
+
+    // The filed bytes are XML (the rendered SARB envelope), not the figures JSON.
+    const bytes = docStore.get(fp.documentHash as DocumentHash);
+    const xml = new TextDecoder().decode(bytes);
+    expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
+    expect(xml).toContain("<BA700");
+
+    // HASH-LINKAGE (the crux): the document-store hash of the envelope is NOT
+    // equal to the ReportGenerated attestable contentHash — they hash different
+    // bytes. The linkage is by reference, recorded in the RecordFiled citations.
+    const generated = reportGeneratedBa700(store);
+    const contentHash = (generated[0]?.payload as { contentHash: string }).contentHash;
+    expect(fp.documentHash).not.toBe(contentHash);
+    const citations = filed[0]?.citations as string[];
+    expect(citations).toContain(`reportGeneratedEventId:${generated[0]?.event_id}`);
+    expect(citations).toContain(`attestableContentHash:${contentHash}`);
+  });
+
+  it("is replay-idempotent — 3× re-run of the closed period files at most one blob + one RecordFiled", async () => {
+    const store = new EventStore(":memory:");
+    const docStore = tmpDocumentStore();
+    const closedPayload = seedClosedPeriod(store);
+    seedRwaComputed(store);
+
+    // Run the SAME closed period three times (the replay invariant).
+    for (let i = 0; i < 3; i++) {
+      await generateAndRecordBa700ForPeriod({
+        store,
+        entity: ENTITY_BANK,
+        closedPayload,
+        documentStore: docStore,
+      });
+    }
+
+    // Exactly one RecordFiled (event-layer idempotency, per entity+form+period).
+    const filed = recordFiledDocuments(store);
+    expect(filed).toHaveLength(1);
+    // Single return-of-record + single submission preserved.
+    expect(reportGeneratedBa700(store)).toHaveLength(1);
+
+    // The blob resolves (content-addressed put is idempotent — same bytes).
+    const fp = filed[0]?.payload as { documentHash: string };
+    expect(docStore.exists(fp.documentHash as DocumentHash)).toBe(true);
   });
 });
