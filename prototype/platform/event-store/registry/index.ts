@@ -341,7 +341,6 @@ import { APPLICABILITY_ASSESSMENT_EVENT_TYPES_REGISTRY } from "./applicability-a
 import { BALANCE_SHEET_EVENT_TYPES_REGISTRY } from "./balance-sheet";
 import { BOND_ACCOUNTING_V2_EVENT_TYPES_REGISTRY } from "./bond-accounting-v2";
 import { BOND_ACCOUNTING_EVENT_TYPES_REGISTRY } from "./bonds";
-import { TRADING_BOOK_POSITION_EVENT_TYPES_REGISTRY } from "./trading-book-positions";
 import { CAE_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./cae-governance";
 import { CFP_TRIGGER_EVENT_TYPES_REGISTRY } from "./cfp-triggers";
 import { CISO_GOVERNANCE_EVENT_TYPES_REGISTRY } from "./ciso-governance";
@@ -434,6 +433,7 @@ import {
 import { SEED_MANAGEMENT_EVENT_TYPES } from "./seed-management";
 import { SETTLEMENT_EVENT_TYPES_REGISTRY } from "./settlement";
 import { SLA_APPROVAL_EVENT_TYPES_REGISTRY } from "./sla-approval";
+import { TRADING_BOOK_POSITION_EVENT_TYPES_REGISTRY } from "./trading-book-positions";
 import type { EventTypeMetadata, EventTypeStatus } from "./types";
 import { V2_BANKING_EVENT_TYPES_REGISTRY } from "./v2-banking";
 import { V2_CONTROL_PLANE_EVENT_TYPES } from "./v2-control-plane";
