@@ -579,7 +579,7 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...PRODUCT_CONTROL_EVENT_TYPES_REGISTRY,
   // WS-FX-OTC-OPRISK — operational-risk loss-event capture (OperationalLossEvent).
   // Capture-only internal loss-data set; op-RWA capital stays gross-income-blocked.
-  // Authority: D-FX-HELD-DIMS-SEAT-SWEEP; Basel II Annex 9 / BCBS D196 §644; Reg 33.
+  // Authority: D-FX-HELD-DIMS-SEAT-SWEEP; Basel II Annex 9 / Basel II bcbs128 §644; Reg 33.
   ...OPERATIONAL_RISK_EVENT_TYPES_REGISTRY,
   // Market-data domain control-plane events (stale-data alerts, model validation).
   // Authority: D-MARKETS-SCHEMA-FOUNDATION; Policies/valuation-policy-v1.md §5.

@@ -159,3 +159,75 @@ Validated against the BIS source (Helena co-authority domain call):
 ### C. Verification
 - `recon:bcbs-citation-number-integrity` — **green** (2747 tokens), re-injection-proven (prose + constant, in alm).
 - Full `bun run ci` (full `tsc --noEmit` + recon suite) — green. `bun run citation-gate` — zero violations.
+
+---
+
+## Op-risk d196 finisher pass — §B closed (Rohan, Risk engineer, under Helena CRO domain authority)
+
+**Authority:** `D-BCBS-CITATION-NUMBERING-REMEDIATION` (CEO session-delegation, 2026-06-26).
+**Author:** Rohan (Risk engineer — market & counterparty-credit risk).
+**Domain decider:** Helena (Chief Risk Officer) — operational-risk RWA citation.
+**Brief:** `brief:rohan:op-risk-citation-remediation-bcbs-d196-mis-attri:2026-06-26`.
+
+This pass completes the op-risk `BCBS D196 §645–§654` / `BCBS-D196-§644` correction that §B above CONFIRMED-but-deferred (one-dispatch-path-per-scope), and extends the recon gate to pin d196=AMA so the mis-citation cannot return.
+
+### B.1 — Premise re-validated independently against the BIS oracle (bis.org)
+
+| BCBS no. | Canonical title (BIS) | Date | Defines the BIA? |
+|---|---|---|---|
+| **d196** (bcbs196) | *Operational Risk — Supervisory Guidelines for the Advanced Measurement Approaches* | 30 Jun 2011 | **NO** — an AMA *supervisory guideline*. Defines none of: the BIA, α=15%, business-line β factors, gross income, the seven loss-event categories. |
+| **bcbs128** | *Basel II: International Convergence of Capital Measurement and Capital Standards — A Revised Framework (Comprehensive Version)* | 30 Jun 2006 | **YES** — operational risk §644 onward: **BIA §645–§651** (α=15% × 3-yr positive-year average gross income); **TSA §652–§654** (per-business-line β ∈ {12%, 15%, 18%}); the seven loss-event categories at Annex 9. Consolidated into the Basel Framework **OPE** standard. |
+
+**Premise CONFIRMED.** The §-numbers in the codebase (§644 seven loss-event categories; §645–§651 BIA; §652–§654 TSA; §649 BIA α; §650 gross-income definition) are **correct for bcbs128** — only the document attribution (`D196`) was wrong. The repo implements **BIA/TSA** (`platform/reporting/ba-400-op-risk.ts` — `BIA_ALPHA = 0.15`, `BUSINESS_LINE_BETA` 12/15/18%, RWA = 12.5 × capital), so the correct source is **Basel II bcbs128 §644–§654 (consolidated OPE)**, NOT d196.
+
+### B.2 — BIA citation chosen + source
+
+- **Prose form:** `BCBS D196 §<n>` → **`Basel II bcbs128 §<n>`** (the §-numbers are preserved — they are correct bcbs128 paragraphs).
+- **Constant form:** `BCBS-D196-§644` → **`BCBS-bcbs128-§644`** (forward-only label; the d-number is dropped because bcbs128 predates the BCBS d-numbering scheme).
+- **Real-node grounding:** the OPE op-risk corpus node already exists — `Regulations/BCBS/ope-operational-risk.md` + `ope-structured.json`, with `urn:reg:bcbs:ope:25.7` cited live in `platform/regulatory/basel-adoption.ts`. The bcbs128 §-numbers are the pre-consolidation BIA/TSA basis OPE supersedes. **No id was invented.**
+
+### B.3 — Methodology vs citation — FLAG (not changed)
+
+The code implements the **BIA/TSA** (Basel II / retired-framework basis). The **current consolidated OPE25 is the new Standardised Approach (SMA — BCBS d424, Basel III finalisation, Dec 2017)**, which **retired the BIA/TSA at the Basel level from 2023**. This was already a **recorded, decided** position before this pass:
+- `ba-400-op-risk.ts` `placeholders` already carries `[citation: TBC — SMA (BCBS D424) replaces BIA / TSA at SARB transition; Reg 33 revision tracked as substrate gap]`.
+- `Regulations/BCBS/ope-operational-risk.md` already documents the build-phase BIA/TSA → SMA transition as a substrate gap.
+
+**No methodology change was made** (citation-correctness only, per the brief). The build-phase choice (compute the bcbs128 BIA/TSA figure until 3 audited fiscal years of gross income / 5y loss history exist, then transition to the SMA) stands as already-decided. **Flag for Helena (CRO):** if/when SARB confirms the BA 400 transition date, the SMA-vs-BIA methodology activation is a CRO op-RWA Decision — surfaced here, not actioned.
+
+### B.4 — Sites changed
+
+**Prose `BCBS D196` → `Basel II bcbs128` (§-numbers preserved):**
+`prototype/platform/reporting/{ba-400-op-risk.ts (+ inline correction annotation), ba-400-events-adapter.ts (×4), operational-loss-projection.ts}`; `prototype/platform/event-store/event-types/{operational-risk.ts (×4), index.ts (×2)}`; `prototype/platform/event-store/registry/{operational-risk.ts, index.ts}`; `prototype/platform/event-store/provenance-category.ts`; `prototype/platform/semantic/op-risk-entries.ts (×9)`; `prototype/platform/markets/products/{npa-fx-oprisk-attestation.ts, fx-otc-vanilla-npa-cycle.ts}`; `prototype/platform/returns/ba400/period-close-subscriber.ts (×2)`; `prototype/platform/recon/completeness/inert-module-detection.ts`; `prototype/runtime/agents/bea-ba400-period-close.ts`; `prototype/scripts/{run-fx-oprisk-attestation.ts, file-tomas-fx-oprisk-completion-verification.ts, backfill-operational-loss-v2.ts}`; `prototype/tests/{ba-400-events-adapter.test.ts (×2), operational-loss-projection.test.ts}`; `prototype/v2-core/regulatory-returns/{gen-return-contract.py (×6), ba400-contract.json (regenerated — 294 templated occurrences, only the citation string changed; generator + JSON in sync), operational-family-contracts.test.ts}`; `Regulations/SARB-PA/ba-returns/ba-300.md (×6)`; `Procedures/by-policy/ba-400-operational-risk-return.md (×3)`.
+
+**Constant `BCBS-D196-§644` → `BCBS-bcbs128-§644` (11 emitted-constant sites):**
+`prototype/platform/event-store/registry/operational-risk.ts (×2 — both `citationsHint`)`; `prototype/platform/markets/products/{npa-fx-oprisk-attestation.ts (×3), fx-otc-vanilla-npa-cycle.ts (×3)}`; `prototype/platform/markets/products/oprisk-attestation-gates.ts`; `prototype/platform/event-store/event-types/operational-risk-v2.test.ts`; `prototype/tests/operational-loss-projection.test.ts`.
+
+**Deliberately NOT changed (historical records / append-only — excluded from the gate):**
+- `prototype/scripts/record-d-reporting-capability-slice-5.ts` — the verbatim `outcome` rationale of the already-recorded `D-REPORTING-CAPABILITY-SLICE-5` Decision (Principle 1: a recorded rationale is not rewritten). Annotated with a HISTORICAL-RECORD NOTE; added to the gate's skip set.
+- `prototype/seeds/agent-memory/notes.seed.json` — a verbatim historical agent-memory note. Added to the gate's skip set.
+- `archive/owner-inbox/2026-05-16_bea-atlas_m3-slice5-ba350-600.md` — archived render of a past emission (already skipped via `/archive/`).
+- `Regulations/_bcbs-citation-numbering-remediation-audit.md` — this audit (already skipped; documents old→new pairings to record the fix).
+
+### B.5 — Replay-safety determination — **SAFE (label, not replay-identity)**
+
+The `BCBS-D196-§644 → BCBS-bcbs128-§644` rename is **replay-safe**, the same class the IRRBB finisher confirmed for `BCBS-D365-IRRBB` (§A.4):
+- The constant appears in registry `citationsHint` (documentation-only metadata; `registry/types.ts` states it is *"Not enforced… used as a documentation aid and as input to Mira's URN-coverage recon"*) and in caller-supplied `citations: string[]` passed straight through `makeOperationalLossEvent(V2)` / the attestation emitters. Event **identity** is the `event_id` (UUID) + `type` discriminator — never derived from citation content.
+- **No parity/snapshot/hash recon asserts byte-equality** on the literal `BCBS-D196-§644` against persisted events. Tests using the constant seed their own in-memory stores (input + expectation move together).
+- **Live-store check (`$HOME/.local/share/bank/event.db`):** **zero `OperationalLossEvent`/`OperationalLossEventV2` events exist** (capture-only, legitimately empty in the build phase — PASS-on-empty). **Two `ProductDimensionAttested` events** (`2f3d6747…`, `3eea3430…`, product `prd:bank:fx:otc-vanilla`) DO carry `BCBS-D196-§644` in their immutable `citationChain` payload. Per **Principle 1 (append-only), these historical events are NOT rewritten** — they keep the old label forever; the rename is "correct going forward" only (future attestations cite `BCBS-bcbs128-§644`). No replay path re-derives the string from source, and no gate asserts the stored payload string against source — so replay is unaffected.
+- **Determination: rename forward-only, history untouched. SAFE.** (No revert / Decision needed.)
+
+### B.6 — Recon gate extended + re-injection-proven
+
+`prototype/platform/recon/bcbs-citation-number-integrity.ts`:
+- `d196 = 196` added to `CANONICAL_BCBS_NUMBERS` (pinned to *AMA Supervisory Guidelines, Jun 2011*) + a header-doc block.
+- New **FORBIDDEN_PAIRING**: `d196` cited near any op-risk-capital keyword (`basic indicator approach` / `bia` / `tsa` / `standardised approach` / `gross income` / `op-risk` / `operational risk` / `loss-event`) **fails closed**. A per-pairing `window` override (80) is added because op-risk citations carry a long `§645–§654` span between the token and the keyword that the default 28-char window cannot reach.
+- New **d196-constant guard**: any `BCBS-D196-…` runtime citation constant (incl. the `§644` tag form, whose tag is not a title keyword) **fails closed** — d196 has no legitimate citation-constant role.
+- `isCorrectionContext` extended with d196 markers (`supervisory guidelines`, `advanced measurement approaches`, `not bcbs d196`, `citation corrected`) so the remediation trail (this audit + the inline `[citation corrected …]` annotation) is not self-flagged.
+- **Re-injection-proven:** injecting `BCBS D196 §645 … BIA … gross income` (prose) **and** `"BCBS-D196-§644"` (constant) into a scanned op-risk file produced **2 FAIL findings** (one per form); reverting returned the gate to **GREEN (2375 tokens)**.
+
+### B.7 — Verification
+
+- `recon:bcbs-citation-number-integrity` — **GREEN (2375 tokens)**, d196 pinned to AMA, re-injection-proven (prose + constant).
+- Full `bun run ci` (full-project `tsc --noEmit` + recon suite incl. the extended gate) — green.
+- `bun run citation-gate` — zero violations.
+- BA400 contract JSON regenerated from `gen-return-contract.py`; git diff confirms **only** the citation string changed (generator + JSON in sync).

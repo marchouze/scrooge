@@ -875,7 +875,7 @@ FORMS = {
     #     12.5 × op-capital) exists as substrate. The REGULATORY-CONSTANT cells —
     #     the BIA α factor, the per-business-line β factors, the 12.5× RWA
     #     multiplier, the loss-component / ILM floor coefficients — are computed
-    #     from BCBS D196 / Reg 33 constants and are `sourced` (the source genuinely
+    #     from Basel II bcbs128 / Reg 33 constants and are `sourced` (the source genuinely
     #     exists; the value is the regulatory constant, not a fabricated figure).
     #     Every gross-income amount, the computed op-capital, the op-RWA and the
     #     ILM are `licence-day-data`: no audited 3-year gross-income history and no
@@ -895,7 +895,7 @@ FORMS = {
             "read with the Regulations relating to Banks reg 33 (operational risk — the basic-"
             "indicator approach (BIA) and the standardised approach (TSA) on annual gross income; "
             "and, on the SARB transition, the BCBS standardised approach (SMA / new SA) business-"
-            "indicator + internal-loss-multiplier framework) and BCBS D196 §645–§654 (op-risk "
+            "indicator + internal-loss-multiplier framework) and Basel II bcbs128 §645–§654 (op-risk "
             "measurement) / BCBS OPE (the revised operational-risk standard); Banks Act 94 of "
             "1990 s.6(6)(a). [Post-#1451 corrected row (D-BA-RETURN-NUMBERING-EXCEL-CANONICAL): "
             "per the canonical SARB Excel form schedule (cell A1 = 'Operational Risk'), form "
@@ -919,7 +919,7 @@ FORMS = {
         gl_categories=[],
         entity_scope="bank",
         # NOT a blanket licence-day form: the BIA α / business-line β / 12.5× RWA
-        # multiplier / ILM-floor cells are computed from BCBS D196 / Reg 33
+        # multiplier / ILM-floor cells are computed from Basel II bcbs128 / Reg 33
         # constants. The per-cell decision is made in operational_cell_status();
         # this flag is the DEFAULT for a cell that does not match the regulatory-
         # constant predicate.
@@ -936,7 +936,7 @@ FORMS = {
             "that the internal-loss-multiplier needs, which the bank-in-formation does not have "
             "pre-licence-day (the known GAP-BA700-OPERATIONAL-RWA), so those values are licence-"
             "day data. The BIA α factor, the per-business-line β factors and the 12.5× RWA "
-            "multiplier ARE BCBS D196 / BCBS OPE / Reg 33 regulatory constants — but they are "
+            "multiplier ARE Basel II bcbs128 / BCBS OPE / Reg 33 regulatory constants — but they are "
             "applied as COEFFICIENTS inside the ba-400-op-risk.ts fold (BIA_ALPHA, "
             "BUSINESS_LINE_BETA, the ×12.5 in generateBa300OpRisk), not reported as BA 400 form "
             "cells, so no reported cell populates from a constant alone (every reported cell needs "
@@ -2623,7 +2623,7 @@ def capital_cell_status(form: str, col_label: str, row_label: str) -> str:
 #
 # HONEST FINDING (no false-positive "sourced" cells): the operational family is
 # WHOLLY licence-day-data. The BIA α factor, the per-business-line β factors and
-# the 12.5× RWA multiplier ARE regulatory constants (BCBS D196 / BCBS OPE /
+# the 12.5× RWA multiplier ARE regulatory constants (Basel II bcbs128 / BCBS OPE /
 # Reg 33) — but they are COEFFICIENTS applied INSIDE the ba-400-op-risk.ts fold
 # (BIA_ALPHA, BUSINESS_LINE_BETA, the ×12.5 in generateBa300OpRisk), NOT cells
 # the BA 400 form reports as their own value. Every REPORTED BA 400 cell is a
@@ -3654,7 +3654,7 @@ def build_cell(form: str, form_cfg, e, shared_codes=frozenset()):
     elif form_cfg.get("operational_family"):
         # Per-cell sourced-vs-licence-day split: the BA 400 regulatory-CONSTANT
         # cells (BIA α / business-line β / 12.5× RWA multiplier / ILM-floor
-        # coefficients) are computed from BCBS D196 / Reg 33 constants (sourced —
+        # coefficients) are computed from Basel II bcbs128 / Reg 33 constants (sourced —
         # no real gross income / loss history needed); every gross-income /
         # capital / RWA / ILM cell and every BA 410 / BA 420 loss cell needs real
         # audited gross income + loss history the bank does not have pre-licence-

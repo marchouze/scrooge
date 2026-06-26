@@ -17,7 +17,7 @@
 // for a future loss-distribution approach, not a substitute for it.
 //
 // Authority: D-FX-HELD-DIMS-SEAT-SWEEP (CEO session-delegation 2026-06-11);
-//   Basel II Annex 9 / BCBS D196 §644; Reg 33 (operational risk).
+//   Basel II Annex 9 / Basel II bcbs128 §644; Reg 33 (operational risk).
 // Author: Tomas (Operations & payments engineer, engineering) — governance
 //   owner Devon (Chief Operating Officer, governance; op-risk seat).
 

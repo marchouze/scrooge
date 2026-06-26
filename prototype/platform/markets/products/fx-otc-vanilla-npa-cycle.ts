@@ -434,7 +434,7 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
     result: "design-attested",
     citationChain: [
       ...BASE_CHAIN,
-      "BCBS-D196-§644",
+      "BCBS-bcbs128-§644",
       "REG-33",
       "FIC-ACT-38-2001",
       "platform/event-store/event-types/operational-risk.ts",
@@ -446,12 +446,12 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
       {
         gapId: "fx-op-rwa-gross-income",
         title:
-          "op-RWA capital (BIA/TSA per BCBS D196 §645–654 / Reg 33) is gross-income-blocked: it requires three fiscal years of audited gross income, which do not exist in the build phase. No hollow gross-income figure is fabricated.",
+          "op-RWA capital (BIA/TSA per Basel II bcbs128 §645–654 / Reg 33) is gross-income-blocked: it requires three fiscal years of audited gross income, which do not exist in the build phase. No hollow gross-income figure is fabricated.",
         owner:
           "Camille (Chief Financial Officer, governance) + Bea (Financial Accountant, finance)",
         targetTrigger:
           "revenue-start + three fiscal years of audited gross income (post-licence-day) feed the BA 400 op-RWA computation",
-        citations: ["BCBS-D196-§644", "REG-33", "platform/reporting/ba-400-op-risk.ts"],
+        citations: ["BCBS-bcbs128-§644", "REG-33", "platform/reporting/ba-400-op-risk.ts"],
       },
       {
         gapId: "fx-op-risk-loss-distribution",
@@ -460,7 +460,7 @@ export const FX_NPA_DIMENSIONS: readonly CleanDimensionAttestation[] = [
         owner: "Tomas (Operations & payments engineer, engineering)",
         targetTrigger:
           "licence-day op-risk model build — multi-year internal-loss data accumulates, then the LDA/SMA model is calibrated and validated",
-        citations: ["BCBS-D196-§644", "platform/event-store/event-types/operational-risk.ts"],
+        citations: ["BCBS-bcbs128-§644", "platform/event-store/event-types/operational-risk.ts"],
       },
       {
         gapId: "fx-op-risk-real-counterparty-onboarding",
