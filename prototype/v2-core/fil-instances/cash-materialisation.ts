@@ -219,12 +219,7 @@ function resolveZarCostBasisMajor(leg: SettledCashLeg, input: CashMaterialisatio
   );
   if (reportingCounter !== undefined) return Math.abs(reportingCounter.signedMajor);
   throw new Error(
-    `cash-materialisation: cannot resolve ZAR cost basis for FCY settled cash leg ` +
-      `(trade ${input.tradeId}, ${leg.currency} ${leg.side}). No reporting-currency (${input.reporting}) ` +
-      `counter leg exists and no zarCostBasisOverrideBySide.${leg.side} was supplied. An FCY monetary ` +
-      `item MUST carry an IAS 21 §21 settlement-date ZAR carrying amount — supply the settlement-date ` +
-      `market rate × notional via zarCostBasisOverrideBySide, or do not materialise this leg (fail-closed, ` +
-      `Engineering Charter cmd 2; D-FX-PNL-FCY-EXPOSURE-REVALUATION).`,
+    `cash-materialisation: cannot resolve ZAR cost basis for FCY settled cash leg (trade ${input.tradeId}, ${leg.currency} ${leg.side}). No reporting-currency (${input.reporting}) counter leg exists and no zarCostBasisOverrideBySide.${leg.side} was supplied. An FCY monetary item MUST carry an IAS 21 §21 settlement-date ZAR carrying amount — supply the settlement-date market rate × notional via zarCostBasisOverrideBySide, or do not materialise this leg (fail-closed, Engineering Charter cmd 2; D-FX-PNL-FCY-EXPOSURE-REVALUATION).`,
   );
 }
 

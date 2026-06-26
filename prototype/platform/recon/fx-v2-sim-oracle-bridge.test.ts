@@ -70,7 +70,12 @@ function manifest(settle: boolean): ScenarioManifest {
       },
       { date: "2026-02-03", market: [{ pair: "USD/ZAR", spotMid: 18.55, forwardPoints: 0.05 }] },
       ...(settle
-        ? [{ date: SETTLEMENT_DATE, market: [{ pair: "USD/ZAR", spotMid: 18.5, forwardPoints: 0.05 }] }]
+        ? [
+            {
+              date: SETTLEMENT_DATE,
+              market: [{ pair: "USD/ZAR", spotMid: 18.5, forwardPoints: 0.05 }],
+            },
+          ]
         : []),
     ],
   };

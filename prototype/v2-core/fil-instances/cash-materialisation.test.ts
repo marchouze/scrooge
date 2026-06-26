@@ -24,7 +24,10 @@ const BASE = {
   originatingEvent: { eventType: "FxSimSettlementConfirmed", eventId: "ev-1" },
 } satisfies Omit<CashMaterialisationInput, "legs">;
 
-function basisOf(built: ReturnType<typeof buildSettledCashPayloads>, side: string): string | undefined {
+function basisOf(
+  built: ReturnType<typeof buildSettledCashPayloads>,
+  side: string,
+): string | undefined {
   const leg = built.find((b) => b.instance.endsWith(`-cash-${side}`));
   return leg?.payload.economicTerms.zarCostBasis?.amount;
 }

@@ -41,9 +41,9 @@
 //   (fail-closed), Principle 1 (append-only). Cites IAS 21 §21, §28.
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
+import { eventStore } from "../platform/composition";
 import { makeFilInstrumentAmended } from "../platform/event-store/event-types/fil-instances";
 import type { ProvenanceTag } from "../platform/event-store/provenance";
-import { eventStore } from "../platform/composition";
 import { anchorFunctionalCurrency } from "../platform/identity/functional-currency";
 import {
   type FilInstanceLifecycleEvent,
@@ -125,9 +125,7 @@ function main(): void {
     if (basis === undefined) {
       skippedNoCounter += 1;
       process.stderr.write(
-        `[skip] ${row.instance} (${t.currency}) — no reporting-currency (${reporting}) counter leg in store; ` +
-          `cannot derive an exact IAS 21 §21 cost basis. Supply one explicitly (settlement-date rate × notional) ` +
-          `— NOT guessed here (fail-closed).\n`,
+        `[skip] ${row.instance} (${t.currency}) — no reporting-currency (${reporting}) counter leg in store; cannot derive an exact IAS 21 §21 cost basis. Supply one explicitly (settlement-date rate × notional) — NOT guessed here (fail-closed).\n`,
       );
       continue;
     }
