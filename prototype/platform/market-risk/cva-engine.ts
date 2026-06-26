@@ -83,7 +83,8 @@
 //   validated by Nadia (Independent-validation engineer), with counterparty
 //   credit-spread inputs supplied by Ravi (market-data infrastructure engineer).
 
-import { minorFromMoneyWire } from "../core/money-codec";
+import { absD, addD, mulD, toCanonicalString, toDecimal } from "../core/decimal-engine";
+import { decodeMoney } from "../core/money-codec";
 import type { DerivativePositionOpenedPayload } from "../event-store/event-types/derivative-book-positions";
 import type { IrdSwapPositionRevaluedPayload } from "../event-store/event-types/ird-accounting";
 import type { EventStore } from "../event-store/store";
@@ -464,17 +465,26 @@ export function deriveCounterpartyExposures(args: {
     const acc = accFor(party);
     // Current exposure: positive fair value only (CVA is on the bank's positive
     // exposure to the counterparty; a negative fair value is the counterparty's
-    // exposure to us). Decimal-native MoneyWire → minor → major ZAR.
-    const fvMinor = minorFromMoneyWire(d.fairValue);
-    if (fvMinor > 0) acc.currentExposureZar += fvMinor / 100;
+    // exposure to us). MoneyWire is decimal-native MAJOR units — read the major
+    // value directly via the decimal engine (no float minor/100 round-trip).
+    const fvMajor = toDecimal(decodeMoney(d.fairValue).amount);
+    if (fvMajor.gt(0)) {
+      acc.currentExposureZar = Number(
+        toCanonicalString(addD(toDecimal(String(acc.currentExposureZar)), fvMajor)),
+      );
+    }
     // PFE add-on: documented fraction of notional by asset class (loud lookup).
-    const notionalZar = Math.abs(minorFromMoneyWire(d.notional)) / 100;
+    // notional (major, absolute) × addon fraction, all via the decimal engine.
+    const notionalMajorAbs = absD(toDecimal(decodeMoney(d.notional).amount));
     const addonFraction = requireWeight(
       DERIVATIVE_PFE_ADDON_BY_ASSET_CLASS,
       d.assetClass,
       "CVA derivative PFE add-on",
     );
-    acc.pfeAddonZar += notionalZar * addonFraction;
+    const addonContribution = mulD(notionalMajorAbs, toDecimal(String(addonFraction)));
+    acc.pfeAddonZar = Number(
+      toCanonicalString(addD(toDecimal(String(acc.pfeAddonZar)), addonContribution)),
+    );
   }
 
   return byParty;

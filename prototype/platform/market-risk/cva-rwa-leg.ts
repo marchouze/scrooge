@@ -29,6 +29,7 @@
 //
 // Author: Atlas (Core banking platform architect, engineering).
 
+import { mulD, roundDecimal, toCanonicalString, toDecimal } from "../core/decimal-engine";
 import type { EventStore } from "../event-store/store";
 import { MarketDataStore } from "../market-data/store";
 import type { ProvenanceFilter } from "../projections/filter";
@@ -76,10 +77,17 @@ export function computeCvaRwaLeg(args: {
       : {}),
   });
 
-  // CVA capital (ZAR major) → minor → RWA. `present` only when status=computed.
+  // CVA capital (ZAR major) → minor → RWA, via the decimal engine (no float
+  // money arithmetic — D-DECIMAL-NATIVE-MONEY-ARITHMETIC). `present` only when
+  // status=computed.
   const cvaCapitalMajor = report.cva.present ? report.cva.value : 0;
-  const cvaCapitalMinor = Math.round(cvaCapitalMajor * 100);
-  const cvaRwaMinor = Math.round(cvaCapitalMinor * CAPITAL_TO_RWA_MULTIPLIER);
+  const cvaCapitalMinorDec = mulD(toDecimal(String(cvaCapitalMajor)), toDecimal("100"));
+  const cvaCapitalMinor = Number(toCanonicalString(roundDecimal(cvaCapitalMinorDec, 0, "HALF_UP")));
+  const cvaRwaMinorDec = mulD(
+    toDecimal(String(cvaCapitalMinor)),
+    toDecimal(String(CAPITAL_TO_RWA_MULTIPLIER)),
+  );
+  const cvaRwaMinor = Number(toCanonicalString(roundDecimal(cvaRwaMinorDec, 0, "HALF_UP")));
 
   return { cvaCapitalMinor, cvaRwaMinor, report };
 }
