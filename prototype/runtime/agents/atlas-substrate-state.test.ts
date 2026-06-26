@@ -74,8 +74,10 @@ describe("SUBSTRATE_GAP_REGISTER", () => {
     for (const g of SUBSTRATE_GAP_REGISTER) {
       expect(g.description.length).toBeGreaterThan(0);
       expect(["medium", "high"]).toContain(g.severity);
-      expect(["planned", "in-flight"]).toContain(g.status);
+      expect(["planned", "in-flight", "resolved"]).toContain(g.status);
       expect(["none", "partial"]).toContain(g.mitigation);
+      // Resolved gaps carry a closing citation (Principle 1); open gaps do not.
+      if (g.status === "resolved") expect(g.closedBy).toBeDefined();
     }
   });
 });

@@ -432,6 +432,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // PASSES on coherence, FAIL-CLOSES on divergence, and FAIL-CLOSES on a vacuous +Sim
   // lens. Not a production access path. T-01 carve-out. F-031.
   "platform/recon/gl-ba700-capital-coherence.test.ts",
+  // D-BA-RETURN-OF-RECORD-EVENT-FAMILY — GL ↔ BA 700 tier2 recon proof. Same
+  // build-phase fixture pattern: raw EventStore(":memory:") seeds a closed period
+  // + T2 GL postings + a persisted ReportGenerated, then asserts the recon
+  // PASSES on match, FIRES on divergence, and notes a substrate-gap on absence.
+  // Not a production access path. T-01 carve-out. F-031.
+  "platform/recon/recon-ba-returns-vs-gl-balances.test.ts",
   // D-FIL-BOOK-COMPOSITE-VALUATION — V2 daily-P&L per-currency-breakdown
   // regression proof. Same build-phase fixture pattern: raw EventStore(":memory:")
   // seeds production FIL FX instruments + a MarketDataStore(":memory:") of
