@@ -65,13 +65,19 @@ function groupThousands(intDigits: string): string {
   return intDigits.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-/** Format a minor-unit amount as "R1,234,567" (no cents). */
-function fmtMinor(minor: number, currency: string): string {
+/**
+ * Format a minor-unit amount as "R1,234,567" (no cents). Pass `{ symbol: false }`
+ * to omit the currency indicator — used for table amount cells that already sit
+ * under a dedicated currency column (CCY) or a currency-labelled header (ZAR), so
+ * the indicator would be redundant.
+ */
+function fmtMinor(minor: number, currency: string, opts?: { symbol?: boolean }): string {
+  const withSymbol = opts?.symbol ?? true;
   const major = roundDecimal(fromMinorUnits(BigInt(Math.trunc(minor)), 2), 0, "DOWN");
   const canonical = toCanonicalString(major);
   const negative = canonical.startsWith("-");
   const digits = negative ? canonical.slice(1) : canonical;
-  const symbol = currency === "ZAR" ? "R" : `${currency} `;
+  const symbol = !withSymbol ? "" : currency === "ZAR" ? "R" : `${currency} `;
   return `${negative ? "−" : ""}${symbol}${groupThousands(digits)}`;
 }
 
@@ -385,24 +391,26 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
       categoryLabel: categoryLabel(category),
       currency,
       debitMinor,
-      debitFmt: debitMinor !== 0 ? fmtMinor(debitMinor, currency) : "",
+      // Amount cells sit under the CCY column → no redundant currency indicator.
+      debitFmt: debitMinor !== 0 ? fmtMinor(debitMinor, currency, { symbol: false }) : "",
       creditMinor,
-      creditFmt: creditMinor !== 0 ? fmtMinor(creditMinor, currency) : "",
+      creditFmt: creditMinor !== 0 ? fmtMinor(creditMinor, currency, { symbol: false }) : "",
       netMinor: nativeNet,
       netFmt: fmtMinor(nativeNet, currency),
       zarRateAvailable,
       zarDebitMinor,
+      // ZAR amount cells sit under a "(ZAR)"-labelled header → omit the "R" indicator.
       zarDebitFmt: !zarRateAvailable
         ? "rate n/a"
         : zarDebitMinor === 0
           ? ""
-          : fmtMinor(zarDebitMinor, FUNCTIONAL_CURRENCY),
+          : fmtMinor(zarDebitMinor, FUNCTIONAL_CURRENCY, { symbol: false }),
       zarCreditMinor,
       zarCreditFmt: !zarRateAvailable
         ? "rate n/a"
         : zarCreditMinor === 0
           ? ""
-          : fmtMinor(zarCreditMinor, FUNCTIONAL_CURRENCY),
+          : fmtMinor(zarCreditMinor, FUNCTIONAL_CURRENCY, { symbol: false }),
       zarNetMinor: zarNet,
       zarNetFmt: !zarRateAvailable ? "rate n/a" : fmtMinor(zarNet, FUNCTIONAL_CURRENCY),
       offBalanceSheet: isObs,
@@ -485,9 +493,10 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
     totalCreditFmt: fmtMinor(totalCreditMinor, FUNCTIONAL_CURRENCY),
     inBalance,
     zarTotalDebitMinor,
-    zarTotalDebitFmt: fmtMinor(zarTotalDebitMinor, FUNCTIONAL_CURRENCY),
+    // Totals land in the "(ZAR)"-labelled amount columns → bare, matching the rows.
+    zarTotalDebitFmt: fmtMinor(zarTotalDebitMinor, FUNCTIONAL_CURRENCY, { symbol: false }),
     zarTotalCreditMinor,
-    zarTotalCreditFmt: fmtMinor(zarTotalCreditMinor, FUNCTIONAL_CURRENCY),
+    zarTotalCreditFmt: fmtMinor(zarTotalCreditMinor, FUNCTIONAL_CURRENCY, { symbol: false }),
     offBalanceSheetDebitMinor: obsDebitMinor,
     offBalanceSheetDebitFmt: fmtMinor(obsDebitMinor, FUNCTIONAL_CURRENCY),
     offBalanceSheetCreditMinor: obsCreditMinor,

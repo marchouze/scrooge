@@ -7,6 +7,13 @@
   <link rel="stylesheet" href="/v2/_v2-shell.css">
   <link rel="stylesheet" href="/v2/_v2-tile.css">
   <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    /* Keep the Account column compact: the account name wraps within a fixed
+       width instead of forcing a wide column, and the account id sits below it
+       in a smaller muted line. */
+    .gl-acct { max-width: 220px; line-height: 1.3; }
+    .gl-acct .v2-muted { font-size: 0.72rem; }
+  </style>
 </head>
 <body data-provenance-source="/api/v2/finance/gl">
   <header class="v2-header">
@@ -45,14 +52,13 @@
     });
 
     const stateHost = document.createElement("div"); main.appendChild(stateHost);
-    const tilesHost = document.createElement("div"); main.appendChild(tilesHost);
     const tbHost = document.createElement("div"); main.appendChild(tbHost);
     const refsHost = document.createElement("div"); main.appendChild(refsHost);
 
     const accountHref = (id) => `/v2/finance/gl-account.html?account=${encodeURIComponent(id)}`;
 
     v2WireLoader(async () => {
-      stateHost.replaceChildren(); tilesHost.replaceChildren();
+      stateHost.replaceChildren();
       tbHost.replaceChildren(); refsHost.replaceChildren();
       let d;
       try {
@@ -75,11 +81,6 @@
         stateHost.appendChild(banner);
       }
 
-      // Totals tiles (assets / liabilities / equity / in-balance check).
-      renderTileGroup(tilesHost, {
-        tiles: d.tiles.map((t) => ({ label: t.label, value: t.valueFmt, unit: t.unit })),
-      });
-
       // Trial-balance table — EVERY row drills to its account ledger.
       const s = document.createElement("div"); s.className = "v2-section"; tbHost.appendChild(s);
       const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "Trial balance"; s.appendChild(h);
@@ -89,7 +90,7 @@
       const tbRows = d.rows.map((r) => ({
         href: accountHref(r.accountId),
         cells: [
-          `<strong>${v2Esc(r.accountName)}</strong><br><span class="v2-muted">${v2Esc(r.accountId)}</span>`,
+          `<div class="gl-acct"><strong>${v2Esc(r.accountName)}</strong><br><span class="v2-muted">${v2Esc(r.accountId)}</span></div>`,
           `<span class="v2-badge v2-badge-info">${v2Esc(r.categoryLabel)}</span>`,
           v2Esc(r.currency),
           v2Esc(r.debitFmt),
