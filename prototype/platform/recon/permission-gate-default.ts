@@ -206,6 +206,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // prove the BCBS golden oracle + production=0 boundary. No production access
   // path — same rationale as ba320-trading-book-sim-drive.
   "platform/recon/cva-derivatives-sim-drive.ts",
+  // BA 300 deposit/funding/HQLA sim-drive gate (D-BA-RETURN-SIMULATOR-FIRST):
+  // builds a throwaway `:memory:` EventStore with a simulated deposit / funding /
+  // HQLA book to drive BA 300 LCR + NSFR and the BA 310 minimum-liquid-reserve
+  // fold to a hand-computed Basel/SARB golden oracle, and reads the LIVE store
+  // read-only for the BA 310 production=0 / operating-book-drive legs. No
+  // production access path — same rationale as ba320-trading-book-sim-drive.
+  "platform/recon/ba300-deposit-funding-sim-drive.ts",
   // Recon pipelines that read-only replay the live store. Wrapping the read
   // path with the gate is a no-op (the gate intercepts append, not replay).
   "platform/recon/dashboard-derivation-recon.ts",

@@ -498,6 +498,20 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // (production read → no-otc-exposure / RWA leg 0). Self-contained — always
     // asserts.
     "recon:cva-derivatives-sim-drive",
+    // D-BA-RETURN-SIMULATOR-FIRST — ENFORCING: the simulated deposit / funding /
+    // HQLA book drives BA 300 LCR + NSFR AND the BA 310 minimum-liquid-reserve
+    // fold. Asserts (A) a self-contained in-memory oracle lands on the hand-
+    // computed Basel/SARB golden figures (LCR HQLA R950m / net-outflow R170m →
+    // 558.82%; NSFR ASF R1,005m [incl. R300m ICAAP tier-1 baseline] / RSF R89.5m
+    // → 1122.91%; BA 310 reduced R1,030m → reserve R25.75m [×2.5%] + L1-required
+    // R51.5m [×5%], L1-held R800m, compliant); (B) the BA 310 production-only read
+    // of the LIVE store stays all-zero (the R300m-into-Prod regression guard);
+    // (C) the operating-book BA 310 read of the LIVE store reproduces the golden
+    // figures when the seed is present (data-dependent; dormant on a clean store);
+    // (D) the per-event provenance boundary holds (every simulated event excluded
+    // by production-only, admitted by operating-book). Self-contained golden +
+    // structural legs always assert.
+    "recon:ba300-deposit-funding-sim-drive",
     // WS-V2-AUTHORITATIVE S6 — ALM-snapshot-SHAPE V2 parity gate (advisory).
     // Structural-compares V1 getALMPositionSnapshot vs V2 getALMPositionSnapshotV2
     // (HQLA / funding / ASF / RSF arrays) for the anchor bank entity — the

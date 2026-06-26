@@ -207,22 +207,26 @@ export const DEPOSIT_FUNDING_SIM_BOOK: DepositFundingSimBook = {
 // === NSFR (BCBS 295 / Reg 26A) ===
 // All deposits / funding mature < 1yr; IBL matures < 6m.
 // ASF (per alm-positions buildASFItems, weights from financial-constants):
+//   tier-1 capital (ICAAP build-phase R300m baseline, 100% ASF) = 300,000,000
+//     — alm-positions buildASFItems folds Tier-1 capital from computeCapitalMetrics,
+//       which under the operating-book lens applies the confirmed R300m ICAAP
+//       build-phase baseline (capital.build-phase.total-capital-minor;
+//       D-MARKETS-CAPITAL-TIME-SHAPE). This is REAL build-phase ASF, not omitted.
 //   retail-stable < 1yr        500m × 0.95 = 475,000,000
 //   retail-less-stable < 1yr   200m × 0.90 = 180,000,000
 //   wholesale-op < 1yr         100m × 0.50 =  50,000,000
 //   wholesale-non-op (any)     150m × 0.00 =           0
 //   (funding line: NOT folded into ASF — alm-positions buildASFItems folds
 //    DepositTaken + capital + BalanceSheetProjected only; the drawn line is a
-//    LCR outflow, not an NSFR ASF source here. Capital = 0 in the isolated
-//    golden store.)
-//   ASF total                              = 705,000,000
+//    LCR outflow, not an NSFR ASF source here.)
+//   ASF total = 300m + 475m + 180m + 50m + 0 = 1,005,000,000
 // RSF (per alm-positions buildRSFItems):
 //   HQLA L1  800m × 0.05 =  40,000,000
 //   HQLA L2a 150m × 0.15 =  22,500,000
 //   HQLA L2b  30m × 0.50 =  15,000,000
 //   IBL placement (20d residual → loan-lt6m) 120m × 0.10 = 12,000,000
 //   RSF total                              =  89,500,000
-// NSFR = 705m / 89.5m = 7.8770949721… → 787.71% (>= 100%, above-minimum)
+// NSFR = 1,005m / 89.5m = 11.2290502793… → 1122.91% (>= 100%, above-minimum)
 //
 // === BA 310 (minimum liquid reserve + level-1 liquid assets; Reg 27 / SARB Act) ===
 // R0010 Liabilities (deposit + funding-line + IBL-is-an-asset-not-liability):
@@ -251,9 +255,10 @@ export const DEPOSIT_FUNDING_SIM_ORACLE = {
     status: "above-minimum" as const,
   },
   nsfr: {
-    asfZar: 705_000_000,
+    // ASF = R300m tier-1 ICAAP build-phase capital baseline + 705m deposit ASF.
+    asfZar: 1_005_000_000,
     rsfZar: 89_500_000,
-    nsfrRatioPct: (705_000_000 / 89_500_000) * 100,
+    nsfrRatioPct: (1_005_000_000 / 89_500_000) * 100,
     status: "above-minimum" as const,
   },
   ba310: {
