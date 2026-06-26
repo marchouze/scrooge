@@ -40,6 +40,7 @@
     "recon:ba700-v2-parity": "bun run platform/recon/ba700-v2-parity.ts",
     "recon:ba320-fx-v2-parity": "bun run platform/recon/ba320-fx-v2-parity.ts",
     "recon:ba320-trading-book-sim-drive": "bun run platform/recon/ba320-trading-book-sim-drive.ts",
+    "recon:ba325-selected-risk-sim-drive": "bun run platform/recon/ba325-selected-risk-sim-drive.ts",
     "recon:alm-snapshot-v2-parity": "bun run platform/recon/alm-snapshot-v2-parity.ts",
     "recon:dashboard-v2-coverage": "bun run platform/recon/dashboard-v2-coverage.ts",
     "file:atlas-v2-capital-ui-visibility-slice-1": "bun run scripts/file-atlas-v2-capital-ui-visibility-slice-1.ts",

@@ -479,15 +479,28 @@ FORMS = {
         licence_day=True,  # no real trading/treasury selected-risk positions pre-licence-day
         market_family=True,
         status_note=(
-            "Selected-risk-exposure figures (market-risk-requirement summary, counterparty-risk "
-            "memorandum — OTC / SFT / credit-derivative, SARB-repo liquidity summary, VaR / sVaR / "
-            "IRC, daily LCR summary line) fold from the trading/treasury selected-risk fold over "
-            "the market-risk fold + the counterparty-risk + liquidity substrate. The folds exist "
-            "as substrate; the trading & treasury selected-risk positions that fill the cells "
-            "require a real trading book, which the bank-in-formation does not run pre-licence-"
-            "day, so those values are licence-day data. The product-attribute dataRequirements — "
-            "trading-book designation, risk class, counterparty-exposure type — bind now so a "
-            "future trading product is correctly gated. No silent fabrication."
+            "Now driven end-to-end against the SIMULATED trading book (D-BA-RETURN-SIMULATOR-FIRST "
+            "Phase 2a): BA 325 ASSEMBLES its summary from the existing driven folds — the "
+            "market-risk-requirement summary + standardised position-risk by class from the BA 320 "
+            "market-risk engine (proven non-zero against the Reg 28(3)(a) / BCBS D352 §718 golden "
+            "cases — equity R1,600,000, commodity R660,000); the counterparty-risk memorandum (OTC) "
+            "from the SA-CCR EAD cohort; the LCR summary from the BA 300 LCR engine; and the "
+            "internal-models-approach VaR / stressed-VaR amount from the V1-free cohort-VaR engine "
+            "over the simulated FX cohort (proven against the single-factor historical-simulation "
+            "oracle). The folds are proven end-to-end by platform/returns/ba325/"
+            "ba-325-selected-risk-sim-golden.test.ts + recon:ba325-selected-risk-sim-drive (ENFORCING). "
+            "The PRODUCTION read folds to 0 / no-positions (the simulated book is invisible to the "
+            "production provenance lens — the R300m-into-Prod guard), so the real cell values remain "
+            "licence-day data: they populate only when a real trading & treasury book is run at "
+            "licence-day. THREE cells/blocks are NOT driven and are tracked as honest substrate gaps "
+            "(explicit `absent`, never a silent zero and never an overclaimed fold — the original "
+            "BA 325 audit finding): the IMA Incremental Risk Charge column C0040 (no IRC engine — "
+            "gap ba325-irc-engine); the SARB-repo-participation liquidity summary R0110–R0140 (no "
+            "repo fold — gap ba325-sarb-repo-liquidity); and the reg-29(3) foreign-currency "
+            "residency-segmented detail block R0360–R0790 (no residency-tagged FX fold — gap "
+            "ba325-reg29-fx-residency-detail). The product-attribute dataRequirements — trading-book "
+            "designation, risk class, counterparty-exposure type — bind now so a future trading "
+            "product is correctly gated. No silent fabrication; no overclaimed fold."
         ),
     ),
     "BA330": dict(

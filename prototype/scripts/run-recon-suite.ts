@@ -450,6 +450,17 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // on a store with no trading-book sim); the production-zero + born-V2
     // registration legs are clean-store-provable and always assert.
     "recon:ba320-trading-book-sim-drive",
+    // D-BA-RETURN-SIMULATOR-FIRST Phase 2a — ENFORCING: BA 325 (Selected Risk
+    // Exposure — Trading & Treasury) ASSEMBLY gate. Builds a self-contained
+    // in-memory simulated trading book and asserts (A) the BA 325 summary lines
+    // reconcile to their source folds (BA 320 sub-charges anchored to the Phase 1
+    // golden case; cohort VaR to its single-factor oracle); (B) the provenance
+    // boundary holds (BA 320 lens → production 0; cohort store-separated →
+    // no-positions); (C) the three genuinely-missing folds (IRC, SARB-repo,
+    // reg-29 FX residency detail) are tracked in the gap-register AND surfaced
+    // `absent` — never a silent zero, never an overclaimed fold. Self-contained,
+    // so it always asserts (a clean store cannot manufacture a pass).
+    "recon:ba325-selected-risk-sim-drive",
     // WS-V2-AUTHORITATIVE S6 — ALM-snapshot-SHAPE V2 parity gate (advisory).
     // Structural-compares V1 getALMPositionSnapshot vs V2 getALMPositionSnapshotV2
     // (HQLA / funding / ASF / RSF arrays) for the anchor bank entity — the
