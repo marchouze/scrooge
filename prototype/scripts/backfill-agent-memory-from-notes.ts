@@ -30,6 +30,31 @@
 //   - `documentStore.put` is content-addressed and idempotent on bytes (the same
 //     body → the same BLAKE3 hash), so re-putting on replay is a no-op.
 //
+// ─── SHARED-STORE PAIRING (the recall loop — Charter cmd 2 fail-closed) ─────
+//
+// The memory EVENT (`AgentMemoryCommitted`) and the memory BODY (the doc-store
+// blob it cites by `bodyDocumentHash`) MUST land in the SAME store the read path
+// reads, or a seeded memory shows "(body UNRESOLVED)" at `dispatch:recall`. The
+// read path (`recall.ts` / `readMyMemory` / `WorldStateSnapshot.myMemory`) boots
+// the SHARED store (`resolve-event-db-boot` → home-default-enabled resolution:
+// `$HOME/.local/share/bank/documents` in the live shared-home topology). This
+// backfill therefore boots the SAME shim FIRST (see the import at the top), so:
+//
+//   - LIVE (shared-home): event → `$HOME/.local/share/bank/event.db`, body →
+//     `$HOME/.local/share/bank/documents` — exactly where recall reads. No
+//     manual blob copy on a clean rebuild.
+//   - CI / local `bun run ci`: `BANK_EVENT_DB` + `BANK_DOCUMENT_STORE` are pinned
+//     repo-local (`.local/event.db`, `.local/documents` — see pr-ci.yml), so the
+//     env tier dominates the boot resolution and event + body both stay
+//     per-worktree, paired, and reproducible (never touching `$HOME`).
+//
+// Previously this backfill imported NEITHER shim, so the body resolved via the
+// `excludeHomeDefault` singleton (`<repo>/prototype/data/documents`) while recall
+// read the shared store — the divergence that left seeded bodies UNRESOLVED in
+// the live topology. `recon:agent-memory-doc-resolves` now resolves its primary
+// store the SAME (read-path) way and FAILS on exactly this split, so a regression
+// re-introducing the divergence is caught fail-closed.
+//
 // ─── PRODUCER FRAMING (the migration instrument) ───────────────────────────
 //
 // `producedByAgent` is Scrooge (Chief of Staff / Orchestrator) — the migration
@@ -68,6 +93,13 @@
 //   lessons-into-th:2026-06-25. Principle 1 (events canonical; the body is the
 //   cited heavy bytes); Principle 2 (every memory ≥1 citation).
 // Author: Atlas (Core banking platform architect, engineering).
+
+// MUST be first — boots the shared event + document store env BEFORE
+// `platform/composition` and `platform/document-store` resolve at module-load.
+// This pairs the memory BODY (doc-store blob) with the memory EVENT in the SAME
+// store the read path (`dispatch:recall` / `readMyMemory`) reads, in every
+// topology — see the "SHARED-STORE PAIRING" note in the header.
+import "../platform/event-store/resolve-event-db-boot";
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -162,7 +194,10 @@ function main(): void {
   const already = existingMemoryIds();
 
   console.log("\n=== WS-AGENT-MEMORY seed backfill — 214 curated lessons ===");
-  console.log(`store        : ${process.env.BANK_EVENT_DB ?? "(home default)"}`);
+  console.log(`event store  : ${process.env.BANK_EVENT_DB ?? "(home default)"}`);
+  console.log(
+    `doc store    : ${process.env.BANK_DOCUMENT_STORE ?? "(home default)"} (boot-shim shared resolution)`,
+  );
   console.log(`seed         : ${SEED_PATH} (${notes.length} notes)`);
   console.log(`producer     : ${producer.name} (${producer.agentId}) — migration instrument`);
   console.log(`fixed asOf   : ${BACKFILL_ASOF}`);

@@ -133,6 +133,21 @@ jobs:
       # reproducibility — full recon on a clean store); mirrors the
       # D-CASH-ASSET-CLASS-V1 repo-local pin convention.
       BANK_V2_CONTROL_PLANE_DB: .local/v2-control-plane.db
+      # Pin the content-addressed DOCUMENT store repo-local too. The memory-seed
+      # backfill (`backfill:agent-memory-from-notes`) + the close-run `--memory`
+      # path BOOT the shared store, so they resolve `BANK_DOCUMENT_STORE` and
+      # write the body blob there; `dispatch:recall` / `readMyMemory` and
+      # `recon:agent-memory-doc-resolves` READ that same resolution. Unset, the
+      # boot resolution falls through to $HOME/.local/share/bank/documents — on a
+      # clean runner that is empty (so the gate would pass) but on a developer's
+      # machine it pollutes the real home store and makes local `bun run ci`
+      # non-reproducible (the same trap BANK_V2_CONTROL_PLANE_DB fixed). Pinning
+      # it repo-local makes the seed WRITE and the recall/recon READ hit one
+      # store, never $HOME, in both CI and local runs. Live (no pin) routes to the
+      # shared home store, where the seeded bodies must land for recall to resolve
+      # them. Authority: D-AGENT-MEMORY-PERSISTENCE; D-CROSS-WORKTREE-EVENT-STORE-
+      # SYNC; Engineering Charter command 7.
+      BANK_DOCUMENT_STORE: .local/documents
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -177,6 +192,12 @@ jobs:
       # command 7 (whole-tree integrity / reproducibility); mirrors
       # D-CASH-ASSET-CLASS-V1's repo-local pin convention.
       BANK_V2_CONTROL_PLANE_DB: .local/v2-control-plane.db
+      # Pin the document store repo-local — see the recon-infra note. The
+      # memory-seed backfill WRITES the body blob to the booted shared resolution
+      # and recall/recon READ it; pinning keeps both repo-local & reproducible,
+      # never $HOME. Authority: D-AGENT-MEMORY-PERSISTENCE; D-CROSS-WORKTREE-
+      # EVENT-STORE-SYNC; Engineering Charter command 7.
+      BANK_DOCUMENT_STORE: .local/documents
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
