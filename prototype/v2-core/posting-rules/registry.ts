@@ -101,6 +101,17 @@ export const postingRuleEntrySchema = z.object({
   deprecated: z.boolean().optional(),
   /** The live posting-rule id(s) that supersede a `deprecated` rule (audit trail). */
   supersededBy: z.array(z.string().min(1)).optional(),
+  /**
+   * IFRS 9 measurement-family GATE. When set, this rule applies ONLY to a product
+   * whose `accountingClassification.ifrs9Family` matches — so an FVOCI-only rule
+   * never renders for an FVTPL product. This is the structured, IFRS-coherent way
+   * to scope a measurement-specific rule out of a product family it can never fire
+   * for (e.g. the FVOCI→P&L reclassification rule, which can never fire for an FX
+   * derivative — FX is mandatorily FVTPL, IFRS 9 §5.7.5 is equity-only). Sourced as
+   * a typed field, not a hardcoded render denylist (Charter cmd 4).
+   * Authority: D-FX-ACCOUNTING-RENDER-COHERENCE; D-FX-IFRS-REVIEW-FOUNDATION (F1).
+   */
+  appliesWhenIfrs9Family: z.enum(["fvtpl", "fvoci", "amortised-cost"]).optional(),
 });
 
 /** Capitalised alias matching the canonical-home schema naming convention used
@@ -335,7 +346,9 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "fx-fil-fvoci-reclass",
     condition: "non-zero-pnl",
     conditionDetail:
-      "IFRS 9 §5.7.10–11 — FVOCI → P&L reclassification on derecognition. Fires at fold time on FilInstrumentTerminated.fvociReclassTerms via fx-settlement.postFxFvociReclassLegs (resolved gap fx-fvoci-reclass-trigger).",
+      "IFRS 9 §5.7.10–11 — FVOCI → P&L reclassification on derecognition. RETAINED machinery for the future EQUITY-instrument estate (postFxFvociReclassLegs); it can NEVER fire for an FX derivative, which is mandatorily FVTPL (IFRS 9 §5.7.5 is equity-only). Gated FVOCI-only so it does NOT render on an FVTPL FX product (D-FX-ACCOUNTING-RENDER-COHERENCE; D-FX-IFRS-REVIEW-FOUNDATION F1).",
+    // FVOCI-only — never renders for an FVTPL FX product.
+    appliesWhenIfrs9Family: "fvoci",
   },
   // ── FX trade-date OBS commitment release + FCY→ZAR realisation
   //    (D-FX-TRADE-DATE-FVTPL-OBS settlement side; D-FX-PNL-FCY-EXPOSURE-
@@ -815,4 +828,31 @@ export function findEntriesForLifecycle(lifecycleId: string): readonly PostingRu
 /** Find the registry entry for a given posting-rule id (first match). */
 export function findEntryForRuleId(postingRuleId: string): PostingRuleEntry | undefined {
   return POSTING_RULE_REGISTRY.find((e) => e.postingRuleId === postingRuleId);
+}
+
+/**
+ * True iff the posting-rule id is RETIRED (structured `deprecated` flag). A
+ * retired rule stays registered (replay of historical events resolves it) but
+ * MUST NOT render as a live posting rule on any product / accounting surface.
+ * Sourced from the registry's own typed flag — never a hardcoded denylist
+ * (Charter cmd 4). An unknown rule id is treated as NOT deprecated (the caller's
+ * other gates assert real-id existence).
+ */
+export function isDeprecatedRuleId(postingRuleId: string): boolean {
+  return POSTING_RULE_REGISTRY.some(
+    (e) => e.postingRuleId === postingRuleId && e.deprecated === true,
+  );
+}
+
+/** The set of LIVE (non-deprecated) trigger event types for a set of lifecycle ids. */
+export function liveTriggerEventTypesForLifecycles(
+  lifecycleIds: readonly string[],
+): ReadonlySet<string> {
+  const live = new Set<string>();
+  for (const e of POSTING_RULE_REGISTRY) {
+    if (e.deprecated === true) continue;
+    if (!lifecycleIds.includes(e.lifecycleId)) continue;
+    live.add(e.triggerEventType);
+  }
+  return live;
 }

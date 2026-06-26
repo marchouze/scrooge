@@ -46,8 +46,10 @@ describe("recon:fx-leg-structure-matches-rules", () => {
     const r = run();
     expect(r.ok).toBe(true);
     expect(failCount(r.violations)).toBe(0);
-    // 11 declared (rule, stage) + 11 driven = 22 assertions.
-    expect(r.asserted).toBe(22);
+    // 10 declared (rule, stage) + 10 driven = 20 assertions. (The FVOCI-reclass
+    // entry was removed — FX is FVTPL-only, never FVOCI; D-FX-ACCOUNTING-RENDER-
+    // COHERENCE / D-FX-IFRS-REVIEW-FOUNDATION F1.)
+    expect(r.asserted).toBe(20);
   });
 
   it("BITES when a leg's DIRECTION is flipped (the drift the gate exists to catch)", () => {

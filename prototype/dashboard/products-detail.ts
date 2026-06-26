@@ -709,8 +709,9 @@ export interface AccountingPerspectiveView {
   readonly authority: readonly string[];
 }
 
-/** Product family → posting-rule registry lifecycleId set. */
-const FAMILY_LIFECYCLE_IDS: Readonly<Record<string, readonly string[]>> = {
+/** Product family → posting-rule registry lifecycleId set. Exported so render-
+ * coherence recon gates source the same family→lifecycle map the page uses. */
+export const FAMILY_LIFECYCLE_IDS: Readonly<Record<string, readonly string[]>> = {
   fx: ["fx-spot-trade", "fx-fil-instance"],
   "listed-bond": ["bond-trade"],
   "listed-equity": ["equity-trade"],
@@ -736,12 +737,41 @@ const DEFERRED_RULE_IDS: ReadonlyMap<string, string> = new Map(
   }),
 );
 
+/**
+ * True iff a posting rule's IFRS 9 measurement-family gate (if any) matches the
+ * product's classification. A rule with no `appliesWhenIfrs9Family` applies to
+ * any family; a gated rule (e.g. the FVOCI→P&L reclassification rule) renders
+ * ONLY for a matching product. FX is FVTPL-only, so an FVOCI-gated rule never
+ * renders for it (D-FX-ACCOUNTING-RENDER-COHERENCE; D-FX-IFRS-REVIEW-FOUNDATION
+ * F1). Source-don't-hardcode (Charter cmd 4): the gate is read off the registry
+ * row, never a per-id render denylist.
+ */
+export function ruleAppliesToProductIfrs9Family(
+  rule: PostingRuleEntry,
+  product: Product,
+): boolean {
+  if (rule.appliesWhenIfrs9Family === undefined) return true;
+  return (
+    rule.appliesWhenIfrs9Family.toLowerCase() ===
+    product.accountingClassification.ifrs9Family.toLowerCase()
+  );
+}
+
 /** Build the accounting-treatment view for a product. Pure, name-free. */
 export function buildAccountingTreatmentView(product: Product): AccountingTreatmentView {
   const lifecycleIds = FAMILY_LIFECYCLE_IDS[product.family] ?? [];
   const rules: AccountingTreatmentPostingRule[] = POSTING_RULE_REGISTRY.filter(
     (r: PostingRuleEntry) =>
-      lifecycleIds.includes(r.lifecycleId) && r.condition !== "intentional-no-impact",
+      lifecycleIds.includes(r.lifecycleId) &&
+      r.condition !== "intentional-no-impact" &&
+      // A retired rule (structured `deprecated` flag) must NEVER render as a live
+      // posting rule — a static registry presence is not evidence it is current
+      // (D-DERIVED-EVENT-IRREDUCIBILITY-TEST; D-FX-ACCOUNTING-RENDER-COHERENCE).
+      r.deprecated !== true &&
+      // A measurement-family-gated rule renders only for a matching product (an
+      // FVOCI-only rule never renders for an FVTPL FX product — FX is FVTPL-only,
+      // IFRS 9 §5.7.5 is equity-only; D-FX-IFRS-REVIEW-FOUNDATION F1).
+      ruleAppliesToProductIfrs9Family(r, product),
   ).map((r) => {
     const deferredTrigger = DEFERRED_RULE_IDS.get(r.postingRuleId);
     return {
@@ -1468,7 +1498,12 @@ export function buildValuationLenses(product: Product): ValuationDomainLens[] {
     const lifecycleIds = FAMILY_LIFECYCLE_IDS[product.family] ?? [];
     const glEntries = POSTING_RULE_REGISTRY.filter(
       (r: PostingRuleEntry) =>
-        lifecycleIds.includes(r.lifecycleId) && r.condition !== "intentional-no-impact",
+        lifecycleIds.includes(r.lifecycleId) &&
+        r.condition !== "intentional-no-impact" &&
+        // Retired rules never render as a live GL posting rule (structured flag).
+        r.deprecated !== true &&
+        // FVOCI-only rules never render for an FVTPL FX product (IFRS gate).
+        ruleAppliesToProductIfrs9Family(r, product),
     );
     // GL posting rule ids = lifecycle-family registry entries UNION the
     // posting-rules treatment module's declared rule ids (both sourced; the
