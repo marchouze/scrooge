@@ -42,8 +42,8 @@
 //   PA Directive 1 of 2023 (NSFR);
 //   PA Directive 4 of 2021 (externally-facilitated liquidity stress);
 //   BCBS 144 (Principles for Sound Liquidity Risk Management, 2008);
-//   BCBS D295 (Basel III LCR, January 2013);
-//   BCBS D335 (Basel III NSFR, October 2014);
+//   BCBS D238 (Basel III LCR, January 2013);
+//   BCBS D295 (Basel III NSFR, October 2014);
 //   BCBS 248 (Intraday liquidity monitoring tools, April 2013);
 //   archive/owner-inbox/2026-05-11_camille-eitan-helena_liquidity-risk-
 //     management-policy-v1.md (LRM Policy v1, §§ 9.1 + 9.2 + 9.3 breach

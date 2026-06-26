@@ -10,7 +10,8 @@
 //
 // METHODOLOGY (documented + chosen standard):
 //   The bank elects a STANDARDISED / accounting-CVA formula, the build-phase
-//   analogue of the Basel BA-CVA standardised approach (BCBS d424 MAR50) and the
+//   analogue of the Basel BA-CVA standardised approach (BCBS MAR50, consolidated
+//   framework; the standard formerly published standalone as BCBS d424) and the
 //   IFRS 13 fair-value CVA: per counterparty,
 //
 //     CVA_cp = LGD × EAD_cp × PD_cp × discount
@@ -19,6 +20,22 @@
 //   This is conservative — it ignores the BA-CVA correlation/hedge offsets — and
 //   is the most defensible method when the OTC book is small and a full SA-CVA
 //   sensitivity engine is not yet built.
+//
+//   ACQUIRED-STANDARD ORACLE (D-BCBS-CVA-IRRBB-ORACLE-RECITATION): the CVA capital
+//   framework IS in the acquired BCBS library as MAR50 ("Credit valuation
+//   adjustment framework", `urn:reg:bcbs:mar:50.*` — `Regulations/BCBS/
+//   source-docs/mar-structured.json`, minted in `mar-obligation-graph.json`). This
+//   engine implements the *reduced version of the BA-CVA* (`urn:reg:bcbs:mar:50.13`
+//   the basic-approach intro electing reduced vs full; `urn:reg:bcbs:mar:50.14`
+//   reduced-version capital requirement Kreduced; `urn:reg:bcbs:mar:50.15` the
+//   stand-alone CVA capital SCVA_c; `urn:reg:bcbs:mar:50.16` the supervisory risk
+//   weights RW_c). The reduced version is the one that DOES NOT recognise hedges
+//   — matching this engine's no-hedge `Σ LGD × EAD × PD × discount` formula. The
+//   FULL version of the BA-CVA (`urn:reg:bcbs:mar:50.17`+, hedges recognised) and
+//   the SA-CVA sensitivity buckets (IR / FX / counterparty- & reference-credit-
+//   spread / equity / commodity, MAR50 full SA-CVA) are NOT implemented here and
+//   are NOT cited — citing a provision the code does not satisfy would be a false
+//   conformance claim (Engineering-Charter command 4).
 //
 //   - EAD_cp (Exposure At Default): a current-exposure + add-on, computed
 //     instrument-by-instrument over the COUNTERPARTY's uncollateralised OTC
@@ -76,7 +93,9 @@
 // enforced CALC_BINDINGS registry fully coherent.
 //
 // Authority: D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 (Slice 5, CEO session-delegation
-//   2026-05-29); RISK-MRP-01 §1.1, §2; BCBS d424 (BA-CVA) MAR50; IFRS 13.
+//   2026-05-29); RISK-MRP-01 §1.1, §2; BCBS MAR50 reduced BA-CVA
+//   (`urn:reg:bcbs:mar:50.13`–`.16`); IFRS 13. Oracle re-cited under
+//   D-BCBS-CVA-IRRBB-ORACLE-RECITATION (CEO-approved 2026-06-26).
 // Author: Rohan (Risk systems engineer, engineering), built under
 //   D-MODEL-REGISTRY-SCOPE-CLOSURE-V1 Slice 5 coordinated by Helena (Chief Risk
 //   Officer, governance — model-risk-policy owner + methodology accountability),
@@ -104,9 +123,10 @@ import { type FinancialInput, absent, present, requireWeight } from "../types/fi
 
 /**
  * Loss Given Default for senior uncollateralised derivative exposure. The
- * Basel CVA standard (BCBS d424 MAR50) and IFRS 13 fair-value CVA both use a
- * 60% LGD for uncollateralised counterparty exposure where no recovery
- * estimate is modelled. Held as a named constant so the assumption is explicit.
+ * Basel CVA standard (BCBS MAR50, reduced BA-CVA — `urn:reg:bcbs:mar:50.14`–`.16`)
+ * and IFRS 13 fair-value CVA both use a 60% LGD for uncollateralised counterparty
+ * exposure where no recovery estimate is modelled. Held as a named constant so
+ * the assumption is explicit.
  */
 export const CVA_LGD_DEFAULT = 0.6;
 
@@ -147,7 +167,8 @@ export const FX_PFE_ADDON_FRACTION = 0.01;
  * track the Basel SA-CCR supervisory-factor ordering (interest-rate lowest;
  * equity / commodity highest; credit / FX in between). A LOUD requireWeight
  * lookup — an unrecognised asset class fails, never a silent 0% add-on that
- * would understate the EAD. Authority: BCBS d424 MAR50 / SA-CCR analogue.
+ * would understate the EAD. Authority: BCBS MAR50 (`urn:reg:bcbs:mar:50.13`)
+ * reduced BA-CVA / SA-CCR analogue.
  */
 const DERIVATIVE_PFE_ADDON_BY_ASSET_CLASS: Readonly<Record<string, number>> = {
   "interest-rate": 0.005, // 0.5% — short-dated IR

@@ -19,6 +19,7 @@
     "nsfr-asf": "NSFR — available stable funding",
     "nsfr-rsf": "NSFR — required stable funding",
     "nsfr-threshold": "NSFR — thresholds",
+    "ba310-threshold": "BA 310 — minimum reserve & liquid-asset ratios",
     "capital-baseline": "Capital — build-phase baselines",
     "capital-threshold": "Capital — appetite thresholds",
     "leverage-threshold": "Leverage — appetite bands",

@@ -445,7 +445,7 @@ function statusForLine(
   // appetite:irrbb:delta-eve-outlier — measured by the IRRBB ΔEVE projection
   // (platform/projections/irrbb-delta-eve.ts), which folds the IRRBBChecked
   // (metric=EVE) events of record emitted by Ravi's daily ALM run into the
-  // BCBS d365 §A-3.4 supervisory-outlier headline: max(|deltaPct|) across the
+  // BCBS d368 §A-3.4 supervisory-outlier headline: max(|deltaPct|) across the
   // six shock scenarios, classified under the register's higher-is-worse
   // ladder (green <10% / amber 10-15% / red ≥15% of Tier-1). NOT a parallel
   // calculator — the ALM run computes ΔEVE (bonds folded; IRS DV01 per
@@ -454,7 +454,7 @@ function statusForLine(
   // climate line's no-data posture — an empty check stream means the ALM run
   // has not ticked, which is NOT zero-risk-by-construction).
   // Authority: D-IRRBB-DELTA-EVE-OUTLIER-MEASUREMENT (CEO-approved
-  //   2026-06-12); D-BOND-RAS-APPETITE; RAS §B4; BCBS d365 §A-3.4;
+  //   2026-06-12); D-BOND-RAS-APPETITE; RAS §B4; BCBS d368 §A-3.4;
   //   escalation:helena:unmeasured-lines-2026-06-12.
   if (line.id === "appetite:irrbb:delta-eve-outlier" && irrbbDeltaEveMetric !== undefined) {
     if (irrbbDeltaEveMetric.status === "no-checks") {
@@ -578,7 +578,7 @@ function buildSnapshot(asOfIso: string): AppetiteSnapshot {
   // no parallel calculator. Build-phase posture: zero EVE checks →
   // `no-checks` → n/a-build-phase.
   // Authority: D-IRRBB-DELTA-EVE-OUTLIER-MEASUREMENT (CEO-approved
-  //   2026-06-12); D-BOND-RAS-APPETITE; RAS §B4; BCBS d365 §A-3.4.
+  //   2026-06-12); D-BOND-RAS-APPETITE; RAS §B4; BCBS d368 §A-3.4.
   const irrbbDeltaEveMetric = getIrrbbDeltaEveMetric(eventStore);
 
   const lineStates = APPETITE_LINES.map((line) =>

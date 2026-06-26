@@ -315,7 +315,7 @@ FORMS = {
         clause=(
             "SARB PA Directive D5/2025 §2.1.11 (form BA 300, Annexure 10A/10B) read with the "
             "Regulations relating to Banks reg 26 (liquidity risk / minimum liquid assets and "
-            "the liquidity coverage ratio) and the Basel III LCR (BCBS D295) and NSFR (BCBS D335) "
+            "the liquidity coverage ratio) and the Basel III LCR (BCBS D238) and NSFR (BCBS D295) "
             "standards; Banks Act 94 of 1990 s.6(6)(a). [Post-#1451 corrected row "
             "(D-BA-RETURN-NUMBERING-EXCEL-CANONICAL): per the canonical SARB Excel form schedule, "
             "form BA 300 is the LIQUIDITY RISK return (incl. the LCR and the NSFR series); the "
@@ -1984,7 +1984,7 @@ def credit_product_attributes(
 # "Total level 2A HQLA" row, the deposit-concentration counterparty cell). A
 # monetary aggregate merely SLICED by an attribute carries it `required:false`
 # (it still folds, possibly to honest 0). Each attribute is grounded in the LCR
-# (BCBS D295) / NSFR (BCBS D335) / SARB reg 26 / reg 27 rule that makes a product
+# (BCBS D238) / NSFR (BCBS D295) / SARB reg 26 / reg 27 rule that makes a product
 # carry it. The form-meta / hash-total / pure-arithmetic cells carry none.
 
 LIQUIDITY_DEPOSIT_PRODUCT_ID = "prd:bank:deposit:transactional"
@@ -1996,26 +1996,26 @@ LIQUIDITY_DEPOSIT_ATTRS = {
         "whether the deposit is a 'stable' or 'less stable' deposit, which selects the "
         "LCR run-off rate (stable retail 3–5%, less-stable retail 10%+) and the NSFR "
         "available-stable-funding factor. The defining attribute of the LCR retail / "
-        "small-business deposit rows. (Basel LCR BCBS D295 §54–§84; NSFR BCBS D335 §22–"
+        "small-business deposit rows. (Basel LCR BCBS D238 §54–§84; NSFR BCBS D295 §22–"
         "§24; SARB Regulations relating to Banks reg 26.)"
     ),
     "depositCounterpartyCategory": (
         "the LCR/NSFR counterparty category of the funding provider — retail / small "
         "business vs wholesale non-financial corporate vs financial institution vs "
         "sovereign/PSE — which selects the outflow / ASF weighting band. (Basel LCR "
-        "BCBS D295 §90–§111; NSFR BCBS D335 §22–§40; SARB reg 26.)"
+        "BCBS D238 §90–§111; NSFR BCBS D295 §22–§40; SARB reg 26.)"
     ),
     "operationalRelationship": (
         "whether the deposit is held for an OPERATIONAL purpose (clearing / custody / "
         "cash-management) with a qualifying operational relationship, which attracts the "
         "reduced 25% operational-deposit run-off rather than the non-operational rate. "
-        "(Basel LCR BCBS D295 §93–§104; SARB reg 26.)"
+        "(Basel LCR BCBS D238 §93–§104; SARB reg 26.)"
     ),
     "maturityCallability": (
         "the residual maturity / notice period / callability of the deposit or funding — "
         "whether it falls within the 30-day LCR horizon and which NSFR maturity bucket "
         "(<6m / 6m–1y / ≥1y) it occupies. Drives both the LCR outflow inclusion and the "
-        "NSFR ASF factor. (Basel LCR BCBS D295 §54; NSFR BCBS D335 §17–§24; SARB reg 26.)"
+        "NSFR ASF factor. (Basel LCR BCBS D238 §54; NSFR BCBS D295 §17–§24; SARB reg 26.)"
     ),
 }
 
@@ -2026,17 +2026,17 @@ LIQUIDITY_HQLA_ATTRS = {
         "its inclusion in the LCR numerator and the BA 310 liquid-asset stock, and the "
         "Level-2 caps (40% / 15%). Computed by the HQLA classifier "
         "(platform/collateral/hqla-classifier.ts) from the asset descriptor. (Basel LCR "
-        "BCBS D295 §24–§54; SARB reg 26 / reg 27.)"
+        "BCBS D238 §24–§54; SARB reg 26 / reg 27.)"
     ),
     "hqlaEligibility": (
         "whether the asset meets the HQLA operational + eligibility criteria (unencumbered, "
         "central-bank-eligible, marketable in a deep liquid market) to count as a high-"
-        "quality liquid asset at all. (Basel LCR BCBS D295 §28–§47; SARB reg 26 / reg 27.)"
+        "quality liquid asset at all. (Basel LCR BCBS D238 §28–§47; SARB reg 26 / reg 27.)"
     ),
     "hqlaHaircut": (
         "the regulatory haircut applied to the asset's market value in the HQLA stock "
         "(0% Level 1, 15% Level 2A, 25–50% Level 2B). Computed by the HQLA classifier from "
-        "the asset's level. (Basel LCR BCBS D295 §49–§54; SARB reg 26 / reg 27.)"
+        "the asset's level. (Basel LCR BCBS D238 §49–§54; SARB reg 26 / reg 27.)"
     ),
     "repoEligibility": (
         "whether the level-1 liquid asset is eligible for / held under a resale or "

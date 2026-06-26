@@ -498,6 +498,33 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // (production read → no-otc-exposure / RWA leg 0). Self-contained — always
     // asserts.
     "recon:cva-derivatives-sim-drive",
+    // D-BA-RETURN-SIMULATOR-FIRST — ENFORCING: the simulated deposit / funding /
+    // HQLA book drives BA 300 LCR + NSFR AND the BA 310 minimum-liquid-reserve
+    // fold. Asserts (A) a self-contained in-memory oracle lands on the hand-
+    // computed Basel/SARB golden figures (LCR HQLA R950m / net-outflow R170m →
+    // 558.82%; NSFR ASF R1,005m [incl. R300m ICAAP tier-1 baseline] / RSF R89.5m
+    // → 1122.91%; BA 310 reduced R1,030m → reserve R25.75m [×2.5%] + L1-required
+    // R51.5m [×5%], L1-held R800m, compliant); (B) the BA 310 production-only read
+    // of the LIVE store stays all-zero (the R300m-into-Prod regression guard);
+    // (C) the operating-book BA 310 read of the LIVE store reproduces the golden
+    // figures when the seed is present (data-dependent; dormant on a clean store);
+    // (D) the per-event provenance boundary holds (every simulated event excluded
+    // by production-only, admitted by operating-book). Self-contained golden +
+    // structural legs always assert.
+    "recon:ba300-deposit-funding-sim-drive",
+    // D-BA-RETURN-SIMULATOR-FIRST — ENFORCING: the simulated credit (loans-and-
+    // advances) book drives the BA 200 credit-risk projection AND the BA 700
+    // credit-RWA leg (the dominant capital denominator). Asserts (A) a self-
+    // contained in-memory oracle lands on the hand-computed Reg 23 / IFRS 9
+    // golden figures (total gross R3,100m; total ECL R56.2m [Stage-1 12-month
+    // R4.2m / Stage-2 lifetime R2.0m / Stage-3 lifetime R50.0m]; NPL 3.2258%;
+    // coverage 50%; six SA-CR exposure classes); (B) the CRE20 standardised
+    // credit RWA lands on R1,235m (sovereign 0% / bank 75% / corporate-ig 65% /
+    // retail 75% / mortgage 30%+40%); (C) the BA 700 credit-RWA leg = the
+    // oracle under the operating-book lens AND 0 under production-only (the
+    // includeSimulated-into-Prod regression guard); (D) the per-event provenance
+    // boundary holds. Self-contained — always asserts.
+    "recon:ba200-credit-sim-drive",
     // WS-V2-AUTHORITATIVE S6 — ALM-snapshot-SHAPE V2 parity gate (advisory).
     // Structural-compares V1 getALMPositionSnapshot vs V2 getALMPositionSnapshotV2
     // (HQLA / funding / ASF / RSF arrays) for the anchor bank entity — the
@@ -629,6 +656,13 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     "recon:entity-identity-coherence",
     "recon:procedure-event-name-coherence",
     "recon:regulatory-extraction-coverage",
+    // D-BCBS-CITATION-NUMBERING-REMEDIATION (CEO session-delegation 2026-06-26) —
+    // fail-closed, harden-only gate pinning each cited BCBS document number to its
+    // canonical title (238=LCR, 295=NSFR, 368=IRRBB, 248=intraday, 144=sound-
+    // liquidity, 450=stress-testing), validated against the BIS source. Forecloses
+    // the systemic LCR=d295 / NSFR=d335 mis-citation that survived the citation-gate
+    // because it was internally consistent but wrong.
+    "recon:bcbs-citation-number-integrity",
     "recon:provision-tick-drift",
     "recon:decision-distillation-coverage",
     "recon:fil-conformance",
@@ -821,6 +855,16 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // ENFORCING, fail-closed on any missing rule / wrong account role / wrong
     // direction / wrong order.
     "recon:fx-leg-structure-matches-rules",
+    // D-FX-ACCOUNTING-RENDER-COHERENCE (CEO-approved 2026-06-26): FX render-path
+    // coherence. No FX product's rendered accounting surfaces (accountingTreatment
+    // posting-rules table, accountingPerspective per-stage legs, GL valuation lens)
+    // may cite a posting rule the registry flags `deprecated` (retired), nor a
+    // trigger event type absent from the LIVE (non-deprecated) family trigger set
+    // (a superseded event family). Complements the EXECUTION-path
+    // recon:fx-pnl-account-category-integrity guard (FVOCI-for-FX forbidden). The
+    // deprecated set is sourced from the registry's own structured flag, not a
+    // hardcoded denylist (Charter cmd 4). ENFORCING, fail-closed.
+    "recon:fx-render-no-deprecated-or-stale-family",
     // D-BA-RETURN-DATA-CONTRACT (CEO-approved 2026-06-19): binds the L3 return-
     // cell data contract into the NPA gate. Every CURRENTLY-EFFECTIVE product
     // (resolveEffectiveApprovals — not dead approvals) must capture, or track as

@@ -77,7 +77,6 @@ import {
   type FxSettlementInput,
   postFxConversionLegs,
   postFxDerecognitionLegs,
-  postFxFvociReclassLegs,
   postFxNdfFixingLegs,
   postFxSettlementLegs,
   postFxSwapFarLegLegs,
@@ -195,7 +194,6 @@ const ALL_ROLES: readonly FxAccountRole[] = [
   "payable",
   "unrealised-pnl",
   "realised-pnl",
-  "oci-reserve",
   "nostro",
   "settlement-clearing",
   "obs-bought-commitment",
@@ -302,7 +300,15 @@ function buildActualLegsByStage(): ReadonlyMap<StageKey, readonly FxPostingLeg[]
     }),
   );
 
-  // d · Termination — derecognition reversal + FVOCI reclass + OBS release.
+  // d · Termination — derecognition reversal + OBS release. NO FVOCI reclass:
+  // FX is FVTPL-only (held-for-trading derivative), so PR-FX-FVOCI-RECLASS-V2
+  // can never fire for FX — it is deliberately ABSENT from the FX leg map and
+  // therefore not driven here (D-FX-IFRS-REVIEW-FOUNDATION finding F1;
+  // D-FX-ACCOUNTING-RENDER-COHERENCE). The enforcing
+  // `recon:fx-pnl-account-category-integrity` gate stands as the single guard
+  // forbidding any FX→OCI posting on the execution path. The
+  // `postFxFvociReclassLegs` function is retained in fx-settlement.ts for the
+  // future equity-instrument estate.
   m.set(
     key("PR-FX-CLOSE-V2", "d"),
     postFxDerecognitionLegs({
@@ -311,16 +317,6 @@ function buildActualLegsByStage(): ReadonlyMap<StageKey, readonly FxPostingLeg[]
       postingDate: POSTING_DATE,
       currency: SOLD_CURRENCY,
       accumulatedUnrealised: "50",
-    }),
-  );
-  m.set(
-    key("PR-FX-FVOCI-RECLASS-V2", "d"),
-    postFxFvociReclassLegs({
-      instanceId: INSTANCE,
-      tenantId: TENANT,
-      postingDate: POSTING_DATE,
-      currency: SOLD_CURRENCY,
-      accumulatedOci: "50",
     }),
   );
   m.set(

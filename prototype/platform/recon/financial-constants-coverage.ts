@@ -47,6 +47,7 @@ const VALID_CATEGORIES: ReadonlySet<ConstantCategory> = new Set<ConstantCategory
   "nsfr-asf",
   "nsfr-rsf",
   "nsfr-threshold",
+  "ba310-threshold",
   "capital-baseline",
   "capital-threshold",
   "leverage-threshold",

@@ -61,8 +61,8 @@ This policy implements the following regulatory authorities. Where exact sub-cla
 | PA Directive D1/2015 — *Directive on Recovery Plans for Banks* | Six required plan elements; annual submission; trigger-breach notification; resolvability assessment interface | LICENCE-BIND |
 | FSB *Key Attributes of Effective Resolution Regimes for Financial Institutions* (Oct 2014) | Resolvability assessment; separability; loss-absorbing capacity; resolution information pack | LICENCE-BIND (read-across from SA resolution-regime obligations) |
 | Financial Sector Regulation Act 9 of 2017 ("FSRA"), Part 5 | SARB Financial Sector Resolution Authority jurisdiction; resolution powers | LICENCE-BIND |
-| BCBS D295 *Stress Testing Principles* (Oct 2018) | Integration of stress testing with recovery-plan early-warning indicators | LICENCE-BIND (Pillar 2 requirement) |
-| BCBS D335 *IRRBB Standards* (Apr 2016) | IRRBB-derived early-warning indicator in §4.2 | LICENCE-BIND (Pillar 2 read-across) |
+| BCBS D450 *Stress Testing Principles* (Oct 2018) | Integration of stress testing with recovery-plan early-warning indicators | LICENCE-BIND (Pillar 2 requirement) |
+| BCBS D368 *IRRBB Standards* (Apr 2016) | IRRBB-derived early-warning indicator in §4.2 | LICENCE-BIND (Pillar 2 read-across) |
 
 The SARB recovery-planning directive `[citation: TBC — Mira (Compliance / RegTech engineer, under Zara (Chief Compliance Officer, governance)) curatorship route; no discrete SARB recovery-planning directive currently appears in the obligations register; per Principle 2, no invented citation; Mira's curatorship deliverable will add a new obligations-register row when the directive is confirmed]` will be incorporated when Mira's curatorship is complete.
 
@@ -214,7 +214,7 @@ Quantitative early-warning indicators are derived directly from the RAS line-set
 | Q7 — Intraday liquidity | Intraday liquidity buffer below the bank's intraday reserve floor (RAS B5) | Buffer at 110%–120% of reserve floor | Buffer at or below reserve floor | Intraday (per BCBS 248 / `ORG-PR-08`) | Intraday-liquidity feed (W2 Slice 5) |
 | Q8 — Leverage ratio | Leverage ratio approaches PA minimum (`[citation: TBC — PA minimum leverage ratio per Reg 38 / BCBS Basel III; Imani ratification route]`) | Within 50bp of PA minimum | At or below PA minimum | Monthly | RWA engine + leverage-ratio computation |
 | Q9 — Large-exposure concentration | Single-name or sector exposure approaching BCBS large-exposure limit (`[citation: TBC — exact Reg limit; Helena + Imani route]`) | Exposure at 80% of limit | Exposure at 90% of limit | Daily | Credit-risk exposure feed |
-| Q10 — IRRBB NII sensitivity | Net interest income sensitivity under a +200bp / −200bp parallel shift scenario approaching the bank's IRRBB RAS limit (`[citation: TBC — RAS IRRBB limit, calibrated under W2 Slice 2]`) per BCBS D335 | Sensitivity at 80% of RAS limit | Sensitivity at 90% of RAS limit | Monthly | IRRBB computation feed |
+| Q10 — IRRBB NII sensitivity | Net interest income sensitivity under a +200bp / −200bp parallel shift scenario approaching the bank's IRRBB RAS limit (`[citation: TBC — RAS IRRBB limit, calibrated under W2 Slice 2]`) per BCBS D368 | Sensitivity at 80% of RAS limit | Sensitivity at 90% of RAS limit | Monthly | IRRBB computation feed |
 
 ### 4.2 Qualitative indicators
 
@@ -547,8 +547,8 @@ All regulatory citations used in this policy:
 | PA Directive D1/2015 | Directive on Recovery Plans for Banks; six required elements; annual submission requirements | `[TBC — Mira curatorship route for exact content and notification windows in PA D1/2015; title assumed from dispatch brief]` |
 | Financial Sector Regulation Act 9 of 2017, Part 5 | SARB Financial Sector Resolution Authority powers | Confirmed Act name and number; Part 5 indices `[TBC — Imani route]` |
 | FSB *Key Attributes of Effective Resolution Regimes for Financial Institutions* (Oct 2014) | Key Attributes 1–12; Key Attribute 11 (resolvability assessment) | Published FSB standard |
-| BCBS D295 *Stress Testing Principles* (Oct 2018) | Integration of stress testing with recovery indicators | Published BCBS standard |
-| BCBS D335 *Standards: IRRBB* (Apr 2016) | IRRBB-derived early-warning indicator (EWI Q10) | Published BCBS standard |
+| BCBS D450 *Stress Testing Principles* (Oct 2018) | Integration of stress testing with recovery indicators | Published BCBS standard |
+| BCBS D368 *Standards: IRRBB* (Apr 2016) | IRRBB-derived early-warning indicator (EWI Q10) | Published BCBS standard |
 | BCBS 144 *Principles for Sound Liquidity Risk Management* (Sept 2008) | Contingency funding plan discipline; liquidity early-warning indicators | Published BCBS standard; discharged under `ORG-PR-15` |
 | BCBS 248 *Monitoring tools for intraday liquidity management* (Apr 2013) | Intraday liquidity EWI (Q7) | Published BCBS standard; discharged under `ORG-PR-08` |
 | `D-REGULATORY-PERIMETER` | Group structure; consolidated-basis reading | CEO-approved 2026-05-09 |

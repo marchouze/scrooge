@@ -11,12 +11,12 @@
 //      the structured governance register.
 //
 //   2. appetite:irrbb:delta-eve-outlier
-//      IRRBB δEVE outlier threshold at 15% of Tier-1 capital per BCBS d365
+//      IRRBB δEVE outlier threshold at 15% of Tier-1 capital per BCBS d368
 //      §A-3.4 (RAS §B4, tier-1). Early-warning amber at 10%.
 //
 // Risk-appetite calibration is CRO authority per the decision-authority
 // routing table (CLAUDE.md). Neither line introduces a new regulatory
-// threshold — both promulgate existing BCBS d365 supervisory outlier limits
+// threshold — both promulgate existing BCBS d368 supervisory outlier limits
 // and build-phase practice into the register. The CRO seat self-ratifies.
 //
 // Idempotent: fixed asOf timestamps so re-runs (home store + CI fresh-store
@@ -60,13 +60,13 @@ requestDecision(
     recommendation:
       "Add two RAS appetite lines for bond trading: " +
       "(1) gross inventory cap at R200m face value (amber at R140m/70%, red at R200m); " +
-      "(2) IRRBB δEVE outlier threshold at 15% of Tier-1 capital per BCBS d365 §A-3.4 " +
+      "(2) IRRBB δEVE outlier threshold at 15% of Tier-1 capital per BCBS d368 §A-3.4 " +
       "(amber at 10%, red at 15%). Both lines use RAS §B4. " +
       "Bond inventory line is tier-2; IRRBB δEVE line is tier-1.",
     rationale:
       "Bond trading review 2026-06-08 identified a hardcoded position cap in " +
       "BondSimEngine (positionCapZarMinor = R200m) with no governance register entry, " +
-      "and an absent IRRBB appetite line for the BCBS d365 §A-3.4 supervisory " +
+      "and an absent IRRBB appetite line for the BCBS d368 §A-3.4 supervisory " +
       "outlier test. Opens the decision lifecycle.",
     citations: CITATIONS,
     recordedVia: "agent:autonomous",
@@ -92,17 +92,17 @@ const result = recordDecision(
       "inventory — BondSimEngine position guard engages at amber/red; CRO review within " +
       "1 business day. " +
       "(2) appetite:irrbb:delta-eve-outlier — IRRBB δEVE outlier threshold at 15% of " +
-      "Tier-1 capital per BCBS d365 §A-3.4 (RAS §B4, tier-1); amber at 10%, red at 15%; " +
+      "Tier-1 capital per BCBS d368 §A-3.4 (RAS §B4, tier-1); amber at 10%, red at 15%; " +
       "measurement binding: IRRBBChecked max(abs(deltaEveMinor)) / tier1CapitalTargetMinor × 100 " +
-      "across all BCBS d365 shock scenarios; breach action: ALCO escalation within 1 " +
-      "business day; PA notification pathway per BCBS d365 Principle 5; escalate to CEO " +
+      "across all BCBS d368 shock scenarios; breach action: ALCO escalation within 1 " +
+      "business day; PA notification pathway per BCBS d368 Principle 5; escalate to CEO " +
       "if breach persists >5 business days.",
     rationale:
       "Bond trading review 2026-06-08 identified: (1) BondSimEngine.positionCapZarMinor " +
       "hardcoded at R200m with no corresponding RAS appetite line — promotes the " +
       "build-phase engineering constant into the structured governance register so the " +
       "cap is CRO-ratified and recon:ras-register-parity enforces it. " +
-      "(2) IRRBB δEVE outlier test required by BCBS d365 §A-3.4 and Banks Act Reg 26 " +
+      "(2) IRRBB δEVE outlier test required by BCBS d368 §A-3.4 and Banks Act Reg 26 " +
       "had no appetite line; supervisory threshold is 15% of Tier-1 capital. " +
       "Build-phase Tier-1 target R300m (licence-day capital plan) used as denominator " +
       "until capital is raised. CRO-ratified 2026-06-08.",

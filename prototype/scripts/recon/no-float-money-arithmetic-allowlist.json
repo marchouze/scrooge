@@ -127,7 +127,7 @@
     },
     {
       "file": "platform/alm/repricing-gap.ts",
-      "line": 108,
+      "line": 110,
       "pattern": "money-multiply/divide"
     },
     {
@@ -187,17 +187,17 @@
     },
     {
       "file": "platform/market-risk/cva-engine.ts",
-      "line": 394,
+      "line": 415,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/market-risk/cva-engine.ts",
-      "line": 397,
+      "line": 418,
       "pattern": "money-multiply/divide"
     },
     {
       "file": "platform/market-risk/cva-engine.ts",
-      "line": 427,
+      "line": 448,
       "pattern": "money-multiply/divide"
     },
     {

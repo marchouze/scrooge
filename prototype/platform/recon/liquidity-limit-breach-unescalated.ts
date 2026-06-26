@@ -40,7 +40,7 @@
 //   Policies/liquidity-risk-management-policy-v1.md §9.1 + §9.3;
 //   Procedures/by-policy/liquidity-limit-management.md (PROC-RISK-LLM-01) §9;
 //   Banks Act 94 of 1990 §§ 60-72; RRB Reg 26; RRB Reg 26A;
-//   PA D6/2015; PA D1/2023; BCBS D295; BCBS D335;
+//   PA D6/2015; PA D1/2023; BCBS D238; BCBS D295;
 //   Principles/1-events-are-truth.md;
 //   Principles/2-single-graph-discipline.md.
 //

@@ -13,7 +13,7 @@
 // Citations:
 //   Banks Act 94 of 1990 §§ 60–72;
 //   RRB Regulation 26 (LCR + intraday + ILAAP); Regulation 26A (NSFR);
-//   PA D6/2015 (LCR); PA D1/2023 (NSFR); BCBS 144; BCBS D295; BCBS D335;
+//   PA D6/2015 (LCR); PA D1/2023 (NSFR); BCBS 144; BCBS D238; BCBS D295;
 //   BCBS 248 (intraday liquidity);
 //   LRM Policy v1 §§ 9.1 + 9.2 + 9.3 (breach taxonomy + escalation +
 //     restoration);

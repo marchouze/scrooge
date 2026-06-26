@@ -33,7 +33,7 @@
 //     their event classes land.
 //
 // Authority: D-TREASURER-WAVE2-SUBSTRATE (CEO-approved 2026-06-11);
-//   BA 120; BCBS D295/D396; Banks Act 94 of 1990 Reg 26A (NSFR).
+//   BA 120; BCBS D238/D396; Banks Act 94 of 1990 Reg 26A (NSFR).
 // Author: Ravi (Treasury and ALM engineer, engineering — reports to Eitan
 //   (Treasurer, governance)).
 
@@ -49,7 +49,7 @@ import type { AgentRunContext, AgentRunOutput } from "../types";
 const EVENT_CITATIONS = [
   "BANKS-ACT-94-1990",
   "BANKS-REG-26A",
-  "BCBS-D295",
+  "BCBS-D238",
   "BCBS-D396",
   "D-TREASURER-WAVE2-SUBSTRATE",
 ];

@@ -116,9 +116,9 @@
     }
     renderHeader(data);
     renderProductChain(data);
-    // Worked-journal-entry table is now embedded inside the accounting
-    // dimension card (see renderJournalTableInline). The top-level
-    // #pp-journal slot stays empty.
+    // The standalone worked-journal-entry table is RETIRED
+    // (D-FX-ACCOUNTING-RENDER-COHERENCE). The top-level #pp-journal slot stays
+    // empty; the live posting-rule set renders in the accounting dimension.
     clearJournalSlot();
     renderDimensions(data);
   }
@@ -149,51 +149,20 @@
     if (el) el.innerHTML = "";
   }
 
-  // Renders the worked-journal-entries table as an HTML fragment for
-  // inline inclusion within the accounting dimension card. Returns "" if
-  // there is no lifecycle event family to report on.
-  function renderJournalTableInline(journalEntries) {
-    if (!journalEntries || journalEntries.length === 0) {
-      return `<p class="pp-policy-cite"><em>No lifecycle events declared on this product yet.</em></p>`;
-    }
-    const rows = journalEntries
-      .map((row) => {
-        if (row.status === "present" && row.rule) {
-          return `<tr>
-            <td><code>${esc(row.eventType)}</code></td>
-            <td><span class="pp-pill ok">${esc(row.rule.ruleId)}</span></td>
-            <td>${esc(row.rule.legs)}</td>
-            <td class="pp-policy-cite">${esc(row.rule.module)}</td>
-          </tr>`;
-        }
-        return `<tr>
-            <td><code>${esc(row.eventType)}</code></td>
-            <td><span class="pp-pill danger">missing</span></td>
-            <td class="pp-missing">substrate gap — Bea posting rule not yet authored</td>
-            <td>—</td>
-          </tr>`;
-      })
-      .join("");
-    return `
-      <div style="margin-top:var(--space-3)">
-        <div class="pp-policy-cite" style="margin-bottom:var(--space-1)"><strong>Worked journal entries per lifecycle event</strong></div>
-        <p class="pp-policy-cite" style="margin:0 0 var(--space-1)">Posting-rule registry — missing rows are substrate gaps.</p>
-        <table class="pp-table">
-          <thead>
-            <tr><th>Lifecycle event</th><th>Posting rule</th><th>Dr / Cr legs</th><th>Module</th></tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>`;
-  }
+  // NOTE — the standalone "worked journal entries per lifecycle event" table is
+  // RETIRED (D-FX-ACCOUNTING-RENDER-COHERENCE). It mapped the product fixture's
+  // `lifecycleEventFamily` (the SUPERSEDED pre-FIL event family for FX) through
+  // a static registry lookup and rendered a retired rule as "present" — a static
+  // lookup is not evidence of a real posting (D-DERIVED-EVENT-IRREDUCIBILITY-
+  // TEST). The live, family-scoped posting-rule set is the Accounting-treatment
+  // table (V2 NPA surface, npa-product.html); the per-stage fold legs are the
+  // Accounting / CFO perspective block.
 
   function renderDimensions(data) {
     const container = document.getElementById("pp-sections");
     container.innerHTML = "";
     data.dimensions.forEach((dim, idx) => {
-      container.appendChild(
-        renderDimensionSection(data.product, dim, idx + 1, data.journalEntries),
-      );
+      container.appendChild(renderDimensionSection(data.product, dim, idx + 1));
     });
   }
 
@@ -232,7 +201,7 @@
       </div>`;
   }
 
-  function renderDimensionSection(product, dim, ordinal, journalEntries) {
+  function renderDimensionSection(product, dim, ordinal) {
     const section = document.createElement("div");
     section.className = "pp-section";
     section.dataset.dimension = dim.dimension;
@@ -251,11 +220,6 @@
     const narrativeBlock = renderNarrativeBlock(dim);
     const programmaticBlock = renderProgrammaticBlock(product, dim);
     const eventsBlock = renderEventsBlock(dim);
-    // The accounting dimension owns the worked-journal-entries table —
-    // moved here from the top-level page so the journal sits next to its
-    // accountable owner (Bea) and IFRS classification fields.
-    const journalBlock =
-      dim.dimension === "accounting" ? renderJournalTableInline(journalEntries) : "";
 
     section.innerHTML = `
       <div class="pp-section-head" data-toggle="1">
@@ -272,7 +236,6 @@
           <dt>Citation chain</dt><dd>${chips(dim.citationChain)}</dd>
         </dl>
         ${eventsBlock}
-        ${journalBlock}
         ${onboardingBlock}
         ${narrativeBlock}
         ${programmaticBlock}

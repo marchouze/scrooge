@@ -91,7 +91,7 @@ function seedSarbCentralBankParty(store: EventStore): void {
         classification: "central-bank",
         scopeJson: { source: "test-seed" },
         citations: [
-          "[citation: BCBS D295 §50(a); Reg 26(7)(a)(i) — central-bank cash is Level-1 HQLA]",
+          "[citation: BCBS D238 §50(a); Reg 26(7)(a)(i) — central-bank cash is Level-1 HQLA]",
         ],
       },
     }),

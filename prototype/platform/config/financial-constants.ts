@@ -39,6 +39,7 @@ export type ConstantCategory =
   | "nsfr-asf"
   | "nsfr-rsf"
   | "nsfr-threshold"
+  | "ba310-threshold"
   | "capital-baseline"
   | "capital-threshold"
   | "leverage-threshold"
@@ -470,6 +471,30 @@ export const FINANCIAL_CONSTANTS: readonly FinancialConstant[] = [
     description: "Percentage points above the minimum still flagged as at-minimum.",
     owningRole: "Chief Financial Officer",
     citation: "D-TREASURY-GAPS-WAVE1",
+  },
+
+  // ── BA 310 minimum reserve / liquid-asset ratios — Treasurer ──────────────
+  {
+    key: "ba310.min-reserve-ratio",
+    value: 0.025,
+    unit: "ratio",
+    category: "ba310-threshold",
+    label: "BA 310 minimum reserve-balance ratio",
+    description:
+      "SARB cash-reserve requirement: % of liabilities-as-adjusted (BA 310 R0090) to hold as an average daily balance with the Reserve Bank (BA 310 R0100 = R0090 × 2.5%).",
+    owningRole: "Treasurer",
+    citation: "South African Reserve Bank Act 90 of 1989; Regs Relating to Banks reg 27; BA 310",
+  },
+  {
+    key: "ba310.level1-liquid-asset-ratio",
+    value: 0.05,
+    unit: "ratio",
+    category: "ba310-threshold",
+    label: "BA 310 minimum level-1 liquid-asset ratio",
+    description:
+      "SARB minimum-liquid-asset requirement: % of liabilities-as-reduced (BA 310 R0040) to hold as level-1 high-quality liquid assets (BA 310 R0140 = R0040 × 5%).",
+    owningRole: "Treasurer",
+    citation: "Regulations Relating to Banks reg 27; BA 310",
   },
 
   // ── Capital baseline (ICAAP v1 build-phase) — CFO ─────────────────────────

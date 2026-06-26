@@ -30,7 +30,7 @@
 import { z } from "zod";
 
 import { newEventId } from "../../core/types";
-import { type Actor, type Event, eventSchema } from "../types";
+import { type Actor, type Event, type ProvenanceTag, eventSchema } from "../types";
 
 // ---------------------------------------------------------------------------
 // Ifrs9StageAssigned
@@ -114,6 +114,15 @@ export function makeIfrs9StageAssigned(args: {
   citations: string[];
   payload: Ifrs9StageAssignedPayload;
   eventId?: string;
+  /**
+   * Optional typed multi-axis provenance tag (D-DATA-PROVENANCE-SUBSTRATE).
+   * Lets a simulator-first run tag staging assessments `simulated` so the
+   * production provenance filter excludes them while the operating-book filter
+   * admits them (the credit-book simulator-first slice,
+   * D-BA-RETURN-SIMULATOR-FIRST). Absent ⇒ untagged (treated as production by
+   * the default-permissive lifecycle predicate).
+   */
+  provenance?: ProvenanceTag;
 }): Event {
   if (!args.citations || args.citations.length === 0) {
     throw new Error(
@@ -128,6 +137,7 @@ export function makeIfrs9StageAssigned(args: {
     actor: args.actor,
     citations: args.citations,
     payload: Ifrs9StageAssignedPayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
 

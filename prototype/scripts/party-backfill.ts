@@ -1134,7 +1134,7 @@ function backfillInstitutionalCounterparties(
           citations: [
             "[citation: D-PARTY-REGISTER]",
             "[citation: South African Reserve Bank Act 90 of 1989 — central-bank status]",
-            "[citation: BCBS D295 §50(a); Reg 26(7)(a)(i) — central-bank cash is Level-1 HQLA]",
+            "[citation: BCBS D238 §50(a); Reg 26(7)(a)(i) — central-bank cash is Level-1 HQLA]",
           ],
         },
       });

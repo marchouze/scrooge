@@ -91,8 +91,8 @@
 | BCBS Principles for Operational Resilience (2021) | BCBS/op-resilience-2021.md | STUB | bis.org |
 | BCBS Principles for the Sound Management of Operational Risk (rev. 2021) | BCBS/op-risk-2021.md | STUB | bis.org |
 | BCBS 239 — Principles for Effective Risk Data Aggregation and Risk Reporting | BCBS/bcbs-239.md | STUB | bis.org |
-| BCBS D295 — LCR | BCBS/d295-lcr.md | STUB | bis.org |
-| BCBS D335 — NSFR | BCBS/d335-nsfr.md | STUB | bis.org |
+| BCBS D238 — LCR | BCBS/d238-lcr.md | STUB | bis.org |
+| BCBS D295 — NSFR | BCBS/d295-nsfr.md | STUB | bis.org |
 | BCBS D368 — IRRBB | BCBS/d368-irrbb.md | STUB | bis.org |
 | BCBS Large Exposures Framework | BCBS/large-exposures.md | STUB | bis.org |
 | BCBS 144 — Sound Liquidity Risk Management | BCBS/bcbs-144.md | STUB | bis.org |
