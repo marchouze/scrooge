@@ -473,6 +473,16 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // cell mapping is tracked in the gap-register AND surfaced `absent`. Self-
     // contained, so it always asserts (a clean store cannot manufacture a pass).
     "recon:ba350-derivatives-sim-drive",
+    // D-BA-RETURN-SIMULATOR-FIRST Phase 2b — ENFORCING: the standardised CVA
+    // capital charge over the OTC derivative counterparty book. Builds a self-
+    // contained in-memory simulated derivative book and asserts (A) CVA lands on
+    // a hand-computed BCBS golden case (Σ LGD × EAD × PD × discount = R64,805.70
+    // over 2 counterparties); (B) the ETD (no-counterparty) position is excluded;
+    // (C) the CVA RWA leg = CVA capital × 12.5 (the BA 700 totalRWA leg sources
+    // the real charge, not a zero placeholder); (D) the provenance boundary holds
+    // (production read → no-otc-exposure / RWA leg 0). Self-contained — always
+    // asserts.
+    "recon:cva-derivatives-sim-drive",
     // WS-V2-AUTHORITATIVE S6 — ALM-snapshot-SHAPE V2 parity gate (advisory).
     // Structural-compares V1 getALMPositionSnapshot vs V2 getALMPositionSnapshotV2
     // (HQLA / funding / ASF / RSF arrays) for the anchor bank entity — the

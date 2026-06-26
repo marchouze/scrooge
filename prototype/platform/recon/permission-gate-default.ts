@@ -192,6 +192,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // reconciliation + production=0 / simulated=values boundary. No production
   // access path — same rationale as ba320-trading-book-sim-drive.
   "platform/recon/ba350-derivatives-sim-drive.ts",
+  // CVA derivatives sim-drive gate (D-BA-RETURN-SIMULATOR-FIRST Phase 2b):
+  // builds a throwaway `:memory:` EventStore with a simulated OTC derivative
+  // counterparty book to drive the standardised CVA charge + CVA RWA leg and
+  // prove the BCBS golden oracle + production=0 boundary. No production access
+  // path — same rationale as ba320-trading-book-sim-drive.
+  "platform/recon/cva-derivatives-sim-drive.ts",
   // Recon pipelines that read-only replay the live store. Wrapping the read
   // path with the gate is a no-op (the gate intercepts append, not replay).
   "platform/recon/dashboard-derivation-recon.ts",
