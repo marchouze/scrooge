@@ -24,6 +24,7 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { money } from "../../core/decimal-money";
 import { encodeMoney } from "../../core/money-codec";
+import { ZAR } from "../../core/types";
 import { makeBondTradeExecuted } from "../../event-store/event-types/bond-accounting";
 import {
   makeCommodityTradingPositionOpened,
@@ -76,7 +77,7 @@ function equityEvent(args: {
       isIndex: args.isIndex ?? false,
       side: args.side,
       quantity: 1000,
-      marketValue: encodeMoney(money(args.marketValueMajor, "ZAR")),
+      marketValue: encodeMoney(money(args.marketValueMajor, ZAR)),
       liquidAndDiversified: args.liquidAndDiversified,
       deskId: TRADING_DESK,
       bookType: "trading",
@@ -105,7 +106,7 @@ function commodityEvent(args: {
       group: "precious-metals",
       side: args.side,
       quantity: 1000,
-      marketValue: encodeMoney(money(args.marketValueMajor, "ZAR")),
+      marketValue: encodeMoney(money(args.marketValueMajor, ZAR)),
       deskId: TRADING_DESK,
       bookType: "trading",
       openedDate: PERIOD_END,
@@ -130,7 +131,7 @@ function bondEvent(args: {
       tradeId: args.tradeId,
       bondIsin: args.bondIsin,
       side: "buy",
-      nominalMinor: Math.round(Number(money(args.nominalMajor, "ZAR").amount) * 100),
+      nominalMinor: Math.round(Number(money(args.nominalMajor, ZAR).amount) * 100),
       cleanPricePercent: 100,
       accruedInterestMinor: 0,
       dirtyPricePercent: 100,
@@ -223,7 +224,7 @@ describe("BA320 sim — EQUITY golden case (Reg 28(3)(a); §718(xi)–(xii))", (
         isIndex: false,
         side: "long",
         quantity: 1000,
-        marketValue: encodeMoney(money("99000000", "ZAR")),
+        marketValue: encodeMoney(money("99000000", ZAR)),
         liquidAndDiversified: false,
         deskId: "desk:treasury-desk:treasury-desk-1",
         bookType: "banking-treasury",
