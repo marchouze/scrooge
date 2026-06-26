@@ -12,7 +12,12 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { assertDomainCompetence } from "./agent-spec-domain-competence";
+import {
+  FAIL_ENFORCED_SEATS,
+  FAIL_ENFORCED_SEATS_BASELINE,
+  assertDomainCompetence,
+  assertNoEnforcedSeatRemoved,
+} from "./agent-spec-domain-competence";
 
 // A synthetic persona with §18–§20 fully and substantively filled.
 const COMPLETE = `# Faux — Test seat
@@ -90,10 +95,94 @@ describe("agent-spec domain-competence recon", () => {
     expect(sec20[0]?.message).toMatch(/no substantive content/);
   });
 
-  it("enforce flag flips missing sections to fail (closure-step ratchet)", () => {
+  it("enforce flag flips missing sections to fail (global closure-step override)", () => {
     const r = assertDomainCompetence({ specs: [["/Team/Faux.md", MISSING]], enforce: true });
     expect(r.violations.length).toBeGreaterThan(0);
     expect(r.violations.every((v) => v.severity === "fail")).toBe(true);
     expect(r.ok).toBe(false);
+  });
+});
+
+describe("agent-spec domain-competence — per-seat enforced-set (Scope D)", () => {
+  it("a seat IN the enforced-set has its §18–§20 violations raised to fail", () => {
+    // Enforce a synthetic "Faux" seat; its MISSING sections now fail-enforce.
+    // Baseline matched to the injected set so the harden-only ratchet stays quiet.
+    const r = assertDomainCompetence({
+      specs: [["/Team/Faux.md", MISSING]],
+      enforcedSeats: new Set(["Faux"]),
+      enforcedSeatsBaseline: ["Faux"],
+    });
+    const missing = r.violations.filter((v) => /missing/.test(v.message));
+    expect(missing.length).toBe(2);
+    expect(missing.every((v) => v.severity === "fail")).toBe(true);
+    expect(r.ok).toBe(false);
+  });
+
+  it("a seat NOT in the enforced-set stays warn (the grooming backlog)", () => {
+    const r = assertDomainCompetence({
+      specs: [["/Team/Faux.md", MISSING]],
+      enforcedSeats: new Set(["SomeOtherSeat"]),
+      enforcedSeatsBaseline: ["SomeOtherSeat"],
+    });
+    const missing = r.violations.filter((v) => /missing/.test(v.message));
+    expect(missing.every((v) => v.severity === "warn")).toBe(true);
+    expect(r.ok).toBe(true);
+  });
+
+  it("a CLEAN enforced seat passes under enforcement (no fail)", () => {
+    const r = assertDomainCompetence({
+      specs: [["/Team/Faux.md", COMPLETE]],
+      enforcedSeats: new Set(["Faux"]),
+      enforcedSeatsBaseline: ["Faux"],
+    });
+    expect(r.violations).toHaveLength(0);
+    expect(r.ok).toBe(true);
+  });
+
+  it("seeds Bea, Camille, Owen into the live enforced-set", () => {
+    expect(FAIL_ENFORCED_SEATS.has("Bea")).toBe(true);
+    expect(FAIL_ENFORCED_SEATS.has("Camille")).toBe(true);
+    expect(FAIL_ENFORCED_SEATS.has("Owen")).toBe(true);
+  });
+
+  it("Bea + Camille + Owen pass §18–§20 under enforcement (live /Team/ files)", () => {
+    // The seal: the enforced seats must be GREEN under fail-enforcement, run
+    // against their REAL /Team/ files (no synthetic spec override).
+    const r = assertDomainCompetence();
+    const enforcedFails = r.violations.filter(
+      (v) =>
+        v.severity === "fail" &&
+        ["Bea", "Camille", "Owen"].some((s) => v.subject.endsWith(`${s}.md`)),
+    );
+    expect(enforcedFails).toHaveLength(0);
+    // And the gate as a whole is GREEN (no fail-severity anywhere).
+    expect(r.ok).toBe(true);
+  });
+});
+
+describe("agent-spec domain-competence — harden-only enforced-set ratchet", () => {
+  it("the live enforced-set is a superset of the baseline (no seat dropped)", () => {
+    for (const seat of FAIL_ENFORCED_SEATS_BASELINE) {
+      expect(FAIL_ENFORCED_SEATS.has(seat)).toBe(true);
+    }
+    expect(assertNoEnforcedSeatRemoved()).toHaveLength(0);
+  });
+
+  it("dropping a baseline seat fails closed (weakening the ratchet)", () => {
+    // A live set MISSING a baseline seat is a weakening — must fail.
+    const weakened = new Set([...FAIL_ENFORCED_SEATS_BASELINE].slice(1)); // drop the first
+    const violations = assertNoEnforcedSeatRemoved(weakened);
+    expect(violations.length).toBeGreaterThan(0);
+    expect(violations.every((v) => v.severity === "fail")).toBe(true);
+    expect(violations[0]?.subject).toContain("enforced-set-weakened");
+  });
+
+  it("the ratchet weakening surfaces through assertDomainCompetence too", () => {
+    const r = assertDomainCompetence({
+      specs: [["/Team/Faux.md", COMPLETE]],
+      enforcedSeats: new Set(["Bea"]), // drops Camille + Owen from the baseline
+    });
+    expect(r.ok).toBe(false);
+    expect(r.violations.some((v) => v.subject.includes("enforced-set-weakened"))).toBe(true);
   });
 });
