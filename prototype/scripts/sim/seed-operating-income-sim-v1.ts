@@ -65,7 +65,12 @@ const CITATIONS = [
 const SIM_PROVENANCE = simulatedTag({
   scenario: "op-risk-income-sim-v1",
   sourceLineage: "scripts/sim/seed-operating-income-sim-v1.ts",
-  tags: ["manual-simulation", "operating-income", "operational-risk", "d-ba-return-simulator-first"],
+  tags: [
+    "manual-simulation",
+    "operating-income",
+    "operational-risk",
+    "d-ba-return-simulator-first",
+  ],
 });
 
 const zar = (major: string) => encodeMoney(money(major, FUNCTIONAL));

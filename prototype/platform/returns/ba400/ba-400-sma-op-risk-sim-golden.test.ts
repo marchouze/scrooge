@@ -33,10 +33,11 @@
 //   D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE.
 // Author: Atlas (Core banking platform architect, engineering).
 
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { afterEach, describe, expect, it } from "bun:test";
 
 import { money } from "../../core/decimal-money";
 import { encodeMoney } from "../../core/money-codec";
+import type { Currency } from "../../core/types";
 import { makeOperatingIncomeStatementSnapshotted } from "../../event-store/event-types/operating-income-statement";
 import { productionTag, simulatedTag } from "../../event-store/provenance";
 import { EventStore } from "../../event-store/store";
@@ -52,7 +53,7 @@ import { generateBa400Sma } from "../../reporting/ba-400-sma-op-risk";
 const ENTITY = "LE-ZA-HOZ-BANK";
 const AS_OF = "2026-06-26T00:00:00.000Z";
 const PERIOD_END = "2026-06-30";
-const FUNCTIONAL = "ZAR";
+const FUNCTIONAL = "ZAR" as Currency;
 const ACTOR = { type: "service" as const, id: "agent:atlas:test" };
 const CITES = ["D-BA-RETURN-SIMULATOR-FIRST", "urn:reg:bcbs:ope25"];
 
@@ -198,10 +199,7 @@ describe("BA 400 SMA op-risk — simulator-first golden case", () => {
 
   it("production-tagged income IS visible to a production read (licence-day shape)", () => {
     const store = new EventStore(":memory:");
-    seedIncome(
-      store,
-      productionTag({ sourceLineage: "test:production-income" }),
-    );
+    seedIncome(store, productionTag({ sourceLineage: "test:production-income" }));
     setDefaultProvenanceModeOverride("production-only");
     const filter: ProvenanceFilter = { mode: "production-only" };
     // Sanity: the production-tagged event matches the production filter.

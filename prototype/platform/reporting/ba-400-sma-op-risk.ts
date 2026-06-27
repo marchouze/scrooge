@@ -319,10 +319,7 @@ export function generateBa400Sma(input: Ba400SmaInput): Ba400SmaOutput {
     bic = addD(mulD(c1, t1), mulD(c2, subD(bi, t1)));
   } else {
     bucket = "bucket-3";
-    bic = addD(
-      addD(mulD(c1, t1), mulD(c2, subD(t2, t1))),
-      mulD(c3, subD(bi, t2)),
-    );
+    bic = addD(addD(mulD(c1, t1), mulD(c2, subD(t2, t1))), mulD(c3, subD(bi, t2)));
   }
 
   // --- ILM (OPE25 §25.7–§25.8) ---
