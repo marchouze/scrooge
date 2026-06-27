@@ -78,8 +78,8 @@
 //            PR #1194 hand-rescue of blob `blake3:8cb3a86e…`.
 // Author: Vera (Internal audit engineer, third line)
 
-import { resolve } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 import { eventStore } from "../../platform/composition";
 import { hashContent } from "../../platform/document-store/hash";
@@ -140,7 +140,9 @@ function readPathStore(): LocalFsDocumentStore {
 }
 
 /** Join map: runId → {briefId, agentName} from AgentRunCompleted. */
-function buildRunInfo(events: Iterable<Event>): Map<string, { briefId: string; agentName: string }> {
+function buildRunInfo(
+  events: Iterable<Event>,
+): Map<string, { briefId: string; agentName: string }> {
   const m = new Map<string, { briefId: string; agentName: string }>();
   for (const e of events) {
     const p = e.payload as Record<string, unknown>;
