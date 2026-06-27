@@ -232,6 +232,26 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // golden oracle, and asserts the production-only BA 700 credit leg stays 0. No
   // production access path — same rationale as ba320-trading-book-sim-drive.
   "platform/recon/ba200-credit-sim-drive.ts",
+  // BA 100 per-cell leaf-fold reconciliation gate (D-BA-RETURN-CELL-VALUE-ENGINE
+  // Phase 1): opens the resolved read-path event store READ-ONLY ({ readonly:
+  // true }, so it never mutates a byte) to fold the BA 100 line values directly
+  // from the capital FIL events and reconcile them to the CoA trial-balance
+  // oracle. Pure read; no write/append path. The co-located test builds an
+  // mkdtempSync-isolated tmp store to seed a CET1 capital event + a deliberately-
+  // empty store (red-team the vacuity guard) — no production access path. Wrapping
+  // the read-only open with a write-path policy gate would add a fake policy
+  // resolver for zero security benefit. Citation: D-BA-RETURN-CELL-VALUE-ENGINE,
+  // D-CAPITAL-ASSET-CLASS-V1, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/ba100-cell-values-reconcile.ts",
+  "platform/recon/ba100-cell-values-reconcile.test.ts",
+  // BA 100 leaf-fold unit test (D-BA-RETURN-CELL-VALUE-ENGINE Phase 1): builds
+  // in-memory `:memory:` throwaway EventStore fixtures to seed synthetic capital
+  // FIL events and assert the fold places them onto the right BA 100 rows. Same
+  // carve-out rationale as the other cell-value / sim-drive tests: no production
+  // access path — the stores are `:memory:` and discarded; gating would require a
+  // fake policy resolver for zero security benefit. Citation:
+  // D-BA-RETURN-CELL-VALUE-ENGINE, D-CAPITAL-ASSET-CLASS-V1, P4-SECURITY-DESIGNED-IN.
+  "platform/reporting/cell-value/ba100-leaf-fold.test.ts",
   // Recon pipelines that read-only replay the live store. Wrapping the read
   // path with the gate is a no-op (the gate intercepts append, not replay).
   "platform/recon/dashboard-derivation-recon.ts",
