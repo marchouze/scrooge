@@ -46,7 +46,14 @@
 // Citations: BCBS Basel III §50–§90; Reg 38; Banks Act 94 §70; P1-EVENTS-AS-TRUTH.
 // Author: Atlas (Substrate Architect, engineering).
 
-import { mulD, roundDecimal, toDecimal, toMinorUnits } from "../core/decimal-engine";
+import {
+  divD,
+  mulD,
+  roundDecimal,
+  toCanonicalString,
+  toDecimal,
+  toMinorUnits,
+} from "../core/decimal-engine";
 import { minorFromMoneyWire } from "../core/money-codec";
 import { normalizeCcrEadPayload } from "../event-store/event-types/counterparty-credit-risk";
 import type { EventStore } from "../event-store/store";
@@ -456,11 +463,21 @@ export function computeBA700V2(args: ComputeBA700V2Args): BA700ReturnV2 {
   // Operational RWA is non-zero only when an income snapshot resolves in this lens.
   const totalRwa = creditRwaMinor + marketRwaMinor + operationalRwaMinor;
   const ownFundsMinor = tier1Capital + tier2Capital;
-  const carRatio = totalRwa > 0 ? ownFundsMinor / totalRwa : null;
-  // Assembled capital-adequacy ratios (Reg 38 minima: CET1 ≥ 4.5%, Tier 1 ≥ 6%,
-  // Total ≥ 8% — plus SARB buffers, applied by the consumer). All against totalRwa.
-  const cet1Ratio = totalRwa > 0 ? cet1Minor / totalRwa : null;
-  const tier1Ratio = totalRwa > 0 ? tier1Capital / totalRwa : null;
+  // Capital-adequacy ratios = capital / totalRwa. A ratio is a dimensionless
+  // quotient of two money figures — computed on the decimal engine (no float on
+  // money; D-DECIMAL-NATIVE-MONEY-ARITHMETIC), then rendered to a JS number for
+  // the (number | null) contract. `null` when totalRwa is zero (no div-by-zero).
+  // Reg 38 minima: CET1 ≥ 4.5%, Tier 1 ≥ 6%, Total ≥ 8% (+ SARB buffers, applied
+  // by the consumer). All against totalRwa.
+  const ratioOf = (numeratorMinor: number): number | null =>
+    totalRwa > 0
+      ? Number(
+          toCanonicalString(divD(toDecimal(String(numeratorMinor)), toDecimal(String(totalRwa)))),
+        )
+      : null;
+  const carRatio = ratioOf(ownFundsMinor);
+  const cet1Ratio = ratioOf(cet1Minor);
+  const tier1Ratio = ratioOf(tier1Capital);
   const totalCapitalRatio = carRatio;
 
   const hasMarketRwa = marketRwaAvailable && marketRwaMinor > 0;
