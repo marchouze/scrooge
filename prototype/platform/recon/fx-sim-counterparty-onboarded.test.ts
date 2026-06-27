@@ -33,8 +33,8 @@ import {
 } from "../../v2-core/client-onboarding";
 import { EventStore } from "../event-store/store";
 import { MarketDataStore } from "../market-data/store";
-import { emitClientOnboardingLifecycle } from "../simulation-v2/sim-modules/counterparty-provisioning";
 import { V2LiveFxDriver } from "../simulation-v2-live/live-driver";
+import { emitClientOnboardingLifecycle } from "../simulation-v2/sim-modules/counterparty-provisioning";
 import {
   type SimFxTradeRef,
   assertSimTradesOnboarded,

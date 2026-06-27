@@ -15,14 +15,14 @@
 import { describe, expect, test } from "bun:test";
 
 import {
-  fxCounterpartiesFromOnboardingEvents,
   type OnboardedFxCounterparty,
+  fxCounterpartiesFromOnboardingEvents,
 } from "../../v2-core/client-onboarding";
 import { EventStore } from "../event-store/store";
 import { MarketDataStore } from "../market-data/store";
 import { ONE_DAY_MS } from "../scenario-clock";
-import { emitClientOnboardingLifecycle } from "../simulation-v2/sim-modules/counterparty-provisioning";
 import type { ScenarioCounterparty } from "../simulation-v2/scenario-manifest";
+import { emitClientOnboardingLifecycle } from "../simulation-v2/sim-modules/counterparty-provisioning";
 import { V2LiveFxDriver } from "./live-driver";
 import {
   onboardedFxCounterparties,
@@ -114,7 +114,9 @@ describe("V2LiveFxDriver — onboarded resolver wiring", () => {
     for (let i = 0; i < 4; i++) driver.tickOnce();
     const created = [...eventStore.replay({ type: "FilInstrumentCreated" })];
     expect(created.length).toBeGreaterThan(0);
-    const onboardedIds = new Set(onboardedFxCounterparties(eventStore).map((c) => c.counterpartyId));
+    const onboardedIds = new Set(
+      onboardedFxCounterparties(eventStore).map((c) => c.counterpartyId),
+    );
     for (const e of created) {
       const terms = (e.payload as { economicTerms?: { counterpartyId?: string } }).economicTerms;
       expect(onboardedIds.has(terms?.counterpartyId ?? "")).toBe(true);

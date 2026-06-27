@@ -14,11 +14,7 @@
 import type { EventStore } from "../event-store/store";
 import type { MarketDataStore } from "../market-data/store";
 import type { SimConfigField, SimStatus, SimulatorModule } from "../simulation/hub/types";
-import {
-  type ClockAdvanceMode,
-  V2LiveFxDriver,
-  type V2LiveFxDriverConfig,
-} from "./live-driver";
+import { type ClockAdvanceMode, V2LiveFxDriver, type V2LiveFxDriverConfig } from "./live-driver";
 
 /** Hub module id — the live V2 generative FX counterparty simulator. */
 export const V2_FX_GENERATIVE_MODULE_ID = "fx-v2-generative";

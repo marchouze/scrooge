@@ -141,6 +141,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Citation: D-FX-V2-SIMULATOR-FIRST, P4-SECURITY-DESIGNED-IN.
   "platform/simulation-v2-live/live-driver.test.ts",
   "platform/simulation-v2-live/hub-module.test.ts",
+  // D-FX-SIM-LIVE-REALTIME-ONBOARDED — the live-driver onboarded-counterparty
+  // source + fail-closed/real-elapsed wiring test builds in-memory throwaway
+  // EventStore fixtures (onboard a sim client, drive the driver, assert the
+  // resolved set). Same carve-out rationale: :memory: stores, no production
+  // access path. Citation: D-FX-SIM-LIVE-REALTIME-ONBOARDED, P4-SECURITY-DESIGNED-IN.
+  "platform/simulation-v2-live/onboarded-counterparty-source.test.ts",
   // GL view test — builds in-memory throwaway EventStore + MarketDataStore and
   // populates them via the live FX simulator to exercise the compact trial-balance
   // + ZAR-equivalent fold. No production access path. Citation: D-FX-V2-SIMULATOR-FIRST,
@@ -158,6 +164,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // simulator never touches the canonical store. Citation: D-FX-V2-SIMULATOR-FIRST,
   // P4-SECURITY-DESIGNED-IN.
   "platform/simulation/onboarded-fx-counterparty-resolver.test.ts",
+  // D-FX-SIM-LIVE-REALTIME-ONBOARDED — the recon's LIVE-DRIVER-coverage block
+  // builds an in-memory throwaway EventStore, onboards a sim client, and drives
+  // the live FX driver to assert simFxInstruments reads its FilInstrumentCreated
+  // emissions. :memory: store, no production access path. Citation:
+  // D-FX-SIM-LIVE-REALTIME-ONBOARDED, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/fx-sim-counterparty-onboarded.test.ts",
   // The recon self-test (formerly harness.ts) builds an in-memory throwaway
   // store for the round-trip assertion; gating it would require synthesising
   // a fake policy resolver for every test event, defeating the purpose.
