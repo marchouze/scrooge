@@ -5855,7 +5855,7 @@ const server = Bun.serve({
       // D-BA-RETURN-NUMBERING-EXCEL-CANONICAL.
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       return jsonResponse({
-        ...buildFinanceReturnsView(eventStore, marketDataStore),
+        ...buildFinanceReturnsView(eventStore, marketDataStore, filter),
         pageProvenance: filter,
       });
     }
@@ -5879,7 +5879,7 @@ const server = Bun.serve({
       }
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       return jsonResponse({
-        ...buildFinanceReturnDetailView(entry.form, eventStore, marketDataStore),
+        ...buildFinanceReturnDetailView(entry.form, eventStore, marketDataStore, filter),
         pageProvenance: filter,
       });
     }

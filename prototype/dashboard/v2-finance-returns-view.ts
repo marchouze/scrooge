@@ -72,8 +72,10 @@ import type { MarketDataStore } from "../platform/market-data/store";
 import { computeBA320V2 } from "../platform/projections/ba320-fx-v2";
 import { computeBA700V2 } from "../platform/projections/ba700-v2";
 import {
+  type ProvenanceFilter,
   defaultProvenanceFilter,
   eventMatchesProvenanceFilter,
+  setDefaultProvenanceModeOverride,
 } from "../platform/projections/filter";
 import { computeTrialBalanceV2 } from "../platform/projections/gl-projection-v2";
 import {
@@ -515,10 +517,38 @@ function ba100Summary(f: Ba100PageFigures): string {
 }
 
 // ---------------------------------------------------------------------------
+// Provenance lens. The page's Prod / +Sim toggle arrives as a ProvenanceFilter
+// (`production-only` for Prod, `combined` for +Sim). The V2 projections read the
+// active lens through `defaultProvenanceFilter()`, so we pin it for the duration
+// of the SYNCHRONOUS fold via the process-local override (the SAME mechanism
+// buildBa320MarketRiskCharge documents). No await runs between set and reset, so
+// concurrent requests cannot interleave. This is what makes the simulated
+// trading book + R300m capital injection visible under +Sim and absent under
+// Prod (D-V2-UI-VISIBILITY-REMEDIATION).
+// ---------------------------------------------------------------------------
+
+function withProvenance<T>(filter: ProvenanceFilter, fn: () => T): T {
+  setDefaultProvenanceModeOverride(filter.mode);
+  try {
+    return fn();
+  } finally {
+    setDefaultProvenanceModeOverride(undefined);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // buildFinanceReturnsView — the route-boundary view builder.
 // ---------------------------------------------------------------------------
 
 export function buildFinanceReturnsView(
+  eventStore: EventStore,
+  marketData: MarketDataStore,
+  filter: ProvenanceFilter,
+): FinanceReturnsView {
+  return withProvenance(filter, () => buildFinanceReturnsViewInner(eventStore, marketData));
+}
+
+function buildFinanceReturnsViewInner(
   eventStore: EventStore,
   marketData: MarketDataStore,
 ): FinanceReturnsView {
@@ -682,6 +712,17 @@ export interface FinanceReturnDetailView {
  * route returns 404) when `formId` is not a registered contract.
  */
 export function buildFinanceReturnDetailView(
+  formId: ReturnForm,
+  eventStore: EventStore,
+  marketData: MarketDataStore,
+  filter: ProvenanceFilter,
+): FinanceReturnDetailView {
+  return withProvenance(filter, () =>
+    buildFinanceReturnDetailViewInner(formId, eventStore, marketData),
+  );
+}
+
+function buildFinanceReturnDetailViewInner(
   formId: ReturnForm,
   eventStore: EventStore,
   marketData: MarketDataStore,
