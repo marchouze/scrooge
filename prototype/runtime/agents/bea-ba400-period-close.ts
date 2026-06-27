@@ -66,7 +66,7 @@
 // Authority: D-TREASURER-WAVE2-SUBSTRATE (CEO session-delegation 2026-06-11);
 //   D-RETURNS-SUBMISSION-WIRING-WORKSTREAM; D-BA-RETURN-NUMBERING-EXCEL-CANONICAL;
 //   Banks Act 94 of 1990 §70; Regulations Relating to Banks Reg 33;
-//   BCBS D196 §645–§654; Principle 1; Principle 6.
+//   Basel II bcbs128 §645–§654; Principle 1; Principle 6.
 // Brief: brief:bea:w2-2-wire-ba-400-operational-risk-return-bia-gro:2026-06-11
 // Run: run:bea:2026-06-11T18-14-12-572Z
 // Author: Bea (Accounting & financial reporting engineer, engineering —

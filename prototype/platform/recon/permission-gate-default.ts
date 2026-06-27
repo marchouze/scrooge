@@ -509,6 +509,25 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // equals 12.5 × the BA-320 charge (rate present) and is EXCLUDED-with-flag /
   // fail-closed (charge null). Not a production access path. T-01 carve-out. F-031.
   "platform/projections/ba700-v2-market-rwa.test.ts",
+  // D-BA-RETURN-SIMULATOR-FIRST Phase A — BA 700 capital-ratio CAPSTONE test:
+  // raw EventStore(":memory:") seeds a simulated CET1 / credit / op-risk book and
+  // asserts the assembled capital ratio (all three RWA legs) hits the golden case,
+  // plus the production-lens no-data guard. Build-phase fixture, not a production
+  // access path. T-01 carve-out. F-031.
+  "platform/projections/ba700-v2-capital-ratio-capstone.test.ts",
+  // D-BA-RETURN-SIMULATOR-FIRST Phase A — BA 400 SMA op-risk sim-golden test:
+  // raw EventStore(":memory:") seeds a simulated operating-income statement and
+  // asserts the SMA fold + BA 700 op-RWA leg land on the OPE25 golden case + the
+  // production/simulated provenance split. Build-phase fixture, not a production
+  // access path. T-01 carve-out. F-031.
+  "platform/returns/ba400/ba-400-sma-op-risk-sim-golden.test.ts",
+  // BA 400 op-risk sim-drive gate (D-BA-RETURN-SIMULATOR-FIRST Phase A): builds a
+  // throwaway `:memory:` EventStore with a simulated operating-income statement to
+  // drive the BA 400 SMA fold (BI=R137m → op-RWA=R205.5m) + prove the BA 700
+  // op-RWA leg + the ILDC-cap-load-bearing in-memory oracle + the production=0 /
+  // simulated=values boundary; reads the LIVE store read-only for the live legs.
+  // No production access path — same rationale as ba320-trading-book-sim-drive.
+  "platform/recon/ba400-op-risk-sim-drive.ts",
   // WS-V2-AUTHORITATIVE S6 — dashboard-shaped V2 ALM-position-snapshot projection
   // unit test. Same build-phase fixture pattern as the V2 GL tests above: raw
   // EventStore(":memory:") seeds V1 / V2 money-market lifecycle events and asserts

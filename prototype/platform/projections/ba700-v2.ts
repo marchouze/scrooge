@@ -46,12 +46,21 @@
 // Citations: BCBS Basel III §50–§90; Reg 38; Banks Act 94 §70; P1-EVENTS-AS-TRUTH.
 // Author: Atlas (Substrate Architect, engineering).
 
-import { mulD, roundDecimal, toDecimal, toMinorUnits } from "../core/decimal-engine";
+import {
+  divD,
+  mulD,
+  roundDecimal,
+  toCanonicalString,
+  toDecimal,
+  toMinorUnits,
+} from "../core/decimal-engine";
 import { minorFromMoneyWire } from "../core/money-codec";
 import { normalizeCcrEadPayload } from "../event-store/event-types/counterparty-credit-risk";
 import type { EventStore } from "../event-store/store";
 import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import type { MarketDataStore } from "../market-data/store";
+import { buildBa400SmaInput } from "../reporting/ba-400-sma-income-adapter";
+import { generateBa400Sma } from "../reporting/ba-400-sma-op-risk";
 import type { BA700Return } from "../returns/ba700/generator";
 import { computeBA320V2 } from "./ba320-fx-v2";
 import { computeCapitalComposition } from "./ba700-capital-composition";
@@ -98,6 +107,13 @@ export interface BA700ReturnV2 {
        * `null` (fail-closed — no fabricated rate, market RWA excluded).
        */
       readonly marketRwa: "ba320-fx-v2" | "none";
+      /**
+       * Operational-RWA source. `"ba400-sma-v2"` when an
+       * `OperatingIncomeStatementSnapshotted` resolved in this provenance lens
+       * (the BA 400 SMA engine drove op-RWA); `"none"` when no income snapshot
+       * is visible (fail-closed — op-RWA excluded, never fabricated).
+       */
+      readonly operationalRwa: "ba400-sma-v2" | "none";
     };
     /**
      * Whether the market-risk RWA component (12.5 × BA-320 FX charge) is included
@@ -108,6 +124,16 @@ export interface BA700ReturnV2 {
      * zero, is the signal.
      */
     readonly marketRwaAvailable: boolean;
+    /**
+     * Whether the operational-risk RWA component (12.5 × SMA Operational Risk
+     * Capital) is included in `totalRwa`. `false` = no
+     * `OperatingIncomeStatementSnapshotted` was visible in this provenance lens
+     * (fail-closed — op-RWA EXCLUDED, not zero-coerced as-if-complete). When
+     * `false`, `capitalAdequacy.operationalRwa` is 0 only as the additive
+     * identity; the flag, not the zero, is the signal. Authority:
+     * D-BA-RETURN-SIMULATOR-FIRST; OPE25.
+     */
+    readonly operationalRwaAvailable: boolean;
   };
   /**
    * V2 capital adequacy section. Fields are comparable to V1's
@@ -117,8 +143,12 @@ export interface BA700ReturnV2 {
    * (Phase 3e gap GAP-3E-001). The `coverageStatus` field signals this.
    */
   readonly capitalAdequacy: {
+    /** CET1 capital (minor units). The Tier-1 own-funds top tier. */
+    readonly cet1Capital: number;
     readonly tier1Capital: number;
     readonly tier2Capital: number;
+    /** Total own funds = Tier 1 + Tier 2 (minor units). */
+    readonly totalCapital: number;
     /**
      * Credit RWA from summed CcrEadComputed V2 events (minor units). Separately
      * inspectable from `marketRwa` for the credit-vs-market RWA decomposition.
@@ -133,14 +163,39 @@ export interface BA700ReturnV2 {
      * (b) `meta.marketRwaAvailable === false` — i.e. the BA-320 charge was `null`
      * (no production FX rate, fail-closed) and market RWA is EXCLUDED from
      * `totalRwa`. Read `meta.marketRwaAvailable` to disambiguate "zero charge"
-     * from "excluded / unavailable". Operational RWA (GAP-3E-003) is still zero.
+     * from "excluded / unavailable".
      */
     readonly marketRwa: number;
+    /**
+     * Operational-risk RWA (minor units) = 12.5 × SMA Operational Risk Capital
+     * (`generateBa400Sma().opRiskRwaMinor`), per Reg 38 / OPE25. The last BA 700
+     * RWA leg to be wired (GAP-BA700-OPERATIONAL-RWA CLOSED — D-BA-RETURN-
+     * SIMULATOR-FIRST Phase A). `0` ONLY when `meta.operationalRwaAvailable ===
+     * false` — no `OperatingIncomeStatementSnapshotted` visible in this
+     * provenance lens (fail-closed). Read `meta.operationalRwaAvailable` to
+     * disambiguate. The SMA approach (Business Indicator → BIC → ILM → ORC)
+     * supersedes the legacy BIA/TSA per the current SARB BA 400 form.
+     */
     readonly operationalRwa: number;
     readonly totalRwa: number;
     /**
-     * Capital adequacy ratio = (tier1 + tier2) / totalRwa.
-     * `null` when totalRwa is zero (no division by zero).
+     * CET1 capital-adequacy ratio = CET1 / totalRwa (Reg 38 minimum 4.5% +
+     * buffers). `null` when totalRwa is zero (no division by zero).
+     */
+    readonly cet1Ratio: number | null;
+    /**
+     * Tier-1 capital-adequacy ratio = (CET1 + AT1) / totalRwa (Reg 38 minimum
+     * 6% + buffers). `null` when totalRwa is zero.
+     */
+    readonly tier1Ratio: number | null;
+    /**
+     * Total capital-adequacy ratio = (Tier 1 + Tier 2) / totalRwa (Reg 38
+     * minimum 8% + buffers). Identical to `carRatio`. `null` when totalRwa zero.
+     */
+    readonly totalCapitalRatio: number | null;
+    /**
+     * Capital adequacy ratio = (tier1 + tier2) / totalRwa (= `totalCapitalRatio`,
+     * retained for V1 parity). `null` when totalRwa is zero (no division by zero).
      */
     readonly carRatio: number | null;
   };
@@ -258,7 +313,6 @@ export function computeBA700V2(args: ComputeBA700V2Args): BA700ReturnV2 {
         "(zero-because-no-rule). Authority: D-CAPITAL-ASSET-CLASS-V1.",
     );
   }
-  void cet1Minor;
   void at1Minor;
   void t2Minor;
 
@@ -361,20 +415,75 @@ export function computeBA700V2(args: ComputeBA700V2Args): BA700ReturnV2 {
     );
   }
 
-  gaps.push(
-    "GAP-3E-003: Operational RWA has no V2 event type at Phase 3e (gross-income-blocked placeholder). " +
-      "Resolution: future op-risk V2 event workstream. Authority: D-V1-REMOVAL-PHASE-3E.",
-  );
+  // -------------------------------------------------------------------------
+  // Step 4: Operational-risk RWA = 12.5 × SMA Operational Risk Capital.
+  //
+  // GAP-BA700-OPERATIONAL-RWA CLOSED (D-BA-RETURN-SIMULATOR-FIRST Phase A,
+  // 2026-06-26). The former hardcoded `operationalRwa: 0` placeholder (the last
+  // missing BA 700 RWA leg) now sources the REAL op-RWA from the BA 400 SMA
+  // engine (`generateBa400Sma`) over the latest `OperatingIncomeStatementSnapshotted`
+  // event, folded through the SAME provenance lens as the rest of this
+  // projection (`defaultProvenanceFilter` — production-only).
+  //
+  // DOMAIN TRUTH: the current SARB BA 400 form mandates the SMA (Business
+  // Indicator → BIC → ILM → ORC), NOT the legacy BIA/TSA. Pre-licence the ILM is
+  // 1 (no loss history; OPE25 §25.8) — the loss-driven ILM is a Phase-B follow-on.
+  //
+  // FAIL-CLOSED (Charter cmd 2): with the production-only filter and a simulated-
+  // only income statement, the adapter finds NO snapshot → op-RWA stays 0
+  // (production folds to 0 pre-licence-day, the R300m-into-Prod guard). The
+  // simulated / combined lens drives it non-zero. A null income statement is
+  // never zero-coerced as-if-complete; the absence is the signal.
+  //
+  // Authority: D-BA-RETURN-SIMULATOR-FIRST; D-CAPITAL-ASSET-CLASS-V1; OPE25 /
+  //   BCBS SCO; SARB Reg 33 revised; Reg 38 (RWA = 12.5 × capital requirement).
+  // -------------------------------------------------------------------------
 
-  // Total RWA = credit RWA + market RWA (when available) + operational RWA (zero).
+  const smaInput = buildBa400SmaInput({
+    entity,
+    periodEnd: args.asOf,
+    periodId: `period:${entity}:ba700-v2`,
+    functionalCurrency,
+    eventStore: args.eventStore,
+    provenanceFilter,
+  });
+  const smaOutput = smaInput !== null ? generateBa400Sma(smaInput) : null;
+  const operationalRwaMinor = smaOutput !== null ? smaOutput.opRiskRwaMinor : 0;
+  const operationalRwaAvailable = smaOutput !== null;
+
+  if (!operationalRwaAvailable) {
+    gaps.push(
+      "GAP-BA700-OPERATIONAL-RWA (FAIL-CLOSED): no OperatingIncomeStatementSnapshotted in the production provenance lens — operational RWA is 0 (production folds to 0 pre-licence-day; the simulated / combined lens drives it via the BA 400 SMA engine). The op-RWA ENGINE + fold are proven end-to-end against the simulated income series (recon:ba400-op-risk-sim-drive); production op-RWA lands at licence-day on REAL audited income. Authority: D-BA-RETURN-SIMULATOR-FIRST; OPE25; SARB Reg 33 revised.",
+    );
+  }
+
+  // Total RWA = credit RWA + market RWA (when available) + operational RWA.
   // Market RWA is summed in ONLY when marketRwaAvailable; a null BA-320 charge
   // contributes nothing (fail-closed), and marketRwaMinor stays 0 as the identity.
-  const totalRwa = creditRwaMinor + marketRwaMinor;
-  const carRatio = totalRwa > 0 ? (tier1Capital + tier2Capital) / totalRwa : null;
+  // Operational RWA is non-zero only when an income snapshot resolves in this lens.
+  const totalRwa = creditRwaMinor + marketRwaMinor + operationalRwaMinor;
+  const ownFundsMinor = tier1Capital + tier2Capital;
+  // Capital-adequacy ratios = capital / totalRwa. A ratio is a dimensionless
+  // quotient of two money figures — computed on the decimal engine (no float on
+  // money; D-DECIMAL-NATIVE-MONEY-ARITHMETIC), then rendered to a JS number for
+  // the (number | null) contract. `null` when totalRwa is zero (no div-by-zero).
+  // Reg 38 minima: CET1 ≥ 4.5%, Tier 1 ≥ 6%, Total ≥ 8% (+ SARB buffers, applied
+  // by the consumer). All against totalRwa.
+  const ratioOf = (numeratorMinor: number): number | null =>
+    totalRwa > 0
+      ? Number(
+          toCanonicalString(divD(toDecimal(String(numeratorMinor)), toDecimal(String(totalRwa)))),
+        )
+      : null;
+  const carRatio = ratioOf(ownFundsMinor);
+  const cet1Ratio = ratioOf(cet1Minor);
+  const tier1Ratio = ratioOf(tier1Capital);
+  const totalCapitalRatio = carRatio;
 
   const hasMarketRwa = marketRwaAvailable && marketRwaMinor > 0;
+  const hasOperationalRwa = operationalRwaAvailable && operationalRwaMinor > 0;
   const coverageStatus: "partial" | "no-data" =
-    hasCapital || hasRwa || hasMarketRwa ? "partial" : "no-data";
+    hasCapital || hasRwa || hasMarketRwa || hasOperationalRwa ? "partial" : "no-data";
 
   return {
     meta: {
@@ -388,16 +497,23 @@ export function computeBA700V2(args: ComputeBA700V2Args): BA700ReturnV2 {
         capital: hasCapital ? "capital-fil-composition" : "none",
         rwa: ccrEadCount > 0 ? "ccr-ead-v2-credit-only" : "none",
         marketRwa: marketRwaAvailable ? "ba320-fx-v2" : "none",
+        operationalRwa: operationalRwaAvailable ? "ba400-sma-v2" : "none",
       },
       marketRwaAvailable,
+      operationalRwaAvailable,
     },
     capitalAdequacy: {
+      cet1Capital: cet1Minor,
       tier1Capital,
       tier2Capital,
+      totalCapital: ownFundsMinor,
       creditRwa: creditRwaMinor,
       marketRwa: marketRwaMinor,
-      operationalRwa: 0,
+      operationalRwa: operationalRwaMinor,
       totalRwa,
+      cet1Ratio,
+      tier1Ratio,
+      totalCapitalRatio,
       carRatio,
     },
     gaps,

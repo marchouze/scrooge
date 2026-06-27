@@ -19,7 +19,15 @@
 //
 // Pure projection over caller-supplied annual gross-income inputs.
 //
-// Computation per BCBS D196 §645–§654 / Reg 33:
+// Computation per Basel II (bcbs128, Jun 2006) §645–§654 / Reg 33:
+//   [citation corrected (Rohan, Risk engineer, under Helena CRO domain authority,
+//    D-BCBS-CITATION-NUMBERING-REMEDIATION): the BIA/TSA arithmetic below is
+//    Basel II bcbs128 (BIA §645–§651, α=15%; TSA §652–§654, β factors), NOT
+//    BCBS d196 — d196 is "Operational Risk: Supervisory Guidelines for the
+//    Advanced Measurement Approaches" (Jun 2011, an AMA guideline) and defines
+//    none of this. Consolidated as the OPE op-risk standard; the *current*
+//    consolidated OPE25 is the SA (SMA), which supersedes BIA/TSA at SARB
+//    transition — see the SMA forward-link in `placeholders`.]:
 //
 //   BIA  capital = α × (sum_{y in years where gi_y > 0} gi_y) / nPositive
 //                  with α = 15%
@@ -49,7 +57,7 @@ import { returnContractCitation } from "../../v2-core/regulatory-returns/return-
 // ---------------------------------------------------------------------------
 
 /**
- * Basel business lines per BCBS D196 §654 / Reg 33(4) Annex.
+ * Basel business lines per Basel II bcbs128 §654 / Reg 33(4) Annex.
  */
 export type BaselBusinessLine =
   | "corporate-finance"
@@ -62,7 +70,7 @@ export type BaselBusinessLine =
   | "retail-brokerage";
 
 /**
- * Per-business-line β factor. Values per BCBS D196 / Reg 33(4) Annex.
+ * Per-business-line β factor. Values per Basel II bcbs128 §654 / Reg 33(4) Annex.
  */
 export const BUSINESS_LINE_BETA: Readonly<Record<BaselBusinessLine, number>> = {
   "corporate-finance": 0.18,
@@ -312,7 +320,7 @@ export function generateBa400OpRisk(input: Ba400GeneratorInput): Ba400Output {
       "D-REPORTING-CAPABILITY-SLICE-5",
       "Banks Act 94 of 1990 §70",
       "Regulations Relating to Banks Reg 33",
-      "BCBS D196",
+      "Basel II bcbs128 §644–§654 (BIA/TSA; consolidated OPE)",
     ],
     placeholders,
   };

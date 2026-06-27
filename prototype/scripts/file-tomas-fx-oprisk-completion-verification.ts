@@ -32,7 +32,7 @@ const body = `# FX OTC-vanilla — operational-risk dimension COMPLETION verific
 
 - \`platform/event-store/event-types/operational-risk.ts\` — OperationalLossEvent
   payload (Basel business line aligned to BA 400 β-line taxonomy via compile-time
-  drift guard; BCBS D196 §644 seven loss-event-type classes; status lifecycle;
+  drift guard; Basel II bcbs128 §644 seven loss-event-type classes; status lifecycle;
   recovery/net). REGISTERED (F-032): event-types/index.ts barrel + TYPED_EVENT_TYPES,
   registry/operational-risk.ts (RETENTION_GOVERNANCE_7Y) + registry/index.ts.
 - \`platform/markets/identity/counterparty-identity-gate.ts\` — FAIL-CLOSED identity

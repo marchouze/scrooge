@@ -23,6 +23,16 @@ import { eventStore } from "../platform/composition";
 import { logger } from "../platform/observability/logger";
 import { recordCeoDecision } from "../runtime/decisions/record";
 
+// HISTORICAL-RECORD NOTE (Rohan, Risk engineer, under Helena CRO domain
+// authority — D-BCBS-CITATION-NUMBERING-REMEDIATION, 2026-06-26): the `outcome`
+// rationale below preserves the original "citing BCBS D196 + Reg 33" wording
+// VERBATIM as a record of the already-recorded D-REPORTING-CAPABILITY-SLICE-5
+// Decision (Principle 1, append-only — a recorded rationale is not rewritten).
+// That d196 attribution was MIS-CITED: the BIA/TSA op-risk-capital basis is
+// Basel II bcbs128 §644–§654 (consolidated OPE), NOT d196 (the AMA Supervisory
+// Guidelines, Jun 2011). The live citations are corrected forward-only across
+// the op-risk path; this file is excluded from recon:bcbs-citation-number-
+// integrity as a historical record (see SKIP_PATH_FRAGMENTS).
 const ENTRY = {
   decisionId: "D-REPORTING-CAPABILITY-SLICE-5",
   action: "approve" as const,
