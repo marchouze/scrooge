@@ -54,12 +54,16 @@
 //   with `buildPhaseFallback: true`.  Callers use `BUILD_PHASE_TOTAL_RWA_MINOR`
 //   in that case (same as the pre-W2-Slice-3 behaviour).
 //
-// Gap documented:
-//   BusinessIndicatorInput is zeroed — no income events exist yet.
-//   A real BI feed requires GL trial-balance projection (Bea M2) decomposed
-//   into OPE25 ILDC/SC/FC lines.  Operational RWA will be non-zero only
-//   after that projection lands.  EUR ↔ ZAR rate is the build-phase
-//   approximation (20 ZAR/EUR, ~20_00 minor/minor) per rwa-delta.ts precedent.
+// Operational-risk BI (D-BA-RETURN-SIMULATOR-FIRST Phase A):
+//   BusinessIndicatorInput now sources the REAL ILDC/SC/FC folded by the BA 400
+//   SMA engine from the latest OperatingIncomeStatementSnapshotted event (via the
+//   SMA income adapter), provenance-filtered through the same lens as the rest of
+//   this fold — so a production read of a simulated-only income statement → no
+//   snapshot → BI 0 → operational RWA 0 (production stays 0 pre-licence-day), and
+//   the simulated/operating-book read drives it non-zero. The BIC bucket / ILM /
+//   12.5× arithmetic stays in computeRwa (single derivation site). EUR ↔ ZAR rate
+//   is the build-phase approximation (20 ZAR/EUR, ~20_00 minor/minor) per
+//   rwa-delta.ts precedent — immaterial in Bucket 1 (12% marginal on the whole BI).
 //
 // Authority: D-RWA-LIVE-POSITIONS-PROJECTION-V1 (CEO-approved 2026-05-30);
 //   D-REGULATORY-READINESS-W2-SLICE-3;
@@ -78,12 +82,12 @@ import type {
 import type { EventStore } from "../event-store/store";
 import { isLiveInstance, resolveTradeLifecycle } from "../lifecycle/trade-lifecycle-state";
 import { computeCvaRwaLeg } from "../market-risk/cva-rwa-leg";
-import { buildBa400SmaInput } from "../reporting/ba-400-sma-income-adapter";
-import { generateBa400Sma } from "../reporting/ba-400-sma-op-risk";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import type { IrsTradeBookedPayload } from "../markets/cdm/ird";
 import { resolveNettingSet } from "../markets/netting-sets";
 import { logger } from "../observability/logger";
+import { buildBa400SmaInput } from "../reporting/ba-400-sma-income-adapter";
+import { generateBa400Sma } from "../reporting/ba-400-sma-op-risk";
 import { resolveAllCounterpartyClasses } from "../risk/counterparty-classification";
 import {
   type CreditExposure,

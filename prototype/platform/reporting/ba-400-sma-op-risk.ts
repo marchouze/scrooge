@@ -334,7 +334,7 @@ export function generateBa400Sma(input: Ba400SmaInput): Ba400SmaOutput {
     // ILM = ln(e − 1 + (LC/BIC)^0.8). Guard BIC=0 (then ILM stays 1 by convention).
     if (cmpD(bic, toDecimal("0")) > 0) {
       const ratio = Number(toCanonicalString(lc)) / Number(toCanonicalString(bic));
-      const ilmNum = Math.log(Math.E - 1 + Math.pow(ratio, 0.8));
+      const ilmNum = Math.log(Math.E - 1 + ratio ** 0.8);
       // ILM is a multiplier (not a money figure) — bounded scalar, rounded to 6dp.
       ilm = roundDecimal(toDecimal(ilmNum.toFixed(6)), 6, "HALF_UP");
     }
