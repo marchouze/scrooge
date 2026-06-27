@@ -855,10 +855,16 @@ function buildFinanceReturnDetailViewInner(
       periodStart: BA100_PERIOD_START,
       periodEnd: BA100_PERIOD_END,
     });
+    // Lift minor→major here (the engine is scale-agnostic / platform-free).
+    const trialBalance = tb.rows.map((r) => ({
+      leafAccountId: r.leafAccountId,
+      amountMajor: moneyFromMinorUnits(BigInt(r.amountMinor), r.currency as Currency).amount,
+      currency: r.currency,
+    }));
     for (const [xsd, v] of computeReturnCellValues({
       form: formId,
       contract,
-      trialBalance: tb.rows,
+      trialBalance,
       functionalCurrency,
     })) {
       valueByXsd.set(xsd, v);

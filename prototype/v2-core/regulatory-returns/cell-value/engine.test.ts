@@ -7,7 +7,7 @@
 // fail-closed contract, and the no-double-count guard.
 
 import { describe, expect, test } from "bun:test";
-import { toDecimal } from "../../../platform/core/decimal-engine";
+import { toDecimal } from "../../fil-core/decimal";
 import type { ReturnContract } from "../cell-contract";
 import { registerLineAttribution } from "./attribution";
 import { evaluateDerivation, referencedCells } from "./derivation-eval";
@@ -86,9 +86,9 @@ const SYNTH_CONTRACT = {
 } as unknown as ReturnContract;
 
 const TB: readonly TrialBalanceAmount[] = [
-  { leafAccountId: "ACC-A", amountMinor: 30_000_000_000, currency: "ZAR" }, // 300,000,000.00
-  { leafAccountId: "ACC-B", amountMinor: 5_000_000, currency: "ZAR" }, // 50,000.00
-  { leafAccountId: "ACC-USD", amountMinor: 999, currency: "USD" }, // ignored (non-functional)
+  { leafAccountId: "ACC-A", amountMajor: "300000000", currency: "ZAR" },
+  { leafAccountId: "ACC-B", amountMajor: "50000", currency: "ZAR" },
+  { leafAccountId: "ACC-USD", amountMajor: "9.99", currency: "USD" }, // ignored (non-functional)
 ];
 
 describe("computeFromAttribution — leaf fold + subtotal fixpoint", () => {

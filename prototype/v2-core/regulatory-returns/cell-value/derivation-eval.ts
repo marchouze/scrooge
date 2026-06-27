@@ -22,14 +22,7 @@
 // about which cell means what — only how to evaluate the form's own formula given
 // a resolver for leaf values. The domain-truth attribution lives elsewhere.
 
-import {
-  type DecimalValue,
-  addD,
-  divD,
-  mulD,
-  subD,
-  toDecimal,
-} from "../../../platform/core/decimal-engine";
+import { type DecimalValue, addD, divD, mulD, subD, toDecimal } from "../../fil-core/decimal";
 
 /**
  * Resolves a referenced cell to its decimal value, or `null` when that cell has
