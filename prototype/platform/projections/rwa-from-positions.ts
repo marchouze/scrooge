@@ -78,6 +78,8 @@ import type {
 import type { EventStore } from "../event-store/store";
 import { isLiveInstance, resolveTradeLifecycle } from "../lifecycle/trade-lifecycle-state";
 import { computeCvaRwaLeg } from "../market-risk/cva-rwa-leg";
+import { buildBa400SmaInput } from "../reporting/ba-400-sma-income-adapter";
+import { generateBa400Sma } from "../reporting/ba-400-sma-op-risk";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import type { IrsTradeBookedPayload } from "../markets/cdm/ird";
 import { resolveNettingSet } from "../markets/netting-sets";
@@ -579,24 +581,52 @@ export function computeRwaFromPositions(
     derivativeProvenanceFilter: provenanceFilter,
   });
 
+  // Operational-risk BI components (OPE25 SMA — D-BA-RETURN-SIMULATOR-FIRST
+  // Phase A): the `businessIndicator` input was a documented ZERO placeholder
+  // (operational RWA = 0). It now sources the REAL ILDC/SC/FC folded from the
+  // latest `OperatingIncomeStatementSnapshotted` event via the SMA income
+  // adapter + engine, provenance-filtered through the SAME `provenanceFilter`
+  // the rest of this fold applies — so a production-only read of a simulated-
+  // only income statement → no snapshot → BI components stay 0 (operational RWA
+  // stays 0 pre-licence-day), and the simulated / operating-book read drives it
+  // non-zero. The BIC bucket / ILM / 12.5× arithmetic stays in `computeRwa`
+  // (single derivation site — Charter cmd 4). Authority: OPE25; SARB Reg 33
+  // revised; D-CAPITAL-ASSET-CLASS-V1.
+  const smaInput = buildBa400SmaInput({
+    entity: ENTITY_ID,
+    periodEnd: asOf,
+    periodId: `period:${ENTITY_ID}:rwa-from-positions`,
+    functionalCurrency: FUNCTIONAL_CURRENCY,
+    eventStore,
+    provenanceFilter,
+  });
+  const smaOutput = smaInput !== null ? generateBa400Sma(smaInput) : null;
+  const businessIndicator =
+    smaOutput !== null
+      ? {
+          ildcMinor: smaOutput.ildcMinor,
+          scMinor: smaOutput.scMinor,
+          fcMinor: smaOutput.fcMinor,
+          eurToFunctionalRate: EUR_TO_ZAR_MINOR_RATE,
+          ilm: smaOutput.lossesUsedForIlm ? Number(smaOutput.ilm) : 1,
+        }
+      : {
+          // No income snapshot in this provenance lens → BI = 0 → op-RWA = 0
+          // (honest no-data; never a fabricated income statement).
+          ildcMinor: 0,
+          scMinor: 0,
+          fcMinor: 0,
+          eurToFunctionalRate: EUR_TO_ZAR_MINOR_RATE,
+          ilm: 1,
+        };
+
   const output = computeRwa({
     entityId: ENTITY_ID,
     asOf,
     functionalCurrency: FUNCTIONAL_CURRENCY,
     creditExposures,
     tradingBookPositions,
-    // Zero BI — no income-event projection yet.
-    // Gap: real ILDC/SC/FC requires Bea M2 GL projection decomposed into
-    //   OPE25 lines (SubLedgerPostingEmitted → income/expense classification).
-    //   Until that lands, operational RWA = 0 (correct direction: conservative
-    //   overstatement on RWA denominator when BI > 0 is suppressed here).
-    businessIndicator: {
-      ildcMinor: 0,
-      scMinor: 0,
-      fcMinor: 0,
-      eurToFunctionalRate: EUR_TO_ZAR_MINOR_RATE,
-      ilm: 1,
-    },
+    businessIndicator,
     cvaRwaMinor: cvaLeg.cvaRwaMinor,
     sourceEventIds,
   });
