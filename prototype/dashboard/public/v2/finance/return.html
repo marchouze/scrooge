@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Regulatory Return — Hoz Bank</title>
+  <link rel="stylesheet" href="/v2/_v2-shell.css">
+  <link rel="stylesheet" href="/v2/_v2-tile.css">
+  <link rel="stylesheet" href="/provenance-badge.css">
+  <style>
+    .v2-chip { display:inline-flex; align-items:center; padding:1px 8px; border-radius:10px; font-size:0.78em; font-weight:600; }
+    .v2-chip--ok { background:var(--color-success-bg); color:var(--color-success); }
+    .v2-chip--info { background:var(--color-info-bg); color:var(--color-info); }
+    .v2-chip--warn { background:var(--color-warning-bg, #5a4a1a); color:var(--color-warning, #e0b020); }
+    .v2-chip--muted { background:var(--color-surface-raised); color:var(--color-text-secondary); }
+    .v2-mono { font-family:var(--font-mono, ui-monospace, monospace); font-size:0.92em; }
+    .v2-note { margin-top:12px; padding:10px 12px; border-radius:6px; background:var(--color-surface-raised);
+      color:var(--color-text-secondary); font-size:0.85em; line-height:1.5; }
+    /* Cell spreadsheet */
+    .v2-ss-toolbar { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:4px 0 12px; }
+    .v2-ss-search { flex:1; min-width:220px; padding:7px 10px; border-radius:6px; border:1px solid var(--color-border);
+      background:var(--color-surface); color:var(--color-text); font-size:0.9em; }
+    .v2-ss-legend { font-size:0.8em; color:var(--color-text-secondary); display:flex; gap:10px; flex-wrap:wrap; }
+    .v2-ss-wrap { overflow:auto; max-height:72vh; border:1px solid var(--color-border); border-radius:6px; }
+    table.v2-ss { width:100%; border-collapse:collapse; font-size:0.84em; }
+    table.v2-ss thead th { position:sticky; top:0; z-index:2; background:var(--color-surface-raised);
+      text-align:left; padding:7px 9px; border-bottom:1px solid var(--color-border); white-space:nowrap; font-weight:600; }
+    table.v2-ss td { padding:5px 9px; border-bottom:1px solid var(--color-border); vertical-align:top; }
+    table.v2-ss tbody tr:hover { background:var(--color-surface-raised); }
+    .v2-ss-coord { font-family:var(--font-mono, ui-monospace, monospace); white-space:nowrap; color:var(--color-text-secondary); }
+    .v2-ss-num { text-align:right; font-family:var(--font-mono, ui-monospace, monospace); white-space:nowrap; }
+    .v2-ss-deriv { font-family:var(--font-mono, ui-monospace, monospace); font-size:0.9em; color:var(--color-text-secondary); max-width:280px; overflow-wrap:anywhere; }
+    .v2-ss-rowcount { font-size:0.8em; color:var(--color-text-secondary); margin-top:8px; }
+  </style>
+</head>
+<body data-provenance-content="none">
+  <header class="v2-header">
+    <div class="v2-header-left">
+      <button class="v2-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+      <a class="v2-brand" href="/v2/index.html">Hoz Bank <span class="v2-phase-badge">Build Phase</span></a>
+    </div>
+    <div class="v2-header-right">
+      <a class="v2-errors-badge" id="errors-badge" href="/v2/errors.html" title="Errors &amp; recon violations">
+        <span class="v2-errors-icon">⚠</span>
+        <span class="v2-errors-count" id="errors-count">…</span>
+      </a>
+      <span class="v2-as-of" id="as-of">—</span>
+    </div>
+  </header>
+  <div class="v2-layout">
+    <nav class="v2-sidebar" id="v2-sidebar"></nav>
+    <main class="v2-main" id="v2-main"></main>
+  </div>
+  <script src="/v2/_v2-shell.js"></script>
+  <script src="/provenance-badge.js"></script>
+  <script src="/v2/_v2-tile.js"></script>
+  <script src="/v2/_v2-data.js"></script>
+  <script>
+    const main = document.getElementById("v2-main");
+    const params = new URLSearchParams(window.location.search);
+    const formId = params.get("form") || "";
+
+    // Decimal-native major-unit Money ({amount, currency}) → grouped string. No float.
+    function fmtMoney(m) {
+      if (!m || m.amount === null || m.amount === undefined) return "—";
+      const s = String(m.amount);
+      const neg = s.startsWith("-");
+      const [intRaw, fracRaw = ""] = (neg ? s.slice(1) : s).split(".");
+      const frac = (fracRaw + "00").slice(0, 2);
+      const grouped = intRaw.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+      return `${v2Esc(m.currency)} ${neg ? "-" : ""}${grouped}.${frac}`;
+    }
+
+    function statusChip(status) {
+      // sourced | counsel-gated-TBC | licence-day-data
+      const map = {
+        "sourced": ["ok", "Sourced"],
+        "counsel-gated-TBC": ["warn", "Counsel-TBC"],
+        "licence-day-data": ["muted", "Licence-day"],
+      };
+      const [variant, label] = map[status] || ["muted", v2Esc(status)];
+      return `<span class="v2-chip v2-chip--${variant}">${label}</span>`;
+    }
+
+    // Computed-figures block — the populated data that exists for live returns.
+    function figuresSection(fig) {
+      if (!fig) return null;
+      const rows = [];
+      if (fig.kind === "ba700") {
+        rows.push(["Tier 1 capital", fmtMoney(fig.tier1Capital)]);
+        rows.push(["Tier 2 capital", fmtMoney(fig.tier2Capital)]);
+        rows.push(["Total risk-weighted assets (RWA)", fmtMoney(fig.totalRwa)]);
+        rows.push(["Total capital ratio (CAR)", fig.carRatio === null || fig.carRatio === undefined ? "—" : `${(fig.carRatio * 100).toFixed(2)}%`]);
+        rows.push(["Coverage status", v2Esc(fig.coverageStatus)]);
+      } else if (fig.kind === "ba320") {
+        (fig.positions || []).forEach((p) => {
+          rows.push([`Net open position — ${v2Esc(p.baseCurrency)}`, p.rateAvailable ? fmtMoney(p.netPositionFunctional) : "— (no rate)"]);
+        });
+        rows.push(["FX open-position charge (Reg 28(5), 8%)", fmtMoney(fig.openPositionCharge)]);
+        rows.push(["Coverage status", v2Esc(fig.coverageStatus)]);
+      } else if (fig.kind === "ba100") {
+        rows.push(["Total assets", fmtMoney(fig.assets)]);
+        rows.push(["Total liabilities", fmtMoney(fig.liabilities)]);
+        rows.push(["Total equity", fmtMoney(fig.equity)]);
+        rows.push(["Balance check", fig.balanced ? "Balanced (A ≡ L + E)" : "Unbalanced (P&L not yet closed)"]);
+        rows.push(["Coverage status", v2Esc(fig.coverageStatus)]);
+      }
+      if (rows.length === 0) return null;
+      const body = rows.map(([k, v]) => `<tr><th style="text-align:left;padding:5px 10px;color:var(--color-text-secondary);white-space:nowrap;">${v2Esc(k)}</th><td class="v2-ss-num" style="padding:5px 10px;">${v}</td></tr>`).join("");
+      const wrap = document.createElement("div");
+      wrap.className = "v2-section";
+      wrap.innerHTML = `<h2 class="v2-section-title">Computed figures</h2>` +
+        `<p class="v2-note" style="margin-top:0;margin-bottom:10px;">The populated data that exists on the build store today. Per-cell values appear in the grid below once the cell-value engine and posted data land; the figures here are the on-demand computed roll-ups.</p>` +
+        `<table style="border-collapse:collapse;font-size:0.9em;"><tbody>${body}</tbody></table>`;
+      return wrap;
+    }
+
+    v2WireLoader(async () => {
+      main.replaceChildren();
+      if (!formId) {
+        renderPageHeader(main, {
+          crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Finance", href: "/v2/finance/index.html" }, { label: "Regulatory Returns", href: "/v2/finance/returns.html" }, { label: "Return" }],
+          title: "Regulatory Return",
+          seat: "SARB submissions",
+        });
+        v2RenderError(main, "No return specified. Open a return from the register.");
+        return;
+      }
+
+      let data;
+      try {
+        data = await v2Fetch(`/api/v2/finance/returns/${encodeURIComponent(formId)}`);
+      } catch (err) {
+        renderPageHeader(main, {
+          crumbs: [{ label: "Executive", href: "/v2/index.html" }, { label: "Finance", href: "/v2/finance/index.html" }, { label: "Regulatory Returns", href: "/v2/finance/returns.html" }, { label: formId }],
+          title: formId,
+          seat: "SARB submissions",
+        });
+        v2RenderError(main, v2Esc(err.message));
+        return;
+      }
+
+      renderPageHeader(main, {
+        crumbs: [
+          { label: "Executive", href: "/v2/index.html" },
+          { label: "Finance", href: "/v2/finance/index.html" },
+          { label: "Regulatory Returns", href: "/v2/finance/returns.html" },
+          { label: `${data.form} — ${data.name}` },
+        ],
+        title: `${data.form} — ${data.name}`,
+        seat: "SARB submissions",
+      });
+
+      // Status / coverage tiles.
+      renderTileGroup(main, {
+        tiles: [
+          { label: "Cells", value: String(data.cellCount), unit: "Total form cells (SARB XSD)" },
+          { label: "Sourced", value: String(data.statusCounts.sourced), unit: "Populatable from current substrate" },
+          { label: "Licence-day", value: String(data.statusCounts.licenceDayData), unit: "Data exists only at licence-day" },
+          { label: "Counsel-TBC", value: String(data.statusCounts.counselGatedTbc), unit: "Definition counsel-gated" },
+        ],
+      });
+
+      // Computed figures, where they exist.
+      const figs = figuresSection(data.figures);
+      if (figs) main.appendChild(figs);
+
+      // Full cell spreadsheet.
+      const section = document.createElement("div");
+      section.className = "v2-section";
+      section.innerHTML = `<h2 class="v2-section-title">Form cells (${data.cellCount})</h2>`;
+      main.appendChild(section);
+
+      const toolbar = document.createElement("div");
+      toolbar.className = "v2-ss-toolbar";
+      toolbar.innerHTML =
+        `<input class="v2-ss-search" type="search" placeholder="Filter cells — coordinate, line item, definition, XSD element…" aria-label="Filter cells">` +
+        `<span class="v2-ss-legend">` +
+        statusChip("sourced") + ` sourced` +
+        statusChip("licence-day-data") + ` licence-day` +
+        statusChip("counsel-gated-TBC") + ` counsel-gated` +
+        `</span>`;
+      section.appendChild(toolbar);
+
+      const wrap = document.createElement("div");
+      wrap.className = "v2-ss-wrap";
+      const table = document.createElement("table");
+      table.className = "v2-ss";
+      const cols = ["Row", "Column", "Line item", "Type", "Unit", "Status", "Derivation", "XSD"];
+      table.innerHTML = `<thead><tr>${cols.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
+      const tbody = document.createElement("tbody");
+
+      // Pre-render each cell row's HTML + a lowercased search blob.
+      const rowEls = data.cells.map((c) => {
+        const tr = document.createElement("tr");
+        const rowCoord = c.row ? `<span class="v2-ss-coord">${v2Esc(c.row)}</span>${c.rowLabel ? `<br><span style="color:var(--color-text-secondary);font-size:0.92em;">${v2Esc(c.rowLabel)}</span>` : ""}` : `<span class="v2-ss-coord">meta</span>`;
+        const colCoord = c.column ? `<span class="v2-ss-coord">${v2Esc(c.column)}</span>${c.columnLabel ? `<br><span style="color:var(--color-text-secondary);font-size:0.92em;">${v2Esc(c.columnLabel)}</span>` : ""}` : "—";
+        const deriv = c.derivationExpression
+          ? `<span class="v2-ss-deriv" title="${v2Esc(c.derivationKind)}">${v2Esc(c.derivationExpression)}</span>`
+          : `<span style="color:var(--color-text-secondary);">${v2Esc(c.derivationKind)}</span>`;
+        tr.innerHTML =
+          `<td>${rowCoord}</td>` +
+          `<td>${colCoord}</td>` +
+          `<td>${v2Esc(c.label)}</td>` +
+          `<td>${v2Esc(c.valueType)}</td>` +
+          `<td>${v2Esc(c.unit)}</td>` +
+          `<td>${statusChip(c.status)}${c.statusReason ? `<br><span style="color:var(--color-text-secondary);font-size:0.85em;">${v2Esc(c.statusReason)}</span>` : ""}</td>` +
+          `<td>${deriv}</td>` +
+          `<td class="v2-ss-coord">${v2Esc(c.xsdElement)}</td>`;
+        const blob = [c.row, c.rowLabel, c.column, c.columnLabel, c.label, c.regulatoryDefinition, c.valueType, c.status, c.derivationExpression, c.xsdElement]
+          .filter(Boolean).join(" ").toLowerCase();
+        return { tr, blob };
+      });
+      for (const r of rowEls) tbody.appendChild(r.tr);
+      table.appendChild(tbody);
+      wrap.appendChild(table);
+      section.appendChild(wrap);
+
+      const countLine = document.createElement("div");
+      countLine.className = "v2-ss-rowcount";
+      const setCount = (n) => { countLine.textContent = `Showing ${n} of ${data.cellCount} cells`; };
+      setCount(data.cellCount);
+      section.appendChild(countLine);
+
+      // Client-side filter.
+      const search = toolbar.querySelector(".v2-ss-search");
+      search.addEventListener("input", () => {
+        const q = search.value.trim().toLowerCase();
+        let shown = 0;
+        for (const r of rowEls) {
+          const match = q === "" || r.blob.includes(q);
+          r.tr.style.display = match ? "" : "none";
+          if (match) shown += 1;
+        }
+        setCount(shown);
+      });
+
+      renderRefs(main, {
+        refs: [
+          { label: "Returns register", href: "/v2/finance/returns.html" },
+          { label: "SARB BA-return canonical register (Excel A1 names)", href: "/v2/compliance/regulations.html" },
+          { label: "recon:ba-return-cell-contract (cells asserted verbatim + complete)", href: "#" },
+        ],
+      });
+    });
+  </script>
+</body>
+</html>

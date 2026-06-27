@@ -159,6 +159,8 @@ export type FinanceReturnFigures = Ba700PageFigures | Ba320PageFigures | Ba100Pa
 
 /** One row in the BA-return register. */
 export interface FinanceReturnRow {
+  /** Registry form key, e.g. "BA700" / "BA94x" — the id used to drill into the detail page. */
+  readonly formId: ReturnForm;
   /** Display form number, e.g. "BA 700" or "BA 941–944" (sourced, never hand-keyed). */
   readonly form: string;
   /** Official form name (Excel A1), verbatim from the typed contract. */
@@ -497,6 +499,7 @@ export function buildFinanceReturnsView(
   const ba700Figures = toBa700Page(ba700.figures as BA700ViewFigures, functionalCurrency);
   const ba700Filing = foldFiling(eventStore, ba700.entity, "BA700");
   liveByForm.set("BA700", {
+    formId: "BA700",
     form: "BA 700",
     name: loadReturnContract("BA700").formName,
     status: "live",
@@ -510,6 +513,7 @@ export function buildFinanceReturnsView(
   const ba320Figures = toBa320Page(ba320.figures as BA320ViewFigures, functionalCurrency);
   const ba320Filing = foldFiling(eventStore, ba320.entity, "BA320");
   liveByForm.set("BA320", {
+    formId: "BA320",
     form: "BA 320",
     name: loadReturnContract("BA320").formName,
     status: "live",
@@ -530,6 +534,7 @@ export function buildFinanceReturnsView(
   );
   const ba100Filing = foldFiling(eventStore, ba700.entity, "BA100");
   liveByForm.set("BA100", {
+    formId: "BA100",
     form: "BA 100",
     name: loadReturnContract("BA100").formName,
     status: "live",
@@ -552,6 +557,7 @@ export function buildFinanceReturnsView(
       continue;
     }
     returns.push({
+      formId: entry.form,
       form: displayFormNumber(entry.form),
       name: loadReturnContract(entry.form).formName,
       status: "planned",
@@ -568,5 +574,149 @@ export function buildFinanceReturnsView(
     totalCount: returns.length,
     filingLifecycleGap: filingLifecycleGap(),
     returns,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Per-form live figures — the SINGLE source the list view and the detail view
+// both reuse (Principle 2 — no duplicated derivation). Returns `undefined` for
+// forms with no on-demand figure-producing route.
+// ---------------------------------------------------------------------------
+
+export function liveFiguresForForm(
+  formId: ReturnForm,
+  eventStore: EventStore,
+  marketData: MarketDataStore,
+): FinanceReturnFigures | undefined {
+  const ccy = anchorFunctionalCurrency();
+  if (formId === "BA700") {
+    const v = selectRegulatoryReturn("ba700", eventStore, marketData);
+    return toBa700Page(v.figures as BA700ViewFigures, ccy);
+  }
+  if (formId === "BA320") {
+    const v = selectRegulatoryReturn("ba320", eventStore, marketData);
+    return toBa320Page(v.figures as BA320ViewFigures, ccy);
+  }
+  if (formId === "BA100") {
+    // BA 100 folds over the same anchor entity / as-of window the BA 700 read
+    // resolves (the anchor bank's licence-bound entity).
+    const anchor = selectRegulatoryReturn("ba700", eventStore, marketData);
+    return buildBa100PageFigures(eventStore, anchor.entity, anchor.asOf, ccy);
+  }
+  return undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Return DETAIL view — the full per-return cell spreadsheet.
+//
+// Surfaces EVERY cell of the typed per-cell data-requirement contract
+// (v2-core/regulatory-returns/<form>-contract.json — the SARB Excel/XSD form
+// transcribed verbatim, gated by recon:ba-return-cell-contract) plus the live
+// computed figures where a figure-producing route exists. Source, don't
+// hardcode (Charter cmd 4): the grid is the loaded contract, never re-keyed.
+// ---------------------------------------------------------------------------
+
+/** One cell of a return's contract, flattened for the spreadsheet grid. */
+export interface FinanceReturnCell {
+  /** XSD/upload-schema element id (e.g. "BA01015768"). */
+  readonly xsdElement: string;
+  /** Grid row coordinate (e.g. "R0010") — null for form-level meta cells. */
+  readonly row: string | null;
+  readonly rowLabel: string | null;
+  /** Grid column coordinate (e.g. "C0010") — null for meta cells. */
+  readonly column: string | null;
+  readonly columnLabel: string | null;
+  /** Official composed cell label. */
+  readonly label: string;
+  /** What the cell means — its regulatory definition (verbatim from the XSD). */
+  readonly regulatoryDefinition: string;
+  readonly valueType: string;
+  readonly unit: string;
+  /** sourced | counsel-gated-TBC | licence-day-data. */
+  readonly status: string;
+  /** Honest reason when status !== "sourced". */
+  readonly statusReason: string | null;
+  readonly derivationKind: string;
+  readonly derivationExpression: string;
+  /** Primary clause citation (P2 upward link). */
+  readonly citation: string;
+}
+
+export interface FinanceReturnDetailView {
+  readonly formId: string;
+  /** Display form number, e.g. "BA 700". */
+  readonly form: string;
+  /** Official form name (Excel A1), verbatim from the contract. */
+  readonly name: string;
+  readonly functionalCurrency: string;
+  readonly cellCount: number;
+  readonly statusCounts: {
+    readonly sourced: number;
+    readonly counselGatedTbc: number;
+    readonly licenceDayData: number;
+  };
+  /** Distinct grid columns (coordinate + label), in coordinate order. */
+  readonly columns: readonly { readonly column: string; readonly label: string }[];
+  /** Computed live figures, where a figure-producing route exists (else absent). */
+  readonly figures?: FinanceReturnFigures;
+  readonly cells: readonly FinanceReturnCell[];
+}
+
+/**
+ * Build the full cell-spreadsheet detail view for one return form. Throws (→ the
+ * route returns 404) when `formId` is not a registered contract.
+ */
+export function buildFinanceReturnDetailView(
+  formId: ReturnForm,
+  eventStore: EventStore,
+  marketData: MarketDataStore,
+): FinanceReturnDetailView {
+  const contract = loadReturnContract(formId);
+  const functionalCurrency = anchorFunctionalCurrency();
+
+  const counts = { sourced: 0, counselGatedTbc: 0, licenceDayData: 0 };
+  const columnMap = new Map<string, string>();
+  const cells: FinanceReturnCell[] = contract.cells.map((c) => {
+    if (c.status === "sourced") counts.sourced += 1;
+    else if (c.status === "counsel-gated-TBC") counts.counselGatedTbc += 1;
+    else counts.licenceDayData += 1;
+    if (c.cellRef.column !== undefined && !columnMap.has(c.cellRef.column)) {
+      columnMap.set(c.cellRef.column, c.cellRef.columnLabel ?? c.cellRef.column);
+    }
+    const primary = c.citations[0];
+    return {
+      xsdElement: c.cellRef.xsdElement,
+      row: c.cellRef.row ?? null,
+      rowLabel: c.cellRef.rowLabel ?? null,
+      column: c.cellRef.column ?? null,
+      columnLabel: c.cellRef.columnLabel ?? null,
+      label: c.label,
+      regulatoryDefinition: c.regulatoryDefinition,
+      valueType: c.valueType,
+      unit: c.unit,
+      status: c.status,
+      statusReason: c.statusReason ?? null,
+      derivationKind: c.derivation.kind,
+      derivationExpression: c.derivation.expression,
+      citation: primary !== undefined ? primary.clause : "",
+    };
+  });
+
+  const columns = [...columnMap.entries()]
+    .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
+    .map(([column, label]) => ({ column, label }));
+
+  const figures = liveFiguresForForm(formId, eventStore, marketData);
+
+  return {
+    formId,
+    form: displayFormNumber(formId),
+    name: contract.formName,
+    functionalCurrency,
+    cellCount: cells.length,
+    statusCounts: counts,
+    columns,
+    ...(figures !== undefined ? { figures } : {}),
+    cells,
   };
 }

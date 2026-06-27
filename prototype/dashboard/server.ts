@@ -237,6 +237,7 @@ import { getSeedManifestEntry } from "../seeds/manifest";
 import { buildSeedsView } from "../seeds/seeds-view";
 import { type AppliesToScope, appliesToScopeSchema } from "../v2-core/posture";
 import { CANONICAL_LEGAL_ENTITY_ID } from "../v2-core/reference-data/legal-entity";
+import { RETURN_CONTRACT_REGISTRY } from "../v2-core/regulatory-returns/return-contracts";
 import { getAgentRuns, groupByAgent } from "./agent-runs";
 import { ownerSeatTitle, redactAgentNames } from "./agent-title";
 import {
@@ -331,7 +332,7 @@ import {
   buildClientOnboardingView,
 } from "./v2-client-onboarding-view";
 import { buildGlAccountLedger, buildGlView } from "./v2-finance-gl-view";
-import { buildFinanceReturnsView } from "./v2-finance-returns-view";
+import { buildFinanceReturnDetailView, buildFinanceReturnsView } from "./v2-finance-returns-view";
 import { buildCapitalView } from "./v2-finance-view";
 import { buildV2AllTradesView } from "./v2-markets-all-trades-view";
 import { buildV2FxTradeHistoryView } from "./v2-markets-fx-trades-view";
@@ -5855,6 +5856,30 @@ const server = Bun.serve({
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       return jsonResponse({
         ...buildFinanceReturnsView(eventStore, marketDataStore),
+        pageProvenance: filter,
+      });
+    }
+    if (req.method === "GET" && url.pathname.startsWith("/api/v2/finance/returns/")) {
+      // Finance → Regulatory Returns DETAIL: the full per-cell spreadsheet for
+      // one return form, sourced from the typed per-cell contract
+      // (recon:ba-return-cell-contract) plus live computed figures where a
+      // figure-producing route exists. The form key is validated against the
+      // canonical registry (fail-closed → 404). Authority: D-BANK-WIDE-V2-MIGRATION;
+      // D-BA-RETURN-DATA-CONTRACT.
+      const rawForm = decodeURIComponent(url.pathname.slice("/api/v2/finance/returns/".length));
+      const entry = RETURN_CONTRACT_REGISTRY.find((e) => e.form === rawForm);
+      if (entry === undefined) {
+        return jsonResponse(
+          {
+            error: "unknown-return",
+            message: `Unknown return form "${rawForm}". See GET /api/v2/finance/returns for the register.`,
+          },
+          404,
+        );
+      }
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      return jsonResponse({
+        ...buildFinanceReturnDetailView(entry.form, eventStore, marketDataStore),
         pageProvenance: filter,
       });
     }
