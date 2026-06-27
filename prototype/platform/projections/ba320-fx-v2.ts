@@ -514,11 +514,11 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
     );
   }
 
-  gaps.push(
-    "GAP-3E-002: BA-320 V2 FX charge is NOT yet fed back into BA-700 V2 market RWA " +
-      "(12.5 × fxCapitalCharge). This gap closes once the BA-320 V2 flip is approved " +
-      "and the BA-700 V2 projection wires the market-RWA slot. Authority: D-V1-REMOVAL-PHASE-3E.",
-  );
+  // GAP-3E-002 CLOSED: the BA-320 FX charge IS fed back into BA-700 V2 market RWA
+  // — as the FX leg of the FULL standardised charge (buildBa320MarketRiskCharge →
+  // ba700-v2.ts market-RWA leg = 12.5 × total charge across all risk classes).
+  // Closed by D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING (FX leg, 2026-06-21)
+  // + D-BA-RETURN-SIMULATOR-FIRST (all-three-legs completion, 2026-06-26). No gap.
 
   // -------------------------------------------------------------------------
   // Step 7: Coverage status.

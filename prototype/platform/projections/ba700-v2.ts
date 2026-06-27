@@ -18,17 +18,30 @@
 //
 //   RWA denominator: `CcrEadComputed` (v2-parallel) — SA-CCR EAD in MoneyWire.
 //     Summed across all netting sets → credit RWA proxy.
-//     Market RWA = 12.5 × the BA-320 V2 FX open-position capital charge
-//       (`computeBA320V2().fx.openPositionChargeMinor`), per Reg 38 / BCBS Basel III
-//       §50–§90 (RWA = 12.5 × capital requirement). REUSES the BA-320 projection —
-//       it does NOT recompute the FX position or re-derive the charge (Principle 2 —
-//       single derivation site; Charter cmd 4 — source, don't duplicate). GAP-3E-002
-//       CLOSED by D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING (2026-06-21).
-//       Where the BA-320 charge is `null` (no production FX rate → BA-320 already
-//       fails closed), market RWA is reported as UNAVAILABLE/EXCLUDED via the
-//       `marketRwaAvailable` flag — never zero-coerced as-if-complete (Charter cmd 2).
-//     Operational RWA has no V2 source at Phase 3e (GAP-3E-003).
-//     → `rwa` sources: "ccr-ead-v2-credit-only" (credit), "ba320-fx-v2" (market).
+//     Market RWA = 12.5 × the FULL BA-320 standardised market-risk capital charge
+//       (Reg 28(3)(a) / Reg 28(5)) — the SUM across ALL risk classes: FX
+//       open-position + IR general + IR specific + equity + commodity — sourced
+//       from `buildBa320MarketRiskCharge` over the (simulated) trading-book event
+//       fold (#1562), per Reg 38 / BCBS Basel III §50–§90 (RWA = 12.5 × capital
+//       requirement). REUSES the per-risk-class adapters (Principle 2 — single
+//       derivation site; Charter cmd 4 — source, don't duplicate). This SUPERSEDES
+//       the former FX-only wiring (`computeBA320V2().fx` only), which understated
+//       market RWA by omitting the equity / commodity / IR trading-book charges
+//       (D-BA-RETURN-SIMULATOR-FIRST capstone). GAP-3E-002 closed by
+//       D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING (2026-06-21); the all-three-
+//       legs completion by D-BA-RETURN-SIMULATOR-FIRST (2026-06-26).
+//
+//       AVAILABILITY (Charter cmd 2 — fail-closed, no zero-coercion): the FX leg
+//       is RATE-DEPENDENT — EXCLUDED (not zeroed) when no production FX rate
+//       resolves (`marketRwaAvailable === false`). The non-FX legs (IR / equity /
+//       commodity) are position×risk-weight — NO rate dependency, so they are
+//       ALWAYS available and contribute to market RWA even when the FX rate is
+//       null. `marketRwaAvailable` reports the FX leg's inclusion specifically;
+//       `marketRwa` always carries the non-FX legs (a 0 there means no open
+//       position, never "unavailable").
+//     Operational RWA: 12.5 × BA-400 SMA op-risk capital (D-BA-RETURN-SIMULATOR-FIRST).
+//     → `rwa` sources: "ccr-ead-v2-credit-only" (credit), "ba320-standardised-v2"
+//       (market — all risk classes), "ba400-sma-v2" (operational).
 //
 // ## No-data handling
 //
@@ -59,18 +72,18 @@ import { normalizeCcrEadPayload } from "../event-store/event-types/counterparty-
 import type { EventStore } from "../event-store/store";
 import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import type { MarketDataStore } from "../market-data/store";
+import { buildBa320MarketRiskCharge } from "../reporting/ba-320-market-risk-charge-adapter";
 import { buildBa400SmaInput } from "../reporting/ba-400-sma-income-adapter";
 import { generateBa400Sma } from "../reporting/ba-400-sma-op-risk";
 import type { BA700Return } from "../returns/ba700/generator";
-import { computeBA320V2 } from "./ba320-fx-v2";
 import { computeCapitalComposition } from "./ba700-capital-composition";
 import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "./filter";
 
 /**
  * Basel III / Reg 38 capital-charge → RWA scalar: RWA = 12.5 × capital requirement
- * (the reciprocal of the 8% minimum capital ratio). Applied to the BA-320 FX
- * open-position capital charge to derive the market-risk RWA component.
- * BCBS Basel III §50–§90; Reg 38.
+ * (the reciprocal of the 8% minimum capital ratio). Applied to the FULL BA-320
+ * standardised market-risk capital charge (all risk classes) to derive the
+ * market-risk RWA component. BCBS Basel III §50–§90; Reg 38.
  */
 const RWA_PER_CAPITAL_CHARGE = "12.5";
 
@@ -102,11 +115,14 @@ export interface BA700ReturnV2 {
       readonly capital: "capital-fil-composition" | "none";
       readonly rwa: "ccr-ead-v2-credit-only" | "none";
       /**
-       * Market-RWA source. `"ba320-fx-v2"` when the BA-320 V2 FX open-position
-       * charge resolved (a production FX rate was available); `"none"` when it is
-       * `null` (fail-closed — no fabricated rate, market RWA excluded).
+       * Market-RWA source. `"ba320-standardised-v2"` when the FULL standardised
+       * BA-320 charge (all risk classes — FX + IR + equity + commodity) resolved
+       * a non-zero charge in this provenance lens; `"none"` when the whole charge
+       * is zero (no open trading-book position AND no FX leg). NOTE: this reflects
+       * whether a charge was produced at all — the FX-leg-specific fail-closed
+       * signal is `marketRwaAvailable` (the non-FX legs are always available).
        */
-      readonly marketRwa: "ba320-fx-v2" | "none";
+      readonly marketRwa: "ba320-standardised-v2" | "none";
       /**
        * Operational-RWA source. `"ba400-sma-v2"` when an
        * `OperatingIncomeStatementSnapshotted` resolved in this provenance lens
@@ -116,14 +132,43 @@ export interface BA700ReturnV2 {
       readonly operationalRwa: "ba400-sma-v2" | "none";
     };
     /**
-     * Whether the market-risk RWA component (12.5 × BA-320 FX charge) is included
-     * in `totalRwa`. `false` = the BA-320 charge was `null` (no production FX rate
-     * → BA-320 fails closed), so market RWA is EXCLUDED — NOT zero-coerced as-if
-     * complete (Charter cmd 2 — fail-closed). When `false`, `capitalAdequacy.marketRwa`
-     * is 0 only as the additive identity for the excluded term; the flag, not the
-     * zero, is the signal.
+     * Whether the FX leg of the market-risk charge is included in `totalRwa`.
+     * `false` = the BA-320 FX open-position charge was `null` (no production FX
+     * rate → the FX leg fails closed), so the FX term is EXCLUDED — NOT
+     * zero-coerced as-if complete (Charter cmd 2 — fail-closed). The flag, not a
+     * zero, is the signal for the excluded FX term.
+     *
+     * IMPORTANT: this flag is FX-leg-specific. The NON-FX legs (IR general/
+     * specific, equity, commodity) are position×risk-weight with NO rate
+     * dependency — they are ALWAYS available and are ALWAYS included in
+     * `capitalAdequacy.marketRwa` regardless of this flag. So `marketRwa` can be
+     * non-zero while `marketRwaAvailable === false` (FX excluded, non-FX legs
+     * present). Read {@link fxLegIncluded}/{@link marketRiskChargeBreakdownMinor}
+     * for the full per-leg decomposition.
      */
     readonly marketRwaAvailable: boolean;
+    /**
+     * Alias of {@link marketRwaAvailable} with an unambiguous name — whether the
+     * FX leg specifically is included in market RWA. The non-FX legs are always
+     * included; this names the FX-leg fail-closed signal explicitly.
+     */
+    readonly fxLegIncluded: boolean;
+    /**
+     * Per-risk-class market-risk CAPITAL CHARGE breakdown (functional-currency
+     * minor units) — the pre-12.5× decomposition of `capitalAdequacy.marketRwa`.
+     * `fxMinor` is `null` when the FX leg is EXCLUDED (no production rate,
+     * fail-closed); the non-FX legs always carry a real figure (0 = no position).
+     * Lets a consumer see exactly which Reg 28(3)(a) risk classes drive the
+     * market-RWA leg. Authority: Reg 28(3)(a), Reg 28(5); BCBS D352 §718.
+     */
+    readonly marketRiskChargeBreakdownMinor: {
+      readonly irGeneralMinor: number;
+      readonly irSpecificMinor: number;
+      readonly equityMinor: number;
+      readonly commodityMinor: number;
+      readonly fxMinor: number | null;
+      readonly totalMinor: number;
+    };
     /**
      * Whether the operational-risk RWA component (12.5 × SMA Operational Risk
      * Capital) is included in `totalRwa`. `false` = no
@@ -155,15 +200,20 @@ export interface BA700ReturnV2 {
      */
     readonly creditRwa: number;
     /**
-     * Market-risk RWA (minor units) = 12.5 × the BA-320 V2 FX open-position
-     * capital charge (`computeBA320V2().fx.openPositionChargeMinor`), per Reg 38 /
-     * BCBS Basel III §50–§90. Separately inspectable from `creditRwa`.
+     * Market-risk RWA (minor units) = 12.5 × the FULL BA-320 standardised
+     * market-risk capital charge — the SUM across ALL Reg 28(3)(a) / Reg 28(5)
+     * risk classes (FX open-position + IR general + IR specific + equity +
+     * commodity), sourced from `buildBa320MarketRiskCharge` over the trading-book
+     * event fold — per Reg 38 / BCBS Basel III §50–§90. Separately inspectable
+     * from `creditRwa`; the per-leg decomposition is in
+     * `meta.marketRiskChargeBreakdownMinor`.
      *
-     * `0` ONLY when (a) there is no open FX position (charge legitimately 0) or
-     * (b) `meta.marketRwaAvailable === false` — i.e. the BA-320 charge was `null`
-     * (no production FX rate, fail-closed) and market RWA is EXCLUDED from
-     * `totalRwa`. Read `meta.marketRwaAvailable` to disambiguate "zero charge"
-     * from "excluded / unavailable".
+     * `0` ONLY when there is NO open trading-book position in ANY risk class AND
+     * the FX leg is absent/excluded. A non-zero value with
+     * `meta.marketRwaAvailable === false` means the FX leg was EXCLUDED
+     * (fail-closed, no rate) but the non-FX legs (always available) drove the
+     * charge. Read `meta.marketRwaAvailable` / `meta.fxLegIncluded` to know the
+     * FX-leg inclusion specifically.
      */
     readonly marketRwa: number;
     /**
@@ -365,55 +415,80 @@ export function computeBA700V2(args: ComputeBA700V2Args): BA700ReturnV2 {
   }
 
   // -------------------------------------------------------------------------
-  // Step 3: Market-risk RWA = 12.5 × BA-320 V2 FX open-position capital charge.
+  // Step 3: Market-risk RWA = 12.5 × the FULL BA-320 standardised market-risk
+  // capital charge (all Reg 28(3)(a) / Reg 28(5) risk classes).
   //
-  // GAP-3E-002 CLOSED (D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING, 2026-06-21).
+  // GAP-3E-002 CLOSED (D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING, 2026-06-21);
+  // ALL-THREE-LEGS completion (D-BA-RETURN-SIMULATOR-FIRST, 2026-06-26). The former
+  // FX-ONLY wiring (`computeBA320V2().fx` only) UNDERSTATED market RWA — it omitted
+  // the equity / commodity / IR-general / IR-specific trading-book charges that the
+  // simulated trading book (#1562) drives non-zero. We now source the COMPLETE
+  // standardised charge from `buildBa320MarketRiskCharge`, which REUSES the
+  // per-risk-class event-fold adapters (Principle 2 — single derivation site;
+  // Charter cmd 4 — source, don't duplicate). All sub-adapters apply the SAME
+  // provenance lens, so production folds to the fail-closed baseline (no real
+  // trading positions → no charge) and the simulated / combined lens drives it.
   //
-  // We REUSE computeBA320V2 — its `fx.openPositionChargeMinor` is the Reg 28(5)
-  // FX open-position CAPITAL charge in functional-currency minor units. We do NOT
-  // recompute the FX position or re-derive the charge here (Principle 2 — single
-  // derivation site; Charter cmd 4). RWA = 12.5 × capital requirement (Reg 38 /
-  // BCBS Basel III §50–§90), computed on the decimal engine (no float on a money
-  // figure; same HALF_UP rule the BA-320 charge itself uses).
+  // RWA = 12.5 × capital requirement (Reg 38 / BCBS Basel III §50–§90), on the
+  // decimal engine (no float on money; HALF_UP).
   //
-  // FAIL-CLOSED (Charter cmd 2): when the BA-320 charge is `null` — no production
-  // FX rate for an open pair, BA-320 already fails closed — market RWA is reported
-  // UNAVAILABLE/EXCLUDED (`marketRwaAvailable === false`, source "none", the term
-  // contributes 0 to totalRwa). It is NEVER zero-coerced as-if-complete and the
-  // rate is NEVER fabricated. A `null` charge with NO open FX position (the clean
-  // build-phase store) and a `null` charge from a missing rate are distinguished
-  // by the BA-320 coverageStatus in the gap text.
+  // FAIL-CLOSED (Charter cmd 2) — DELIBERATE per-leg availability:
+  //   * FX leg is RATE-DEPENDENT. When the BA-320 FX charge is `null` (no
+  //     production rate for an open pair) the FX leg is EXCLUDED — not zeroed —
+  //     and `marketRwaAvailable === false`. The flag, not a zero, is the signal.
+  //   * NON-FX legs (IR / equity / commodity) are position×risk-weight with NO
+  //     rate dependency — ALWAYS available, included even when the FX rate is
+  //     null. So `marketRwa` can be non-zero while `marketRwaAvailable === false`.
+  // The aggregate market-risk charge is therefore NEVER null (the non-FX legs
+  // always carry a real figure, possibly 0); the FX term is summed in only when
+  // available. The rate is NEVER fabricated and no leg is zero-coerced as-if-complete.
   // -------------------------------------------------------------------------
 
-  const ba320 = computeBA320V2({
+  const marketCharge = buildBa320MarketRiskCharge({
     eventStore: args.eventStore,
-    asOf: args.asOf,
     entity,
+    asOf: args.asOf,
     functionalCurrency,
     ...(args.marketDataStore !== undefined ? { marketDataStore: args.marketDataStore } : {}),
     ...(args.zarRates !== undefined ? { zarRates: args.zarRates } : {}),
   });
 
-  const fxChargeMinor = ba320.fx.openPositionChargeMinor;
-  const marketRwaAvailable = fxChargeMinor !== null;
+  const marketRwaAvailable = marketCharge.fxAvailable;
 
-  let marketRwaMinor = 0;
-  if (marketRwaAvailable) {
-    // RWA = 12.5 × capital charge, decimal-engine HALF_UP (no float on money).
-    const rwaD = roundDecimal(
-      mulD(toDecimal(String(fxChargeMinor)), toDecimal(RWA_PER_CAPITAL_CHARGE)),
+  // RWA = 12.5 × the TOTAL standardised charge (non-FX legs always; FX leg only
+  // when available — already excluded inside marketRiskChargeMinor when null).
+  const marketRwaMinor = Number(
+    toMinorUnits(
+      roundDecimal(
+        mulD(
+          toDecimal(String(marketCharge.marketRiskChargeMinor)),
+          toDecimal(RWA_PER_CAPITAL_CHARGE),
+        ),
+        0,
+        "HALF_UP",
+      ),
       0,
-      "HALF_UP",
-    );
-    marketRwaMinor = Number(toMinorUnits(rwaD, 0));
-  } else {
-    // Fail-closed: BA-320 charge is null (no production FX rate, or no open FX
-    // position). Market RWA is EXCLUDED — not zero-as-if-complete. The flag
-    // (marketRwaAvailable=false) is the signal; the 0 is only the additive identity.
+    ),
+  );
+
+  if (!marketRwaAvailable) {
+    // Fail-closed: the FX leg is EXCLUDED (no production rate / no open FX pair).
+    // The non-FX legs (if any) are still folded into marketRwaMinor; the flag is
+    // the signal for the excluded FX term, never a fabricated rate.
     gaps.push(
-      `GAP-3E-002 (FAIL-CLOSED): BA-320 V2 FX open-position charge is null (BA-320 coverageStatus="${ba320.fx.coverageStatus}") — market-risk RWA is EXCLUDED from totalRwa, not zero-coerced. On the clean build-phase store this is the expected no-open-FX-position state; where an open FX pair lacks a production fx-quote tick it is the fail-closed missing-rate state (no fabricated rate). When the BA-320 charge resolves, market RWA = 12.5x charge is included automatically. Authority: D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING; Reg 38; BCBS Basel III §50–§90.`,
+      `GAP-3E-002 (FX-LEG FAIL-CLOSED): BA-320 FX open-position charge is null (FX coverageStatus="${marketCharge.fxCoverageStatus}") — the FX leg is EXCLUDED from market RWA, not zero-coerced. On the clean build-phase store this is the no-open-FX-position state; where an open FX pair lacks a production fx-quote tick it is the fail-closed missing-rate state (no fabricated rate). The NON-FX legs (IR / equity / commodity) are unaffected — they are always available and remain included. When the FX charge resolves, its 12.5× contribution is added automatically. Authority: D-BA-RETURN-SIMULATOR-FIRST; D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING; Reg 38; BCBS Basel III §50–§90.`,
     );
   }
+
+  // Surface any IRS swaps that could not be maturity-method-decomposed (not
+  // dropped, not fabricated — Charter cmd 5, no silent deferral).
+  for (const swapId of marketCharge.swapsMissingTerms) {
+    gaps.push(
+      `GAP-BA320-IRS-DECOMP: trading-book IRS ${swapId} could not be maturity-method-decomposed (non-vanilla role or missing next-reset terms) — its IR-general contribution is surfaced, NOT folded. Authority: WS-BA-RETURNS-FOLLOWON G1; D-IRS-DV01-BUCKETING-CALIBRATION.`,
+    );
+  }
+
+  const hasMarketCharge = marketCharge.marketRiskChargeMinor > 0;
 
   // -------------------------------------------------------------------------
   // Step 4: Operational-risk RWA = 12.5 × SMA Operational Risk Capital.
@@ -457,9 +532,11 @@ export function computeBA700V2(args: ComputeBA700V2Args): BA700ReturnV2 {
     );
   }
 
-  // Total RWA = credit RWA + market RWA (when available) + operational RWA.
-  // Market RWA is summed in ONLY when marketRwaAvailable; a null BA-320 charge
-  // contributes nothing (fail-closed), and marketRwaMinor stays 0 as the identity.
+  // Total RWA = credit RWA + market RWA + operational RWA.
+  // Market RWA = 12.5 × the full standardised charge: the non-FX legs (IR /
+  // equity / commodity) are always included; the FX leg is summed into the charge
+  // ONLY when marketRwaAvailable (excluded inside marketCharge when null — fail-
+  // closed). So marketRwaMinor is never a fabricated figure for an excluded leg.
   // Operational RWA is non-zero only when an income snapshot resolves in this lens.
   const totalRwa = creditRwaMinor + marketRwaMinor + operationalRwaMinor;
   const ownFundsMinor = tier1Capital + tier2Capital;
@@ -480,7 +557,9 @@ export function computeBA700V2(args: ComputeBA700V2Args): BA700ReturnV2 {
   const tier1Ratio = ratioOf(tier1Capital);
   const totalCapitalRatio = carRatio;
 
-  const hasMarketRwa = marketRwaAvailable && marketRwaMinor > 0;
+  // Market RWA contributes to "partial" coverage whenever ANY market-risk charge
+  // was produced (non-FX legs are always available; FX adds when its rate resolves).
+  const hasMarketRwa = hasMarketCharge;
   const hasOperationalRwa = operationalRwaAvailable && operationalRwaMinor > 0;
   const coverageStatus: "partial" | "no-data" =
     hasCapital || hasRwa || hasMarketRwa || hasOperationalRwa ? "partial" : "no-data";
@@ -496,10 +575,19 @@ export function computeBA700V2(args: ComputeBA700V2Args): BA700ReturnV2 {
       sources: {
         capital: hasCapital ? "capital-fil-composition" : "none",
         rwa: ccrEadCount > 0 ? "ccr-ead-v2-credit-only" : "none",
-        marketRwa: marketRwaAvailable ? "ba320-fx-v2" : "none",
+        marketRwa: hasMarketCharge ? "ba320-standardised-v2" : "none",
         operationalRwa: operationalRwaAvailable ? "ba400-sma-v2" : "none",
       },
       marketRwaAvailable,
+      fxLegIncluded: marketRwaAvailable,
+      marketRiskChargeBreakdownMinor: {
+        irGeneralMinor: marketCharge.charges.irGeneralMinor,
+        irSpecificMinor: marketCharge.charges.irSpecificMinor,
+        equityMinor: marketCharge.charges.equityMinor,
+        commodityMinor: marketCharge.charges.commodityMinor,
+        fxMinor: marketCharge.charges.fxMinor,
+        totalMinor: marketCharge.marketRiskChargeMinor,
+      },
       operationalRwaAvailable,
     },
     capitalAdequacy: {
