@@ -319,6 +319,16 @@ const ALLOWLIST_PREFIXES: ReadonlyArray<string> = [
   // is an injectable-default pattern — callers that need deterministic
   // time inject an explicit `asOfDate`. Same rationale as dashboard/registry.ts.
   "platform/recon/npa-post-approval-finding-review.ts",
+  // Live FX V2 driver package — the APPROVED real-time scheduler boundary. The
+  // driver's "real-elapsed" clock-advance mode reads wall-time to advance the
+  // SimulatedClock by the real delta between ticks (current-time trading from an
+  // assumed-past baseline). The wall-clock now-source is an injectable default
+  // (`cfg.nowMs ?? Date.now`); tests inject a deterministic fake. The payload
+  // package (platform/simulation-v2/) stays fully deterministic — only this
+  // scheduler-side package reads wall-time. Decision-backed, not silent.
+  // Authority: D-FX-SIM-LIVE-REALTIME-ONBOARDED (CEO-approved 2026-06-27) under
+  //   D-FX-V2-SIMULATOR-FIRST.
+  "platform/simulation-v2-live/",
 ];
 
 // Directories to skip entirely when walking prototype/.

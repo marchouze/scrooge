@@ -31,7 +31,16 @@ import {
   CLIENT_SOUNDING_OPENED,
   fxCounterpartiesFromOnboardingEvents,
 } from "../../v2-core/client-onboarding";
-import { type SimFxTradeRef, assertSimTradesOnboarded } from "./fx-sim-counterparty-onboarded";
+import { EventStore } from "../event-store/store";
+import { MarketDataStore } from "../market-data/store";
+import { emitClientOnboardingLifecycle } from "../simulation-v2/sim-modules/counterparty-provisioning";
+import { V2LiveFxDriver } from "../simulation-v2-live/live-driver";
+import {
+  type SimFxTradeRef,
+  assertSimTradesOnboarded,
+  onboardedFxPartyIds,
+  simFxInstruments,
+} from "./fx-sim-counterparty-onboarded";
 
 interface Raw {
   kind: string;
@@ -132,5 +141,50 @@ describe("recon:fx-sim-counterparty-onboarded", () => {
     );
     const onboarded = fxCounterpartiesFromOnboardingEvents(partial);
     expect(onboarded).toHaveLength(0);
+  });
+});
+
+describe("recon:fx-sim-counterparty-onboarded — LIVE-DRIVER coverage", () => {
+  // The live FX V2 driver books `FilInstrumentCreated` (simulated fx), NOT
+  // `FxTradeExecuted{venue:OTC-SIM}`. The simFxInstruments reader brings that
+  // emission shape into the gate (D-FX-SIM-LIVE-REALTIME-ONBOARDED).
+  function driveLive(): EventStore {
+    const eventStore = new EventStore();
+    const marketDataStore = new MarketDataStore(":memory:");
+    emitClientOnboardingLifecycle({
+      store: eventStore,
+      scenarioId: "fx-v2-live",
+      asOf: "2026-02-02T07:00:00.000Z",
+      counterparty: {
+        counterpartyId: "CP-SIM-ACME-100",
+        name: "Acme Sim Bank",
+        bic: "ACMEZAJJXXX",
+        eligiblePairs: ["USD/ZAR", "EUR/ZAR"],
+        behaviourProfile: "reliable",
+        agreement: { agreementType: "ISDA-2002", csaInScope: true, csaCurrency: "ZAR" },
+      },
+    });
+    const driver = new V2LiveFxDriver({
+      eventStore,
+      marketDataStore,
+      config: { tradesPerTick: 2 },
+    });
+    for (let i = 0; i < 4; i++) driver.tickOnce();
+    return eventStore;
+  }
+
+  it("reads the live driver's simulated fx FilInstrumentCreated as sim trades", () => {
+    const store = driveLive();
+    const trades = simFxInstruments(store);
+    expect(trades.length).toBeGreaterThan(0);
+    for (const t of trades) expect(t.counterpartyPartyId).toBe("CP-SIM-ACME-100");
+  });
+
+  it("every live-driver instrument's counterparty is in the onboarded set (gate passes)", () => {
+    const store = driveLive();
+    const ids = onboardedFxPartyIds(store);
+    const { asserted, violations } = assertSimTradesOnboarded(simFxInstruments(store), ids, "fail");
+    expect(asserted).toBeGreaterThan(0);
+    expect(violations).toHaveLength(0);
   });
 });

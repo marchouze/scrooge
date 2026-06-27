@@ -8,12 +8,30 @@ import { describe, expect, test } from "bun:test";
 
 import { EventStore } from "../event-store/store";
 import { MarketDataStore } from "../market-data/store";
+import { emitClientOnboardingLifecycle } from "../simulation-v2/sim-modules/counterparty-provisioning";
 import { V2_FX_GENERATIVE_MODULE_ID } from "./hub-module";
 import { buildV2Hub } from "./register-v2-defaults";
 
+// The live driver now trades ONLY with in-sim onboarded FX-eligible clients
+// (D-FX-SIM-LIVE-REALTIME-ONBOARDED) — no seed fallback. Onboard one simulated
+// client so a fired tick has a counterparty to deal with; an empty store would
+// (correctly) fail-closed to zero trades.
 function freshHub() {
   const eventStore = new EventStore();
   const marketDataStore = new MarketDataStore(":memory:");
+  emitClientOnboardingLifecycle({
+    store: eventStore,
+    scenarioId: "fx-v2-live",
+    asOf: "2026-02-02T07:00:00.000Z",
+    counterparty: {
+      counterpartyId: "CP-SIM-ACME-100",
+      name: "Acme Sim Bank",
+      bic: "ACMEZAJJXXX",
+      eligiblePairs: ["USD/ZAR", "EUR/ZAR"],
+      behaviourProfile: "reliable",
+      agreement: { agreementType: "ISDA-2002", csaInScope: true, csaCurrency: "ZAR" },
+    },
+  });
   const { hub } = buildV2Hub({ eventStore, marketDataStore });
   return { hub, eventStore };
 }
