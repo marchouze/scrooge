@@ -73,7 +73,14 @@
 //     Vera-style hand-rescue, not a new violation).
 //   - Blob missing everywhere, event `as_of` ON OR AFTER 2026-06-11 →
 //     `fail` (post-sync the boot shims keep blobs and events in the same
-//     store, so a miss is a real integrity violation).
+//     store, so a miss is a real integrity violation) — UNLESS the exact
+//     `(recordId, documentHash)` pair is on the FROZEN historical-loss
+//     allowlist (`rms-blob-historical-loss-allowlist.json`), in which case
+//     it is downgraded to an explicitly-acknowledged, non-failing `warn`.
+//     The allowlist is keyed-exact, finite, committed data — never a
+//     predicate. Any NEW dangling record (a pair NOT on the list) still
+//     fails. Authority: D-RMS-BLOB-HISTORICAL-LOSS-ALLOWLIST (CEO-approved
+//     2026-06-27, Phase 2 of the remediation); basis Vera census PR #1590.
 //
 // Authority: D-CROSS-WORKTREE-EVENT-STORE-SYNC (CEO session-delegation
 //            2026-05-21) — design precedent, extended to blob roots;
@@ -82,6 +89,8 @@
 // Brief: brief:atlas:extend-cross-worktree-sync-to-document-store-blo:2026-06-10.
 // Author: Atlas (Core banking platform architect, engineering)
 
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { eventStore } from "../composition";
 import { LocalFsDocumentStore } from "../document-store/local-fs";
 import {
@@ -101,6 +110,83 @@ const PIPELINE = "rms-document-blob-integrity";
  */
 export const ENFORCEMENT_DATE = "2026-06-11";
 
+/**
+ * FROZEN HISTORICAL-LOSS ALLOWLIST (D-RMS-BLOB-HISTORICAL-LOSS-ALLOWLIST,
+ * CEO-approved 2026-06-27; Phase 2 of the RMS blob-integrity remediation).
+ *
+ * After the read-path fix + 432 byte-exact rescues of PR #1590 (Vera's
+ * census), 1,435 dangling `RecordFiled` events (1,381 unique
+ * `(recordId, documentHash)` pairs) remained irreducible against the
+ * home/shared read-path — blobs genuinely lost (pre-document-store-sync,
+ * source stores pruned, not regenerable to the recorded BLAKE3 hash;
+ * `rescue:dangling-recordfiled-blobs --dry-run` rescues 0 of them).
+ *
+ * Marc approved allowlisting EXACTLY that enumerated set. The allowlist
+ * downgrades a dangling record to a NON-FAILING, explicitly-acknowledged
+ * `warn` class ("acknowledged historical loss") **only** when its precise
+ * `(recordId, documentHash)` pair is on the committed frozen list. Every
+ * record NOT on the list still fails per the existing date logic — the
+ * fail-direction is fully enforcing for any NEW dangling record. The
+ * allowlist is DATA: keyed-exact, finite, committed — never a predicate
+ * that auto-absorbs new losses. This is a one-time frozen acknowledgement,
+ * NOT a standing waiver.
+ *
+ * Authority: D-RMS-BLOB-HISTORICAL-LOSS-ALLOWLIST; basis Vera census PR
+ * #1590; D-RMS-PHASE-3; Engineering Charter (no green-by-concealment — the
+ * fail-direction survives, proven by the synthetic-new-dangling test).
+ */
+export const ALLOWLIST_FILE = "rms-blob-historical-loss-allowlist.json";
+
+interface AllowlistEntry {
+  readonly recordId: string;
+  readonly documentHash: string;
+  readonly asOf: string;
+  readonly severity: string;
+}
+
+interface AllowlistDoc {
+  readonly schema: string;
+  readonly authority: string;
+  readonly asOf: string;
+  readonly entries: readonly AllowlistEntry[];
+}
+
+/**
+ * Separator between recordId and documentHash in a composite allowlist
+ * key. An explicit single ASCII space (0x20), built via `String.fromCharCode`
+ * so no invisible / non-ASCII separator can hide in a template literal.
+ */
+export const ALLOWLIST_KEY_SEP = String.fromCharCode(0x20);
+
+/** Stable composite key for an allowlisted (recordId, documentHash) pair. */
+export function allowKey(recordId: string, documentHash: string): string {
+  return recordId + ALLOWLIST_KEY_SEP + documentHash;
+}
+
+function findReconDir(start: string): string {
+  let dir = start;
+  for (let i = 0; i < 8; i++) {
+    const candidate = resolve(dir, "platform/recon", ALLOWLIST_FILE);
+    if (existsSync(candidate)) return resolve(dir, "platform/recon");
+    dir = resolve(dir, "..");
+  }
+  throw new Error(`Cannot locate platform/recon/${ALLOWLIST_FILE} from ${start}`);
+}
+
+/**
+ * Load the frozen allowlist into a key set. Resolution mirrors
+ * `v1-removal-ratchet.json` (committed alongside the recon pipeline,
+ * walked up from `import.meta.dir`). Tests inject `allowlistKeys`
+ * directly to avoid filesystem coupling.
+ */
+export function loadAllowlistKeys(allowlistPath?: string): Set<string> {
+  const path = allowlistPath ?? resolve(findReconDir(import.meta.dir), ALLOWLIST_FILE);
+  const doc = JSON.parse(readFileSync(path, "utf8")) as AllowlistDoc;
+  const keys = new Set<string>();
+  for (const e of doc.entries) keys.add(allowKey(e.recordId, e.documentHash));
+  return keys;
+}
+
 export interface BlobIntegrityDeps {
   /** Injected `RecordFiled` events (tests). Default: composition replay. */
   readonly recordFiledEvents?: readonly Event[];
@@ -115,6 +201,14 @@ export interface BlobIntegrityDeps {
   readonly legacyStore?: DocumentStore | null;
   /** Enforcement boundary override (tests). Default `ENFORCEMENT_DATE`. */
   readonly enforcementDate?: string;
+  /**
+   * Injected frozen historical-loss allowlist keys (tests). Each key is
+   * `allowKey(recordId, documentHash)`. Default: loaded from the committed
+   * `rms-blob-historical-loss-allowlist.json`. Pass an empty `Set` to
+   * disable the allowlist explicitly (proves the underlying fail-direction
+   * is unchanged). Authority: D-RMS-BLOB-HISTORICAL-LOSS-ALLOWLIST.
+   */
+  readonly allowlistKeys?: ReadonlySet<string>;
 }
 
 /**
@@ -146,6 +240,7 @@ export function run(deps: BlobIntegrityDeps = {}): ReconResult {
   const violations: ReconViolation[] = [];
 
   const enforcementDate = deps.enforcementDate ?? ENFORCEMENT_DATE;
+  const allowlistKeys = deps.allowlistKeys ?? loadAllowlistKeys();
 
   let resolvedStore: DocumentStore;
   let legacyStore: DocumentStore | null;
@@ -184,6 +279,22 @@ export function run(deps: BlobIntegrityDeps = {}): ReconResult {
 
     const eventDate = (e.as_of ?? "").slice(0, 10);
     const postEnforcement = eventDate >= enforcementDate;
+
+    // FROZEN HISTORICAL-LOSS ALLOWLIST. Only the EXACT (recordId,
+    // documentHash) pair on the committed list is acknowledged — and even
+    // then it is downgraded to a non-failing `warn`, never silently
+    // dropped. Any dangling record NOT on the list still fails per the
+    // date logic below: the fail-direction is fully intact for new losses.
+    // Authority: D-RMS-BLOB-HISTORICAL-LOSS-ALLOWLIST (CEO-approved
+    // 2026-06-27); basis Vera census PR #1590; D-RMS-PHASE-3.
+    if (postEnforcement && allowlistKeys.has(allowKey(recordId, hash))) {
+      violations.push({
+        subject,
+        message: `Acknowledged historical loss (frozen allowlist): RecordFiled event \`${recordId}\` (as_of ${eventDate}) cites documentHash \`${hash}\` with no blob in any reachable store. This exact (recordId, documentHash) pair is on the committed frozen historical-loss allowlist — an irreducible pre-document-store-sync loss (not regenerable to the recorded hash; verified non-rescuable). One-time acknowledgement, NOT a standing waiver; any NEW dangling record still fails. Citations: D-RMS-BLOB-HISTORICAL-LOSS-ALLOWLIST, Vera census PR #1590, D-RMS-PHASE-3, Principle 1.`,
+        severity: "warn",
+      });
+      continue;
+    }
 
     violations.push({
       subject,

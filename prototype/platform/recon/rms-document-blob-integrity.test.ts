@@ -23,7 +23,7 @@ import {
 } from "../document-store/resolve-document-store";
 import { makeRecordFiled } from "../event-store/event-types";
 import type { Event } from "../event-store/types";
-import { readPathDocumentStoreRoot, run } from "./rms-document-blob-integrity";
+import { loadAllowlistKeys, readPathDocumentStoreRoot, run } from "./rms-document-blob-integrity";
 
 const ENFORCEMENT = "2026-06-11";
 const PRE_ENFORCEMENT_AS_OF = "2026-06-01T10:00:00.000Z";
@@ -67,6 +67,11 @@ function recordFiledEvent(recordId: string, documentHash: string, asOf: string):
 }
 
 const MISSING_HASH = `blake3:${"ab".repeat(32)}`;
+
+/** Composite allowlist key — mirrors `allowKey` in the gate (recordId + " " + hash). */
+function key(recordId: string, documentHash: string): string {
+  return `${recordId} ${documentHash}`;
+}
 
 describe("recon:rms-document-blob-integrity", () => {
   it("passes when every RecordFiled documentHash resolves in the resolved store", () => {
@@ -231,5 +236,115 @@ describe("readPathDocumentStoreRoot — models the reader's store, not the per-w
     expect(readPath.root).toBe(resolve("/tmp/fake-home", ".local", "share", "bank", "documents"));
     expect(singleton.source).toBe("fallback");
     expect(readPath.root).not.toBe(singleton.root);
+  });
+});
+
+// FROZEN HISTORICAL-LOSS ALLOWLIST (D-RMS-BLOB-HISTORICAL-LOSS-ALLOWLIST,
+// CEO-approved 2026-06-27; Phase 2 of the RMS blob-integrity remediation;
+// basis Vera census PR #1590). The allowlist downgrades EXACTLY the
+// enumerated (recordId, documentHash) pairs to a non-failing acknowledged
+// `warn`; the fail-direction is provably intact for any NEW dangling record.
+// These are the load-bearing tests Charter command 3 requires: a frozen,
+// Decision-backed allowlist is acceptable only because the fail-direction
+// survives — proven here, not asserted.
+describe("frozen historical-loss allowlist — fail-direction provably intact", () => {
+  const ALLOWED_ID = "rec:historical-loss";
+  const ALLOWED_KEYS: ReadonlySet<string> = new Set([key(ALLOWED_ID, MISSING_HASH)]);
+
+  it("an allowlisted post-enforcement dangling record does NOT fail (downgraded to acknowledged warn)", () => {
+    const r = run({
+      recordFiledEvents: [recordFiledEvent(ALLOWED_ID, MISSING_HASH, POST_ENFORCEMENT_AS_OF)],
+      resolvedStore,
+      legacyStore: null,
+      enforcementDate: ENFORCEMENT,
+      allowlistKeys: ALLOWED_KEYS,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.violations).toHaveLength(1);
+    expect(r.violations[0]?.severity).toBe("warn");
+    expect(r.violations[0]?.message).toContain("Acknowledged historical loss");
+    expect(r.violations[0]?.message).toContain("D-RMS-BLOB-HISTORICAL-LOSS-ALLOWLIST");
+    expect(r.violations[0]?.message).toContain("#1590");
+  });
+
+  it("a synthetic NEW dangling record (hash NOT on the allowlist) STILL FAILS — fail-direction survives", () => {
+    const NEW_DANGLE_HASH = `blake3:${"cd".repeat(32)}`;
+    expect(ALLOWED_KEYS.has(key("rec:brand-new", NEW_DANGLE_HASH))).toBe(false);
+    const r = run({
+      recordFiledEvents: [
+        recordFiledEvent("rec:brand-new", NEW_DANGLE_HASH, POST_ENFORCEMENT_AS_OF),
+      ],
+      resolvedStore,
+      legacyStore: null,
+      enforcementDate: ENFORCEMENT,
+      allowlistKeys: ALLOWED_KEYS,
+    });
+    expect(r.ok).toBe(false);
+    expect(r.violations).toHaveLength(1);
+    expect(r.violations[0]?.severity).toBe("fail");
+    expect(r.violations[0]?.message).toContain("DANGLING RECORD");
+  });
+
+  it("the SAME recordId with a DIFFERENT hash is NOT excused — the allowlist is keyed on the exact pair", () => {
+    const OTHER_HASH = `blake3:${"ef".repeat(32)}`;
+    const r = run({
+      recordFiledEvents: [recordFiledEvent(ALLOWED_ID, OTHER_HASH, POST_ENFORCEMENT_AS_OF)],
+      resolvedStore,
+      legacyStore: null,
+      enforcementDate: ENFORCEMENT,
+      allowlistKeys: ALLOWED_KEYS,
+    });
+    expect(r.ok).toBe(false);
+    expect(r.violations[0]?.severity).toBe("fail");
+  });
+
+  it("removing the entry from the allowlist makes the SAME record fail again", () => {
+    const events = [recordFiledEvent(ALLOWED_ID, MISSING_HASH, POST_ENFORCEMENT_AS_OF)];
+    const withEntry = run({
+      recordFiledEvents: events,
+      resolvedStore,
+      legacyStore: null,
+      enforcementDate: ENFORCEMENT,
+      allowlistKeys: ALLOWED_KEYS,
+    });
+    expect(withEntry.ok).toBe(true);
+
+    const withoutEntry = run({
+      recordFiledEvents: events,
+      resolvedStore,
+      legacyStore: null,
+      enforcementDate: ENFORCEMENT,
+      allowlistKeys: new Set(), // entry removed
+    });
+    expect(withoutEntry.ok).toBe(false);
+    expect(withoutEntry.violations[0]?.severity).toBe("fail");
+  });
+
+  it("the allowlist never rescues a PRE-enforcement record into the acknowledged class (it stays a historical warn)", () => {
+    // Pre-enforcement records are already non-failing warns; the allowlist
+    // only consults the fail-direction. A pre-enforcement record on the list
+    // keeps the historical-warn message, not the acknowledged-allowlist one.
+    const r = run({
+      recordFiledEvents: [recordFiledEvent(ALLOWED_ID, MISSING_HASH, PRE_ENFORCEMENT_AS_OF)],
+      resolvedStore,
+      legacyStore: null,
+      enforcementDate: ENFORCEMENT,
+      allowlistKeys: ALLOWED_KEYS,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.violations[0]?.severity).toBe("warn");
+    expect(r.violations[0]?.message).toContain("historical");
+  });
+});
+
+describe("the committed frozen allowlist artefact", () => {
+  it("loads the committed rms-blob-historical-loss-allowlist.json and is non-empty + keyed exact", () => {
+    const keys = loadAllowlistKeys();
+    expect(keys.size).toBeGreaterThan(0);
+    // Every key is the exact `${recordId} ${documentHash}` composite — a
+    // blake3 hash is always present, so every key contains the prefix.
+    for (const k of keys) {
+      expect(k).toContain(" blake3:");
+    }
   });
 });
