@@ -85,6 +85,11 @@ import {
 } from "../platform/reporting/ba-100-balance-sheet";
 import { getSubstrateGap } from "../platform/substrate/gap-register";
 import { COA_ACCOUNTS } from "../v2-core/accounting/chart-of-accounts";
+import { hasLineAttribution } from "../v2-core/regulatory-returns/cell-value/attribution";
+import { computeReturnCellValues } from "../v2-core/regulatory-returns/cell-value/engine";
+// Side-effect import: registers every seat-authored per-form line attribution so
+// the cell-value engine can fill granular cells (D-BA-RETURN-CELL-VALUE-ENGINE).
+import "../v2-core/regulatory-returns/cell-value/registrations";
 import { CANONICAL_LEGAL_ENTITY_ID } from "../v2-core/reference-data/legal-entity";
 import type { ReturnForm } from "../v2-core/regulatory-returns/cell-contract";
 import {
@@ -771,13 +776,11 @@ export interface FinanceReturnCell {
   /** Primary clause citation (P2 upward link). */
   readonly citation: string;
   /**
-   * The cell's computed numeric value, where the substrate can source it SOUNDLY
-   * (currently the form-level aggregate cells only — see HEADLINE_CELLS). null for
-   * the granular line cells: the chart-of-accounts is coarser than the SARB form
-   * lines (multiple form rows fold to one CoA category, so a per-line GL split
-   * would double-count) and GL postings carry no banking/trading book dimension —
-   * so a granular per-cell value cannot be produced without fabricating. Honest
-   * null, never a guessed number (Charter cmd 2 / cmd 4).
+   * The cell's computed numeric value, where the substrate can source it SOUNDLY:
+   * the form-level aggregate cells (HEADLINE_CELLS) always, PLUS the full per-line
+   * value engine for any form whose owning seat has authored a line attribution
+   * (D-BA-RETURN-CELL-VALUE-ENGINE; Phase 1, per return). null for cells with no
+   * sound source yet — honest, never a guessed number (Charter cmd 2 / cmd 4).
    */
   readonly value: FinanceReturnCellValue | null;
 }
@@ -836,7 +839,37 @@ function buildFinanceReturnDetailViewInner(
 
   // Figures first — the sound headline cell values are derived from them.
   const figures = liveFiguresForForm(formId, eventStore, marketData);
-  const valueByXsd = headlineValuesByXsd(formId, contract, figures);
+
+  // Per-cell values: the headline aggregate cells always; PLUS the full per-line
+  // engine for any form a seat has authored a line attribution for (none yet —
+  // Phase 1). The engine runs under the active provenance lens (computeTrialBalanceV2
+  // reads defaultProvenanceFilter, pinned by withProvenance). Engine values win on
+  // overlap (they compute the totals too, via the form's own arithmetic).
+  const valueByXsd = new Map<string, FinanceReturnCellValue>(
+    headlineValuesByXsd(formId, contract, figures),
+  );
+  if (hasLineAttribution(formId)) {
+    const tb = computeTrialBalanceV2({
+      eventStore,
+      entity: RETURNS_ENTITY,
+      periodStart: BA100_PERIOD_START,
+      periodEnd: BA100_PERIOD_END,
+    });
+    // Lift minor→major here (the engine is scale-agnostic / platform-free).
+    const trialBalance = tb.rows.map((r) => ({
+      leafAccountId: r.leafAccountId,
+      amountMajor: moneyFromMinorUnits(BigInt(r.amountMinor), r.currency as Currency).amount,
+      currency: r.currency,
+    }));
+    for (const [xsd, v] of computeReturnCellValues({
+      form: formId,
+      contract,
+      trialBalance,
+      functionalCurrency,
+    })) {
+      valueByXsd.set(xsd, v);
+    }
+  }
 
   const counts = { sourced: 0, counselGatedTbc: 0, licenceDayData: 0 };
   const columnMap = new Map<string, string>();
