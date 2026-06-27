@@ -13,13 +13,17 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 import { migrateDocumentStoreBlobs } from "../../scripts/migrate/migrate-document-store-blobs-to-shared";
 import { LocalFsDocumentStore } from "../document-store/local-fs";
+import {
+  inRepoDocumentStoreRoot,
+  resolveDocumentStoreRoot,
+} from "../document-store/resolve-document-store";
 import { makeRecordFiled } from "../event-store/event-types";
 import type { Event } from "../event-store/types";
-import { run } from "./rms-document-blob-integrity";
+import { readPathDocumentStoreRoot, run } from "./rms-document-blob-integrity";
 
 const ENFORCEMENT = "2026-06-11";
 const PRE_ENFORCEMENT_AS_OF = "2026-06-01T10:00:00.000Z";
@@ -156,6 +160,15 @@ describe("recon:rms-document-blob-integrity", () => {
     expect(after.violations).toHaveLength(0);
   });
 
+  // The injected-`recordFiledEvents` + injected-store cases above prove the
+  // assertion CORE. The read-path block below proves the gate's PRIMARY-store
+  // DEFAULT resolution models the store the reader (dashboard / RecordFiled
+  // consumers) reads — not the `excludeHomeDefault` per-worktree singleton.
+  // This is the blind spot that made the live sweep report ~3,268 false
+  // dangling records (shared event store audited against the empty
+  // per-worktree document store) instead of the true ~1,867 the home store
+  // carries; it cannot regress while these assertions hold. Mirrors the
+  // `agent-memory-doc-resolves` read-path regression (2026-06-25).
   it("asserts a mixed population with per-event severities", () => {
     const clean = resolvedStore.put("clean body");
     const legacy = legacyStore.put("legacy body");
@@ -174,5 +187,49 @@ describe("recon:rms-document-blob-integrity", () => {
     expect(r.ok).toBe(false);
     const bySeverity = r.violations.map((v) => v.severity).sort();
     expect(bySeverity).toEqual(["fail", "warn", "warn"]);
+  });
+});
+
+describe("readPathDocumentStoreRoot — models the reader's store, not the per-worktree singleton", () => {
+  it("honors BANK_DOCUMENT_STORE (the env tier the boot shim / CI pin sets)", () => {
+    const saved = process.env.BANK_DOCUMENT_STORE;
+    try {
+      process.env.BANK_DOCUMENT_STORE = "/tmp/rms-blob-read-path-docs";
+      expect(readPathDocumentStoreRoot()).toBe(resolve("/tmp/rms-blob-read-path-docs"));
+    } finally {
+      if (saved === undefined) {
+        // biome-ignore lint/performance/noDelete: env-var cleanup needs delete for true absence (undefined-assignment coerces to the string "undefined")
+        delete process.env.BANK_DOCUMENT_STORE;
+      } else {
+        process.env.BANK_DOCUMENT_STORE = saved;
+      }
+    }
+  });
+
+  it("is home-default-ENABLED: the read-path root diverges from the excludeHomeDefault singleton when no env is set", () => {
+    // The crux the gate's read-path fix depends on: with no doc-store env set,
+    // the READ path (this gate's primary store, paired to the event store's
+    // live home resolution) resolves to the shared HOME store, while the
+    // per-worktree `excludeHomeDefault` singleton resolves to the empty
+    // in-repo fallback. If the gate used the singleton (as it did before this
+    // fix) it would audit the SHARED event store against the EMPTY
+    // per-worktree document store and report every RecordFiled as dangling.
+    const NO_ENV = {
+      explicit: "",
+      envBankDocumentStore: "",
+      envBankDocumentStorePath: "",
+      envBankHomeDocumentStore: "",
+      home: "/tmp/fake-home",
+    } as const;
+    const readPath = resolveDocumentStoreRoot({ ...NO_ENV });
+    const singleton = resolveDocumentStoreRoot({
+      ...NO_ENV,
+      excludeHomeDefault: true,
+      fallbackRoot: inRepoDocumentStoreRoot(),
+    });
+    expect(readPath.source).toBe("home-default");
+    expect(readPath.root).toBe(resolve("/tmp/fake-home", ".local", "share", "bank", "documents"));
+    expect(singleton.source).toBe("fallback");
+    expect(readPath.root).not.toBe(singleton.root);
   });
 });

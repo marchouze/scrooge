@@ -12,16 +12,38 @@
 // the blob locally while the event went to the shared store, and the
 // worktree was pruned.
 //
-// **Store resolution.** Both stores resolve exactly like every other
-// recon pipeline's inputs:
+// **Store resolution — model the READ PATH, paired to the event store.**
+// The gate audits whatever event store `eventStore` resolved to; its
+// document store MUST resolve to the store the SAME read path reads —
+// "shared event store ⇒ shared document store" is the pairing invariant
+// (D-CROSS-WORKTREE-EVENT-STORE-SYNC). The two stores resolve as:
 //   - Event store: `eventStore` from `platform/composition` —
 //     env-overridable via `BANK_EVENT_DB`; per-worktree `.local/event.db`
-//     in CI.
-//   - Document store: `new LocalFsDocumentStore()` — the default
-//     (composition-posture) ladder `BANK_DOCUMENT_STORE` →
+//     in CI; the canonical `$HOME/.local/share/bank/event.db` in the live
+//     sweep (the dashboard's read path).
+//   - Document store (primary): `readPathDocumentStoreRoot()` — the
+//     home-default-ENABLED resolution (`BANK_DOCUMENT_STORE` →
 //     `BANK_DOCUMENT_STORE_PATH` → `BANK_HOME_DOCUMENT_STORE` →
-//     per-worktree in-repo fallback (`prototype/data/documents`). See
+//     `$HOME/.local/share/bank/documents`). This mirrors the event
+//     store's live posture: when `BANK_EVENT_DB` points at the shared
+//     home event store and `BANK_DOCUMENT_STORE` is unset, the document
+//     store resolves to the PAIRED `$HOME/.local/share/bank/documents`,
+//     not the empty per-worktree singleton. See
 //     `platform/document-store/resolve-document-store.ts`.
+//
+//   THE BLIND SPOT THIS FIXES. The previous version mounted
+//   `new LocalFsDocumentStore()` — the `excludeHomeDefault` singleton
+//   (`<repo>/prototype/data/documents`). In the live shared-home sweep
+//   (`BANK_EVENT_DB=$HOME/...event.db`, `BANK_DOCUMENT_STORE` unset) that
+//   audited the SHARED event store against the EMPTY per-worktree
+//   document store, reporting EVERY `RecordFiled` as dangling (~3,268
+//   false positives) instead of the true ~1,867 the home store carries.
+//   A doc-store integrity gate must resolve the store the reader reads
+//   (home/shared), NOT the `excludeHomeDefault` singleton — the same fix
+//   landed in `agent-memory-doc-resolves.ts` (2026-06-25). CI stays green
+//   because there `BANK_DOCUMENT_STORE` is pinned repo-local
+//   (`.local/documents`, see pr-ci.yml), so writer + gate both resolve
+//   there and every blob is present by construction.
 //
 // **Why CI is green pre-migration (mechanism statement).** Every
 // `RecordFiled` writer (`recordFiled` in `platform/records/helpers.ts`,
@@ -62,7 +84,10 @@
 
 import { eventStore } from "../composition";
 import { LocalFsDocumentStore } from "../document-store/local-fs";
-import { inRepoDocumentStoreRoot } from "../document-store/resolve-document-store";
+import {
+  inRepoDocumentStoreRoot,
+  resolveDocumentStoreRoot,
+} from "../document-store/resolve-document-store";
 import type { DocumentHash, DocumentStore } from "../document-store/types";
 import type { Event } from "../event-store/types";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
@@ -92,8 +117,24 @@ export interface BlobIntegrityDeps {
   readonly enforcementDate?: string;
 }
 
+/**
+ * The document-store root the READ PATH resolves to — the
+ * home-default-ENABLED resolution (NOT `excludeHomeDefault`). This is the
+ * store the dashboard / `RecordFiled` consumers read, and it pairs to the
+ * event store's live resolution: `BANK_DOCUMENT_STORE` pinned (CI / local
+ * repro) → that repo-local root; unset (live shared-home sweep) →
+ * `$HOME/.local/share/bank/documents` — the twin of
+ * `$HOME/.local/share/bank/event.db` that `eventStore` opens when
+ * `BANK_EVENT_DB` points there. Exported so the regression test can pin
+ * this read-path behaviour and the `excludeHomeDefault`-singleton blind
+ * spot cannot regress.
+ */
+export function readPathDocumentStoreRoot(): string {
+  return resolveDocumentStoreRoot({}).root;
+}
+
 function defaultStores(): { resolved: LocalFsDocumentStore; legacy: LocalFsDocumentStore | null } {
-  const resolved = new LocalFsDocumentStore();
+  const resolved = new LocalFsDocumentStore({ root: readPathDocumentStoreRoot() });
   const legacyRoot = inRepoDocumentStoreRoot();
   const legacy =
     resolved.rootPath() === legacyRoot ? null : new LocalFsDocumentStore({ root: legacyRoot });
