@@ -652,6 +652,91 @@ export function liveFiguresForForm(
 }
 
 // ---------------------------------------------------------------------------
+// SOUND per-cell values — the form-level AGGREGATE cells only.
+//
+// A granular per-line value cannot be produced soundly from today's substrate:
+//   - the chart-of-accounts is COARSER than the SARB form lines (e.g. BA 100
+//     rows R0040/R0050/R0060 all fold to `category:asset-cash`), so splitting a
+//     category across its form rows would double-count in the subtotals; and
+//   - GL postings carry no banking/trading book dimension, so the per-book
+//     columns (Banking / Trading) cannot be filled.
+// What IS sound is the GRAND-TOTAL cell of a section — it equals the validated,
+// provenance-aware figure the page already computes (assets / liabilities /
+// equity totals; the aggregate RWA). Each mapping below is pinned to an explicit
+// (row, column) coordinate and GUARDED by a rowLabel keyword so a contract edit
+// that moves the line silently drops the value rather than mis-placing it
+// (fail-safe). Filling the rest awaits finer CoA→line mapping + book/entity
+// dimensioning on postings (a finance/risk-seat substrate programme), not a
+// dashboard guess. Charter cmd 2 (fail-closed) / cmd 4 (source, don't fabricate).
+// ---------------------------------------------------------------------------
+
+interface HeadlineCellMap {
+  readonly row: string;
+  readonly column: string;
+  /** Lowercased keyword the target cell's rowLabel must contain (drift guard). */
+  readonly keyword: string;
+  readonly pick: (figures: FinanceReturnFigures) => Money<Currency> | null;
+}
+
+const HEADLINE_CELLS: Partial<Record<ReturnForm, readonly HeadlineCellMap[]>> = {
+  BA100: [
+    {
+      row: "R0540",
+      column: "C0040",
+      keyword: "total assets",
+      pick: (f) => (f.kind === "ba100" ? f.assets : null),
+    },
+    {
+      row: "R0790",
+      column: "C0040",
+      keyword: "total liabilities",
+      pick: (f) => (f.kind === "ba100" ? f.liabilities : null),
+    },
+    {
+      row: "R0870",
+      column: "C0040",
+      keyword: "total equity",
+      pick: (f) => (f.kind === "ba100" ? f.equity : null),
+    },
+  ],
+  BA700: [
+    {
+      row: "R0030",
+      column: "C0080",
+      keyword: "aggregate risk weighted",
+      pick: (f) => (f.kind === "ba700" ? f.totalRwa : null),
+    },
+  ],
+};
+
+/** Resolve the sound headline cell values, keyed by xsdElement. */
+export function headlineValuesByXsd(
+  formId: ReturnForm,
+  contract: ReturnType<typeof loadReturnContract>,
+  figures: FinanceReturnFigures | undefined,
+): Map<string, FinanceReturnCellValue> {
+  const out = new Map<string, FinanceReturnCellValue>();
+  if (figures === undefined) return out;
+  for (const h of HEADLINE_CELLS[formId] ?? []) {
+    const cell = contract.cells.find(
+      (c) => c.cellRef.row === h.row && c.cellRef.column === h.column,
+    );
+    // Drift guard: the coordinate must still carry the expected line (else skip —
+    // never place a value on the wrong cell).
+    if (cell === undefined) continue;
+    if (!(cell.cellRef.rowLabel ?? "").toLowerCase().includes(h.keyword)) continue;
+    const money = h.pick(figures);
+    if (money === null) continue;
+    out.set(cell.cellRef.xsdElement, {
+      amount: money.amount,
+      valueType: "money",
+      currency: money.currency,
+    });
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
 // Return DETAIL view — the full per-return cell spreadsheet.
 //
 // Surfaces EVERY cell of the typed per-cell data-requirement contract
@@ -685,6 +770,25 @@ export interface FinanceReturnCell {
   readonly derivationExpression: string;
   /** Primary clause citation (P2 upward link). */
   readonly citation: string;
+  /**
+   * The cell's computed numeric value, where the substrate can source it SOUNDLY
+   * (currently the form-level aggregate cells only — see HEADLINE_CELLS). null for
+   * the granular line cells: the chart-of-accounts is coarser than the SARB form
+   * lines (multiple form rows fold to one CoA category, so a per-line GL split
+   * would double-count) and GL postings carry no banking/trading book dimension —
+   * so a granular per-cell value cannot be produced without fabricating. Honest
+   * null, never a guessed number (Charter cmd 2 / cmd 4).
+   */
+  readonly value: FinanceReturnCellValue | null;
+}
+
+/** A soundly-sourced cell value: decimal-native, provenance-aware. */
+export interface FinanceReturnCellValue {
+  /** Decimal-native major-unit amount (money) or percentage value (ratio). */
+  readonly amount: string;
+  readonly valueType: "money" | "ratio";
+  /** ISO-4217 currency for money values; null for ratios. */
+  readonly currency: string | null;
 }
 
 export interface FinanceReturnDetailView {
@@ -730,6 +834,10 @@ function buildFinanceReturnDetailViewInner(
   const contract = loadReturnContract(formId);
   const functionalCurrency = anchorFunctionalCurrency();
 
+  // Figures first — the sound headline cell values are derived from them.
+  const figures = liveFiguresForForm(formId, eventStore, marketData);
+  const valueByXsd = headlineValuesByXsd(formId, contract, figures);
+
   const counts = { sourced: 0, counselGatedTbc: 0, licenceDayData: 0 };
   const columnMap = new Map<string, string>();
   const cells: FinanceReturnCell[] = contract.cells.map((c) => {
@@ -755,14 +863,13 @@ function buildFinanceReturnDetailViewInner(
       derivationKind: c.derivation.kind,
       derivationExpression: c.derivation.expression,
       citation: primary !== undefined ? primary.clause : "",
+      value: valueByXsd.get(c.cellRef.xsdElement) ?? null,
     };
   });
 
   const columns = [...columnMap.entries()]
     .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
     .map(([column, label]) => ({ column, label }));
-
-  const figures = liveFiguresForForm(formId, eventStore, marketData);
 
   return {
     formId,

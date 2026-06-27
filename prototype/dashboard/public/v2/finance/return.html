@@ -45,6 +45,8 @@
     table.v2-form td.cell.licence { background:transparent; color:var(--color-text-secondary); }
     table.v2-form td.cell.counsel { background:var(--color-warning-bg, #5a4a1a); }
     table.v2-form td.cell .frm { font-size:0.92em; color:var(--color-text-secondary); }
+    table.v2-form td.cell.has-val { background:var(--color-info-bg); }
+    table.v2-form td.cell.has-val .val { font-weight:700; color:var(--color-text); }
   </style>
 </head>
 <body data-provenance-content="none">
@@ -222,6 +224,14 @@
           cell.derivationExpression ? `Derivation [${cell.derivationKind}]: ${cell.derivationExpression}` : `Derivation: ${cell.derivationKind}`,
           cell.statusReason || "",
         ].filter(Boolean).join("\n");
+        // A soundly-computed value (currently the form-level aggregates) takes
+        // precedence — show the real number, not the formula.
+        if (cell.value) {
+          const v = cell.value.valueType === "money"
+            ? fmtMoney({ amount: cell.value.amount, currency: cell.value.currency })
+            : `${Number(cell.value.amount).toFixed(2)}%`;
+          return `<td class="cell ${cls} has-val" title="${v2Esc(tip)}"><span class="val">${v}</span></td>`;
+        }
         let inner = "";
         if (cell.status === "sourced") {
           inner = cell.derivationExpression
