@@ -16,21 +16,35 @@
     .v2-mono { font-family:var(--font-mono, ui-monospace, monospace); font-size:0.92em; }
     .v2-note { margin-top:12px; padding:10px 12px; border-radius:6px; background:var(--color-surface-raised);
       color:var(--color-text-secondary); font-size:0.85em; line-height:1.5; }
-    /* Cell spreadsheet */
+    /* SARB form — Excel-style pivot grid */
     .v2-ss-toolbar { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:4px 0 12px; }
     .v2-ss-search { flex:1; min-width:220px; padding:7px 10px; border-radius:6px; border:1px solid var(--color-border);
       background:var(--color-surface); color:var(--color-text); font-size:0.9em; }
-    .v2-ss-legend { font-size:0.8em; color:var(--color-text-secondary); display:flex; gap:10px; flex-wrap:wrap; }
-    .v2-ss-wrap { overflow:auto; max-height:72vh; border:1px solid var(--color-border); border-radius:6px; }
-    table.v2-ss { width:100%; border-collapse:collapse; font-size:0.84em; }
-    table.v2-ss thead th { position:sticky; top:0; z-index:2; background:var(--color-surface-raised);
-      text-align:left; padding:7px 9px; border-bottom:1px solid var(--color-border); white-space:nowrap; font-weight:600; }
-    table.v2-ss td { padding:5px 9px; border-bottom:1px solid var(--color-border); vertical-align:top; }
-    table.v2-ss tbody tr:hover { background:var(--color-surface-raised); }
-    .v2-ss-coord { font-family:var(--font-mono, ui-monospace, monospace); white-space:nowrap; color:var(--color-text-secondary); }
-    .v2-ss-num { text-align:right; font-family:var(--font-mono, ui-monospace, monospace); white-space:nowrap; }
-    .v2-ss-deriv { font-family:var(--font-mono, ui-monospace, monospace); font-size:0.9em; color:var(--color-text-secondary); max-width:280px; overflow-wrap:anywhere; }
+    .v2-ss-legend { font-size:0.8em; color:var(--color-text-secondary); display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .v2-ss-legend .sw { display:inline-block; width:11px; height:11px; border-radius:2px; margin-right:4px; vertical-align:-1px; border:1px solid var(--color-border); }
     .v2-ss-rowcount { font-size:0.8em; color:var(--color-text-secondary); margin-top:8px; }
+
+    .v2-form-wrap { overflow:auto; max-height:76vh; border:1px solid var(--color-border); border-radius:6px; background:var(--color-surface); }
+    table.v2-form { border-collapse:separate; border-spacing:0; font-size:0.8em; }
+    table.v2-form th, table.v2-form td { border-right:1px solid var(--color-border); border-bottom:1px solid var(--color-border); padding:4px 8px; }
+    /* column headers (top, sticky) */
+    table.v2-form thead th { position:sticky; top:0; z-index:3; background:var(--color-surface-raised);
+      text-align:center; font-weight:600; min-width:104px; max-width:150px; vertical-align:bottom; line-height:1.25; }
+    table.v2-form thead th .cc { display:block; font-family:var(--font-mono, ui-monospace, monospace); font-size:0.82em; color:var(--color-text-secondary); font-weight:400; }
+    /* top-left corner */
+    table.v2-form thead th.corner { left:0; z-index:4; text-align:left; min-width:300px; max-width:340px; }
+    /* row headers (left, sticky) */
+    table.v2-form td.rowhead { position:sticky; left:0; z-index:1; background:var(--color-surface);
+      min-width:300px; max-width:340px; text-align:left; vertical-align:top; line-height:1.3; }
+    table.v2-form td.rowhead .rc { font-family:var(--font-mono, ui-monospace, monospace); font-size:0.82em; color:var(--color-text-secondary); margin-right:6px; }
+    table.v2-form tbody tr:hover td.rowhead { background:var(--color-surface-raised); }
+    /* data cells */
+    table.v2-form td.cell { text-align:right; font-family:var(--font-mono, ui-monospace, monospace); white-space:nowrap; color:var(--color-text); }
+    table.v2-form td.cell.empty { background:repeating-linear-gradient(135deg, transparent, transparent 5px, var(--color-surface-raised) 5px, var(--color-surface-raised) 6px); }
+    table.v2-form td.cell.sourced { background:var(--color-success-bg); }
+    table.v2-form td.cell.licence { background:transparent; color:var(--color-text-secondary); }
+    table.v2-form td.cell.counsel { background:var(--color-warning-bg, #5a4a1a); }
+    table.v2-form td.cell .frm { font-size:0.92em; color:var(--color-text-secondary); }
   </style>
 </head>
 <body data-provenance-content="none">
@@ -169,50 +183,98 @@
       const figs = figuresSection(data.figures);
       if (figs) main.appendChild(figs);
 
-      // Full cell spreadsheet.
+      // ---- The SARB form as a 2D Excel-style grid ------------------------
+      // Rows down (R-coordinate + official row heading), columns across
+      // (C-coordinate + official column heading), one cell per intersection.
+      // Exactly the shape of the published SARB BAxxx workbook.
+      const VAL_COL = " val"; // synthetic column for cells with no C-coordinate
+      const metaCells = data.cells.filter((c) => c.row === null);
+      const gridCells = data.cells.filter((c) => c.row !== null);
+
+      // Column order: the form's declared columns, plus a leading "Value" column
+      // only if some row carries a coordinate-less single value.
+      const cols = [...data.columns];
+      if (gridCells.some((c) => c.column === null)) {
+        cols.unshift({ column: VAL_COL, label: "Value" });
+      }
+
+      // Row order: first-seen order (the contract is authored in form order).
+      const rowOrder = [];
+      const rowLabelOf = new Map();
+      const cellAt = new Map(); // `${row} ${col}` -> cell
+      for (const c of gridCells) {
+        if (!rowLabelOf.has(c.row)) { rowLabelOf.set(c.row, c.rowLabel || ""); rowOrder.push(c.row); }
+        cellAt.set(`${c.row} ${c.column ?? VAL_COL}`, c);
+      }
+
+      // Cell renderer: a real SARB form cell. Sourced cells (populatable from the
+      // current substrate) carry their derivation expression — the formula/source
+      // that fills them — like a spreadsheet's formula view; licence-day cells are
+      // blank (the unfilled form); a missing intersection is a hatched gap.
+      function cellHtml(cell) {
+        if (!cell) return `<td class="cell empty"></td>`;
+        const cls = cell.status === "sourced" ? "sourced" : cell.status === "counsel-gated-TBC" ? "counsel" : "licence";
+        const tip = [
+          `${cell.row || ""}${cell.column ? " · " + cell.column : ""}  ${cell.xsdElement}`,
+          cell.label,
+          cell.regulatoryDefinition,
+          `Type: ${cell.valueType}${cell.unit ? " (" + cell.unit + ")" : ""} · Status: ${cell.status}`,
+          cell.derivationExpression ? `Derivation [${cell.derivationKind}]: ${cell.derivationExpression}` : `Derivation: ${cell.derivationKind}`,
+          cell.statusReason || "",
+        ].filter(Boolean).join("\n");
+        let inner = "";
+        if (cell.status === "sourced") {
+          inner = cell.derivationExpression
+            ? `<span class="frm">${v2Esc(cell.derivationExpression)}</span>`
+            : `<span class="frm">${v2Esc(cell.derivationKind)}</span>`;
+        } else if (cell.status === "counsel-gated-TBC") {
+          inner = `<span class="frm">TBC</span>`;
+        }
+        return `<td class="cell ${cls}" title="${v2Esc(tip)}">${inner}</td>`;
+      }
+
       const section = document.createElement("div");
       section.className = "v2-section";
-      section.innerHTML = `<h2 class="v2-section-title">Form cells (${data.cellCount})</h2>`;
+      section.innerHTML = `<h2 class="v2-section-title">${v2Esc(data.form)} form — ${data.cellCount} cells, ${rowOrder.length} rows × ${data.columns.length} columns</h2>`;
       main.appendChild(section);
 
       const toolbar = document.createElement("div");
       toolbar.className = "v2-ss-toolbar";
       toolbar.innerHTML =
-        `<input class="v2-ss-search" type="search" placeholder="Filter cells — coordinate, line item, definition, XSD element…" aria-label="Filter cells">` +
+        `<input class="v2-ss-search" type="search" placeholder="Filter rows — row heading, coordinate, definition…" aria-label="Filter rows">` +
         `<span class="v2-ss-legend">` +
-        statusChip("sourced") + ` sourced` +
-        statusChip("licence-day-data") + ` licence-day` +
-        statusChip("counsel-gated-TBC") + ` counsel-gated` +
+        `<span><span class="sw" style="background:var(--color-success-bg)"></span>sourced (formula shown)</span>` +
+        `<span><span class="sw" style="background:transparent"></span>licence-day (blank)</span>` +
+        `<span><span class="sw" style="background:var(--color-warning-bg,#5a4a1a)"></span>counsel-TBC</span>` +
         `</span>`;
       section.appendChild(toolbar);
 
+      // Meta / form-header cells (FirmID, reporting dates …) — not part of the grid.
+      if (metaCells.length > 0) {
+        const meta = document.createElement("p");
+        meta.className = "v2-note";
+        meta.innerHTML = `<strong>Form header (${metaCells.length}):</strong> ` +
+          metaCells.map((c) => `<span class="v2-mono" title="${v2Esc(c.regulatoryDefinition)}">${v2Esc(c.label)}</span>`).join(" · ");
+        section.appendChild(meta);
+      }
+
       const wrap = document.createElement("div");
-      wrap.className = "v2-ss-wrap";
+      wrap.className = "v2-form-wrap";
       const table = document.createElement("table");
-      table.className = "v2-ss";
-      const cols = ["Row", "Column", "Line item", "Type", "Unit", "Status", "Derivation", "XSD"];
-      table.innerHTML = `<thead><tr>${cols.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
+      table.className = "v2-form";
+      const headCols = cols.map((c) =>
+        `<th><span>${v2Esc(c.label)}</span>${c.column !== VAL_COL ? `<span class="cc">${v2Esc(c.column)}</span>` : ""}</th>`).join("");
+      table.innerHTML = `<thead><tr><th class="corner">Line item</th>${headCols}</tr></thead>`;
       const tbody = document.createElement("tbody");
 
-      // Pre-render each cell row's HTML + a lowercased search blob.
-      const rowEls = data.cells.map((c) => {
+      const rowEls = rowOrder.map((row) => {
         const tr = document.createElement("tr");
-        const rowCoord = c.row ? `<span class="v2-ss-coord">${v2Esc(c.row)}</span>${c.rowLabel ? `<br><span style="color:var(--color-text-secondary);font-size:0.92em;">${v2Esc(c.rowLabel)}</span>` : ""}` : `<span class="v2-ss-coord">meta</span>`;
-        const colCoord = c.column ? `<span class="v2-ss-coord">${v2Esc(c.column)}</span>${c.columnLabel ? `<br><span style="color:var(--color-text-secondary);font-size:0.92em;">${v2Esc(c.columnLabel)}</span>` : ""}` : "—";
-        const deriv = c.derivationExpression
-          ? `<span class="v2-ss-deriv" title="${v2Esc(c.derivationKind)}">${v2Esc(c.derivationExpression)}</span>`
-          : `<span style="color:var(--color-text-secondary);">${v2Esc(c.derivationKind)}</span>`;
-        tr.innerHTML =
-          `<td>${rowCoord}</td>` +
-          `<td>${colCoord}</td>` +
-          `<td>${v2Esc(c.label)}</td>` +
-          `<td>${v2Esc(c.valueType)}</td>` +
-          `<td>${v2Esc(c.unit)}</td>` +
-          `<td>${statusChip(c.status)}${c.statusReason ? `<br><span style="color:var(--color-text-secondary);font-size:0.85em;">${v2Esc(c.statusReason)}</span>` : ""}</td>` +
-          `<td>${deriv}</td>` +
-          `<td class="v2-ss-coord">${v2Esc(c.xsdElement)}</td>`;
-        const blob = [c.row, c.rowLabel, c.column, c.columnLabel, c.label, c.regulatoryDefinition, c.valueType, c.status, c.derivationExpression, c.xsdElement]
-          .filter(Boolean).join(" ").toLowerCase();
+        const rowLabel = rowLabelOf.get(row) || "";
+        const cells = cols.map((col) => cellHtml(cellAt.get(`${row} ${col.column}`))).join("");
+        tr.innerHTML = `<td class="rowhead"><span class="rc">${v2Esc(row)}</span>${v2Esc(rowLabel)}</td>${cells}`;
+        const rowCells = cols.map((col) => cellAt.get(`${row} ${col.column}`)).filter(Boolean);
+        const blob = [row, rowLabel, ...rowCells.map((c) => `${c.label} ${c.regulatoryDefinition} ${c.xsdElement}`)]
+          .join(" ").toLowerCase();
         return { tr, blob };
       });
       for (const r of rowEls) tbody.appendChild(r.tr);
@@ -222,11 +284,11 @@
 
       const countLine = document.createElement("div");
       countLine.className = "v2-ss-rowcount";
-      const setCount = (n) => { countLine.textContent = `Showing ${n} of ${data.cellCount} cells`; };
-      setCount(data.cellCount);
+      const setCount = (n) => { countLine.textContent = `Showing ${n} of ${rowOrder.length} rows`; };
+      setCount(rowOrder.length);
       section.appendChild(countLine);
 
-      // Client-side filter.
+      // Client-side row filter.
       const search = toolbar.querySelector(".v2-ss-search");
       search.addEventListener("input", () => {
         const q = search.value.trim().toLowerCase();
