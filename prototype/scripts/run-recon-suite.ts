@@ -450,6 +450,18 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // on a store with no trading-book sim); the production-zero + born-V2
     // registration legs are clean-store-provable and always assert.
     "recon:ba320-trading-book-sim-drive",
+    // D-BA-RETURN-CELL-VALUE-ENGINE Phase 1 — ENFORCING: the BA 100 per-cell LEAF
+    // FOLD reconciles to the canonical CoA trial-balance oracle. The leaf fold
+    // reads the BA 100 line values DIRECTLY from the capital FIL events (a return
+    // and the CoA are SIBLING folds of the same event log — granularity comes from
+    // the events, NOT routed through the CoA); this gate asserts Σ(folded asset-
+    // line values) == oracle.assets, Σ(liabilities) == oracle.liabilities,
+    // Σ(equity) == oracle.equity under the COMBINED provenance lens, plus non-
+    // vacuity (the R300m CET1 injection MUST place at least one line). The CoA fold
+    // is the reconciliation ORACLE ONLY, never the source. Read-path-store aware
+    // (resolves the store the dashboard reader reads, opened read-only). Authority:
+    // D-BA-RETURN-CELL-VALUE-ENGINE; D-CAPITAL-ASSET-CLASS-V1; SARB BA 100.
+    "recon:ba100-cell-values-reconcile",
     // D-BA-RETURN-SIMULATOR-FIRST Phase 2a — ENFORCING: BA 325 (Selected Risk
     // Exposure — Trading & Treasury) ASSEMBLY gate. Builds a self-contained
     // in-memory simulated trading book and asserts (A) the BA 325 summary lines

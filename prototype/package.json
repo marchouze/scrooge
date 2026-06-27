@@ -47,6 +47,7 @@
     "recon:cva-derivatives-sim-drive": "bun run platform/recon/cva-derivatives-sim-drive.ts",
     "recon:ba300-deposit-funding-sim-drive": "bun run platform/recon/ba300-deposit-funding-sim-drive.ts",
     "recon:ba200-credit-sim-drive": "bun run platform/recon/ba200-credit-sim-drive.ts",
+    "recon:ba100-cell-values-reconcile": "bun run platform/recon/ba100-cell-values-reconcile.ts",
     "recon:alm-snapshot-v2-parity": "bun run platform/recon/alm-snapshot-v2-parity.ts",
     "recon:dashboard-v2-coverage": "bun run platform/recon/dashboard-v2-coverage.ts",
     "file:atlas-v2-capital-ui-visibility-slice-1": "bun run scripts/file-atlas-v2-capital-ui-visibility-slice-1.ts",
