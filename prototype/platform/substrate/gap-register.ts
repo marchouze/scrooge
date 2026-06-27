@@ -384,6 +384,22 @@ export const SUBSTRATE_GAP_REGISTER: readonly SubstrateGapRecord[] = [
     status: "planned",
     mitigation: "partial",
   },
+  // ---------------------------------------------------------------------------
+  // BA 100 per-cell leaf fold — Phase 1 pilot (D-BA-RETURN-CELL-VALUE-ENGINE).
+  // The capital FIL instances fold soundly onto their BA 100 rows (R0040 cash,
+  // R0810/R0820/R0830 equity, R0700 capital liabilities); the remaining BA 100
+  // lines stay BLANK because the build-phase instruments do not yet carry the
+  // dimension each line needs. Tracked here — never folded from a coarser proxy.
+  // ---------------------------------------------------------------------------
+  {
+    id: "ba100-leaf-fold-instrument-coverage",
+    title: "BA 100 leaf fold: most lines blank — instruments lack the line dimension",
+    description:
+      "The BA 100 per-cell leaf fold (platform/reporting/cell-value/ba100-leaf-fold.ts; D-BA-RETURN-CELL-VALUE-ENGINE Phase 1) folds the CAPITAL FIL instances (assetClass:'capital') directly from the event log onto their SARB BA 100 rows — Dr settlement-cash (nostro) → R0040 (local & foreign currency), Cr own-funds → R0810 share capital / R0820 retained earnings / R0830 other reserves (CET1) or R0700 qualifying-as-capital (AT1/Tier 2). This reconciles to the canonical generateBa100BalanceSheet section totals by construction (recon:ba100-cell-values-reconcile). Every OTHER BA 100 line stays BLANK because the build-phase instruments do not yet carry the event/product dimension that line needs — NOT because 'the CoA is too coarse' (a return and the CoA are sibling folds of the same log; the missing dimension is an EVENT/PRODUCT-SCHEMA gap). Named missing dimensions: (1) loans-and-advances rows R0130–R0230 (homeloans / commercial mortgages / credit cards / overdrafts / term loans …) need a born-V2 loan-origination instrument carrying its SARB loan-product sub-type (shares the GAP-BA200-CREDIT-SIM-GL born-V2 loan substrate); (2) deposits-and-creditors rows R0560–R0620 + the R1010 counterparty-sector analysis need a born-V2 deposit instrument carrying deposit-type + counterparty-sector (shares GAP-BA300-DEPOSIT-FUNDING-SIM-GL); (3) investment & trading securities rows R0270–R0330 + pledged-assets R0350–R0380 need a securities-holding FIL instrument carrying listed/unlisted + issuer-sector + pledge status; (4) the Banking (C0010) / Trading (C0020) column split needs a per-leg banking-vs-trading-book designation on the posting leg (the capital legs are reported in the consolidated C0040 'Total bank' column only at Phase 1); (5) settled `cash` FX legs (FilInstrumentCreated{cash}) are NOT folded onto R0040 because they are not yet on-balance-sheet GL-posted on the clean store — folding them would break the trial-balance reconciliation (they have no matching GL line), so they stay blank pending the born-V2 FX-settlement GL path. Each line is left UNRESOLVED (blank), never fabricated and never folded from a coarser proxy (Engineering Charter cmd 2 fail-closed / cmd 4 source-don't-fabricate). Authority: D-BA-RETURN-CELL-VALUE-ENGINE; D-CAPITAL-ASSET-CLASS-V1; Engineering Charter cmd 2 / cmd 5 (no silent deferral); SARB BA 100; Banks Act §75; Reg 32.",
+    severity: "medium",
+    status: "planned",
+    mitigation: "partial",
+  },
   {
     id: "ba200-credit-granular-cell-mapping",
     title: "BA 200 granular published-schedule cell mapping: engine + aggregate proven",

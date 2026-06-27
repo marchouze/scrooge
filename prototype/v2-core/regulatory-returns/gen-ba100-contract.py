@@ -319,7 +319,14 @@ def build_cell(e):
     elif is_total:
         derivation = {"kind": "sum", "expression": f"sum of constituent {section.replace('total-','')} line-items (see BA 100 form layout)"}
     elif col in AGG_COLUMNS:
-        derivation = {"kind": "sum", "expression": f"[{row},C0010]+[{row},C0020] (Banking + Trading)"}
+        # C0030 (Total1) = Banking (C0010) + Trading (C0020). Emit the CANONICAL
+        # derivation grammar the per-cell value engine evaluates: form-prefixed cell
+        # refs `[BA100,Rxxxx,Cxxxx]`, no trailing prose comment (the engine's
+        # derivation-eval grammar admits only number | [FORM,Rxxxx,Cxxxx] | ops |
+        # parens — a 2-arg ref or a trailing comment is unparseable and crashes the
+        # whole-form fold). The Banking+Trading meaning is documented here, not in
+        # the machine-evaluated expression. (D-BA-RETURN-CELL-VALUE-ENGINE.)
+        derivation = {"kind": "sum", "expression": f"[BA100,{row},C0010]+[BA100,{row},C0020]"}
     else:
         derivation = {"kind": "direct", "expression": f"GL trial-balance fold for line {row}, {collabel} dimension"}
 
