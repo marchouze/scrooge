@@ -236,7 +236,7 @@ export * from "./product-control";
 export * from "./mtm";
 // Operational-risk loss-event CAPTURE — OperationalLossEvent.
 // Internal loss-data set; capture-only (op-RWA capital stays gross-income-blocked).
-// Authority: D-FX-HELD-DIMS-SEAT-SWEEP; Basel II Annex 9 / BCBS D196 §644; Reg 33.
+// Authority: D-FX-HELD-DIMS-SEAT-SWEEP; Basel II Annex 9 / Basel II bcbs128 §644; Reg 33.
 // Author: Tomas (Operations & payments engineer, engineering)
 export * from "./operational-risk";
 // D-EVENT-VIEW-BOUNDARY-WIRE Slice A — PolicyVersionActivated.
@@ -710,7 +710,7 @@ export const TYPED_EVENT_TYPES = [
   // WS-FX-OTC-OPRISK — operational-risk loss-event CAPTURE family.
   // OperationalLossEvent. Capture-only internal loss-data set (op-RWA capital
   // stays gross-income-blocked, revenue-start). Authority: D-FX-HELD-DIMS-SEAT-
-  // SWEEP; Basel II Annex 9 / BCBS D196 §644; Reg 33.
+  // SWEEP; Basel II Annex 9 / Basel II bcbs128 §644; Reg 33.
   ...OPERATIONAL_RISK_TYPED_EVENT_TYPES,
   // WS-V2-BBAAS S4 — V2 anchor-bank standing-data typed event types.
   // V2ProductRegistered, V2ProductDeprecated, V2AccountTypeRegistered,

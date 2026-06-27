@@ -229,7 +229,7 @@ export const WIRED_RETURN_COMPONENT_DEFERRALS: readonly WiredComponentDeferral[]
       "D-RETURNS-SUBMISSION-WIRING-WORKSTREAM",
       "D-BA-RETURN-NUMBERING-EXCEL-CANONICAL",
       "Regulations Relating to Banks Reg 33 (operational risk)",
-      "BCBS D196 §645–§654 (BIA)",
+      "Basel II bcbs128 §645–§654 (BIA)",
     ],
   },
   {

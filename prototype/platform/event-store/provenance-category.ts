@@ -152,7 +152,7 @@ const EXACT: Readonly<Record<string, ProvenanceCategory>> = {
   ReportFiled: "governance",
   ReportSubmissionAcknowledged: "governance",
   // Operational-loss CAPTURE records — the internal-loss data set every bank
-  // must collect (Basel II Annex 9 / BCBS D196 §644; Reg 33). A risk-governance
+  // must collect (Basel II Annex 9 / Basel II bcbs128 §644; Reg 33). A risk-governance
   // record (registry class "governance"), NOT operational simulated trading
   // data: it must survive the production-filter fold so the op-loss register +
   // recon:operational-loss-v2-parity read it. Categorising OperationalLossEventV2

@@ -12,7 +12,7 @@
 // `SubLedgerPostingEmitted.baselBusinessLine` (merged PR #1118) — the SLA
 // interpreter's product-to-business-line classification carried on each posting.
 //
-// Gross-income definition per BCBS D196 §650 / Reg 33(2):
+// Gross-income definition per Basel II bcbs128 §650 / Reg 33(2):
 //
 //   gross income = net interest income
 //                + net fee / commission income
@@ -47,7 +47,7 @@
 // Authority: D-BA-RETURNS-FOLLOWON-BATCH; brief
 //   brief:mira:ws-ba-returns-followon-ba-400-op-risk-events-fir:2026-06-09.
 // Citations: Principles/1-events-are-truth.md; D-BA-RETURN-NUMBERING-EXCEL-
-//   CANONICAL; BCBS D196 §645–§654; Regulations Relating to Banks Reg 33.
+//   CANONICAL; Basel II bcbs128 §645–§654; Regulations Relating to Banks Reg 33.
 //
 // Author: Mira (Regulatory reporting engineer, engineering — reports to Camille
 //   CFO; BA-returns sourcing owner).
@@ -92,7 +92,7 @@ function isBaselBusinessLine(bl: string): bl is BaselBusinessLine {
  * sign of a CREDIT leg's contribution to gross income (a debit leg is the
  * negation).
  *
- * Per BCBS D196 §650 gross income = net interest + net fee + net trading +
+ * Per Basel II bcbs128 §650 gross income = net interest + net fee + net trading +
  * other operating income, GROSS of operating expenses and provisions. We
  * therefore include `income-*` categories (credit = positive income) and
  * EXCLUDE provision / impairment accounts (`expense-impairment`). Pure expense
@@ -113,7 +113,7 @@ function grossIncomeCreditSign(accountId: string): 1 | undefined {
   // debit) and the income side of net interest income.
   if (acct.category.startsWith("income-")) return 1;
   // Interest-expense accounts (`expense-interest`) net INTO net interest income
-  // per BCBS D196 §650 (gross income = net interest income + …). Interest
+  // per Basel II bcbs128 §650 (gross income = net interest income + …). Interest
   // expense is a DEBIT to a debit-natural `expense-interest` account; with
   // creditSign = +1 a debit contributes −amount, reducing gross income — i.e.
   // gross income = interest income − interest expense.

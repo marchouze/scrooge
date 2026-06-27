@@ -29,13 +29,25 @@
 //   352 = market risk minimum capital requirements (Jan 2016, superseded)
 //   457 = FRTB market risk minimum capital requirements (Jan 2019)
 //   450 = Stress testing principles (Oct 2018)
+//   196 = Operational Risk — Supervisory Guidelines for the Advanced
+//         Measurement Approaches (AMA guidelines, Jun 2011)
 //
-// Two numbers are explicitly flagged as NEVER-a-liquidity/IRRBB-standard, so
-// any pairing of them with LCR/NSFR/IRRBB is a violation:
+// Three numbers are explicitly flagged as NEVER-a-given-standard, so any
+// pairing of them with that standard is a violation:
 //   295 must NOT be cited as the LCR (it is the NSFR)
 //   335 must NOT be cited as the NSFR or IRRBB (it is RCAP Saudi Arabia)
 //   365 must NOT be cited as the IRRBB standard (it is the leverage-ratio
 //       consultative document, Apr 2016 — the IRRBB STANDARD is d368)
+//   196 must NOT be cited as the Basic Indicator Approach (BIA) / the
+//       Standardised Approach (TSA) / the op-risk-capital α / β / gross-income
+//       definition: d196 is the AMA Supervisory Guidelines (Jun 2011), which
+//       define NONE of those. The BIA/TSA (α=15%, business-line β, gross
+//       income; §644–§654) are Basel II bcbs128 (Jun 2006), consolidated as the
+//       OPE op-risk standard. (The CURRENT consolidated OPE25 is the new SA /
+//       SMA — bcbs d424, Dec 2017 — which superseded BIA/TSA from 2023; the
+//       build-phase engine computes the bcbs128 BIA/TSA figure until enough
+//       loss history exists. That is a Helena/CRO methodology matter, not a
+//       citation matter — this gate pins the CITATION only.)
 //
 // Scope
 // -----
@@ -84,7 +96,24 @@ export const CANONICAL_BCBS_NUMBERS = {
   SA_CCR: 279, // Standardised approach for counterparty credit risk, Mar 2014
   FRTB: 457, // Minimum capital requirements for market risk (FRTB), Jan 2019
   STRESS_TESTING: 450, // Stress testing principles, Oct 2018
+  OPRISK_AMA_GUIDELINES: 196, // Operational Risk — Supervisory Guidelines for the AMA, Jun 2011
 } as const;
+
+/**
+ * Numbers that are categorically NOT the op-risk-CAPITAL standard. d196 is the
+ * AMA *supervisory guidelines* — it does not define the Basic Indicator
+ * Approach, the Standardised Approach, the α / β factors, or the gross-income
+ * definition (those are Basel II bcbs128 §644–§654, consolidated as OPE). Pinned
+ * here so a `BCBS d196` / `BCBS-D196-…` citation against any op-risk-capital
+ * keyword fails closed. Validated against bis.org (the domain-truth oracle).
+ */
+export const OPRISK_CAPITAL_TITLE_KEYWORDS = [
+  "basic indicator approach",
+  "basic-indicator approach",
+  "standardised approach",
+  "gross income",
+  "gross-income",
+] as const;
 
 /**
  * Numbers that are categorically NOT a given standard — citing them against
@@ -96,6 +125,14 @@ const FORBIDDEN_PAIRINGS: readonly {
   titleLabel: string;
   keywords: readonly string[];
   reason: string;
+  /**
+   * Optional proximity-window override (chars either side of the token). The
+   * op-risk pairing needs a wider window than the default because op-risk
+   * citations carry a long `§645–§654` paragraph span between the `BCBS d196`
+   * token and the title keyword (`BCBS d196 §645–§654 (op-risk measurement)`),
+   * which the default 28-char window cannot reach.
+   */
+  window?: number;
 }[] = [
   {
     number: 295,
@@ -137,6 +174,29 @@ const FORBIDDEN_PAIRINGS: readonly {
     titleLabel: "stress testing",
     keywords: ["stress testing", "stress-testing"],
     reason: "BCBS d295 is the NSFR; the Stress Testing Principles are BCBS d450 (Oct 2018)",
+  },
+  {
+    number: 196,
+    titleLabel: "Basic Indicator Approach (op-risk capital)",
+    keywords: [
+      "basic indicator approach",
+      "basic-indicator approach",
+      "bia",
+      "tsa",
+      "standardised approach",
+      "gross income",
+      "gross-income",
+      "op-risk",
+      "operational risk",
+      "operational-risk",
+      "loss-event",
+      "loss event",
+    ],
+    reason:
+      "BCBS d196 is the AMA Supervisory Guidelines (Jun 2011) — it does NOT define the BIA/TSA, the α=15% / β factors, or gross income; those are Basel II bcbs128 §644–§654, consolidated as the OPE op-risk standard",
+    // op-risk citations span `§645–§654` between the token and the title
+    // keyword; widen the window so the BIA/op-risk keyword is reached.
+    window: 80,
   },
 ];
 
@@ -190,7 +250,15 @@ function isCorrectionContext(line: string): boolean {
     l.includes("not the nsfr") ||
     l.includes("not the lcr") ||
     l.includes("not the irrbb") ||
-    l.includes("rcap saudi arabia")
+    l.includes("rcap saudi arabia") ||
+    // d196 correction context: lines that recite d196 to RECORD that it is the
+    // AMA guidelines and NOT the BIA/op-risk-capital source (the remediation
+    // trail), e.g. the inline `[citation corrected (…): … NOT BCBS d196 — d196
+    // is the AMA Supervisory Guidelines …]` annotation on the op-risk path.
+    l.includes("supervisory guidelines") ||
+    l.includes("advanced measurement approaches") ||
+    l.includes("not bcbs d196") ||
+    l.includes("citation corrected")
   );
 }
 
@@ -278,6 +346,14 @@ const SKIP_PATH_FRAGMENTS = [
   // token, so the .json is validated via its generator source, not re-scanned.
   "regulatory-returns/ba300-contract.json",
   "regulatory-returns/ba310-contract.json",
+  // Historical RECORDS that preserve a now-superseded citation verbatim (the
+  // old `BCBS D196` op-risk attribution, corrected forward-only under
+  // D-BCBS-CITATION-NUMBERING-REMEDIATION). They are append-only records OF past
+  // state, not live citations the bank asserts now — excluded like the audit md
+  // + source-doc verbatim extracts. Each carries an inline correction marker so
+  // a reader knows the d196 mention is the OLD wrong attribution kept as history.
+  "scripts/record-d-reporting-capability-slice-5.ts",
+  "seeds/agent-memory/notes.seed.json",
 ];
 const SCAN_EXTS = [".md", ".html", ".ts", ".json", ".yml", ".yaml"];
 
@@ -313,9 +389,10 @@ function nearbyHasKeyword(
   idx: number,
   len: number,
   keywords: readonly string[],
+  window: number = WINDOW,
 ): boolean {
-  const start = Math.max(0, idx - WINDOW);
-  const end = Math.min(text.length, idx + len + WINDOW);
+  const start = Math.max(0, idx - window);
+  const end = Math.min(text.length, idx + len + window);
   const win = text.slice(start, end).toLowerCase();
   return keywords.some((k) => win.includes(k));
 }
@@ -391,7 +468,7 @@ export function run(): ReconResult {
           ownTitles.some((k) => preceding.includes(k));
         if (!apposedToOwnTitle) {
           for (const fp of FORBIDDEN_PAIRINGS) {
-            if (num === fp.number && nearbyHasKeyword(text, idx, len, fp.keywords)) {
+            if (num === fp.number && nearbyHasKeyword(text, idx, len, fp.keywords, fp.window)) {
               violations.push({
                 subject: `${rel}:${lineNo}`,
                 message: `BCBS d${num} cited as the ${fp.titleLabel} — ${fp.reason}`,
@@ -429,6 +506,22 @@ export function run(): ReconResult {
             });
           }
         }
+      }
+
+      // d196-specific constant guard. Any `BCBS-D196-…` runtime citation
+      // constant is a mis-citation regardless of its trailing tag: d196 is the
+      // AMA Supervisory Guidelines (Jun 2011), an AMA *guideline* with no
+      // citation-constant role in this codebase. Every observed `BCBS-D196-§644`
+      // was the mis-attributed op-risk-capital label (corrected forward-only to
+      // `BCBS-bcbs128-§644` under D-BCBS-CITATION-NUMBERING-REMEDIATION). A
+      // re-injected `BCBS-D196-…` constant — including the `§644` form whose tag
+      // is not a recognised title keyword — therefore fails closed here.
+      if (num === 196 && !isCorrectionContext(lineText)) {
+        violations.push({
+          subject: `${rel}:${lineNo}`,
+          message: `BCBS-D196-${(c[2] ?? "").toUpperCase()} constant — d196 is the AMA Supervisory Guidelines (Jun 2011), NOT an op-risk-capital citation; the BIA/TSA basis is Basel II bcbs128 §644–§654 (use BCBS-bcbs128-§644)`,
+          severity: "fail",
+        });
       }
 
       c = CONSTANT_RE.exec(text);

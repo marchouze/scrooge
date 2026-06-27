@@ -106,6 +106,9 @@ export { TRADING_BOOK_POSITION_EVENT_TYPES_REGISTRY } from "./trading-book-posit
 // D-BA-RETURN-SIMULATOR-FIRST Phase 2b — born-V2 derivative-book position events
 // that feed the BA 350 (Derivatives Instruments) inventory + CVA capital folds.
 export { DERIVATIVE_BOOK_POSITION_EVENT_TYPES_REGISTRY } from "./derivative-book-positions";
+// D-BA-RETURN-SIMULATOR-FIRST Phase A — born-V2 operating-income-statement snapshot
+// that feeds the BA 400 (Operational Risk) SMA fold + the BA 700 op-RWA leg.
+export { OPERATING_INCOME_STATEMENT_EVENT_TYPES_REGISTRY } from "./operating-income-statement";
 // D-BA-RETURN-SIMULATOR-FIRST Phase 2c — born-V2 banking-book equity-holding
 // events that feed the BA 340 (Equity Risk in the Banking Book) simple-risk-
 // weight engine. Distinct from the trading-book equity events above — banking-
@@ -422,6 +425,7 @@ import { OBLIGATION_REVIEW_EVENT_TYPES_REGISTRY } from "./obligation-review";
 import { ODP_COLLATERAL_SEGREGATION_EVENT_TYPES_REGISTRY } from "./odp-collateral-segregation";
 import { ODP_PORTFOLIO_RECON_EVENT_TYPES_REGISTRY } from "./odp-portfolio-recon";
 import { ODP_UMOJA_UTI_EVENT_TYPES_REGISTRY } from "./odp-umoja-uti";
+import { OPERATING_INCOME_STATEMENT_EVENT_TYPES_REGISTRY } from "./operating-income-statement";
 import { OPERATIONAL_RISK_EVENT_TYPES_REGISTRY } from "./operational-risk";
 import { PAYMENTS_EVENT_TYPES_REGISTRY } from "./payments";
 import { POLICY_ACTIVATION_EVENT_TYPES_REGISTRY } from "./policy-activation";
@@ -579,8 +583,12 @@ export const EVENT_TYPE_REGISTRY: readonly EventTypeMetadata[] = [
   ...PRODUCT_CONTROL_EVENT_TYPES_REGISTRY,
   // WS-FX-OTC-OPRISK — operational-risk loss-event capture (OperationalLossEvent).
   // Capture-only internal loss-data set; op-RWA capital stays gross-income-blocked.
-  // Authority: D-FX-HELD-DIMS-SEAT-SWEEP; Basel II Annex 9 / BCBS D196 §644; Reg 33.
+  // Authority: D-FX-HELD-DIMS-SEAT-SWEEP; Basel II Annex 9 / Basel II bcbs128 §644; Reg 33.
   ...OPERATIONAL_RISK_EVENT_TYPES_REGISTRY,
+  // Born-V2 operating-income-statement snapshot — the SMA Business Indicator
+  // income-statement components feeding the BA 400 op-risk SMA fold + BA 700 op-RWA.
+  // Authority: D-BA-RETURN-SIMULATOR-FIRST; OPE25 / BCBS SCO; SARB Reg 33 revised.
+  ...OPERATING_INCOME_STATEMENT_EVENT_TYPES_REGISTRY,
   // Market-data domain control-plane events (stale-data alerts, model validation).
   // Authority: D-MARKETS-SCHEMA-FOUNDATION; Policies/valuation-policy-v1.md §5.
   ...MARKET_DATA_EVENT_TYPES_REGISTRY,

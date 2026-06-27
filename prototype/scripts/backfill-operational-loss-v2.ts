@@ -38,7 +38,7 @@
 //   D-V2-CORE-MONEY-DECIMAL-NATIVE; D-FX-HELD-DIMS-SEAT-SWEEP.
 // Engineering Charter: D-ENGINEERING-INTEGRITY-CHARTER.
 // Citations:
-//   Basel II Annex 9 / BCBS D196 §644; Reg 33 (operational risk);
+//   Basel II Annex 9 / Basel II bcbs128 §644; Reg 33 (operational risk);
 //   D-V2-CORE-MONEY-DECIMAL-NATIVE; Principles/1-events-are-truth.md;
 //   Principles/2-single-graph-discipline.md.
 // Author: Atlas (Core banking platform architect, engineering).

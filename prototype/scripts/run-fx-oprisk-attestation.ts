@@ -29,7 +29,7 @@
 //   bun run scripts/run-fx-oprisk-attestation.ts
 //
 // Authority: D-FX-HELD-DIMS-SEAT-SWEEP (CEO session-delegation 2026-06-11);
-//   D-NEW-PRODUCT-APPROVAL-POLICY §5; Basel II Annex 9 / BCBS D196 §644; Reg 33.
+//   D-NEW-PRODUCT-APPROVAL-POLICY §5; Basel II Annex 9 / Basel II bcbs128 §644; Reg 33.
 
 import "../platform/event-store/resolve-event-db-boot";
 
