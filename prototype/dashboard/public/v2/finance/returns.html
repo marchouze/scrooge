@@ -80,11 +80,17 @@
       ],
     });
 
-    // Format functional-currency minor units as a major-unit figure for display.
-    function fmtMinor(minor, ccy) {
-      if (minor === null || minor === undefined) return "—";
-      const major = (Number(minor) / 100).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      return `${v2Esc(ccy)} ${major}`;
+    // Render decimal-native major-unit Money ({amount, currency}) with thousands
+    // grouping. No float and no /100 — the boundary already lifted minor→major,
+    // so we only format the exact decimal string (feedback_no_minor_money_decimal_native).
+    function fmtMoney(m) {
+      if (!m || m.amount === null || m.amount === undefined) return "—";
+      const s = String(m.amount);
+      const neg = s.startsWith("-");
+      const [intRaw, fracRaw = ""] = (neg ? s.slice(1) : s).split(".");
+      const frac = (fracRaw + "00").slice(0, 2);
+      const grouped = intRaw.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+      return `${v2Esc(m.currency)} ${neg ? "-" : ""}${grouped}.${frac}`;
     }
 
     function statusChip(status) {
@@ -102,25 +108,36 @@
       return { label: "BA 700", value: `${(fig.carRatio * 100).toFixed(2)}%`, unit: "Total capital ratio" };
     }
 
-    function fxChargeTile(returns, ccy) {
+    function fxChargeTile(returns) {
       const ba320 = returns.find((r) => r.form === "BA 320");
       const fig = ba320 && ba320.figures;
-      if (!fig || fig.openPositionChargeMinor === null || fig.openPositionChargeMinor === undefined) {
+      if (!fig || !fig.openPositionCharge) {
         return { label: "BA 320", value: "—", unit: "FX open-position charge (no production rate)" };
       }
-      return { label: "BA 320", value: fmtMinor(fig.openPositionChargeMinor, ccy), unit: "FX open-position charge" };
+      return { label: "BA 320", value: fmtMoney(fig.openPositionCharge), unit: "FX open-position charge" };
+    }
+
+    function assetsTile(returns) {
+      const ba100 = returns.find((r) => r.form === "BA 100");
+      const fig = ba100 && ba100.figures;
+      if (!fig) return { label: "BA 100", value: "—", unit: "Total assets" };
+      return {
+        label: "BA 100",
+        value: fmtMoney(fig.assets),
+        unit: fig.balanced ? "Total assets (balanced)" : "Total assets (P&L not closed)",
+      };
     }
 
     // Headline cell per row — the live figure, else "—".
-    function headlineFor(row, ccy) {
+    function headlineFor(row) {
       if (row.status !== "live" || !row.figures) return "—";
-      if (row.form === "BA 700") {
-        const r = row.figures.carRatio;
-        return (r === null || r === undefined) ? "—" : `CAR ${(r * 100).toFixed(2)}%`;
+      const fig = row.figures;
+      if (fig.kind === "ba700") {
+        return (fig.carRatio === null || fig.carRatio === undefined)
+          ? "—" : `CAR ${(fig.carRatio * 100).toFixed(2)}%`;
       }
-      if (row.form === "BA 320") {
-        return fmtMinor(row.figures.openPositionChargeMinor, ccy);
-      }
+      if (fig.kind === "ba320") return fmtMoney(fig.openPositionCharge);
+      if (fig.kind === "ba100") return fmtMoney(fig.assets);
       return "—";
     }
 
@@ -165,16 +182,16 @@
       }
       const fig = row.figures;
       let inner;
-      if (row.form === "BA 700") {
+      if (fig.kind === "ba700") {
         inner = kvTable([
-          ["Tier 1 capital", fmtMinor(fig.tier1Capital, ccy)],
-          ["Tier 2 capital", fmtMinor(fig.tier2Capital, ccy)],
-          ["Total risk-weighted assets (RWA)", fmtMinor(fig.totalRwa, ccy)],
+          ["Tier 1 capital", fmtMoney(fig.tier1Capital)],
+          ["Tier 2 capital", fmtMoney(fig.tier2Capital)],
+          ["Total risk-weighted assets (RWA)", fmtMoney(fig.totalRwa)],
           ["Total capital ratio (CAR)", fig.carRatio === null || fig.carRatio === undefined
             ? "—" : `${(fig.carRatio * 100).toFixed(2)}%`],
           ["Coverage status", v2Esc(fig.coverageStatus)],
         ]);
-      } else if (row.form === "BA 320") {
+      } else if (fig.kind === "ba320") {
         let posTable;
         if (!fig.positions || fig.positions.length === 0) {
           posTable = `<p class="v2-ret-empty">No open FX positions on the build store ` +
@@ -183,17 +200,38 @@
           const posRows = fig.positions.map((p) =>
             `<tr><th>${v2Esc(p.baseCurrency)}</th>` +
             `<td class="v2-ret-num">${p.rateAvailable
-              ? fmtMinor(p.netPositionFunctionalMinor, ccy)
+              ? fmtMoney(p.netPositionFunctional)
               : "— (no rate)"}</td></tr>`).join("");
           posTable = `<table class="v2-ret-kv"><thead><tr><th>Currency</th>` +
             `<th class="v2-ret-num">Net open position</th></tr></thead><tbody>${posRows}</tbody></table>`;
         }
         const summary = kvTable([
-          ["FX open-position charge (Reg 28(5), 8%)",
-            fmtMinor(fig.openPositionChargeMinor, ccy)],
+          ["FX open-position charge (Reg 28(5), 8%)", fmtMoney(fig.openPositionCharge)],
           ["Coverage status", v2Esc(fig.coverageStatus)],
         ]);
         inner = `${posTable}<div style="height:12px"></div>${summary}`;
+      } else if (fig.kind === "ba100") {
+        const sectionBlock = (title, sec, total) => {
+          const items = fig.lines.filter((l) => l.section === sec);
+          const body = items.length
+            ? items.map((l) => `<tr><th>${v2Esc(l.label)}</th><td class="v2-ret-num">${fmtMoney(l.amount)}</td></tr>`).join("")
+            : `<tr><td colspan="2" class="v2-ret-empty">No ${sec} lines posted on the build store.</td></tr>`;
+          return `<h4 style="margin:12px 0 4px;font-size:0.85em;">${title}</h4>` +
+            `<table class="v2-ret-kv"><tbody>${body}` +
+            `<tr><th>Total ${sec}</th><td class="v2-ret-num"><strong>${fmtMoney(total)}</strong></td></tr></tbody></table>`;
+        };
+        const balanceLine = `<p class="v2-ret-sub" style="margin-top:12px;">` +
+          `Assets ${fmtMoney(fig.assets)} ${fig.balanced ? "≡" : "≠"} Liabilities ${fmtMoney(fig.liabilities)} ` +
+          `+ Equity ${fmtMoney(fig.equity)}` +
+          `${fig.balanced ? " — balanced" : " — unbalanced (period P&L not yet closed to retained earnings)"}</p>`;
+        const gapLine = fig.classificationGapCount > 0
+          ? `<p class="v2-ret-gap">${fig.classificationGapCount} trial-balance row(s) had no balance-sheet classification this run.</p>`
+          : "";
+        inner = sectionBlock("Assets", "assets", fig.assets)
+          + sectionBlock("Liabilities", "liabilities", fig.liabilities)
+          + sectionBlock("Equity", "equity", fig.equity)
+          + balanceLine + gapLine
+          + kvTable([["Coverage status", v2Esc(fig.coverageStatus)]]);
       } else {
         inner = `<p class="v2-ret-empty">No detail renderer for this return.</p>`;
       }
@@ -272,7 +310,8 @@
       renderTileGroup(tilesMount, {
         tiles: [
           carRatioTile(data.returns),
-          fxChargeTile(data.returns, ccy),
+          fxChargeTile(data.returns),
+          assetsTile(data.returns),
           { label: "Returns Built", value: `${data.liveCount} / ${data.totalCount}`, unit: "Live on-demand of canonical returns" },
           // No ReportFiled / filing-lifecycle event exists — overdue cannot be
           // sourced. Honest "N/A", never a fabricated count.

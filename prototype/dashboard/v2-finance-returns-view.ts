@@ -62,6 +62,9 @@
 // Author: Mira (Compliance / RegTech engineer, engineering — reports to Zara
 //   (Chief Compliance Officer)).
 
+import { computeTrialBalance } from "../platform/accounting/period-close";
+import { type Money, moneyFromMinorUnits } from "../platform/core/decimal-money";
+import type { Currency } from "../platform/core/types";
 import type { EventStore } from "../platform/event-store/store";
 import { anchorFunctionalCurrency } from "../platform/identity/functional-currency";
 import type { MarketDataStore } from "../platform/market-data/store";
@@ -69,7 +72,13 @@ import {
   defaultProvenanceFilter,
   eventMatchesProvenanceFilter,
 } from "../platform/projections/filter";
+import {
+  type Ba100LineClassification,
+  generateBa100BalanceSheet,
+  isOffBalanceSheetAccountId,
+} from "../platform/reporting/ba-100-balance-sheet";
 import { getSubstrateGap } from "../platform/substrate/gap-register";
+import { COA_ACCOUNTS } from "../v2-core/accounting/chart-of-accounts";
 import type { ReturnForm } from "../v2-core/regulatory-returns/cell-contract";
 import {
   RETURN_CONTRACT_REGISTRY,
@@ -87,18 +96,79 @@ import {
 
 export type ReturnBuildStatus = "live" | "built" | "planned";
 
+// ---------------------------------------------------------------------------
+// Page-facing figures — DECIMAL-NATIVE money (Charter cmd 4; feedback_no_minor_
+// money_decimal_native). Money is carried as the canonical major-unit `Money`
+// type ({amount: "73750000.00", currency: "ZAR"}) — NEVER a minor-unit integer
+// and NEVER divided by 100 on the page. The underlying selectRegulatoryReturn /
+// BA-100 generators still expose `*Minor` integers internally; they are lifted
+// to `Money` here, at the V2 boundary, exactly once via moneyFromMinorUnits.
+// ---------------------------------------------------------------------------
+
+/** BA 700 capital-adequacy page figures (decimal-native major-unit money). */
+export interface Ba700PageFigures {
+  readonly kind: "ba700";
+  readonly tier1Capital: Money<Currency>;
+  readonly tier2Capital: Money<Currency>;
+  readonly totalRwa: Money<Currency>;
+  /** Total capital ratio = (T1 + T2) / RWA; `null` when RWA is zero. A pure ratio, not money. */
+  readonly carRatio: number | null;
+  readonly coverageStatus: string;
+  readonly gaps: readonly string[];
+}
+
+/** One BA 320 net-open-position row (functional-currency money; null = no rate). */
+export interface Ba320PagePosition {
+  readonly baseCurrency: string;
+  readonly netPositionFunctional: Money<Currency> | null;
+  readonly rateAvailable: boolean;
+}
+
+/** BA 320 FX market-risk page figures (decimal-native major-unit money). */
+export interface Ba320PageFigures {
+  readonly kind: "ba320";
+  readonly positions: readonly Ba320PagePosition[];
+  /** Reg 28(5) FX open-position charge; `null` when a rate is missing (fail-closed). */
+  readonly openPositionCharge: Money<Currency> | null;
+  readonly coverageStatus: string;
+  readonly gaps: readonly string[];
+}
+
+/** One BA 100 balance-sheet line (decimal-native major-unit money). */
+export interface Ba100PageLine {
+  readonly section: "assets" | "liabilities" | "equity";
+  readonly label: string;
+  readonly amount: Money<Currency>;
+}
+
+/** BA 100 balance-sheet page figures (decimal-native major-unit money). */
+export interface Ba100PageFigures {
+  readonly kind: "ba100";
+  readonly assets: Money<Currency>;
+  readonly liabilities: Money<Currency>;
+  readonly equity: Money<Currency>;
+  /** assets ≡ liabilities + equity (per the generator's balance check). */
+  readonly balanced: boolean;
+  readonly lines: readonly Ba100PageLine[];
+  /** Trial-balance rows with no on-balance-sheet classification this run (surfaced, not hidden). */
+  readonly classificationGapCount: number;
+  readonly coverageStatus: string;
+}
+
+export type FinanceReturnFigures = Ba700PageFigures | Ba320PageFigures | Ba100PageFigures;
+
 /** One row in the BA-return register. */
 export interface FinanceReturnRow {
   /** Display form number, e.g. "BA 700" or "BA 941–944" (sourced, never hand-keyed). */
   readonly form: string;
   /** Official form name (Excel A1), verbatim from the typed contract. */
   readonly name: string;
-  /** Build/data status — `live` for the two on-demand returns, else `planned`. */
+  /** Build/data status — `live` for the on-demand returns, else `planned`. */
   readonly status: ReturnBuildStatus;
   /** One-line headline for a live return (e.g. the CAR ratio or FX charge). */
   readonly summary?: string;
-  /** The sourced figures for a live return (BA 700 capital or BA 320 FX). */
-  readonly figures?: BA700ViewFigures | BA320ViewFigures;
+  /** The sourced, decimal-native figures for a live return. */
+  readonly figures?: FinanceReturnFigures;
   /** Which read path produced a live return's figures ("v1" | "v2"). */
   readonly readPath?: "v1" | "v2";
   /** Advisory gap markers carried through from the live return's projection. */
@@ -255,22 +325,157 @@ function foldFiling(
 }
 
 // ---------------------------------------------------------------------------
-// Headline summaries for the two live returns (sourced figures only).
+// Minor → decimal-native Money lifters. The selectRegulatoryReturn / BA-100
+// generators still expose `*Minor` integers internally; they are lifted to the
+// canonical major-unit Money type EXACTLY ONCE here, at the V2 boundary. The
+// page never sees a minor-unit integer and never divides by 100 (Charter cmd 4;
+// feedback_no_minor_money_decimal_native).
 // ---------------------------------------------------------------------------
 
-function ba700Summary(figures: BA700ViewFigures): string {
-  if (figures.carRatio === null) {
-    return "Capital ratio — (RWA is zero on the build store; no real capital pre-licence-day)";
-  }
-  return `Total capital ratio ${(figures.carRatio * 100).toFixed(2)}%`;
+function liftMoney(minor: number, ccy: string): Money<Currency> {
+  // The source figures are minor-unit INTEGERS (toMinorUnits output); BigInt is
+  // exact and fail-closed if a non-integer ever leaks (no float rounding here —
+  // D-DECIMAL-NATIVE-MONEY-ARITHMETIC).
+  return moneyFromMinorUnits(BigInt(minor), ccy as Currency);
 }
 
-function ba320Summary(figures: BA320ViewFigures, functionalCurrency: string): string {
-  if (figures.openPositionChargeMinor === null) {
+function liftMoneyOrNull(minor: number | null | undefined, ccy: string): Money<Currency> | null {
+  return minor === null || minor === undefined ? null : liftMoney(minor, ccy);
+}
+
+function toBa700Page(f: BA700ViewFigures, ccy: string): Ba700PageFigures {
+  return {
+    kind: "ba700",
+    tier1Capital: liftMoney(f.tier1Capital, ccy),
+    tier2Capital: liftMoney(f.tier2Capital, ccy),
+    totalRwa: liftMoney(f.totalRwa, ccy),
+    carRatio: f.carRatio,
+    coverageStatus: f.coverageStatus,
+    gaps: f.gaps,
+  };
+}
+
+function toBa320Page(f: BA320ViewFigures, ccy: string): Ba320PageFigures {
+  return {
+    kind: "ba320",
+    positions: f.positions.map((p) => ({
+      baseCurrency: p.baseCurrency,
+      netPositionFunctional: liftMoneyOrNull(p.netPositionFunctionalMinor, ccy),
+      rateAvailable: p.rateAvailable,
+    })),
+    openPositionCharge: liftMoneyOrNull(f.openPositionChargeMinor, ccy),
+    coverageStatus: f.coverageStatus,
+    gaps: f.gaps,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// BA 100 (Balance Sheet) — on-demand read-path live figures. Mirrors the
+// BA 700 / BA 320 dual-read shape: a pure projection over the event log, no
+// event side-effects.
+//
+//   computeTrialBalance (pure fold over SubLedgerPostingEmitted — NOT the
+//      event-emitting closePeriod) → generateBa100BalanceSheet with a CoA-
+//      derived classification map → decimal-native section totals + lines.
+//
+// The classification map is DERIVED from the CoA registry category prefix
+// (Charter cmd 4 — source, don't hand-key); income/expense, memorandum and
+// off-balance-sheet accounts are excluded (not balance-sheet sections). On a
+// store with no GL postings the balance sheet is honestly empty/zero rather
+// than fabricated.
+// ---------------------------------------------------------------------------
+
+const BA100_PERIOD_START = "2026-01-01";
+const BA100_PERIOD_END = "2099-12-31";
+const BA100_PERIOD_ID = "period:hoz-bank:build-phase";
+
+function ba100SectionForCategory(category: string): "assets" | "liabilities" | "equity" | null {
+  if (category.startsWith("asset")) return "assets";
+  if (category.startsWith("liability")) return "liabilities";
+  if (category.startsWith("equity")) return "equity";
+  // income / expense (close to retained earnings) / memorandum / unknown — not a
+  // balance-sheet section.
+  return null;
+}
+
+function deriveBa100Classifications(): readonly Ba100LineClassification[] {
+  const out: Ba100LineClassification[] = [];
+  for (const a of COA_ACCOUNTS) {
+    if (isOffBalanceSheetAccountId(a.id)) continue;
+    const section = ba100SectionForCategory(a.category);
+    if (section === null) continue;
+    out.push({ leafAccountId: a.id, section, lineLabel: `${section}.${a.name}` });
+  }
+  return out;
+}
+
+function buildBa100PageFigures(
+  eventStore: EventStore,
+  entity: string,
+  asOf: string,
+  ccy: string,
+): Ba100PageFigures {
+  const tb = computeTrialBalance({
+    eventStore,
+    entity,
+    periodStart: BA100_PERIOD_START,
+    periodEnd: BA100_PERIOD_END,
+  });
+  const sheet = generateBa100BalanceSheet({
+    entity,
+    asOf,
+    periodId: BA100_PERIOD_ID,
+    functionalCurrency: ccy,
+    trialBalance: tb.rows,
+    classifications: deriveBa100Classifications(),
+    // This read-path fold does NOT close P&L to retained earnings, so the strict
+    // `assets ≡ liabilities + equity` invariant can legitimately not hold. We
+    // tolerate the imbalance and surface `balanced` honestly rather than throwing
+    // (Charter cmd 2 — fail-closed becomes surface-honestly here, never fabricate).
+    tolerateImbalanceMinor: Number.MAX_SAFE_INTEGER,
+  });
+
+  const lines: Ba100PageLine[] = [];
+  for (const sec of [sheet.assets, sheet.liabilities, sheet.equity] as const) {
+    for (const li of sec.lineItems) {
+      // li.amount is already decimal-native Money from the generator.
+      lines.push({ section: sec.section, label: li.lineLabel, amount: li.amount });
+    }
+  }
+
+  return {
+    kind: "ba100",
+    assets: liftMoney(sheet.assets.totalMinor, ccy),
+    liabilities: liftMoney(sheet.liabilities.totalMinor, ccy),
+    equity: liftMoney(sheet.equity.totalMinor, ccy),
+    balanced: sheet.balanceCheck.balanced,
+    lines,
+    classificationGapCount: sheet.classificationGaps.length,
+    coverageStatus: tb.rows.length === 0 ? "no-data" : "v1-trial-balance",
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Headline summaries for the live returns (decimal-native; sourced figures).
+// ---------------------------------------------------------------------------
+
+function ba700Summary(f: Ba700PageFigures): string {
+  if (f.carRatio === null) {
+    return "Total capital ratio — (RWA is zero on the build store; no real capital pre-licence-day)";
+  }
+  return `Total capital ratio ${(f.carRatio * 100).toFixed(2)}%`;
+}
+
+function ba320Summary(f: Ba320PageFigures): string {
+  if (f.openPositionCharge === null) {
     return "FX open-position charge — (no production FX rate; fail-closed)";
   }
-  // Present minor units honestly as a labelled figure; the page formats it.
-  return `FX open-position charge ${functionalCurrency} ${figures.openPositionChargeMinor} (minor units)`;
+  return `FX open-position charge ${f.openPositionCharge.currency} ${f.openPositionCharge.amount}`;
+}
+
+function ba100Summary(f: Ba100PageFigures): string {
+  const head = `Total assets ${f.assets.currency} ${f.assets.amount}`;
+  return f.balanced ? head : `${head} (unbalanced — P&L not yet closed)`;
 }
 
 // ---------------------------------------------------------------------------
@@ -289,7 +494,7 @@ export function buildFinanceReturnsView(
 
   const liveByForm = new Map<string, FinanceReturnRow>();
 
-  const ba700Figures = ba700.figures as BA700ViewFigures;
+  const ba700Figures = toBa700Page(ba700.figures as BA700ViewFigures, functionalCurrency);
   const ba700Filing = foldFiling(eventStore, ba700.entity, "BA700");
   liveByForm.set("BA700", {
     form: "BA 700",
@@ -302,17 +507,37 @@ export function buildFinanceReturnsView(
     ...(ba700Filing !== undefined ? { filing: ba700Filing } : {}),
   });
 
-  const ba320Figures = ba320.figures as BA320ViewFigures;
+  const ba320Figures = toBa320Page(ba320.figures as BA320ViewFigures, functionalCurrency);
   const ba320Filing = foldFiling(eventStore, ba320.entity, "BA320");
   liveByForm.set("BA320", {
     form: "BA 320",
     name: loadReturnContract("BA320").formName,
     status: "live",
-    summary: ba320Summary(ba320Figures, functionalCurrency),
+    summary: ba320Summary(ba320Figures),
     figures: ba320Figures,
     readPath: ba320.readPath,
     gaps: ba320Figures.gaps,
     ...(ba320Filing !== undefined ? { filing: ba320Filing } : {}),
+  });
+
+  // BA 100 (Balance Sheet) — on-demand read-path live figures, folded from the
+  // trial balance over the event log (pure; no event side-effects).
+  const ba100Figures = buildBa100PageFigures(
+    eventStore,
+    ba700.entity,
+    ba700.asOf,
+    functionalCurrency,
+  );
+  const ba100Filing = foldFiling(eventStore, ba700.entity, "BA100");
+  liveByForm.set("BA100", {
+    form: "BA 100",
+    name: loadReturnContract("BA100").formName,
+    status: "live",
+    summary: ba100Summary(ba100Figures),
+    figures: ba100Figures,
+    readPath: "v1",
+    gaps: [],
+    ...(ba100Filing !== undefined ? { filing: ba100Filing } : {}),
   });
 
   // Build one row per canonical §1 return, in registry order. Live rows reuse
