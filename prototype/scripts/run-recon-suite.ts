@@ -488,6 +488,16 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // is tracked in the gap-register AND surfaced `absent` — never a silent zero,
     // never an overclaimed fold. Self-contained, so it always asserts.
     "recon:ba340-equity-risk-sim-drive",
+    // D-BA-RETURN-SIMULATOR-FIRST Phase A — ENFORCING: the operational-risk SMA
+    // (OPE25) capital + RWA. A simulated operating-income statement drives the BA
+    // 400 SMA fold to a hand-computed OPE25 golden case (ILDC cap binds → BI=R137m
+    // → BIC=R16.44m → ILM=1 → op-RWA=R205.5m) and the BA 700 op-RWA LEG (the last
+    // missing RWA leg, GAP-BA700-OPERATIONAL-RWA, now wired). Proves: (A) sim read
+    // → golden figures; (B) production read → 0 (the R300m-into-Prod guard); (C)
+    // BA 700 sources the real op-RWA; (D) born-V2 registration; (E) the ILDC cap
+    // is load-bearing arithmetic (in-memory oracle). The current SARB BA 400 form
+    // mandates SMA, NOT the legacy BIA/TSA — a domain-truth correction.
+    "recon:ba400-op-risk-sim-drive",
     // D-BA-RETURN-SIMULATOR-FIRST Phase 2b — ENFORCING: the standardised CVA
     // capital charge over the OTC derivative counterparty book. Builds a self-
     // contained in-memory simulated derivative book and asserts (A) CVA lands on

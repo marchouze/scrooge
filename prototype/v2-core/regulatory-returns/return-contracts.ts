@@ -215,17 +215,25 @@ export const RETURN_CONTRACT_REGISTRY: readonly ReturnContractRegistryEntry[] = 
     schemaZipRelPath: "Regulations/SARB-PA/ba-returns/schemas/BA701.zip",
   },
   // Phase C batch 6 — the OPERATIONAL FAMILY (BA 400 / BA 410 / BA 420). The
-  // operational-risk capital return (BIA / TSA gross income → op-capital,
-  // op-RWA = 12.5 × op-capital, feeding the BA 700 RWA denominator) plus its two
-  // operational-loss companions (BA 410 quarterly, BA 420 12-month rolling).
-  // Operational risk is gross-income- and loss-event-derived (entity-level), so
-  // the family carries ZERO product-attribute requirements (like the capital
-  // family) — no product, and in particular not the live FX product, is gated on
-  // an operational cell. BA 400's regulatory α / β / 12.5× constants are
-  // `sourced`; every gross-income / capital / RWA / ILM cell and every BA 410 /
-  // BA 420 loss cell is `licence-day-data` (no audited 3-year gross income and no
-  // loss history pre-licence-day — the known GAP-BA700-OPERATIONAL-RWA). BA 420's
-  // XSD is version-suffixed.
+  // operational-risk capital return — the SMA (Standardised Measurement Approach,
+  // OPE25): Business Indicator (ILDC + SC + FC) → BIC → ILM → ORC, op-RWA =
+  // 12.5 × ORC, feeding the BA 700 RWA denominator — plus its two operational-
+  // loss companions (BA 410 quarterly, BA 420 12-month rolling). [DOMAIN-TRUTH
+  // CORRECTION (D-BA-RETURN-SIMULATOR-FIRST Phase A): the current SARB BA 400 form
+  // mandates the SMA, NOT the legacy BIA (α=15% × gross income) / TSA (β by
+  // business line) — those are superseded at the SARB transition.] Operational
+  // risk is income- and loss-event-derived (entity-level), so the family carries
+  // ZERO product-attribute requirements (like the capital family) — no product,
+  // and in particular not the live FX product, is gated on an operational cell.
+  // BA 400's regulatory SMA coefficients (12% / 15% / 18% marginal, 2.25% ILDC
+  // cap, 12.5× RWA) are `sourced`; every income / capital / RWA / ILM cell and
+  // every BA 410 / BA 420 loss cell is `licence-day-data` (no REAL audited income
+  // and no loss history pre-licence-day). GAP-BA700-OPERATIONAL-RWA is CLOSED
+  // (Phase A): the SMA engine (platform/reporting/ba-400-sma-op-risk.ts) + the
+  // BA 700 op-RWA leg (platform/projections/ba700-v2.ts) are PROVEN end-to-end
+  // against a simulated income statement (recon:ba400-op-risk-sim-drive; BI=R137m
+  // → op-RWA=R205.5m); the PRODUCTION read still folds to 0 pre-licence-day. BA
+  // 420's XSD is version-suffixed.
   {
     form: "BA400",
     contractJsonPath: jsonPath("ba400-contract.json"),
