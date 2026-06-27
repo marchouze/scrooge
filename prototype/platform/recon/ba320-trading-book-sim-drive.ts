@@ -35,7 +35,15 @@
 //       provable construction condition. Any deviation breaks the adapters and
 //       widens the v1-only estate (V1-retirement directive).
 //
-// SEVERITY: ENFORCING. The structural legs (A-IR, B, C) always assert. The live
+//   (D) BA 700 MARKET-RWA LEG = 12.5 × the FULL BA 320 charge (in-memory oracle,
+//       ALWAYS asserts). Proves the BA 700 capital ratio's market-RWA leg sources
+//       the COMPLETE standardised charge (all risk classes — equity + commodity
+//       here; FX null) — NOT the former FX-only wiring — under the simulated lens,
+//       and stays at the fail-closed baseline (0) under the production lens (the
+//       R300m-into-Prod guard). The leg-wiring oracle does not depend on the live
+//       seed. Authority: D-BA-RETURN-SIMULATOR-FIRST; Reg 38; BCBS Basel III §50–§90.
+//
+// SEVERITY: ENFORCING. The structural legs (A-IR, B, C, D) always assert. The live
 // equity/commodity golden leg (A) is data-dependent: it fires only when the
 // seeded positions are present (so a clean store does not manufacture a pass),
 // but when they ARE present a wrong charge is a hard FAIL.
@@ -45,15 +53,26 @@
 //   Regulations Relating to Banks Reg 28(3)(a); BCBS D352 §718(xi)–(xv).
 // Author: Atlas (Core banking platform architect, engineering).
 
+import { DEFAULT_SIM_DESK_ID } from "../../v2-core/desk/roster";
 import { eventStore } from "../composition";
+import { money } from "../core/decimal-money";
+import { encodeMoney } from "../core/money-codec";
+import type { Currency } from "../core/types";
 import { makeBondTradeExecuted } from "../event-store/event-types/bond-accounting";
+import {
+  makeCommodityTradingPositionOpened,
+  makeEquityTradingPositionOpened,
+} from "../event-store/event-types/trading-book-positions";
+import { simulatedTag } from "../event-store/provenance";
 import { EVENT_TYPE_REGISTRY } from "../event-store/registry/index";
 import { EventStore } from "../event-store/store";
 import { eventSchema } from "../event-store/types";
+import { computeBA700V2 } from "../projections/ba700-v2";
 import { setDefaultProvenanceModeOverride } from "../projections/filter";
 import { buildBondIrGeneralLadder } from "../reporting/ba-320-bond-events-adapter";
 import { buildCommodityRows } from "../reporting/ba-320-commodity-events-adapter";
 import { buildEquityRows } from "../reporting/ba-320-equity-events-adapter";
+import { buildBa320MarketRiskCharge } from "../reporting/ba-320-market-risk-charge-adapter";
 import { generateBa320MarketRisk } from "../reporting/ba-320-market-risk";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
@@ -74,6 +93,15 @@ const IR_GOV_GOLDEN_WEIGHTED_MINOR = 325_000_000;
 const EQUITY_JSE_GOLDEN_MINOR = 160_000_000;
 // commodity XPT: 0.15×300,000,000 + 0.03×700,000,000 = 66,000,000
 const COMMODITY_XPT_GOLDEN_MINOR = 66_000_000;
+
+// (D) BA 700 market-RWA leg oracle: a self-contained in-memory trading book of
+// equity JSE (golden) + commodity XPT (golden), all simulated-tagged. The full
+// BA 320 standardised charge = R1,600,000 + R660,000 = R2,260,000 (FX null on
+// this book) → market RWA = 12.5 × R2,260,000 = R28,250,000.
+const FUNCTIONAL = "ZAR" as Currency;
+const MR_ORACLE_CHARGE_MINOR = EQUITY_JSE_GOLDEN_MINOR + COMMODITY_XPT_GOLDEN_MINOR; // 226,000,000
+const MR_ORACLE_RWA_MINOR = MR_ORACLE_CHARGE_MINOR * 12.5; // 2,825,000,000 = R28,250,000
+const zar = (m: string) => encodeMoney(money(m, FUNCTIONAL));
 
 const TRADING_BOOK_POSITION_TYPES = [
   "EquityTradingPositionOpened",
@@ -144,6 +172,69 @@ function irOracleLadder(): ReturnType<typeof buildBondIrGeneralLadder> {
   bond("RSA-R2032-TB", "ZAG000150001", "trading-book");
   bond("RSA-R2032-BB", "ZAG000150002", "banking-book");
   return buildBondIrGeneralLadder({ entity: ENTITY, periodEnd: IR_PERIOD_END, eventStore: store });
+}
+
+/**
+ * Build a self-contained in-memory simulated trading book (equity JSE golden +
+ * commodity XPT golden), all simulated-tagged. Used by assertion family (D) to
+ * prove the BA 700 market-RWA leg = 12.5 × the FULL BA 320 charge WITHOUT
+ * depending on the live seed (so the leg-wiring oracle ALWAYS asserts).
+ */
+function marketRwaOracleStore(): EventStore {
+  const store = new EventStore(":memory:");
+  const SIM = simulatedTag({
+    scenario: "ba700-market-rwa-leg-oracle",
+    sourceLineage: "platform/recon/ba320-trading-book-sim-drive.ts",
+  });
+  const equity = (id: string, side: "long" | "short", mv: string) =>
+    makeEquityTradingPositionOpened({
+      asOf: PERIOD_END,
+      entity: ENTITY,
+      actor: { type: "service", id: "agent:atlas:recon-mr-oracle" },
+      citations: ["D-BA-RETURN-SIMULATOR-FIRST", "BANKS-REG-28"],
+      eventId: id,
+      provenance: SIM,
+      payload: {
+        positionId: id,
+        instrumentId: `SIM-${id}`,
+        instrumentName: `JSE single name (${side})`,
+        market: "JSE",
+        isIndex: false,
+        side,
+        quantity: 1000,
+        marketValue: zar(mv),
+        liquidAndDiversified: false,
+        deskId: DEFAULT_SIM_DESK_ID,
+        bookType: "trading",
+        openedDate: PERIOD_END,
+      },
+    });
+  const commodity = (id: string, side: "long" | "short", mv: string) =>
+    makeCommodityTradingPositionOpened({
+      asOf: PERIOD_END,
+      entity: ENTITY,
+      actor: { type: "service", id: "agent:atlas:recon-mr-oracle" },
+      citations: ["D-BA-RETURN-SIMULATOR-FIRST", "BANKS-REG-28"],
+      eventId: id,
+      provenance: SIM,
+      payload: {
+        positionId: id,
+        commodity: "XPT",
+        commodityName: "Platinum (sim)",
+        group: "precious-metals",
+        side,
+        quantity: 1000,
+        marketValue: zar(mv),
+        deskId: DEFAULT_SIM_DESK_ID,
+        bookType: "trading",
+        openedDate: PERIOD_END,
+      },
+    });
+  store.append(equity("MR-EQ-JSE-LONG", "long", "10000000"));
+  store.append(equity("MR-EQ-JSE-SHORT", "short", "4000000"));
+  store.append(commodity("MR-CM-XPT-LONG", "long", "5000000"));
+  store.append(commodity("MR-CM-XPT-SHORT", "short", "2000000"));
+  return store;
 }
 
 export function run(): ReconResult {
@@ -310,6 +401,76 @@ export function run(): ReconResult {
     });
   }
 
+  // -----------------------------------------------------------------------
+  // (D) BA 700 MARKET-RWA LEG = 12.5 × the FULL BA 320 standardised charge.
+  // In-memory oracle (always asserts — independent of the live seed). Proves
+  // (D1) the full charge adapter sums equity + commodity (FX null here);
+  // (D2) the BA 700 market-RWA leg under the simulated lens = 12.5 × that charge;
+  // (D3) the production lens stays at the fail-closed baseline (0 — the
+  //      R300m-into-Prod guard; the simulated trading book is invisible to prod).
+  // Authority: D-BA-RETURN-SIMULATOR-FIRST; Reg 38; Reg 28(3)(a); BCBS D352.
+  // -----------------------------------------------------------------------
+  const mrStore = marketRwaOracleStore();
+  let simChargeMinor = 0;
+  let simMarketRwa = 0;
+  let prodMarketRwa = 0;
+  let prodMarketSource: string = "none";
+  try {
+    setDefaultProvenanceModeOverride("combined");
+    simChargeMinor = buildBa320MarketRiskCharge({
+      eventStore: mrStore,
+      entity: ENTITY,
+      asOf: PERIOD_END,
+      functionalCurrency: FUNCTIONAL,
+    }).marketRiskChargeMinor;
+    simMarketRwa = computeBA700V2({
+      eventStore: mrStore,
+      asOf: PERIOD_END,
+      functionalCurrency: FUNCTIONAL,
+    }).capitalAdequacy.marketRwa;
+
+    setDefaultProvenanceModeOverride("production-only");
+    const prodBa700 = computeBA700V2({
+      eventStore: mrStore,
+      asOf: PERIOD_END,
+      functionalCurrency: FUNCTIONAL,
+    });
+    prodMarketRwa = prodBa700.capitalAdequacy.marketRwa;
+    prodMarketSource = prodBa700.meta.sources.marketRwa;
+  } finally {
+    setDefaultProvenanceModeOverride(undefined);
+  }
+
+  // (D1) full charge = equity JSE + commodity XPT golden (FX null on this book).
+  asserted += 1;
+  if (simChargeMinor !== MR_ORACLE_CHARGE_MINOR) {
+    violations.push({
+      subject: `${PIPELINE}:market-charge-mismatch`,
+      severity: "fail",
+      message: `Full BA 320 market-risk charge ${simChargeMinor} minor ≠ golden ${MR_ORACLE_CHARGE_MINOR} minor (equity JSE 160,000,000 + commodity XPT 66,000,000; FX null). The market-RWA leg must source the FULL standardised charge, not FX-only. Authority: D-BA-RETURN-SIMULATOR-FIRST; Reg 28(3)(a).`,
+    });
+  }
+
+  // (D2) BA 700 market-RWA leg = 12.5 × that charge under the simulated lens.
+  asserted += 1;
+  if (simMarketRwa !== MR_ORACLE_RWA_MINOR) {
+    violations.push({
+      subject: `${PIPELINE}:ba700-market-rwa-leg-mismatch`,
+      severity: "fail",
+      message: `BA 700 simulated market-RWA leg ${simMarketRwa} minor ≠ golden ${MR_ORACLE_RWA_MINOR} minor (12.5 × ${MR_ORACLE_CHARGE_MINOR}). The BA 700 capital ratio must reflect the FULL trading-book market-risk charge (all risk classes), not FX-only. Authority: D-BA-RETURN-SIMULATOR-FIRST; Reg 38; BCBS Basel III §50–§90.`,
+    });
+  }
+
+  // (D3) production read stays at the fail-closed baseline (0).
+  asserted += 1;
+  if (prodMarketRwa !== 0 || prodMarketSource !== "none") {
+    violations.push({
+      subject: `${PIPELINE}:ba700-production-market-rwa-nonzero`,
+      severity: "fail",
+      message: `BA 700 PRODUCTION market-RWA leg is NON-ZERO (rwa=${prodMarketRwa} minor, source="${prodMarketSource}") — the simulated trading book must be invisible to the production read pre-licence-day (the R300m-into-Prod guard). A real production position needs a non-simulated provenance tag. Authority: D-BA-RETURN-SIMULATOR-FIRST; D-PROVENANCE-FILTER-ENFORCEMENT.`,
+    });
+  }
+
   result.asserted = asserted;
   result.violations = violations;
   result.ok = !violations.some((v) => v.severity === "fail");
@@ -321,6 +482,7 @@ export function run(): ReconResult {
     `ba320-trading-book-sim-drive [ENFORCING]: live equity/commodity book ${bookPresent ? "PRESENT" : "absent (golden legs dormant)"}; ` +
     `sim equity=${simCharge.equityMinor} commodity=${simCharge.commodityMinor} minor; ir-oracle weighted=${simIrWeighted} minor; ` +
     `prod equity=${prodCharge.equityMinor} commodity=${prodCharge.commodityMinor} minor; ` +
+    `ba700 market-RWA leg: sim charge=${simChargeMinor} → RWA=${simMarketRwa} minor (prod RWA=${prodMarketRwa}); ` +
     `${violations.filter((v) => v.severity === "fail").length} fail.`;
   return result;
 }

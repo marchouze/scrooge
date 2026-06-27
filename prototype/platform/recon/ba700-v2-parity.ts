@@ -204,17 +204,21 @@ export function run(): ReconResult {
 
   // (5) Advisory gap — RWA decomposition coverage at Phase 3e.
   //
-  // GAP-3E-002 (market RWA) is now CLOSED: computeBA700V2 wires market RWA =
-  // 12.5 × the BA-320 V2 FX open-position charge (reused from computeBA320V2),
-  // fail-closed when the charge is null (marketRwaAvailable=false). On the clean
-  // store there is no open FX book, so the charge is null and market RWA is
-  // legitimately excluded — the wiring, not a non-zero figure, is what closed the
-  // gap. Credit RWA stays an EAD-sum proxy; operational RWA (GAP-3E-003) is still
-  // open (no V2 op-risk event type).
+  // ALL THREE RWA legs are now wired:
+  //   - credit RWA: CcrEadComputed V2 events (EAD-sum proxy, not CRE20-weighted).
+  //   - market RWA: 12.5 × the FULL BA-320 standardised charge (all risk classes —
+  //     FX + IR + equity + commodity) from buildBa320MarketRiskCharge; the FX leg
+  //     is fail-closed (rate-dependent, marketRwaAvailable flag), the non-FX legs
+  //     are always available. GAP-3E-002 (FX) CLOSED; the all-three-legs
+  //     completion by D-BA-RETURN-SIMULATOR-FIRST.
+  //   - operational RWA: 12.5 × BA-400 SMA op-RWA (D-BA-RETURN-SIMULATOR-FIRST).
+  // On the clean store all legs fold to 0/excluded (no positions) — the wiring,
+  // not a non-zero figure, is the completion. Remaining refinements: CRE20-
+  // weighted credit RWA (not EAD-sum proxy); loss-driven ILM for op-RWA.
   result.asserted += 1;
   violations.push({
     subject: "ba700-v2-parity:gap:phase-3e-rwa-coverage",
-    message: `ADVISORY GAP (Phase 3e): V2 RWA decomposition — credit RWA from CcrEadComputed V2 events (EAD-sum proxy, not CRE20-weighted — conservative overstatement); market RWA = 12.5 × BA-320 V2 FX charge (GAP-3E-002 CLOSED by D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING — wired from computeBA320V2, fail-closed when the charge is null, marketRwaAvailable flag on meta); operational RWA still GAP-3E-003 (no V2 op-risk event). V1 totalRwa=${v1Rwa} V2 creditRwa=${v2CreditRwa}. Coverage status: ${v2CoverageStatus}. REMAINING: build a V2 op-risk event type for operational RWA. Authority: D-V1-REMOVAL-PHASE-3E; D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING.`,
+    message: `ADVISORY (Phase 3e): V2 RWA decomposition — ALL THREE legs wired. Credit RWA from CcrEadComputed V2 events (EAD-sum proxy, not CRE20-weighted — conservative overstatement); market RWA = 12.5 × the FULL BA-320 standardised charge (FX + IR + equity + commodity) from buildBa320MarketRiskCharge (FX leg fail-closed via marketRwaAvailable; non-FX legs always available; GAP-3E-002 CLOSED + all-legs completion by D-BA-RETURN-SIMULATOR-FIRST); operational RWA = 12.5 × BA-400 SMA op-RWA (D-BA-RETURN-SIMULATOR-FIRST). V1 totalRwa=${v1Rwa} V2 creditRwa=${v2CreditRwa}. Coverage status: ${v2CoverageStatus}. REMAINING: CRE20-weighted credit RWA; loss-driven ILM. Authority: D-V1-REMOVAL-PHASE-3E; D-BA-RETURN-SIMULATOR-FIRST; D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING.`,
     severity: "warn",
   });
 
