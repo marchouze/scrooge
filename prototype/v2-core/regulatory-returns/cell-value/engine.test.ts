@@ -2,16 +2,17 @@
 //
 // Phase 0 framework tests for the per-cell value engine
 // (D-BA-RETURN-CELL-VALUE-ENGINE): the decimal-native derivation evaluator and
-// the attribution-driven cell-value engine. No domain data — a synthetic 3-line
-// "form" exercises leaf folding, subtotal evaluation to a fixpoint, the
-// fail-closed contract, and the no-double-count guard.
+// the generic, source-agnostic `computeDerivedCells` fixpoint. Leaf values are
+// supplied directly (in production they are folded from the underlying events by
+// a seat-owned per-form leaf fold — not from the CoA). A synthetic 3-line "form"
+// exercises leaf pass-through, subtotal evaluation to a fixpoint, and the
+// fail-closed contract.
 
 import { describe, expect, test } from "bun:test";
 import { toDecimal } from "../../fil-core/decimal";
 import type { ReturnContract } from "../cell-contract";
-import { registerLineAttribution } from "./attribution";
 import { evaluateDerivation, referencedCells } from "./derivation-eval";
-import { type TrialBalanceAmount, computeFromAttribution } from "./engine";
+import { type LeafCellValues, computeDerivedCells } from "./engine";
 
 describe("evaluateDerivation — decimal-native form arithmetic", () => {
   const val = new Map<string, string>([
@@ -85,27 +86,15 @@ const SYNTH_CONTRACT = {
   ],
 } as unknown as ReturnContract;
 
-const TB: readonly TrialBalanceAmount[] = [
-  { leafAccountId: "ACC-A", amountMajor: "300000000", currency: "ZAR" },
-  { leafAccountId: "ACC-B", amountMajor: "50000", currency: "ZAR" },
-  { leafAccountId: "ACC-USD", amountMajor: "9.99", currency: "USD" }, // ignored (non-functional)
-];
-
-describe("computeFromAttribution — leaf fold + subtotal fixpoint", () => {
-  test("leaves fold from attributed accounts; subtotal computes via the form formula", () => {
-    const attribution = {
-      form: "BA100" as const,
-      authoredBySeat: "test",
-      reconcilesTo: "test-oracle",
-      entries: [
-        { account: "ACC-A", row: "R0010", column: "C0010", sign: "as-is" as const },
-        { account: "ACC-B", row: "R0020", column: "C0010", sign: "as-is" as const },
-      ],
-    };
-    const values = computeFromAttribution(attribution, {
-      form: "BA100",
+describe("computeDerivedCells — generic leaf pass-through + subtotal fixpoint", () => {
+  test("leaves pass through; the subtotal computes via the form's own formula", () => {
+    const leafValues: LeafCellValues = new Map([
+      ["R0010 C0010", "300000000"],
+      ["R0020 C0010", "50000"],
+    ]);
+    const values = computeDerivedCells({
       contract: SYNTH_CONTRACT,
-      trialBalance: TB,
+      leafValues,
       functionalCurrency: "ZAR",
     });
 
@@ -123,36 +112,25 @@ describe("computeFromAttribution — leaf fold + subtotal fixpoint", () => {
     });
   });
 
-  test("a subtotal stays UNFILLED when a leaf is unattributed (fail-closed, no partial)", () => {
-    const attribution = {
-      form: "BA100" as const,
-      authoredBySeat: "test",
-      reconcilesTo: "test-oracle",
-      // Only R0010 attributed — R0020 has no account, so the R0030 subtotal must
-      // not resolve (it would be a partial/wrong total).
-      entries: [{ account: "ACC-A", row: "R0010", column: "C0010", sign: "as-is" as const }],
-    };
-    const values = computeFromAttribution(attribution, {
-      form: "BA100",
+  test("a subtotal stays UNFILLED when a leaf is missing (fail-closed, no partial)", () => {
+    // Only R0010 supplied — the R0030 subtotal references R0020, which has no
+    // value, so it must NOT resolve (a partial/wrong total).
+    const leafValues: LeafCellValues = new Map([["R0010 C0010", "300000000"]]);
+    const values = computeDerivedCells({
       contract: SYNTH_CONTRACT,
-      trialBalance: TB,
+      leafValues,
       functionalCurrency: "ZAR",
     });
     expect(values.get("X-R0010")?.amount).toBe("300000000");
     expect(values.has("X-R0030")).toBe(false);
   });
 
-  test("registry rejects an account attributed to two cells (double-count guard)", () => {
-    expect(() =>
-      registerLineAttribution({
-        form: "BA110",
-        authoredBySeat: "test",
-        reconcilesTo: "test-oracle",
-        entries: [
-          { account: "ACC-A", row: "R0010", column: "C0010", sign: "as-is" },
-          { account: "ACC-A", row: "R0020", column: "C0010", sign: "as-is" },
-        ],
-      }),
-    ).toThrow(/more than one cell/);
+  test("no leaves ⇒ no values (the page shows only the aggregate cells)", () => {
+    const values = computeDerivedCells({
+      contract: SYNTH_CONTRACT,
+      leafValues: new Map(),
+      functionalCurrency: "ZAR",
+    });
+    expect(values.size).toBe(0);
   });
 });

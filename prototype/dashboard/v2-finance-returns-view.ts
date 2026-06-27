@@ -83,15 +83,15 @@ import {
   generateBa100BalanceSheet,
   isOffBalanceSheetAccountId,
 } from "../platform/reporting/ba-100-balance-sheet";
+import { leafFoldFor } from "../platform/reporting/cell-value/leaf-fold-registry";
 import { getSubstrateGap } from "../platform/substrate/gap-register";
+// Side-effect import: registers every seat-authored per-form leaf fold so the
+// cell-value engine can fill granular cells (D-BA-RETURN-CELL-VALUE-ENGINE).
+import "../platform/reporting/cell-value/registrations";
 import { COA_ACCOUNTS } from "../v2-core/accounting/chart-of-accounts";
-import { hasLineAttribution } from "../v2-core/regulatory-returns/cell-value/attribution";
-import { computeReturnCellValues } from "../v2-core/regulatory-returns/cell-value/engine";
-// Side-effect import: registers every seat-authored per-form line attribution so
-// the cell-value engine can fill granular cells (D-BA-RETURN-CELL-VALUE-ENGINE).
-import "../v2-core/regulatory-returns/cell-value/registrations";
 import { CANONICAL_LEGAL_ENTITY_ID } from "../v2-core/reference-data/legal-entity";
 import type { ReturnForm } from "../v2-core/regulatory-returns/cell-contract";
+import { computeDerivedCells } from "../v2-core/regulatory-returns/cell-value/engine";
 import {
   RETURN_CONTRACT_REGISTRY,
   loadReturnContract,
@@ -841,32 +841,25 @@ function buildFinanceReturnDetailViewInner(
   const figures = liveFiguresForForm(formId, eventStore, marketData);
 
   // Per-cell values: the headline aggregate cells always; PLUS the full per-line
-  // engine for any form a seat has authored a line attribution for (none yet —
-  // Phase 1). The engine runs under the active provenance lens (computeTrialBalanceV2
-  // reads defaultProvenanceFilter, pinned by withProvenance). Engine values win on
-  // overlap (they compute the totals too, via the form's own arithmetic).
+  // engine for any form whose owning seat has authored a LEAF FOLD (none yet —
+  // Phase 1). The leaf fold reads the underlying EVENTS directly (a return and the
+  // CoA are sibling folds of the same log — granularity comes from the events, not
+  // the CoA). It runs under the active provenance lens (pinned by withProvenance),
+  // then the generic engine computes the form's subtotals/totals via the form's
+  // own arithmetic. Engine values win on overlap (they compute the totals too).
   const valueByXsd = new Map<string, FinanceReturnCellValue>(
     headlineValuesByXsd(formId, contract, figures),
   );
-  if (hasLineAttribution(formId)) {
-    const tb = computeTrialBalanceV2({
+  const leafFold = leafFoldFor(formId);
+  if (leafFold !== undefined) {
+    const leafValues = leafFold({
       eventStore,
+      marketData,
       entity: RETURNS_ENTITY,
-      periodStart: BA100_PERIOD_START,
-      periodEnd: BA100_PERIOD_END,
-    });
-    // Lift minor→major here (the engine is scale-agnostic / platform-free).
-    const trialBalance = tb.rows.map((r) => ({
-      leafAccountId: r.leafAccountId,
-      amountMajor: moneyFromMinorUnits(BigInt(r.amountMinor), r.currency as Currency).amount,
-      currency: r.currency,
-    }));
-    for (const [xsd, v] of computeReturnCellValues({
-      form: formId,
-      contract,
-      trialBalance,
+      asOf: RETURNS_AS_OF,
       functionalCurrency,
-    })) {
+    });
+    for (const [xsd, v] of computeDerivedCells({ contract, leafValues, functionalCurrency })) {
       valueByXsd.set(xsd, v);
     }
   }
