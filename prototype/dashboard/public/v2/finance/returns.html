@@ -15,7 +15,20 @@
     .v2-mono { font-family:var(--font-mono, ui-monospace, monospace); font-size:0.92em; }
     .v2-note { margin-top:12px; padding:10px 12px; border-radius:6px; background:var(--color-surface-raised);
       color:var(--color-text-secondary); font-size:0.85em; line-height:1.5; }
-  </style>
+    /* Expandable returns register — click a row to reveal its populated cells. */
+    .v2-ret-caret { display:inline-block; width:1em; color:var(--color-text-secondary); transition:transform .12s ease; }
+    tr[aria-expanded="true"] .v2-ret-caret { transform:rotate(90deg); }
+    .v2-ret-detail-cell { padding:0 !important; background:var(--color-surface-raised); }
+    .v2-ret-detail { padding:14px 18px; }
+    .v2-ret-detail h3 { margin:0 0 4px; font-size:0.95em; }
+    .v2-ret-detail .v2-ret-sub { margin:0 0 12px; font-size:0.82em; color:var(--color-text-secondary); }
+    .v2-ret-kv { width:100%; border-collapse:collapse; font-size:0.88em; }
+    .v2-ret-kv th, .v2-ret-kv td { text-align:left; padding:5px 10px; border-bottom:1px solid var(--color-border); }
+    .v2-ret-kv th { font-weight:600; color:var(--color-text-secondary); white-space:nowrap; }
+    .v2-ret-kv td.v2-ret-num { text-align:right; font-family:var(--font-mono, ui-monospace, monospace); }
+    .v2-ret-empty { font-size:0.85em; color:var(--color-text-secondary); font-style:italic; }
+    .v2-ret-gap { margin-top:10px; font-size:0.8em; color:var(--color-text-secondary); }
+</style>
 </head>
 <body data-provenance-content="none">
   <header class="v2-header">
@@ -67,11 +80,17 @@
       ],
     });
 
-    // Format functional-currency minor units as a major-unit figure for display.
-    function fmtMinor(minor, ccy) {
-      if (minor === null || minor === undefined) return "—";
-      const major = (Number(minor) / 100).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      return `${v2Esc(ccy)} ${major}`;
+    // Render decimal-native major-unit Money ({amount, currency}) with thousands
+    // grouping. No float and no /100 — the boundary already lifted minor→major,
+    // so we only format the exact decimal string (feedback_no_minor_money_decimal_native).
+    function fmtMoney(m) {
+      if (!m || m.amount === null || m.amount === undefined) return "—";
+      const s = String(m.amount);
+      const neg = s.startsWith("-");
+      const [intRaw, fracRaw = ""] = (neg ? s.slice(1) : s).split(".");
+      const frac = (fracRaw + "00").slice(0, 2);
+      const grouped = intRaw.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+      return `${v2Esc(m.currency)} ${neg ? "-" : ""}${grouped}.${frac}`;
     }
 
     function statusChip(status) {
@@ -89,25 +108,36 @@
       return { label: "BA 700", value: `${(fig.carRatio * 100).toFixed(2)}%`, unit: "Total capital ratio" };
     }
 
-    function fxChargeTile(returns, ccy) {
+    function fxChargeTile(returns) {
       const ba320 = returns.find((r) => r.form === "BA 320");
       const fig = ba320 && ba320.figures;
-      if (!fig || fig.openPositionChargeMinor === null || fig.openPositionChargeMinor === undefined) {
+      if (!fig || !fig.openPositionCharge) {
         return { label: "BA 320", value: "—", unit: "FX open-position charge (no production rate)" };
       }
-      return { label: "BA 320", value: fmtMinor(fig.openPositionChargeMinor, ccy), unit: "FX open-position charge" };
+      return { label: "BA 320", value: fmtMoney(fig.openPositionCharge), unit: "FX open-position charge" };
+    }
+
+    function assetsTile(returns) {
+      const ba100 = returns.find((r) => r.form === "BA 100");
+      const fig = ba100 && ba100.figures;
+      if (!fig) return { label: "BA 100", value: "—", unit: "Total assets" };
+      return {
+        label: "BA 100",
+        value: fmtMoney(fig.assets),
+        unit: fig.balanced ? "Total assets (balanced)" : "Total assets (P&L not closed)",
+      };
     }
 
     // Headline cell per row — the live figure, else "—".
-    function headlineFor(row, ccy) {
+    function headlineFor(row) {
       if (row.status !== "live" || !row.figures) return "—";
-      if (row.form === "BA 700") {
-        const r = row.figures.carRatio;
-        return (r === null || r === undefined) ? "—" : `CAR ${(r * 100).toFixed(2)}%`;
+      const fig = row.figures;
+      if (fig.kind === "ba700") {
+        return (fig.carRatio === null || fig.carRatio === undefined)
+          ? "—" : `CAR ${(fig.carRatio * 100).toFixed(2)}%`;
       }
-      if (row.form === "BA 320") {
-        return fmtMinor(row.figures.openPositionChargeMinor, ccy);
-      }
+      if (fig.kind === "ba320") return fmtMoney(fig.openPositionCharge);
+      if (fig.kind === "ba100") return fmtMoney(fig.assets);
       return "—";
     }
 
@@ -115,6 +145,154 @@
     function sourceFor(row) {
       if (row.status !== "live" || !row.readPath) return "";
       return `<span class="v2-mono">${row.readPath.toUpperCase()} read</span>`;
+    }
+
+    // ---- Detail panel: the actual populated data for one return -------------
+    // The figures already arrive in the API payload for live returns. We render
+    // them as a real cell table; planned returns (a typed contract but no
+    // on-demand figure route) say so honestly rather than faking a table.
+
+    function kvTable(pairs) {
+      const body = pairs
+        .map(([k, v]) => `<tr><th>${v2Esc(k)}</th><td class="v2-ret-num">${v}</td></tr>`)
+        .join("");
+      return `<table class="v2-ret-kv"><tbody>${body}</tbody></table>`;
+    }
+
+    function gapNote(figures) {
+      if (!figures || !figures.gaps || figures.gaps.length === 0) return "";
+      return `<p class="v2-ret-gap"><strong>Gaps:</strong> ${figures.gaps.map(v2Esc).join(", ")}</p>`;
+    }
+
+    function filingNote(row) {
+      if (!row.filing) return "";
+      const f = row.filing;
+      const filed = f.lastFiled ? v2Esc(f.lastFiled) : "generated, not yet filed";
+      const mode = f.mode ? ` (${v2Esc(f.mode)})` : "";
+      return `<p class="v2-ret-sub">Reporting period ${v2Esc(f.reportingPeriod)} · ${filed}${mode}` +
+        ` · hash <span class="v2-mono">${v2Esc(String(f.contentHash).slice(0, 12))}…</span></p>`;
+    }
+
+    // Build the inner HTML of the detail panel for a return row.
+    function detailHtml(row, ccy) {
+      if (row.status !== "live" || !row.figures) {
+        return `<div class="v2-ret-detail"><p class="v2-ret-empty">No populated figures yet — ` +
+          `a typed cell-data contract exists for this return, but no on-demand ` +
+          `figure-producing route is wired (status: planned).</p></div>`;
+      }
+      const fig = row.figures;
+      let inner;
+      if (fig.kind === "ba700") {
+        inner = kvTable([
+          ["Tier 1 capital", fmtMoney(fig.tier1Capital)],
+          ["Tier 2 capital", fmtMoney(fig.tier2Capital)],
+          ["Total risk-weighted assets (RWA)", fmtMoney(fig.totalRwa)],
+          ["Total capital ratio (CAR)", fig.carRatio === null || fig.carRatio === undefined
+            ? "—" : `${(fig.carRatio * 100).toFixed(2)}%`],
+          ["Coverage status", v2Esc(fig.coverageStatus)],
+        ]);
+      } else if (fig.kind === "ba320") {
+        let posTable;
+        if (!fig.positions || fig.positions.length === 0) {
+          posTable = `<p class="v2-ret-empty">No open FX positions on the build store ` +
+            `(no executed FX trades, or no production rate — fail-closed).</p>`;
+        } else {
+          const posRows = fig.positions.map((p) =>
+            `<tr><th>${v2Esc(p.baseCurrency)}</th>` +
+            `<td class="v2-ret-num">${p.rateAvailable
+              ? fmtMoney(p.netPositionFunctional)
+              : "— (no rate)"}</td></tr>`).join("");
+          posTable = `<table class="v2-ret-kv"><thead><tr><th>Currency</th>` +
+            `<th class="v2-ret-num">Net open position</th></tr></thead><tbody>${posRows}</tbody></table>`;
+        }
+        const summary = kvTable([
+          ["FX open-position charge (Reg 28(5), 8%)", fmtMoney(fig.openPositionCharge)],
+          ["Coverage status", v2Esc(fig.coverageStatus)],
+        ]);
+        inner = `${posTable}<div style="height:12px"></div>${summary}`;
+      } else if (fig.kind === "ba100") {
+        const sectionBlock = (title, sec, total) => {
+          const items = fig.lines.filter((l) => l.section === sec);
+          const body = items.length
+            ? items.map((l) => `<tr><th>${v2Esc(l.label)}</th><td class="v2-ret-num">${fmtMoney(l.amount)}</td></tr>`).join("")
+            : `<tr><td colspan="2" class="v2-ret-empty">No ${sec} lines posted on the build store.</td></tr>`;
+          return `<h4 style="margin:12px 0 4px;font-size:0.85em;">${title}</h4>` +
+            `<table class="v2-ret-kv"><tbody>${body}` +
+            `<tr><th>Total ${sec}</th><td class="v2-ret-num"><strong>${fmtMoney(total)}</strong></td></tr></tbody></table>`;
+        };
+        const balanceLine = `<p class="v2-ret-sub" style="margin-top:12px;">` +
+          `Assets ${fmtMoney(fig.assets)} ${fig.balanced ? "≡" : "≠"} Liabilities ${fmtMoney(fig.liabilities)} ` +
+          `+ Equity ${fmtMoney(fig.equity)}` +
+          `${fig.balanced ? " — balanced" : " — unbalanced (period P&L not yet closed to retained earnings)"}</p>`;
+        const gapLine = fig.classificationGapCount > 0
+          ? `<p class="v2-ret-gap">${fig.classificationGapCount} trial-balance row(s) had no balance-sheet classification this run.</p>`
+          : "";
+        inner = sectionBlock("Assets", "assets", fig.assets)
+          + sectionBlock("Liabilities", "liabilities", fig.liabilities)
+          + sectionBlock("Equity", "equity", fig.equity)
+          + balanceLine + gapLine
+          + kvTable([["Coverage status", v2Esc(fig.coverageStatus)]]);
+      } else {
+        inner = `<p class="v2-ret-empty">No detail renderer for this return.</p>`;
+      }
+      return `<div class="v2-ret-detail">` +
+        `<h3>${v2Esc(row.form)} — ${v2Esc(row.name)}</h3>` +
+        filingNote(row) +
+        (row.readPath ? `<p class="v2-ret-sub">Figures from the ${v2Esc(row.readPath.toUpperCase())} read path.</p>` : "") +
+        inner + gapNote(fig) + `</div>`;
+    }
+
+    // Build the register as an expandable table: each row toggles a detail row
+    // beneath it showing the return's actual populated cells.
+    function renderExpandableReturns(mount, returns, ccy) {
+      mount.replaceChildren();
+      if (returns.length === 0) {
+        renderTable(mount, { columns: ["Return"], rows: [], emptyMsg: "No returns in the register." });
+        return;
+      }
+      const wrapper = document.createElement("div");
+      wrapper.className = "v2-table-wrapper";
+      const table = document.createElement("table");
+      table.className = "v2-table";
+      const columns = ["", "Return", "Description", "Status", "Headline", "Source"];
+      table.innerHTML = `<thead><tr>${columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
+      const tbody = document.createElement("tbody");
+
+      returns.forEach((r, i) => {
+        const tr = document.createElement("tr");
+        tr.className = "v2-table-row-link";
+        tr.tabIndex = 0;
+        tr.setAttribute("aria-expanded", "false");
+        tr.innerHTML = [
+          `<span class="v2-ret-caret">▸</span>`,
+          `<span class="v2-mono">${v2Esc(r.form)}</span>`,
+          v2Esc(r.name),
+          statusChip(r.status),
+          headlineFor(r, ccy),
+          sourceFor(r),
+        ].map((c) => `<td>${c}</td>`).join("");
+
+        const detail = document.createElement("tr");
+        detail.style.display = "none";
+        detail.innerHTML = `<td class="v2-ret-detail-cell" colspan="${columns.length}">${detailHtml(r, ccy)}</td>`;
+
+        const toggle = () => {
+          const open = detail.style.display !== "none";
+          detail.style.display = open ? "none" : "";
+          tr.setAttribute("aria-expanded", open ? "false" : "true");
+        };
+        tr.addEventListener("click", toggle);
+        tr.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+        });
+
+        tbody.appendChild(tr);
+        tbody.appendChild(detail);
+      });
+
+      table.appendChild(tbody);
+      wrapper.appendChild(table);
+      mount.appendChild(wrapper);
     }
 
     v2WireLoader(async () => {
@@ -132,7 +310,8 @@
       renderTileGroup(tilesMount, {
         tiles: [
           carRatioTile(data.returns),
-          fxChargeTile(data.returns, ccy),
+          fxChargeTile(data.returns),
+          assetsTile(data.returns),
           { label: "Returns Built", value: `${data.liveCount} / ${data.totalCount}`, unit: "Live on-demand of canonical returns" },
           // No ReportFiled / filing-lifecycle event exists — overdue cannot be
           // sourced. Honest "N/A", never a fabricated count.
@@ -140,20 +319,7 @@
         ],
       });
 
-      const rows = data.returns.map((r) => ({
-        cells: [
-          `<span class="v2-mono">${v2Esc(r.form)}</span>`,
-          v2Esc(r.name),
-          statusChip(r.status),
-          headlineFor(r, ccy),
-          sourceFor(r),
-        ],
-      }));
-      renderTable(tableMount, {
-        columns: ["Return", "Description", "Status", "Headline", "Source"],
-        rows,
-        emptyMsg: "No returns in the register.",
-      });
+      renderExpandableReturns(tableMount, data.returns, ccy);
 
       // Surface the filing-lifecycle substrate gap honestly beneath the table.
       if (data.filingLifecycleGap) {
