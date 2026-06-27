@@ -72,8 +72,8 @@ import { setDefaultProvenanceModeOverride } from "../projections/filter";
 import { buildBondIrGeneralLadder } from "../reporting/ba-320-bond-events-adapter";
 import { buildCommodityRows } from "../reporting/ba-320-commodity-events-adapter";
 import { buildEquityRows } from "../reporting/ba-320-equity-events-adapter";
-import { buildBa320MarketRiskCharge } from "../reporting/ba-320-market-risk-charge-adapter";
 import { generateBa320MarketRisk } from "../reporting/ba-320-market-risk";
+import { buildBa320MarketRiskCharge } from "../reporting/ba-320-market-risk-charge-adapter";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "ba320-trading-book-sim-drive";
@@ -414,7 +414,7 @@ export function run(): ReconResult {
   let simChargeMinor = 0;
   let simMarketRwa = 0;
   let prodMarketRwa = 0;
-  let prodMarketSource: string = "none";
+  let prodMarketSource: "ba320-standardised-v2" | "none" = "none";
   try {
     setDefaultProvenanceModeOverride("combined");
     simChargeMinor = buildBa320MarketRiskCharge({

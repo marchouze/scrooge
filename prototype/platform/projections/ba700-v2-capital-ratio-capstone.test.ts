@@ -45,6 +45,7 @@
 
 import { afterEach, describe, expect, test } from "bun:test";
 
+import { DEFAULT_SIM_DESK_ID } from "../../v2-core/desk/roster";
 import type { FilInstrumentCreatedPayload } from "../../v2-core/fil-instances/events";
 import { money } from "../core/decimal-money";
 import { encodeMoney } from "../core/money-codec";
@@ -59,7 +60,6 @@ import {
 import { simulatedTag } from "../event-store/provenance";
 import { EventStore } from "../event-store/store";
 import type { Actor, ProvenanceTag } from "../event-store/types";
-import { DEFAULT_SIM_DESK_ID } from "../../v2-core/desk/roster";
 import { computeBA700V2 } from "./ba700-v2";
 import { setDefaultProvenanceModeOverride } from "./filter";
 
