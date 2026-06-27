@@ -14,7 +14,7 @@
 import type { EventStore } from "../event-store/store";
 import type { MarketDataStore } from "../market-data/store";
 import type { SimConfigField, SimStatus, SimulatorModule } from "../simulation/hub/types";
-import { V2LiveFxDriver, type V2LiveFxDriverConfig } from "./live-driver";
+import { type ClockAdvanceMode, V2LiveFxDriver, type V2LiveFxDriverConfig } from "./live-driver";
 
 /** Hub module id — the live V2 generative FX counterparty simulator. */
 export const V2_FX_GENERATIVE_MODULE_ID = "fx-v2-generative";
@@ -59,6 +59,17 @@ const CONFIG_SCHEMA: readonly SimConfigField[] = [
     help: "accelerated = settle same tick; realtime = settle on T+2 sim day.",
   },
   {
+    key: "clockAdvanceMode",
+    label: "Clock advance mode",
+    type: "select",
+    default: "fixed-day-step",
+    options: ["fixed-day-step", "real-elapsed"],
+    help:
+      "fixed-day-step = one sim day per tick (byte-replayable); real-elapsed = " +
+      "advance the sim clock by real wall-clock time between ticks (current-time " +
+      "trading from an assumed-past baseline).",
+  },
+  {
     key: "seed",
     label: "RNG seed",
     type: "number",
@@ -73,12 +84,16 @@ function configFrom(raw: Record<string, unknown> | undefined): V2LiveFxDriverCon
     tickIntervalMs?: number;
     tradesPerTick?: number;
     settlementMode?: "accelerated" | "realtime";
+    clockAdvanceMode?: ClockAdvanceMode;
     seed?: number;
   } = {};
   if (typeof r.tickIntervalMs === "number") cfg.tickIntervalMs = r.tickIntervalMs;
   if (typeof r.tradesPerTick === "number") cfg.tradesPerTick = r.tradesPerTick;
   if (r.settlementMode === "accelerated" || r.settlementMode === "realtime") {
     cfg.settlementMode = r.settlementMode;
+  }
+  if (r.clockAdvanceMode === "fixed-day-step" || r.clockAdvanceMode === "real-elapsed") {
+    cfg.clockAdvanceMode = r.clockAdvanceMode;
   }
   if (typeof r.seed === "number" && Number.isInteger(r.seed)) cfg.seed = r.seed;
   return cfg;

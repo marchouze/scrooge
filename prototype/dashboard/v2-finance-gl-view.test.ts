@@ -30,6 +30,7 @@ import { EventStore } from "../platform/event-store/store";
 import type { Actor, Event } from "../platform/event-store/types";
 import { MarketDataStore } from "../platform/market-data/store";
 import { V2LiveFxDriver } from "../platform/simulation-v2-live/live-driver";
+import { emitClientOnboardingLifecycle } from "../platform/simulation-v2/sim-modules/counterparty-provisioning";
 import { tenantIdSchema } from "../v2-core/control-plane/tenant";
 import { FX_TREATMENT_MODULES } from "../v2-core/reporting-treatments/fx-modules";
 import { buildGlView } from "./v2-finance-gl-view";
@@ -50,10 +51,30 @@ function seedFxTreatment(store: EventStore): void {
   }
 }
 
+// The live driver now trades ONLY with in-sim onboarded FX-eligible clients
+// (D-FX-SIM-LIVE-REALTIME-ONBOARDED) — no seed fallback. Onboard one simulated
+// client so the driver has a counterparty; an empty store would fail-closed.
+function seedOnboardedSimClient(store: EventStore): void {
+  emitClientOnboardingLifecycle({
+    store,
+    scenarioId: "fx-v2-live",
+    asOf: "2026-02-02T07:00:00.000Z",
+    counterparty: {
+      counterpartyId: "CP-SIM-ACME-100",
+      name: "Acme Sim Bank",
+      bic: "ACMEZAJJXXX",
+      eligiblePairs: ["USD/ZAR", "EUR/ZAR"],
+      behaviourProfile: "reliable",
+      agreement: { agreementType: "ISDA-2002", csaInScope: true, csaCurrency: "ZAR" },
+    },
+  });
+}
+
 function populatedStores(): { eventStore: EventStore; marketDataStore: MarketDataStore } {
   const eventStore = new EventStore();
   const marketDataStore = new MarketDataStore(":memory:");
   seedFxTreatment(eventStore);
+  seedOnboardedSimClient(eventStore);
   const driver = new V2LiveFxDriver({
     eventStore,
     marketDataStore,
@@ -73,6 +94,7 @@ function openTradeStores(): { eventStore: EventStore; marketDataStore: MarketDat
   const eventStore = new EventStore();
   const marketDataStore = new MarketDataStore(":memory:");
   seedFxTreatment(eventStore);
+  seedOnboardedSimClient(eventStore);
   const driver = new V2LiveFxDriver({
     eventStore,
     marketDataStore,

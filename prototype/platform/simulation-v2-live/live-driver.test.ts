@@ -13,8 +13,19 @@ import { describe, expect, test } from "bun:test";
 
 import { EventStore } from "../event-store/store";
 import { MarketDataStore } from "../market-data/store";
-import { V2LiveFxDriver, type V2LiveFxDriverConfig } from "./live-driver";
+import {
+  DEFAULT_SIM_COUNTERPARTIES,
+  V2LiveFxDriver,
+  type V2LiveFxDriverConfig,
+} from "./live-driver";
 
+/**
+ * A fresh driver with the explicit DEFAULT_SIM_COUNTERPARTIES opt-in injected.
+ * The lifecycle/replay tests below assert deterministic trade generation, so
+ * they inject a fixed counterparty set rather than relying on the onboarded
+ * resolver (an empty store would fail-closed to zero trades — exercised
+ * separately in the onboarded-source tests).
+ */
 function freshDriver(config?: V2LiveFxDriverConfig): {
   driver: V2LiveFxDriver;
   eventStore: EventStore;
@@ -24,7 +35,7 @@ function freshDriver(config?: V2LiveFxDriverConfig): {
   const driver = new V2LiveFxDriver({
     eventStore,
     marketDataStore,
-    ...(config ? { config } : {}),
+    config: { counterparties: DEFAULT_SIM_COUNTERPARTIES, ...config },
   });
   return { driver, eventStore };
 }

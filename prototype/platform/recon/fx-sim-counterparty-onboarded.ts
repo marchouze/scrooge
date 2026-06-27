@@ -17,6 +17,14 @@
 // Manually-booked / production FX trades use other venues and are out of scope
 // for this gate (the production counterparty path is governed elsewhere).
 //
+// LIVE-DRIVER COVERAGE (D-FX-SIM-LIVE-REALTIME-ONBOARDED). The born-V2 live FX
+// driver (platform/simulation-v2-live/) does NOT emit `FxTradeExecuted` — it
+// books `FilInstrumentCreated` (assetClass "fx") directly through the SUT. So
+// the V1 `venue:OTC-SIM` reader alone left the live driver UNCOVERED. This gate
+// therefore ALSO asserts every `simulated`-provenance fx `FilInstrumentCreated`
+// names a counterparty in the onboarded set — the live driver's
+// `economicTerms.counterpartyId`. Same invariant, second emission shape.
+//
 // HOW IT RUNS: replay the V1 canonical store, fold the born-V2 onboarding
 // register, derive the FX-eligible onboarded set (simulated provenance), then
 // assert every `venue:"OTC-SIM"` FxTradeExecuted's `counterparty.partyId` is in
@@ -137,6 +145,31 @@ export function simFxTrades(store: Pick<EventStore, "replay">): SimFxTradeRef[] 
   return trades;
 }
 
+/**
+ * Every LIVE-DRIVER simulated FX instrument (born-V2 `FilInstrumentCreated`,
+ * assetClass "fx", `simulated` provenance) from the store, as a `SimFxTradeRef`
+ * keyed by its `economicTerms.counterpartyId`. This is the live driver's
+ * emission shape — it never emits `FxTradeExecuted{venue:OTC-SIM}`.
+ */
+export function simFxInstruments(store: Pick<EventStore, "replay">): SimFxTradeRef[] {
+  const trades: SimFxTradeRef[] = [];
+  for (const ev of store.replay({ type: "FilInstrumentCreated" })) {
+    if (!isSimulated(ev)) continue; // production / governance instruments out of scope.
+    const payload = ev.payload as {
+      instance?: unknown;
+      economicTerms?: { assetClass?: unknown; counterpartyId?: unknown };
+    };
+    const terms = payload.economicTerms;
+    if (terms?.assetClass !== "fx") continue; // non-FX instrument.
+    const counterpartyPartyId =
+      typeof terms.counterpartyId === "string" ? terms.counterpartyId : "";
+    if (counterpartyPartyId === "") continue; // malformed; out of this gate's scope.
+    const tradeId = typeof payload.instance === "string" ? payload.instance : ev.event_id;
+    trades.push({ tradeId, counterpartyPartyId });
+  }
+  return trades;
+}
+
 /** Best-effort trade-id extraction (`{ value }` | string | fallback to event id). */
 function extractTradeId(raw: unknown): string | null {
   if (typeof raw === "string") return raw;
@@ -156,7 +189,9 @@ export function run(): ReconResult {
   const severity: ReconViolation["severity"] = ENFORCING ? "fail" : "warn";
 
   const onboardedIds = onboardedFxPartyIds(eventStore);
-  const trades = simFxTrades(eventStore);
+  // BOTH simulator emission shapes: the V1 `FxTradeExecuted{venue:OTC-SIM}` path
+  // and the live-driver `FilInstrumentCreated` (simulated fx) path.
+  const trades = [...simFxTrades(eventStore), ...simFxInstruments(eventStore)];
   const { asserted, violations } = assertSimTradesOnboarded(trades, onboardedIds, severity);
 
   result.asserted = asserted;
