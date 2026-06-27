@@ -19,9 +19,11 @@
 //      NUMBERING is gated by `recon:ba-form-numbering`. So no BA-return name or
 //      number is written by hand in this module or on the page.
 //
-//   2. The live figures come from `selectRegulatoryReturn(...)`
-//      (dashboard/regulatory-returns-view.ts) — the existing route-boundary
-//      dual-read for BA 700 / BA 320. It is REUSED, not duplicated.
+//   2. The live figures come DIRECTLY from the V2 projections (computeBA700V2,
+//      computeBA320V2, computeTrialBalanceV2) — NOT the flag-gated
+//      `selectRegulatoryReturn` dual-read, which falls back to the V1 generators
+//      when `useV2Store` is off. This page is V2-only: no V1 data reaches it
+//      (D-V1-REMOVAL-PHASE-1; the CLAUDE.md V1-retirement directive).
 //
 // ## STATUS — `live` vs `planned` (honest; Charter cmd 3 / cmd 5)
 //
@@ -33,8 +35,8 @@
 // in-flight remediation, so a `built` status cannot be cleanly sourced for the
 // non-live forms. Rather than ASSERT a status I cannot source, this view
 // COLLAPSES to `live` vs `planned`:
-//   - `live`    — BA 700 and BA 320 ONLY (served on demand by
-//                 selectRegulatoryReturn; figures populated below).
+//   - `live`    — BA 700, BA 320 and BA 100 ONLY (served on demand by the V2
+//                 projections; figures populated below).
 //   - `planned` — every other canonical return: a typed cell-data contract
 //                 exists (the form is data-modelled) but no on-demand
 //                 figure-producing route does.
@@ -62,16 +64,18 @@
 // Author: Mira (Compliance / RegTech engineer, engineering — reports to Zara
 //   (Chief Compliance Officer)).
 
-import { computeTrialBalance } from "../platform/accounting/period-close";
 import { type Money, moneyFromMinorUnits } from "../platform/core/decimal-money";
 import type { Currency } from "../platform/core/types";
 import type { EventStore } from "../platform/event-store/store";
 import { anchorFunctionalCurrency } from "../platform/identity/functional-currency";
 import type { MarketDataStore } from "../platform/market-data/store";
+import { computeBA320V2 } from "../platform/projections/ba320-fx-v2";
+import { computeBA700V2 } from "../platform/projections/ba700-v2";
 import {
   defaultProvenanceFilter,
   eventMatchesProvenanceFilter,
 } from "../platform/projections/filter";
+import { computeTrialBalanceV2 } from "../platform/projections/gl-projection-v2";
 import {
   type Ba100LineClassification,
   generateBa100BalanceSheet,
@@ -79,16 +83,12 @@ import {
 } from "../platform/reporting/ba-100-balance-sheet";
 import { getSubstrateGap } from "../platform/substrate/gap-register";
 import { COA_ACCOUNTS } from "../v2-core/accounting/chart-of-accounts";
+import { CANONICAL_LEGAL_ENTITY_ID } from "../v2-core/reference-data/legal-entity";
 import type { ReturnForm } from "../v2-core/regulatory-returns/cell-contract";
 import {
   RETURN_CONTRACT_REGISTRY,
   loadReturnContract,
 } from "../v2-core/regulatory-returns/return-contracts";
-import {
-  type BA320ViewFigures,
-  type BA700ViewFigures,
-  selectRegulatoryReturn,
-} from "./regulatory-returns-view";
 
 // ---------------------------------------------------------------------------
 // View shapes — the V2 boundary DTO.
@@ -100,8 +100,8 @@ export type ReturnBuildStatus = "live" | "built" | "planned";
 // Page-facing figures — DECIMAL-NATIVE money (Charter cmd 4; feedback_no_minor_
 // money_decimal_native). Money is carried as the canonical major-unit `Money`
 // type ({amount: "73750000.00", currency: "ZAR"}) — NEVER a minor-unit integer
-// and NEVER divided by 100 on the page. The underlying selectRegulatoryReturn /
-// BA-100 generators still expose `*Minor` integers internally; they are lifted
+// and NEVER divided by 100 on the page. The underlying V2 projections still
+// expose `*Minor` integers internally; they are lifted
 // to `Money` here, at the V2 boundary, exactly once via moneyFromMinorUnits.
 // ---------------------------------------------------------------------------
 
@@ -327,13 +327,32 @@ function foldFiling(
 }
 
 // ---------------------------------------------------------------------------
-// Minor → decimal-native Money lifters. The selectRegulatoryReturn / BA-100
-// generators still expose `*Minor` integers internally; they are lifted to the
-// canonical major-unit Money type EXACTLY ONCE here, at the V2 boundary. The
-// page never sees a minor-unit integer and never divides by 100 (Charter cmd 4;
-// feedback_no_minor_money_decimal_native).
+// V2-ONLY sourcing. This page reads the V2 projections DIRECTLY — never the
+// flag-gated `selectRegulatoryReturn` dual-read (which falls back to the V1
+// generators when `useV2Store` is off). No V1 data reaches this surface
+// (D-V1-REMOVAL-PHASE-1; the CLAUDE.md V1-retirement directive — new code routes
+// through v2-core / V2 projections, never V1):
+//   - BA 700 → computeBA700V2 (GlPostingEmitted capital + CcrEadComputed credit
+//              RWA + market RWA from the BA-320 V2 charge).
+//   - BA 320 → computeBA320V2 (FilInstrumentCreated/Terminated FIL FX).
+//   - BA 100 → computeTrialBalanceV2 (pure fold over GlPostingEmitted — the V2
+//              GL posting event — NOT the V1 SubLedgerPostingEmitted).
+//
+// Entity is the sourced canonical anchor (CANONICAL_LEGAL_ENTITY_ID), never a
+// literal; the as-of bound captures the whole build-phase window (mirrors the
+// V2 parity gates). Charter cmd 4 (source, don't hardcode) / cmd 2 (fail-closed).
 // ---------------------------------------------------------------------------
 
+const RETURNS_ENTITY = CANONICAL_LEGAL_ENTITY_ID;
+const RETURNS_AS_OF = "2099-12-31"; // broad window capturing all build-phase events
+const BA100_PERIOD_START = "2026-01-01";
+const BA100_PERIOD_END = "2099-12-31";
+const BA100_PERIOD_ID = "period:hoz-bank:build-phase";
+
+// Minor → decimal-native Money. The V2 projections expose `*Minor` integers
+// internally; they are lifted to the canonical major-unit Money type EXACTLY
+// ONCE here, at the V2 boundary. The page never sees a minor-unit integer and
+// never divides by 100 (Charter cmd 4; feedback_no_minor_money_decimal_native).
 function liftMoney(minor: number, ccy: string): Money<Currency> {
   // The source figures are minor-unit INTEGERS (toMinorUnits output); BigInt is
   // exact and fail-closed if a non-integer ever leaks (no float rounding here —
@@ -345,40 +364,64 @@ function liftMoneyOrNull(minor: number | null | undefined, ccy: string): Money<C
   return minor === null || minor === undefined ? null : liftMoney(minor, ccy);
 }
 
-function toBa700Page(f: BA700ViewFigures, ccy: string): Ba700PageFigures {
+/** BA 700 capital-adequacy page figures, sourced from the V2 projection. */
+function ba700PageFromV2(
+  eventStore: EventStore,
+  marketData: MarketDataStore,
+  ccy: string,
+): Ba700PageFigures {
+  const v2 = computeBA700V2({
+    eventStore,
+    asOf: RETURNS_AS_OF,
+    entity: RETURNS_ENTITY,
+    functionalCurrency: ccy,
+    marketDataStore: marketData,
+  });
+  const ca = v2.capitalAdequacy;
   return {
     kind: "ba700",
-    tier1Capital: liftMoney(f.tier1Capital, ccy),
-    tier2Capital: liftMoney(f.tier2Capital, ccy),
-    totalRwa: liftMoney(f.totalRwa, ccy),
-    carRatio: f.carRatio,
-    coverageStatus: f.coverageStatus,
-    gaps: f.gaps,
+    tier1Capital: liftMoney(ca.tier1Capital, ccy),
+    tier2Capital: liftMoney(ca.tier2Capital, ccy),
+    totalRwa: liftMoney(ca.totalRwa, ccy),
+    carRatio: ca.carRatio,
+    coverageStatus: v2.meta.coverageStatus,
+    gaps: v2.gaps,
   };
 }
 
-function toBa320Page(f: BA320ViewFigures, ccy: string): Ba320PageFigures {
+/** BA 320 FX market-risk page figures, sourced from the V2 projection. */
+function ba320PageFromV2(
+  eventStore: EventStore,
+  marketData: MarketDataStore,
+  ccy: string,
+): Ba320PageFigures {
+  const v2 = computeBA320V2({
+    eventStore,
+    asOf: RETURNS_AS_OF,
+    entity: RETURNS_ENTITY,
+    functionalCurrency: ccy,
+    marketDataStore: marketData,
+  });
   return {
     kind: "ba320",
-    positions: f.positions.map((p) => ({
+    positions: v2.fx.positions.map((p) => ({
       baseCurrency: p.baseCurrency,
       netPositionFunctional: liftMoneyOrNull(p.netPositionFunctionalMinor, ccy),
       rateAvailable: p.rateAvailable,
     })),
-    openPositionCharge: liftMoneyOrNull(f.openPositionChargeMinor, ccy),
-    coverageStatus: f.coverageStatus,
-    gaps: f.gaps,
+    openPositionCharge: liftMoneyOrNull(v2.fx.openPositionChargeMinor, ccy),
+    coverageStatus: v2.meta.coverageStatus,
+    gaps: v2.gaps,
   };
 }
 
 // ---------------------------------------------------------------------------
-// BA 100 (Balance Sheet) — on-demand read-path live figures. Mirrors the
-// BA 700 / BA 320 dual-read shape: a pure projection over the event log, no
-// event side-effects.
+// BA 100 (Balance Sheet) — on-demand V2 read-path live figures. A pure
+// projection over the event log, no event side-effects:
 //
-//   computeTrialBalance (pure fold over SubLedgerPostingEmitted — NOT the
-//      event-emitting closePeriod) → generateBa100BalanceSheet with a CoA-
-//      derived classification map → decimal-native section totals + lines.
+//   computeTrialBalanceV2 (pure fold over GlPostingEmitted — the V2 GL posting
+//      event, NOT the V1 SubLedgerPostingEmitted) → generateBa100BalanceSheet
+//      with a CoA-derived classification map → decimal-native section totals.
 //
 // The classification map is DERIVED from the CoA registry category prefix
 // (Charter cmd 4 — source, don't hand-key); income/expense, memorandum and
@@ -386,10 +429,6 @@ function toBa320Page(f: BA320ViewFigures, ccy: string): Ba320PageFigures {
 // store with no GL postings the balance sheet is honestly empty/zero rather
 // than fabricated.
 // ---------------------------------------------------------------------------
-
-const BA100_PERIOD_START = "2026-01-01";
-const BA100_PERIOD_END = "2099-12-31";
-const BA100_PERIOD_ID = "period:hoz-bank:build-phase";
 
 function ba100SectionForCategory(category: string): "assets" | "liabilities" | "equity" | null {
   if (category.startsWith("asset")) return "assets";
@@ -411,21 +450,16 @@ function deriveBa100Classifications(): readonly Ba100LineClassification[] {
   return out;
 }
 
-function buildBa100PageFigures(
-  eventStore: EventStore,
-  entity: string,
-  asOf: string,
-  ccy: string,
-): Ba100PageFigures {
-  const tb = computeTrialBalance({
+function buildBa100PageFigures(eventStore: EventStore, ccy: string): Ba100PageFigures {
+  const tb = computeTrialBalanceV2({
     eventStore,
-    entity,
+    entity: RETURNS_ENTITY,
     periodStart: BA100_PERIOD_START,
     periodEnd: BA100_PERIOD_END,
   });
   const sheet = generateBa100BalanceSheet({
-    entity,
-    asOf,
+    entity: RETURNS_ENTITY,
+    asOf: RETURNS_AS_OF,
     periodId: BA100_PERIOD_ID,
     functionalCurrency: ccy,
     trialBalance: tb.rows,
@@ -453,7 +487,7 @@ function buildBa100PageFigures(
     balanced: sheet.balanceCheck.balanced,
     lines,
     classificationGapCount: sheet.classificationGaps.length,
-    coverageStatus: tb.rows.length === 0 ? "no-data" : "v1-trial-balance",
+    coverageStatus: tb.rows.length === 0 ? "no-data" : "v2-trial-balance",
   };
 }
 
@@ -490,14 +524,11 @@ export function buildFinanceReturnsView(
 ): FinanceReturnsView {
   const functionalCurrency = anchorFunctionalCurrency();
 
-  // The live returns, sourced via the SHARED selectRegulatoryReturn dual-read.
-  const ba700 = selectRegulatoryReturn("ba700", eventStore, marketData);
-  const ba320 = selectRegulatoryReturn("ba320", eventStore, marketData);
-
+  // The live returns, sourced DIRECTLY from the V2 projections (no V1 fallback).
   const liveByForm = new Map<string, FinanceReturnRow>();
 
-  const ba700Figures = toBa700Page(ba700.figures as BA700ViewFigures, functionalCurrency);
-  const ba700Filing = foldFiling(eventStore, ba700.entity, "BA700");
+  const ba700Figures = ba700PageFromV2(eventStore, marketData, functionalCurrency);
+  const ba700Filing = foldFiling(eventStore, RETURNS_ENTITY, "BA700");
   liveByForm.set("BA700", {
     formId: "BA700",
     form: "BA 700",
@@ -505,13 +536,13 @@ export function buildFinanceReturnsView(
     status: "live",
     summary: ba700Summary(ba700Figures),
     figures: ba700Figures,
-    readPath: ba700.readPath,
+    readPath: "v2",
     gaps: ba700Figures.gaps,
     ...(ba700Filing !== undefined ? { filing: ba700Filing } : {}),
   });
 
-  const ba320Figures = toBa320Page(ba320.figures as BA320ViewFigures, functionalCurrency);
-  const ba320Filing = foldFiling(eventStore, ba320.entity, "BA320");
+  const ba320Figures = ba320PageFromV2(eventStore, marketData, functionalCurrency);
+  const ba320Filing = foldFiling(eventStore, RETURNS_ENTITY, "BA320");
   liveByForm.set("BA320", {
     formId: "BA320",
     form: "BA 320",
@@ -519,20 +550,15 @@ export function buildFinanceReturnsView(
     status: "live",
     summary: ba320Summary(ba320Figures),
     figures: ba320Figures,
-    readPath: ba320.readPath,
+    readPath: "v2",
     gaps: ba320Figures.gaps,
     ...(ba320Filing !== undefined ? { filing: ba320Filing } : {}),
   });
 
-  // BA 100 (Balance Sheet) — on-demand read-path live figures, folded from the
+  // BA 100 (Balance Sheet) — on-demand V2 read-path figures, folded from the V2
   // trial balance over the event log (pure; no event side-effects).
-  const ba100Figures = buildBa100PageFigures(
-    eventStore,
-    ba700.entity,
-    ba700.asOf,
-    functionalCurrency,
-  );
-  const ba100Filing = foldFiling(eventStore, ba700.entity, "BA100");
+  const ba100Figures = buildBa100PageFigures(eventStore, functionalCurrency);
+  const ba100Filing = foldFiling(eventStore, RETURNS_ENTITY, "BA100");
   liveByForm.set("BA100", {
     formId: "BA100",
     form: "BA 100",
@@ -540,7 +566,7 @@ export function buildFinanceReturnsView(
     status: "live",
     summary: ba100Summary(ba100Figures),
     figures: ba100Figures,
-    readPath: "v1",
+    readPath: "v2",
     gaps: [],
     ...(ba100Filing !== undefined ? { filing: ba100Filing } : {}),
   });
@@ -567,9 +593,9 @@ export function buildFinanceReturnsView(
   const liveCount = returns.filter((r) => r.status === "live").length;
 
   return {
-    asOf: ba700.asOf,
+    asOf: RETURNS_AS_OF,
     functionalCurrency,
-    entity: ba700.entity,
+    entity: RETURNS_ENTITY,
     liveCount,
     totalCount: returns.length,
     filingLifecycleGap: filingLifecycleGap(),
@@ -589,20 +615,9 @@ export function liveFiguresForForm(
   marketData: MarketDataStore,
 ): FinanceReturnFigures | undefined {
   const ccy = anchorFunctionalCurrency();
-  if (formId === "BA700") {
-    const v = selectRegulatoryReturn("ba700", eventStore, marketData);
-    return toBa700Page(v.figures as BA700ViewFigures, ccy);
-  }
-  if (formId === "BA320") {
-    const v = selectRegulatoryReturn("ba320", eventStore, marketData);
-    return toBa320Page(v.figures as BA320ViewFigures, ccy);
-  }
-  if (formId === "BA100") {
-    // BA 100 folds over the same anchor entity / as-of window the BA 700 read
-    // resolves (the anchor bank's licence-bound entity).
-    const anchor = selectRegulatoryReturn("ba700", eventStore, marketData);
-    return buildBa100PageFigures(eventStore, anchor.entity, anchor.asOf, ccy);
-  }
+  if (formId === "BA700") return ba700PageFromV2(eventStore, marketData, ccy);
+  if (formId === "BA320") return ba320PageFromV2(eventStore, marketData, ccy);
+  if (formId === "BA100") return buildBa100PageFigures(eventStore, ccy);
   return undefined;
 }
 
