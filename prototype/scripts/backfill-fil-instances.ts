@@ -73,6 +73,7 @@ import "../platform/event-store/resolve-event-db-boot";
 
 import { eventStore } from "../platform/composition";
 import {
+  makeFilInstrumentAmended,
   makeFilInstrumentCreated,
   makeFilInstrumentTerminated,
 } from "../platform/event-store/event-types/fil-instances";
@@ -495,6 +496,23 @@ function existingFilInstances(type: string): Set<string> {
   return out;
 }
 
+// EFFECTIVE economic terms per instance URN in the MAIN store — latest
+// `FilInstrumentCreated`/`FilInstrumentAmended` payload wins (Principle 1
+// latest-wins fold). Used by the self-heal to detect an instance frozen WITHOUT
+// the symmetric fxAgreement quad (materialised before commit cb8b7ce6), so the
+// backfill can re-stamp it via a `FilInstrumentAmended` rather than leave it
+// quad-less forever behind the idempotent create-skip.
+function effectiveEconomicTermsByInstance(): Map<string, Record<string, unknown>> {
+  const out = new Map<string, Record<string, unknown>>();
+  for (const type of ["FilInstrumentCreated", "FilInstrumentAmended"]) {
+    for (const e of eventStore.replay({ type })) {
+      const p = e.payload as { instance?: string; economicTerms?: Record<string, unknown> };
+      if (p.instance && p.economicTerms) out.set(p.instance, p.economicTerms);
+    }
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------------------
 // Slice 2 (D-CASH-ASSET-CLASS-V1) — materialise the settled cash leg(s) of a
 // settling FX trade as REAL `cash` FIL instances. PRODUCT-DRIVEN: the legs are
@@ -641,13 +659,16 @@ function mirrorDescriptorToAnchor(d: FilDescriptor, fxInstance: string): number 
 function emitFilInstances(descriptors: readonly FilDescriptor[]): {
   created: number;
   terminated: number;
+  healed: number;
   cashMaterialised: number;
   anchorCashMaterialised: number;
 } {
   const haveCreated = existingFilInstances("FilInstrumentCreated");
   const haveTerminated = existingFilInstances("FilInstrumentTerminated");
+  const effectiveTerms = effectiveEconomicTermsByInstance();
   let created = 0;
   let terminated = 0;
+  let healed = 0;
   let cashMaterialised = 0;
   let anchorCashMaterialised = 0;
 
@@ -676,6 +697,40 @@ function emitFilInstances(descriptors: readonly FilDescriptor[]): {
       );
       haveCreated.add(instance);
       created += 1;
+    } else if (
+      // SELF-HEAL (D-FX-INSTRUMENT-BUYSELL-QUAD convergence). The create exists, so
+      // the idempotent guard skipped it — but a fixture FX instance materialised
+      // BEFORE the symmetric buy/sell quad landed (commit cb8b7ce6) is frozen
+      // quad-less, since a plain re-run never re-emits a create. When the descriptor
+      // CAN supply a quad and the existing EFFECTIVE terms lack one, append a
+      // `FilInstrumentAmended` re-stamping the quad-bearing terms — the fold replaces
+      // economicTerms latest-wins, so the gate converges to green on the next
+      // `ci:migrate` (append-only; the original create is untouched — Principle 1).
+      d.economicTerms.fxAgreement !== undefined &&
+      effectiveTerms.get(instance)?.fxAgreement === undefined
+    ) {
+      eventStore.append(
+        makeFilInstrumentAmended({
+          asOf: d.createdAsOf,
+          entity: ENTITY,
+          actor: BACKFILL_ACTOR,
+          citations: [...FIL_CITATIONS, "D-FX-INSTRUMENT-BUYSELL-QUAD"],
+          provenance: BACKFILL_PROVENANCE,
+          eventId: `atlas:fx-quad-heal:${instance}`,
+          payload: {
+            kind: "FilInstrumentAmended",
+            instance,
+            type: d.typeUrn,
+            tenant: TENANT,
+            asOf: d.createdAsOf,
+            amendmentVia: "FilInstrumentAmended",
+            originatingEvent: { eventType: d.originatingEventType, eventId: d.originatingEventId },
+            economicTerms: d.economicTerms,
+          },
+        }),
+      );
+      effectiveTerms.set(instance, d.economicTerms as unknown as Record<string, unknown>);
+      healed += 1;
     }
 
     if (d.terminal && !haveTerminated.has(instance)) {
@@ -710,7 +765,7 @@ function emitFilInstances(descriptors: readonly FilDescriptor[]): {
     // the on-anchor HISTORY proof exercises a non-zero materialised population.
     anchorCashMaterialised += mirrorDescriptorToAnchor(d, instance);
   }
-  return { created, terminated, cashMaterialised, anchorCashMaterialised };
+  return { created, terminated, healed, cashMaterialised, anchorCashMaterialised };
 }
 
 // ---------------------------------------------------------------------------
@@ -790,7 +845,7 @@ console.log(
 
 const fil = emitFilInstances(descriptors);
 console.log(
-  `FIL instances   : ${fil.created} created, ${fil.terminated} terminated, ${fil.cashMaterialised} cash leg(s) materialised (D-CASH-ASSET-CLASS-V1)`,
+  `FIL instances   : ${fil.created} created, ${fil.terminated} terminated, ${fil.healed} quad-healed (D-FX-INSTRUMENT-BUYSELL-QUAD), ${fil.cashMaterialised} cash leg(s) materialised (D-CASH-ASSET-CLASS-V1)`,
 );
 console.log(
   `anchor store    : ${fil.anchorCashMaterialised} cash leg(s) mirrored into BANK_V2_ANCHOR_DB (${resolveV2AnchorDb()}) — on-anchor HISTORY proof non-vacuous (MV-CASH-001)`,

@@ -159,4 +159,99 @@ describe("materialiseFxInstanceToAnchor (anchor-store FX instrument-of-record)",
     expect(res2.created).toBe(0);
     expect(res2.terminated).toBe(0);
   });
+
+  // SELF-HEAL (D-FX-INSTRUMENT-BUYSELL-QUAD convergence). An fx instance
+  // materialised BEFORE the symmetric buy/sell quad landed is frozen quad-less
+  // behind the idempotent create-skip; re-materialising with quad-bearing terms
+  // must append a FilInstrumentAmended so the fold converges to the quad.
+  test("self-heals a quad-less fx instance via FilInstrumentAmended on re-materialise", () => {
+    const dbPath = tmpDb();
+    const heal = "fil:inst:LE-ZA-HOZ-BANK:T-HEAL-1";
+    const termsNoQuad = {
+      assetClass: "fx",
+      notional: { currency: "ZAR", amount: "9260000.00" },
+      direction: "long" as const,
+      counterpartyId: "CP",
+      nettingSetId: "NS-CP-ZAR",
+      currency: "ZAR",
+      settlementDate: "2026-06-03",
+      hedgingSetTag: "USD/ZAR",
+    };
+    const termsWithQuad = {
+      ...termsNoQuad,
+      fxAgreement: {
+        buy: { currency: "USD", amount: "500000.00" },
+        sell: { currency: "ZAR", amount: "9260000.00" },
+      },
+    };
+
+    // 1) First materialisation — pre-quad terms (the stale state).
+    expect(
+      materialiseFxInstanceToAnchor(
+        {
+          fxInstance: heal,
+          fxTypeUrn: FX_SPOT_TYPE_URN,
+          entity: "LE-ZA-HOZ-BANK",
+          tenant: "LE-ZA-HOZ-BANK",
+          createdAsOf: "2026-06-01T09:00:00.000Z",
+          economicTerms: termsNoQuad,
+          originatingEvent: { eventType: "FxTradeExecuted", eventId: "e-heal" },
+        },
+        { dbPath },
+      ).created,
+    ).toBe(1);
+
+    const readAmends = (): Array<Record<string, unknown>> => {
+      const db = new Database(dbPath, { readonly: true });
+      try {
+        return db
+          .query<{ payload: string }, []>(
+            "SELECT payload FROM v2_events WHERE type = 'FilInstrumentAmended' ORDER BY sequence ASC",
+          )
+          .all()
+          .map((r) => JSON.parse(r.payload) as Record<string, unknown>)
+          .filter((p) => p.instance === heal);
+      } finally {
+        db.close();
+      }
+    };
+    expect(readAmends().length).toBe(0);
+
+    // 2) Re-materialise with the quad-bearing terms — the create is skipped, but a
+    //    FilInstrumentAmended must be appended carrying the quad.
+    const res = materialiseFxInstanceToAnchor(
+      {
+        fxInstance: heal,
+        fxTypeUrn: FX_SPOT_TYPE_URN,
+        entity: "LE-ZA-HOZ-BANK",
+        tenant: "LE-ZA-HOZ-BANK",
+        createdAsOf: "2026-06-01T09:00:00.000Z",
+        economicTerms: termsWithQuad,
+        originatingEvent: { eventType: "FxTradeExecuted", eventId: "e-heal" },
+      },
+      { dbPath },
+    );
+    expect(res.created).toBe(0);
+    const amends = readAmends();
+    expect(amends.length).toBe(1);
+    const amend = amends[0];
+    if (amend === undefined) throw new Error("expected one heal amendment");
+    expect((amend.economicTerms as { fxAgreement?: unknown }).fxAgreement).toBeDefined();
+
+    // 3) Idempotent — a third call (effective terms now carry the quad) appends
+    //    nothing further.
+    materialiseFxInstanceToAnchor(
+      {
+        fxInstance: heal,
+        fxTypeUrn: FX_SPOT_TYPE_URN,
+        entity: "LE-ZA-HOZ-BANK",
+        tenant: "LE-ZA-HOZ-BANK",
+        createdAsOf: "2026-06-01T09:00:00.000Z",
+        economicTerms: termsWithQuad,
+        originatingEvent: { eventType: "FxTradeExecuted", eventId: "e-heal" },
+      },
+      { dbPath },
+    );
+    expect(readAmends().length).toBe(1);
+  });
 });
