@@ -463,6 +463,11 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // seeds inputs, runs emitRwaComputedV2, asserts the decoded decimal RWA. Not a
   // production access path. T-01 carve-out. Citation: D-V1-REMOVAL-FLIP-BASIS-RBC.
   "platform/risk/rwa-computed-engine-v2.test.ts",
+  // L2-FX cohort-VaR ProvenanceFilter hardening (#1600) — raw EventStore(":memory:")
+  // seeds FIL FX instances (production- and simulated-tagged) to prove computeCohortVar
+  // fails closed on a simulated leak under the production read. Not a production access
+  // path; build-phase fixture pattern. T-01 carve-out. Citation: D-FX-V2-SIMULATOR-FIRST, F-031.
+  "platform/market-risk/eod-cohort-var-v2.test.ts",
   // Bucket A batch A3 — OperationalLossEventV2 round-trip + positive-figure emit
   // proof. Builds an mkdtempSync-isolated tmp EventStore, captures one
   // OperationalLossEventV2, asserts the projection reads the decoded figure +
