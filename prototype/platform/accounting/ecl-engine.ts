@@ -93,9 +93,25 @@ const LGD_BPS: Readonly<Record<string, number>> = {
 
 /**
  * BA 200 credit-risk exposure class — the obligor classification used by the
- * by-category fold of the BA 200 (credit-risk loans-and-advances) projection.
+ * by-category fold of the BA 200 (credit-risk loans-and-advances) projection AND
+ * the CRE20 standardised risk-weight (the dominant BA 700 credit-RWA denominator).
+ *
+ * Originally the four debt-securities/interbank classes
+ * (sovereign / bank / corporate / retail). EXTENDED (L5-FTR loan-origination
+ * slice, D-BA-RETURN-CELL-VALUE-ENGINE item #2) with the two further Reg 23 /
+ * CRE20 classes a real loan book spans — `sme-corporate` (corporate sub-treatment)
+ * and `residential-mortgage` (LTV-stepped). The born-V2 loan-origination fold sets
+ * the class from the instance's typed `loanTerms.exposureClass`; bonds + interbank
+ * continue to use the original four. Append-only-safe: existing `DebtExposure`
+ * constructors that set sovereign/bank/corporate/retail are unaffected.
  */
-export type ExposureClass = "sovereign" | "bank" | "corporate" | "retail";
+export type ExposureClass =
+  | "sovereign"
+  | "bank"
+  | "corporate"
+  | "sme-corporate"
+  | "retail"
+  | "residential-mortgage";
 
 /** A single in-scope debt exposure the ECL engine measures. */
 export interface DebtExposure {
@@ -129,6 +145,16 @@ export interface DebtExposure {
   /** Exposure at default in minor currency units (gross market value). */
   readonly eadMinor: number;
   readonly currency: string;
+  /**
+   * OPTIONAL CRE20 loan-to-value band — the residential-mortgage risk weight is
+   * LTV-stepped (CRE20). Carried by the born-V2 loan-origination fold for a
+   * `residential-mortgage` exposure so `debtExposureToCreditExposure` resolves the
+   * correct LTV-stepped weight rather than the conservative default. Absent for
+   * bonds / interbank / non-mortgage loans (replay-safe; no behaviour change).
+   * String-typed (the rwa-engine `LtvBucket` union) to avoid a platform→platform
+   * type import here; the bridge narrows it.
+   */
+  readonly cre20LtvBucket?: string;
 }
 
 /** Per-exposure ECL breakdown (audit aid). */
@@ -296,6 +322,162 @@ export function readDebtExposures(
   }
 
   out.push(...readInterbankExposures(store, provenanceFilter));
+  out.push(...readLoanExposures(store, provenanceFilter));
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// Born-V2 LOAN-ORIGINATION fold (L5-FTR loan-origination slice, D-BA-RETURN-CELL-
+// VALUE-ENGINE item #2). The bank-as-LENDER loans-and-advances asset — the credit
+// EAD that drives BOTH the BA 200 credit-risk projection AND computeRwaComputed's
+// credit leg (the dominant BA 700 capital denominator). Before this fold,
+// readDebtExposures had NO loan source at all (only bonds + interbank), so the
+// credit-RWA leg from a loan book folded to an honest 0; this fold is the core
+// unblock.
+//
+// A loan FIL instance is a born-V2 `credit` loan-advance type
+// (`fil:type:credit:loan.*`) carrying its typed `loanTerms` (loanProductSubType /
+// ifrs9Stage / exposureClass / ltvBucket). It is LIVE until terminated
+// (FilInstrumentTerminated derecognises the advance). EAD is the notional principal
+// — the FIL notional is a DECIMAL-NATIVE MAJOR-unit string, converted to the
+// engine-native minor units (× 100) here. The exposure class + LTV band ride the
+// DebtExposure so the CRE20 bridge resolves the LTV-stepped residential-mortgage
+// weight (and the SME / mortgage classes) precisely.
+//
+// BORN-V2 (D-V1-REMOVAL-PHASE-1): reads only the V2 FIL lifecycle events; never the
+// v1-only `LoanBooked`. Provenance-filtered exactly like the bond + interbank folds,
+// so a production-only lens excludes a simulated loan book (the honest pre-licence-
+// day empty state) and the operating-book lens admits it.
+// ---------------------------------------------------------------------------
+
+/** Live loan-and-advance folded from born-V2 loan FIL lifecycle events. */
+interface LiveLoan {
+  instance: string;
+  /** EAD = notional principal in minor units (major × 100). */
+  eadMinor: number;
+  currency: string;
+  exposureClass: ExposureClass;
+  /** Obligor / borrower party id (LEX grain). */
+  obligorPartyId?: string;
+  /** CRE20 LTV band (residential-mortgage only). */
+  ltvBucket?: string;
+}
+
+/** Valid loan exposure-class values (for narrowing the typed loanTerms read). */
+const LOAN_EXPOSURE_CLASSES: readonly ExposureClass[] = [
+  "sovereign",
+  "bank",
+  "corporate",
+  "sme-corporate",
+  "retail",
+  "residential-mortgage",
+];
+
+function readLoanExposureClass(value: unknown): ExposureClass | undefined {
+  return typeof value === "string" && (LOAN_EXPOSURE_CLASSES as readonly string[]).includes(value)
+    ? (value as ExposureClass)
+    : undefined;
+}
+
+/**
+ * The ECL `riskBucket` (PD/LGD lookup key) for a loan exposure class. Loans use the
+ * existing PD/LGD parameter buckets (no new model parameters minted here): the
+ * engine-level Stage-1 ECL slice is dominated by the emitted `Ifrs9StageAssigned`
+ * staging events in the BA 200 events-first path; this bucket is the fallback used
+ * only by `computeStage1Ecl` when no staging event exists. Conservative mapping:
+ * sovereign → sovereign-bond; bank → interbank-placement; everything else →
+ * corporate-bond (the 80bps/45% conservative corporate bucket). Fail-loud:
+ * `requireWeight` throws on any bucket absent from PD_12M_BPS / LGD_BPS.
+ */
+function loanRiskBucket(cls: ExposureClass): string {
+  switch (cls) {
+    case "sovereign":
+      return "sovereign-bond";
+    case "bank":
+      return "interbank-placement";
+    default:
+      return "corporate-bond";
+  }
+}
+
+/**
+ * Fold live born-V2 loan-origination instances (bank as lender) from the store.
+ * A loan is live until it emits `FilInstrumentTerminated`. EAD is the notional
+ * principal (decimal-native major units → minor units). Only `credit` loan-advance
+ * FIL types (`fil:type:credit:loan.*`) carrying `loanTerms` are folded; a loan
+ * instance lacking `loanTerms` or an unknown exposure class is SKIPPED loudly via
+ * the typed read (no silent mis-bucketing).
+ */
+function readLoanExposures(store: EventStore, provenanceFilter?: ProvenanceFilter): DebtExposure[] {
+  const live = new Map<string, LiveLoan>();
+
+  for (const ev of store.replay({ type: "FilInstrumentCreated" })) {
+    if (provenanceFilter && !eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+    const p = ev.payload as Record<string, unknown>;
+    const typeUrn = typeof p.type === "string" ? p.type : null;
+    if (typeUrn === null || !typeUrn.startsWith("fil:type:credit:loan.")) continue;
+    const instance = typeof p.instance === "string" ? p.instance : null;
+    const economicTerms =
+      typeof p.economicTerms === "object" && p.economicTerms !== null
+        ? (p.economicTerms as Record<string, unknown>)
+        : null;
+    if (instance === null || economicTerms === null) continue;
+
+    const loanTerms =
+      typeof economicTerms.loanTerms === "object" && economicTerms.loanTerms !== null
+        ? (economicTerms.loanTerms as Record<string, unknown>)
+        : null;
+    const notional =
+      typeof economicTerms.notional === "object" && economicTerms.notional !== null
+        ? (economicTerms.notional as Record<string, unknown>)
+        : null;
+    if (loanTerms === null || notional === null) continue;
+
+    const exposureClass = readLoanExposureClass(loanTerms.exposureClass);
+    const amount = typeof notional.amount === "string" ? notional.amount : null;
+    const currency = typeof notional.currency === "string" ? notional.currency : null;
+    if (exposureClass === undefined || amount === null || currency === null) continue;
+
+    // Decimal-native MAJOR-unit string → engine-native MINOR units (× 100).
+    const eadMinor = Math.round(Number.parseFloat(amount) * 100);
+    if (!Number.isFinite(eadMinor) || eadMinor <= 0) continue;
+
+    const counterpartyId =
+      typeof economicTerms.counterpartyId === "string" ? economicTerms.counterpartyId : undefined;
+    const ltvBucket = typeof loanTerms.ltvBucket === "string" ? loanTerms.ltvBucket : undefined;
+
+    live.set(instance, {
+      instance,
+      eadMinor,
+      currency,
+      exposureClass,
+      ...(counterpartyId !== undefined ? { obligorPartyId: counterpartyId } : {}),
+      ...(ltvBucket !== undefined ? { ltvBucket } : {}),
+    });
+  }
+
+  for (const ev of store.replay({ type: "FilInstrumentTerminated" })) {
+    const p = ev.payload as Record<string, unknown>;
+    const typeUrn = typeof p.type === "string" ? p.type : null;
+    if (typeUrn === null || !typeUrn.startsWith("fil:type:credit:loan.")) continue;
+    const instance = typeof p.instance === "string" ? p.instance : null;
+    if (instance !== null) live.delete(instance);
+  }
+
+  const out: DebtExposure[] = [];
+  for (const loan of live.values()) {
+    out.push({
+      instrumentId: `fi:loan:${loan.instance}`,
+      tradeId: loan.instance,
+      riskBucket: loanRiskBucket(loan.exposureClass),
+      productFamily: "loan",
+      exposureClass: loan.exposureClass,
+      ...(loan.obligorPartyId !== undefined ? { obligorPartyId: loan.obligorPartyId } : {}),
+      eadMinor: loan.eadMinor,
+      currency: loan.currency,
+      ...(loan.ltvBucket !== undefined ? { cre20LtvBucket: loan.ltvBucket } : {}),
+    });
+  }
   return out;
 }
 

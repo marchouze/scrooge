@@ -65,6 +65,7 @@ import type {
   FilDepositCategory,
   FilDepositCounterpartySector,
 } from "../../../v2-core/fil-instances/events";
+import type { FilLoanProductSubType } from "../../../v2-core/fil-instances/events";
 import {
   type CapitalPostingLeg,
   isCapitalPostingInstance,
@@ -78,6 +79,13 @@ import {
   postDepositTakeOnLegs,
   requireDepositTerms,
 } from "../../../v2-core/posting-rules/deposit";
+import {
+  type LoanPostingLeg,
+  isLoanPostingInstance,
+  postLoanOriginationLegs,
+  postLoanRepaymentLegs,
+  requireLoanTerms,
+} from "../../../v2-core/posting-rules/loan";
 import type { LeafCellValues } from "../../../v2-core/regulatory-returns/cell-value/engine";
 import { COA_BY_ID } from "../../accounting/coa-registry";
 import {
@@ -234,8 +242,32 @@ const DEPOSIT_SECTOR_ANALYSIS_ROW: Readonly<Record<FilDepositCounterpartySector,
   "wholesale-non-operational": { row: "R1070", keyword: "corporate customers" },
 };
 
+// ---------------------------------------------------------------------------
+// LOAN classification (L5-FTR loan-origination slice; DISCOVERY backlog item #2).
+// A born-V2 loan-origination FIL instance is the bank-as-LENDER asset whose BA 100
+// advances line is determined by the instance's TYPED `loanTerms.loanProductSubType`
+// (the SARB R0130–R0230 loans-and-advances detail rows) — the dimension comes from
+// the EVENT, not the (single) CoA account (sibling-fold discipline, Principle 1).
+// The loan's Cr nostro (cash-out) leg lands on the SAME R0040 cash row the capital /
+// deposit cash legs use (account-classified, below); the Dr advances leg lands on
+// the typed advances detail row. SARB BA 100 Excel form labels are the canonical
+// source for the (sub-type → row) coordinate.
+// ---------------------------------------------------------------------------
+
+/** loanProductSubType → BA 100 loans-and-advances detail row (R0130–R0230). */
+const LOAN_PRODUCT_ROW: Readonly<Record<FilLoanProductSubType, RowMapping>> = {
+  "home-loan": { row: "R0130", keyword: "homeloans" },
+  "commercial-mortgage": { row: "R0140", keyword: "commercial mortgages" },
+  "credit-card": { row: "R0150", keyword: "credit cards" },
+  "lease-instalment": { row: "R0160", keyword: "lease and instalment debtors" },
+  overdraft: { row: "R0170", keyword: "overdrafts" },
+  "term-loan": { row: "R0200", keyword: "term loans" },
+  other: { row: "R0230", keyword: "other loans" },
+};
+
 const CAPITAL_FIL_EVENT_TYPES = ["FilInstrumentCreated", "FilInstrumentTerminated"] as const;
 const DEPOSIT_FIL_EVENT_TYPES = ["FilInstrumentCreated", "FilInstrumentTerminated"] as const;
+const LOAN_FIL_EVENT_TYPES = ["FilInstrumentCreated", "FilInstrumentTerminated"] as const;
 
 /** Add a natural-signed amount into the (row, C0040) accumulator. */
 function addToCell(
@@ -365,12 +397,86 @@ function foldDepositLegs(
 }
 
 /**
- * Read the underlying capital + deposit FIL events for the entity under the active
- * provenance lens, resolve each posting leg, classify it to its BA 100 row, and
- * emit the per-(row, C0040) leaf cell value as a decimal-native major-unit string.
- * Capital legs classify by CoA account; deposit liability legs classify by the
- * instance's typed depositTerms (sibling-fold discipline — the dimension is on the
- * event, Principle 1).
+ * LOAN fold pass (L5-FTR loan-origination slice) — resolve each loan origination /
+ * repayment posting leg, then classify it onto its BA 100 line:
+ *   - the Dr advances-asset (debit) leg → the LOANS-AND-ADVANCES DETAIL row
+ *     R0130–R0230 by the instance's TYPED `loanTerms.loanProductSubType` (the
+ *     dimension comes from the EVENT, not the per-sub-type CoA account — the two
+ *     agree by construction, but the EVENT is the source per Principle 1).
+ *   - the Cr settlement-cash (credit) leg → R0040 cash row, by its CoA account
+ *     (same cash row the capital / deposit cash legs use) — account-classified.
+ * The debit-natural advances magnitude is accumulated positive on its detail row
+ * (BA 100 presents a positive advances stock); the cash-out leg is a CREDIT to the
+ * nostro, reducing the cash stock (the bank pays the principal out). A repayment
+ * terminal posts a zero memo (its principal-repayment leg is a tracked deferred gap
+ * — see loan.ts). Only functional-currency legs are summed.
+ */
+function foldLoanLegs(
+  ctx: LeafFoldContext,
+  provenanceFilter: ProvenanceFilter,
+  byCell: Map<string, RowAccumulator>,
+): void {
+  for (const type of LOAN_FIL_EVENT_TYPES) {
+    for (const ev of ctx.eventStore.replay({ entity: ctx.entity, type, asOf: ctx.asOf })) {
+      if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+
+      let legs: LoanPostingLeg[];
+      let productSubType: FilLoanProductSubType | undefined;
+      if (type === "FilInstrumentCreated") {
+        const created = ev.payload as FilInstrumentCreatedPayload;
+        if (typeof created.type !== "string" || !isLoanPostingInstance(created.type)) continue;
+        legs = postLoanOriginationLegs(created);
+        productSubType = requireLoanTerms(created, "ba100-leaf-fold").loanProductSubType;
+      } else {
+        const terminated = ev.payload as FilInstrumentTerminatedPayload;
+        if (typeof terminated.type !== "string" || !isLoanPostingInstance(terminated.type)) {
+          continue;
+        }
+        legs = postLoanRepaymentLegs(terminated);
+        // The terminal memo posts zero (deferred-gap); no detail-row contribution.
+        productSubType = undefined;
+      }
+
+      for (const leg of legs) {
+        if (leg.amount.currency !== ctx.functionalCurrency) continue;
+        const coa = COA_BY_ID.get(leg.accountCode);
+        if (coa === undefined) continue;
+        const magnitude = toDecimal(leg.amount.amount);
+
+        if (coa.category.startsWith("asset") && coa.category !== "asset-cash") {
+          // Dr advances-asset — classify by the TYPED loanProductSubType onto the
+          // loans-and-advances detail row. A debit increases the advances stock.
+          if (productSubType === undefined) continue;
+          const detail = LOAN_PRODUCT_ROW[productSubType];
+          addToCell(
+            byCell,
+            detail.row,
+            leg.creditDebit === "debit" ? magnitude : magnitude.negated(),
+          );
+          continue;
+        }
+
+        // The settlement-cash (nostro) leg → R0040 cash row, account-classified. A
+        // credit (cash paid out to the borrower) reduces the cash stock.
+        const mapping = ba100RowForAccount(leg.accountCode);
+        if (mapping === undefined) continue;
+        addToCell(
+          byCell,
+          mapping.row,
+          leg.creditDebit === "debit" ? magnitude : magnitude.negated(),
+        );
+      }
+    }
+  }
+}
+
+/**
+ * Read the underlying capital + deposit + loan FIL events for the entity under the
+ * active provenance lens, resolve each posting leg, classify it to its BA 100 row,
+ * and emit the per-(row, C0040) leaf cell value as a decimal-native major-unit
+ * string. Capital legs classify by CoA account; deposit liability legs by typed
+ * depositTerms; loan advances legs by typed loanTerms (sibling-fold discipline —
+ * the dimension is on the event, Principle 1).
  */
 export function foldBa100LeafValues(ctx: LeafFoldContext): LeafCellValues {
   const provenanceFilter = defaultProvenanceFilter();
@@ -378,6 +484,7 @@ export function foldBa100LeafValues(ctx: LeafFoldContext): LeafCellValues {
 
   foldCapitalLegs(ctx, provenanceFilter, byCell);
   foldDepositLegs(ctx, provenanceFilter, byCell);
+  foldLoanLegs(ctx, provenanceFilter, byCell);
 
   const out = new Map<string, string>();
   for (const [key, acc] of byCell) {

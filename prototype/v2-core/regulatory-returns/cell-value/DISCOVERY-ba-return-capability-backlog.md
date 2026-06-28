@@ -75,7 +75,14 @@ the brief anticipated. It is the single capability whose one build unblocks the 
 *dimension-gated* (not presentation-gated) cells across the most returns. BUILD proceeded
 on item #1 against a simulated outside world.
 
-status: delivered
+**Item #2 — the born-V2 loan-origination instrument — is now also BUILT** (§5 below). It
+is the second-highest-leverage capability: credit RWA is the dominant BA 700 capital
+denominator, and one build unblocks the asset side of BA 100 (advances R0130–R0230), the
+BA 200 credit return, and the BA 700 credit-RWA leg. BUILD proceeded against the same
+simulated outside world (the canonical `CREDIT_BOOK_SIM_BOOK`, now emitted as born-V2 loan
+FIL events).
+
+status: delivered (items #1 + #2)
 
 ## 4. BUILD record — born-V2 deposit instrument (#1)
 
@@ -114,6 +121,60 @@ simulated born-V2 deposit book + the BA 300 LCR run-off wiring keyed on
 DATA / a mechanical wiring step, not a missing engine. Recorded as the typed substrate
 gap `ba100-300-deposit-instrument-live-seed-lcr-wiring` (and the
 `ba100-leaf-fold-instrument-coverage` dimension-2 note is updated to "NOW FOLDED").
+
+## 4a. BUILD record — born-V2 loan-origination instrument (#2)
+
+Built against a **simulated outside world** (the canonical `CREDIT_BOOK_SIM_BOOK` emitted
+as born-V2 loan FIL events):
+
+- **`loanTerms` dimension** (`v2-core/fil-instances/events.ts`) — optional, additive block
+  on the FIL economic terms (mirrors `depositTerms` / `qualifyingCapital`): a closed
+  `loanProductSubType` set mapping 1:1 onto BA 100 R0130–R0230 (home-loan → R0130,
+  commercial-mortgage → R0140, credit-card → R0150, lease-instalment → R0160, overdraft →
+  R0170, term-loan → R0200, other → R0230 — SARB Excel form labels canonical); an
+  `ifrs9Stage` (1/2/3) for the BA 200 ECL split; an `exposureClass` (six Reg 23 / CRE20
+  classes) for the BA 200 by-category fold + the CRE20 credit-RWA weight; and an
+  `ltvBucket` REQUIRED for `residential-mortgage` (CRE20 LTV-stepped weight — fail-closed
+  superRefine). Replay-safe; only loan instances carry it.
+- **Born-V2 loan posting rule** (`v2-core/posting-rules/loan.ts`) — pure `payload → legs`
+  core mirroring `capital.ts` / `deposit.ts`: origination posts Dr loan-asset (advances,
+  per product sub-type → ACC-7200-001..007) / Cr settlement-cash (nostro), IFRS 9
+  §3.1.1/§4.1.2 amortised cost; a bare terminal posts a zero memo (principal-repayment leg
+  = tracked deferred gap). Fail-closed on missing `loanTerms` / unmapped sub-type /
+  unmapped currency. Registered as `PR-LOAN-ORIG-001-V2` / `PR-LOAN-REPAY-002-V2` under
+  lifecycleId `loan-fil-instance` (a FIL-fold lifecycle — NOT a trade lifecycle, so no
+  gl-ledger-coverage mandate, identical to the capital/deposit fold). **No v1-only
+  emission** (the v1 `LoanBooked` family is not used or widened).
+- **`readDebtExposures` loan fold** (`platform/accounting/ecl-engine.ts`) — THE CORE
+  UNBLOCK. readDebtExposures previously read only BondTradeExecuted + InterbankLoanPlaced
+  (no loan source), so the credit-RWA leg from a loan book folded to an honest 0. It now
+  folds born-V2 loan FIL instances into EAD that drives BOTH the BA 200 credit projection
+  AND `computeRwaComputed`'s credit leg (the dominant BA 700 denominator). `ExposureClass`
+  was extended with `sme-corporate` + `residential-mortgage`; `DebtExposure` carries an
+  optional CRE20 LTV band so `debtExposureToCreditExposure` resolves the LTV-stepped
+  residential-mortgage weight precisely.
+- **BA 100 leaf fold extension** (`platform/reporting/cell-value/ba100-leaf-fold.ts`) — the
+  BA 100 fold now folds loan FIL instances alongside capital + deposit: the loan Dr
+  advances leg → the advances detail row (R0130–R0230) by the instance's typed
+  `loanProductSubType`, the Cr nostro (cash-out) leg → R0040. The line dimension is read
+  from the **event**, not a coarser CoA proxy (sibling-fold discipline, Principle 1).
+- **Tests** — `loan-origination-sim-golden.test.ts` (9 tests): the event-sourced born-V2
+  loan book drives `computeRwaComputed`'s credit leg to the **R1,235m** Reg 23 / CRE20
+  oracle and total gross EAD to **R3,100m**, with the correct per-class CRE20 weights
+  (sovereign 0% / bank 75% / corporate+SME 65% / retail 75% / mortgage LTV-60-80 30% /
+  LTV-80-90 40%), and the production-only lens stays 0; `ba100-leaf-fold.test.ts` (7 new
+  loan tests): each product sub-type lights its advances row, the cash leg reduces R0040,
+  bare repayment posts a zero memo, production-only excludes the sim book, non-functional
+  currency excluded, and a residential mortgage without an LTV band is rejected at parse.
+
+**Deferral (DATA, not ENGINE) — tracked, never silent.** The live-store seed of a
+simulated born-V2 loan book into the canonical store (ci:migrate) + per-loan
+`Ifrs9StageAssigned` staging events (so the BA 200 events-first STAGE split lights up live
+rather than via the engine Stage-1 fallback) are the two named follow-ons, both gating
+licence-day real-borrower DATA / a mechanical wiring step, not a missing engine. Recorded
+as the typed substrate gap `ba200-credit-loan-instrument-live-seed`; `ba200-credit-sim-gl`
+is updated to record the born-V2 loan path as BUILT (engine unblocked); the
+`ba100-leaf-fold-instrument-coverage` dimension-1 note is updated to "NOW FOLDED".
 
 ## 5. Follow-on briefs to other lanes
 
