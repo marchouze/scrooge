@@ -8,7 +8,7 @@
 //
 // The two cases this pins (Definition of Done):
 //   (1) Rate / charge present  → marketRwa === 12.5 × charge, summed into totalRwa,
-//                                marketRwaAvailable === true, source "ba320-fx-v2".
+//                                marketRwaAvailable === true, source "ba320-standardised-v2".
 //   (2) Charge null (no rate)  → market RWA EXCLUDED with marketRwaAvailable=false,
 //                                marketRwa contributes 0 to totalRwa (NOT zero as-if
 //                                complete), source "none", GAP-3E-002 fail-closed
@@ -135,7 +135,7 @@ describe("computeBA700V2 — market RWA = 12.5 × BA-320 FX charge (GAP-3E-002)"
 
     // Market RWA is exactly 12.5 × the BA-320 charge — derived, not recomputed.
     expect(ba700.meta.marketRwaAvailable).toBe(true);
-    expect(ba700.meta.sources.marketRwa).toBe("ba320-fx-v2");
+    expect(ba700.meta.sources.marketRwa).toBe("ba320-standardised-v2");
     expect(ba700.capitalAdequacy.marketRwa).toBe(rwaFromCharge(chargeMinor));
     expect(ba700.capitalAdequacy.marketRwa).toBe(100_000_000); // 12.5 × 8,000,000
 
@@ -188,8 +188,9 @@ describe("computeBA700V2 — market RWA = 12.5 × BA-320 FX charge (GAP-3E-002)"
     // totalRwa does NOT silently absorb a fabricated market figure.
     expect(ba700.capitalAdequacy.totalRwa).toBe(ba700.capitalAdequacy.creditRwa);
 
-    // Fail-closed gap note present and visible (no fabricated rate).
-    expect(ba700.gaps.some((g) => g.includes("GAP-3E-002 (FAIL-CLOSED)"))).toBe(true);
+    // Fail-closed gap note present and visible (no fabricated rate). The FX leg
+    // is the only excluded leg; the non-FX legs (0 here, no positions) are unaffected.
+    expect(ba700.gaps.some((g) => g.includes("GAP-3E-002 (FX-LEG FAIL-CLOSED)"))).toBe(true);
   });
 
   test("no open FX position → market RWA excluded (charge null), totalRwa = credit only", () => {

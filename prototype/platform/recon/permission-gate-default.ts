@@ -141,6 +141,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // Citation: D-FX-V2-SIMULATOR-FIRST, P4-SECURITY-DESIGNED-IN.
   "platform/simulation-v2-live/live-driver.test.ts",
   "platform/simulation-v2-live/hub-module.test.ts",
+  // D-FX-SIM-LIVE-REALTIME-ONBOARDED — the live-driver onboarded-counterparty
+  // source + fail-closed/real-elapsed wiring test builds in-memory throwaway
+  // EventStore fixtures (onboard a sim client, drive the driver, assert the
+  // resolved set). Same carve-out rationale: :memory: stores, no production
+  // access path. Citation: D-FX-SIM-LIVE-REALTIME-ONBOARDED, P4-SECURITY-DESIGNED-IN.
+  "platform/simulation-v2-live/onboarded-counterparty-source.test.ts",
   // GL view test — builds in-memory throwaway EventStore + MarketDataStore and
   // populates them via the live FX simulator to exercise the compact trial-balance
   // + ZAR-equivalent fold. No production access path. Citation: D-FX-V2-SIMULATOR-FIRST,
@@ -158,6 +164,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // simulator never touches the canonical store. Citation: D-FX-V2-SIMULATOR-FIRST,
   // P4-SECURITY-DESIGNED-IN.
   "platform/simulation/onboarded-fx-counterparty-resolver.test.ts",
+  // D-FX-SIM-LIVE-REALTIME-ONBOARDED — the recon's LIVE-DRIVER-coverage block
+  // builds an in-memory throwaway EventStore, onboards a sim client, and drives
+  // the live FX driver to assert simFxInstruments reads its FilInstrumentCreated
+  // emissions. :memory: store, no production access path. Citation:
+  // D-FX-SIM-LIVE-REALTIME-ONBOARDED, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/fx-sim-counterparty-onboarded.test.ts",
   // The recon self-test (formerly harness.ts) builds an in-memory throwaway
   // store for the round-trip assertion; gating it would require synthesising
   // a fake policy resolver for every test event, defeating the purpose.
@@ -220,6 +232,26 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // golden oracle, and asserts the production-only BA 700 credit leg stays 0. No
   // production access path — same rationale as ba320-trading-book-sim-drive.
   "platform/recon/ba200-credit-sim-drive.ts",
+  // BA 100 per-cell leaf-fold reconciliation gate (D-BA-RETURN-CELL-VALUE-ENGINE
+  // Phase 1): opens the resolved read-path event store READ-ONLY ({ readonly:
+  // true }, so it never mutates a byte) to fold the BA 100 line values directly
+  // from the capital FIL events and reconcile them to the CoA trial-balance
+  // oracle. Pure read; no write/append path. The co-located test builds an
+  // mkdtempSync-isolated tmp store to seed a CET1 capital event + a deliberately-
+  // empty store (red-team the vacuity guard) — no production access path. Wrapping
+  // the read-only open with a write-path policy gate would add a fake policy
+  // resolver for zero security benefit. Citation: D-BA-RETURN-CELL-VALUE-ENGINE,
+  // D-CAPITAL-ASSET-CLASS-V1, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/ba100-cell-values-reconcile.ts",
+  "platform/recon/ba100-cell-values-reconcile.test.ts",
+  // BA 100 leaf-fold unit test (D-BA-RETURN-CELL-VALUE-ENGINE Phase 1): builds
+  // in-memory `:memory:` throwaway EventStore fixtures to seed synthetic capital
+  // FIL events and assert the fold places them onto the right BA 100 rows. Same
+  // carve-out rationale as the other cell-value / sim-drive tests: no production
+  // access path — the stores are `:memory:` and discarded; gating would require a
+  // fake policy resolver for zero security benefit. Citation:
+  // D-BA-RETURN-CELL-VALUE-ENGINE, D-CAPITAL-ASSET-CLASS-V1, P4-SECURITY-DESIGNED-IN.
+  "platform/reporting/cell-value/ba100-leaf-fold.test.ts",
   // Recon pipelines that read-only replay the live store. Wrapping the read
   // path with the gate is a no-op (the gate intercepts append, not replay).
   "platform/recon/dashboard-derivation-recon.ts",

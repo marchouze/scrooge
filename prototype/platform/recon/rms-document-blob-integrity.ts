@@ -12,16 +12,38 @@
 // the blob locally while the event went to the shared store, and the
 // worktree was pruned.
 //
-// **Store resolution.** Both stores resolve exactly like every other
-// recon pipeline's inputs:
+// **Store resolution — model the READ PATH, paired to the event store.**
+// The gate audits whatever event store `eventStore` resolved to; its
+// document store MUST resolve to the store the SAME read path reads —
+// "shared event store ⇒ shared document store" is the pairing invariant
+// (D-CROSS-WORKTREE-EVENT-STORE-SYNC). The two stores resolve as:
 //   - Event store: `eventStore` from `platform/composition` —
 //     env-overridable via `BANK_EVENT_DB`; per-worktree `.local/event.db`
-//     in CI.
-//   - Document store: `new LocalFsDocumentStore()` — the default
-//     (composition-posture) ladder `BANK_DOCUMENT_STORE` →
+//     in CI; the canonical `$HOME/.local/share/bank/event.db` in the live
+//     sweep (the dashboard's read path).
+//   - Document store (primary): `readPathDocumentStoreRoot()` — the
+//     home-default-ENABLED resolution (`BANK_DOCUMENT_STORE` →
 //     `BANK_DOCUMENT_STORE_PATH` → `BANK_HOME_DOCUMENT_STORE` →
-//     per-worktree in-repo fallback (`prototype/data/documents`). See
+//     `$HOME/.local/share/bank/documents`). This mirrors the event
+//     store's live posture: when `BANK_EVENT_DB` points at the shared
+//     home event store and `BANK_DOCUMENT_STORE` is unset, the document
+//     store resolves to the PAIRED `$HOME/.local/share/bank/documents`,
+//     not the empty per-worktree singleton. See
 //     `platform/document-store/resolve-document-store.ts`.
+//
+//   THE BLIND SPOT THIS FIXES. The previous version mounted
+//   `new LocalFsDocumentStore()` — the `excludeHomeDefault` singleton
+//   (`<repo>/prototype/data/documents`). In the live shared-home sweep
+//   (`BANK_EVENT_DB=$HOME/...event.db`, `BANK_DOCUMENT_STORE` unset) that
+//   audited the SHARED event store against the EMPTY per-worktree
+//   document store, reporting EVERY `RecordFiled` as dangling (~3,268
+//   false positives) instead of the true ~1,867 the home store carries.
+//   A doc-store integrity gate must resolve the store the reader reads
+//   (home/shared), NOT the `excludeHomeDefault` singleton — the same fix
+//   landed in `agent-memory-doc-resolves.ts` (2026-06-25). CI stays green
+//   because there `BANK_DOCUMENT_STORE` is pinned repo-local
+//   (`.local/documents`, see pr-ci.yml), so writer + gate both resolve
+//   there and every blob is present by construction.
 //
 // **Why CI is green pre-migration (mechanism statement).** Every
 // `RecordFiled` writer (`recordFiled` in `platform/records/helpers.ts`,
@@ -51,7 +73,14 @@
 //     Vera-style hand-rescue, not a new violation).
 //   - Blob missing everywhere, event `as_of` ON OR AFTER 2026-06-11 →
 //     `fail` (post-sync the boot shims keep blobs and events in the same
-//     store, so a miss is a real integrity violation).
+//     store, so a miss is a real integrity violation) — UNLESS the exact
+//     `(recordId, documentHash)` pair is on the FROZEN historical-loss
+//     allowlist (`rms-blob-historical-loss-allowlist.json`), in which case
+//     it is downgraded to an explicitly-acknowledged, non-failing `warn`.
+//     The allowlist is keyed-exact, finite, committed data — never a
+//     predicate. Any NEW dangling record (a pair NOT on the list) still
+//     fails. Authority: D-RMS-BLOB-HISTORICAL-LOSS-ALLOWLIST (CEO-approved
+//     2026-06-27, Phase 2 of the remediation); basis Vera census PR #1590.
 //
 // Authority: D-CROSS-WORKTREE-EVENT-STORE-SYNC (CEO session-delegation
 //            2026-05-21) — design precedent, extended to blob roots;
@@ -60,9 +89,14 @@
 // Brief: brief:atlas:extend-cross-worktree-sync-to-document-store-blo:2026-06-10.
 // Author: Atlas (Core banking platform architect, engineering)
 
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { eventStore } from "../composition";
 import { LocalFsDocumentStore } from "../document-store/local-fs";
-import { inRepoDocumentStoreRoot } from "../document-store/resolve-document-store";
+import {
+  inRepoDocumentStoreRoot,
+  resolveDocumentStoreRoot,
+} from "../document-store/resolve-document-store";
 import type { DocumentHash, DocumentStore } from "../document-store/types";
 import type { Event } from "../event-store/types";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
@@ -75,6 +109,83 @@ const PIPELINE = "rms-document-blob-integrity";
  * (the boot shims landed 2026-06-10) and are historical `warn`s.
  */
 export const ENFORCEMENT_DATE = "2026-06-11";
+
+/**
+ * FROZEN HISTORICAL-LOSS ALLOWLIST (D-RMS-BLOB-HISTORICAL-LOSS-ALLOWLIST,
+ * CEO-approved 2026-06-27; Phase 2 of the RMS blob-integrity remediation).
+ *
+ * After the read-path fix + 432 byte-exact rescues of PR #1590 (Vera's
+ * census), 1,435 dangling `RecordFiled` events (1,381 unique
+ * `(recordId, documentHash)` pairs) remained irreducible against the
+ * home/shared read-path — blobs genuinely lost (pre-document-store-sync,
+ * source stores pruned, not regenerable to the recorded BLAKE3 hash;
+ * `rescue:dangling-recordfiled-blobs --dry-run` rescues 0 of them).
+ *
+ * Marc approved allowlisting EXACTLY that enumerated set. The allowlist
+ * downgrades a dangling record to a NON-FAILING, explicitly-acknowledged
+ * `warn` class ("acknowledged historical loss") **only** when its precise
+ * `(recordId, documentHash)` pair is on the committed frozen list. Every
+ * record NOT on the list still fails per the existing date logic — the
+ * fail-direction is fully enforcing for any NEW dangling record. The
+ * allowlist is DATA: keyed-exact, finite, committed — never a predicate
+ * that auto-absorbs new losses. This is a one-time frozen acknowledgement,
+ * NOT a standing waiver.
+ *
+ * Authority: D-RMS-BLOB-HISTORICAL-LOSS-ALLOWLIST; basis Vera census PR
+ * #1590; D-RMS-PHASE-3; Engineering Charter (no green-by-concealment — the
+ * fail-direction survives, proven by the synthetic-new-dangling test).
+ */
+export const ALLOWLIST_FILE = "rms-blob-historical-loss-allowlist.json";
+
+interface AllowlistEntry {
+  readonly recordId: string;
+  readonly documentHash: string;
+  readonly asOf: string;
+  readonly severity: string;
+}
+
+interface AllowlistDoc {
+  readonly schema: string;
+  readonly authority: string;
+  readonly asOf: string;
+  readonly entries: readonly AllowlistEntry[];
+}
+
+/**
+ * Separator between recordId and documentHash in a composite allowlist
+ * key. An explicit single ASCII space (0x20), built via `String.fromCharCode`
+ * so no invisible / non-ASCII separator can hide in a template literal.
+ */
+export const ALLOWLIST_KEY_SEP = String.fromCharCode(0x20);
+
+/** Stable composite key for an allowlisted (recordId, documentHash) pair. */
+export function allowKey(recordId: string, documentHash: string): string {
+  return recordId + ALLOWLIST_KEY_SEP + documentHash;
+}
+
+function findReconDir(start: string): string {
+  let dir = start;
+  for (let i = 0; i < 8; i++) {
+    const candidate = resolve(dir, "platform/recon", ALLOWLIST_FILE);
+    if (existsSync(candidate)) return resolve(dir, "platform/recon");
+    dir = resolve(dir, "..");
+  }
+  throw new Error(`Cannot locate platform/recon/${ALLOWLIST_FILE} from ${start}`);
+}
+
+/**
+ * Load the frozen allowlist into a key set. Resolution mirrors
+ * `v1-removal-ratchet.json` (committed alongside the recon pipeline,
+ * walked up from `import.meta.dir`). Tests inject `allowlistKeys`
+ * directly to avoid filesystem coupling.
+ */
+export function loadAllowlistKeys(allowlistPath?: string): Set<string> {
+  const path = allowlistPath ?? resolve(findReconDir(import.meta.dir), ALLOWLIST_FILE);
+  const doc = JSON.parse(readFileSync(path, "utf8")) as AllowlistDoc;
+  const keys = new Set<string>();
+  for (const e of doc.entries) keys.add(allowKey(e.recordId, e.documentHash));
+  return keys;
+}
 
 export interface BlobIntegrityDeps {
   /** Injected `RecordFiled` events (tests). Default: composition replay. */
@@ -90,10 +201,34 @@ export interface BlobIntegrityDeps {
   readonly legacyStore?: DocumentStore | null;
   /** Enforcement boundary override (tests). Default `ENFORCEMENT_DATE`. */
   readonly enforcementDate?: string;
+  /**
+   * Injected frozen historical-loss allowlist keys (tests). Each key is
+   * `allowKey(recordId, documentHash)`. Default: loaded from the committed
+   * `rms-blob-historical-loss-allowlist.json`. Pass an empty `Set` to
+   * disable the allowlist explicitly (proves the underlying fail-direction
+   * is unchanged). Authority: D-RMS-BLOB-HISTORICAL-LOSS-ALLOWLIST.
+   */
+  readonly allowlistKeys?: ReadonlySet<string>;
+}
+
+/**
+ * The document-store root the READ PATH resolves to — the
+ * home-default-ENABLED resolution (NOT `excludeHomeDefault`). This is the
+ * store the dashboard / `RecordFiled` consumers read, and it pairs to the
+ * event store's live resolution: `BANK_DOCUMENT_STORE` pinned (CI / local
+ * repro) → that repo-local root; unset (live shared-home sweep) →
+ * `$HOME/.local/share/bank/documents` — the twin of
+ * `$HOME/.local/share/bank/event.db` that `eventStore` opens when
+ * `BANK_EVENT_DB` points there. Exported so the regression test can pin
+ * this read-path behaviour and the `excludeHomeDefault`-singleton blind
+ * spot cannot regress.
+ */
+export function readPathDocumentStoreRoot(): string {
+  return resolveDocumentStoreRoot({}).root;
 }
 
 function defaultStores(): { resolved: LocalFsDocumentStore; legacy: LocalFsDocumentStore | null } {
-  const resolved = new LocalFsDocumentStore();
+  const resolved = new LocalFsDocumentStore({ root: readPathDocumentStoreRoot() });
   const legacyRoot = inRepoDocumentStoreRoot();
   const legacy =
     resolved.rootPath() === legacyRoot ? null : new LocalFsDocumentStore({ root: legacyRoot });
@@ -105,6 +240,7 @@ export function run(deps: BlobIntegrityDeps = {}): ReconResult {
   const violations: ReconViolation[] = [];
 
   const enforcementDate = deps.enforcementDate ?? ENFORCEMENT_DATE;
+  const allowlistKeys = deps.allowlistKeys ?? loadAllowlistKeys();
 
   let resolvedStore: DocumentStore;
   let legacyStore: DocumentStore | null;
@@ -143,6 +279,22 @@ export function run(deps: BlobIntegrityDeps = {}): ReconResult {
 
     const eventDate = (e.as_of ?? "").slice(0, 10);
     const postEnforcement = eventDate >= enforcementDate;
+
+    // FROZEN HISTORICAL-LOSS ALLOWLIST. Only the EXACT (recordId,
+    // documentHash) pair on the committed list is acknowledged — and even
+    // then it is downgraded to a non-failing `warn`, never silently
+    // dropped. Any dangling record NOT on the list still fails per the
+    // date logic below: the fail-direction is fully intact for new losses.
+    // Authority: D-RMS-BLOB-HISTORICAL-LOSS-ALLOWLIST (CEO-approved
+    // 2026-06-27); basis Vera census PR #1590; D-RMS-PHASE-3.
+    if (postEnforcement && allowlistKeys.has(allowKey(recordId, hash))) {
+      violations.push({
+        subject,
+        message: `Acknowledged historical loss (frozen allowlist): RecordFiled event \`${recordId}\` (as_of ${eventDate}) cites documentHash \`${hash}\` with no blob in any reachable store. This exact (recordId, documentHash) pair is on the committed frozen historical-loss allowlist — an irreducible pre-document-store-sync loss (not regenerable to the recorded hash; verified non-rescuable). One-time acknowledgement, NOT a standing waiver; any NEW dangling record still fails. Citations: D-RMS-BLOB-HISTORICAL-LOSS-ALLOWLIST, Vera census PR #1590, D-RMS-PHASE-3, Principle 1.`,
+        severity: "warn",
+      });
+      continue;
+    }
 
     violations.push({
       subject,

@@ -55,11 +55,31 @@ import { emitPostSettlementAdvice } from "../simulation-v2/sim-modules/post-sett
 import { emitSettlementLifecycle } from "../simulation-v2/sim-modules/settlement-lifecycle";
 import { emitCounterpartyConfirmation } from "../simulation-v2/sim-modules/trade-confirmation";
 import { buildFxCadenceHooks } from "./cadence-hooks";
+import { onboardedFxCounterparties } from "./onboarded-counterparty-source";
 
 const REPORTING = "ZAR";
 const SCENARIO_ID = "fx-v2-live";
 const SOURCE_LINEAGE = "simulation-v2-live:fx-generative";
 const DEFAULT_BASELINE = "2026-02-02T07:00:00.000Z";
+
+/**
+ * Clock-advance mode (D-FX-SIM-LIVE-REALTIME-ONBOARDED):
+ *   - "fixed-day-step" (DEFAULT): advance the SimulatedClock by a fixed `stepMs`
+ *     (= `dayStepMs`) per tick. Byte-replayable from (seed, baselineInstant,
+ *     stepMs, tick-count) — the wall clock decides only WHEN a tick fires.
+ *   - "real-elapsed": advance the SimulatedClock by the REAL wall-clock delta
+ *     since the previous tick (sim-now = assumed-past baseline + accumulated real
+ *     elapsed). Reads wall-time ONLY inside the live-driver scheduler boundary
+ *     (the approved boundary); the payload package stays fully deterministic.
+ */
+export type ClockAdvanceMode = "fixed-day-step" | "real-elapsed";
+
+/**
+ * Wall-clock epoch-ms source, injected so `real-elapsed` mode stays testable
+ * (the test supplies a deterministic fake; production defaults to `Date.now`).
+ * The ONLY wall-clock read in this package's `real-elapsed` path.
+ */
+export type WallClockNowMs = () => number;
 
 /** Default simulated counterparties (CP-SIM-* — simulated identities, not agents). */
 export const DEFAULT_SIM_COUNTERPARTIES: readonly ScenarioCounterparty[] = Object.freeze([
@@ -84,10 +104,26 @@ export const DEFAULT_SIM_COUNTERPARTIES: readonly ScenarioCounterparty[] = Objec
 export interface V2LiveFxDriverConfig {
   /** Seed for the run's deterministic RNG. Default 0x11fe. */
   readonly seed?: number;
-  /** ISO instant the SimulatedClock starts at. Default DEFAULT_BASELINE. */
+  /** ISO instant the SimulatedClock starts at (the assumed-past baseline). Default DEFAULT_BASELINE. */
   readonly baselineInstant?: string;
-  /** Simulated time advanced per tick. Default ONE_DAY_MS (one sim day / tick). */
+  /**
+   * Simulated time advanced per tick in "fixed-day-step" mode. Default
+   * ONE_DAY_MS (one sim day / tick). Selectable — the day-step is a config value,
+   * not a hardcoded constant (the constant is only the default).
+   */
   readonly stepMs?: number;
+  /**
+   * Clock-advance mode. "fixed-day-step" (default) keeps byte-replay; "real-elapsed"
+   * advances the sim clock by the real wall-clock delta between ticks (current
+   * date/time trading from an assumed-past baseline). See {@link ClockAdvanceMode}.
+   */
+  readonly clockAdvanceMode?: ClockAdvanceMode;
+  /**
+   * Wall-clock now-source (epoch ms) used ONLY by "real-elapsed" mode. Injectable
+   * so tests stay deterministic; defaults to `Date.now`. Ignored in
+   * "fixed-day-step" mode (no wall-clock read at all).
+   */
+  readonly nowMs?: WallClockNowMs;
   /** Wall-clock interval between ticks (the scheduler period). Default 3000ms. */
   readonly tickIntervalMs?: number;
   /** Trades generated per tick. Default 1. */
@@ -100,7 +136,13 @@ export interface V2LiveFxDriverConfig {
   readonly settlementMode?: "accelerated" | "realtime";
   /** EOD boundary hour (UTC). Default 17. */
   readonly eodHourUtc?: number;
-  /** Counterparties the simulator trades with. Default DEFAULT_SIM_COUNTERPARTIES. */
+  /**
+   * EXPLICIT counterparty opt-in. When supplied the driver trades with exactly
+   * this set (used by the replay-determinism tests with DEFAULT_SIM_COUNTERPARTIES).
+   * When OMITTED the driver resolves its counterparties from the IN-SIM ONBOARDED
+   * client set (onboarded-counterparty-source.ts) — fail-closed: no onboarded
+   * client → no counterparty → no trade. There is NO silent seed fallback.
+   */
   readonly counterparties?: readonly ScenarioCounterparty[];
 }
 
@@ -139,11 +181,21 @@ export class V2LiveFxDriver {
   private readonly rng: SeededRng;
   private readonly rateWalk: FxRateWalkV2;
   private readonly bus: EodTriggerBus;
-  private readonly counterparties: readonly ScenarioCounterparty[];
+  /**
+   * Explicitly-injected counterparties (opt-in), or null to resolve from the
+   * onboarded client set lazily at first provision. NEVER falls back to a seed.
+   */
+  private readonly injectedCounterparties: readonly ScenarioCounterparty[] | null;
+  /** Resolved counterparty set (injected, or folded from onboarded clients). */
+  private counterparties: readonly ScenarioCounterparty[] = [];
   private readonly stepMs: number;
   private readonly tickIntervalMs: number;
   private readonly tradesPerTick: number;
   private readonly settlementMode: "accelerated" | "realtime";
+  private readonly clockAdvanceMode: ClockAdvanceMode;
+  private readonly nowMs: WallClockNowMs;
+  /** Wall-clock ms at the previous tick ("real-elapsed" mode only); null before the first tick. */
+  private lastWallMs: number | null = null;
   private readonly provenance: ProvenanceTag;
   private readonly bookedRateByInstance = new Map<string, number>();
   private readonly hooks: readonly EodHook[];
@@ -175,11 +227,16 @@ export class V2LiveFxDriver {
     this.rng = new SeededRng(cfg.seed ?? 0x11fe);
     this.rateWalk = new FxRateWalkV2();
     this.bus = new EodTriggerBus(this.clock, { eodHourUtc: cfg.eodHourUtc ?? 17 });
-    this.counterparties = cfg.counterparties ?? DEFAULT_SIM_COUNTERPARTIES;
+    // No silent seed fallback: an explicit `counterparties` opt-in is the ONLY
+    // way to inject a set; otherwise the driver folds the onboarded client set
+    // lazily at first provision (fail-closed empty → zero trades).
+    this.injectedCounterparties = cfg.counterparties ?? null;
     this.stepMs = cfg.stepMs ?? ONE_DAY_MS;
     this.tickIntervalMs = cfg.tickIntervalMs ?? 3_000;
     this.tradesPerTick = Math.max(1, cfg.tradesPerTick ?? 1);
     this.settlementMode = cfg.settlementMode ?? "accelerated";
+    this.clockAdvanceMode = cfg.clockAdvanceMode ?? "fixed-day-step";
+    this.nowMs = cfg.nowMs ?? Date.now; // wall-clock: "real-elapsed" mode only; injectable for tests.
     this.provenance = simulatedTag({ scenario: SCENARIO_ID, sourceLineage: SOURCE_LINEAGE });
 
     // EOD cadence hooks (cohort P&L + VaR over the simulated cohort). Pure reads —
@@ -198,9 +255,21 @@ export class V2LiveFxDriver {
     for (const hook of this.hooks) this.bus.register(hook);
   }
 
-  /** Provision the simulated counterparties once (idempotent on the store). */
+  /**
+   * Resolve the trading counterparty set: the explicit injected opt-in, else the
+   * IN-SIM ONBOARDED client set folded from the store (fail-closed empty → []).
+   * Resolved lazily at first provision so the onboarding seed can land AFTER
+   * driver construction. NEVER falls back to DEFAULT_SIM_COUNTERPARTIES.
+   */
+  private resolveCounterparties(): readonly ScenarioCounterparty[] {
+    if (this.injectedCounterparties !== null) return this.injectedCounterparties;
+    return onboardedFxCounterparties(this.eventStore);
+  }
+
+  /** Provision the resolved counterparties once (idempotent on the store). */
   private provisionOnce(): void {
     if (this.provisioned) return;
+    this.counterparties = this.resolveCounterparties();
     const asOf = this.clock.now();
     for (const cp of this.counterparties) {
       emitCounterpartyProvisioning({
@@ -350,10 +419,32 @@ export class V2LiveFxDriver {
       }
     }
 
-    // Advance the simulated clock one step; the bus fires the EOD boundary(ies)
-    // crossed (cohort P&L + VaR), leaving the clock at the next tick's instant.
-    this.bus.advanceBy(this.stepMs);
+    // Advance the simulated clock; the bus fires the EOD boundary(ies) crossed
+    // (cohort P&L + VaR), leaving the clock at the next tick's instant. The
+    // advance amount depends on the mode (the assumed-past baseline is unchanged):
+    //   - fixed-day-step: a fixed `stepMs` (byte-replayable).
+    //   - real-elapsed:   the real wall-clock delta since the previous tick
+    //     (sim-now = pastBaseline + accumulated real elapsed). The ONLY wall-clock
+    //     read in this package, confined to this scheduler-side advance.
+    this.bus.advanceBy(this.clockStepForTick());
     this.ticks += 1;
+  }
+
+  /**
+   * The simulated-time advance for this tick. In "fixed-day-step" mode it is a
+   * fixed `stepMs`. In "real-elapsed" mode it is the wall-clock delta since the
+   * previous tick (the first tick advances 0 — there is no prior reference,
+   * baseline stays the assumed-past instant). Negative deltas (clock skew) are
+   * clamped to 0 so the sim clock never rewinds.
+   */
+  private clockStepForTick(): number {
+    if (this.clockAdvanceMode === "fixed-day-step") return this.stepMs;
+    const now = this.nowMs();
+    const prev = this.lastWallMs;
+    this.lastWallMs = now;
+    if (prev === null) return 0;
+    const delta = now - prev;
+    return delta > 0 ? delta : 0;
   }
 
   /** Start the real-time scheduler. Idempotent — a second start() is a no-op. */

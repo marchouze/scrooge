@@ -1,0 +1,103 @@
+// v2-core/regulatory-returns/cell-value/engine.ts
+//
+// Phase 0 of the per-cell value engine (D-BA-RETURN-CELL-VALUE-ENGINE): the
+// GENERIC, source-agnostic core. Given a form's contract and a set of LEAF cell
+// values, it evaluates the `sum`/`formula` cells via the form's own arithmetic
+// (derivation-eval) to a fixpoint and emits a value per resolved cell.
+//
+// IT KNOWS NOTHING ABOUT WHERE LEAF VALUES COME FROM. A return and the chart-of-
+// accounts are two SIBLING folds of the same event log (Principle 1) — neither
+// derives from the other. So the leaf values are folded DIRECTLY FROM THE
+// UNDERLYING EVENTS (per each cell's `dataRequirements`: event-field / product-
+// attribute / projection / …), with whatever dimensions the events carry —
+// independent of how the CoA happens to bucket them. That fold is per-form and
+// seat-owned (it reads events, so it lives platform-side); this v2-core module is
+// pure (no event reads), takes the leaf values as decimal STRINGS, and stays
+// platform-free. Where the events lack a dimension a cell needs, the leaf fold
+// surfaces an event/product-schema gap and leaves that cell unresolved — NOT a
+// "CoA too coarse" excuse, and never a fabricated number (Charter cmd 2 / cmd 4).
+
+import { type DecimalValue, decimalToString, toDecimal } from "../../fil-core/decimal";
+import type { ReturnContract } from "../cell-contract";
+import { evaluateDerivation } from "./derivation-eval";
+
+/** A soundly-computed cell value, decimal-native. */
+export interface CellNumericValue {
+  /** Decimal-native major-unit amount (money) or percentage value (ratio). */
+  readonly amount: string;
+  readonly valueType: "money" | "ratio";
+  /** ISO-4217 currency for money values; null for ratios. */
+  readonly currency: string | null;
+}
+
+/** Leaf cell values keyed by `"<row> <column>"`, as decimal-native MAJOR-unit strings. */
+export type LeafCellValues = ReadonlyMap<string, string>;
+
+export interface ComputeDerivedCellsArgs {
+  readonly contract: ReturnContract;
+  /** Leaf values folded from the underlying events (seat-owned, per-form). */
+  readonly leafValues: LeafCellValues;
+  /** ISO-4217 functional currency for money cells. */
+  readonly functionalCurrency: string;
+}
+
+function coordKey(row: string, column: string): string {
+  return `${row} ${column}`;
+}
+
+/**
+ * Evaluate a form's cells from its leaf values: leaves pass through; `sum`/
+ * `formula` cells are computed via the form's own derivation arithmetic, iterated
+ * to a fixpoint so nested subtotals resolve. Fail-closed: a derived cell that
+ * references an unresolved cell stays unresolved (never partial / zero-filled).
+ * Returns a value per cell (keyed by xsdElement) whose coordinate resolved.
+ */
+export function computeDerivedCells(args: ComputeDerivedCellsArgs): Map<string, CellNumericValue> {
+  const values = new Map<string, DecimalValue>();
+  for (const [key, amount] of args.leafValues) {
+    values.set(key, toDecimal(amount));
+  }
+
+  const resolver = (_form: string, row: string, column: string): DecimalValue | null =>
+    values.get(coordKey(row, column)) ?? null;
+
+  const derivedCells = args.contract.cells.filter(
+    (c) =>
+      (c.derivation.kind === "sum" || c.derivation.kind === "formula") &&
+      c.cellRef.row !== undefined &&
+      c.cellRef.column !== undefined,
+  );
+
+  let progressed = true;
+  while (progressed) {
+    progressed = false;
+    for (const c of derivedCells) {
+      const row = c.cellRef.row;
+      const column = c.cellRef.column;
+      if (row === undefined || column === undefined) continue;
+      const key = coordKey(row, column);
+      if (values.has(key)) continue;
+      const v = evaluateDerivation(c.derivation.expression, args.contract.returnForm, resolver);
+      if (v !== null) {
+        values.set(key, v);
+        progressed = true;
+      }
+    }
+  }
+
+  const out = new Map<string, CellNumericValue>();
+  for (const c of args.contract.cells) {
+    const row = c.cellRef.row;
+    const column = c.cellRef.column;
+    if (row === undefined || column === undefined) continue;
+    const v = values.get(coordKey(row, column));
+    if (v === undefined) continue;
+    const isRatio = c.valueType === "ratio";
+    out.set(c.cellRef.xsdElement, {
+      amount: decimalToString(v),
+      valueType: isRatio ? "ratio" : "money",
+      currency: isRatio ? null : args.functionalCurrency,
+    });
+  }
+  return out;
+}
