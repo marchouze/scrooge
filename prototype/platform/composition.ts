@@ -14,6 +14,8 @@ import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
 import { LocalPermissionPolicyPublisher } from "./agent-identity/permission-policy";
+import { LocalFsDocumentStore } from "./document-store";
+import type { DocumentStore } from "./document-store/types";
 import { gateEventStore, isGateEnabled } from "./event-store/permission-gate";
 import { resolveEventDbPath } from "./event-store/resolve-event-db";
 import { EventStore } from "./event-store/store";
@@ -111,6 +113,25 @@ export const eventStore = teeEventStore(gatedEventStore);
 
 export const projector = new LocalProjector(eventStore);
 export const authenticator = new LocalAuthenticator({ keyPath: idpKeyPath });
+
+// Content-addressed document store — the composition-root twin of `eventStore`.
+// The two stores TRAVEL TOGETHER (D-CROSS-WORKTREE-EVENT-STORE-SYNC, blob
+// extension): a `RecordFiled`/`AgentMemoryCommitted` event in the event store
+// references a blob (its `documentHash` / `bodyDocumentHash`) that must resolve
+// in the paired document store, or the reference dangles. Resolution posture
+// MIRRORS the event store above: `LocalFsDocumentStore` itself applies
+// `excludeHomeDefault: true`, so this singleton never silently adopts the shared
+// HOME store — surfaces opt into the shared event+document stores together via
+// the `resolve-event-db-boot` shim (which chains `resolve-document-store-boot`),
+// exactly as composition's `eventStore` opts in via `BANK_EVENT_DB`. Wiring it
+// here makes the document store a first-class composition dependency that the
+// runtime WorldState reader injects, so `WorldStateSnapshot.myMemory` populates
+// from the SAME paired store the manual `dispatch:recall` reads — the autonomous
+// read-hook and the manual recall cannot diverge (single `readMyMemory` path;
+// recon:agent-memory-recall-determinism + the #1599 no-drift gate stay green).
+// Authority: D-AGENT-MEMORY-PERSISTENCE; D-SCROOGE-RECALL-BEFORE-DISPATCH;
+//   D-CROSS-WORKTREE-EVENT-STORE-SYNC.
+export const documentStore: DocumentStore = new LocalFsDocumentStore();
 
 // Controlled-time substrate (D-SCENARIO-CLOCK, authorised under
 // D-FIRST-DRY-RUN-SCENARIO; CEO-approved 2026-05-10). Default `WallClock`
