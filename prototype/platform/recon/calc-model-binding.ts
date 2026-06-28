@@ -5,24 +5,40 @@
 // registry. Objective 3 of the Trusted-Figures Program: a figure may not be
 // derived from an ungoverned model.
 //
-// For each calcKey in CALC_BINDINGS, checkModelApproved() must return ok. To
-// keep the gate self-sufficient (and to catch binding↔seed drift), the calc
-// models are seeded idempotently first: if a binding references a model the
-// seed does not register/approve, the approval check fails and the gate fails.
-// That is exactly the drift we want to catch — a new binding with no owned,
-// approved model behind it.
+// For each calcKey in CALC_BINDINGS, checkModelApproved() must return ok against
+// the calc models that the bank has seeded into the authoritative event store
+// (the `seed:calc-models` step in the `ci:migrate` chain — `run-calc-model-seed.ts`).
+// If a binding references a model the migrate seed does not register/approve, the
+// approval check fails and the gate fails. That is exactly the drift we want to
+// catch — a new binding with no owned, approved model behind it.
+//
+// READ-ONLY (Principle 1: events are truth — recon observes, it never emits).
+// This gate previously called `seedCalcModels(store)` to make itself
+// self-sufficient. That made the recon a *writer* of the authoritative V1 store:
+// running the gate emitted 20 calc models' `ModelSubmitted → ModelTierClassified
+// → ModelValidationApproved` triples via a raw (un-teed) `EventStore`, so those
+// events landed in V1 but were never mirrored to the v2 control-plane store. In
+// the suite that produced a non-deterministic `recon:money-free-batch-3-v2-parity`
+// failure (V1 199 vs v2 142): whenever this gate ran before that parity gate, the
+// parity gate observed the 57 un-mirrored model events as a V1↔v2 divergence. A
+// gate that seeds the very models it then asserts is also circular ("green by
+// concealment", Engineering Charter cmd 3). The seed now lives in `ci:migrate`
+// (before the final `backfill:v2-store-tee`, so the calc-model events mirror to
+// v2 and parity holds), and this gate reads the resulting store.
 //
 // Mode: blocking (non-zero exit on any violation). Wired into
 //       `bun run ci:recon:domain` via `bun run recon:calc-model-binding`.
 //
-// Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29).
+// Authority: D-TRUSTED-FIGURES-PROGRAM-V1 (CEO session-delegation 2026-05-29);
+//   D-BANK-WIDE-V2-MIGRATION (CEO-approved 2026-06-16, parity-gate lineage).
+// Engineering Charter: D-ENGINEERING-INTEGRITY-CHARTER (root-cause; recon is
+//   read-only; no green by concealment).
 // Author: Atlas (Core banking platform architect, engineering)
 
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { EventStore } from "@platform/event-store/store";
-import { seedCalcModels } from "../model-registry/calc-model-definitions";
 import {
   allCalcKeys,
   checkModelApproved,
@@ -43,8 +59,6 @@ function findRepoRoot(start: string): string {
 
 export interface RunOpts {
   dbPath?: string;
-  /** Skip the idempotent seed step (tests that pre-seed their own store). */
-  skipSeed?: boolean;
 }
 
 export function run(opts: RunOpts = {}): ReconResult {
@@ -59,18 +73,11 @@ export function run(opts: RunOpts = {}): ReconResult {
     return result;
   }
 
+  // READ-ONLY: open the store to assert against the calc models the bank seeded
+  // in `ci:migrate` (seed:calc-models). This recon never emits — a missing or
+  // un-approved model is a finding to surface, not a state for the gate to fix
+  // (Principle 1; Engineering Charter cmd 3, no green by concealment).
   const store = new EventStore(dbPath);
-
-  // Make the gate self-sufficient: ensure the bound calc models are registered
-  // and approved. Idempotent — already-approved models are skipped.
-  if (!opts.skipSeed) {
-    try {
-      seedCalcModels(store);
-    } catch {
-      // Best-effort — a read-only store in CI still lets us assert against
-      // whatever models are already present.
-    }
-  }
 
   const violations: ReconViolation[] = [];
   const keys = allCalcKeys();
