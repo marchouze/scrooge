@@ -61,15 +61,30 @@
 import { addD, decimalToString, toDecimal } from "../../../v2-core/fil-core/decimal";
 import type { FilInstrumentCreatedPayload } from "../../../v2-core/fil-instances/events";
 import type { FilInstrumentTerminatedPayload } from "../../../v2-core/fil-instances/events";
+import type {
+  FilDepositCategory,
+  FilDepositCounterpartySector,
+} from "../../../v2-core/fil-instances/events";
 import {
   type CapitalPostingLeg,
   isCapitalPostingInstance,
   postCapitalIssuanceLegs,
   postCapitalRedemptionLegs,
 } from "../../../v2-core/posting-rules/capital";
+import {
+  type DepositPostingLeg,
+  isDepositPostingInstance,
+  postDepositRepaymentLegs,
+  postDepositTakeOnLegs,
+  requireDepositTerms,
+} from "../../../v2-core/posting-rules/deposit";
 import type { LeafCellValues } from "../../../v2-core/regulatory-returns/cell-value/engine";
 import { COA_BY_ID } from "../../accounting/coa-registry";
-import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "../../projections/filter";
+import {
+  type ProvenanceFilter,
+  defaultProvenanceFilter,
+  eventMatchesProvenanceFilter,
+} from "../../projections/filter";
 import { type LeafFoldContext, registerLeafFold } from "./leaf-fold-registry";
 
 // ---------------------------------------------------------------------------
@@ -186,27 +201,70 @@ function naturalSignedAmount(leg: CapitalPostingLeg): ReturnType<typeof toDecima
 // The BA 100 leaf fold.
 // ---------------------------------------------------------------------------
 
-const CAPITAL_FIL_EVENT_TYPES = ["FilInstrumentCreated", "FilInstrumentTerminated"] as const;
+// ---------------------------------------------------------------------------
+// DEPOSIT classification (L5-FTR deposit-instrument slice). A deposit FIL instance
+// is the bank-as-taker liability whose BA 100 line is determined by the instance's
+// TYPED `depositTerms.depositCategory` (the SARB R0570–R0620 deposit detail rows)
+// and whose R1010 sector-analysis line is determined by `counterpartySector` — the
+// dimension comes from the EVENT, not the (single, sector-split-only) CoA account
+// (sibling-fold discipline, Principle 1). The deposit's Dr nostro leg lands on the
+// SAME R0040 cash row the capital cash leg uses (account-classified, below).
+// ---------------------------------------------------------------------------
+
+/** depositCategory → BA 100 deposit detail row (R0570–R0620). */
+const DEPOSIT_CATEGORY_ROW: Readonly<Record<FilDepositCategory, RowMapping>> = {
+  savings: { row: "R0570", keyword: "savings deposits" },
+  call: { row: "R0580", keyword: "call deposits" },
+  "fixed-notice": { row: "R0590", keyword: "fixed and notice deposits" },
+  "negotiable-cert": { row: "R0600", keyword: "negotiable certificates of deposit" },
+  other: { row: "R0610", keyword: "other deposits" },
+  repo: { row: "R0620", keyword: "repurchase agreements" },
+};
 
 /**
- * Read the underlying capital FIL events for the entity under the active
- * provenance lens, resolve each issuance / redemption posting leg, classify it to
- * its BA 100 row by the leg's CoA account, and emit the per-(row, C0040) leaf cell
- * value as a decimal-native major-unit string. Only the functional-currency legs
- * are summed (cross-currency own-funds translation is a licence-day refinement —
- * tracked, not silently mixed; the build-phase anchor capital is ZAR).
+ * counterpartySector → BA 100 R1010 sector-analysis row. The LCR retail/wholesale
+ * partition maps onto the BA 100 deposit sector-analysis taxonomy: retail → R1080
+ * (Retail customers); wholesale → R1070 (Corporate customers). This is a faithful
+ * placement of the build-phase simulated book — never a fabricated split.
  */
-export function foldBa100LeafValues(ctx: LeafFoldContext): LeafCellValues {
-  const provenanceFilter = defaultProvenanceFilter();
-  const byCell = new Map<string, RowAccumulator>();
+const DEPOSIT_SECTOR_ANALYSIS_ROW: Readonly<Record<FilDepositCounterpartySector, RowMapping>> = {
+  "retail-stable": { row: "R1080", keyword: "retail customers" },
+  "retail-less-stable": { row: "R1080", keyword: "retail customers" },
+  "wholesale-operational": { row: "R1070", keyword: "corporate customers" },
+  "wholesale-non-operational": { row: "R1070", keyword: "corporate customers" },
+};
 
+const CAPITAL_FIL_EVENT_TYPES = ["FilInstrumentCreated", "FilInstrumentTerminated"] as const;
+const DEPOSIT_FIL_EVENT_TYPES = ["FilInstrumentCreated", "FilInstrumentTerminated"] as const;
+
+/** Add a natural-signed amount into the (row, C0040) accumulator. */
+function addToCell(
+  byCell: Map<string, RowAccumulator>,
+  row: string,
+  amount: ReturnType<typeof toDecimal>,
+): void {
+  const key = `${row} ${TOTAL_BANK_COLUMN}`;
+  const acc = byCell.get(key) ?? { total: toDecimal("0") };
+  acc.total = addD(acc.total, amount);
+  byCell.set(key, acc);
+}
+
+/**
+ * CAPITAL fold pass — resolve each capital issuance / redemption posting leg,
+ * classify it to its BA 100 row by the leg's CoA account (the account IS the
+ * economic dimension), and accumulate the natural-signed amount. Only the
+ * functional-currency legs are summed (cross-currency own-funds translation is a
+ * tracked licence-day refinement, never silently mixed; build-phase anchor = ZAR).
+ */
+function foldCapitalLegs(
+  ctx: LeafFoldContext,
+  provenanceFilter: ProvenanceFilter,
+  byCell: Map<string, RowAccumulator>,
+): void {
   for (const type of CAPITAL_FIL_EVENT_TYPES) {
     for (const ev of ctx.eventStore.replay({ entity: ctx.entity, type, asOf: ctx.asOf })) {
       if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
 
-      // Resolve the capital posting legs for this lifecycle event. Only
-      // `capital`-asset-class instances are this fold's concern; the posting-rule
-      // type guard skips the rest. A non-capital event contributes no legs.
       let legs: CapitalPostingLeg[];
       if (type === "FilInstrumentCreated") {
         const created = ev.payload as FilInstrumentCreatedPayload;
@@ -221,21 +279,105 @@ export function foldBa100LeafValues(ctx: LeafFoldContext): LeafCellValues {
       }
 
       for (const leg of legs) {
-        // Functional-currency only (the BA 100 form is presented in the entity's
-        // functional currency at v0; cross-currency own-funds translation is a
-        // tracked licence-day refinement, never silently mixed).
         if (leg.amount.currency !== ctx.functionalCurrency) continue;
         const mapping = ba100RowForAccount(leg.accountCode);
         // An unmapped account is left UNRESOLVED — surfaced as a substrate gap by
         // the registration, never folded from a coarser proxy (Charter cmd 2).
         if (mapping === undefined) continue;
-        const key = `${mapping.row} ${TOTAL_BANK_COLUMN}`;
-        const acc = byCell.get(key) ?? { total: toDecimal("0") };
-        acc.total = addD(acc.total, naturalSignedAmount(leg));
-        byCell.set(key, acc);
+        addToCell(byCell, mapping.row, naturalSignedAmount(leg));
       }
     }
   }
+}
+
+/**
+ * DEPOSIT fold pass (L5-FTR slice) — resolve each deposit take-on / repayment
+ * posting leg, then classify it onto its BA 100 line:
+ *   - the Dr nostro (asset) leg → R0040 cash row, by its CoA account (same cash
+ *     row the capital cash leg uses) — account-classified via naturalSignedAmount.
+ *   - the Cr deposit-liability (credit) leg → the DEPOSIT DETAIL row R0570–R0620
+ *     by the instance's TYPED `depositTerms.depositCategory` (the dimension comes
+ *     from the EVENT, not the sector-split-only CoA liability account), AND the
+ *     R1010 sector-analysis row by `counterpartySector`.
+ * The credit-natural liability magnitude is accumulated positive on its detail row
+ * (BA 100 presents a positive deposit stock); a repayment terminal posts a zero
+ * memo (its principal-repayment leg is a tracked deferred gap — see deposit.ts).
+ * Only functional-currency legs are summed.
+ */
+function foldDepositLegs(
+  ctx: LeafFoldContext,
+  provenanceFilter: ProvenanceFilter,
+  byCell: Map<string, RowAccumulator>,
+): void {
+  for (const type of DEPOSIT_FIL_EVENT_TYPES) {
+    for (const ev of ctx.eventStore.replay({ entity: ctx.entity, type, asOf: ctx.asOf })) {
+      if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+
+      let legs: DepositPostingLeg[];
+      let depositCategory: FilDepositCategory | undefined;
+      if (type === "FilInstrumentCreated") {
+        const created = ev.payload as FilInstrumentCreatedPayload;
+        if (typeof created.type !== "string" || !isDepositPostingInstance(created.type)) continue;
+        legs = postDepositTakeOnLegs(created);
+        depositCategory = requireDepositTerms(created, "ba100-leaf-fold").depositCategory;
+      } else {
+        const terminated = ev.payload as FilInstrumentTerminatedPayload;
+        if (typeof terminated.type !== "string" || !isDepositPostingInstance(terminated.type)) {
+          continue;
+        }
+        legs = postDepositRepaymentLegs(terminated);
+        // The terminal memo posts zero (deferred-gap); no detail-row contribution.
+        depositCategory = undefined;
+      }
+
+      for (const leg of legs) {
+        if (leg.amount.currency !== ctx.functionalCurrency) continue;
+        const coa = COA_BY_ID.get(leg.accountCode);
+        if (coa === undefined) continue;
+        const magnitude = toDecimal(leg.amount.amount);
+
+        if (coa.category.startsWith("asset")) {
+          // Dr nostro — the cash leg lands on R0040 (local and foreign currency),
+          // exactly as the capital cash leg does (debit increases the asset stock).
+          const mapping = ba100RowForAccount(leg.accountCode);
+          if (mapping === undefined) continue;
+          addToCell(
+            byCell,
+            mapping.row,
+            leg.creditDebit === "debit" ? magnitude : magnitude.negated(),
+          );
+          continue;
+        }
+
+        // The deposit-LIABILITY leg — classify by the TYPED depositCategory onto
+        // the deposit detail row + by counterpartySector onto the R1010 analysis.
+        // A credit increases the liability stock (presented positive on BA 100).
+        const signed = leg.creditDebit === "credit" ? magnitude : magnitude.negated();
+        if (depositCategory !== undefined) {
+          const detail = DEPOSIT_CATEGORY_ROW[depositCategory];
+          addToCell(byCell, detail.row, signed);
+          const sector = DEPOSIT_SECTOR_ANALYSIS_ROW[leg.counterpartySector];
+          addToCell(byCell, sector.row, signed);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Read the underlying capital + deposit FIL events for the entity under the active
+ * provenance lens, resolve each posting leg, classify it to its BA 100 row, and
+ * emit the per-(row, C0040) leaf cell value as a decimal-native major-unit string.
+ * Capital legs classify by CoA account; deposit liability legs classify by the
+ * instance's typed depositTerms (sibling-fold discipline — the dimension is on the
+ * event, Principle 1).
+ */
+export function foldBa100LeafValues(ctx: LeafFoldContext): LeafCellValues {
+  const provenanceFilter = defaultProvenanceFilter();
+  const byCell = new Map<string, RowAccumulator>();
+
+  foldCapitalLegs(ctx, provenanceFilter, byCell);
+  foldDepositLegs(ctx, provenanceFilter, byCell);
 
   const out = new Map<string, string>();
   for (const [key, acc] of byCell) {

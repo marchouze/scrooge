@@ -433,6 +433,52 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
   },
 
   // ══════════════════════════════════════════════════════════════════════════
+  // DEPOSIT V2 FIL-FOLD posting rules (lifecycleId: "deposit-fil-instance").
+  //
+  // The born-V2 deposit (bank-as-taker liability) contribution to BA 100 (balance
+  // sheet) + BA 300 (LCR / NSFR) is computed as a PURE FOLD over the generic FIL
+  // instance lifecycle events (FilInstrumentCreated / FilInstrumentTerminated) for
+  // money-market DEPOSIT instances (`fil:type:ir:money-market.deposit:*`), via the
+  // pure rules in `v2-core/posting-rules/deposit.ts` (mirrors the capital fold). No
+  // `SubLedgerPostingEmitted` / `GlPostingEmitted` is stored on the deposit read
+  // path — the legs are folded in memory — so these are NOT gl-ledger-coverage
+  // mandates; they document the V2 deposit posting determination so the deposit
+  // treatment module's `applicablePostingRuleIds` resolve. lifecycleId
+  // "deposit-fil-instance" is NOT a TRADE_LIFECYCLE_REGISTRY lifecycle.
+  //
+  // BORN-V2 — supersedes the v1-only `mmd-deposit` lifecycle (PR-MMD-001 et al.,
+  // below) for the leaf-fold read path. The v1 rows stay registered (replay of
+  // historical events resolves them); the v1→v2 flip of the DepositTaken event
+  // estate is the tracked follow-on (gap ba300-deposit-funding-v1-flip), NOT widened
+  // here (V1-retirement directive rule 1: no new v1-only emission — this slice emits
+  // born-V2 FIL events only). Authority: D-BA-RETURN-CELL-VALUE-ENGINE;
+  // D-BA-RETURN-CAPABILITY-FIRST; D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD;
+  // D-V1-REMOVAL-PHASE-1.
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    triggerEventType: "FilInstrumentCreated",
+    triggerDomain: "trade",
+    lifecycleId: "deposit-fil-instance",
+    lifecycleStage: "opening",
+    postingRuleId: "PR-DEP-TAKEON-001-V2",
+    postingType: "deposit-fil-take-on",
+    condition: "always",
+    conditionDetail:
+      "IAS 32 §11/§AG3 (financial liability) / IFRS 9 §3.1.1 + §4.2.1 (amortised cost) — deposit recognition on take-on (FIL fold). Dr settlement-cash (nostro) / Cr deposit-liability account per counterparty sector (ACC-6100-001..004). The BA 100 deposit detail line (R0570–R0620) is keyed off the instance's typed depositTerms.depositCategory; the LCR run-off band + R1010 sector analysis off counterpartySector. BCBS d238 LCR; SARB Reg 26; BA 100; BA 300.",
+  },
+  {
+    triggerEventType: "FilInstrumentTerminated",
+    triggerDomain: "trade",
+    lifecycleId: "deposit-fil-instance",
+    lifecycleStage: "terminal",
+    postingRuleId: "PR-DEP-REPAY-002-V2",
+    postingType: "deposit-fil-repayment",
+    condition: "always",
+    conditionDetail:
+      "IFRS 9 §3.3.1 (financial-liability extinguishment) — deposit derecognition on maturity/repayment/early-withdrawal (FIL fold). A bare terminal posts the zero-amount memo; the principal-repayment cash leg + accrued-interest settlement require a richer FIL terminal event (tracked deferred gap, mirrors PR-CAP-REDEEM-003-V2 / PR-FX-CLOSE-V2).",
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
   // BOND  (lifecycleId: "bond-trade")
   // ══════════════════════════════════════════════════════════════════════════
   {
