@@ -54,16 +54,19 @@ describe("headlineValuesByXsd — sound aggregate cell values", () => {
       amount: "300000000",
       valueType: "money",
       currency: "ZAR",
+      source: "headline",
     });
     expect(m.get(xsdAt(contract, "R0790", "C0040"))).toEqual({
       amount: "0",
       valueType: "money",
       currency: "ZAR",
+      source: "headline",
     });
     expect(m.get(xsdAt(contract, "R0870", "C0040"))).toEqual({
       amount: "300000000",
       valueType: "money",
       currency: "ZAR",
+      source: "headline",
     });
   });
 
@@ -85,6 +88,7 @@ describe("headlineValuesByXsd — sound aggregate cell values", () => {
       amount: "201841758.13",
       valueType: "money",
       currency: "ZAR",
+      source: "headline",
     });
   });
 
