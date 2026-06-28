@@ -70,10 +70,27 @@ import type { RwaDecomposition } from "../reporting/ba-700-capital";
 import {
   type CounterpartyType,
   type CreditExposure,
+  type LtvBucket,
   RWA_BANK_ENTITIES,
   type RwaEngineOutput,
   computeRwa,
 } from "./rwa-engine";
+
+/** Valid CRE20 LTV bands — narrows the string-typed `DebtExposure.cre20LtvBucket`. */
+const LTV_BUCKETS: readonly LtvBucket[] = [
+  "ltv-le-50",
+  "ltv-50-60",
+  "ltv-60-80",
+  "ltv-80-90",
+  "ltv-90-100",
+  "ltv-gt-100",
+];
+
+function narrowLtvBucket(value: string | undefined): LtvBucket | undefined {
+  return value !== undefined && (LTV_BUCKETS as readonly string[]).includes(value)
+    ? (value as LtvBucket)
+    : undefined;
+}
 
 // ---------------------------------------------------------------------------
 // Source discriminator — canonical build-phase composition.
@@ -123,8 +140,16 @@ export function exposureClassToCounterpartyType(cls: ExposureClass): Counterpart
       return "bank";
     case "corporate":
       return "corporate-ig";
+    // L5-FTR loan-origination slice (item #2): SME corporate is treated under the
+    // corporate-IG node (65% unrated default per CRE20.46 — the SME supporting
+    // factor is a later refinement); residential-mortgage is LTV-stepped (the
+    // ltvBucket rides the exposure → see debtExposureToCreditExposure).
+    case "sme-corporate":
+      return "corporate-ig";
     case "retail":
       return "retail";
+    case "residential-mortgage":
+      return "residential-mortgage";
   }
 }
 
@@ -139,6 +164,10 @@ export function exposureClassToCounterpartyType(cls: ExposureClass): Counterpart
 export function debtExposureToCreditExposure(d: DebtExposure): CreditExposure {
   const counterpartyType = exposureClassToCounterpartyType(d.exposureClass);
   const isSovereign = counterpartyType === "sovereign-domestic-currency";
+  // Residential-mortgage CRE20 weight is LTV-stepped — pass the band through when
+  // the exposure carries one (the born-V2 loan fold sets it from loanTerms.ltvBucket).
+  const ltvBucket =
+    counterpartyType === "residential-mortgage" ? narrowLtvBucket(d.cre20LtvBucket) : undefined;
   return {
     counterpartyId: d.obligorPartyId ?? d.instrumentId,
     counterpartyType,
@@ -146,6 +175,7 @@ export function debtExposureToCreditExposure(d: DebtExposure): CreditExposure {
     currency: d.currency,
     ...(isSovereign ? {} : { ratingBucket: "unrated" as const }),
     residualMaturity: "long-term",
+    ...(ltvBucket !== undefined ? { ltvBucket } : {}),
     note: `${d.productFamily} instrument=${d.instrumentId} tradeId=${d.tradeId}`,
   };
 }

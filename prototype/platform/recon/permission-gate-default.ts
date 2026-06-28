@@ -458,6 +458,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // asserts balanced double-entry to the capital accounts. Not a production
   // access path. T-01 carve-out.
   "platform/accounting/gl-posting-engine-v2-capital.test.ts",
+  // L5-FTR born-V2 loan-origination (#1601) — build-phase sim-book builder that seeds
+  // a simulated loan-origination FIL book into a raw EventStore(":memory:") to drive the
+  // BA 200 credit / BA 700 credit-RWA golden test. Non-test fixture helper (same kind of
+  // carve-out as recon-self-test.ts); no production access path. T-01 carve-out. Citation:
+  // D-BA-RETURN-SIMULATOR-FIRST, D-BA-RETURN-CAPABILITY-FIRST, F-031.
+  "platform/returns/ba200/loan-origination-sim-book.ts",
   // Bucket A pilot — RwaComputedV2 decimal-native engine test. Same build-phase
   // fixture pattern as the V2 GL engine tests above: raw EventStore(":memory:")
   // seeds inputs, runs emitRwaComputedV2, asserts the decoded decimal RWA. Not a
@@ -732,6 +738,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // production access path. T-01 carve-out.
   // Citation: D-FINANCIAL-INSTRUMENT-ENTITY; BA-110-LCR; P4-SECURITY-DESIGNED-IN.
   "platform/reporting/ba-300-lcr.test.ts",
+  // BA 325 reg-29(3) FX residency-segmented detail fold unit tests (L2-FX,
+  // D-BA-RETURN-PER-PRODUCT-RICHNESS). Co-located per-module test convention.
+  // Raw EventStore(":memory:") is a build-phase fixture for folding open FX FIL
+  // instances + party-register residency classification into the reg-29 detail
+  // block, not a production access path. T-01 carve-out.
+  // Citation: D-BA-RETURN-PER-PRODUCT-RICHNESS; Reg 29(3); P4-SECURITY-DESIGNED-IN.
+  "platform/reporting/ba-325-reg29-fx-residency-fold.test.ts",
   // BA 110 off-balance-sheet generator + BA 700 leverage wiring unit tests
   // (WS-BA-RETURNS-P1-SOURCING Phase 4). Co-located per-module test convention.
   // Raw EventStore(":memory:") is a build-phase fixture for folding primary

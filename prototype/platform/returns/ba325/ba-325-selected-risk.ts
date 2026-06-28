@@ -58,6 +58,7 @@ import type { Currency } from "../../core/types";
 import type { CohortVarResult } from "../../market-risk/eod-cohort-var-v2";
 import type { Ba300LcrOutput } from "../../reporting/ba-300-lcr";
 import type { Ba320Output } from "../../reporting/ba-320-market-risk";
+import type { Ba325Reg29FxResidencyOutput } from "../../reporting/ba-325-reg29-fx-residency-fold";
 import type { FinancialInput } from "../../types/financial-input";
 import { absent, present } from "../../types/financial-input";
 
@@ -118,6 +119,16 @@ export interface Ba325AssemblyInput {
    * is empty and the per-desk rows are surfaced `absent`.
    */
   readonly perDeskVar?: ReadonlyMap<string, FinancialInput<number>>;
+  /**
+   * Reg-29(3) FX residency-segmented detail block (R0610–R0750), already folded
+   * by `computeBa325Reg29FxResidency` under the SAME provenance lens as the other
+   * source folds. When supplied, the residency detail block is surfaced AND the
+   * `ba325-reg29-fx-residency-detail` gap is removed from the assembled gaps[]
+   * (it is NOW FOLDED for engine + sim; only the licence-day real-counterparty
+   * POPULATION is deferred, tracked in the gap-register entry's description). When
+   * omitted (legacy callers), the block stays a tracked gap as before.
+   */
+  readonly reg29FxResidency?: Ba325Reg29FxResidencyOutput;
 }
 
 // ---------------------------------------------------------------------------
@@ -152,6 +163,13 @@ export interface Ba325SelectedRiskOutput {
   readonly liquiditySummary: readonly Ba325Line[];
   /** Internal-models-approach VaR / sVaR + per-desk memorandum. */
   readonly internalModelsApproach: readonly Ba325Line[];
+  /**
+   * Reg-29(3) FX residency-segmented detail block (R0610–R0750), when folded and
+   * supplied by the caller. `undefined` for legacy callers that did not compute
+   * it — in which case the `ba325-reg29-fx-residency-detail` gap remains in
+   * gaps[]. NON-undefined ⇒ the block is folded and the gap is dropped.
+   */
+  readonly reg29FxResidency?: Ba325Reg29FxResidencyOutput;
   /** Citations carried forward (Principle 2). */
   readonly citations: readonly string[];
   /**
@@ -438,7 +456,14 @@ export function assembleBa325SelectedRisk(input: Ba325AssemblyInput): Ba325Selec
   }
 
   // ---- Honest gaps (no silent zeros; gap-register-tracked) ----------------
-  const gaps: string[] = [BA325_GAP_IRC, BA325_GAP_SARB_REPO, BA325_GAP_REG29_FX_DETAIL];
+  // The reg-29 FX residency detail gap is DROPPED when the residency block is
+  // folded and supplied (D-BA-RETURN-PER-PRODUCT-RICHNESS, L2-FX): the engine +
+  // sim fold exists; only the licence-day real-counterparty POPULATION remains
+  // deferred (tracked in the gap-register description, not as a blank cell).
+  const gaps: string[] = [BA325_GAP_IRC, BA325_GAP_SARB_REPO];
+  if (input.reg29FxResidency === undefined) {
+    gaps.push(BA325_GAP_REG29_FX_DETAIL);
+  }
   // SARB-repo liquidity summary (R0110–R0140): no fold — surface as a tracked
   // gap line in the liquidity section so the missing input is loud, not silent.
   liquiditySummary.push({
@@ -462,6 +487,7 @@ export function assembleBa325SelectedRisk(input: Ba325AssemblyInput): Ba325Selec
     counterpartyMemorandum,
     liquiditySummary,
     internalModelsApproach,
+    ...(input.reg29FxResidency !== undefined ? { reg29FxResidency: input.reg29FxResidency } : {}),
     citations: [
       "D-BA-RETURN-SIMULATOR-FIRST",
       "D-FX-V2-SIMULATOR-FIRST",

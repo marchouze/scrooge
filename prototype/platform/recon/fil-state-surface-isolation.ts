@@ -109,6 +109,12 @@ const SURFACE_FILES: readonly string[] = ["platform/projections/gl-projection-v2
 const STATE_DERIVATION_ALLOWLIST: ReadonlySet<string> = new Set([
   "platform/accounting/posting-rules-v2/fx-instance-fold.ts",
   "platform/accounting/posting-rules-v2/capital-instance-fold.ts",
+  // Born-V2 loan-origination EAD derivation (L5-FTR loan-origination slice;
+  // D-BA-RETURN-CELL-VALUE-ENGINE item #2). Reads the FIL STATE register
+  // (`foldFilInstances`) for the live-loan set + stage and the CREATED payload for
+  // the FLOW amount + loanTerms — the sanctioned consumer surface the ECL
+  // `readDebtExposures` calls instead of replaying FIL itself.
+  "platform/accounting/posting-rules-v2/loan-instance-fold.ts",
 ]);
 
 /**

@@ -67,12 +67,12 @@
     },
     {
       "file": "platform/accounting/ecl-engine.ts",
-      "line": 284,
+      "line": 311,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/accounting/ecl-engine.ts",
-      "line": 394,
+      "line": 495,
       "pattern": "Math.round(money)"
     },
     {
