@@ -222,7 +222,9 @@ export function assertSharedPath(
 export function importsCanonicalReadMyMemory(source: string): boolean {
   // Match `import { … readMyMemory … } from "…read-my-memory"` (and the
   // `type`-qualified / multi-line forms). The `[\s\S]` spans line breaks.
-  const importBlocks = source.matchAll(/import\s+(?:type\s+)?\{([\s\S]*?)\}\s*from\s*["']([^"']+)["']/g);
+  const importBlocks = source.matchAll(
+    /import\s+(?:type\s+)?\{([\s\S]*?)\}\s*from\s*["']([^"']+)["']/g,
+  );
   for (const m of importBlocks) {
     const names = m[1] ?? "";
     const moduleSpecifier = m[2] ?? "";

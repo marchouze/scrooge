@@ -183,6 +183,14 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // defeat the read-surface probe. Citation: D-AGENT-MEMORY-PERSISTENCE,
   // P4-SECURITY-DESIGNED-IN.
   "platform/recon/agent-memory-dual-vocabulary.ts",
+  // WS-AGENT-MEMORY read-hook — the no-drift gate builds one ephemeral `:memory:`
+  // EventStore to BEHAVIOURALLY probe that the autonomous runtime read-hook
+  // (WorldStateSnapshot.myMemory) equals a direct readMyMemory call over the same
+  // store (the shared-path invariant). No production access path — the probe store
+  // is `:memory:` and discarded; gating it would require a fake policy resolver and
+  // defeat the read-hook equivalence probe. Citation: D-SCROOGE-RECALL-BEFORE-DISPATCH,
+  // D-AGENT-MEMORY-PERSISTENCE, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/agent-memory-read-hook-shared-path.ts",
   // BA 320 simulator-first trading-book drive gate (D-BA-RETURN-SIMULATOR-FIRST):
   // reads the LIVE store read-only for the equity/commodity legs, and builds a
   // throwaway `:memory:` EventStore for the IR oracle (one trading-book bond +
