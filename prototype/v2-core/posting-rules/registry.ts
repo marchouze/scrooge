@@ -479,6 +479,54 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
   },
 
   // ══════════════════════════════════════════════════════════════════════════
+  // LOAN V2 FIL-FOLD posting rules (lifecycleId: "loan-fil-instance").
+  //
+  // The born-V2 loan-origination (bank-as-LENDER asset) contribution to BA 100
+  // (balance-sheet advances R0130–R0230) + BA 200 (credit-risk loans-and-advances)
+  // + BA 700 (credit-RWA leg, the dominant capital denominator) is computed as a
+  // PURE FOLD over the generic FIL instance lifecycle events (FilInstrumentCreated /
+  // FilInstrumentTerminated) for `credit` loan-advance instances
+  // (`fil:type:credit:loan.*`), via the pure rules in `v2-core/posting-rules/
+  // loan.ts` (mirrors the capital + deposit folds). No `SubLedgerPostingEmitted` /
+  // `GlPostingEmitted` is stored on the loan read path — the legs are folded in
+  // memory — so these are NOT gl-ledger-coverage mandates; they document the V2 loan
+  // posting determination so the loan treatment module's `applicablePostingRuleIds`
+  // resolve. lifecycleId "loan-fil-instance" is NOT a TRADE_LIFECYCLE_REGISTRY
+  // lifecycle.
+  //
+  // BORN-V2 — the natural v1 loan event family `LoanBooked` is `v1-only`
+  // (event-store/registry/missing-types.ts) and is NOT used or widened here
+  // (V1-retirement directive rule 1: no new v1-only emission — this slice emits
+  // born-V2 FIL events only). The live-store seed of a simulated loan book is the
+  // tracked follow-on (gap ba200-credit-sim-gl), which this born-V2 loan path now
+  // unblocks. Authority: D-BA-RETURN-CELL-VALUE-ENGINE; D-BA-RETURN-CAPABILITY-FIRST;
+  // D-BA-RETURN-SIMULATOR-FIRST; D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD;
+  // D-V1-REMOVAL-PHASE-1.
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    triggerEventType: "FilInstrumentCreated",
+    triggerDomain: "trade",
+    lifecycleId: "loan-fil-instance",
+    lifecycleStage: "opening",
+    postingRuleId: "PR-LOAN-ORIG-001-V2",
+    postingType: "loan-fil-origination",
+    condition: "always",
+    conditionDetail:
+      "IFRS 9 §3.1.1 + §4.1.2 (financial asset at amortised cost) — loan-and-advance recognition on origination/drawdown (FIL fold). Dr loan-asset (advances per product sub-type, ACC-7200-001..007) / Cr settlement-cash (nostro). The BA 100 advances detail line (R0130–R0230) is keyed off the instance's typed loanTerms.loanProductSubType; the BA 200 credit-risk class + the CRE20 risk-weight off exposureClass (+ ltvBucket for residential mortgages); the IFRS 9 ECL stage off ifrs9Stage. Reg 23; Basel CRE20; IFRS 9 §5.5; BA 100; BA 200; BA 700.",
+  },
+  {
+    triggerEventType: "FilInstrumentTerminated",
+    triggerDomain: "trade",
+    lifecycleId: "loan-fil-instance",
+    lifecycleStage: "terminal",
+    postingRuleId: "PR-LOAN-REPAY-002-V2",
+    postingType: "loan-fil-repayment",
+    condition: "always",
+    conditionDetail:
+      "IFRS 9 §3.2.3 (financial-asset derecognition) — loan derecognition on repayment/settlement/write-off (FIL fold). A bare terminal posts the zero-amount memo; the principal-repayment cash leg + accrued-interest / impairment-reversal settlement require a richer FIL terminal event (tracked deferred gap, mirrors PR-DEP-REPAY-002-V2 / PR-CAP-REDEEM-003-V2).",
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
   // BOND  (lifecycleId: "bond-trade")
   // ══════════════════════════════════════════════════════════════════════════
   {
