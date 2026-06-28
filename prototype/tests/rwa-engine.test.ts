@@ -500,9 +500,9 @@ describe("D-REGULATORY-READINESS-W2-SLICE-3 — end-to-end synthetic fixture", (
   });
 
   it("rejects negative fxOpenPositionChargeMinor (fail-closed, never a silent clamp)", () => {
-    expect(() =>
-      computeRwa({ ...EMPTY_INPUT, fxOpenPositionChargeMinor: -1 }),
-    ).toThrow(/fxOpenPositionChargeMinor/);
+    expect(() => computeRwa({ ...EMPTY_INPUT, fxOpenPositionChargeMinor: -1 })).toThrow(
+      /fxOpenPositionChargeMinor/,
+    );
   });
 });
 

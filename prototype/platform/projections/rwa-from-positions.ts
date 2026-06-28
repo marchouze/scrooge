@@ -81,10 +81,10 @@ import type {
 } from "../event-store/event-types/repo-mmd-ibl";
 import type { EventStore } from "../event-store/store";
 import { isLiveInstance, resolveTradeLifecycle } from "../lifecycle/trade-lifecycle-state";
+import type { MarketDataStore } from "../market-data/store";
 import { computeCvaRwaLeg } from "../market-risk/cva-rwa-leg";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import type { IrsTradeBookedPayload } from "../markets/cdm/ird";
-import type { MarketDataStore } from "../market-data/store";
 import { resolveNettingSet } from "../markets/netting-sets";
 import { logger } from "../observability/logger";
 import { buildBa400SmaInput } from "../reporting/ba-400-sma-income-adapter";

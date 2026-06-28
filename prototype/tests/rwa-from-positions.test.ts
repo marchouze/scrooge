@@ -33,7 +33,6 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { newEventId } from "../platform/core/types";
 import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-accounting";
 import { makeFilInstrumentCreated } from "../platform/event-store/event-types/fil-instances";
-import { simulatedTag } from "../platform/event-store/provenance";
 import { makeFxTradeCancelled } from "../platform/event-store/event-types/fx-accounting";
 import { makeIrdSwapTerminated } from "../platform/event-store/event-types/ird-accounting";
 import {
@@ -43,6 +42,7 @@ import {
   makeRepoTradeOpened,
 } from "../platform/event-store/event-types/repo-mmd-ibl";
 import { makeTradeMatured } from "../platform/event-store/event-types/trade-matured";
+import { simulatedTag } from "../platform/event-store/provenance";
 import { EventStore } from "../platform/event-store/store";
 import { makeFxTradeExecuted, makeSettlementConfirmed } from "../platform/markets/cdm/fx";
 import { makeIrsTradeBooked } from "../platform/markets/cdm/ird";
