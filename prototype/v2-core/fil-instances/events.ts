@@ -142,6 +142,87 @@ export const filQualifyingCapitalSchema = z.object({
 export type FilQualifyingCapital = z.infer<typeof filQualifyingCapitalSchema>;
 
 // ---------------------------------------------------------------------------
+// DEPOSIT TERMS (D-BA-RETURN-CELL-VALUE-ENGINE; L5-FTR deposit-instrument slice).
+//
+// The funding/deposit dimension carried on a money-market DEPOSIT FIL instance
+// (`fil:type:ir:money-market.deposit:*`) — the bank-as-taker liability. The
+// deposit FIL *model* already exists (`mm-deposit-model.ts`, Valuable+Performable
+// amortised-cost) and the deposit-liability CoA accounts exist (ACC-6100-001..004
+// by counterparty sector). What was MISSING — the gap this slice closes — is the
+// typed reporting dimension the deposit needs so a BA 100 (balance-sheet) and a
+// BA 300 (liquidity) leaf fold can place the instrument onto the right SARB line
+// from the EVENT, not from a coarser CoA proxy (sibling-fold discipline,
+// Principle 1).
+//
+// TWO dimensions, both fail-closed (Charter cmd 2 — no silent bucketing):
+//   - `depositCategory` — the SARB BA 100 deposit-LINE discriminator. The closed
+//     set maps 1:1 onto the BA 100 R0570–R0620 deposit detail rows (savings /
+//     call / fixed-and-notice / negotiable-cert-of-deposit / other / repo). The
+//     fixed-term deposit model maps to `fixed-notice`.
+//   - `counterpartySector` — the LCR run-off + BA 100 R1010 sector-analysis
+//     discriminator. The closed set is the Basel LCR deposit-source partition
+//     (retail-stable / retail-less-stable / wholesale-operational /
+//     wholesale-non-operational) — byte-identical to the ACC-6100-001..004
+//     deposit-liability CoA sub-accounts, so the posting rule resolves the
+//     liability leg's account DETERMINISTICALLY from this sector (the account IS
+//     the event's economic dimension — same pattern as the capital tier→account).
+//
+// SOURCE, don't hardcode (Charter cmd 4): the sectors are the BCBS LCR (d238)
+// deposit-source partition + SARB Reg 26; the categories are the BA 100 form
+// deposit rows. Citations live on the posting rule + model declaration, not magic
+// strings here — this is the typed vocabulary.
+//
+// OPTIONAL + additive: only money-market deposit instances carry it; every
+// existing (ir/fx/cash/capital/…) instance parses unchanged (replay-safe —
+// Charter cmd 9). The deposit posting rule fails closed on a deposit instance that
+// lacks the block (no silent default).
+// ---------------------------------------------------------------------------
+
+/**
+ * SARB BA 100 deposit-line discriminator — the closed set mapping onto the
+ * BA 100 R0570–R0620 deposit detail rows. Fixed-term deposits are `fixed-notice`.
+ */
+export const filDepositCategorySchema = z.enum([
+  "savings", // BA 100 R0570 — Savings deposits.
+  "call", // BA 100 R0580 — Call deposits.
+  "fixed-notice", // BA 100 R0590 — Fixed and notice deposits.
+  "negotiable-cert", // BA 100 R0600 — Negotiable certificates of deposit.
+  "other", // BA 100 R0610 — Other deposits and loan accounts.
+  "repo", // BA 100 R0620 — Deposits received under repurchase agreements.
+]);
+
+export type FilDepositCategory = z.infer<typeof filDepositCategorySchema>;
+
+/**
+ * BCBS LCR (d238) / SARB Reg 26 deposit-source counterparty sector — byte-
+ * identical to the ACC-6100-001..004 deposit-liability CoA sub-accounts. Drives
+ * both the BA 300 LCR run-off band and the BA 100 R1010 sector analysis.
+ */
+export const filDepositCounterpartySectorSchema = z.enum([
+  "retail-stable", // ACC-6100-001.
+  "retail-less-stable", // ACC-6100-002.
+  "wholesale-operational", // ACC-6100-003.
+  "wholesale-non-operational", // ACC-6100-004.
+]);
+
+export type FilDepositCounterpartySector = z.infer<typeof filDepositCounterpartySectorSchema>;
+
+/**
+ * The deposit dimension carried on a money-market deposit FIL instance. The
+ * posting rule keys the liability-leg account on `counterpartySector`; the BA 100
+ * leaf fold keys the deposit line on `depositCategory`; the BA 300 LCR fold keys
+ * the run-off band on `counterpartySector`.
+ */
+export const filDepositTermsSchema = z.object({
+  /** The SARB BA 100 deposit-line category (savings / call / fixed-notice / …). */
+  depositCategory: filDepositCategorySchema,
+  /** The BCBS LCR / Reg 26 counterparty sector (drives LCR run-off + R1010). */
+  counterpartySector: filDepositCounterpartySectorSchema,
+});
+
+export type FilDepositTerms = z.infer<typeof filDepositTermsSchema>;
+
+// ---------------------------------------------------------------------------
 // FX AGREEMENT QUAD (D-FX-INSTRUMENT-BUYSELL-QUAD, CEO-approved 2026-06-24).
 //
 // MODEL TRUTH: an FX spot/forward IS an agreement to BUY one currency and SELL
@@ -277,6 +358,17 @@ const filEconomicTermsObjectSchema = z.object({
    * lacks this block (no silent default — Charter cmd 2).
    */
   qualifyingCapital: filQualifyingCapitalSchema.optional(),
+  /**
+   * Deposit dimension (D-BA-RETURN-CELL-VALUE-ENGINE; L5-FTR deposit slice).
+   * Carried on a money-market DEPOSIT FIL instance (the bank-as-taker liability)
+   * — the typed deposit-category + counterparty-sector the BA 100 (balance-sheet)
+   * and BA 300 (LCR/NSFR liquidity) leaf folds place the instrument onto its SARB
+   * line/band with. OPTIONAL + additive: only deposit instances carry it; every
+   * existing instance parses unchanged (replay-safe — Charter cmd 9). The deposit
+   * posting rule fails closed on a deposit instance lacking it (no silent default
+   * — Charter cmd 2).
+   */
+  depositTerms: filDepositTermsSchema.optional(),
   /**
    * The symmetric BUY/SELL agreement quad (D-FX-INSTRUMENT-BUYSELL-QUAD). Carried
    * on an `fx` asset-class instance so the instrument is self-describing: it
