@@ -738,6 +738,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // production access path. T-01 carve-out.
   // Citation: D-FINANCIAL-INSTRUMENT-ENTITY; BA-110-LCR; P4-SECURITY-DESIGNED-IN.
   "platform/reporting/ba-300-lcr.test.ts",
+  // BA 325 reg-29(3) FX residency-segmented detail fold unit tests (L2-FX,
+  // D-BA-RETURN-PER-PRODUCT-RICHNESS). Co-located per-module test convention.
+  // Raw EventStore(":memory:") is a build-phase fixture for folding open FX FIL
+  // instances + party-register residency classification into the reg-29 detail
+  // block, not a production access path. T-01 carve-out.
+  // Citation: D-BA-RETURN-PER-PRODUCT-RICHNESS; Reg 29(3); P4-SECURITY-DESIGNED-IN.
+  "platform/reporting/ba-325-reg29-fx-residency-fold.test.ts",
   // BA 110 off-balance-sheet generator + BA 700 leverage wiring unit tests
   // (WS-BA-RETURNS-P1-SOURCING Phase 4). Co-located per-module test convention.
   // Raw EventStore(":memory:") is a build-phase fixture for folding primary

@@ -40,6 +40,7 @@
 //   Regulations Relating to Banks Reg 28 / reg 29; BCBS D352 §718.
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
+import { type PartyId, makePartyClassified, makePartyRegistered } from "../../domains/party";
 import { filInstrumentCreatedPayloadSchema } from "../../v2-core/fil-instances/events";
 import { divD, toCanonicalString, toDecimal } from "../core/decimal-engine";
 import { money } from "../core/decimal-money";
@@ -60,6 +61,7 @@ import type { Ba300LcrOutput } from "../reporting/ba-300-lcr";
 import { buildCommodityRows } from "../reporting/ba-320-commodity-events-adapter";
 import { buildEquityRows } from "../reporting/ba-320-equity-events-adapter";
 import { type Ba320Output, generateBa320MarketRisk } from "../reporting/ba-320-market-risk";
+import { computeBa325Reg29FxResidency } from "../reporting/ba-325-reg29-fx-residency-fold";
 import {
   BA325_GAP_IRC,
   BA325_GAP_REG29_FX_DETAIL,
@@ -179,6 +181,114 @@ function seedSimBook(store: EventStore): void {
     }),
   });
   store.append({ ...fx, provenance: SIM_FIL });
+}
+
+// ---------------------------------------------------------------------------
+// Reg-29(3) FX residency-detail drive (L2-FX, D-BA-RETURN-PER-PRODUCT-RICHNESS).
+// Seeds one party per residency bucket + one FX position each, so the residency
+// fold exercises all four buckets. The party register is the event-sourced
+// residency source the fold classifies against.
+// ---------------------------------------------------------------------------
+
+const RESIDENCY_CP: Readonly<
+  Record<"resident" | "non-resident" | "authorised-dealer" | "sarb", PartyId>
+> = {
+  resident: "urn:party:legal-entity:recon-resident-corp",
+  "non-resident": "urn:party:legal-entity:recon-nonresident-bank-gb",
+  "authorised-dealer": "urn:party:legal-entity:recon-authorised-dealer-za",
+  sarb: "urn:party:legal-entity:recon-sarb",
+};
+
+function seedResidencyBook(store: EventStore): void {
+  const reg = (
+    partyId: PartyId,
+    jurisdiction: string,
+    primaryRegulator: "PA" | "JSE" | "FSCA" | "none-companies-act-only" | "other",
+  ) =>
+    store.append({
+      ...makePartyRegistered({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITES,
+        payload: {
+          partyId,
+          kind: "legal-entity",
+          displayName: partyId,
+          legalName: partyId,
+          jurisdictions: [jurisdiction],
+          taxResidencies: [jurisdiction],
+          kindAttributes: {
+            kind: "legal-entity",
+            entityForm: "Ltd",
+            parentPartyId: null,
+            primaryRegulator,
+            regimeAnchor: ["recon fixture regime anchor"],
+          },
+          citations: CITES,
+        },
+      }),
+      provenance: SIM,
+    });
+  reg(RESIDENCY_CP.resident, "ZA", "JSE");
+  reg(RESIDENCY_CP["non-resident"], "GB", "other");
+  reg(RESIDENCY_CP["authorised-dealer"], "ZA", "PA");
+  reg(RESIDENCY_CP.sarb, "ZA", "other");
+  store.append({
+    ...makePartyClassified({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITES,
+      payload: {
+        partyId: RESIDENCY_CP.sarb,
+        classification: "central-bank",
+        scopeJson: {},
+        citations: CITES,
+      },
+    }),
+    provenance: SIM,
+  });
+
+  const fxPos = (
+    id: string,
+    counterpartyId: string,
+    direction: "long" | "short",
+    notionalMajor: number,
+  ) =>
+    store.append({
+      ...makeFilInstrumentCreated({
+        asOf: AS_OF,
+        entity: ENTITY,
+        actor: ACTOR,
+        citations: CITES,
+        provenance: SIM_FIL,
+        payload: filInstrumentCreatedPayloadSchema.parse({
+          kind: "FilInstrumentCreated",
+          instance: `fil:inst:${ENTITY}:RESID-${id}`,
+          type: "fil:type:fx:spot:otc-vanilla@1.0",
+          tenant: ENTITY,
+          asOf: AS_OF,
+          originatingEvent: { eventType: "FxTradeExecuted", eventId: `evt-RESID-${id}` },
+          initialStage: "active",
+          economicTerms: {
+            assetClass: "fx",
+            notional: { currency: "USD", amount: String(notionalMajor) },
+            direction,
+            counterpartyId,
+            nettingSetId: `NS-${counterpartyId}-USD`,
+            currency: "USD",
+            settlementDate: PERIOD_END,
+            hedgingSetTag: "USD/ZAR",
+          },
+        }),
+      }),
+      provenance: SIM_FIL,
+    });
+  fxPos("RES", RESIDENCY_CP.resident, "long", 1_000_000);
+  fxPos("NONRES", RESIDENCY_CP["non-resident"], "long", 2_000_000);
+  fxPos("AD", RESIDENCY_CP["authorised-dealer"], "short", 3_000_000);
+  fxPos("SARB", RESIDENCY_CP.sarb, "long", 500_000);
 }
 
 function seedFxReturnPath(marketData: MarketDataStore): void {
@@ -515,6 +625,85 @@ export function run(): ReconResult {
       severity: "fail",
       message:
         "The BA 325 IRC line (R0240.C0040) is present — there is NO IRC engine, so it must be an explicit `absent`, not a fabricated zero or overclaimed fold. Authority: Engineering Charter cmd 5; gap ba325-irc-engine.",
+    });
+  }
+
+  // -----------------------------------------------------------------------
+  // (D) REG-29(3) FX RESIDENCY DETAIL — the L2-FX fold drives all four buckets
+  // and the effective NOP reconciles to the long−short net by construction; the
+  // production read of an all-simulated book folds to ZERO (provenance boundary).
+  // (D-BA-RETURN-PER-PRODUCT-RICHNESS; Reg 29(3) read with Reg 28(5).)
+  // -----------------------------------------------------------------------
+  const residencyStore = new EventStore(":memory:");
+  seedResidencyBook(residencyStore);
+  let residencySim: ReturnType<typeof computeBa325Reg29FxResidency>;
+  let residencyProd: ReturnType<typeof computeBa325Reg29FxResidency>;
+  try {
+    setDefaultProvenanceModeOverride("combined");
+    residencySim = computeBa325Reg29FxResidency({
+      eventStore: residencyStore,
+      asOf: AS_OF,
+      functionalCurrency: "ZAR",
+    });
+  } finally {
+    setDefaultProvenanceModeOverride(undefined);
+  }
+  residencyProd = computeBa325Reg29FxResidency({
+    eventStore: residencyStore,
+    asOf: AS_OF,
+    functionalCurrency: "ZAR",
+    provenanceFilter: { mode: "production-only" },
+  });
+
+  // Each bucket lights its row (USD minor; scale 2).
+  const expectResidency = (label: string, actual: number, expected: number) => {
+    asserted += 1;
+    if (actual !== expected) {
+      violations.push({
+        subject: `${PIPELINE}:reg29-residency:${label}`,
+        severity: "fail",
+        message: `BA 325 reg-29 FX residency detail ${label}: expected ${expected} USD minor, got ${actual}. The residency fold must place each FX position on its Reg 29(3) residency bucket. Authority: D-BA-RETURN-PER-PRODUCT-RICHNESS; Reg 29(3).`,
+      });
+    }
+  };
+  expectResidency(
+    "purchase.resident.USD",
+    residencySim.purchase.byResidency.resident.USD,
+    1_000_000_00,
+  );
+  expectResidency(
+    "purchase.non-resident.USD",
+    residencySim.purchase.byResidency["non-resident"].USD,
+    2_000_000_00,
+  );
+  expectResidency("purchase.sarb.USD", residencySim.purchase.byResidency.sarb.USD, 500_000_00);
+  expectResidency(
+    "sell.authorised-dealer.USD",
+    residencySim.sell.byResidency["authorised-dealer"].USD,
+    3_000_000_00,
+  );
+  // Effective NOP (R0750) = purchase − sell = (1m+2m+0.5m − 3m) USD.
+  expectResidency(
+    "effectiveNOP.USD",
+    residencySim.effectiveNetOpenPosition.USD,
+    (1_000_000 + 2_000_000 + 500_000 - 3_000_000) * 100,
+  );
+  // No unmappable counterparty in the seeded book (all four parties registered).
+  asserted += 1;
+  if (residencySim.unmappable.length !== 0) {
+    violations.push({
+      subject: `${PIPELINE}:reg29-residency:unmappable`,
+      severity: "fail",
+      message: `BA 325 reg-29 FX residency detail: ${residencySim.unmappable.length} counterparty(ies) failed residency classification in the seeded sim book — all four bucket parties are registered, so none should be unmappable. Authority: Engineering Charter cmd 2 (fail-closed).`,
+    });
+  }
+  // Provenance boundary: production read of an all-simulated book is empty.
+  asserted += 1;
+  if (residencyProd.meta.foldedInstanceCount !== 0) {
+    violations.push({
+      subject: `${PIPELINE}:reg29-residency:prod-not-empty`,
+      severity: "fail",
+      message: `BA 325 reg-29 FX residency detail: the production read of an all-simulated FX book folded ${residencyProd.meta.foldedInstanceCount} instance(s) — it must be the honest empty state (zero) pre-licence-day. Authority: D-OPERATING-BOOK-PROVENANCE-ARCHITECTURE; the R300m-into-Prod guard.`,
     });
   }
 
