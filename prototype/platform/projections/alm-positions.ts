@@ -45,8 +45,16 @@
 //
 // Author: Ravi (Treasury and ALM engineer, engineering)
 
+import { resolveReportingCurrency } from "../../v2-core/fil-models/fx-valuation/reporting-currency-resolver";
 import { type SecurityDescriptor, classifyHQLA } from "../collateral/hqla-classifier";
+import { minorFromMoneyWire } from "../core/money-codec";
+import type {
+  DepositTakenV2Payload,
+  FundingLineDrawnV2Payload,
+  InterbankLoanPlacedV2Payload,
+} from "../event-store/event-types/repo-mmd-ibl-v2";
 import type { EventStore } from "../event-store/store";
+import { platformFunctionalCurrencyLookup } from "../identity/functional-currency";
 import type { FundingPosition, HQLAPosition } from "../liquidity/lcr";
 import type { ASFItem, RSFItem } from "../liquidity/nsfr";
 import { computeCapitalMetrics } from "./capital-metrics";
@@ -540,6 +548,161 @@ function buildFundingPositions(
 }
 
 // ---------------------------------------------------------------------------
+// V2 money-market funding fold — DepositTakenV2 / FundingLineDrawnV2 /
+// InterbankLoanPlacedV2 (born-V2 lifecycle events; D-V1-REMOVAL-PHASE-3B).
+// ---------------------------------------------------------------------------
+// The V1 ALM snapshot is the canonical headline-LCR fold. The deposit / funding
+// book is now sourced from the BORN-V2 money-market events (the V1 DepositTaken /
+// FundingLineDrawn / InterbankLoanPlaced events are GL-coupled via PR-MMD/FUNDING/
+// IBL lifecycle rules — seeding them would force V1 GL postings that widen the
+// v1-only estate; the born-V2 path posts via gl-posting-engine-v2-mm and adds
+// ZERO v1 estate — see scripts/sim/seed-deposit-funding-book-sim-v2.ts and
+// D-CALC-RWA-LCR-SURFACE-V1). Folding the V2 funding events HERE keeps the
+// headline tile (calc-provenance → getALMPositionSnapshot) on its single canonical
+// path while sourcing funding from V2. There is no double-count: a store that
+// holds the V1 funding events does NOT also hold the V2 ones for the same book
+// (they are distinct seeds with distinct ids), and the production store holds
+// neither generation until a book is seeded.
+//
+// Currency discipline: the V1 snapshot's amount fields are reporting-currency
+// (the holding entity's functional currency). A V2 MoneyWire whose currency is
+// NOT the reporting currency is NOT silently FX-converted into the ratio (no
+// silent cross-currency arithmetic — Charter cmd 2/4); it is skipped and the
+// skip is surfaced as a gap. Mirrors alm-positions-v2.ts.
+
+/** Resolve the reporting currency for the V2 funding fold (entity functional ccy). */
+function reportingCurrencyForV2(entity: string | undefined): string {
+  const ANCHOR = "LE-ZA-HOZ-BANK";
+  const ref = entity ?? ANCHOR;
+  // resolveReportingCurrency throws if unresolved (fail-closed); no `?? "ZAR"`.
+  return resolveReportingCurrency(ref, platformFunctionalCurrencyLookup);
+}
+
+/** MoneyWire major-unit string → number (parse, not money arithmetic). */
+function moneyWireMajor(wire: { amount: string }): number {
+  return Number(wire.amount);
+}
+
+interface V2FundingFoldResult {
+  positions: FundingPosition[];
+  depositCount: number;
+  fundingLineCount: number;
+  iblCount: number;
+  crossCurrencySkipped: number;
+  /** Live V2 deposits for the ASF fold (mirrors liveDeposits shape). */
+  liveDeposits: Array<{ principalZar: number; maturityDate: string; depositCategory: string }>;
+  /** Live V2 IBL placements for the RSF fold. */
+  liveIBLs: Array<{ principalZar: number; maturityDate: string | null }>;
+}
+
+function buildFundingPositionsV2(
+  rawEventStore: EventStore,
+  asOf: string,
+  entity?: string,
+): V2FundingFoldResult {
+  const eventStore = liveFlowView(rawEventStore, entity);
+  const reporting = reportingCurrencyForV2(entity);
+  const positions: FundingPosition[] = [];
+  const liveDeposits: V2FundingFoldResult["liveDeposits"] = [];
+  const liveIBLs: V2FundingFoldResult["liveIBLs"] = [];
+  let depositCount = 0;
+  let fundingLineCount = 0;
+  let iblCount = 0;
+  let crossCurrencySkipped = 0;
+
+  // Deposits — exclude matured / withdrawn-early.
+  const closedDeposits = new Set<string>();
+  for (const e of eventStore.replay({ type: "DepositMaturedV2" })) {
+    if (e.as_of > asOf) continue;
+    const id = (e.payload as { depositId?: string }).depositId;
+    if (id) closedDeposits.add(id);
+  }
+  for (const e of eventStore.replay({ type: "DepositWithdrawnEarlyV2" })) {
+    if (e.as_of > asOf) continue;
+    const id = (e.payload as { depositId?: string }).depositId;
+    if (id) closedDeposits.add(id);
+  }
+  for (const e of eventStore.replay({ type: "DepositTakenV2" })) {
+    if (e.as_of > asOf) continue;
+    const p = e.payload as unknown as DepositTakenV2Payload;
+    if (!p.depositId || closedDeposits.has(p.depositId)) continue;
+    if (p.principal.currency !== reporting) {
+      crossCurrencySkipped++;
+      continue;
+    }
+    const amountZar = moneyWireMajor(p.principal);
+    if (amountZar <= 0) continue;
+    positions.push({ amountZar, category: p.depositCategory });
+    liveDeposits.push({
+      // ASF fold reads minor units (it divides by 100); convert via the decimal
+      // engine, not float arithmetic (D-DECIMAL-NATIVE-MONEY-ARITHMETIC).
+      principalZar: minorFromMoneyWire(p.principal),
+      maturityDate: p.maturityDate,
+      depositCategory: p.depositCategory,
+    });
+    depositCount++;
+  }
+
+  // Funding lines — exclude repaid. Wholesale-non-operational (100% run-off).
+  const repaidLines = new Set<string>();
+  for (const e of eventStore.replay({ type: "FundingLineRepaidV2" })) {
+    if (e.as_of > asOf) continue;
+    const id = (e.payload as { fundingLineId?: string }).fundingLineId;
+    if (id) repaidLines.add(id);
+  }
+  for (const e of eventStore.replay({ type: "FundingLineDrawnV2" })) {
+    if (e.as_of > asOf) continue;
+    const p = e.payload as unknown as FundingLineDrawnV2Payload;
+    if (!p.fundingLineId || repaidLines.has(p.fundingLineId)) continue;
+    if (p.drawnAmount.currency !== reporting) {
+      crossCurrencySkipped++;
+      continue;
+    }
+    const amountZar = moneyWireMajor(p.drawnAmount);
+    if (amountZar <= 0) continue;
+    positions.push({ amountZar, category: "wholesale-non-operational" });
+    fundingLineCount++;
+  }
+
+  // Interbank placements — exclude matured / recalled. Inflow-contractual.
+  const closedIbl = new Set<string>();
+  for (const e of eventStore.replay({ type: "InterbankLoanMaturedV2" })) {
+    if (e.as_of > asOf) continue;
+    const id = (e.payload as { placementId?: string }).placementId;
+    if (id) closedIbl.add(id);
+  }
+  for (const e of eventStore.replay({ type: "InterbankLoanRecalledEarlyV2" })) {
+    if (e.as_of > asOf) continue;
+    const id = (e.payload as { placementId?: string }).placementId;
+    if (id) closedIbl.add(id);
+  }
+  for (const e of eventStore.replay({ type: "InterbankLoanPlacedV2" })) {
+    if (e.as_of > asOf) continue;
+    const p = e.payload as unknown as InterbankLoanPlacedV2Payload;
+    if (!p.placementId || closedIbl.has(p.placementId)) continue;
+    if (p.principal.currency !== reporting) {
+      crossCurrencySkipped++;
+      continue;
+    }
+    const amountZar = moneyWireMajor(p.principal);
+    if (amountZar <= 0) continue;
+    positions.push({ amountZar, category: "inflow-contractual" });
+    liveIBLs.push({ principalZar: amountZar, maturityDate: p.maturityDate ?? null });
+    iblCount++;
+  }
+
+  return {
+    positions,
+    depositCount,
+    fundingLineCount,
+    iblCount,
+    crossCurrencySkipped,
+    liveDeposits,
+    liveIBLs,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Settlement-outflow fold — TradeBooked buy-side with explicit settlementDate
 // ---------------------------------------------------------------------------
 // Settlement date conventions differ by product (SAGB T+3, FX spot T+2,
@@ -919,12 +1082,31 @@ export function computeALMPositionSnapshot(
     iblCount,
   } = buildFundingPositions(eventStore, asOf, entity);
 
+  // V2 money-market funding fold (born-V2 events — D-V1-REMOVAL-PHASE-3B).
+  // Sourced separately from the V1 funding vocabulary above; merged into the
+  // same FundingPosition[] denominator. No double-count: V1 and V2 funding
+  // events for a given book are distinct seeds with distinct ids.
+  const v2Funding = buildFundingPositionsV2(eventStore, asOf, entity);
+
   if (
     depositCount === 0 &&
-    !hasAnyEventOfType(eventStore, ALM_POSITION_SOURCE_EVENTS.fundingDepositTaken)
+    v2Funding.depositCount === 0 &&
+    !hasAnyEventOfType(eventStore, ALM_POSITION_SOURCE_EVENTS.fundingDepositTaken) &&
+    !hasAnyEventOfType(eventStore, "DepositTakenV2")
   ) {
     gaps.push(
-      `${ALM_POSITION_SOURCE_EVENTS.fundingDepositTaken}: not yet emitted (Ravi + Atlas substrate). Retail / wholesale deposit classification per BA 110 §19 not yet queryable.`,
+      `${ALM_POSITION_SOURCE_EVENTS.fundingDepositTaken} / DepositTakenV2: not yet emitted (Ravi + Atlas substrate). Retail / wholesale deposit classification per BA 110 §19 not yet queryable.`,
+    );
+  }
+
+  if (v2Funding.depositCount > 0 || v2Funding.fundingLineCount > 0 || v2Funding.iblCount > 0) {
+    gaps.push(
+      `Born-V2 money-market funding folded: ${v2Funding.depositCount} DepositTakenV2 + ${v2Funding.fundingLineCount} FundingLineDrawnV2 + ${v2Funding.iblCount} InterbankLoanPlacedV2 (D-V1-REMOVAL-PHASE-3B; GL via gl-posting-engine-v2-mm — zero v1-only estate).`,
+    );
+  }
+  if (v2Funding.crossCurrencySkipped > 0) {
+    gaps.push(
+      `${v2Funding.crossCurrencySkipped} V2 money-market position(s) carried a currency other than the reporting currency and were NOT FX-converted into the LCR/NSFR ratio (no silent cross-currency arithmetic — Charter cmd 2/4). A multi-currency liquidity view requires an explicit rate-feed FX-translation step (deferred).`,
     );
   }
 
@@ -933,6 +1115,7 @@ export function computeALMPositionSnapshot(
   const settlementResult = buildSettlementOutflows(eventStore, asOf, horizonDays, entity);
   const fundingPositions: FundingPosition[] = [
     ...rawFundingPositions,
+    ...v2Funding.positions,
     ...settlementResult.positions,
   ];
 
@@ -1017,11 +1200,17 @@ export function computeALMPositionSnapshot(
     });
   }
 
+  // Merge the born-V2 money-market deposits + IBL placements into the ASF / RSF
+  // inputs so the NSFR numerator/denominator are consistent with the V2-sourced
+  // LCR funding (the deposits drive ASF, the IBL claim drives RSF).
+  const allLiveDeposits = [...liveDeposits, ...v2Funding.liveDeposits];
+  const allLiveIBLs = [...liveIBLs, ...v2Funding.liveIBLs];
+
   // -------------------------------------------------------------------------
   // ASF / RSF — partially wired via WS2 event folds
   // -------------------------------------------------------------------------
-  const asfItems = buildASFItems(eventStore, asOf, liveDeposits);
-  const rsfItems = buildRSFItems(eventStore, asOf, hqlaPositions, liveIBLs);
+  const asfItems = buildASFItems(eventStore, asOf, allLiveDeposits);
+  const rsfItems = buildRSFItems(eventStore, asOf, hqlaPositions, allLiveIBLs);
 
   // BalanceSheetProjected gap: conditional on event existence
   if (!hasAnyEventOfType(eventStore, ALM_POSITION_SOURCE_EVENTS.asfBalanceSheet)) {
@@ -1039,7 +1228,7 @@ export function computeALMPositionSnapshot(
 
   const note = buildPhase
     ? `Build-phase ALM snapshot at ${asOf} (T+${horizonDays}d): no positions derived from live events. ${gaps.length} substrate gap(s) named. Anya's downstream LCR/NSFR computation returns 'no-positions'; Helena's appetite line reports green-with-substrate-gap.`
-    : `Live ALM snapshot at ${asOf} (T+${horizonDays}d): ${hqlaPositions.length} HQLA position(s), ${fundingPositions.length} funding position(s) [${depositCount} deposit(s), ${fundingLineCount} funding line(s), ${iblCount} IBL(s)], ${asfItems.length} ASF item(s), ${rsfItems.length} RSF item(s). ${gaps.length} residual substrate gap(s).`;
+    : `Live ALM snapshot at ${asOf} (T+${horizonDays}d): ${hqlaPositions.length} HQLA position(s), ${fundingPositions.length} funding position(s) [V1: ${depositCount} deposit(s), ${fundingLineCount} funding line(s), ${iblCount} IBL(s); V2: ${v2Funding.depositCount} deposit(s), ${v2Funding.fundingLineCount} funding line(s), ${v2Funding.iblCount} IBL(s)], ${asfItems.length} ASF item(s), ${rsfItems.length} RSF item(s). ${gaps.length} residual substrate gap(s).`;
 
   return {
     asOf,

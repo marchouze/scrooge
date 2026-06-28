@@ -26,19 +26,26 @@
 //   (C) BA 310 OPERATING-BOOK READ DRIVES THE LIVE STORE (data-dependent). When
 //       the seeded book IS present in the live store, the operating-book BA 310
 //       read must be non-zero AND reproduce the golden BA 310 figures. Dormant
-//       (no manufactured green) on a clean store with no seed — which is the
-//       canonical state TODAY: the live `ci:migrate` does NOT seed the deposit/
-//       funding book, because DepositTaken / FundingLineDrawn / InterbankLoanPlaced
-//       are V1-only LIFECYCLE-registered events that `recon:gl-ledger-coverage`
-//       requires a matching GL posting for — and emitting V1 GL postings would
-//       WIDEN the v1-only estate (V1-retirement directive), while the born-V2 GL
-//       path keys on the V2-parallel *V2 event types. So the live-store seed is a
-//       tracked follow-on (GAP-BA300-DEPOSIT-FUNDING-SIM-GL) gated on the born-V2
-//       DepositTakenV2 / FundingLineDrawnV2 emission path — exactly the same
-//       GL-coupling deferral as the trading-book IR oracle (GAP-BA320-IR-SIM-GL).
-//       The golden drive is therefore PROVEN by the self-contained in-memory
-//       oracle (leg A), not by live-store pollution; leg C remains as the
-//       activation assertion for when the born-V2 live seed lands.
+//       (no manufactured green) on a clean store with no seed.
+//       ACTIVATED 2026-06-28 (D-CALC-RWA-LCR-SURFACE-V1): the live `ci:migrate`
+//       now seeds the deposit/funding/HQLA book via the BORN-V2 seed
+//       (`scripts/sim/seed-deposit-funding-book-sim-v2.ts`, run target
+//       `seed:deposit-funding-book-sim-v2`). The original deferral —
+//       GAP-BA300-DEPOSIT-FUNDING-SIM-GL — was that the V1 DepositTaken /
+//       FundingLineDrawn / InterbankLoanPlaced events are V1-only LIFECYCLE-
+//       registered openings (PR-MMD-001 / PR-FUNDING-001 / PR-IBL-001) that
+//       `recon:gl-ledger-coverage` requires a GL posting for, and emitting V1 GL
+//       postings would WIDEN the v1-only estate. The born-V2 path resolves this:
+//       it emits DepositTakenV2 / FundingLineDrawnV2 / InterbankLoanPlacedV2 and
+//       posts them via `gl-posting-engine-v2-mm` — coverage satisfied through the
+//       born-V2 GL path, ZERO v1-only estate widened. HQLA is the shared-
+//       vocabulary `CollateralInventorySnapshotted` (no lifecycle GL rule). The
+//       BA 310 liability fold + the ALM funding fold now read both generations,
+//       so the operating-book drive reproduces the golden case live. The golden
+//       drive is ALSO independently PROVEN by the self-contained in-memory oracle
+//       (leg A). The V1 seed (`seed-deposit-funding-book-sim-v1.ts`) is retained
+//       for local-only demos; it is NOT in ci:migrate (its V1 funding events
+//       would still trip gl-coverage).
 //
 //   (D) PROVENANCE BOUNDARY — STRUCTURAL (always asserts). Every event of the
 //       in-memory simulated book is EXCLUDED by a production-only provenance
@@ -332,7 +339,7 @@ export function run(): ReconResult {
       violations.push({
         subject: `${PIPELINE}:ba310-live-operating-drift`,
         severity: "fail",
-        message: `The seeded book IS present in the live store but the operating-book BA 310 read drifted from the golden case: reduced=${liveOperating.liabilitiesReducedZar} (expected ${oracle.ba310.liabilitiesReducedZar}), reserve=${liveOperating.minimumReserveBalanceZar} (expected ${oracle.ba310.minimumReserveBalanceZar}), L1-required=${liveOperating.levelOneRequiredZar} (expected ${oracle.ba310.levelOneRequiredZar}), L1-held=${liveOperating.levelOneHeldZar} (expected ${oracle.ba310.levelOneHeldZar}). Inspect scripts/sim/seed-deposit-funding-book-sim-v1.ts. Authority: Reg 27; SARB Act 90/1989.`,
+        message: `The seeded book IS present in the live store but the operating-book BA 310 read drifted from the golden case: reduced=${liveOperating.liabilitiesReducedZar} (expected ${oracle.ba310.liabilitiesReducedZar}), reserve=${liveOperating.minimumReserveBalanceZar} (expected ${oracle.ba310.minimumReserveBalanceZar}), L1-required=${liveOperating.levelOneRequiredZar} (expected ${oracle.ba310.levelOneRequiredZar}), L1-held=${liveOperating.levelOneHeldZar} (expected ${oracle.ba310.levelOneHeldZar}). Inspect scripts/sim/seed-deposit-funding-book-sim-v2.ts (the born-V2 live seed). Authority: Reg 27; SARB Act 90/1989.`,
       });
     }
   }

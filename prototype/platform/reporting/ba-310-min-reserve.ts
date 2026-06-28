@@ -44,10 +44,16 @@
 // requirement). They are owned in financial-constants (source, don't hardcode).
 //
 // ── DATA SOURCING (Principle 1) ─────────────────────────────────────────────
-// The liability base folds from the deposit / funding lifecycle events
-// (DepositTaken / DepositMatured / FundingLineDrawn / FundingLineRepaid) — the
-// SAME events the LCR / NSFR engines consume — so the three returns are coherent
-// by construction. The interbank PLACEMENT (InterbankLoanPlaced) is a bank ASSET,
+// The liability base folds from the deposit / funding lifecycle events of BOTH
+// generations — V1 (DepositTaken / DepositMatured / FundingLineDrawn /
+// FundingLineRepaid) AND born-V2 (DepositTakenV2 / DepositMaturedV2 /
+// DepositWithdrawnEarlyV2 / FundingLineDrawnV2 / FundingLineRepaidV2;
+// D-V1-REMOVAL-PHASE-3B) — the SAME events the LCR / NSFR engines consume, so the
+// three returns are coherent by construction. The simulator-first book is now
+// sourced born-V2 (the V1 funding events are GL-coupled and would widen the
+// v1-only estate; the V2 path posts via gl-posting-engine-v2-mm with zero v1
+// estate — see scripts/sim/seed-deposit-funding-book-sim-v2.ts;
+// D-CALC-RWA-LCR-SURFACE-V1). The interbank PLACEMENT (InterbankLoanPlaced) is a bank ASSET,
 // not a liability, and is excluded from the liability base. The level-1 HQLA held
 // folds from the CollateralInventorySnapshotted snapshot (L1 tier) — the same
 // numerator the LCR uses. There is no group funding / repo / derivative liability
@@ -72,6 +78,7 @@
 // Author: Atlas (Core banking platform architect, engineering).
 
 import { getFinancialConstant } from "../config/financial-constants";
+import { minorFromMoneyWire } from "../core/money-codec";
 import type {
   DepositMaturedPayload,
   DepositTakenPayload,
@@ -79,6 +86,10 @@ import type {
   FundingLineDrawnPayload,
   FundingLineRepaidPayload,
 } from "../event-store/event-types/repo-mmd-ibl";
+import type {
+  DepositTakenV2Payload,
+  FundingLineDrawnV2Payload,
+} from "../event-store/event-types/repo-mmd-ibl-v2";
 import type { EventStore } from "../event-store/store";
 import { type ProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 
@@ -186,19 +197,22 @@ function foldLiabilityBaseZar(args: {
   readonly entity: string;
   readonly asOf: string;
   readonly filter: ProvenanceFilter;
+  readonly functionalCurrency: string;
 }): number {
-  const { eventStore, entity, asOf, filter } = args;
+  const { eventStore, entity, asOf, filter, functionalCurrency } = args;
 
-  // Collect closed deposit / funding-line ids (live-only filter).
+  // Collect closed deposit / funding-line ids (live-only filter). Both V1 and
+  // born-V2 close vocabularies are honoured so a matured/withdrawn V2 deposit
+  // drops out of the liability base.
   const closedDepositIds = new Set<string>();
   const closedFundingLineIds = new Set<string>();
   for (const ev of eventStore.replay({ entity, asOf })) {
     if (!eventMatchesProvenanceFilter(ev, filter)) continue;
-    if (ev.type === "DepositMatured") {
+    if (ev.type === "DepositMatured" || ev.type === "DepositMaturedV2") {
       closedDepositIds.add((ev.payload as unknown as DepositMaturedPayload).depositId);
-    } else if (ev.type === "DepositWithdrawnEarly") {
+    } else if (ev.type === "DepositWithdrawnEarly" || ev.type === "DepositWithdrawnEarlyV2") {
       closedDepositIds.add((ev.payload as unknown as DepositWithdrawnEarlyPayload).depositId);
-    } else if (ev.type === "FundingLineRepaid") {
+    } else if (ev.type === "FundingLineRepaid" || ev.type === "FundingLineRepaidV2") {
       closedFundingLineIds.add((ev.payload as unknown as FundingLineRepaidPayload).fundingLineId);
     }
   }
@@ -222,6 +236,21 @@ function foldLiabilityBaseZar(args: {
       const p = ev.payload as unknown as FundingLineDrawnPayload;
       if (closedFundingLineIds.has(p.fundingLineId)) continue;
       liabilityCents += p.drawnAmountZar;
+    } else if (ev.type === "DepositTakenV2") {
+      // Born-V2 deposit liability (D-V1-REMOVAL-PHASE-3B). MoneyWire major-unit
+      // → cents via the decimal engine (minorFromMoneyWire), NOT float arithmetic
+      // (D-DECIMAL-NATIVE-MONEY-ARITHMETIC). A non-functional-currency wire is NOT
+      // FX-converted into the reserve base (no silent cross-currency arithmetic —
+      // Charter cmd 2/4).
+      const p = ev.payload as unknown as DepositTakenV2Payload;
+      if (closedDepositIds.has(p.depositId)) continue;
+      if (p.principal.currency !== functionalCurrency) continue;
+      liabilityCents += minorFromMoneyWire(p.principal);
+    } else if (ev.type === "FundingLineDrawnV2") {
+      const p = ev.payload as unknown as FundingLineDrawnV2Payload;
+      if (closedFundingLineIds.has(p.fundingLineId)) continue;
+      if (p.drawnAmount.currency !== functionalCurrency) continue;
+      liabilityCents += minorFromMoneyWire(p.drawnAmount);
     }
   }
 
@@ -298,6 +327,7 @@ export function generateBa310(input: Ba310GeneratorInput): Ba310Output {
     entity: input.entity,
     asOf: input.asOf,
     filter: input.filter,
+    functionalCurrency: input.functionalCurrency,
   });
 
   // Reductions / add-backs — fold to 0 in the bank-in-formation's book.
