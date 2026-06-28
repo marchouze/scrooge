@@ -40,7 +40,7 @@ import { LocalAgentGoalLoopRunner } from "../../platform/agent-runtime/goal-loop
 import type { RunWithGoalArgs } from "../../platform/agent-runtime/goal-loop";
 import { parseSpecFile } from "../../platform/agent-runtime/spec-parser";
 import { LocalAgentWorldStateReader } from "../../platform/agent-runtime/world-state";
-import { eventStore, logger } from "../../platform/composition";
+import { documentStore, eventStore, logger } from "../../platform/composition";
 import type { AgentBriefIssuedPayload } from "../../platform/event-store/event-types/agent";
 import type { EventStore } from "../../platform/event-store/store";
 import { recordAgentRunCompleted, recordAgentRunStarted } from "../../platform/records/helpers";
@@ -618,7 +618,7 @@ function getGoalLoopRunner(): LocalAgentGoalLoopRunner {
 }
 
 function getWorldStateReader(): LocalAgentWorldStateReader {
-  if (!_worldStateReader) _worldStateReader = new LocalAgentWorldStateReader({ eventStore });
+  if (!_worldStateReader) _worldStateReader = new LocalAgentWorldStateReader({ eventStore, documentStore });
   return _worldStateReader;
 }
 
