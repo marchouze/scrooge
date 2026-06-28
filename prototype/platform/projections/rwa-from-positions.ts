@@ -81,6 +81,7 @@ import type {
 } from "../event-store/event-types/repo-mmd-ibl";
 import type { EventStore } from "../event-store/store";
 import { isLiveInstance, resolveTradeLifecycle } from "../lifecycle/trade-lifecycle-state";
+import type { MarketDataStore } from "../market-data/store";
 import { computeCvaRwaLeg } from "../market-risk/cva-rwa-leg";
 import type { FxTradeExecutedPayload } from "../markets/cdm/fx";
 import type { IrsTradeBookedPayload } from "../markets/cdm/ird";
@@ -103,6 +104,7 @@ import {
 } from "../risk/sa-ccr/fil-valuable-collateral-feed";
 import { minorBigintToMajorString, v2MoneyToMinor } from "../risk/sa-ccr/v2-money-bridge";
 import { requireWeight } from "../types/financial-input";
+import { computeBA320V2 } from "./ba320-fx-v2";
 import {
   type ProvenanceFilter,
   defaultProvenanceFilter,
@@ -202,6 +204,7 @@ export function computeRwaFromPositions(
   asOf: string,
   filter?: ProvenanceFilter,
   filInstanceEvents?: FilInstanceLifecycleEvent[],
+  marketDataStore?: MarketDataStore,
 ): RwaFromPositionsResult {
   // Load market-risk weights from the canonical registry (CRO-owned,
   // cited — same pattern as rwa-delta.ts).
@@ -457,6 +460,7 @@ export function computeRwaFromPositions(
 
   const fxWeight = requireWeight(RWA_WEIGHTS, "FX-spot", RWA_WEIGHT_TABLE_LABEL);
 
+  let legacyFxTradeBookPositions = 0;
   for (const ev of eventStore.replay({ type: "FxTradeExecuted", asOf })) {
     if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
     const p = ev.payload as unknown as FxTradeExecutedPayload;
@@ -483,6 +487,53 @@ export function computeRwaFromPositions(
       note: `FxTradeExecuted tradeId=${tradeIdValue}`,
     });
     sourceEventIds.push(ev.event_id);
+    legacyFxTradeBookPositions += 1;
+  }
+
+  // -------------------------------------------------------------------------
+  // 4b. FIL FX net-open-position → FX market-risk CAPITAL CHARGE (Reg 28(5))
+  //
+  //     ROOT CAUSE of the dark headline RWA (calc-rwa-failed, 2026-06-28): the
+  //     live V2 FX simulator (simulation-v2-live) books born-V2 FIL instances —
+  //     NOT `FxTradeExecuted` events. The legacy loop above reads
+  //     `FxTradeExecuted`, of which the V2 book has ZERO, so the FX market leg
+  //     was structurally dark and every component fell into buildPhaseFallback.
+  //     The canonical V2 FX market-risk basis already exists as `computeBA320V2`
+  //     (the Reg 28(5) net-open-position charge sourced from the SAME FIL FX
+  //     instances the BA-320 return and the FX-desk RAS B3 panel consume). We
+  //     source the FX charge from it here, under the SAME provenance lens the
+  //     rest of this fold applies — so production-only reads stay production-
+  //     only, and the build-phase combined read picks up simulated FX positions
+  //     (fixtures stay excluded by the shared guard — never the R300m-painting
+  //     anti-pattern). Reg 28(5) (8% × max(Σlong, Σshort)) SUPERSEDES the flat
+  //     per-trade FX-spot weight; we therefore apply it ONLY when the legacy
+  //     `FxTradeExecuted` loop produced no FX trading-book positions (the V2
+  //     book), so the two FX bases never double-count. The ×12.5 RWA conversion
+  //     stays inside `computeRwa` (single derivation site — Charter cmd 4).
+  //
+  //     Authority: Reg 28(5); BCBS D352 §718(xiii); D-V1-REMOVAL-PHASE-3E
+  //     (BA-320 V2 FX basis); D-RWA-LIVE-POSITIONS-PROJECTION-V1.
+  // -------------------------------------------------------------------------
+
+  let fxOpenPositionChargeMinor = 0;
+  if (legacyFxTradeBookPositions === 0) {
+    const ba320 = computeBA320V2({
+      eventStore,
+      asOf,
+      provenanceFilter,
+      // Production fx-quote rate source (market DATA, not events — Principle 1
+      // store-tier separation) for foreign-denominated FX notionals. Without a
+      // rate, a foreign-leg position FAILS CLOSED (GAP-3E-005) and contributes
+      // nothing — never a fabricated rate (Charter cmd 4). When omitted at the
+      // call-site, the charge resolves only from native-functional notionals.
+      ...(marketDataStore ? { marketDataStore } : {}),
+    });
+    // `openPositionChargeMinor` is null only when EVERY position lacks a rate
+    // path (GAP-3E-005). A native-functional notional needs no rate, so the
+    // build-phase book resolves to a concrete charge; a genuine all-missing-rate
+    // book leaves the FX leg at 0 (the BA-320 coverage gap is surfaced there,
+    // not silently zeroed here).
+    fxOpenPositionChargeMinor = ba320.fx.openPositionChargeMinor ?? 0;
   }
 
   // -------------------------------------------------------------------------
@@ -555,9 +606,15 @@ export function computeRwaFromPositions(
   // Graceful fallback: no trades → build-phase fallback
   // -------------------------------------------------------------------------
 
+  // The FX net-open-position charge (Reg 28(5), §4b) is a real market-risk
+  // position even when it produced no per-trade `TradingBookPosition` rows —
+  // it is folded from the FIL FX net-open position, not a trade list. A non-zero
+  // charge therefore counts as a live position: the fold must NOT fall back to
+  // the build-phase constant when the book carries a real FX net-open exposure.
   const tradeCount = creditExposures.length + tradingBookPositions.length;
+  const hasFxNetOpenPosition = fxOpenPositionChargeMinor > 0;
 
-  if (tradeCount === 0) {
+  if (tradeCount === 0 && !hasFxNetOpenPosition) {
     return {
       output: makeZeroOutput(asOf),
       buildPhaseFallback: true,
@@ -632,6 +689,7 @@ export function computeRwaFromPositions(
     tradingBookPositions,
     businessIndicator,
     cvaRwaMinor: cvaLeg.cvaRwaMinor,
+    fxOpenPositionChargeMinor,
     sourceEventIds,
   });
 

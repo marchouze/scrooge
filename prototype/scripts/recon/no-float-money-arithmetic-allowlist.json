@@ -717,47 +717,47 @@
     },
     {
       "file": "platform/risk/rwa-engine.ts",
-      "line": 579,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "platform/risk/rwa-engine.ts",
-      "line": 587,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "platform/risk/rwa-engine.ts",
       "line": 594,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/risk/rwa-engine.ts",
-      "line": 638,
+      "line": 602,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/risk/rwa-engine.ts",
-      "line": 685,
+      "line": 609,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/risk/rwa-engine.ts",
-      "line": 706,
+      "line": 653,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/risk/rwa-engine.ts",
-      "line": 710,
+      "line": 700,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/risk/rwa-engine.ts",
-      "line": 734,
+      "line": 745,
       "pattern": "Math.round(money)"
     },
     {
       "file": "platform/risk/rwa-engine.ts",
-      "line": 574,
+      "line": 749,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/risk/rwa-engine.ts",
+      "line": 773,
+      "pattern": "Math.round(money)"
+    },
+    {
+      "file": "platform/risk/rwa-engine.ts",
+      "line": 589,
       "pattern": "money-multiply/divide"
     },
     {

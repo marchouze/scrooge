@@ -474,6 +474,36 @@ describe("D-REGULATORY-READINESS-W2-SLICE-3 — end-to-end synthetic fixture", (
     expect(out.cvaMinor).toBe(5_000_000_000);
     expect(out.totalRwaMinor).toBe(5_000_000_000);
   });
+
+  // Reg 28(5) FX net-open-position CAPITAL CHARGE → market RWA = 12.5 × charge.
+  // Authority: Reg 28(5); BCBS D352 §718(xiii); D-RWA-LIVE-POSITIONS-PROJECTION-V1.
+  it("fxOpenPositionChargeMinor folds into the market section as a 12.5× line", () => {
+    const charge = 1_093_661_120; // 8% × max(Σlong, Σshort), ZAR minor
+    const out = computeRwa({
+      ...EMPTY_INPUT,
+      fxOpenPositionChargeMinor: charge,
+    });
+    const fxLine = out.market.lines.find((l) => l.key === "fx.net-open-position");
+    expect(fxLine).toBeDefined();
+    // RWA = 12.5 × charge (single derivation site in the engine).
+    expect(fxLine?.contributionMinor).toBe(Math.round(charge * 12.5));
+    expect(out.market.totalMinor).toBe(Math.round(charge * 12.5));
+    // The charge re-appears (pre-12.5) in the market capital-charge total.
+    expect(out.market.capitalChargeMinor).toBe(charge);
+    expect(out.totalRwaMinor).toBe(Math.round(charge * 12.5));
+  });
+
+  it("fxOpenPositionChargeMinor of 0 contributes no FX line", () => {
+    const out = computeRwa({ ...EMPTY_INPUT, fxOpenPositionChargeMinor: 0 });
+    expect(out.market.lines.find((l) => l.key === "fx.net-open-position")).toBeUndefined();
+    expect(out.market.totalMinor).toBe(0);
+  });
+
+  it("rejects negative fxOpenPositionChargeMinor (fail-closed, never a silent clamp)", () => {
+    expect(() => computeRwa({ ...EMPTY_INPUT, fxOpenPositionChargeMinor: -1 })).toThrow(
+      /fxOpenPositionChargeMinor/,
+    );
+  });
 });
 
 // =====================================================================

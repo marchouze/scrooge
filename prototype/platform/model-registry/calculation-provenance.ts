@@ -178,6 +178,10 @@ export function emitAllCalculationProvenance(deps: EmitProvenanceDeps): void {
       asOf,
       { mode: "combined" },
       readFilInstanceEvents(),
+      // Production fx-quote rate source so the FX net-open-position charge
+      // (Reg 28(5), sourced from computeBA320V2) can convert foreign-denominated
+      // FIL FX notionals to ZAR. Market DATA, not events — never fabricated.
+      marketDataStore,
     );
     const rwaFallback = rwa.buildPhaseFallback;
     emitOne(
