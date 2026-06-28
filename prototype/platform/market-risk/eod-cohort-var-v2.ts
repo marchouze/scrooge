@@ -35,6 +35,11 @@
 import type { EventStore } from "../event-store/store";
 import { type MarketDataStore, lookupQuoteWithInverse } from "../market-data/store";
 import {
+  type ProvenanceFilter,
+  defaultProvenanceFilter,
+  eventMatchesProvenanceFilter,
+} from "../projections/filter";
+import {
   type RiskFactorExposure,
   confidenceFor,
   historicalES,
@@ -82,6 +87,22 @@ interface CohortPosition {
  * stores. NO SILENT ZEROS: a figure is `computed` only when the book is non-flat
  * AND every risk factor has a sufficient return window; otherwise a loud
  * `no-positions` / `insufficient-history` status with zeroed figures.
+ *
+ * FAIL-CLOSED PROVENANCE: the FIL cohort fold is provenance-filtered through the
+ * SAME `eventMatchesProvenanceFilter` predicate the BA 320 / BA 350 folds use.
+ * The default (`provenanceFilter` omitted) is `defaultProvenanceFilter()` — the
+ * canonical env-resolved filter every projection fold defaults to — which is
+ * NEVER simulated-inclusive on the production path (`operating-book` in build
+ * phase, `production-only` at commencement, both of which reject `kind:simulated`).
+ * So a simulated FIL instrument leaked into the production canonical store is
+ * excluded from the production VaR figure by the FILTER, not by store separation
+ * (the R300m-into-Prod regression class, `D-V2-UI-VISIBILITY-REMEDIATION`):
+ * correctness no longer depends on the production and simulated stores being
+ * distinct files. The production VaR call passes `{ mode: "production-only" }`
+ * explicitly for the strict regulatory read; the +Sim / recon path passes a
+ * simulated-inclusive filter (`{ mode: "combined" }` / `simulated-only`)
+ * explicitly. Both the production-only and the simulated-inclusive reads are
+ * therefore explicit lenses over ONE store, never a reliance on which store.
  */
 export function computeCohortVar(args: {
   readonly eventStore: EventStore;
@@ -91,11 +112,22 @@ export function computeCohortVar(args: {
   readonly asOf: string;
   /** Return window length to read per factor (defaults to 250 business days). */
   readonly window?: number;
+  /**
+   * Provenance filter applied to the FIL-cohort event fold. Defaults to the
+   * canonical env-resolved filter (`defaultProvenanceFilter()`) — the same
+   * default the BA 350 derivatives fold uses — which never admits `simulated`
+   * on the production path, so a leaked simulated instrument is excluded by the
+   * filter rather than by store separation. The strict regulatory production
+   * read passes `{ mode: "production-only" }`; the +Sim / recon read passes a
+   * simulated-inclusive filter (`{ mode: "combined" }` / `simulated-only`).
+   */
+  readonly provenanceFilter?: ProvenanceFilter;
 }): CohortVarResult {
   const { eventStore, marketDataStore, reporting, reportDate, asOf } = args;
   const window = args.window ?? 250;
+  const provenanceFilter = args.provenanceFilter ?? defaultProvenanceFilter();
 
-  const netByCcy = foldCohortNetPosition(eventStore, reporting);
+  const netByCcy = foldCohortNetPosition(eventStore, reporting, provenanceFilter);
 
   const exposures: RiskFactorExposure[] = [];
   const returnsByFactor = new Map<string, number[]>();
@@ -183,16 +215,30 @@ export function computeCohortVar(args: {
  * `cash` instruments contribute their signed amount (settlement-retained NOP).
  * The reporting currency leg is excluded (it is not an FX risk factor). A
  * terminated FX instrument is dropped (its cash legs carry the retained NOP).
+ *
+ * Every replayed FIL lifecycle event is provenance-filtered through
+ * `provenanceFilter` (the same `eventMatchesProvenanceFilter` predicate the
+ * BA 320 / BA 350 folds use). Under the production-only default a simulated
+ * instrument is excluded even if physically present in the production store —
+ * the fold no longer relies on store separation for provenance correctness.
+ * The termination set is filtered identically so a simulated termination cannot
+ * silently drop a production instrument under the production read.
  */
-function foldCohortNetPosition(store: EventStore, reporting: string): CohortPosition[] {
+function foldCohortNetPosition(
+  store: EventStore,
+  reporting: string,
+  provenanceFilter: ProvenanceFilter,
+): CohortPosition[] {
   const terminated = new Set<string>();
   for (const e of store.replay({ type: "FilInstrumentTerminated" })) {
+    if (!eventMatchesProvenanceFilter(e, provenanceFilter)) continue;
     const inst = (e.payload as { instance?: string }).instance;
     if (inst) terminated.add(inst);
   }
 
   const net = new Map<string, number>();
   for (const e of store.replay({ type: "FilInstrumentCreated" })) {
+    if (!eventMatchesProvenanceFilter(e, provenanceFilter)) continue;
     const p = e.payload as Record<string, unknown>;
     const economic = p.economicTerms as Record<string, unknown> | undefined;
     if (!economic) continue;
