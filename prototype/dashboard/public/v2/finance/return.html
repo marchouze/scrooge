@@ -47,6 +47,18 @@
     table.v2-form td.cell .frm { font-size:0.92em; color:var(--color-text-secondary); }
     table.v2-form td.cell.has-val { background:var(--color-info-bg); }
     table.v2-form td.cell.has-val .val { font-weight:700; color:var(--color-text); }
+    /* Per-cell value provenance (which stage of the cell-value pipeline filled it):
+       leaf-fold = folded directly from events (the granular per-line value);
+       derived   = a computed subtotal/total; headline = legacy aggregate roll-up. */
+    table.v2-form td.cell.src-leaf-fold { background:var(--color-success-bg); box-shadow:inset 3px 0 0 var(--color-success); }
+    table.v2-form td.cell.src-leaf-fold .val { color:var(--color-text); }
+    table.v2-form td.cell.src-derived { background:var(--color-info-bg); }
+    table.v2-form td.cell.src-headline { background:var(--color-surface-raised); }
+    table.v2-form td.cell .src-tag { display:block; font-size:0.68em; font-weight:600; letter-spacing:0.02em;
+      text-transform:uppercase; opacity:0.8; margin-top:1px; text-align:right; }
+    table.v2-form td.cell.src-leaf-fold .src-tag { color:var(--color-success); }
+    table.v2-form td.cell.src-derived .src-tag { color:var(--color-info); }
+    table.v2-form td.cell.src-headline .src-tag { color:var(--color-text-secondary); }
   </style>
 </head>
 <body data-provenance-content="none">
@@ -213,30 +225,56 @@
       // current substrate) carry their derivation expression — the formula/source
       // that fills them — like a spreadsheet's formula view; licence-day cells are
       // blank (the unfilled form); a missing intersection is a hatched gap.
+      // How each value-source reads in the cell tag + tooltip (generic — driven by
+      // the DTO's value.source, so any form's leaf-fold cells light up the same way).
+      const SOURCE_LABEL = {
+        "leaf-fold": "folded",
+        "derived": "subtotal",
+        "headline": "aggregate",
+      };
+      const SOURCE_TIP = {
+        "leaf-fold": "Folded directly from the underlying events by the per-cell leaf-fold engine — the granular, event-sourced per-line value.",
+        "derived": "Computed by the form's own sum/formula arithmetic over the resolved leaf cells (a subtotal/total).",
+        "headline": "Form-level aggregate roll-up from the on-demand projection, placed on its section-total cell.",
+      };
       function cellHtml(cell) {
         if (!cell) return `<td class="cell empty"></td>`;
         const cls = cell.status === "sourced" ? "sourced" : cell.status === "counsel-gated-TBC" ? "counsel" : "licence";
-        const tip = [
+        const tipBase = [
           `${cell.row || ""}${cell.column ? " · " + cell.column : ""}  ${cell.xsdElement}`,
           cell.label,
           cell.regulatoryDefinition,
           `Type: ${cell.valueType}${cell.unit ? " (" + cell.unit + ")" : ""} · Status: ${cell.status}`,
           cell.derivationExpression ? `Derivation [${cell.derivationKind}]: ${cell.derivationExpression}` : `Derivation: ${cell.derivationKind}`,
           cell.statusReason || "",
-        ].filter(Boolean).join("\n");
-        // A soundly-computed value (currently the form-level aggregates) takes
-        // precedence — show the real number, not the formula.
+        ].filter(Boolean);
+        // A soundly-computed value takes precedence — show the real number, not the
+        // formula. The value's `source` drives the cell styling + tag so the
+        // overseer can see WHICH cells the per-cell leaf-fold engine resolved from
+        // events (leaf-fold), vs computed subtotals (derived), vs legacy aggregate
+        // roll-ups (headline). Generic over forms — no per-row list.
         if (cell.value) {
           const v = cell.value.valueType === "money"
             ? fmtMoney({ amount: cell.value.amount, currency: cell.value.currency })
             : `${Number(cell.value.amount).toFixed(2)}%`;
-          return `<td class="cell ${cls} has-val" title="${v2Esc(tip)}"><span class="val">${v}</span></td>`;
+          const src = cell.value.source || "derived";
+          const srcLabel = SOURCE_LABEL[src] || src;
+          const tip = [...tipBase, `Value source: ${src} — ${SOURCE_TIP[src] || ""}`].join("\n");
+          return `<td class="cell ${cls} has-val src-${v2Esc(src)}" title="${v2Esc(tip)}">` +
+            `<span class="val">${v}</span><span class="src-tag">${v2Esc(srcLabel)}</span></td>`;
         }
+        const tip = tipBase.join("\n");
+        // No sound value yet. A `sourced`-status cell is one the substrate is
+        // EXPECTED to fill (the leaf fold could resolve it once its event/data lands)
+        // — frame it as an honest, tracked capability gap ("not yet sourced"), never a
+        // fabricated or zero value. Licence-day / counsel-gated cells render blank as
+        // before (the unfilled form).
         let inner = "";
         if (cell.status === "sourced") {
-          inner = cell.derivationExpression
-            ? `<span class="frm">${v2Esc(cell.derivationExpression)}</span>`
-            : `<span class="frm">${v2Esc(cell.derivationKind)}</span>`;
+          inner = `<span class="frm" title="Not yet sourced — the per-cell engine will fold this from events once its data/fold lands (tracked capability gap, never fabricated).">— not yet sourced</span>`;
+          if (cell.derivationExpression) {
+            inner += `<span class="src-tag" style="color:var(--color-text-secondary);text-transform:none;letter-spacing:0;opacity:0.7;">${v2Esc(cell.derivationExpression)}</span>`;
+          }
         } else if (cell.status === "counsel-gated-TBC") {
           inner = `<span class="frm">TBC</span>`;
         }
@@ -253,8 +291,10 @@
       toolbar.innerHTML =
         `<input class="v2-ss-search" type="search" placeholder="Filter rows — row heading, coordinate, definition…" aria-label="Filter rows">` +
         `<span class="v2-ss-legend">` +
-        `<span><span class="sw" style="background:var(--color-success-bg)"></span>sourced (formula shown)</span>` +
-        `<span><span class="sw" style="background:transparent"></span>licence-day (blank)</span>` +
+        `<span><span class="sw" style="background:var(--color-success-bg);box-shadow:inset 3px 0 0 var(--color-success)"></span>folded (per-cell, from events)</span>` +
+        `<span><span class="sw" style="background:var(--color-info-bg)"></span>subtotal (derived)</span>` +
+        `<span><span class="sw" style="background:var(--color-surface-raised)"></span>aggregate (roll-up)</span>` +
+        `<span><span class="sw" style="background:transparent"></span>not yet sourced / licence-day</span>` +
         `<span><span class="sw" style="background:var(--color-warning-bg,#5a4a1a)"></span>counsel-TBC</span>` +
         `</span>`;
       section.appendChild(toolbar);

@@ -152,6 +152,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // + ZAR-equivalent fold. No production access path. Citation: D-FX-V2-SIMULATOR-FIRST,
   // D-V2-UI-VISIBILITY-REMEDIATION, P4-SECURITY-DESIGNED-IN.
   "dashboard/v2-finance-gl-view.test.ts",
+  // Returns detail source-tag test — builds in-memory throwaway EventStore +
+  // MarketDataStore (:memory:), seeds simulated capital/deposit FIL instruments,
+  // and asserts the BA-100 return detail view surfaces + source-tags the per-cell
+  // folded values. No production access path — the :memory: stores never touch the
+  // canonical store. Citation: D-BA-RETURN-CELL-VALUE-ENGINE, D-V2-UI-VISIBILITY-
+  // REMEDIATION, P4-SECURITY-DESIGNED-IN.
+  "dashboard/v2-finance-returns-detail-source.test.ts",
   // FX trade-history view test — builds an in-memory throwaway EventStore +
   // MarketDataStore and populates via the live FX simulator. No production access
   // path. Citation: D-FX-V2-SIMULATOR-FIRST, P4-SECURITY-DESIGNED-IN.
