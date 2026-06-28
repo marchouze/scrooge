@@ -36,6 +36,7 @@ import { z } from "zod";
 import { tenantIdSchema } from "../../../v2-core/control-plane/tenant";
 import { moneyWireSchema } from "../../core/money-codec";
 import { newEventId } from "../../core/types";
+import type { ProvenanceTag } from "../provenance";
 import { type Actor, type Event, eventSchema } from "../types";
 
 /** Every V2 money-market payload carries the literal schema-version marker. */
@@ -178,6 +179,7 @@ export function makeDepositTakenV2(args: {
   citations: string[];
   payload: DepositTakenV2Payload;
   eventId?: string;
+  provenance?: ProvenanceTag;
 }): Event {
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
@@ -187,6 +189,7 @@ export function makeDepositTakenV2(args: {
     actor: args.actor,
     citations: args.citations,
     payload: depositTakenV2PayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
 
@@ -332,6 +335,7 @@ export function makeFundingLineDrawnV2(args: {
   citations: string[];
   payload: FundingLineDrawnV2Payload;
   eventId?: string;
+  provenance?: ProvenanceTag;
 }): Event {
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
@@ -341,6 +345,7 @@ export function makeFundingLineDrawnV2(args: {
     actor: args.actor,
     citations: args.citations,
     payload: fundingLineDrawnV2PayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
 
@@ -402,6 +407,7 @@ export function makeInterbankLoanPlacedV2(args: {
   citations: string[];
   payload: InterbankLoanPlacedV2Payload;
   eventId?: string;
+  provenance?: ProvenanceTag;
 }): Event {
   return eventSchema.parse({
     event_id: args.eventId ?? newEventId(),
@@ -411,6 +417,7 @@ export function makeInterbankLoanPlacedV2(args: {
     actor: args.actor,
     citations: args.citations,
     payload: interbankLoanPlacedV2PayloadSchema.parse(args.payload),
+    ...(args.provenance ? { provenance: args.provenance } : {}),
   });
 }
 
