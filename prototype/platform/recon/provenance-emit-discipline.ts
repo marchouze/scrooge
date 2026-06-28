@@ -171,6 +171,13 @@ export const EXPLICIT_PROVENANCE_ALLOWLIST: Readonly<Record<string, string>> = {
     "(V1 provenanceMode parity). Simulated + scenario-bound by construction (everything the simulator " +
     "emits IS simulated); the kind is fixed by the simulator, never derivable from bank mode. " +
     "Authority: D-FX-V2-SIMULATOR-FIRST (WS-FX-V2-SIMULATOR).",
+  "platform/returns/ba200/loan-origination-sim-book.ts":
+    "born-V2 loan-origination simulator (L5-FTR DISCOVERY #2; D-BA-RETURN-SIMULATOR-FIRST) — " +
+    "the canonical simulated loan book emitted as FilInstrumentCreated events to drive the BA 200 / " +
+    "credit-RWA folds. Simulated + scenario-bound by construction (the simulated outside world's loan " +
+    "book); the kind is fixed by the simulator, never derivable from bank mode. A defaultable " +
+    "`provenance` arg lets the golden test pass a production tag for the production-admission control. " +
+    "Same basis as platform/simulation-v2/sim-modules/*.ts.",
   "platform/projections/filter.ts":
     "read-side filter default for legacy untagged events (UNTAGGED_AS_SIMULATED mirrors " +
     "PRE_SUBSTRATE_BACKFILL_TAG without the import cycle) — not an emit site.",
