@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# After every git pull / merge: prune stale agent worktrees in the background
+# (non-blocking; never touches locked/live worktrees). See prune-worktrees.sh.
+PRUNE="$(git rev-parse --show-toplevel)/prune-worktrees.sh"
+[ -x "$PRUNE" ] && ( "$PRUNE" >/dev/null 2>&1 & )
+
 # After every git pull / merge: check whether the dashboard server is
 # running on a now-stale commit and warn if so.
 #
