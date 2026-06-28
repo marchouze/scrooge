@@ -736,6 +736,7 @@ export function headlineValuesByXsd(
       amount: money.amount,
       valueType: "money",
       currency: money.currency,
+      source: "headline",
     });
   }
   return out;
@@ -785,6 +786,25 @@ export interface FinanceReturnCell {
   readonly value: FinanceReturnCellValue | null;
 }
 
+/**
+ * Where a soundly-sourced cell value came from — surfaced so the overseer can see
+ * WHICH cells the per-cell leaf-fold engine resolved directly from the events,
+ * vs the form-level aggregate roll-ups, vs the engine's own subtotal arithmetic:
+ *   - `leaf-fold`  — folded DIRECTLY from the underlying events by the seat-owned
+ *                    per-cell leaf fold (D-BA-RETURN-CELL-VALUE-ENGINE). The
+ *                    granular, event-sourced per-line value the brief asks the page
+ *                    to surface (e.g. BA 100 capital R0040/R0810, deposit detail
+ *                    R0570–R0620, R1010 sector analysis once that data is in store).
+ *   - `derived`    — computed by the generic engine's own sum/formula arithmetic
+ *                    over the resolved leaves (a subtotal / total line).
+ *   - `headline`   — a form-level AGGREGATE figure from the legacy on-demand
+ *                    projection (HEADLINE_CELLS), placed on its section-total cell.
+ * The page styles + legends each source distinctly. This is GENERIC: any form's
+ * leaf fold marks its own leaves, so loan-advances / FX-residency rows light up as
+ * `leaf-fold` automatically once those folds + their data land — no per-row list.
+ */
+export type FinanceReturnCellValueSource = "leaf-fold" | "derived" | "headline";
+
 /** A soundly-sourced cell value: decimal-native, provenance-aware. */
 export interface FinanceReturnCellValue {
   /** Decimal-native major-unit amount (money) or percentage value (ratio). */
@@ -792,6 +812,8 @@ export interface FinanceReturnCellValue {
   readonly valueType: "money" | "ratio";
   /** ISO-4217 currency for money values; null for ratios. */
   readonly currency: string | null;
+  /** Provenance of the value within the cell-value pipeline (see the type doc). */
+  readonly source: FinanceReturnCellValueSource;
 }
 
 export interface FinanceReturnDetailView {
@@ -859,8 +881,28 @@ function buildFinanceReturnDetailViewInner(
       asOf: RETURNS_AS_OF,
       functionalCurrency,
     });
+    // The set of cell COORDINATES (`"<row> <column>"`) the leaf fold resolved
+    // DIRECTLY from the events — these are the granular, event-sourced per-line
+    // values (`source:"leaf-fold"`); every other cell the engine fills is a
+    // computed subtotal/total (`source:"derived"`). The distinction is GENERIC:
+    // it falls out of which coordinates the fold returned, so any form's leaves are
+    // marked without a per-row list. We resolve each xsdElement back to its
+    // coordinate via the contract to classify.
+    const leafCoords = new Set(leafValues.keys());
+    const coordByXsd = new Map<string, string>();
+    for (const c of contract.cells) {
+      if (c.cellRef.row !== undefined && c.cellRef.column !== undefined) {
+        coordByXsd.set(c.cellRef.xsdElement, `${c.cellRef.row} ${c.cellRef.column}`);
+      }
+    }
     for (const [xsd, v] of computeDerivedCells({ contract, leafValues, functionalCurrency })) {
-      valueByXsd.set(xsd, v);
+      const coord = coordByXsd.get(xsd);
+      const source: FinanceReturnCellValueSource =
+        coord !== undefined && leafCoords.has(coord) ? "leaf-fold" : "derived";
+      // Engine values win on overlap (they compute the totals too) — including over
+      // a legacy headline placement on the same cell, which the leaf-fold/derived
+      // value supersedes with its sourced provenance.
+      valueByXsd.set(xsd, { ...v, source });
     }
   }
 
