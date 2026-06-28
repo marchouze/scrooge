@@ -371,7 +371,8 @@ function getGoalLoopRunner(): LocalAgentGoalLoopRunner {
 }
 
 function getWorldStateReader(): LocalAgentWorldStateReader {
-  if (!_worldStateReader) _worldStateReader = new LocalAgentWorldStateReader({ eventStore, documentStore });
+  if (!_worldStateReader)
+    _worldStateReader = new LocalAgentWorldStateReader({ eventStore, documentStore });
   return _worldStateReader;
 }
 

@@ -1,6 +1,11 @@
-// platform/agent-runtime/world-state-my-memory.test.ts
+// tests/agent-runtime-autonomous-read-hook.test.ts
 //
 // L3-AGENTS — autonomous agent-memory read-hook, live end-to-end.
+//
+// Lives in tests/ (the permission-gate-default carve-out dir) because it builds
+// in-memory :memory: fixture EventStores to drive a full goal-loop iteration —
+// the same carve-out rationale as the other integration tests here (no
+// production access path).
 //
 // Proves the wiring that makes `WorldStateSnapshot.myMemory` populate from the
 // paired document store at runtime (the documentStore injected into
@@ -30,22 +35,26 @@
 
 import { describe, expect, it } from "bun:test";
 
-import type { DocumentHash, DocumentMetadata, DocumentStore } from "../document-store/types";
-import { makeAgentMemoryCommitted } from "../event-store/event-types";
-import { EventStore } from "../event-store/store";
-import type { Event } from "../event-store/types";
+import { resolve } from "node:path";
+
 import {
   type GoalDeriver,
   LocalAgentGoalLoopRunner,
   type RunWithGoalArgs,
-} from "./goal-loop";
-import { readMyMemory } from "./read-my-memory";
-import { parseSpecFile } from "./spec-parser";
-import { LocalAgentWorldStateReader } from "./world-state";
+} from "../platform/agent-runtime/goal-loop";
+import { readMyMemory } from "../platform/agent-runtime/read-my-memory";
+import { parseSpecFile } from "../platform/agent-runtime/spec-parser";
+import { LocalAgentWorldStateReader } from "../platform/agent-runtime/world-state";
+import type {
+  DocumentHash,
+  DocumentMetadata,
+  DocumentStore,
+} from "../platform/document-store/types";
+import { makeAgentMemoryCommitted } from "../platform/event-store/event-types";
+import { EventStore } from "../platform/event-store/store";
+import type { Event } from "../platform/event-store/types";
 
-import { resolve } from "node:path";
-
-const ATLAS_SPEC_PATH = resolve(import.meta.dir, "..", "..", "..", "Team", "Atlas.md");
+const ATLAS_SPEC_PATH = resolve(import.meta.dir, "..", "..", "Team", "Atlas.md");
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 
@@ -68,7 +77,13 @@ class StubStore implements DocumentStore {
     return this.bodies.has(hash);
   }
   metadata(hash: DocumentHash): DocumentMetadata {
-    return { hash, path: `mem://${hash}`, size: 0, algo: "blake3", firstSeenAt: "2026-06-28T00:00:00.000Z" };
+    return {
+      hash,
+      path: `mem://${hash}`,
+      size: 0,
+      algo: "blake3",
+      firstSeenAt: "2026-06-28T00:00:00.000Z",
+    };
   }
 }
 
