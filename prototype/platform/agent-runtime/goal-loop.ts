@@ -382,6 +382,16 @@ export class LocalAgentGoalLoopRunner implements AgentGoalLoopRunner {
             })),
             ...(chosen !== undefined ? { chosen } : {}),
             reason: reason.slice(0, 2000),
+            // WS-AGENT-MEMORY read-hook (autonomous read live): record the size
+            // of the mandate∪shared agent-memory slice this iteration loaded
+            // into its reasoning context (the single `readMyMemory` path behind
+            // `WorldStateSnapshot.myMemory`). This is the typed record that the
+            // autonomous read-hook surfaced memory for the iteration — every
+            // goal-loop tick now traces the memory it read, retiring the manual
+            // `dispatch:recall` stand-in. Absent when no doc store is wired.
+            ...(args.worldState.myMemory.length > 0
+              ? { myMemoryCount: args.worldState.myMemory.length }
+              : {}),
           },
         }),
       );

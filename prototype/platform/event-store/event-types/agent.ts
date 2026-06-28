@@ -587,6 +587,18 @@ export const agentGoalEvaluatedPayloadSchema = z.object({
   ),
   chosen: z.string().optional(),
   reason: z.string().max(2000),
+  /**
+   * WS-AGENT-MEMORY read-hook (autonomous read live, L3-AGENTS): the count of
+   * federated agent-memory rows the agent LOADED into this iteration's
+   * reasoning context (its `mandateDomains` ∪ `{shared}` slice, via the single
+   * `readMyMemory` path behind `WorldStateSnapshot.myMemory`). Optional +
+   * additive: absent on legacy traces and on iterations where no doc store is
+   * wired (read-at-dispatch off). Its presence is the typed record that the
+   * autonomous read-hook surfaced memory into the agent's reasoning context for
+   * the iteration — the counterpart that retires the manual `dispatch:recall`
+   * stand-in. Authority: D-AGENT-MEMORY-PERSISTENCE; D-SCROOGE-RECALL-BEFORE-DISPATCH.
+   */
+  myMemoryCount: z.number().int().nonnegative().optional(),
 });
 export type AgentGoalEvaluatedPayload = z.infer<typeof agentGoalEvaluatedPayloadSchema>;
 
