@@ -34,7 +34,11 @@
 
 import type { EventStore } from "../event-store/store";
 import { type MarketDataStore, lookupQuoteWithInverse } from "../market-data/store";
-import { type ProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
+import {
+  type ProvenanceFilter,
+  defaultProvenanceFilter,
+  eventMatchesProvenanceFilter,
+} from "../projections/filter";
 import {
   type RiskFactorExposure,
   confidenceFor,
@@ -78,37 +82,27 @@ interface CohortPosition {
 }
 
 /**
- * The fail-closed production-read provenance filter for the cohort-VaR fold.
- *
- * `production-only` — NOT the env default (`defaultProvenanceFilter()`, today
- * `operating-book`). The production VaR figure is a regulatory / risk-appetite
- * number, so it reads strictly production provenance: a simulated FIL instrument
- * is excluded EVEN IF it is physically present in the production canonical store.
- * This closes the store-separation gap (the R300m-into-Prod class,
- * `D-V2-UI-VISIBILITY-REMEDIATION`): correctness no longer depends on the
- * production and simulated stores being distinct files — the filter excludes
- * simulated provenance regardless of store contents.
- *
- * Authority: D-PROVENANCE-FILTER-ENFORCEMENT (CEO-approved 2026-05-12);
- *   D-DATA-PROVENANCE-SUBSTRATE. Mirrors the BA 320 / BA 350 fold discipline.
- */
-export function productionCohortVarFilter(): ProvenanceFilter {
-  return { mode: "production-only" };
-}
-
-/**
  * Compute the cohort's VaR / SVaR / ES for `reportDate` from the booked FIL
  * cohort + the production return histories. Pure read; deterministic given the
  * stores. NO SILENT ZEROS: a figure is `computed` only when the book is non-flat
  * AND every risk factor has a sufficient return window; otherwise a loud
  * `no-positions` / `insufficient-history` status with zeroed figures.
  *
- * FAIL-CLOSED PROVENANCE: the FIL cohort fold is provenance-filtered. The
- * default (`provenanceFilter` omitted) is the strict production-only read
- * (`productionCohortVarFilter()`), so a simulated FIL instrument leaked into the
- * production store is excluded from the production VaR figure — the read does NOT
- * rely on store separation. A caller wanting the simulated/combined book (the
- * +Sim path, recon) passes a simulated-inclusive filter explicitly.
+ * FAIL-CLOSED PROVENANCE: the FIL cohort fold is provenance-filtered through the
+ * SAME `eventMatchesProvenanceFilter` predicate the BA 320 / BA 350 folds use.
+ * The default (`provenanceFilter` omitted) is `defaultProvenanceFilter()` — the
+ * canonical env-resolved filter every projection fold defaults to — which is
+ * NEVER simulated-inclusive on the production path (`operating-book` in build
+ * phase, `production-only` at commencement, both of which reject `kind:simulated`).
+ * So a simulated FIL instrument leaked into the production canonical store is
+ * excluded from the production VaR figure by the FILTER, not by store separation
+ * (the R300m-into-Prod regression class, `D-V2-UI-VISIBILITY-REMEDIATION`):
+ * correctness no longer depends on the production and simulated stores being
+ * distinct files. The production VaR call passes `{ mode: "production-only" }`
+ * explicitly for the strict regulatory read; the +Sim / recon path passes a
+ * simulated-inclusive filter (`{ mode: "combined" }` / `simulated-only`)
+ * explicitly. Both the production-only and the simulated-inclusive reads are
+ * therefore explicit lenses over ONE store, never a reliance on which store.
  */
 export function computeCohortVar(args: {
   readonly eventStore: EventStore;
@@ -120,16 +114,18 @@ export function computeCohortVar(args: {
   readonly window?: number;
   /**
    * Provenance filter applied to the FIL-cohort event fold. Defaults to the
-   * strict production-only read (`productionCohortVarFilter()`) so the
-   * production path fails closed regardless of store contents. The +Sim / recon
-   * read passes a simulated-inclusive filter (e.g. `defaultProvenanceFilter()`
-   * or `{ mode: "combined" }`) explicitly.
+   * canonical env-resolved filter (`defaultProvenanceFilter()`) — the same
+   * default the BA 350 derivatives fold uses — which never admits `simulated`
+   * on the production path, so a leaked simulated instrument is excluded by the
+   * filter rather than by store separation. The strict regulatory production
+   * read passes `{ mode: "production-only" }`; the +Sim / recon read passes a
+   * simulated-inclusive filter (`{ mode: "combined" }` / `simulated-only`).
    */
   readonly provenanceFilter?: ProvenanceFilter;
 }): CohortVarResult {
   const { eventStore, marketDataStore, reporting, reportDate, asOf } = args;
   const window = args.window ?? 250;
-  const provenanceFilter = args.provenanceFilter ?? productionCohortVarFilter();
+  const provenanceFilter = args.provenanceFilter ?? defaultProvenanceFilter();
 
   const netByCcy = foldCohortNetPosition(eventStore, reporting, provenanceFilter);
 

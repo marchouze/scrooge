@@ -30,6 +30,7 @@ import { makeFilInstrumentCreated } from "../event-store/event-types/fil-instanc
 import { EventStore } from "../event-store/store";
 import type { Actor, ProvenanceTag } from "../event-store/types";
 import { MarketDataStore } from "../market-data/store";
+import type { ProvenanceFilter } from "../projections/filter";
 import { computeCohortVar } from "./eod-cohort-var-v2";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
@@ -117,6 +118,11 @@ function usdInstrument(id: string, notional: string, provenance: ProvenanceTag) 
   });
 }
 
+// The strict regulatory production read — the filter every production VaR caller
+// passes (D-PROVENANCE-FILTER-ENFORCEMENT). It rejects `kind:simulated` in BOTH
+// lifecycle phases, so it is the lens the fail-closed proof asserts under.
+const PRODUCTION_ONLY: ProvenanceFilter = { mode: "production-only" };
+
 describe("computeCohortVar — fail-closed provenance filter", () => {
   it("PRODUCTION BASELINE: a genuine production FIL instrument drives a non-flat production VaR", () => {
     const store = emptyStore();
@@ -130,6 +136,7 @@ describe("computeCohortVar — fail-closed provenance filter", () => {
       reporting: REPORTING,
       reportDate: REPORT_DATE,
       asOf: ASOF,
+      provenanceFilter: PRODUCTION_ONLY,
     });
 
     expect(result.status).toBe("computed");
@@ -151,11 +158,14 @@ describe("computeCohortVar — fail-closed provenance filter", () => {
       reporting: REPORTING,
       reportDate: REPORT_DATE,
       asOf: ASOF,
+      provenanceFilter: PRODUCTION_ONLY,
     });
 
     // The SAME store, now ALSO carrying a simulated instrument PHYSICALLY in the
-    // production canonical store (the leak). The default production read must
-    // exclude it — the VaR figure is UNCHANGED from the baseline.
+    // production canonical store (the leak). The production-only read must
+    // exclude it — the VaR figure is UNCHANGED from the baseline. This proves the
+    // FILTER, not store separation: the leaked instrument is right there in the
+    // store the production read reads, and is excluded anyway.
     const leakedStore = emptyStore();
     leakedStore.append(usdInstrument("prod-1", "1000000", PROD_TAG));
     leakedStore.append(usdInstrument("sim-leak-1", "9999999999", SIM_TAG));
@@ -165,6 +175,7 @@ describe("computeCohortVar — fail-closed provenance filter", () => {
       reporting: REPORTING,
       reportDate: REPORT_DATE,
       asOf: ASOF,
+      provenanceFilter: PRODUCTION_ONLY,
     });
 
     // Fail-closed: the simulated leak does NOT move the production VaR.
@@ -177,7 +188,7 @@ describe("computeCohortVar — fail-closed provenance filter", () => {
     expect(guarded.esReporting).toBe(baseline.esReporting);
   });
 
-  it("EMPTY-STORE SEPARATION (necessary but not sufficient): a store with ONLY a simulated instrument yields no production position", () => {
+  it("EMPTY-STORE SEPARATION (necessary but not sufficient): a production-only read of a store with ONLY a simulated instrument yields no production position", () => {
     const store = emptyStore();
     const md = marketData();
     seedUsdZarHistory(md);
@@ -189,6 +200,7 @@ describe("computeCohortVar — fail-closed provenance filter", () => {
       reporting: REPORTING,
       reportDate: REPORT_DATE,
       asOf: ASOF,
+      provenanceFilter: PRODUCTION_ONLY,
     });
 
     expect(result.status).toBe("no-positions");
@@ -196,7 +208,7 @@ describe("computeCohortVar — fail-closed provenance filter", () => {
     expect(result.varReporting).toBe(0);
   });
 
-  it("+SIM PATH: an explicit simulated-inclusive filter INCLUDES the simulated instrument", () => {
+  it("+SIM PATH: an explicit simulated-inclusive filter INCLUDES the simulated instrument the production read excludes", () => {
     const store = emptyStore();
     const md = marketData();
     seedUsdZarHistory(md);
@@ -209,10 +221,11 @@ describe("computeCohortVar — fail-closed provenance filter", () => {
       reporting: REPORTING,
       reportDate: REPORT_DATE,
       asOf: ASOF,
+      provenanceFilter: PRODUCTION_ONLY,
     });
     expect(prodRead.status).toBe("no-positions");
 
-    // +Sim read: the simulated instrument is folded → a computed figure.
+    // +Sim read of the SAME store: the simulated instrument is folded → computed.
     const simRead = computeCohortVar({
       eventStore: store,
       marketDataStore: md,
@@ -225,5 +238,26 @@ describe("computeCohortVar — fail-closed provenance filter", () => {
     expect(simRead.exposures).toHaveLength(1);
     expect(simRead.exposures[0]?.factor).toBe("USD/ZAR");
     expect(simRead.varReporting).toBeGreaterThan(0);
+  });
+
+  it("DEFAULT FILTER (omitted) resolves to defaultProvenanceFilter() — never simulated-inclusive on the production path", () => {
+    // With no override, the env default is the non-simulated operating-book /
+    // production-only filter. A production-only store therefore computes; the
+    // default is a safe lens, not a reliance on store separation.
+    const store = emptyStore();
+    const md = marketData();
+    seedUsdZarHistory(md);
+    store.append(usdInstrument("prod-1", "1000000", PROD_TAG));
+
+    const result = computeCohortVar({
+      eventStore: store,
+      marketDataStore: md,
+      reporting: REPORTING,
+      reportDate: REPORT_DATE,
+      asOf: ASOF,
+    });
+
+    expect(result.status).toBe("computed");
+    expect(result.varReporting).toBeGreaterThan(0);
   });
 });
