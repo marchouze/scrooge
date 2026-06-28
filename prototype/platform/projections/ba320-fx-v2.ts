@@ -63,7 +63,11 @@ import type { Currency } from "../core/types";
 import type { EventStore } from "../event-store/store";
 import { anchorFunctionalCurrency } from "../identity/functional-currency";
 import { type MarketDataStore, lookupQuoteWithInverse } from "../market-data/store";
-import { defaultProvenanceFilter, eventMatchesProvenanceFilter } from "./filter";
+import {
+  type ProvenanceFilter,
+  defaultProvenanceFilter,
+  eventMatchesProvenanceFilter,
+} from "./filter";
 
 // ---------------------------------------------------------------------------
 // Output shapes
@@ -174,6 +178,19 @@ export interface ComputeBA320V2Args {
    * currency is absent from BOTH, the position is FAIL-CLOSED (GAP-3E-005).
    */
   readonly zarRates?: Readonly<Record<string, number>>;
+  /**
+   * Optional provenance lens for the FIL-instance fold. Defaults to
+   * `defaultProvenanceFilter()` (production-only) — the canonical BA-320
+   * regulatory-return read stays production-only. Callers that need the
+   * combined (production + simulated, fixtures excluded) book — e.g. the
+   * build-phase RWA projection (`computeRwaFromPositions`) — pass
+   * `{ mode: "combined" }` so simulated FX positions contribute to the FX
+   * net-open-position charge alongside production positions. Build-phase
+   * fixtures remain excluded by the same explicit guard the rest of the fold
+   * applies, so this NEVER widens the lens to paint a fixture number.
+   * Authority: D-RWA-LIVE-POSITIONS-PROJECTION-V1; D-V1-REMOVAL-PHASE-3E.
+   */
+  readonly provenanceFilter?: ProvenanceFilter;
 }
 
 // ---------------------------------------------------------------------------
@@ -206,7 +223,7 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
     args.functionalCurrency ?? anchorFunctionalCurrency(),
     `ba320-fx-v2 (entity=${entity})`,
   );
-  const provenanceFilter = defaultProvenanceFilter();
+  const provenanceFilter = args.provenanceFilter ?? defaultProvenanceFilter();
   const gaps: string[] = [];
 
   // -------------------------------------------------------------------------

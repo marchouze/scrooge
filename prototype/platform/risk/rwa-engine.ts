@@ -259,6 +259,21 @@ export interface RwaEngineInput {
   readonly creditExposures: readonly CreditExposure[];
   /** Trading-book positions for market risk (MAR pre-FRTB). */
   readonly tradingBookPositions: readonly TradingBookPosition[];
+  /**
+   * Optional pre-computed FX net-open-position CAPITAL CHARGE (minor units),
+   * already on the Reg 28(5) basis: 8% × max(Σ|long|, Σ|short|) across the FX
+   * book in the functional currency. The engine folds this into the market
+   * section as a dedicated `fx (net-open-position)` line at the single ×12.5
+   * derivation site (so the 12.5× arithmetic is never duplicated outside the
+   * engine — Engineering Charter cmd 4). This is the canonical FX market-risk
+   * basis sourced from the FIL instance register via `computeBA320V2`; when
+   * supplied it SUPERSEDES the per-trade flat-weight FX `TradingBookPosition`
+   * approximation (callers omit FX trading-book positions when they pass this).
+   * Omitted/0 → no FX net-open-position contribution.
+   * Authority: Reg 28(5); BCBS D352 §718(xiii); D-V1-REMOVAL-PHASE-3E;
+   *   D-RWA-LIVE-POSITIONS-PROJECTION-V1.
+   */
+  readonly fxOpenPositionChargeMinor?: number;
   /** Business-Indicator inputs for operational risk (OPE25). */
   readonly businessIndicator: BusinessIndicatorInput;
   /**
@@ -694,6 +709,30 @@ export function computeRwa(input: RwaEngineInput): RwaEngineOutput {
         capitalChargeMinor,
         ids: [p.positionId],
         label,
+      });
+    }
+  }
+
+  // FX net-open-position (Reg 28(5)) — a pre-computed CAPITAL CHARGE sourced
+  // from the FIL instance register via computeBA320V2 (8% × max(Σlong, Σshort)).
+  // Folded here so the ×12.5 RWA conversion stays at the single engine site.
+  // Charter cmd 2 (fail-closed): a negative charge is a hard error, never a
+  // silent clamp.
+  const fxOpenPositionChargeMinor = input.fxOpenPositionChargeMinor ?? 0;
+  if (fxOpenPositionChargeMinor < 0) {
+    throw new RwaEngineError(
+      `RWA engine: fxOpenPositionChargeMinor must be ≥ 0, got ${fxOpenPositionChargeMinor}`,
+    );
+  }
+  if (fxOpenPositionChargeMinor > 0) {
+    const existing = marketByKey.get("fx.net-open-position");
+    if (existing) {
+      existing.capitalChargeMinor += fxOpenPositionChargeMinor;
+    } else {
+      marketByKey.set("fx.net-open-position", {
+        capitalChargeMinor: fxOpenPositionChargeMinor,
+        ids: ["fx-net-open-position-reg28(5)"],
+        label: "fx (net-open-position, Reg 28(5))",
       });
     }
   }

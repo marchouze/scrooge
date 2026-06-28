@@ -32,6 +32,8 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { newEventId } from "../platform/core/types";
 import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-accounting";
+import { makeFilInstrumentCreated } from "../platform/event-store/event-types/fil-instances";
+import { simulatedTag } from "../platform/event-store/provenance";
 import { makeFxTradeCancelled } from "../platform/event-store/event-types/fx-accounting";
 import { makeIrdSwapTerminated } from "../platform/event-store/event-types/ird-accounting";
 import {
@@ -54,6 +56,7 @@ import type { FilEventRef } from "../v2-core/fil-core/lifecycle";
 import type { Instant } from "../v2-core/fil-core/primitives";
 import type { FilInstanceUrn, FilTypeUrn } from "../v2-core/fil-core/urn";
 import type { FilInstanceLifecycleEvent } from "../v2-core/fil-instances";
+import { filInstrumentCreatedPayloadSchema } from "../v2-core/fil-instances/events";
 import { computeSaCcr } from "../v2-core/fil-models/sa-ccr";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
@@ -1018,5 +1021,107 @@ describe("rwa-from-positions — FIL SA-CCR → credit RWA", () => {
     const result = computeRwaFromPositions(store, AS_OF, undefined, instances);
     const eadA = expectedEad(NOTIONAL);
     expect(result.output.credit.totalMinor).toBe(eadA * 2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FX net-open-position (Reg 28(5)) market RWA — the root-cause fix for the
+// dark headline RWA (calc-rwa-failed, 2026-06-28). The live V2 FX simulator
+// books born-V2 FIL FX instances, NOT `FxTradeExecuted` events, so the legacy
+// FX market leg was structurally dark. The market leg now sources the FX
+// net-open-position charge from computeBA320V2 (the same FIL FX instances the
+// BA-320 return consumes) when no `FxTradeExecuted` positions are present.
+// Authority: Reg 28(5); BCBS D352 §718(xiii); D-V1-REMOVAL-PHASE-3E;
+//   D-RWA-LIVE-POSITIONS-PROJECTION-V1.
+// Author: Rohan (Risk engineer, engineering).
+// ---------------------------------------------------------------------------
+
+describe("rwa-from-positions — FX net-open-position (Reg 28(5)) market RWA from FIL", () => {
+  /** Append a functional-native (ZAR-denominated) FIL FX instance to the store.
+   *  Native-functional notional means the Reg 28(5) charge computes WITHOUT an
+   *  FX rate (no market-data store needed) — the build-phase canonical FX shape. */
+  function appendFilFxToStore(
+    store: EventStore,
+    opts: { id: string; foreign: string; direction: "long" | "short"; notionalZar: string },
+  ): void {
+    const ev = makeFilInstrumentCreated({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITATIONS,
+      provenance: simulatedTag({
+        scenario: "rwa-from-positions-fx-nop-test",
+        sourceLineage: "test:rwa-from-positions",
+      }),
+      payload: filInstrumentCreatedPayloadSchema.parse({
+        kind: "FilInstrumentCreated",
+        instance: `fil:inst:${ENTITY}:${opts.id}`,
+        type: "fil:type:fx:spot:otc-vanilla@1.0",
+        tenant: ENTITY,
+        asOf: AS_OF,
+        originatingEvent: { eventType: "FxTradeExecuted", eventId: `evt-${opts.id}` },
+        initialStage: "active",
+        economicTerms: {
+          assetClass: "fx",
+          notional: { currency: "ZAR", amount: opts.notionalZar },
+          direction: opts.direction,
+          counterpartyId: "urn:party:legal-entity:standard-bank-za",
+          nettingSetId: `NS-${opts.id}`,
+          currency: "ZAR",
+          settlementDate: "2030-12-31",
+          hedgingSetTag: `${opts.foreign}/ZAR`,
+        },
+      }),
+    });
+    store.append(ev);
+  }
+
+  it("FIL FX net-open-position → market RWA surfaces, buildPhaseFallback false (no FxTradeExecuted)", () => {
+    const store = new EventStore(":memory:");
+    // Net long ZAR 1,000,000.00 (USD/ZAR); charge = 8% × 100,000,000 minor.
+    appendFilFxToStore(store, {
+      id: "fx-usd-long",
+      foreign: "USD",
+      direction: "long",
+      notionalZar: "1000000.00",
+    });
+
+    const result = computeRwaFromPositions(store, AS_OF, { mode: "combined" });
+
+    // The dark-RWA bug: buildPhaseFallback was true here (no FxTradeExecuted).
+    // The FX net-open-position is a real position → no fallback.
+    expect(result.buildPhaseFallback).toBe(false);
+    const fxLine = result.output.market.lines.find((l) => l.key === "fx.net-open-position");
+    expect(fxLine).toBeDefined();
+    // 8% × 100,000,000 minor = 8,000,000 charge → ×12.5 = 100,000,000 market RWA.
+    expect(result.output.market.totalMinor).toBe(100_000_000);
+    expect(result.output.totalRwaMinor).toBeGreaterThan(0);
+  });
+
+  it("no FxTradeExecuted AND no FIL FX → buildPhaseFallback true (fail-closed preserved)", () => {
+    const store = new EventStore(":memory:");
+    const result = computeRwaFromPositions(store, AS_OF, { mode: "combined" });
+    expect(result.buildPhaseFallback).toBe(true);
+    expect(result.output.market.totalMinor).toBe(0);
+  });
+
+  it("FxTradeExecuted present → legacy FX path used, FIL FX charge NOT double-counted", () => {
+    const store = new EventStore(":memory:");
+    // A live FxTradeExecuted position drives the legacy flat-weight FX leg.
+    appendFxTrade(store, { notionalMinor: 50_000_000 });
+    // A FIL FX instance ALSO exists — but the legacy path is active, so the
+    // Reg 28(5) FIL charge must be suppressed to avoid double-counting FX risk.
+    appendFilFxToStore(store, {
+      id: "fx-usd-long",
+      foreign: "USD",
+      direction: "long",
+      notionalZar: "1000000.00",
+    });
+    const result = computeRwaFromPositions(store, AS_OF, { mode: "combined" });
+    // No Reg 28(5) net-open-position line — the legacy FxTradeExecuted FX line wins.
+    expect(
+      result.output.market.lines.find((l) => l.key === "fx.net-open-position"),
+    ).toBeUndefined();
+    expect(result.output.market.lines.some((l) => l.key.startsWith("fx."))).toBe(true);
   });
 });
