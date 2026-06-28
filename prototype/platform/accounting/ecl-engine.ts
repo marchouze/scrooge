@@ -47,6 +47,7 @@ import type { EventStore } from "../event-store/store";
 import { type ProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 import { requireWeight } from "../types/financial-input";
 import { assessIfrs9Stage } from "./ifrs9-staging";
+import { deriveLoanInstanceExposures } from "./posting-rules-v2/loan-instance-fold";
 
 // ---------------------------------------------------------------------------
 // Build-phase PD / LGD parameter tables (loud lookups — no silent default)
@@ -335,49 +336,23 @@ export function readDebtExposures(
 // credit-RWA leg from a loan book folded to an honest 0; this fold is the core
 // unblock.
 //
-// A loan FIL instance is a born-V2 `credit` loan-advance type
-// (`fil:type:credit:loan.*`) carrying its typed `loanTerms` (loanProductSubType /
-// ifrs9Stage / exposureClass / ltvBucket). It is LIVE until terminated
-// (FilInstrumentTerminated derecognises the advance). EAD is the notional principal
-// — the FIL notional is a DECIMAL-NATIVE MAJOR-unit string, converted to the
-// engine-native minor units (× 100) here. The exposure class + LTV band ride the
-// DebtExposure so the CRE20 bridge resolves the LTV-stepped residential-mortgage
+// CONSUMER-SURFACE DISCIPLINE (D-FIL-CONSUMER-SURFACE-ARCHITECTURE; enforced by
+// recon:fil-state-surface-isolation): this accounting / GL surface must NOT replay
+// the raw `FilInstrument*` lifecycle for STATE. The loan EAD base is sourced from
+// the sanctioned state-derivation module `posting-rules-v2/loan-instance-fold.ts`
+// (`deriveLoanInstanceExposures`), which reads the FIL STATE register
+// (`foldFilInstances`) for the live-loan set + stage and the CREATED payload for the
+// FLOW amount + loanTerms. Here we only map that state-derived exposure onto the
+// engine's `DebtExposure` shape (the ECL risk-bucket + LEX obligor grain). The
+// exposure class + LTV band ride the DebtExposure so the CRE20 bridge
+// (debtExposureToCreditExposure) resolves the LTV-stepped residential-mortgage
 // weight (and the SME / mortgage classes) precisely.
 //
-// BORN-V2 (D-V1-REMOVAL-PHASE-1): reads only the V2 FIL lifecycle events; never the
-// v1-only `LoanBooked`. Provenance-filtered exactly like the bond + interbank folds,
-// so a production-only lens excludes a simulated loan book (the honest pre-licence-
-// day empty state) and the operating-book lens admits it.
+// BORN-V2 (D-V1-REMOVAL-PHASE-1): the state-derivation reads only V2 FIL lifecycle
+// events; never the v1-only `LoanBooked`. Provenance-filtered (the derivation reads
+// the CREATED FLOW events under the lens), so a production-only lens excludes a
+// simulated loan book (the honest pre-licence-day empty state).
 // ---------------------------------------------------------------------------
-
-/** Live loan-and-advance folded from born-V2 loan FIL lifecycle events. */
-interface LiveLoan {
-  instance: string;
-  /** EAD = notional principal in minor units (major × 100). */
-  eadMinor: number;
-  currency: string;
-  exposureClass: ExposureClass;
-  /** Obligor / borrower party id (LEX grain). */
-  obligorPartyId?: string;
-  /** CRE20 LTV band (residential-mortgage only). */
-  ltvBucket?: string;
-}
-
-/** Valid loan exposure-class values (for narrowing the typed loanTerms read). */
-const LOAN_EXPOSURE_CLASSES: readonly ExposureClass[] = [
-  "sovereign",
-  "bank",
-  "corporate",
-  "sme-corporate",
-  "retail",
-  "residential-mortgage",
-];
-
-function readLoanExposureClass(value: unknown): ExposureClass | undefined {
-  return typeof value === "string" && (LOAN_EXPOSURE_CLASSES as readonly string[]).includes(value)
-    ? (value as ExposureClass)
-    : undefined;
-}
 
 /**
  * The ECL `riskBucket` (PD/LGD lookup key) for a loan exposure class. Loans use the
@@ -401,84 +376,28 @@ function loanRiskBucket(cls: ExposureClass): string {
 }
 
 /**
- * Fold live born-V2 loan-origination instances (bank as lender) from the store.
- * A loan is live until it emits `FilInstrumentTerminated`. EAD is the notional
- * principal (decimal-native major units → minor units). Only `credit` loan-advance
- * FIL types (`fil:type:credit:loan.*`) carrying `loanTerms` are folded; a loan
- * instance lacking `loanTerms` or an unknown exposure class is SKIPPED loudly via
- * the typed read (no silent mis-bucketing).
+ * Map the state-derived born-V2 loan exposures onto the engine's `DebtExposure`
+ * shape. The STATE (live-loan set + stage) + FLOW (EAD + loanTerms) derivation lives
+ * in the sanctioned `loan-instance-fold.ts` (no raw FIL replay on this accounting
+ * surface — D-FIL-CONSUMER-SURFACE-ARCHITECTURE).
  */
 function readLoanExposures(store: EventStore, provenanceFilter?: ProvenanceFilter): DebtExposure[] {
-  const live = new Map<string, LiveLoan>();
+  const exposures = deriveLoanInstanceExposures({
+    eventStore: store,
+    ...(provenanceFilter !== undefined ? { filter: provenanceFilter } : {}),
+  });
 
-  for (const ev of store.replay({ type: "FilInstrumentCreated" })) {
-    if (provenanceFilter && !eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
-    const p = ev.payload as Record<string, unknown>;
-    const typeUrn = typeof p.type === "string" ? p.type : null;
-    if (typeUrn === null || !typeUrn.startsWith("fil:type:credit:loan.")) continue;
-    const instance = typeof p.instance === "string" ? p.instance : null;
-    const economicTerms =
-      typeof p.economicTerms === "object" && p.economicTerms !== null
-        ? (p.economicTerms as Record<string, unknown>)
-        : null;
-    if (instance === null || economicTerms === null) continue;
-
-    const loanTerms =
-      typeof economicTerms.loanTerms === "object" && economicTerms.loanTerms !== null
-        ? (economicTerms.loanTerms as Record<string, unknown>)
-        : null;
-    const notional =
-      typeof economicTerms.notional === "object" && economicTerms.notional !== null
-        ? (economicTerms.notional as Record<string, unknown>)
-        : null;
-    if (loanTerms === null || notional === null) continue;
-
-    const exposureClass = readLoanExposureClass(loanTerms.exposureClass);
-    const amount = typeof notional.amount === "string" ? notional.amount : null;
-    const currency = typeof notional.currency === "string" ? notional.currency : null;
-    if (exposureClass === undefined || amount === null || currency === null) continue;
-
-    // Decimal-native MAJOR-unit string → engine-native MINOR units (× 100).
-    const eadMinor = Math.round(Number.parseFloat(amount) * 100);
-    if (!Number.isFinite(eadMinor) || eadMinor <= 0) continue;
-
-    const counterpartyId =
-      typeof economicTerms.counterpartyId === "string" ? economicTerms.counterpartyId : undefined;
-    const ltvBucket = typeof loanTerms.ltvBucket === "string" ? loanTerms.ltvBucket : undefined;
-
-    live.set(instance, {
-      instance,
-      eadMinor,
-      currency,
-      exposureClass,
-      ...(counterpartyId !== undefined ? { obligorPartyId: counterpartyId } : {}),
-      ...(ltvBucket !== undefined ? { ltvBucket } : {}),
-    });
-  }
-
-  for (const ev of store.replay({ type: "FilInstrumentTerminated" })) {
-    const p = ev.payload as Record<string, unknown>;
-    const typeUrn = typeof p.type === "string" ? p.type : null;
-    if (typeUrn === null || !typeUrn.startsWith("fil:type:credit:loan.")) continue;
-    const instance = typeof p.instance === "string" ? p.instance : null;
-    if (instance !== null) live.delete(instance);
-  }
-
-  const out: DebtExposure[] = [];
-  for (const loan of live.values()) {
-    out.push({
-      instrumentId: `fi:loan:${loan.instance}`,
-      tradeId: loan.instance,
-      riskBucket: loanRiskBucket(loan.exposureClass),
-      productFamily: "loan",
-      exposureClass: loan.exposureClass,
-      ...(loan.obligorPartyId !== undefined ? { obligorPartyId: loan.obligorPartyId } : {}),
-      eadMinor: loan.eadMinor,
-      currency: loan.currency,
-      ...(loan.ltvBucket !== undefined ? { cre20LtvBucket: loan.ltvBucket } : {}),
-    });
-  }
-  return out;
+  return exposures.map((loan) => ({
+    instrumentId: `fi:loan:${loan.instance}`,
+    tradeId: loan.instance,
+    riskBucket: loanRiskBucket(loan.exposureClass),
+    productFamily: "loan",
+    exposureClass: loan.exposureClass,
+    ...(loan.obligorPartyId !== undefined ? { obligorPartyId: loan.obligorPartyId } : {}),
+    eadMinor: loan.eadMinor,
+    currency: loan.currency,
+    ...(loan.ltvBucket !== undefined ? { cre20LtvBucket: loan.ltvBucket } : {}),
+  }));
 }
 
 /** Live interbank placement folded from InterbankLoanPlaced events. */
