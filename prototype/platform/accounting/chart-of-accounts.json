@@ -669,6 +669,55 @@
       "side": "credit"
     },
     {
+      "id": "ACC-7200-001",
+      "name": "Loans and Advances — Homeloans",
+      "currency": "ZAR",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-7200-002",
+      "name": "Loans and Advances — Commercial Mortgages",
+      "currency": "ZAR",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-7200-003",
+      "name": "Loans and Advances — Credit Cards",
+      "currency": "ZAR",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-7200-004",
+      "name": "Loans and Advances — Lease and Instalment Debtors",
+      "currency": "ZAR",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-7200-005",
+      "name": "Loans and Advances — Overdrafts",
+      "currency": "ZAR",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-7200-006",
+      "name": "Loans and Advances — Term Loans",
+      "currency": "ZAR",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
+      "id": "ACC-7200-007",
+      "name": "Loans and Advances — Other",
+      "currency": "ZAR",
+      "category": "asset-receivable",
+      "side": "debit"
+    },
+    {
       "id": "ACC-9000-001",
       "name": "Net Open Position Memorandum — Long",
       "category": "memorandum-regulatory-nop",

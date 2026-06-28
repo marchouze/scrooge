@@ -458,6 +458,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // asserts balanced double-entry to the capital accounts. Not a production
   // access path. T-01 carve-out.
   "platform/accounting/gl-posting-engine-v2-capital.test.ts",
+  // L5-FTR born-V2 loan-origination (#1601) — build-phase sim-book builder that seeds
+  // a simulated loan-origination FIL book into a raw EventStore(":memory:") to drive the
+  // BA 200 credit / BA 700 credit-RWA golden test. Non-test fixture helper (same kind of
+  // carve-out as recon-self-test.ts); no production access path. T-01 carve-out. Citation:
+  // D-BA-RETURN-SIMULATOR-FIRST, D-BA-RETURN-CAPABILITY-FIRST, F-031.
+  "platform/returns/ba200/loan-origination-sim-book.ts",
   // Bucket A pilot — RwaComputedV2 decimal-native engine test. Same build-phase
   // fixture pattern as the V2 GL engine tests above: raw EventStore(":memory:")
   // seeds inputs, runs emitRwaComputedV2, asserts the decoded decimal RWA. Not a

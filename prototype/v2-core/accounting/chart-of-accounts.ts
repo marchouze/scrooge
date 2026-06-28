@@ -854,6 +854,64 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
     side: "credit",
   },
 
+  // 7200 — Loans and advances to customers (bank as LENDER) — born-V2 credit
+  // asset (D-BA-RETURN-CELL-VALUE-ENGINE; L5-FTR loan-origination slice). One
+  // advances-asset account per SARB BA 100 loan-product sub-type (R0130–R0230),
+  // so the born-V2 loan posting rule resolves the Dr advances leg DETERMINISTICALLY
+  // from the instance's typed `loanTerms.loanProductSubType` — the account IS the
+  // event's economic dimension (same pattern as deposit sector → ACC-6100-* and
+  // capital tier → ACC-5000-*). All measured at amortised cost (IFRS 9 §4.1.2),
+  // asset-receivable (debit-natural). Reg 23 / Basel CRE20; SARB BA 100; BA 200.
+  {
+    id: "ACC-7200-001",
+    name: "Loans and Advances — Homeloans",
+    category: "asset-receivable",
+    currency: "ZAR",
+    side: "debit",
+  },
+  {
+    id: "ACC-7200-002",
+    name: "Loans and Advances — Commercial Mortgages",
+    category: "asset-receivable",
+    currency: "ZAR",
+    side: "debit",
+  },
+  {
+    id: "ACC-7200-003",
+    name: "Loans and Advances — Credit Cards",
+    category: "asset-receivable",
+    currency: "ZAR",
+    side: "debit",
+  },
+  {
+    id: "ACC-7200-004",
+    name: "Loans and Advances — Lease and Instalment Debtors",
+    category: "asset-receivable",
+    currency: "ZAR",
+    side: "debit",
+  },
+  {
+    id: "ACC-7200-005",
+    name: "Loans and Advances — Overdrafts",
+    category: "asset-receivable",
+    currency: "ZAR",
+    side: "debit",
+  },
+  {
+    id: "ACC-7200-006",
+    name: "Loans and Advances — Term Loans",
+    category: "asset-receivable",
+    currency: "ZAR",
+    side: "debit",
+  },
+  {
+    id: "ACC-7200-007",
+    name: "Loans and Advances — Other",
+    category: "asset-receivable",
+    currency: "ZAR",
+    side: "debit",
+  },
+
   // 9000 — SARB FX Net-Open-Position (NOP) memorandum accounts (regulatory only)
   {
     id: "ACC-9000-001",

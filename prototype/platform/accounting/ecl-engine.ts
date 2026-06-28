@@ -47,6 +47,7 @@ import type { EventStore } from "../event-store/store";
 import { type ProvenanceFilter, eventMatchesProvenanceFilter } from "../projections/filter";
 import { requireWeight } from "../types/financial-input";
 import { assessIfrs9Stage } from "./ifrs9-staging";
+import { deriveLoanInstanceExposures } from "./posting-rules-v2/loan-instance-fold";
 
 // ---------------------------------------------------------------------------
 // Build-phase PD / LGD parameter tables (loud lookups — no silent default)
@@ -93,9 +94,25 @@ const LGD_BPS: Readonly<Record<string, number>> = {
 
 /**
  * BA 200 credit-risk exposure class — the obligor classification used by the
- * by-category fold of the BA 200 (credit-risk loans-and-advances) projection.
+ * by-category fold of the BA 200 (credit-risk loans-and-advances) projection AND
+ * the CRE20 standardised risk-weight (the dominant BA 700 credit-RWA denominator).
+ *
+ * Originally the four debt-securities/interbank classes
+ * (sovereign / bank / corporate / retail). EXTENDED (L5-FTR loan-origination
+ * slice, D-BA-RETURN-CELL-VALUE-ENGINE item #2) with the two further Reg 23 /
+ * CRE20 classes a real loan book spans — `sme-corporate` (corporate sub-treatment)
+ * and `residential-mortgage` (LTV-stepped). The born-V2 loan-origination fold sets
+ * the class from the instance's typed `loanTerms.exposureClass`; bonds + interbank
+ * continue to use the original four. Append-only-safe: existing `DebtExposure`
+ * constructors that set sovereign/bank/corporate/retail are unaffected.
  */
-export type ExposureClass = "sovereign" | "bank" | "corporate" | "retail";
+export type ExposureClass =
+  | "sovereign"
+  | "bank"
+  | "corporate"
+  | "sme-corporate"
+  | "retail"
+  | "residential-mortgage";
 
 /** A single in-scope debt exposure the ECL engine measures. */
 export interface DebtExposure {
@@ -129,6 +146,16 @@ export interface DebtExposure {
   /** Exposure at default in minor currency units (gross market value). */
   readonly eadMinor: number;
   readonly currency: string;
+  /**
+   * OPTIONAL CRE20 loan-to-value band — the residential-mortgage risk weight is
+   * LTV-stepped (CRE20). Carried by the born-V2 loan-origination fold for a
+   * `residential-mortgage` exposure so `debtExposureToCreditExposure` resolves the
+   * correct LTV-stepped weight rather than the conservative default. Absent for
+   * bonds / interbank / non-mortgage loans (replay-safe; no behaviour change).
+   * String-typed (the rwa-engine `LtvBucket` union) to avoid a platform→platform
+   * type import here; the bridge narrows it.
+   */
+  readonly cre20LtvBucket?: string;
 }
 
 /** Per-exposure ECL breakdown (audit aid). */
@@ -296,7 +323,81 @@ export function readDebtExposures(
   }
 
   out.push(...readInterbankExposures(store, provenanceFilter));
+  out.push(...readLoanExposures(store, provenanceFilter));
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// Born-V2 LOAN-ORIGINATION fold (L5-FTR loan-origination slice, D-BA-RETURN-CELL-
+// VALUE-ENGINE item #2). The bank-as-LENDER loans-and-advances asset — the credit
+// EAD that drives BOTH the BA 200 credit-risk projection AND computeRwaComputed's
+// credit leg (the dominant BA 700 capital denominator). Before this fold,
+// readDebtExposures had NO loan source at all (only bonds + interbank), so the
+// credit-RWA leg from a loan book folded to an honest 0; this fold is the core
+// unblock.
+//
+// CONSUMER-SURFACE DISCIPLINE (D-FIL-CONSUMER-SURFACE-ARCHITECTURE; enforced by
+// recon:fil-state-surface-isolation): this accounting / GL surface must NOT replay
+// the raw `FilInstrument*` lifecycle for STATE. The loan EAD base is sourced from
+// the sanctioned state-derivation module `posting-rules-v2/loan-instance-fold.ts`
+// (`deriveLoanInstanceExposures`), which reads the FIL STATE register
+// (`foldFilInstances`) for the live-loan set + stage and the CREATED payload for the
+// FLOW amount + loanTerms. Here we only map that state-derived exposure onto the
+// engine's `DebtExposure` shape (the ECL risk-bucket + LEX obligor grain). The
+// exposure class + LTV band ride the DebtExposure so the CRE20 bridge
+// (debtExposureToCreditExposure) resolves the LTV-stepped residential-mortgage
+// weight (and the SME / mortgage classes) precisely.
+//
+// BORN-V2 (D-V1-REMOVAL-PHASE-1): the state-derivation reads only V2 FIL lifecycle
+// events; never the v1-only `LoanBooked`. Provenance-filtered (the derivation reads
+// the CREATED FLOW events under the lens), so a production-only lens excludes a
+// simulated loan book (the honest pre-licence-day empty state).
+// ---------------------------------------------------------------------------
+
+/**
+ * The ECL `riskBucket` (PD/LGD lookup key) for a loan exposure class. Loans use the
+ * existing PD/LGD parameter buckets (no new model parameters minted here): the
+ * engine-level Stage-1 ECL slice is dominated by the emitted `Ifrs9StageAssigned`
+ * staging events in the BA 200 events-first path; this bucket is the fallback used
+ * only by `computeStage1Ecl` when no staging event exists. Conservative mapping:
+ * sovereign → sovereign-bond; bank → interbank-placement; everything else →
+ * corporate-bond (the 80bps/45% conservative corporate bucket). Fail-loud:
+ * `requireWeight` throws on any bucket absent from PD_12M_BPS / LGD_BPS.
+ */
+function loanRiskBucket(cls: ExposureClass): string {
+  switch (cls) {
+    case "sovereign":
+      return "sovereign-bond";
+    case "bank":
+      return "interbank-placement";
+    default:
+      return "corporate-bond";
+  }
+}
+
+/**
+ * Map the state-derived born-V2 loan exposures onto the engine's `DebtExposure`
+ * shape. The STATE (live-loan set + stage) + FLOW (EAD + loanTerms) derivation lives
+ * in the sanctioned `loan-instance-fold.ts` (no raw FIL replay on this accounting
+ * surface — D-FIL-CONSUMER-SURFACE-ARCHITECTURE).
+ */
+function readLoanExposures(store: EventStore, provenanceFilter?: ProvenanceFilter): DebtExposure[] {
+  const exposures = deriveLoanInstanceExposures({
+    eventStore: store,
+    ...(provenanceFilter !== undefined ? { filter: provenanceFilter } : {}),
+  });
+
+  return exposures.map((loan) => ({
+    instrumentId: `fi:loan:${loan.instance}`,
+    tradeId: loan.instance,
+    riskBucket: loanRiskBucket(loan.exposureClass),
+    productFamily: "loan",
+    exposureClass: loan.exposureClass,
+    ...(loan.obligorPartyId !== undefined ? { obligorPartyId: loan.obligorPartyId } : {}),
+    eadMinor: loan.eadMinor,
+    currency: loan.currency,
+    ...(loan.ltvBucket !== undefined ? { cre20LtvBucket: loan.ltvBucket } : {}),
+  }));
 }
 
 /** Live interbank placement folded from InterbankLoanPlaced events. */
