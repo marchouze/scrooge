@@ -126,14 +126,13 @@ const DEPOSIT_IAS_RULES = {
 // drift between this map and the chart of accounts is caught at fold time.
 // ---------------------------------------------------------------------------
 
-const DEPOSIT_LIABILITY_ACCOUNT_BY_SECTOR: Readonly<
-  Record<FilDepositCounterpartySector, string>
-> = {
-  "retail-stable": "ACC-6100-001", // Deposit Liability — Retail Stable
-  "retail-less-stable": "ACC-6100-002", // Deposit Liability — Retail Less-Stable
-  "wholesale-operational": "ACC-6100-003", // Deposit Liability — Wholesale Operational
-  "wholesale-non-operational": "ACC-6100-004", // Deposit Liability — Wholesale Non-Operational
-};
+const DEPOSIT_LIABILITY_ACCOUNT_BY_SECTOR: Readonly<Record<FilDepositCounterpartySector, string>> =
+  {
+    "retail-stable": "ACC-6100-001", // Deposit Liability — Retail Stable
+    "retail-less-stable": "ACC-6100-002", // Deposit Liability — Retail Less-Stable
+    "wholesale-operational": "ACC-6100-003", // Deposit Liability — Wholesale Operational
+    "wholesale-non-operational": "ACC-6100-004", // Deposit Liability — Wholesale Non-Operational
+  };
 
 /**
  * Resolve the deposit-liability CoA account for a counterparty sector, fail-closed.
@@ -150,7 +149,9 @@ export function resolveDepositLiabilityAccount(sector: FilDepositCounterpartySec
   }
   const coa = COA_BY_ID.get(accountId);
   if (coa === undefined) {
-    throw new Error(`deposit posting: deposit-liability account ${accountId} not in chart of accounts`);
+    throw new Error(
+      `deposit posting: deposit-liability account ${accountId} not in chart of accounts`,
+    );
   }
   if (coa.side !== "credit") {
     throw new Error(

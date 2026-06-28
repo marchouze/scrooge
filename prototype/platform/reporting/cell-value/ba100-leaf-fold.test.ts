@@ -32,11 +32,11 @@ import type {
   FilInstrumentCreatedPayload,
   FilInstrumentTerminatedPayload,
 } from "../../../v2-core/fil-instances/events";
-import { CAPITAL_INSTRUMENT_TYPE_URN } from "../../../v2-core/fil-models/capital/types/capital-type-definitions";
 import type {
   FilDepositCategory,
   FilDepositCounterpartySector,
 } from "../../../v2-core/fil-instances/events";
+import { CAPITAL_INSTRUMENT_TYPE_URN } from "../../../v2-core/fil-models/capital/types/capital-type-definitions";
 import { MM_DEPOSIT_TYPE_URN } from "../../../v2-core/fil-models/ir/money-market/types/mm-type-definitions";
 import { ba100Contract } from "../../../v2-core/regulatory-returns/ba100-contract";
 import { computeDerivedCells } from "../../../v2-core/regulatory-returns/cell-value/engine";

@@ -238,7 +238,11 @@ const CAPITAL_FIL_EVENT_TYPES = ["FilInstrumentCreated", "FilInstrumentTerminate
 const DEPOSIT_FIL_EVENT_TYPES = ["FilInstrumentCreated", "FilInstrumentTerminated"] as const;
 
 /** Add a natural-signed amount into the (row, C0040) accumulator. */
-function addToCell(byCell: Map<string, RowAccumulator>, row: string, amount: ReturnType<typeof toDecimal>): void {
+function addToCell(
+  byCell: Map<string, RowAccumulator>,
+  row: string,
+  amount: ReturnType<typeof toDecimal>,
+): void {
   const key = `${row} ${TOTAL_BANK_COLUMN}`;
   const acc = byCell.get(key) ?? { total: toDecimal("0") };
   acc.total = addD(acc.total, amount);
@@ -337,7 +341,11 @@ function foldDepositLegs(
           // exactly as the capital cash leg does (debit increases the asset stock).
           const mapping = ba100RowForAccount(leg.accountCode);
           if (mapping === undefined) continue;
-          addToCell(byCell, mapping.row, leg.creditDebit === "debit" ? magnitude : magnitude.negated());
+          addToCell(
+            byCell,
+            mapping.row,
+            leg.creditDebit === "debit" ? magnitude : magnitude.negated(),
+          );
           continue;
         }
 
