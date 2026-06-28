@@ -177,10 +177,13 @@ export interface MaterialisationOpts {
 /** Append a FIL lifecycle event to the anchor store, idempotent on instance+type. */
 function appendLifecycle(
   db: Database,
-  evType: "FilInstrumentCreated" | "FilInstrumentTerminated",
+  evType: "FilInstrumentCreated" | "FilInstrumentAmended" | "FilInstrumentTerminated",
   asOf: string,
   entity: string,
   payload: Record<string, unknown>,
+  // OPTIONAL deterministic event_id (used by the self-heal amend so a re-run is an
+  // INSERT-OR-IGNORE no-op) + extra citations to merge with the FIL set.
+  opts: { eventId?: string; citations?: readonly string[] } = {},
 ): void {
   // Write path — `Database.run` (a statement execute), NOT `.query` (a SELECT
   // builder): this is an INSERT into the v2 ANCHOR store's `v2_events` table, not
@@ -191,16 +194,44 @@ function appendLifecycle(
        (event_id, type, as_of, entity, actor_type, actor_id, citations, payload)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      newEventId(),
+      opts.eventId ?? newEventId(),
       evType,
       asOf,
       entity,
       ACTOR.type,
       ACTOR.id,
-      JSON.stringify([...FIL_CITATIONS]),
+      JSON.stringify([...FIL_CITATIONS, ...(opts.citations ?? [])]),
       JSON.stringify(payload),
     ],
   );
+}
+
+/**
+ * The EFFECTIVE economic terms of an instance in the anchor store — the latest
+ * `FilInstrumentCreated`/`FilInstrumentAmended` payload by sequence (Principle 1
+ * latest-wins fold, mirrored over the two store rows the recon gate reads).
+ * Returns `undefined` when the instance has no create/amend in the store.
+ */
+function effectiveEconomicTerms(
+  db: Database,
+  instanceUrn: string,
+): Record<string, unknown> | undefined {
+  const rows = db
+    .query<{ payload: string }, []>(
+      `SELECT payload FROM v2_events
+       WHERE type IN ('FilInstrumentCreated','FilInstrumentAmended')
+       ORDER BY sequence ASC`,
+    )
+    .all();
+  let terms: Record<string, unknown> | undefined;
+  for (const r of rows) {
+    const p = JSON.parse(r.payload) as {
+      instance?: string;
+      economicTerms?: Record<string, unknown>;
+    };
+    if (p.instance === instanceUrn && p.economicTerms) terms = p.economicTerms;
+  }
+  return terms;
 }
 
 /** Has a lifecycle event of `evType` for this instance URN already been emitted? */
@@ -252,6 +283,43 @@ export function materialiseFxInstanceToAnchor(
         economicTerms: args.economicTerms,
       });
       created += 1;
+    } else {
+      // SELF-HEAL (D-FX-INSTRUMENT-BUYSELL-QUAD convergence). The create already
+      // exists, so the idempotent guard above skipped it — but a row materialised
+      // BEFORE the symmetric buy/sell quad landed (commit cb8b7ce6) is frozen
+      // quad-less forever, since a plain re-run never re-emits a create. When the
+      // existing EFFECTIVE terms lack `fxAgreement` but the NEW terms carry it,
+      // emit a `FilInstrumentAmended` re-stamping the quad-bearing terms. The fold
+      // replaces economicTerms latest-wins (projection.ts), so the gate converges
+      // to green on the next `ci:migrate` — append-only, the original create is
+      // untouched (Principle 1). Deterministic event_id ⇒ re-run is a no-op.
+      const newTerms = args.economicTerms as { fxAgreement?: unknown };
+      const effective = effectiveEconomicTerms(db, args.fxInstance);
+      const effectiveHasQuad = effective?.fxAgreement !== undefined;
+      if (newTerms.fxAgreement !== undefined && !effectiveHasQuad) {
+        appendLifecycle(
+          db,
+          "FilInstrumentAmended",
+          args.createdAsOf,
+          args.entity,
+          {
+            kind: "FilInstrumentAmended",
+            instance: args.fxInstance,
+            type: args.fxTypeUrn,
+            tenant: args.tenant,
+            asOf: args.createdAsOf,
+            // The amendment IS the carrier of this quad correction (no separate
+            // detail event); `amendmentVia` names the lifecycle event-type ref.
+            amendmentVia: "FilInstrumentAmended",
+            originatingEvent: args.originatingEvent,
+            economicTerms: args.economicTerms,
+          },
+          {
+            eventId: `fx-quad-heal:${args.fxInstance}`,
+            citations: ["D-FX-INSTRUMENT-BUYSELL-QUAD"],
+          },
+        );
+      }
     }
     if (args.terminal && !hasLifecycle(db, "FilInstrumentTerminated", args.fxInstance)) {
       appendLifecycle(db, "FilInstrumentTerminated", args.terminal.asOf, args.entity, {
