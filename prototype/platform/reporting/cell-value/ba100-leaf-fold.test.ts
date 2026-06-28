@@ -36,7 +36,13 @@ import type {
   FilDepositCategory,
   FilDepositCounterpartySector,
 } from "../../../v2-core/fil-instances/events";
+import type {
+  FilLoanExposureClass,
+  FilLoanLtvBucket,
+  FilLoanProductSubType,
+} from "../../../v2-core/fil-instances/events";
 import { CAPITAL_INSTRUMENT_TYPE_URN } from "../../../v2-core/fil-models/capital/types/capital-type-definitions";
+import { LOAN_ADVANCE_TYPE_URN } from "../../../v2-core/fil-models/credit/types/loan-type-definitions";
 import { MM_DEPOSIT_TYPE_URN } from "../../../v2-core/fil-models/ir/money-market/types/mm-type-definitions";
 import { ba100Contract } from "../../../v2-core/regulatory-returns/ba100-contract";
 import { computeDerivedCells } from "../../../v2-core/regulatory-returns/cell-value/engine";
@@ -214,6 +220,94 @@ function seedDepositTerminated(
     tenant: ENTITY,
     asOf: AS_OF,
     originatingEvent: { eventType: "DepositMaturedV2", eventId: `DEP-${instanceId}-term` },
+    terminalStage,
+  };
+  store.append(
+    makeFilInstrumentTerminated({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITES,
+      provenance: SIM,
+      payload: payload as unknown as FilInstrumentTerminatedPayload as Parameters<
+        typeof makeFilInstrumentTerminated
+      >[0]["payload"],
+    }),
+  );
+}
+
+/**
+ * Seed a born-V2 loan-origination (the bank-as-LENDER asset) — a simulated
+ * borrower from the outside world. `notional` is the principal advanced; the typed
+ * loanTerms carry the BA 100 advances row (product sub-type) + IFRS 9 stage +
+ * exposure class (+ LTV for residential mortgages).
+ */
+function seedLoanOriginated(
+  store: EventStore,
+  args: {
+    instanceId: string;
+    amount: string;
+    loanProductSubType: FilLoanProductSubType;
+    ifrs9Stage: 1 | 2 | 3;
+    exposureClass: FilLoanExposureClass;
+    ltvBucket?: FilLoanLtvBucket;
+    currency?: string;
+    provenance?: typeof SIM | typeof PROD;
+  },
+): void {
+  const instance = formatInstanceUrn({ tenant: ENTITY, instanceId: args.instanceId });
+  const ccy = args.currency ?? CCY;
+  const payload = {
+    kind: "FilInstrumentCreated" as const,
+    instance,
+    type: LOAN_ADVANCE_TYPE_URN,
+    tenant: ENTITY,
+    asOf: AS_OF,
+    originatingEvent: { eventType: "LoanOriginatedV2", eventId: `LOAN-${args.instanceId}` },
+    initialStage: "active" as const,
+    economicTerms: {
+      assetClass: "credit" as const,
+      notional: { currency: ccy, amount: args.amount },
+      direction: "long" as const, // the bank holds the advance (asset)
+      counterpartyId: `urn:party:borrower:sim:${args.instanceId}`,
+      nettingSetId: `NS-LOAN-${args.instanceId}-${ccy}`,
+      currency: ccy,
+      settlementDate: AS_OF.slice(0, 10),
+      loanTerms: {
+        loanProductSubType: args.loanProductSubType,
+        ifrs9Stage: args.ifrs9Stage,
+        exposureClass: args.exposureClass,
+        ...(args.ltvBucket !== undefined ? { ltvBucket: args.ltvBucket } : {}),
+      },
+    },
+  };
+  store.append(
+    makeFilInstrumentCreated({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: CITES,
+      provenance: args.provenance ?? SIM,
+      payload: payload as unknown as FilInstrumentCreatedPayload as Parameters<
+        typeof makeFilInstrumentCreated
+      >[0]["payload"],
+    }),
+  );
+}
+
+function seedLoanTerminated(
+  store: EventStore,
+  instanceId: string,
+  terminalStage: "settled" | "matured" | "cancelled" | "terminated",
+): void {
+  const instance = formatInstanceUrn({ tenant: ENTITY, instanceId });
+  const payload = {
+    kind: "FilInstrumentTerminated" as const,
+    instance,
+    type: LOAN_ADVANCE_TYPE_URN,
+    tenant: ENTITY,
+    asOf: AS_OF,
+    originatingEvent: { eventType: "LoanRepaidV2", eventId: `LOAN-${instanceId}-term` },
     terminalStage,
   };
   store.append(
@@ -598,5 +692,157 @@ describe("BA 100 leaf fold — deposit FIL → BA 100 deposit rows (L5-FTR sibli
       currency: "USD",
     });
     expect(fold(store, "combined").size).toBe(0);
+  });
+});
+
+describe("BA 100 leaf fold — loan FIL → BA 100 advances rows (L5-FTR sibling fold)", () => {
+  test("a home loan lights up R0130 (homeloans) + reduces R0040 cash by the principal advanced", () => {
+    const store = new EventStore();
+    seedLoanOriginated(store, {
+      instanceId: "LOAN-HL-1",
+      amount: "500000000",
+      loanProductSubType: "home-loan",
+      ifrs9Stage: 1,
+      exposureClass: "residential-mortgage",
+      ltvBucket: "ltv-60-80",
+    });
+
+    const leaf = fold(store, "combined");
+    // Dr advances-asset → R0130 (homeloans); the EVENT's loanProductSubType is the
+    // source dimension, not the CoA account (sibling fold, Principle 1).
+    expect(leaf.get("R0130 C0040")).toBe("500000000");
+    // Cr settlement-cash (principal paid out) → R0040 reduced by the principal.
+    expect(leaf.get("R0040 C0040")).toBe("-500000000");
+    // No other row fabricated.
+    expect([...leaf.keys()].sort()).toEqual(["R0040 C0040", "R0130 C0040"]);
+  });
+
+  test("loans split onto their typed advances rows by product sub-type", () => {
+    const store = new EventStore();
+    seedLoanOriginated(store, {
+      instanceId: "LOAN-OD",
+      amount: "30000000",
+      loanProductSubType: "overdraft",
+      ifrs9Stage: 1,
+      exposureClass: "corporate",
+    });
+    seedLoanOriginated(store, {
+      instanceId: "LOAN-TL",
+      amount: "200000000",
+      loanProductSubType: "term-loan",
+      ifrs9Stage: 1,
+      exposureClass: "corporate",
+    });
+    seedLoanOriginated(store, {
+      instanceId: "LOAN-CC",
+      amount: "10000000",
+      loanProductSubType: "credit-card",
+      ifrs9Stage: 2,
+      exposureClass: "retail",
+    });
+
+    const leaf = fold(store, "combined");
+    expect(leaf.get("R0170 C0040")).toBe("30000000"); // overdrafts
+    expect(leaf.get("R0200 C0040")).toBe("200000000"); // term loans
+    expect(leaf.get("R0150 C0040")).toBe("10000000"); // credit cards
+    // Cash reduced by the total principal advanced (30 + 200 + 10 = 240m).
+    expect(leaf.get("R0040 C0040")).toBe("-240000000");
+  });
+
+  test("the engine cross-foots the advances detail rows into the advances subtotals", () => {
+    const store = new EventStore();
+    seedLoanOriginated(store, {
+      instanceId: "LOAN-HL",
+      amount: "500000000",
+      loanProductSubType: "home-loan",
+      ifrs9Stage: 1,
+      exposureClass: "residential-mortgage",
+      ltvBucket: "ltv-60-80",
+    });
+    seedLoanOriginated(store, {
+      instanceId: "LOAN-CM",
+      amount: "100000000",
+      loanProductSubType: "commercial-mortgage",
+      ifrs9Stage: 1,
+      exposureClass: "corporate",
+    });
+
+    const leaf = fold(store, "combined");
+    const contract = ba100Contract();
+    const derived = computeDerivedCells({ contract, leafValues: leaf, functionalCurrency: CCY });
+    const valueAt = (row: string): string | undefined => {
+      const cell = contract.cells.find(
+        (c) => c.cellRef.row === row && c.cellRef.column === "C0040",
+      );
+      return cell ? derived.get(cell.cellRef.xsdElement)?.amount : undefined;
+    };
+    // The advances detail rows resolved from the typed event dimension.
+    expect(valueAt("R0130")).toBe("500000000");
+    expect(valueAt("R0140")).toBe("100000000");
+  });
+
+  test("provenance: a production-only lens excludes the simulated loan book", () => {
+    const store = new EventStore();
+    seedLoanOriginated(store, {
+      instanceId: "SIM-LOAN",
+      amount: "500000000",
+      loanProductSubType: "home-loan",
+      ifrs9Stage: 1,
+      exposureClass: "residential-mortgage",
+      ltvBucket: "ltv-60-80",
+      provenance: SIM,
+    });
+    expect(fold(store, "production-only").size).toBe(0);
+    // combined: R0130 + R0040.
+    expect(fold(store, "combined").size).toBe(2);
+  });
+
+  test("a bare loan repayment posts a zero memo — stock unchanged (tracked repayment gap)", () => {
+    const store = new EventStore();
+    seedLoanOriginated(store, {
+      instanceId: "LOAN-REPAY",
+      amount: "80000000",
+      loanProductSubType: "term-loan",
+      ifrs9Stage: 1,
+      exposureClass: "corporate",
+    });
+    seedLoanTerminated(store, "LOAN-REPAY", "matured");
+
+    const leaf = fold(store, "combined");
+    // The terminal posts a zero memo (its principal-repayment leg is a tracked
+    // deferred gap — see loan.ts), so the advances stock is unchanged on a bare
+    // maturity.
+    expect(leaf.get("R0200 C0040")).toBe("80000000");
+    expect(leaf.get("R0040 C0040")).toBe("-80000000");
+  });
+
+  test("a non-functional-currency loan is excluded (licence-day refinement, not silently mixed)", () => {
+    const store = new EventStore();
+    seedLoanOriginated(store, {
+      instanceId: "USD-LOAN",
+      amount: "10000000",
+      loanProductSubType: "term-loan",
+      ifrs9Stage: 1,
+      exposureClass: "corporate",
+      currency: "USD",
+    });
+    expect(fold(store, "combined").size).toBe(0);
+  });
+
+  test("a residential-mortgage loan without an LTV band is rejected at parse (CRE20 fail-closed)", () => {
+    // The loanTerms superRefine fails closed on a residential-mortgage that lacks
+    // an ltvBucket (the CRE20 weight is LTV-stepped). The event factory parses the
+    // payload, so the seed throws — never a silently mis-weighted mortgage.
+    const store = new EventStore();
+    expect(() =>
+      seedLoanOriginated(store, {
+        instanceId: "BAD-MORTGAGE",
+        amount: "100000000",
+        loanProductSubType: "home-loan",
+        ifrs9Stage: 1,
+        exposureClass: "residential-mortgage",
+        // ltvBucket deliberately omitted.
+      }),
+    ).toThrow();
   });
 });

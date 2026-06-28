@@ -769,7 +769,11 @@ const EXPOSURE_CLASS_TO_CATEGORY: Readonly<Record<ExposureClass, string>> = {
   sovereign: "sovereign",
   bank: "interbank",
   corporate: "corporate",
+  // L5-FTR loan-origination slice (D-BA-RETURN-CELL-VALUE-ENGINE item #2): the
+  // born-V2 loan book spans the two further Reg 23 / CRE20 classes.
+  "sme-corporate": "sme-corporate",
   retail: "retail",
+  "residential-mortgage": "residential-mortgage",
 };
 
 /**

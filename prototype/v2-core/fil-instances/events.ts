@@ -223,6 +223,153 @@ export const filDepositTermsSchema = z.object({
 export type FilDepositTerms = z.infer<typeof filDepositTermsSchema>;
 
 // ---------------------------------------------------------------------------
+// LOAN TERMS (D-BA-RETURN-CELL-VALUE-ENGINE; L5-FTR loan-origination slice;
+// DISCOVERY backlog item #2). The credit/lending dimension carried on a born-V2
+// LOAN-ORIGINATION FIL instance (`fil:type:credit:loan.advance:*`) — the
+// bank-as-LENDER asset (loans and advances to customers). This is the asset-side
+// mirror of `depositTerms` (the bank-as-taker liability): one self-describing
+// instrument-of-record whose BA 100 (balance-sheet advances), BA 200 (credit-risk
+// loans-and-advances) and BA 700 (credit-RWA) leaf folds read the SARB line / the
+// IFRS 9 stage / the SA-CR exposure class DIRECTLY from the EVENT, not from a
+// coarser CoA proxy (sibling-fold discipline, Principle 1).
+//
+// THREE dimensions, all fail-closed (Charter cmd 2 — no silent bucketing):
+//   - `loanProductSubType` — the SARB BA 100 advances-LINE discriminator. The
+//     closed set maps 1:1 onto the BA 100 R0130–R0230 loans-and-advances detail
+//     rows (home-loan → R0130, commercial-mortgage → R0140, credit-card → R0150,
+//     lease-instalment → R0160, overdraft → R0170, term-loan → R0200, other →
+//     R0230). The exact SARB Excel row labels are the canonical source (per
+//     `project_ba_return_numbering_excel_canonical`).
+//   - `ifrs9Stage` — the IFRS 9 §5.5 staging discriminator (1 performing /
+//     2 SICR / 3 credit-impaired) that drives the BA 200 by-stage ECL split
+//     (12-month vs lifetime) and the NPL / coverage ratios.
+//   - `exposureClass` — the SA credit-risk (Reg 23 / Basel CRE20) standardised
+//     exposure class that drives the BA 200 by-category fold AND the credit-RWA
+//     risk-weight (the dominant BA 700 capital denominator). The closed set is the
+//     six+ Reg 23 / CRE20 classes (sovereign / bank / corporate / sme-corporate /
+//     retail / residential-mortgage). For residential mortgages the CRE20 risk
+//     weight steps with the loan-to-value band, so `ltvBucket` is REQUIRED for
+//     `residential-mortgage` (and only meaningful there).
+//
+// SOURCE, don't hardcode (Charter cmd 4): the product sub-types are the SARB BA 100
+// form advances rows; the exposure classes + LTV bands are Reg 23 / Basel CRE20;
+// the staging set is IFRS 9 §5.5. Citations live on the posting rule + the leaf
+// folds, not magic strings here — this is the typed vocabulary.
+//
+// OPTIONAL + additive: only loan-origination instances carry it; every existing
+// (ir/fx/cash/capital/deposit/…) instance parses unchanged (replay-safe —
+// Charter cmd 9). The loan posting rule + the credit folds fail closed on a loan
+// instance that lacks the block, or on a residential-mortgage that lacks an LTV
+// bucket (no silent default).
+// ---------------------------------------------------------------------------
+
+/**
+ * SARB BA 100 loans-and-advances LINE discriminator — the closed set mapping 1:1
+ * onto the BA 100 R0130–R0230 advances detail rows (SARB Excel form labels are the
+ * canonical source). Each value names the BA 100 advances row it folds onto.
+ */
+export const filLoanProductSubTypeSchema = z.enum([
+  "home-loan", // BA 100 R0130 — Homeloans.
+  "commercial-mortgage", // BA 100 R0140 — Commercial mortgages.
+  "credit-card", // BA 100 R0150 — Credit cards.
+  "lease-instalment", // BA 100 R0160 — Lease and instalment debtors.
+  "overdraft", // BA 100 R0170 — Overdrafts.
+  "term-loan", // BA 100 R0200 — Term loans.
+  "other", // BA 100 R0230 — Other loans to customers / clients.
+]);
+
+export type FilLoanProductSubType = z.infer<typeof filLoanProductSubTypeSchema>;
+
+/**
+ * IFRS 9 §5.5 expected-credit-loss STAGE. Stage 1 (performing) carries 12-month
+ * ECL; Stage 2 (SICR) + Stage 3 (credit-impaired) carry lifetime ECL. Drives the
+ * BA 200 by-stage ECL split + NPL / coverage ratios.
+ */
+export const filIfrs9StageSchema = z.union([z.literal(1), z.literal(2), z.literal(3)]);
+
+export type FilIfrs9Stage = z.infer<typeof filIfrs9StageSchema>;
+
+/**
+ * SA credit-risk (Reg 23 / Basel CRE20) standardised EXPOSURE CLASS — the obligor
+ * classification that drives BOTH the BA 200 by-category credit-risk fold AND the
+ * CRE20 standardised risk-weight (the dominant BA 700 credit-RWA denominator).
+ * The closed set is the six Reg 23 / CRE20 classes the simulated credit book
+ * spans. Byte-compatible with the BA 200 product-category vocabulary.
+ */
+export const filLoanExposureClassSchema = z.enum([
+  "sovereign", // CRE20 — sovereign (RSA ZAR-domestic = 0%).
+  "bank", // CRE20.21 — bank exposure (SCRA).
+  "corporate", // CRE20.46 — corporate (investment-grade default).
+  "sme-corporate", // CRE20 — SME corporate (corporate sub-treatment).
+  "retail", // CRE20 — regulatory retail.
+  "residential-mortgage", // CRE20 — residential real estate (LTV-stepped).
+]);
+
+export type FilLoanExposureClass = z.infer<typeof filLoanExposureClassSchema>;
+
+/**
+ * Loan-to-value (LTV) band per Basel CRE20 for residential-mortgage exposures —
+ * the risk weight steps with the LTV. Byte-identical to the rwa-engine `LtvBucket`
+ * union; re-declared here (not imported) to keep the event grammar self-contained,
+ * exactly as `filSaCcrAssetClassSchema` re-declares the SA-CCR asset-class subset.
+ * REQUIRED on a `residential-mortgage` exposure (fail-closed in the fold);
+ * meaningless on any other class.
+ */
+export const filLoanLtvBucketSchema = z.enum([
+  "ltv-le-50",
+  "ltv-50-60",
+  "ltv-60-80",
+  "ltv-80-90",
+  "ltv-90-100",
+  "ltv-gt-100",
+]);
+
+export type FilLoanLtvBucket = z.infer<typeof filLoanLtvBucketSchema>;
+
+/**
+ * The loan dimension carried on a born-V2 loan-origination FIL instance. The
+ * posting rule keys the advances-asset leg's BA 100 row + the credit-risk fold on
+ * `loanProductSubType`; the BA 200 ECL split on `ifrs9Stage`; the BA 200
+ * by-category fold + the CRE20 credit-RWA risk-weight on `exposureClass` (+
+ * `ltvBucket` for residential mortgages).
+ */
+export const filLoanTermsSchema = z
+  .object({
+    /** The SARB BA 100 advances-line product sub-type (home-loan / overdraft / …). */
+    loanProductSubType: filLoanProductSubTypeSchema,
+    /** IFRS 9 §5.5 ECL stage (1 performing / 2 SICR / 3 credit-impaired). */
+    ifrs9Stage: filIfrs9StageSchema,
+    /** Reg 23 / CRE20 standardised exposure class (drives the credit-RWA weight). */
+    exposureClass: filLoanExposureClassSchema,
+    /** CRE20 LTV band — REQUIRED for `residential-mortgage`, else omitted. */
+    ltvBucket: filLoanLtvBucketSchema.optional(),
+  })
+  .superRefine((terms, ctx) => {
+    // CRE20: the residential-mortgage risk weight is LTV-stepped, so an LTV band is
+    // MANDATORY — a residential mortgage without one cannot be risk-weighted
+    // (fail-closed; no silent default to a wrong weight — Charter cmd 2).
+    if (terms.exposureClass === "residential-mortgage" && terms.ltvBucket === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["ltvBucket"],
+        message:
+          "loanTerms coherence: a residential-mortgage exposure MUST carry an ltvBucket (the CRE20 risk weight is LTV-stepped) — fail-closed",
+      });
+    }
+    // An LTV band on a NON-mortgage exposure is a construction defect (it would be
+    // silently ignored by the risk-weight lookup) — reject at parse.
+    if (terms.exposureClass !== "residential-mortgage" && terms.ltvBucket !== undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["ltvBucket"],
+        message: `loanTerms coherence: ltvBucket is only meaningful for residential-mortgage exposures, not ${terms.exposureClass}`,
+      });
+    }
+  });
+
+export type FilLoanTerms = z.infer<typeof filLoanTermsSchema>;
+
+// ---------------------------------------------------------------------------
 // FX AGREEMENT QUAD (D-FX-INSTRUMENT-BUYSELL-QUAD, CEO-approved 2026-06-24).
 //
 // MODEL TRUTH: an FX spot/forward IS an agreement to BUY one currency and SELL
@@ -369,6 +516,18 @@ const filEconomicTermsObjectSchema = z.object({
    * — Charter cmd 2).
    */
   depositTerms: filDepositTermsSchema.optional(),
+  /**
+   * Loan dimension (D-BA-RETURN-CELL-VALUE-ENGINE; L5-FTR loan-origination slice;
+   * DISCOVERY backlog item #2). Carried on a born-V2 LOAN-ORIGINATION FIL instance
+   * (the bank-as-LENDER asset) — the typed SARB loan-product sub-type (BA 100
+   * advances row) + IFRS 9 stage (BA 200 ECL split) + SA-CR exposure class
+   * (BA 200 by-category + the CRE20 credit-RWA weight, the dominant BA 700
+   * denominator). OPTIONAL + additive: only loan instances carry it; every
+   * existing instance parses unchanged (replay-safe — Charter cmd 9). The loan
+   * posting rule + the credit folds fail closed on a loan instance lacking it
+   * (no silent default — Charter cmd 2).
+   */
+  loanTerms: filLoanTermsSchema.optional(),
   /**
    * The symmetric BUY/SELL agreement quad (D-FX-INSTRUMENT-BUYSELL-QUAD). Carried
    * on an `fx` asset-class instance so the instrument is self-describing: it
