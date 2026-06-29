@@ -1,31 +1,43 @@
 // dashboard/trade-book-view.ts
 //
-// POST /api/trades/book — manual FX spot trade booking entry point.
+// POST /api/trades/book — manual trade booking entry point.
 //
-// Validates the booking request, emits a `FxTradeExecuted` event with
-// `provenance.kind: "manual"`, then immediately runs the GL posting engine
-// so the trade-booking SubLedgerPostingEmitted is produced inline.
+// FX (D-FX-E2E-CORRECTNESS-V1, Lane 1): a manual FX booking is now BORN-V2. The
+// route validates the request, models the born-V2 confirmation flow
+// (TradeConfirmationSent → TradeAffirmed), then books a `FilInstrumentCreated`
+// via the SUT `bookAffirmedFxTrade` — the self-describing FIL instrument carrying
+// the BUY/SELL agreement quad + tradeDate + settlementDate exactly as the user
+// specifies (backdated, live, or future; no `< today` block, no forced T+2). The
+// born-V2 instrument flows end-to-end into V2 accounting (the pure FX trial-
+// balance fold over the FIL events — no inline GL engine), every BA-return fold,
+// and the V2 FX blotter. The legacy V1 `FxTradeExecuted` booking path for the
+// manual desk (+ inline beaGlPostingEngine / V1 MTM / V1 runPostTradeLifecycle)
+// is RETIRED (V1-retirement — flip what you touch). The non-FX product handlers
+// (repo / mmd / ibl / equity / bond / irs) remain on their existing paths.
 //
 // Authority:
+//   D-FX-E2E-CORRECTNESS-V1 (CEO-approved — born-V2 FX booking spine + dates)
+//   D-FX-INSTRUMENT-BUYSELL-QUAD (CEO-approved 2026-06-24 — the quad)
 //   D-MANUAL-TRADE-BOOKING (CEO-approved 2026-05-19)
 //   D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)
 //
-// Author: Devon (Chief Technology Officer, engineering)
+// Author: Devon (Chief Technology Officer, engineering);
+//         Kai (Trading systems engineer, engineering — Lane 1 born-V2 re-platform)
 
 import { randomBytes } from "node:crypto";
 
-import { clock, eventStore, logger } from "../platform/composition";
+import { clock, eventStore } from "../platform/composition";
 import { newEventId } from "../platform/core/types";
 import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-accounting";
+import {
+  makeTradeAffirmed,
+  makeTradeConfirmationSent,
+} from "../platform/event-store/event-types/fx-trade-confirmation";
 import {
   makeDepositTaken,
   makeInterbankLoanPlaced,
   makeRepoTradeOpened,
 } from "../platform/event-store/event-types/repo-mmd-ibl";
-import {
-  makeTradeAffirmed,
-  makeTradeConfirmationSent,
-} from "../platform/event-store/event-types/fx-trade-confirmation";
 import {
   buildPhaseFixtureTag,
   productionTag,
@@ -1197,7 +1209,8 @@ export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResul
   // Prefer the picked party id (LEI / party-register id); fall back to a derived
   // id from the name so a hand-typed counterparty still books deterministically.
   const counterpartyId =
-    counterpartyLei ?? `MANUAL-CPTY-${counterpartyName.replace(/[^A-Za-z0-9]+/g, "-").toUpperCase()}`;
+    counterpartyLei ??
+    `MANUAL-CPTY-${counterpartyName.replace(/[^A-Za-z0-9]+/g, "-").toUpperCase()}`;
 
   // ----- Identity + as_of -----
   // `as_of` is ALIGNED to the user-specified trade date (with a synthetic
@@ -1212,8 +1225,7 @@ export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResul
   // Derive the base-currency notional in MAJOR units for the SUT (which carries
   // the symmetric quad from base + rate). The user may quote the notional in the
   // base or the quote currency; convert to base when given in quote.
-  const baseNotionalMajor =
-    notionalCurrency === base ? notionalAmount : notionalAmount / rate;
+  const baseNotionalMajor = notionalCurrency === base ? notionalAmount : notionalAmount / rate;
 
   // ----- Provenance tag (Rule B — constructed at the call-site, never in the SUT) -----
   // A manual desk booking in the build phase is real bank state authored pre-
