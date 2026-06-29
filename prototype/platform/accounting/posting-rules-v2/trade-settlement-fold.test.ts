@@ -161,11 +161,17 @@ describe("D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL Slice 1 — decomposition byte-equ
     const decomposed = postTradeSettlementListLegs(
       decomposeFxSettlementToTradeSettlements({ settlement: s }),
     );
-    // P&L-NEUTRAL (D-FX-PNL-FCY-EXPOSURE-REVALUATION): settlement posts NO realised
-    // P&L (ACC-2100-006); the cash legs balance against the FX settlement clearing
-    // account (ACC-2100-027). Non-vacuity asserts the clearing leg exists.
+    // P&L-NEUTRAL PvP settlement (D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1; refines
+    // D-FX-PNL-FCY-EXPOSURE-REVALUATION): a deliverable spot settles nostro-to-nostro
+    // — NO realised P&L (ACC-2100-006) and NO clearing contra (ACC-2100-027); the
+    // settled cash lives directly in the nostro and the trade balances in the
+    // functional currency. Non-vacuity asserts the nostro cash legs exist.
     expect(golden.some((l) => l.accountCode === "ACC-2100-006")).toBe(false);
-    expect(golden.some((l) => l.accountCode === "ACC-2100-027")).toBe(true);
+    expect(golden.some((l) => l.accountCode === "ACC-2100-027")).toBe(false);
+    expect(golden.some((l) => l.accountCode.startsWith("ACC-1200-"))).toBe(true);
+    // The byte-equivalence between the two-leg FX path and N single-asset
+    // settlements still holds (both produce nostro-only) — the decomposition
+    // equivalence this test protects is unaffected by dropping the clearing.
     expectByteIdenticalNet(golden, decomposed);
   });
 

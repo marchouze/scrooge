@@ -433,12 +433,16 @@ describe("CASE 3-SIGN — GIVEN a pre-measured loss, the posting rule flips Cr p
 // IFRS-correct ONLY under that daily-reval policy (D-FX-PNL-FCY-EXPOSURE-
 // REVALUATION); absent it, §28 would require a settlement-date exchange difference.
 // On settlement the bank receives USD 7,000,000 and pays ZAR 129,955,000;
-// settlement recognises the cash against the FX settlement clearing account (NOT
-// realised P&L). Golden: Dr USD nostro 7,000,000 / Cr clearing USD 7,000,000 ;
-// Cr ZAR nostro 129,955,000 / Dr clearing ZAR 129,955,000. NO realised-P&L leg.
+// settlement recognises the cash DIRECTLY in the nostros (PvP nostro-to-nostro;
+// D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1), NOT against a clearing contra and NOT as
+// realised P&L. Golden: Dr USD nostro 7,000,000 ; Cr ZAR nostro 129,955,000. The
+// two cash legs do NOT balance natively (USD ≠ ZAR) — they balance in the
+// FUNCTIONAL currency at the settlement spot (7m USD × 18.565 = 129,955,000 ZAR).
+// NO clearing leg, NO realised-P&L leg; the FX exposure lives purely as the nostro
+// cash. The clearing account is reserved for sequential swap legs.
 // ===========================================================================
 
-describe("CASE 4 — settlement P&L-neutral: cash vs clearing, no realised P&L (IAS 21 §28/§29; D-FX-PNL-FCY-EXPOSURE-REVALUATION)", () => {
+describe("CASE 4 — settlement P&L-neutral PvP nostro-to-nostro, no clearing, no realised P&L (IAS 21 §21/§28/§29; D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1)", () => {
   const legs = postFxSettlementLegs({
     instanceId: INSTANCE,
     tenantId: TENANT,
@@ -451,15 +455,15 @@ describe("CASE 4 — settlement P&L-neutral: cash vs clearing, no realised P&L (
     soldSettledAmount: "129955000.00",
   });
 
-  test("recognises cash against settlement clearing — never realised P&L", () => {
-    expect(legs.length).toBe(4);
+  test("recognises cash nostro-to-nostro — never clearing, never realised P&L", () => {
+    expect(legs.length).toBe(2);
     for (const l of legs) expect(l.accountCode).not.toBe(FX_REALISED_PNL_ACCOUNT);
-    // Bought USD: Dr nostro, Cr clearing.
+    for (const l of legs) expect(l.accountCode).not.toBe(FX_SETTLEMENT_CLEARING_ACCOUNT);
+    // Bought USD: Dr nostro. Sold ZAR: Cr nostro. (No clearing contra.)
     expectLeg(leg(legs, nostroFor("USD"), "USD"), "debit", "7000000.00");
-    expectLeg(leg(legs, FX_SETTLEMENT_CLEARING_ACCOUNT, "USD"), "credit", "7000000.00");
-    // Sold ZAR: Cr nostro, Dr clearing.
     expectLeg(leg(legs, nostroFor("ZAR"), "ZAR"), "credit", "129955000.00");
-    expectLeg(leg(legs, FX_SETTLEMENT_CLEARING_ACCOUNT, "ZAR"), "debit", "129955000.00");
+    // Functional (ZAR) balance: 7,000,000 USD × 18.565 = 129,955,000 ZAR = the ZAR leg.
+    expect(7_000_000 * 18.565).toBeCloseTo(129_955_000, 2);
   });
 });
 

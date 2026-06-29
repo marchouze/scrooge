@@ -26,27 +26,28 @@
 //   S4. Derecognition — FilInstrumentTerminated{settled}; the FX contract NOP in
 //       BA-320 drops to ZERO (the open FX instance closes); the trade-date OBS
 //       commitment (ACC-9100-*) nets to zero (released). IFRS 9 §3.2.3.
-//   S5. GL trial balance balances PER CURRENCY across the whole cycle.
+//   S5. GL trial balance balances in the FUNCTIONAL currency (IAS 21 §21) across
+//       the whole cycle (re-based from per-currency-native per
+//       D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1).
 //   S6. Provenance partition — settlement folds under operating-book; EXCLUDED
 //       under production-only (production stays honest-empty pre-licence).
 //
-// ★ THE ADVERSARIAL CLEARING-ACCOUNT TEST (the question Marc most needed answered).
-//   Kai's design has ACC-2100-027 carrying a STANDING two-currency position after
-//   settlement (USD −1m / ZAR +18.5m), claimed to "square only on the FCY→ZAR
-//   conversion (PR-FX-CONVERT-V2)". This test pins that BEHAVIOUR as-built (so the
-//   finding is anchored to evidence) AND proves the two facts that make the design
-//   a SMELL rather than the domain-truth treatment:
-//     (a) the standing clearing balance is the EXACT NEGATION of the nostro cash
-//         position — it duplicates the economic position with the opposite sign; and
-//     (b) the conversion rule postFxConversionLegs NEVER references ACC-2100-027, so
-//         the claimed squaring event cannot, as implemented, ever empty it — the
-//         balance accumulates across every settled trade without bound.
-//   Domain-truth ruling (see the Lane-4b validation report): for a DELIVERABLE spot
-//   both legs settle PvP on the same value date, so the clearing account has no
-//   inter-leg timing gap to bridge and MUST net to zero at settlement; the FX
-//   exposure lives purely as the nostro cash. This is a FINDING (raised to the
-//   coordinator); per second-line independence this test does NOT fix Kai's code —
-//   it PROVES the smell and the bound.
+// ★ THE CLEARING-ACCOUNT REMEDIATION (Nadia's MEDIUM finding, now FIXED).
+//   Nadia's finding (finding:nadia:fx-settlement-clearing-account-standing-balance:
+//   2026-06-29) was that the as-built design left ACC-2100-027 carrying an unbounded
+//   STANDING two-currency position after a deliverable spot settled. The fix was
+//   BLOCKED because the TB fold asserted per-currency-NATIVE balancing (a cross-
+//   currency spot cannot balance natively without the clearing contra). Option A
+//   (D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1, CEO-approved) re-based the in-balance
+//   invariant to the FUNCTIONAL currency (IAS 21 §21) — the basis the bank's own
+//   recon:gl-currency-dimension-integrity gate already mandates — which unblocked
+//   the domain-correct treatment: a DELIVERABLE spot settles PvP nostro-to-nostro
+//   (both legs on the same value date), so the clearing account has no inter-leg
+//   timing gap to bridge and is EMPTY at settlement; the FX exposure lives purely as
+//   the nostro cash (IAS 21 §23 monetary items). These tests now PROVE the
+//   remediation (clearing empty; cash is the sole exposure representation). The
+//   clearing account is RESERVED for genuinely sequential-leg settlement (swap
+//   near/far) — not deleted.
 //
 // Author: Nadia (Independent-validation engineer, second line — validation, risk).
 // Authority: D-FX-SETTLEMENT-REALISATION-V1 (CEO-approved); D-FX-E2E-CORRECTNESS-V1;
@@ -62,10 +63,12 @@ import { eventStore } from "../platform/composition";
 import { makeClientOnboardingProspectRegistered } from "../platform/event-store/event-types/client-onboarding";
 import { makeReportingTreatmentDeclared } from "../platform/event-store/event-types/reporting-treatments";
 import { productionTag, simulatedTag } from "../platform/event-store/provenance";
+import type { RateMap } from "../platform/accounting/fx-rate-projection";
 import { computeBA320V2 } from "../platform/projections/ba320-fx-v2";
 import {
   computeGlEntriesV2,
   computeTrialBalanceV2,
+  trialBalanceFunctionalCurrencyBalance,
 } from "../platform/projections/gl-projection-v2";
 import { citationRefSchema } from "../v2-core/fil-core/primitives";
 import type { FilInstrumentTerminatedPayload } from "../v2-core/fil-instances/events";
@@ -180,6 +183,31 @@ function tradeEntries(tradeId: string, filter?: { mode: "production-only" }) {
     ...WINDOW,
     ...(filter ? { filter } : {}),
   }).filter((e) => e.sourceEventId?.endsWith(`:${tradeId}`) ?? false);
+}
+
+/**
+ * Build a USD↔ZAR RateMap from the EVENT-SOURCED settlement-of-record (the two
+ * `TradeSettlementExecuted` movements for this trade). The implied transaction-date
+ * spot is |ZAR settled| / |USD settled| (IAS 21 §21) — derived from the emitted
+ * events, never hardcoded. This is the functional-currency translation rate the
+ * trial-balance in-balance invariant is asserted against (D-GL-FUNCTIONAL-CURRENCY-
+ * BALANCING-V1).
+ */
+function rateMapFromSettlement(tradeId: string): RateMap {
+  let usd = 0;
+  let zar = 0;
+  for (const e of eventStore.replay({ type: "TradeSettlementExecuted" })) {
+    const p = e.payload as TradeSettlementExecutedPayload;
+    if (!p.tradeInstance.endsWith(`:${tradeId}`)) continue;
+    if (p.movement.currency === "USD") usd = Math.abs(Number(p.movement.amount));
+    if (p.movement.currency === "ZAR") zar = Math.abs(Number(p.movement.amount));
+  }
+  if (usd === 0) throw new Error("no USD settlement movement to derive the rate from");
+  const usdZar = zar / usd; // ZAR per 1 USD
+  const map: RateMap = new Map();
+  map.set("USD", new Map([["ZAR", usdZar]]));
+  map.set("ZAR", new Map([["USD", 1 / usdZar]]));
+  return map;
 }
 
 /** Net (debit +, credit −) per currency for one account across this trade. */
@@ -366,16 +394,28 @@ describe("FX golden e2e THROUGH settlement — book → settle(value date) → d
     expect(openCountBefore).toBeGreaterThan(0);
   });
 
-  // ── S5: trial balance balances per currency across the cycle ─────────────
-  test("S5 GL trial balance balances PER CURRENCY across the whole cycle", async () => {
+  // ── S5: trial balance balances in the FUNCTIONAL currency across the cycle ──
+  // IAS 21 §21: the books balance in the FUNCTIONAL currency (ZAR), NOT per-currency
+  // native. A deliverable spot is Dr USD-cash / Cr ZAR-cash — it does NOT balance in
+  // native minor units (USD cents ≠ ZAR cents; Principle 5) but balances exactly once
+  // each leg is translated to ZAR at the transaction-date spot. Re-based per
+  // D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1 (the prior per-currency-native assertion
+  // was a stricter, internally-inconsistent invariant relative to the recon gate +
+  // production GL view, and was only satisfiable via the now-removed clearing contra).
+  test("S5 GL trial balance balances in the FUNCTIONAL currency (IAS 21 §21) across the whole cycle", async () => {
     seedZaBankCounterparty();
     const tradeId = await bookSpecimen();
     settleManualFxTrade({ tradeId, asOf: SPEC.settleAsOf });
 
     const tb = computeTrialBalanceV2({ eventStore, entity: ENTITY, ...WINDOW });
-    for (const t of tb.perCurrencyTotals) {
-      expect(t.debitMinor).toBe(t.creditMinor);
-    }
+    const fb = trialBalanceFunctionalCurrencyBalance(tb, rateMapFromSettlement(tradeId));
+    // Every currency translated (no missing-rate fail-closed) AND ΣDr == ΣCr in ZAR.
+    expect(fb.unconvertibleCurrencies).toEqual([]);
+    expect(fb.functionalDebitMinor).toBe(fb.functionalCreditMinor);
+    expect(fb.balanced).toBe(true);
+    // The functional totals are populated (not a fake balanced zero) — the cycle
+    // posted real ZAR-equivalent value.
+    expect(fb.functionalDebitMinor).toBeGreaterThan(0);
   });
 
   // ── S6: provenance partition ─────────────────────────────────────────────
@@ -384,55 +424,63 @@ describe("FX golden e2e THROUGH settlement — book → settle(value date) → d
     const tradeId = await bookSpecimen();
     settleManualFxTrade({ tradeId, asOf: SPEC.settleAsOf });
 
-    const opBook = tradeEntries(tradeId).filter((e) => e.accountId === FX_CLEARING);
+    // Probe the settlement output via the USD nostro cash leg (the clearing account
+    // is no longer used for a PvP spot — the settled cash lives directly in the
+    // nostro). The settlement folds under the operating book but is excluded under
+    // production-only (production stays honest-empty pre-licence).
+    const opBook = tradeEntries(tradeId).filter((e) => e.accountId === USD_NOSTRO);
     expect(opBook.length).toBeGreaterThan(0);
 
     const prod = tradeEntries(tradeId, { mode: "production-only" }).filter(
-      (e) => e.accountId === FX_CLEARING,
+      (e) => e.accountId === USD_NOSTRO,
     );
     expect(prod.length).toBe(0);
   });
 
-  // ── ★ ADVERSARIAL: the clearing-account treatment ────────────────────────
-  test("★ ADVERSARIAL clearing-account (behaviour as-built): ACC-2100-027 carries a STANDING two-ccy position (USD −1m / ZAR +18.5m) after settlement", async () => {
+  // ── ★ CLEARING-ACCOUNT REMEDIATION (Nadia's MEDIUM finding, now FIXED) ─────
+  // The finding (finding:nadia:fx-settlement-clearing-account-standing-balance:
+  // 2026-06-29) was that a deliverable spot left an unbounded STANDING two-ccy
+  // balance in ACC-2100-027. D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1 (Option A) re-
+  // based the TB in-balance invariant to the functional currency, which UNBLOCKED
+  // the domain-correct nostro-to-nostro PvP settlement. These tests now prove the
+  // remediation: the clearing account is EMPTY at settlement; the FX exposure lives
+  // purely as the nostro cash.
+  test("★ REMEDIATED: the FX settlement clearing account (ACC-2100-027) is EMPTY at settlement — no standing balance", async () => {
     seedZaBankCounterparty();
     const tradeId = await bookSpecimen();
     settleManualFxTrade({ tradeId, asOf: SPEC.settleAsOf });
 
     const clearing = netByCcy(tradeEntries(tradeId), FX_CLEARING);
-    // As built (Kai's design): bought leg ⇒ Cr clearing[USD]; sold leg ⇒ Dr clearing[ZAR].
-    expect(clearing.get("USD")).toBeCloseTo(-SPEC.notionalUsd, 2); // CREDIT
-    expect(clearing.get("ZAR")).toBeCloseTo(SPEC.sellZar, 2); // DEBIT
-    // It does NOT net to zero per currency — a STANDING balance remains.
-    expect(Math.abs(clearing.get("USD") ?? 0)).toBeGreaterThan(0);
-    expect(Math.abs(clearing.get("ZAR") ?? 0)).toBeGreaterThan(0);
+    // A deliverable spot settles PvP nostro-to-nostro — NO clearing leg is posted at
+    // all, so the clearing account carries no balance in any currency.
+    expect(clearing.size).toBe(0);
+    expect(clearing.get("USD") ?? 0).toBe(0);
+    expect(clearing.get("ZAR") ?? 0).toBe(0);
   });
 
-  test("★ ADVERSARIAL clearing-account (the SMELL #1): the standing clearing balance is the EXACT NEGATION of the nostro cash position — it duplicates the economic position with opposite sign", async () => {
+  test("★ REMEDIATED: the FX exposure lives PURELY as the nostro cash (USD +1m / ZAR −18.5m) — no sign-flipped clearing duplicate", async () => {
     seedZaBankCounterparty();
     const tradeId = await bookSpecimen();
     settleManualFxTrade({ tradeId, asOf: SPEC.settleAsOf });
 
     const entries = tradeEntries(tradeId);
-    const clearing = netByCcy(entries, FX_CLEARING);
     const usdNostro = netByCcy(entries, USD_NOSTRO).get("USD") ?? 0;
     const zarNostro = netByCcy(entries, ZAR_NOSTRO).get("ZAR") ?? 0;
-
-    // clearing[ccy] === −nostro[ccy] for BOTH currencies: the clearing account holds
-    // a perfect mirror of the genuine cash position. The economic FX exposure is
-    // FULLY represented by the nostro cash alone (USD +1m / ZAR −18.5m); the clearing
-    // balance adds nothing but a sign-flipped duplicate that would ACCUMULATE across
-    // every settled trade. (Domain-truth ruling: a PvP deliverable-spot clearing
-    // account should EMPTY at settlement — see the Lane-4b validation report.)
-    expect(clearing.get("USD")).toBeCloseTo(-usdNostro, 2);
-    expect(clearing.get("ZAR")).toBeCloseTo(-zarNostro, 2);
+    // The genuine cash position is the SOLE representation of the FX exposure.
+    expect(usdNostro).toBeCloseTo(SPEC.notionalUsd, 2);
+    expect(zarNostro).toBeCloseTo(-SPEC.sellZar, 2);
+    // And there is NO clearing balance duplicating it (would have accumulated
+    // unbounded across every settled trade under the old design).
+    const clearing = netByCcy(entries, FX_CLEARING);
+    expect(clearing.size).toBe(0);
   });
 
-  test("★ ADVERSARIAL clearing-account (the SMELL #2): the claimed squaring event PR-FX-CONVERT-V2 NEVER touches ACC-2100-027 — so it cannot, as implemented, ever empty the clearing account", () => {
-    // The doctrine claims the clearing balance "squares ONLY on the FCY→ZAR
-    // conversion (PR-FX-CONVERT-V2)". Exercise the conversion rule directly with a
-    // representative input (sell the settled USD 1m back to ZAR) and prove NO leg
-    // references the clearing account. Pure function — no store needed.
+  test("★ CONVERSION (PR-FX-CONVERT-V2) draws down the FCY nostro in its OWN currency and never touches ACC-2100-027", () => {
+    // The realisation rule squares the FCY cash back to ZAR. It draws down the FCY
+    // nostro at the FCY FACE amount IN USD (designated-currency-correct, Item 3),
+    // recognises ZAR proceeds, and strikes realised P&L — it does NOT (and need not)
+    // touch the clearing account, because the PvP spot left the clearing account
+    // empty. Pure function — no store needed.
     const legs = postFxConversionLegs({
       instanceId: "fil:inst:LE-ZA-HOZ-BANK:e2e-convert-probe",
       tenantId: "tenant:LE-ZA-HOZ-BANK",
@@ -444,14 +492,13 @@ describe("FX golden e2e THROUGH settlement — book → settle(value date) → d
       zarCostBasis: "18500000",
       accumulatedUnrealised: "0",
     });
-    expect(legs.length).toBeGreaterThan(0); // it DOES post (proceeds / cost / realised)
-    // …but NONE of its legs touch the FX settlement clearing account.
-    const touchesClearing = legs.some((l) => l.accountCode === FX_CLEARING);
-    expect(touchesClearing).toBe(false);
-    // Therefore the standing clearing balance struck at settlement has NO wired path
-    // back to zero: confirmed FINDING (raised to the coordinator; second-line does
-    // not fix Kai's code). The residual FCY exposure already lives correctly in the
-    // nostro cash, so the clearing balance is a redundant, unbounded-accumulating
-    // suspense position.
+    expect(legs.length).toBeGreaterThan(0);
+    // The FCY nostro leg is denominated in the FCY (USD), not ZAR (Item 3 fix).
+    const fcyNostroLeg = legs.find((l) => l.accountCode === USD_NOSTRO);
+    expect(fcyNostroLeg).toBeDefined();
+    expect(fcyNostroLeg?.amount.currency).toBe("USD");
+    expect(Number(fcyNostroLeg?.amount.amount)).toBeCloseTo(1_000_000, 2);
+    // No leg touches the FX settlement clearing account.
+    expect(legs.some((l) => l.accountCode === FX_CLEARING)).toBe(false);
   });
 });
