@@ -59,11 +59,11 @@
 import { describe, expect, test } from "bun:test";
 
 import { bookFxTrade, settleManualFxTrade } from "../dashboard/trade-book-view";
+import type { RateMap } from "../platform/accounting/fx-rate-projection";
 import { eventStore } from "../platform/composition";
 import { makeClientOnboardingProspectRegistered } from "../platform/event-store/event-types/client-onboarding";
 import { makeReportingTreatmentDeclared } from "../platform/event-store/event-types/reporting-treatments";
 import { productionTag, simulatedTag } from "../platform/event-store/provenance";
-import type { RateMap } from "../platform/accounting/fx-rate-projection";
 import { computeBA320V2 } from "../platform/projections/ba320-fx-v2";
 import {
   computeGlEntriesV2,

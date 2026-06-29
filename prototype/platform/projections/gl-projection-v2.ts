@@ -45,8 +45,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import type { TrialBalance } from "../accounting/period-close";
 import { type RateMap, convertMinor } from "../accounting/fx-rate-projection";
+import type { TrialBalance } from "../accounting/period-close";
 import { isCapitalSourcedGlPosting } from "../accounting/posting-rules-v2/capital-fold";
 import { deriveCapitalInstanceLegs } from "../accounting/posting-rules-v2/capital-instance-fold";
 import { deriveFxConversionLegs } from "../accounting/posting-rules-v2/fx-conversion-fold";

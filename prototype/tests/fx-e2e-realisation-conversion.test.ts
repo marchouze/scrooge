@@ -183,10 +183,7 @@ describe("FX realisation e2e — convert FCY→ZAR strikes realised P&L + closes
     // legs at face. ΣDr(ZAR) == ΣCr(ZAR).
     let zarNet = 0;
     for (const e of conversionEntries) {
-      const zarValue =
-        e.currency === "ZAR"
-          ? Number(e.amount.amount)
-          : SPEC.sellZar; // the USD leg's ZAR cost basis (1m USD @ 18.5)
+      const zarValue = e.currency === "ZAR" ? Number(e.amount.amount) : SPEC.sellZar; // the USD leg's ZAR cost basis (1m USD @ 18.5)
       zarNet += e.debitCredit === "debit" ? zarValue : -zarValue;
     }
     expect(zarNet).toBeCloseTo(0, 2); // the conversion balances in the functional ccy
