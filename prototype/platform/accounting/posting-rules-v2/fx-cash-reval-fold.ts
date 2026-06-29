@@ -225,6 +225,66 @@ function absD(d: Decimal): Decimal {
 }
 
 /**
+ * PER-ENTRY ZAR-balance residuals for the settlement entries. For each settled
+ * trade, sum the ZAR-equivalent of its legs AT THE TRADE'S OWN SETTLE RATE — the
+ * ZAR cash leg is the identity, and each FCY leg's ZAR-equivalent IS its ZAR
+ * partner leg of the SAME trade (the settle-rate exchange). A balanced settlement
+ * entry nets to ZERO in ZAR by construction (Dr bought-ccy cash @ settle rate = Cr
+ * sold-ccy cash @ settle rate, IAS 21 §21). Returns the residual (ZAR major-unit
+ * decimal) per trade so the recon can fail closed on a single non-zero entry.
+ *
+ * The residual is computed as Σ(signed ZAR leg) + Σ(signed FCY leg × its trade
+ * settle rate), where the trade settle rate = |ZAR moved| / |FCY moved| per
+ * currency on that trade — i.e. the FCY leg is valued at exactly the rate the ZAR
+ * partner implies, so a correct PvP settlement residual is exactly zero.
+ */
+export function foldSettlementEntryZarResiduals(args: {
+  readonly eventStore: EventStore;
+  readonly periodStart: string;
+  readonly periodEnd: string;
+  readonly filter: ProvenanceFilter;
+}): Map<string, Decimal> {
+  // Re-group the settlement legs per trade (same source as the positions fold).
+  const tradeLegs = new Map<string, Array<{ currency: string; signed: Decimal }>>();
+  function pushLeg(trade: string, currency: string, signed: Decimal, postingDate: string) {
+    if (postingDate < args.periodStart || postingDate > args.periodEnd) return;
+    const arr = tradeLegs.get(trade) ?? [];
+    arr.push({ currency, signed });
+    tradeLegs.set(trade, arr);
+  }
+  for (const t of SETTLEMENT_EVENT_TYPES) {
+    for (const e of args.eventStore.replay({ type: t })) {
+      if (!eventMatchesProvenanceFilter(e, args.filter)) continue;
+      if (t === "TradeSettlementExecuted") {
+        const p = e.payload as unknown as TradeSettlementExecutedPayload;
+        pushLeg(p.tradeInstance, p.movement.currency, toDecimal(p.movement.amount), p.asOf.substring(0, 10));
+      } else {
+        const p = e.payload as unknown as FilFxSettlementConfirmedPayload;
+        const postingDate = p.asOf.substring(0, 10);
+        pushLeg(p.instance, p.boughtBooked.currency, toDecimal(p.boughtSettled.amount), postingDate);
+        pushLeg(p.instance, p.soldBooked.currency, negD(toDecimal(p.soldSettled.amount)), postingDate);
+      }
+    }
+  }
+  const residuals = new Map<string, Decimal>();
+  for (const [trade, legs] of tradeLegs) {
+    const zarLegs = legs.filter((l) => l.currency === FUNCTIONAL_CURRENCY);
+    const fcyLegs = legs.filter((l) => l.currency !== FUNCTIONAL_CURRENCY);
+    let zarMoved = toDecimal("0");
+    for (const z of zarLegs) zarMoved = addD(zarMoved, z.signed);
+    // The trade's ZAR-equiv of its FCY legs is exactly the ZAR partner it was
+    // exchanged against (−zarMoved across the FCY legs, apportioned by |fcy|). The
+    // residual is the ZAR legs + that ZAR-equiv, which is zero for a balanced PvP.
+    let residual = zarMoved; // signed ZAR legs
+    for (const f of fcyLegs) {
+      residual = addD(residual, apportionBasis(f.signed, fcyLegs, zarMoved));
+    }
+    residuals.set(trade, residual);
+  }
+  return residuals;
+}
+
+/**
  * Per non-functional currency, the SETTLE-rate COST-BASIS rate (ZAR per 1 FCY) of
  * the net settled-cash position = `zarCostBasis / netFcy`. The GL view uses this to
  * carry the FCY nostro at its cost basis (IAS 21 §23); the EOD-MTM reval

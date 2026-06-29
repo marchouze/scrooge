@@ -24,11 +24,17 @@ import {
   type GlPostingEmittedPayload,
   makeGlPostingEmitted,
 } from "../platform/event-store/event-types/fx-accounting";
+import { makePolicyVersionActivated } from "../platform/event-store/event-types/policy-activation";
 import { makeReportingTreatmentDeclared } from "../platform/event-store/event-types/reporting-treatments";
 import { productionTag } from "../platform/event-store/provenance";
 import { EventStore } from "../platform/event-store/store";
 import type { Actor, Event } from "../platform/event-store/types";
 import { MarketDataStore } from "../platform/market-data/store";
+import {
+  adoptDailyOfficialFxMarks,
+  resolveActivePolicyVersionRef,
+} from "../platform/valuation/mark-adoption-engine";
+import { V2_PERIOD_END } from "../platform/projections/v2-read-window";
 import { V2LiveFxDriver } from "../platform/simulation-v2-live/live-driver";
 import { emitClientOnboardingLifecycle } from "../platform/simulation-v2/sim-modules/counterparty-provisioning";
 import { tenantIdSchema } from "../v2-core/control-plane/tenant";
@@ -70,10 +76,33 @@ function seedOnboardedSimClient(store: EventStore): void {
   });
 }
 
+/** Activate the founding valuation policy so adoptDailyOfficialFxMarks can resolve
+ *  a policy-version ref and emit OfficialMarkAdopted marks (the EOD-MTM reval reads
+ *  these closing marks; missing → fail-closed). */
+function seedValuationPolicy(store: EventStore): void {
+  const ev = makePolicyVersionActivated({
+    asOf: "2026-01-01T00:00:00.000Z",
+    entity: "LE-ZA-HOZ-BANK",
+    actor: { type: "service", id: "agent:helena:cro" },
+    citations: ["Policies/valuation-policy-v1.md"],
+    payload: {
+      policyDomain: "valuation",
+      policyId: "VALUATION-POLICY-V1",
+      version: "1.0",
+      effectiveFrom: "2026-01-01T00:00:00.000Z",
+      documentHash: `blake3:${"a".repeat(64)}`,
+      supersedes: null,
+      activatedBy: "agent:helena:cro",
+    },
+  });
+  store.append({ ...ev, provenance: PROD_TAG });
+}
+
 function populatedStores(): { eventStore: EventStore; marketDataStore: MarketDataStore } {
   const eventStore = new EventStore();
   const marketDataStore = new MarketDataStore(":memory:");
   seedFxTreatment(eventStore);
+  seedValuationPolicy(eventStore);
   seedOnboardedSimClient(eventStore);
   const driver = new V2LiveFxDriver({
     eventStore,
@@ -81,6 +110,11 @@ function populatedStores(): { eventStore: EventStore; marketDataStore: MarketDat
     config: { tradesPerTick: 2, seed: 0x9911 },
   });
   for (let i = 0; i < 5; i++) driver.tickOnce();
+  // EOD-MTM closing marks for the whole production feed universe (the same daily
+  // feed-marking the MTM run does) — so the settled-FCY-cash reval has an
+  // event-sourced closing mark per held currency (no-silent-zero).
+  const ref = resolveActivePolicyVersionRef(eventStore);
+  adoptDailyOfficialFxMarks(eventStore, marketDataStore, V2_PERIOD_END, ref);
   return { eventStore, marketDataStore };
 }
 
@@ -255,28 +289,39 @@ describe("buildGlView — per-(account,currency) TB + CCY/ZAR-equivalent", () =>
     }
   });
 
-  test("the in-balance invariant is asserted on the FUNCTIONAL (ZAR-equivalent) totals, never native", () => {
+  test("the MULTI-trade settled ZAR TB balances PRE- AND POST-EOD-MTM (per-entry ZAR invariant; #1617 gap CLOSED)", () => {
     // IAS 21 §21: the in-balance invariant is the FUNCTIONAL (ZAR-equivalent) one,
-    // NOT a native cross-currency minor sum (D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1;
-    // recon:gl-currency-dimension-integrity). This test asserts the BASIS is
-    // functional — `inBalance` agrees with the ZAR-equivalent totals comparison —
-    // and that those totals are populated (not a fake balanced zero).
+    // asserted PER-ENTRY — every Dr/Cr pair is ZAR-equal at its own rate, so the sum
+    // balances by construction (D-GL-PER-ENTRY-FUNCTIONAL-BALANCE-V1, CEO 2026-06-29;
+    // strengthens D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1). The #1617-documented gap is
+    // now CLOSED: settled FCY cash (a §23 monetary item) is revalued daily to the
+    // closing official mark, the unrealised exchange-difference contra (§28) posted
+    // into the GL fold — so the multi-trade functional TB nets to ZERO.
     const { eventStore, marketDataStore } = populatedStores();
     const view = buildGlView({ eventStore, marketDataStore, filter: { mode: "combined" } });
     expect(view.zarTotalDebitMinor).toBeGreaterThan(0);
     expect(view.zarTotalCreditMinor).toBeGreaterThan(0);
     // `inBalance` is the functional comparison, never the native one.
     expect(view.inBalance).toBe(view.zarTotalDebitMinor === view.zarTotalCreditMinor);
-    // NOTE — post-Option-A KNOWN GAP (tracked: task "Wire daily FCY-cash revaluation
-    // contra into GL"): on a MULTI-trade settled book the closing-mark functional
-    // totals do NOT yet net to zero, because settled FCY cash (carried at booked ZAR
-    // cost basis, IAS 21 §23) is not revalued daily — the unrealised-reval P&L contra
-    // is missing from the GL fold. A SINGLE deliverable spot DOES balance at its trade
-    // rate (tests/fx-e2e-settlement-derecognition.test.ts S5). The residual here is
-    // exactly that unbooked FCY-cash reval; do NOT force it to zero by concealment
-    // (Engineering Charter cmd 3) — it closes when the daily cash-reval lands.
-    const residual = Math.abs(view.zarTotalDebitMinor - view.zarTotalCreditMinor);
-    expect(residual).toBeGreaterThan(0); // the documented, quantified reval gap
+    // POST-EOD-MTM: the multi-trade settled book balances to the cent (TRUE balance,
+    // not the previously-documented reval gap). The settled USD + EUR nostro cash is
+    // carried at SETTLE-rate cost basis and the EOD-MTM reval (ACC-1200-099 ↔
+    // ACC-2100-005) carries it to the closing mark — both legs ZAR-equal, so the
+    // entry self-balances. No concealment (Engineering Charter cmd 3): the residual
+    // is genuinely zero because the missing reval contra is now folded.
+    expect(view.zarTotalDebitMinor - view.zarTotalCreditMinor).toBe(0);
+    expect(view.inBalance).toBe(true);
+    // PROOF the gap-closing reval actually ran (not a vacuous zero): the §23
+    // retranslation-adjustment account + the §28 unrealised-P&L contra are both
+    // populated and equal-and-opposite (a balanced ZAR entry).
+    const retrans = view.rows.find((r) => r.accountId === "ACC-1200-099");
+    const unrealised = view.rows.find((r) => r.accountId === "ACC-2100-005");
+    expect(retrans).toBeDefined();
+    expect(unrealised).toBeDefined();
+    if (retrans && unrealised) {
+      expect(retrans.zarNetMinor).toBe(-unrealised.zarNetMinor);
+      expect(retrans.zarNetMinor).not.toBe(0);
+    }
   });
 
   test("SHARED account with USD + ZAR postings yields TWO per-currency rows, ZERO 'multi'", () => {
@@ -402,12 +447,17 @@ describe("buildGlView — per-(account,currency) TB + CCY/ZAR-equivalent", () =>
     // (4) NOSTRO-TO-NOSTRO settlement (D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1): the
     // settled cash lives in the FCY/ZAR nostros (ACC-1200-*), with NO standing FX
     // settlement clearing balance (ACC-2100-027) — the remediation of Nadia's MEDIUM
-    // finding. (The closing-mark functional in-balance on this MULTI-trade settled
-    // book is the separate, tracked FCY-cash-reval gap — see the "in-balance
-    // invariant" test above; not asserted here.)
+    // finding. The closing-mark functional in-balance on this MULTI-trade settled
+    // book is now TRUE (D-GL-PER-ENTRY-FUNCTIONAL-BALANCE-V1): the settled FCY cash
+    // is revalued daily to the closing official mark with its §28 P&L contra, so the
+    // ZAR TB nets to zero (the #1617 gap is closed — see the per-entry-invariant test
+    // above).
     const clearingRows = view.rows.filter((r) => r.accountId === "ACC-2100-027");
     expect(clearingRows.every((r) => r.netMinor === 0)).toBe(true);
     const nostroRows = view.rows.filter((r) => r.accountId.startsWith("ACC-1200-"));
     expect(nostroRows.length).toBeGreaterThan(0);
+    // The settled multi-trade book balances in ZAR at the closing marks (true zero).
+    expect(view.inBalance).toBe(true);
+    expect(view.zarTotalDebitMinor - view.zarTotalCreditMinor).toBe(0);
   });
 });

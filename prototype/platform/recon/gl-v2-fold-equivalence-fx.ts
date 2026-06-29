@@ -71,6 +71,8 @@ import {
   foldFxContributionLegs,
   foldTreatmentRegisterFromStore,
 } from "../accounting/posting-rules-v2/fx-fold";
+import { deriveFxCashRevalLegs } from "../accounting/posting-rules-v2/fx-cash-reval-fold";
+import { deriveFxConversionLegs } from "../accounting/posting-rules-v2/fx-conversion-fold";
 import { deriveFxInstanceLegs } from "../accounting/posting-rules-v2/fx-instance-fold";
 import { eventStore } from "../composition";
 import { amountToMinorUnits } from "../core/decimal-money";
@@ -441,6 +443,23 @@ export function run(): ReconResult {
     // (5) Cross-check against the projection trial balance: every FX (ACC-2100-*)
     // row in the full combined TB must equal the fold's FX figure (proves the
     // projection wiring, not just the helper, surfaces the folded FX numbers).
+    //
+    // The trial balance folds the FX-INSTANCE contribution PLUS two additive
+    // contributions that ALSO post into the FX account block (ACC-2100-005/006):
+    //   - FX REALISATION (PR-FX-CONVERT-V2, deriveFxConversionLegs); and
+    //   - EOD-MTM SETTLED-FCY-CASH REVAL (PR-FX-CASH-REVAL-V2, deriveFxCashRevalLegs,
+    //     D-GL-PER-ENTRY-FUNCTIONAL-BALANCE-V1) — the §28 unrealised-P&L contra.
+    // Those are NOT part of the FX-instance fold (`foldFxContributionLegs`), so the
+    // comparison subtracts their contribution from the TB FX rows before asserting
+    // the residual equals the FX-instance fold. (Their own balance is asserted by
+    // fx-settlement.test.ts + recon:gl-per-entry-zar-balance.)
+    const additiveFx = new Map<string, number>();
+    for (const leg of deriveFxConversionLegs({ eventStore, periodStart: V2_PERIOD_START, periodEnd: V2_PERIOD_END })) {
+      accumulate(additiveFx, leg);
+    }
+    for (const leg of deriveFxCashRevalLegs({ eventStore, periodStart: V2_PERIOD_START, periodEnd: V2_PERIOD_END }).legs) {
+      accumulate(additiveFx, leg);
+    }
     const tb = computeTrialBalanceV2Uncached({
       eventStore,
       entity: V2_ANCHOR_ENTITY,
@@ -452,10 +471,13 @@ export function run(): ReconResult {
       result.asserted += 1;
       const key = `${row.leafAccountId}|${row.currency}`;
       const f = folded.get(key) ?? 0;
-      if (row.amountMinor !== f) {
+      // Remove the realisation + reval contributions so the residual is the
+      // FX-instance contribution the golden / event-fold produce.
+      const fxInstanceContribution = row.amountMinor - (additiveFx.get(key) ?? 0);
+      if (fxInstanceContribution !== f) {
         violations.push({
           subject: `${PIPELINE}:projection-row-divergence:${key}`,
-          message: `Trial-balance FX row "${key}" amountMinor=${row.amountMinor} but the fold computes ${f}. The projection must surface the fold's FX contribution unchanged. Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD.`,
+          message: `Trial-balance FX row "${key}" FX-instance contribution=${fxInstanceContribution} (amountMinor=${row.amountMinor} less realisation+reval ${additiveFx.get(key) ?? 0}) but the fold computes ${f}. The projection must surface the fold's FX-instance contribution unchanged. Authority: D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD.`,
           severity: "fail",
         });
       }

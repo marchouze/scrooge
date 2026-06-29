@@ -946,6 +946,16 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // CLASS. Authority: D-V2-UI-VISIBILITY-REMEDIATION; Principle 5;
     // D-ENGINEERING-INTEGRITY-CHARTER.
     "recon:gl-currency-dimension-integrity",
+    // ENFORCING (D-GL-PER-ENTRY-FUNCTIONAL-BALANCE-V1, CEO 2026-06-29): the
+    // PER-ENTRY functional-currency (ZAR) double-entry invariant — every journal
+    // entry's Dr and Cr legs are ZAR-equal at its OWN rate, so the multi-trade
+    // settled ZAR TB balances PRE- and POST-EOD-MTM (settled FCY cash revalued
+    // daily to the closing official mark with its IAS 21 §28 P&L contra; the #1617
+    // gap closed). Stronger than — and subsumes — the aggregate-rate-map check.
+    // A single unbalanced-in-ZAR entry fails closed; a missing closing mark on a
+    // held FCY balance fails closed (no-silent-zero). Authority: IAS 21 §21/§23/§28;
+    // D-ENGINEERING-INTEGRITY-CHARTER.
+    "recon:gl-per-entry-zar-balance",
     "recon:valuation-adjustment-additive",
     "recon:orphan-open-runs",
     "recon:orphan-run-deliverable-state",
