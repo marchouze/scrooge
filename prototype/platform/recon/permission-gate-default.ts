@@ -259,6 +259,13 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // D-CAPITAL-ASSET-CLASS-V1, P4-SECURITY-DESIGNED-IN.
   "platform/recon/ba100-cell-values-reconcile.ts",
   "platform/recon/ba100-cell-values-reconcile.test.ts",
+  // FX production-view ↔ GL leak gate (D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX): opens
+  // the resolved read-path event store READ-ONLY ({ readonly: true }) to fold the
+  // production-only open-FX register and assert it reconciles to the empty GL. Pure
+  // read; no append path. Wrapping the read-only open with a write-path policy gate
+  // is a no-op (the gate intercepts append, not replay). Citation:
+  // D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/fx-production-view-gl-reconciliation.ts",
   // BA 100 leaf-fold unit test (D-BA-RETURN-CELL-VALUE-ENGINE Phase 1): builds
   // in-memory `:memory:` throwaway EventStore fixtures to seed synthetic capital
   // FIL events and assert the fold places them onto the right BA 100 rows. Same
