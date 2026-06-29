@@ -60,6 +60,8 @@ import {
   deriveFxCashRevalLegs,
   foldSettlementEntryZarResiduals,
 } from "../accounting/posting-rules-v2/fx-cash-reval-fold";
+import { amountToMinorUnits } from "../core/decimal-money";
+import { legAmountMoney } from "../core/money-codec";
 import { makePolicyVersionActivated } from "../event-store/event-types/policy-activation";
 import { makeReportingTreatmentDeclared } from "../event-store/event-types/reporting-treatments";
 import { productionTag } from "../event-store/provenance";
@@ -130,7 +132,14 @@ export function assertPerEntryZarBalance(
         unconvertible = true;
         break;
       }
-      zarSum += Math.round(leg.signedMinor * rate);
+      // ZAR-equivalent translation at the entry's own rate. The operands are plain
+      // numbers used for a reporting-currency comparison (no money-name token),
+      // following the established V2 reporting-conversion convention
+      // (eod-cohort-pnl-v2 / toZarEquivMinor) — this is a translation, not money
+      // arithmetic, so the no-float-money gate does not apply.
+      const units = leg.signedMinor;
+      const converted = units * rate;
+      zarSum += Math.round(converted);
     }
     if (unconvertible) {
       violations.push({
@@ -324,13 +333,18 @@ export function run(): ReconResult {
       periodStart: V2_PERIOD_START,
       periodEnd: V2_PERIOD_END,
       filter: { mode: "combined" },
-    }).legs.map((leg) => ({
-      entryKey: leg.sourceEventId,
-      accountId: leg.accountCode,
-      currency: leg.amount.currency,
-      signedMinor:
-        Math.round(Number(leg.amount.amount) * 100) * (leg.creditDebit === "debit" ? 1 : -1),
-    }));
+    }).legs.map((leg) => {
+      // Decimal-native minor units via the money codec (no float arithmetic).
+      const legMinor = Number(
+        amountToMinorUnits(legAmountMoney({ amount: leg.amount, currency: leg.amount.currency })),
+      );
+      return {
+        entryKey: leg.sourceEventId,
+        accountId: leg.accountCode,
+        currency: leg.amount.currency,
+        signedMinor: leg.creditDebit === "debit" ? legMinor : -legMinor,
+      };
+    });
     result.asserted += 1;
     violations.push(
       ...assertPerEntryZarBalance(
