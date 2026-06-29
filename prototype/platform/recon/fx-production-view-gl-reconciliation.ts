@@ -38,6 +38,7 @@
 // Author: Kai (Trading systems engineer, engineering).
 
 import { openFxInstances } from "../../dashboard/v2-fx-open-book";
+import { nowUtc } from "../core/types";
 import { bankLifecyclePhase } from "../event-store/provenance";
 import { resolveEventDbPath } from "../event-store/resolve-event-db";
 import { EventStore } from "../event-store/store";
@@ -55,7 +56,7 @@ interface RawFxCreated {
 export interface FxProductionViewReconOptions {
   /** Override the event store path (tests). Defaults to the read-path resolver. */
   readonly eventDbPath?: string;
-  /** Override "now" for the settlement-date bound (tests). Defaults to wall-clock. */
+  /** Override "now" for the settlement-date bound (tests). Defaults to `nowUtc()`. */
   readonly nowIso?: string;
 }
 
@@ -64,7 +65,10 @@ export function run(opts: FxProductionViewReconOptions = {}): ReconResult {
   const violations: ReconViolation[] = [];
   let asserted = 0;
 
-  const nowIso = opts.nowIso ?? new Date().toISOString();
+  // Clock via the approved `nowUtc()` abstraction (platform/core/types.ts —
+  // inside the wall-clock boundary), never a raw `new Date()`. Tests inject
+  // `nowIso` for determinism. Citation: recon:wall-clock-callsite-coverage.
+  const nowIso = opts.nowIso ?? nowUtc();
   const dbPath = opts.eventDbPath ?? resolveEventDbPath({ excludeHomeDefault: false }).path;
 
   let store: EventStore;
