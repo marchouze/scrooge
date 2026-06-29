@@ -40,11 +40,11 @@
       crumbs: [
         { label: "Executive", href: "/v2/index.html" },
         { label: "Markets", href: "/v2/markets/index.html" },
-        { label: "FIL Positions", href: "/v2/markets/positions.html" },
-        { label: id ? (id.split(":").pop() || id) : "Instrument Detail" },
+        { label: "FX Desk", href: "/v2/markets/fx.html" },
+        { label: id ? (id.split(":").pop() || id) : "Trade Impact" },
       ],
-      title: id ? `Instrument: ${id.split(":").pop() || id}` : "Instrument Detail",
-      seat: "FX FIL instance · economic terms from live blotter",
+      title: id ? `Trade: ${id.split(":").pop() || id}` : "Trade Impact",
+      seat: "FX FIL instance · GL footprint + per-BA-return impact (D-FX-E2E-CORRECTNESS-V1)",
     });
 
     const bodyHost = document.createElement("div"); main.appendChild(bodyHost);
@@ -59,26 +59,27 @@
         bodyHost.replaceChildren();
         let d;
         try {
-          d = await v2Fetch("/api/v2/markets/fx/blotter");
+          d = await v2Fetch(`/api/v2/markets/fx/trade-impact?id=${encodeURIComponent(id)}`);
         } catch (err) {
           v2RenderError(bodyHost, v2Esc(err.message));
           return;
         }
         document.getElementById("as-of").textContent = d.asOf ? `as of ${new Date(d.asOf).toLocaleString()}` : "—";
 
-        const r = (d.rows || []).find((x) => x.instance === id);
-        if (!r) {
-          // Honest not-found — never a blank that reads as "exists but empty".
+        if (d.state !== "found" || !d.economicTerms) {
+          // Honest not-found / not-fx — never a blank that reads as "exists but empty".
           const banner = document.createElement("div");
           banner.className = "v2-empty";
           banner.innerHTML =
             `<div class="v2-empty-icon">○</div><div class="v2-empty-msg">` +
-            `<strong>Instrument <code>${v2Esc(id)}</code> is not in the live FX blotter under this lens.</strong><br>` +
-            `It may be terminated, out of this provenance scope, or a non-FX instrument (cross-asset FIL is not yet served — see <a href="/v2/markets/positions.html">FIL Positions</a> scope note). ` +
-            `Switch to <strong>+ Sim</strong> if you expect the demonstration cohort.</div>`;
+            `<strong>Trade <code>${v2Esc(id)}</code> — ${v2Esc(d.state)}.</strong><br>` +
+            `${v2Esc(d.reason || "")}<br>` +
+            `Switch to <strong>+ Sim</strong> if you expect the demonstration cohort, or return to the <a href="/v2/markets/fx.html">FX Desk</a> blotter.</div>`;
           bodyHost.appendChild(banner);
           return;
         }
+
+        const r = d.economicTerms;
 
         // Headline tiles.
         renderTileGroup(bodyHost, {
@@ -86,48 +87,89 @@
             { label: "Stage", value: r.stage, unit: "Lifecycle" },
             { label: "Pair", value: r.pair, unit: "Hedging set" },
             { label: "Notional", value: `${r.notional.amount} ${r.notional.currency}`, unit: "Netting-set ccy" },
-            { label: "Settlement", value: r.settlementDate, unit: "Driving-leg maturity" },
+            { label: "Residency (BA-325)", value: r.residencyUnmapped ? "UNMAPPED" : (r.residencyLabel || "—"), unit: "Reg 29(3) row axis" },
           ],
         });
 
-        // Economic terms.
+        // Economic terms + the granularity that drives BA returns.
         const s = document.createElement("div"); s.className = "v2-section"; bodyHost.appendChild(s);
-        const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "Economic terms"; s.appendChild(h);
+        const h = document.createElement("h2"); h.className = "v2-section-title"; h.textContent = "Economic terms & BA-return granularity"; s.appendChild(h);
         renderTable(s, {
           columns: ["Field", "Value"],
           rows: [
-            { cells: ["Instance URN", `<code>${v2Esc(r.instance)}</code>`] },
+            { cells: ["Instance URN", `<code>${v2Esc(d.instance)}</code>`] },
             { cells: ["FIL type", `<code>${v2Esc(r.type)}</code>`] },
             { cells: ["Pair", `<strong>${v2Esc(r.pair)}</strong>`] },
             { cells: ["Direction", r.direction === "long"
               ? '<span class="v2-badge v2-badge-success">long</span>'
               : '<span class="v2-badge v2-badge-warning">short</span>'] },
             { cells: ["Notional", `${v2Esc(r.notional.amount)} ${v2Esc(r.notional.currency)}`] },
-            { cells: ["Counterparty", v2Esc(r.counterpartyId)] },
+            { cells: ["Counterparty", r.counterpartyName
+              ? `${v2Esc(r.counterpartyName)} <code class="v2-note">${v2Esc(r.counterpartyId)}</code>`
+              : `<code>${v2Esc(r.counterpartyId)}</code>`] },
+            { cells: ["Domicile / jurisdiction", r.counterpartyJurisdiction ? v2Esc(r.counterpartyJurisdiction) : "—"] },
+            { cells: ["Sector", r.counterpartySector ? v2Esc(r.counterpartySector) : "—"] },
+            { cells: ["Residency bucket (BA-325)", r.residencyUnmapped
+              ? `<span class="v2-badge v2-badge-danger" title="${v2Esc(r.residencyReason || "")}">unmapped — drops out of BA-325</span>`
+              : `<span class="v2-badge v2-badge-info">${v2Esc(r.residencyLabel || "—")}</span>`] },
             { cells: ["Netting set", `<code>${v2Esc(r.nettingSetId)}</code>`] },
+            { cells: ["Trade date", r.tradeDate ? v2Esc(r.tradeDate) : "—"] },
             { cells: ["Settlement date", v2Esc(r.settlementDate)] },
             { cells: ["Stage", v2Esc(r.stage)] },
           ],
         });
 
-        // Valuation + event-history are not served per-instrument yet — stated honestly.
-        const gapSection = document.createElement("div"); gapSection.className = "v2-section"; bodyHost.appendChild(gapSection);
-        const gh = document.createElement("h2"); gh.className = "v2-section-title"; gh.textContent = "Valuation & event history"; gapSection.appendChild(gh);
-        const gap = document.createElement("div");
-        gap.className = "v2-note";
-        gap.innerHTML =
-          "<strong>Substrate gap:</strong> there is no per-instrument <code>/api/v2</code> read endpoint serving " +
-          "this instance's mark-to-market valuation or its raw <code>FilInstrument*</code> event history. " +
-          "These terms are sourced from the live FX blotter (<code>/api/v2/markets/fx/blotter</code>); " +
-          "a dedicated instrument-detail endpoint (valuation + replay-derived event history) is a tracked " +
-          "follow-on, not rendered here as an empty zero.";
-        gapSection.appendChild(gap);
+        // --- Per-BA-return impact: what does THIS trade do to the returns? ---
+        const ri = document.createElement("div"); ri.className = "v2-section"; bodyHost.appendChild(ri);
+        const rh = document.createElement("h2"); rh.className = "v2-section-title"; rh.textContent = "BA-return impact — this trade's contribution"; ri.appendChild(rh);
+        renderTable(ri, {
+          columns: ["Return", "Cell / line", "Contribution", "Basis"],
+          emptyMsg: "No BA-return impact derived.",
+          rows: (d.returnImpacts || []).map((x) => ({
+            href: x.returnHref,
+            cells: [
+              `<strong>${v2Esc(x.form)}</strong><br><span class="v2-note">${v2Esc(x.title)}</span>`,
+              v2Esc(x.cell),
+              x.contribution
+                ? `${v2Esc(x.contribution.amount)} ${v2Esc(x.contribution.currency)}`
+                : '<span class="v2-badge v2-badge-warning">see note</span>',
+              `<span class="v2-note">${v2Esc(x.note)}</span>`,
+            ],
+          })),
+        });
+
+        // --- GL footprint: the trade's ledger entries (sourceEventId === instance). ---
+        const gl = document.createElement("div"); gl.className = "v2-section"; bodyHost.appendChild(gl);
+        const glh = document.createElement("h2"); glh.className = "v2-section-title"; glh.textContent = `GL footprint — ${(d.glLegs || []).length} ledger legs`; gl.appendChild(glh);
+        const glIntro = document.createElement("div");
+        glIntro.className = "v2-note";
+        glIntro.innerHTML =
+          "Every FX GL leg carries <code>sourceEventId = this instance</code>, so this is the trade's exact ledger footprint: " +
+          "OBS memorandum legs at trade date (BA-110), on-balance-sheet derivative + reval legs (BA-100), settlement + P&L legs (BA-120).";
+        gl.appendChild(glIntro);
+        renderTable(gl, {
+          columns: ["Posted", "Account", "Dr/Cr", "Amount", "Return", "Rule"],
+          emptyMsg: "No GL legs for this trade in the read window (an at-market forward may post OBS-only until revaluation/settlement).",
+          rows: (d.glLegs || []).map((l) => ({
+            cells: [
+              v2Esc((l.postedAt || "").slice(0, 10)),
+              `<code>${v2Esc(l.accountId)}</code><br><span class="v2-note">${v2Esc(l.accountName)}</span>`,
+              l.debitCredit === "debit"
+                ? '<span class="v2-badge v2-badge-info">Dr</span>'
+                : '<span class="v2-badge v2-badge-info">Cr</span>',
+              `${v2Esc(l.amount)} ${v2Esc(l.currency)}`,
+              `<span class="v2-badge v2-badge-info">${v2Esc(l.returnBucket)}</span>`,
+              l.postingRuleId ? `<code>${v2Esc(l.postingRuleId)}</code>` : "—",
+            ],
+          })),
+        });
 
         renderRefs(bodyHost, {
           refs: [
             { label: "FIL instance schema (FilInstrumentCreated)", href: "/v2/operations/schemas.html?type=FilInstrumentCreated" },
             { label: "FX Desk (full book)", href: "/v2/markets/fx.html" },
-            { label: "FIL Positions (register)", href: "/v2/markets/positions.html" },
+            { label: "General Ledger", href: "/gl" },
+            { label: "Regulatory Returns register", href: "/v2/finance/returns.html" },
           ],
         });
       });

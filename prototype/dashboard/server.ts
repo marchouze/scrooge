@@ -335,6 +335,7 @@ import { buildGlAccountLedger, buildGlView } from "./v2-finance-gl-view";
 import { buildFinanceReturnDetailView, buildFinanceReturnsView } from "./v2-finance-returns-view";
 import { buildCapitalView } from "./v2-finance-view";
 import { buildV2AllTradesView } from "./v2-markets-all-trades-view";
+import { buildV2FxTradeImpactView } from "./v2-markets-fx-trade-impact-view";
 import { buildV2FxTradeHistoryView } from "./v2-markets-fx-trades-view";
 import {
   buildV2FxBlotterView,
@@ -5942,6 +5943,30 @@ const server = Bun.serve({
     if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/blotter") {
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       return jsonResponse({ ...buildV2FxBlotterView(eventStore), pageProvenance: filter });
+    }
+    // Per-trade BA-return IMPACT drill-through (D-FX-E2E-CORRECTNESS-V1). Given one
+    // FIL FX instance id, surfaces the trade's GL footprint (entries whose
+    // sourceEventId === instance) + its contribution to each BA return it touches
+    // (BA-100/110/120/320/325/350/700) by reverse-attribution from the canonical
+    // folds. Fail-closed on an unmappable-residency counterparty (surfaced loudly).
+    // Name-free DTO (counterparty legal names ARE shown — the policy is agent names).
+    if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/trade-impact") {
+      const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
+      const instance = url.searchParams.get("id") ?? "";
+      if (instance === "") {
+        return jsonResponse(
+          {
+            error: "missing-id",
+            message:
+              "GET /api/v2/markets/fx/trade-impact requires ?id=<fil instance URN>. See GET /api/v2/markets/fx/blotter for instance ids.",
+          },
+          400,
+        );
+      }
+      return jsonResponse({
+        ...buildV2FxTradeImpactView({ eventStore, instance, nowIso: nowUtc(), filter }),
+        pageProvenance: filter,
+      });
     }
     // FX trade history — all FX trades (open / settled / cancelled) folded from the
     // FIL register, provenance-filtered. Distinct from the live-only blotter above.
