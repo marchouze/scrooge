@@ -14,7 +14,10 @@
 
 import { describe, expect, test } from "bun:test";
 
-import { filInstrumentCreatedPayloadSchema } from "../../v2-core/fil-instances/events";
+import {
+  filInstrumentCreatedPayloadSchema,
+  filInstrumentTerminatedPayloadSchema,
+} from "../../v2-core/fil-instances/events";
 import {
   makeFilInstrumentCreated,
   makeFilInstrumentTerminated,
@@ -150,7 +153,7 @@ function terminateCashHolding(store: EventStore): void {
       actor: ACTOR,
       citations: CITES,
       provenance: PROD_TAG,
-      payload: {
+      payload: filInstrumentTerminatedPayloadSchema.parse({
         kind: "FilInstrumentTerminated",
         instance: `fil:inst:${ENTITY}:TRADE-1-cash-received`,
         type: CASH_TYPE_URN,
@@ -158,7 +161,7 @@ function terminateCashHolding(store: EventStore): void {
         asOf: "2026-06-25T10:00:00.000Z",
         terminalStage: "settled",
         originatingEvent: { eventType: "FxConversionExecuted", eventId: "evt-convert-1" },
-      },
+      }),
     }),
   );
 }
