@@ -50,6 +50,7 @@ import { makeIrsTradeBooked } from "../platform/markets/cdm/ird";
 import { bookAffirmedFxTrade } from "../platform/markets/products/book-affirmed-fx-trade";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
 import type { AgentRunContext } from "../runtime/types";
+import { decimalToString, divD, roundDecimal, toDecimal } from "../v2-core/fil-core/decimal";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -1224,8 +1225,21 @@ export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResul
 
   // Derive the base-currency notional in MAJOR units for the SUT (which carries
   // the symmetric quad from base + rate). The user may quote the notional in the
-  // base or the quote currency; convert to base when given in quote.
-  const baseNotionalMajor = notionalCurrency === base ? notionalAmount : notionalAmount / rate;
+  // base or the quote currency; convert to base when given in quote. The
+  // conversion uses the v2-core decimal engine (NOT a float `/`) — the SUT then
+  // re-derives the quad decimal-natively from this magnitude.
+  const baseNotionalMajor =
+    notionalCurrency === base
+      ? notionalAmount
+      : Number(
+          decimalToString(
+            roundDecimal(
+              divD(toDecimal(String(notionalAmount)), toDecimal(String(rate))),
+              8,
+              "HALF_UP",
+            ),
+          ),
+        );
 
   // ----- Provenance tag (Rule B — constructed at the call-site, never in the SUT) -----
   // A manual desk booking in the build phase is real bank state authored pre-

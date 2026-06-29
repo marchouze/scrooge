@@ -16,9 +16,9 @@
 // amounts must be the base notional and base × rate (the quote leg).
 
 import { describe, expect, it } from "bun:test";
-import type { FilInstrumentCreatedPayload } from "../../v2-core/fil-instances/events";
 import { bookFxTrade } from "../dashboard/trade-book-view";
 import { eventStore } from "../platform/composition";
+import type { FilInstrumentCreatedPayload } from "../v2-core/fil-instances/events";
 
 const BASE_BODY = {
   tradeDate: "2026-06-02",
