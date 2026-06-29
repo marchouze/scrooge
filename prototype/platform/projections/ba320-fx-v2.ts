@@ -70,6 +70,17 @@ import {
 } from "./filter";
 
 // ---------------------------------------------------------------------------
+// Settlement-lifecycle helper (D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX defect #3).
+// ---------------------------------------------------------------------------
+
+/** UTC calendar day (`YYYY-MM-DD`) of an ISO date/instant; `null` if unparseable. */
+function utcDayOf(iso: string): string | null {
+  const ms = Date.parse(iso);
+  if (!Number.isFinite(ms)) return null;
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
+// ---------------------------------------------------------------------------
 // Output shapes
 // ---------------------------------------------------------------------------
 
@@ -330,12 +341,14 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
   // open (fail-closed) — an instance we cannot prove is still pre-settlement is
   // excluded rather than silently counted. Charter cmd 1 (root-cause) + cmd 2
   // (fail-closed).
-  const asOfMs = Date.parse(args.asOf);
-  if (Number.isFinite(asOfMs)) {
+  // Compare on calendar DAY (not instant): a spot settling ON `asOf`'s day is
+  // still open that day; it drops out once a LATER day's asOf passes it.
+  const asOfDay = utcDayOf(args.asOf);
+  if (asOfDay !== null) {
     for (const [urn, terms] of [...openInstances.entries()]) {
-      const settlementMs =
-        terms.settlementDate !== undefined ? Date.parse(terms.settlementDate) : Number.NaN;
-      if (!Number.isFinite(settlementMs) || settlementMs <= asOfMs) {
+      const settlementDay =
+        terms.settlementDate !== undefined ? utcDayOf(terms.settlementDate) : null;
+      if (settlementDay === null || settlementDay < asOfDay) {
         openInstances.delete(urn);
       }
     }

@@ -59,27 +59,43 @@ const FX_LIFECYCLE_EVENT_TYPES = [
 ] as const;
 
 /**
+ * Reduce an ISO date / instant to its UTC calendar day (`YYYY-MM-DD`). Returns
+ * `null` when unparseable. The settlement-lifecycle bound compares on calendar
+ * DAY, not instant: a spot settling ON the report date is valued THAT day (the
+ * settlement-day mark; settlement-continuity holds across the boundary) and is
+ * excluded only once a LATER day's asOf passes it. Comparing on raw instants
+ * would wrongly drop a same-day-settling trade whose midnight-parsed settlement
+ * date sits before an intraday asOf.
+ */
+function utcDay(iso: string): string | null {
+  const ms = Date.parse(iso);
+  if (!Number.isFinite(ms)) return null;
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
+/**
  * True iff a FIL FX instance is an OPEN position as of `asOf`:
  *   - its lifecycle stage is live (active / proposed — not a terminal stage), AND
- *   - its settlement date is strictly AFTER `asOf`.
+ *   - its settlement DATE (calendar day) is on or after the `asOf` calendar day.
  *
  * The settlement-date bound is the fail-closed backstop (Charter cmd 2): a
  * simulated spot whose `FilInstrumentTerminated` was never emitted stays
- * `stage:active`, but a position past its settlement date is NOT open — it has
- * settled by the passage of time. Excluding it prevents a stale settled trade
- * from accruing an open-position charge / MTM indefinitely.
+ * `stage:active`, but a position whose settlement day is in the PAST is NOT open
+ * — it has settled by the passage of time. Excluding it prevents a stale settled
+ * trade from accruing an open-position charge / MTM indefinitely. A trade
+ * settling on the asOf day is still OPEN that day (valued at the settlement-day
+ * mark).
  *
  * A missing / unparseable settlement date is treated as NOT open (fail-closed):
- * an instance we cannot prove is still pre-settlement is excluded from the open
- * book rather than silently counted.
+ * an instance we cannot prove is still pre-/on-settlement is excluded from the
+ * open book rather than silently counted.
  */
 export function isOpenFxAsOf(row: FilInstanceRow, asOf: string): boolean {
   if (!isLiveStage(row.stage)) return false;
-  const settlement = row.economicTerms.settlementDate;
-  const settlementMs = Date.parse(settlement);
-  const asOfMs = Date.parse(asOf);
-  if (!Number.isFinite(settlementMs) || !Number.isFinite(asOfMs)) return false;
-  return settlementMs > asOfMs;
+  const settlementDay = utcDay(row.economicTerms.settlementDate);
+  const asOfDay = utcDay(asOf);
+  if (settlementDay === null || asOfDay === null) return false;
+  return settlementDay >= asOfDay;
 }
 
 /**

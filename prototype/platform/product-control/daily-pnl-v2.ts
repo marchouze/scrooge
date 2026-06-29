@@ -225,6 +225,13 @@ function signedNotional(amount: string, direction: "long" | "short"): string {
   return `-${amount}`;
 }
 
+/** UTC calendar day (`YYYY-MM-DD`) of an ISO date/instant; `null` if unparseable. */
+function utcDayOf(iso: string): string | null {
+  const ms = Date.parse(iso);
+  if (!Number.isFinite(ms)) return null;
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
 // ---------------------------------------------------------------------------
 // Resolve the reporting-currency (ZAR) COST BASIS of an OPEN FX contract.
 // D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX defect #2.
@@ -295,11 +302,11 @@ export function computeDailyPnLV2(
   // functional currency is a seed change, not a code change. WS-MULTI-BASE-CURRENCY.
   const reporting = anchorFunctionalCurrency();
 
-  // D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX: the `asOf` for the settlement-lifecycle
-  // bound is the snapshot timestamp (the report's valuation instant). A spot
-  // whose settlement date is on/before this is no longer an OPEN FX contract.
-  const lifecycleAsOf = clockNow();
-  const lifecycleAsOfMs = Date.parse(lifecycleAsOf);
+  // D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX: the settlement-lifecycle bound compares
+  // on calendar DAY (a spot settling ON the report day is still valued that day;
+  // it drops only once a LATER day passes it). `null` ⇒ unparseable clock; the
+  // bound is then a no-op (conservative — keep the instrument).
+  const lifecycleAsOfDay = utcDayOf(clockNow());
 
   // -------------------------------------------------------------------------
   // 1. Replay FilInstrumentCreated (assetClass === "fx") → candidate instruments
@@ -330,9 +337,9 @@ export function computeDailyPnLV2(
       // below). Fail-closed: an instrument with no/unparseable settlement date is
       // NOT treated as open here.
       const settlementDate = economicTerms.settlementDate as string | undefined;
-      const settlementMs = settlementDate !== undefined ? Date.parse(settlementDate) : Number.NaN;
-      if (Number.isFinite(lifecycleAsOfMs)) {
-        if (!Number.isFinite(settlementMs) || settlementMs <= lifecycleAsOfMs) continue;
+      if (lifecycleAsOfDay !== null) {
+        const settlementDay = settlementDate !== undefined ? utcDayOf(settlementDate) : null;
+        if (settlementDay === null || settlementDay < lifecycleAsOfDay) continue;
       }
 
       const notionalRaw = economicTerms.notional as Record<string, unknown> | undefined;
