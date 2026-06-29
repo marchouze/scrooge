@@ -58,10 +58,6 @@
 //   cmd 2 fail-closed, cmd 4 source-don't-hardcode). IAS 21 §21, §23, §28.
 // Author: Bea (Accounting & financial reporting engineer, engineering).
 
-import type { FilFxSettlementConfirmedPayload } from "../../../v2-core/fil-instances/events";
-import type { TradeSettlementExecutedPayload } from "../../../v2-core/fil-instances/trade-settlement";
-import type { FxPostingLeg } from "../../../v2-core/posting-rules/fx";
-import { FX_UNREALISED_PNL_ACCOUNT } from "../../../v2-core/posting-rules/fx-settlement";
 import {
   type DecimalValue as Decimal,
   addD,
@@ -75,6 +71,10 @@ import {
   subD,
   toDecimal,
 } from "../../../v2-core/fil-core/decimal";
+import type { FilFxSettlementConfirmedPayload } from "../../../v2-core/fil-instances/events";
+import type { TradeSettlementExecutedPayload } from "../../../v2-core/fil-instances/trade-settlement";
+import type { FxPostingLeg } from "../../../v2-core/posting-rules/fx";
+import { FX_UNREALISED_PNL_ACCOUNT } from "../../../v2-core/posting-rules/fx-settlement";
 import type { OfficialMarkAdoptedPayload } from "../../event-store/event-types/valuation";
 import type { EventStore } from "../../event-store/store";
 import {
@@ -97,7 +97,8 @@ export const FX_CASH_REVAL_RULE_ID = "PR-FX-CASH-REVAL-V2";
  */
 export const FX_CASH_RETRANSLATION_ACCOUNT = "ACC-1200-099";
 
-const IAS_RULE = "IAS 21 §23, §28 — settled FCY cash daily retranslation to closing rate, exchange difference to P&L";
+const IAS_RULE =
+  "IAS 21 §23, §28 — settled FCY cash daily retranslation to closing rate, exchange difference to P&L";
 
 /** True iff a posting-rule id is an EOD-MTM cash-reval leg (double-count guard). */
 export function isFxCashRevalSourcedGlPosting(postingRuleId: string | undefined): boolean {
@@ -164,8 +165,18 @@ export function foldSettledFcyCashPositions(args: {
         const p = e.payload as unknown as FilFxSettlementConfirmedPayload;
         const postingDate = p.asOf.substring(0, 10);
         // Bought leg is RECEIVED (+settled); sold leg is PAID (−settled).
-        pushLeg(p.instance, p.boughtBooked.currency, toDecimal(p.boughtSettled.amount), postingDate);
-        pushLeg(p.instance, p.soldBooked.currency, negD(toDecimal(p.soldSettled.amount)), postingDate);
+        pushLeg(
+          p.instance,
+          p.boughtBooked.currency,
+          toDecimal(p.boughtSettled.amount),
+          postingDate,
+        );
+        pushLeg(
+          p.instance,
+          p.soldBooked.currency,
+          negD(toDecimal(p.soldSettled.amount)),
+          postingDate,
+        );
       }
     }
   }
@@ -257,12 +268,27 @@ export function foldSettlementEntryZarResiduals(args: {
       if (!eventMatchesProvenanceFilter(e, args.filter)) continue;
       if (t === "TradeSettlementExecuted") {
         const p = e.payload as unknown as TradeSettlementExecutedPayload;
-        pushLeg(p.tradeInstance, p.movement.currency, toDecimal(p.movement.amount), p.asOf.substring(0, 10));
+        pushLeg(
+          p.tradeInstance,
+          p.movement.currency,
+          toDecimal(p.movement.amount),
+          p.asOf.substring(0, 10),
+        );
       } else {
         const p = e.payload as unknown as FilFxSettlementConfirmedPayload;
         const postingDate = p.asOf.substring(0, 10);
-        pushLeg(p.instance, p.boughtBooked.currency, toDecimal(p.boughtSettled.amount), postingDate);
-        pushLeg(p.instance, p.soldBooked.currency, negD(toDecimal(p.soldSettled.amount)), postingDate);
+        pushLeg(
+          p.instance,
+          p.boughtBooked.currency,
+          toDecimal(p.boughtSettled.amount),
+          postingDate,
+        );
+        pushLeg(
+          p.instance,
+          p.soldBooked.currency,
+          negD(toDecimal(p.soldSettled.amount)),
+          postingDate,
+        );
       }
     }
   }

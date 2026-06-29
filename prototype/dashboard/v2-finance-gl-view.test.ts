@@ -30,13 +30,13 @@ import { productionTag } from "../platform/event-store/provenance";
 import { EventStore } from "../platform/event-store/store";
 import type { Actor, Event } from "../platform/event-store/types";
 import { MarketDataStore } from "../platform/market-data/store";
+import { V2_PERIOD_END } from "../platform/projections/v2-read-window";
+import { V2LiveFxDriver } from "../platform/simulation-v2-live/live-driver";
+import { emitClientOnboardingLifecycle } from "../platform/simulation-v2/sim-modules/counterparty-provisioning";
 import {
   adoptDailyOfficialFxMarks,
   resolveActivePolicyVersionRef,
 } from "../platform/valuation/mark-adoption-engine";
-import { V2_PERIOD_END } from "../platform/projections/v2-read-window";
-import { V2LiveFxDriver } from "../platform/simulation-v2-live/live-driver";
-import { emitClientOnboardingLifecycle } from "../platform/simulation-v2/sim-modules/counterparty-provisioning";
 import { tenantIdSchema } from "../v2-core/control-plane/tenant";
 import { FX_TREATMENT_MODULES } from "../v2-core/reporting-treatments/fx-modules";
 import { buildGlView } from "./v2-finance-gl-view";

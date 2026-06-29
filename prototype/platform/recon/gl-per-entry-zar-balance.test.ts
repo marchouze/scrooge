@@ -64,7 +64,8 @@ describe("run() — live gate over the multi-trade settled book", () => {
     expect(r.pipeline).toBe("gl-per-entry-zar-balance");
     expect(r.asserted).toBeGreaterThan(0);
     const fails = r.violations.filter((v) => v.severity === "fail");
-    if (fails.length > 0) for (const f of fails) console.error(`UNEXPECTED FAIL: ${f.subject}: ${f.message}`);
+    if (fails.length > 0)
+      for (const f of fails) console.error(`UNEXPECTED FAIL: ${f.subject}: ${f.message}`);
     expect(fails).toEqual([]);
     expect(r.ok).toBe(true);
   });

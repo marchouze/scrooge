@@ -55,6 +55,7 @@
 import { fileURLToPath } from "node:url";
 
 import { buildGlView } from "../../dashboard/v2-finance-gl-view";
+import { FX_TREATMENT_MODULES } from "../../v2-core/reporting-treatments/fx-modules";
 import {
   deriveFxCashRevalLegs,
   foldSettlementEntryZarResiduals,
@@ -65,10 +66,12 @@ import { productionTag } from "../event-store/provenance";
 import { EventStore } from "../event-store/store";
 import { MarketDataStore } from "../market-data/store";
 import { V2_ANCHOR_ENTITY, V2_PERIOD_END, V2_PERIOD_START } from "../projections/v2-read-window";
-import { adoptDailyOfficialFxMarks, resolveActivePolicyVersionRef } from "../valuation/mark-adoption-engine";
-import { emitClientOnboardingLifecycle } from "../simulation-v2/sim-modules/counterparty-provisioning";
 import { V2LiveFxDriver } from "../simulation-v2-live/live-driver";
-import { FX_TREATMENT_MODULES } from "../../v2-core/reporting-treatments/fx-modules";
+import { emitClientOnboardingLifecycle } from "../simulation-v2/sim-modules/counterparty-provisioning";
+import {
+  adoptDailyOfficialFxMarks,
+  resolveActivePolicyVersionRef,
+} from "../valuation/mark-adoption-engine";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "gl-per-entry-zar-balance";
@@ -273,7 +276,11 @@ export function run(): ReconResult {
     }
 
     const { eventStore: preStore, marketDataStore: preMd } = settledMultiTradeStores(false);
-    const pre = buildGlView({ eventStore: preStore, marketDataStore: preMd, filter: { mode: "combined" } });
+    const pre = buildGlView({
+      eventStore: preStore,
+      marketDataStore: preMd,
+      filter: { mode: "combined" },
+    });
     result.asserted += 1;
     if (!pre.inBalance || pre.zarTotalDebitMinor !== pre.zarTotalCreditMinor) {
       violations.push({
@@ -321,11 +328,16 @@ export function run(): ReconResult {
       entryKey: leg.sourceEventId,
       accountId: leg.accountCode,
       currency: leg.amount.currency,
-      signedMinor: Math.round(Number(leg.amount.amount) * 100) * (leg.creditDebit === "debit" ? 1 : -1),
+      signedMinor:
+        Math.round(Number(leg.amount.amount) * 100) * (leg.creditDebit === "debit" ? 1 : -1),
     }));
     result.asserted += 1;
     violations.push(
-      ...assertPerEntryZarBalance(revalLegs, (ccy) => (ccy === FUNCTIONAL_CURRENCY ? 1 : null), `${PIPELINE}:reval`),
+      ...assertPerEntryZarBalance(
+        revalLegs,
+        (ccy) => (ccy === FUNCTIONAL_CURRENCY ? 1 : null),
+        `${PIPELINE}:reval`,
+      ),
     );
 
     // (3) FAIL-CLOSED ON A MISSING MARK — the pre-MTM (no-marks) book carries a net

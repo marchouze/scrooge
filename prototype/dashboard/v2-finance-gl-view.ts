@@ -389,8 +389,9 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
     // rate). A settled-FCY-cash NOSTRO row is carried at its SETTLE-rate COST BASIS
     // (IAS 21 §23 monetary item); the EOD-MTM reval-asset (ACC-1200-099) carries the
     // adjustment to the closing mark. Every other FCY row uses the latest spot.
-    const costRate =
-      accountId.startsWith(NOSTRO_ACCOUNT_PREFIX) ? cashCostRates.get(currency) : undefined;
+    const costRate = accountId.startsWith(NOSTRO_ACCOUNT_PREFIX)
+      ? cashCostRates.get(currency)
+      : undefined;
     const zar = toZarEquivMinor(nativeNet, currency, marketDataStore, costRate);
     const zarRateAvailable = zar !== null;
     const zarNet = zar ?? 0;

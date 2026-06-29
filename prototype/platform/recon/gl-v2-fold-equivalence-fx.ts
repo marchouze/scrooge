@@ -66,13 +66,13 @@ import {
   postFxObsCommitmentReleaseLegs,
   postFxRevaluationLegs,
 } from "../accounting/posting-rules-v2/fx";
+import { deriveFxCashRevalLegs } from "../accounting/posting-rules-v2/fx-cash-reval-fold";
+import { deriveFxConversionLegs } from "../accounting/posting-rules-v2/fx-conversion-fold";
 import {
   type FxFoldLeg,
   foldFxContributionLegs,
   foldTreatmentRegisterFromStore,
 } from "../accounting/posting-rules-v2/fx-fold";
-import { deriveFxCashRevalLegs } from "../accounting/posting-rules-v2/fx-cash-reval-fold";
-import { deriveFxConversionLegs } from "../accounting/posting-rules-v2/fx-conversion-fold";
 import { deriveFxInstanceLegs } from "../accounting/posting-rules-v2/fx-instance-fold";
 import { eventStore } from "../composition";
 import { amountToMinorUnits } from "../core/decimal-money";
@@ -454,10 +454,18 @@ export function run(): ReconResult {
     // the residual equals the FX-instance fold. (Their own balance is asserted by
     // fx-settlement.test.ts + recon:gl-per-entry-zar-balance.)
     const additiveFx = new Map<string, number>();
-    for (const leg of deriveFxConversionLegs({ eventStore, periodStart: V2_PERIOD_START, periodEnd: V2_PERIOD_END })) {
+    for (const leg of deriveFxConversionLegs({
+      eventStore,
+      periodStart: V2_PERIOD_START,
+      periodEnd: V2_PERIOD_END,
+    })) {
       accumulate(additiveFx, leg);
     }
-    for (const leg of deriveFxCashRevalLegs({ eventStore, periodStart: V2_PERIOD_START, periodEnd: V2_PERIOD_END }).legs) {
+    for (const leg of deriveFxCashRevalLegs({
+      eventStore,
+      periodStart: V2_PERIOD_START,
+      periodEnd: V2_PERIOD_END,
+    }).legs) {
       accumulate(additiveFx, leg);
     }
     const tb = computeTrialBalanceV2Uncached({
