@@ -55,6 +55,7 @@ import type {
 import type { EventStore } from "../../event-store/store";
 import type { MarketDataStore } from "../../market-data/store";
 import { computeBA320V2 } from "../ba320-fx-v2";
+import { type ProvenanceFilter, defaultProvenanceFilter } from "../filter";
 
 // ---------------------------------------------------------------------------
 // Output shape — name-free; mirrors the V1 HeadroomRow fields the desk consumes
@@ -179,12 +180,18 @@ export function buildFilFxHeadroomView(
   store: EventStore,
   marketDataStore: MarketDataStore,
   nowIso: string,
+  filter: ProvenanceFilter = defaultProvenanceFilter(),
 ): FilFxHeadroomView {
+  // EXPLICIT provenance lens (D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX): threaded into
+  // BA-320 V2 so the B3 headroom exposure does not silently default to
+  // `operating-book` (which admits simulated). The desk route passes the same
+  // `production-only` filter the rest of the FX surface uses.
   const ba320 = computeBA320V2({
     eventStore: store,
     asOf: nowIso,
     marketDataStore,
     entity: ANCHOR_ENTITY,
+    provenanceFilter: filter,
   });
   const functionalCurrency = ba320.meta.functionalCurrency;
   const openInstanceCount = ba320.meta.openFxInstanceCount;

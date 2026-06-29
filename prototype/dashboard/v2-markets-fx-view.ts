@@ -36,6 +36,7 @@
 //
 // Author: Atlas (Core banking platform architect, engineering).
 
+import { nowUtc } from "../platform/core/types";
 import type { EventStore } from "../platform/event-store/store";
 import { anchorFunctionalCurrency } from "../platform/identity/functional-currency";
 import type { MarketDataStore } from "../platform/market-data/store";
@@ -47,6 +48,7 @@ import {
 } from "../platform/markets/fx/counterparty-residency";
 import { computeDailyPnLV2 } from "../platform/product-control/daily-pnl-v2";
 import { computeBA320V2 } from "../platform/projections/ba320-fx-v2";
+import { type ProvenanceFilter, defaultProvenanceFilter } from "../platform/projections/filter";
 import {
   type FilFxHeadroomB3Row,
   buildFilFxHeadroomView,
@@ -56,10 +58,11 @@ import {
   type V2FxRejectionRow,
   readV2FxRejections,
 } from "../platform/projections/markets/v2-fx-gateway-rejections";
-import { type FilInstanceRow, foldFilInstances, liveInstances } from "../v2-core/fil-instances";
+import type { FilInstanceRow } from "../v2-core/fil-instances";
 import { seatTitle } from "./agent-title";
 import { buildCounterpartiesView } from "./markets-fx-counterparties";
 import { type NpaStatus, buildNpaView } from "./markets-fx-npa";
+import { openFxInstances } from "./v2-fx-open-book";
 
 // ---------------------------------------------------------------------------
 // Shared honesty primitive — every panel declares its data state explicitly.
@@ -86,30 +89,21 @@ const ANCHOR_ENTITY = "LE-ZA-HOZ-BANK";
 
 // ---------------------------------------------------------------------------
 // FIL FX instance read — the V2-native trade source.
+//
+// D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX: the open-FX-book read is now the single
+// canonical `openFxInstances` (dashboard/v2-fx-open-book.ts) — folded under an
+// EXPLICIT `ProvenanceFilter` (never an implicit default) and bounded to OPEN
+// positions (live stage AND settlement-date in the future). Every panel below
+// reads through it so a simulated / fixture / post-settlement instance can no
+// longer leak into a `production-only`-labelled FX view.
 // ---------------------------------------------------------------------------
 
-/**
- * Fold the FIL instance lifecycle family from the (main) event store into the
- * current-state register, returning the LIVE FX instances. Reads the same
- * `FilInstrumentCreated/Amended/Terminated` family the BA-320 V2 projection and
- * the daily-P&L V2 engine consume — the single FIL data-access path
- * (D-MODEL-BINDING-CONTRACT-V1). The fold is replay-derived (Principle 1).
- */
-function liveFxInstances(store: Pick<EventStore, "replay">): FilInstanceRow[] {
-  const events: unknown[] = [];
-  for (const type of [
-    "FilInstrumentCreated",
-    "FilInstrumentAmended",
-    "FilInstrumentTerminated",
-  ] as const) {
-    try {
-      for (const e of store.replay({ type })) events.push(e.payload);
-    } catch {
-      // Family not registered in this store — fold what we have (conservative).
-    }
-  }
-  const register = foldFilInstances(events as never);
-  return liveInstances(register).filter((r) => r.economicTerms.assetClass === "fx");
+function liveFxInstances(
+  store: Pick<EventStore, "replay">,
+  filter: ProvenanceFilter,
+  asOf: string,
+): FilInstanceRow[] {
+  return openFxInstances(store, filter, asOf);
 }
 
 // ---------------------------------------------------------------------------
@@ -183,8 +177,16 @@ function readTradeDate(terms: unknown): string | null {
   return typeof v === "string" && v.length > 0 ? v : null;
 }
 
-function buildBlotter(store: EventStore): V2FxBlotterView {
-  const live = liveFxInstances(store);
+function buildBlotter(
+  store: EventStore,
+  filter: ProvenanceFilter = defaultProvenanceFilter(),
+  // Clock via the approved `nowUtc()` abstraction (platform/core/types.ts),
+  // never a raw `new Date()` (recon:wall-clock-callsite-coverage). The route
+  // passes an explicit `nowUtc()`; this default keeps the no-asOf test call
+  // inside the clock boundary.
+  asOf: string = nowUtc(),
+): V2FxBlotterView {
+  const live = liveFxInstances(store, filter, asOf);
   // One oracle for the whole blotter build (folds party + onboarding registers
   // once). Read-only; reused for every row's residency + descriptive detail.
   const oracle: ResidencyOracle = buildResidencyOracle(store);
@@ -264,8 +266,20 @@ function buildRisk(
   store: EventStore,
   marketDataStore: MarketDataStore,
   asOf: string,
+  filter: ProvenanceFilter = defaultProvenanceFilter(),
 ): V2FxRiskView {
-  const ba320 = computeBA320V2({ eventStore: store, asOf, marketDataStore, entity: ANCHOR_ENTITY });
+  // EXPLICIT provenance lens (D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX): the route's
+  // `production-only` filter is threaded straight into BA-320 V2 so the risk
+  // panel does NOT default to `operating-book` (which admits simulated). The
+  // BA-320 V2 projection also drops post-settlement instances via the same
+  // settlement-date bound below (see ba320-fx-v2 step 1b).
+  const ba320 = computeBA320V2({
+    eventStore: store,
+    asOf,
+    marketDataStore,
+    entity: ANCHOR_ENTITY,
+    provenanceFilter: filter,
+  });
   const positions: V2FxPositionRow[] = ba320.fx.positions.map((p) => ({
     baseCurrency: p.baseCurrency,
     netPositionBaseCurrencyMinor: p.netPositionBaseCurrencyMinor,
@@ -389,15 +403,17 @@ function buildPnL(
   marketDataStore: MarketDataStore,
   reportDate: string,
   nowIso: string,
+  filter: ProvenanceFilter,
 ): V2FxPnLView {
-  const result = computeDailyPnLV2(store, marketDataStore, reportDate, () => nowIso);
+  const result = computeDailyPnLV2(store, marketDataStore, reportDate, () => nowIso, filter);
   const byCurrencyRaw = result.payload.byCurrency ?? [];
   const byCurrency = byCurrencyRaw.map((c) => ({
     currency: c.currency,
     trades: c.tradeCount,
     unrealisedFunctionalMinor: c.unrealisedPnlZarMinor,
   }));
-  const hasInstruments = liveFxInstances(store).length > 0 || result.trades.length > 0;
+  const hasInstruments =
+    liveFxInstances(store, filter, nowIso).length > 0 || result.trades.length > 0;
   // The headline figure is present when every live position was markable.
   const present = result.totalUnrealised.present;
   return {
@@ -423,17 +439,19 @@ export function buildV2FxSummaryView(
   store: EventStore,
   marketDataStore: MarketDataStore,
   nowIso: string,
+  filter: ProvenanceFilter = defaultProvenanceFilter(),
 ): V2FxSummaryView {
   const reportDate = nowIso.slice(0, 10);
-  const live = liveFxInstances(store);
+  const live = liveFxInstances(store, filter, nowIso);
   const counterparties = new Set(live.map((r) => r.economicTerms.counterpartyId));
   const ba320 = computeBA320V2({
     eventStore: store,
     asOf: nowIso,
     marketDataStore,
     entity: ANCHOR_ENTITY,
+    provenanceFilter: filter,
   });
-  const pnl = buildPnL(store, marketDataStore, reportDate, nowIso);
+  const pnl = buildPnL(store, marketDataStore, reportDate, nowIso, filter);
   const varPanel = buildVar(store);
   const hasData = live.length > 0;
   return {
@@ -472,10 +490,11 @@ export interface V2FxCounterpartiesView extends PanelMeta {
 function buildCounterparties(
   store: Pick<EventStore, "replay">,
   nowIso: string,
+  filter: ProvenanceFilter = defaultProvenanceFilter(),
 ): V2FxCounterpartiesView {
   const eligibility = buildCounterpartiesView(store, nowIso);
   const eligibleById = new Map(eligibility.counterparties.map((c) => [c.counterpartyId, c]));
-  const live = liveFxInstances(store);
+  const live = liveFxInstances(store, filter, nowIso);
   const fxByCp = new Map<string, number>();
   for (const r of live) {
     const cp = r.economicTerms.counterpartyId;
@@ -630,8 +649,9 @@ function buildHeadroom(
   store: EventStore,
   marketDataStore: MarketDataStore,
   nowIso: string,
+  filter: ProvenanceFilter = defaultProvenanceFilter(),
 ): V2FxHeadroomView {
-  const view = buildFilFxHeadroomView(store, marketDataStore, nowIso);
+  const view = buildFilFxHeadroomView(store, marketDataStore, nowIso, filter);
   // Map the projection's own data state onto the shared PanelMeta state. "no-limit"
   // is a present-but-incomplete state → surface as "empty" at the panel level
   // (no utilisation to render) while carrying the precise reason through.
@@ -702,17 +722,18 @@ export function buildV2FxSurfaceView(
   marketDataStore: MarketDataStore,
   nowIso: string,
   deps: V2FxSurfaceDeps = {},
+  filter: ProvenanceFilter = defaultProvenanceFilter(),
 ): V2FxSurfaceView {
-  const summary = buildV2FxSummaryView(store, marketDataStore, nowIso);
-  const risk = buildRisk(store, marketDataStore, nowIso);
-  const blotter = buildBlotter(store);
-  const counterparties = buildCounterparties(store, nowIso);
+  const summary = buildV2FxSummaryView(store, marketDataStore, nowIso, filter);
+  const risk = buildRisk(store, marketDataStore, nowIso, filter);
+  const blotter = buildBlotter(store, filter, nowIso);
+  const counterparties = buildCounterparties(store, nowIso, filter);
   const npa = buildNpa(store, nowIso);
   // The V2 rejections feed reads the V2 control-plane store (default path). The
   // reader is injected so tests can point at a tmpdir control-plane store and so
   // the build never silently touches the home store.
   const rejections = buildRejections(deps.readV2Rejections ?? (() => readV2FxRejections()));
-  const headroom = buildHeadroom(store, marketDataStore, nowIso);
+  const headroom = buildHeadroom(store, marketDataStore, nowIso, filter);
 
   const panels: V2FxPanelStatus[] = [
     panelStatus("summary", "/api/v2/markets/fx/summary", summary),

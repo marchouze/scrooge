@@ -259,6 +259,7 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
       currency: string;
       notionalMajor: string;
       hedgingSetTag: string | undefined;
+      settlementDate: string | undefined;
     }
   >();
 
@@ -279,6 +280,7 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
         direction?: string;
         currency?: string;
         hedgingSetTag?: string;
+        settlementDate?: string;
       };
     };
 
@@ -298,6 +300,7 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
       currency,
       notionalMajor: notional.amount,
       hedgingSetTag: p.economicTerms?.hedgingSetTag,
+      settlementDate: p.economicTerms?.settlementDate,
     });
   }
 
@@ -312,6 +315,29 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
     const p = ev.payload as { instance?: string };
     if (p.instance) {
       openInstances.delete(p.instance);
+    }
+  }
+
+  // Step 2b: Remove POST-SETTLEMENT instances (D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX,
+  // defect #3). A spot whose settlement date is on/before `asOf` is no longer an
+  // OPEN net-open-position regardless of whether a `FilInstrumentTerminated` was
+  // emitted — settlement extinguishes the open FX contract (the FCY exposure that
+  // survives settlement is a CASH position, folded by the cash projection, not an
+  // open FX net-open-position line under Reg 28(5)). This is the fail-closed
+  // backstop for the simulated trades whose termination event was never emitted:
+  // they stayed `stage:active` and inflated the open-position charge for months
+  // after settling. A missing / unparseable settlement date is treated as NOT
+  // open (fail-closed) — an instance we cannot prove is still pre-settlement is
+  // excluded rather than silently counted. Charter cmd 1 (root-cause) + cmd 2
+  // (fail-closed).
+  const asOfMs = Date.parse(args.asOf);
+  if (Number.isFinite(asOfMs)) {
+    for (const [urn, terms] of [...openInstances.entries()]) {
+      const settlementMs =
+        terms.settlementDate !== undefined ? Date.parse(terms.settlementDate) : Number.NaN;
+      if (!Number.isFinite(settlementMs) || settlementMs <= asOfMs) {
+        openInstances.delete(urn);
+      }
     }
   }
 

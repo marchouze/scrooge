@@ -5887,7 +5887,7 @@ const server = Bun.serve({
     if (req.method === "GET" && url.pathname === "/api/v2/markets/fx") {
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       return jsonResponse({
-        ...buildV2FxSurfaceView(eventStore, marketDataStore, nowUtc()),
+        ...buildV2FxSurfaceView(eventStore, marketDataStore, nowUtc(), {}, filter),
         pageProvenance: filter,
       });
     }
@@ -5925,14 +5925,14 @@ const server = Bun.serve({
     if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/summary") {
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       return jsonResponse({
-        ...buildV2FxSummaryView(eventStore, marketDataStore, nowUtc()),
+        ...buildV2FxSummaryView(eventStore, marketDataStore, nowUtc(), filter),
         pageProvenance: filter,
       });
     }
     if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/risk") {
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       return jsonResponse({
-        ...buildV2FxRiskView(eventStore, marketDataStore, nowUtc()),
+        ...buildV2FxRiskView(eventStore, marketDataStore, nowUtc(), filter),
         pageProvenance: filter,
       });
     }
@@ -5942,7 +5942,10 @@ const server = Bun.serve({
     }
     if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/blotter") {
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
-      return jsonResponse({ ...buildV2FxBlotterView(eventStore), pageProvenance: filter });
+      return jsonResponse({
+        ...buildV2FxBlotterView(eventStore, filter, nowUtc()),
+        pageProvenance: filter,
+      });
     }
     // Per-trade BA-return IMPACT drill-through (D-FX-E2E-CORRECTNESS-V1). Given one
     // FIL FX instance id, surfaces the trade's GL footprint (entries whose
@@ -5992,7 +5995,7 @@ const server = Bun.serve({
     if (req.method === "GET" && url.pathname === "/api/v2/markets/fx/counterparties") {
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       return jsonResponse({
-        ...buildV2FxCounterpartiesView(eventStore, nowUtc()),
+        ...buildV2FxCounterpartiesView(eventStore, nowUtc(), filter),
         pageProvenance: filter,
       });
     }
@@ -6018,7 +6021,7 @@ const server = Bun.serve({
       // (the FX cluster); other clusters stay V1. Authority: D-FX-OTC-CLOSURE-BACKLOG.
       const filter = provenanceFilterFromMode(url.searchParams.get("provenance"));
       return jsonResponse({
-        ...buildV2FxHeadroomView(eventStore, marketDataStore, nowUtc()),
+        ...buildV2FxHeadroomView(eventStore, marketDataStore, nowUtc(), filter),
         pageProvenance: filter,
       });
     }
