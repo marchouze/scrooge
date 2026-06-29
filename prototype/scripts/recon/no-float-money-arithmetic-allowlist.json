@@ -47,7 +47,7 @@
     },
     {
       "file": "dashboard/trade-book-view.ts",
-      "line": 804,
+      "line": 808,
       "pattern": "money-multiply/divide"
     },
     {
