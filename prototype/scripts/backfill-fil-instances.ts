@@ -72,6 +72,7 @@
 import "../platform/event-store/resolve-event-db-boot";
 
 import { eventStore } from "../platform/composition";
+import { nowUtc } from "../platform/core/types";
 import {
   makeFilInstrumentAmended,
   makeFilInstrumentCreated,
@@ -234,8 +235,28 @@ interface FilDescriptor {
 
 const FIXTURE_RATES: Readonly<Record<string, number>> = { USD: 18.52, EUR: 20.15, GBP: 23.4 };
 const FIXTURE_TRADE_TS = "2026-06-01T09:00:00.000Z";
+
+// SETTLED-leg settlement instant — a FIXED past calendar date. The settled USD
+// fixture is terminated (→ FilInstrumentTerminated) and never counts as an open
+// FX contract, so a frozen past date is correct for it.
 const FIXTURE_SETTLE_DATE = "2026-06-03";
 const FIXTURE_SETTLE_TS = `${FIXTURE_SETTLE_DATE}T09:00:00.000Z`;
+
+// OPEN-leg settlement date — CLOCK-RELATIVE, not a frozen calendar date
+// (D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX defect #3; Charter cmd 4 — source, don't
+// hardcode; agent-time-not-wall-clock). The daily-P&L V2 settlement-lifecycle
+// bound drops a spot once its settlement DAY passes the valuation day, so an
+// "open" fixture pinned to a frozen past date silently ages out of the open book
+// and the construction-sentinel (recon:daily-pnl-v2-parity C2) goes vacuous. The
+// open legs settle T+2 from the current clock — the same convention the FX world
+// simulator uses (settlementDateT2(nowUtc())) — so they stay genuinely open as
+// agent-time advances. Re-run churn is absorbed by the settlement-date self-heal
+// (FilInstrumentAmended) below.
+function fixtureOpenSettleDate(): string {
+  const d = new Date(Date.parse(nowUtc()));
+  d.setUTCDate(d.getUTCDate() + 2);
+  return d.toISOString().slice(0, 10);
+}
 
 interface FixtureLeg {
   readonly tradeId: string;
@@ -347,7 +368,10 @@ function fixtureDescriptors(): FilDescriptor[] {
         counterpartyId: ft.counterpartyId,
         nettingSetId: `NS-${ft.counterpartyId}-${REPORTING}`,
         currency: REPORTING,
-        settlementDate: FIXTURE_SETTLE_DATE,
+        // Settled leg keeps its frozen past settlement; open legs settle T+2 from
+        // the current clock so they remain genuinely OPEN under the daily-P&L V2
+        // settlement-lifecycle bound (defect #3). See `fixtureOpenSettleDate`.
+        settlementDate: ft.settled ? FIXTURE_SETTLE_DATE : fixtureOpenSettleDate(),
         hedgingSetTag: `${ft.base}/${REPORTING}`,
         // S0d — booking-time product binding (NPA-gated). The fixture FX book is FX
         // spot, governed by the NPA-approved FX OTC Vanilla product; stamp its v2
@@ -511,6 +535,27 @@ function effectiveEconomicTermsByInstance(): Map<string, Record<string, unknown>
     }
   }
   return out;
+}
+
+// Does an EXISTING FIL instance need a self-heal `FilInstrumentAmended`? Returns
+// true when the descriptor's current terms differ from the frozen effective terms
+// in a way the idempotent create-skip can never fix on its own:
+//   (a) the descriptor supplies an fxAgreement quad the effective terms lack;
+//   (b) the descriptor supplies a settlement date that DIFFERS from the effective
+//       one (e.g. an open fixture frozen with a stale hardcoded past date, now
+//       superseded by the clock-relative forward date).
+// `undefined` effective terms (no prior payload) is not a heal — the create path
+// handles a brand-new instance.
+function filInstanceNeedsHeal(
+  d: FilDescriptor,
+  effective: Record<string, unknown> | undefined,
+): boolean {
+  if (effective === undefined) return false;
+  const quadHeal = d.economicTerms.fxAgreement !== undefined && effective.fxAgreement === undefined;
+  const descSettle = d.economicTerms.settlementDate;
+  const effSettle = effective.settlementDate;
+  const settlementHeal = typeof descSettle === "string" && descSettle !== effSettle;
+  return quadHeal || settlementHeal;
 }
 
 // ---------------------------------------------------------------------------
@@ -698,16 +743,21 @@ function emitFilInstances(descriptors: readonly FilDescriptor[]): {
       haveCreated.add(instance);
       created += 1;
     } else if (
-      // SELF-HEAL (D-FX-INSTRUMENT-BUYSELL-QUAD convergence). The create exists, so
-      // the idempotent guard skipped it — but a fixture FX instance materialised
-      // BEFORE the symmetric buy/sell quad landed (commit cb8b7ce6) is frozen
-      // quad-less, since a plain re-run never re-emits a create. When the descriptor
-      // CAN supply a quad and the existing EFFECTIVE terms lack one, append a
-      // `FilInstrumentAmended` re-stamping the quad-bearing terms — the fold replaces
-      // economicTerms latest-wins, so the gate converges to green on the next
-      // `ci:migrate` (append-only; the original create is untouched — Principle 1).
-      d.economicTerms.fxAgreement !== undefined &&
-      effectiveTerms.get(instance)?.fxAgreement === undefined
+      // SELF-HEAL (D-FX-INSTRUMENT-BUYSELL-QUAD + D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX
+      // convergence). The create exists, so the idempotent guard skipped it — but a
+      // fixture FX instance may be frozen with STALE economic terms a plain re-run
+      // never re-emits. Two heal triggers, both fixed by appending a
+      // `FilInstrumentAmended` re-stamping the descriptor's current terms (the fold
+      // replaces economicTerms latest-wins, so the relevant recon gates converge to
+      // green on the next `ci:migrate`; append-only — the original create is
+      // untouched, Principle 1):
+      //   (a) QUAD: materialised before the symmetric buy/sell quad landed (commit
+      //       cb8b7ce6) → frozen quad-less.
+      //   (b) STALE SETTLEMENT: an OPEN fixture frozen with a past, hardcoded
+      //       settlement date (pre clock-relative `fixtureOpenSettleDate`) ages out
+      //       of the open book under the daily-P&L V2 lifecycle bound — re-stamp the
+      //       refreshed forward settlement date so it stays genuinely open.
+      filInstanceNeedsHeal(d, effectiveTerms.get(instance))
     ) {
       eventStore.append(
         makeFilInstrumentAmended({
