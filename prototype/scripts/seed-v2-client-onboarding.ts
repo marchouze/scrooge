@@ -52,6 +52,7 @@ import {
   type ClientFatcaStatus,
   type ClientSector,
   foldClientOnboardingRegister,
+  isFxEligibleOnboardedClient,
 } from "../v2-core/client-onboarding";
 
 const ENTITY = "LE-ZA-HOZ-BANK"; // canonical anchor bank entity.
@@ -80,6 +81,14 @@ const T = {
   credit: "2026-06-22T08:08:00.000Z",
   accounts: "2026-06-22T08:09:00.000Z",
   activated: "2026-06-22T08:10:00.000Z",
+  // Corrective re-registration timestamp (strictly after `activated`). Used ONLY
+  // to backfill FX-eligibility (bic + fxEligiblePairs) onto a client that was
+  // onboarded BEFORE those static fields existed on the prospect payload, and is
+  // already `activated` so the normal lifecycle short-circuits. A second
+  // ProspectRegistered carrying the fields lands under a distinct event_id; the
+  // projection folds bic/fxEligiblePairs from every ProspectRegistered seen, so
+  // the corrective (the only one with the fields) wins. Replay-safe + append-only.
+  fxCorrection: "2026-06-22T08:11:00.000Z",
 } as const;
 
 interface SeedClient {
@@ -201,6 +210,39 @@ function counterpartyId(slug: string): string {
 /** Deterministic event id from (slug, phase) — replay-stable INSERT-OR-IGNORE key. */
 function eid(slug: string, phase: string): string {
   return `client-onboarding:${slug}:${phase}`;
+}
+
+/**
+ * A single corrective ProspectRegistered that backfills FX-eligibility (bic +
+ * fxEligiblePairs) onto an already-activated client whose original onboarding
+ * predates those fields. Distinct event_id (`prospect-fx-eligibility-correction`)
+ * so it lands alongside the original prospect event rather than being deduped.
+ * Only emitted for clients the seed defines as FX-eligible (banks) — never for
+ * corporates (which onboard without a BIC by design).
+ */
+function fxEligibilityCorrectionEvent(c: SeedClient): Event {
+  const cp = counterpartyId(c.slug);
+  return makeClientOnboardingProspectRegistered({
+    eventId: eid(c.slug, "prospect-fx-eligibility-correction"),
+    asOf: T.fxCorrection,
+    entity: ENTITY,
+    actor: ACTOR,
+    citations: CITES,
+    provenance: PROVENANCE,
+    payload: {
+      counterpartyId: cp,
+      legalName: c.legalName,
+      jurisdiction: c.jurisdiction,
+      sector: c.sector,
+      partyRef: `urn:party:counterparty:${c.slug}`,
+      // The fields this corrective exists to backfill. Traceability lives in the
+      // distinct event_id (`:prospect-fx-eligibility-correction`); the payload
+      // schema is `.strict()`, so no extra marker field is carried.
+      ...(c.bic !== undefined ? { bic: c.bic } : {}),
+      ...(c.fxEligiblePairs !== undefined ? { fxEligiblePairs: [...c.fxEligiblePairs] } : {}),
+      citations: CITES,
+    },
+  });
 }
 
 /** Build the full clean lifecycle (11 events) for one client, in causal order. */
@@ -399,10 +441,28 @@ function main(): void {
   let emitted = 0;
   let skippedActivated = 0;
   let skippedExistingEvents = 0;
+  let fxEligibilityBackfilled = 0;
   for (const c of CLIENTS) {
     const cp = counterpartyId(c.slug);
     const rec = register.getClient(cp);
     if (rec && rec.phase === "activated") {
+      // Already onboarded — normally a no-op. But an activated client that the
+      // seed defines as FX-eligible (a bank) yet whose folded record is NOT
+      // FX-eligible was onboarded BEFORE bic + fxEligiblePairs existed on the
+      // prospect payload. Self-heal that drift with a corrective ProspectRegistered
+      // (root-cause, not a fresh re-onboard) so the live driver can resolve it as
+      // an FX counterparty. Append-only + replay-safe (deduped on its event_id).
+      const seedDefinesFxEligible = c.bic !== undefined && (c.fxEligiblePairs?.length ?? 0) > 0;
+      if (seedDefinesFxEligible && !isFxEligibleOnboardedClient(rec)) {
+        const corrective = fxEligibilityCorrectionEvent(c);
+        if (!existingEventIds.has(corrective.event_id)) {
+          eventStore.append(corrective);
+          emitted += 1;
+          fxEligibilityBackfilled += 1;
+        } else {
+          skippedExistingEvents += 1;
+        }
+      }
       skippedActivated += 1;
       continue;
     }
@@ -426,6 +486,7 @@ function main(): void {
         emittedEvents: emitted,
         skippedAlreadyActivated: skippedActivated,
         skippedExistingEvents,
+        fxEligibilityBackfilled,
       },
       null,
       2,

@@ -174,6 +174,45 @@ function rejectionProbability(profile: CounterpartyBehaviourProfileId): number {
   return profile === "unreliable" ? 0.02 : 0;
 }
 
+/**
+ * True when `pair` (`BASE/QUOTE`) is quoted in the reporting currency on EITHER
+ * leg — i.e. one leg is the reporting currency, so its settled FCY leg has a
+ * resolvable IAS 21 §21 ZAR cost basis (the reporting counter leg). A cross with
+ * neither leg = reporting (e.g. EUR/USD when reporting is ZAR) is NOT
+ * settlement-capable under the current FX-vanilla product. Malformed pairs → false.
+ */
+function isReportingQuotedPair(pair: string, reporting: string): boolean {
+  const [base, quote] = pair.split("/");
+  if (base === undefined || quote === undefined || base === "" || quote === "") return false;
+  return base === reporting || quote === reporting;
+}
+
+/**
+ * Resume baseline for a WARM store. The driver replays from a FIXED baseline +
+ * seed, so a second run against a store that ALREADY holds this scenario's events
+ * would regenerate identical deterministic tradeIds → event_ids and throw
+ * `UNIQUE constraint failed` (the dashboard simulator is CONTROLLABLE — started,
+ * stopped, and fired across sessions, each time reconstructing the driver). To
+ * make every run re-runnable, resume the sim clock one day AFTER the latest
+ * persisted scenario instant, so each run continues FORWARD in sim-time and every
+ * generated tradeId (which embeds the instant) is fresh. A COLD store with no
+ * scenario events returns null → DEFAULT_BASELINE. Deterministic: derived from
+ * persisted `as_of` strings via Date.parse — NO wall-clock read. The marker type
+ * is `FilInstrumentCreated` (one per booked trade), filtered to this scenario's
+ * `simulated` provenance so non-sim instruments are ignored.
+ */
+function resolveResumeBaseline(store: EventStore): number | null {
+  let maxMs: number | null = null;
+  for (const ev of store.replay({ type: "FilInstrumentCreated" })) {
+    const prov = ev.provenance as { scenario?: string } | null | undefined;
+    if (!prov || prov.scenario !== SCENARIO_ID) continue;
+    const ms = Date.parse(ev.as_of);
+    if (Number.isNaN(ms)) continue;
+    if (maxMs === null || ms > maxMs) maxMs = ms;
+  }
+  return maxMs === null ? null : maxMs + ONE_DAY_MS;
+}
+
 export class V2LiveFxDriver {
   private readonly eventStore: EventStore;
   private readonly marketDataStore: MarketDataStore;
@@ -223,7 +262,13 @@ export class V2LiveFxDriver {
     const cfg = args.config ?? {};
     this.eventStore = args.eventStore;
     this.marketDataStore = args.marketDataStore;
-    this.clock = new SimulatedClock(cfg.baselineInstant ?? DEFAULT_BASELINE);
+    // Explicit baseline (tests/scenarios) wins — preserves byte-replay. Otherwise
+    // resume one day past the latest persisted scenario instant on a warm store, so
+    // repeated dashboard runs never collide on deterministic ids; cold store →
+    // DEFAULT_BASELINE.
+    this.clock = new SimulatedClock(
+      cfg.baselineInstant ?? resolveResumeBaseline(args.eventStore) ?? DEFAULT_BASELINE,
+    );
     this.rng = new SeededRng(cfg.seed ?? 0x11fe);
     this.rateWalk = new FxRateWalkV2();
     this.bus = new EodTriggerBus(this.clock, { eodHourUtc: cfg.eodHourUtc ?? 17 });
@@ -260,10 +305,30 @@ export class V2LiveFxDriver {
    * IN-SIM ONBOARDED client set folded from the store (fail-closed empty → []).
    * Resolved lazily at first provision so the onboarding seed can land AFTER
    * driver construction. NEVER falls back to DEFAULT_SIM_COUNTERPARTIES.
+   *
+   * SETTLEMENT-CAPABILITY SCOPING: the bank's built FX-vanilla product settles a
+   * two-leg spot where ONE leg is the reporting currency (FCY ⇄ ZAR) — the ZAR
+   * leg IS the IAS 21 §21 cost basis of the FCY leg (settle-fx-leg.ts /
+   * cash-materialisation.ts). A non-reporting CROSS (e.g. EUR/USD) has no ZAR leg,
+   * so its settled FCY cash legs have no resolvable ZAR carrying amount and the
+   * materialiser FAILS CLOSED. Cross-pair FCY settlement (caller-supplied
+   * `zarCostBasisOverrideBySide` priced off a settlement-date X/ZAR rate) is a
+   * not-yet-built capability — see the tracked gap. Until it lands, the live
+   * driver trades ONLY reporting-quoted pairs, so every booked trade is settleable.
+   * This is a subset of each counterparty's onboarded eligibility (recon:fx-sim-
+   * counterparty-onboarded still holds — driver pairs ⊆ onboarded pairs).
    */
   private resolveCounterparties(): readonly ScenarioCounterparty[] {
-    if (this.injectedCounterparties !== null) return this.injectedCounterparties;
-    return onboardedFxCounterparties(this.eventStore);
+    const resolved =
+      this.injectedCounterparties !== null
+        ? this.injectedCounterparties
+        : onboardedFxCounterparties(this.eventStore);
+    return resolved
+      .map((cp) => ({
+        ...cp,
+        eligiblePairs: cp.eligiblePairs.filter((p) => isReportingQuotedPair(p, REPORTING)),
+      }))
+      .filter((cp) => cp.eligiblePairs.length > 0);
   }
 
   /** Provision the resolved counterparties once (idempotent on the store). */
