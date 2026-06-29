@@ -65,6 +65,16 @@ export interface AffirmedFxTrade {
    */
   readonly rate: number;
   readonly settlementDate: string;
+  /**
+   * OPTIONAL trade / deal date (ISO date) the trade was STRUCK on
+   * (D-FX-E2E-CORRECTNESS-V1). Threaded onto `economicTerms.tradeDate` so the
+   * instrument records the economic-recognition date distinct from the value date.
+   * When OMITTED the booking falls back to `asOf.slice(0,10)` (the prior implicit
+   * trade date) — replay-safe for the existing simulator callers, which do not
+   * supply it. The manual desk path supplies the user-specified date (backdated,
+   * live, or future) so the OBS recognition folds into the correct period.
+   */
+  readonly tradeDate?: string;
 }
 
 /**
@@ -170,6 +180,10 @@ export function bookAffirmedFxTrade(args: {
           nettingSetId,
           currency: base,
           settlementDate: trade.settlementDate,
+          // Trade / deal date — the user/desk-specified strike date when supplied
+          // (manual backdated / live / future), else the as_of date (the prior
+          // implicit trade date — replay-safe for the simulator callers).
+          tradeDate: trade.tradeDate ?? asOf.slice(0, 10),
           hedgingSetTag: trade.pair,
           fxAgreement,
         },
