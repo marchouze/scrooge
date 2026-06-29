@@ -150,17 +150,26 @@ export function run(opts: FxProductionViewReconOptions = {}): ReconResult {
       }
     }
 
-    // (4) Cross-check: the production-only read must be a strict subset of
-    //     production-kind instances. (Structural assertion that runs even when
-    //     the open set is empty — non-vacuous coverage of the read path.)
+    // (4) Cross-check: the production-only read must be a strict subset of the
+    //     ADMITTED set. "Admitted" is NOT "kind===production" — the production-only
+    //     filter is lifecycle-aware (D-PROVENANCE-BUILD-PHASE-CLASS Slice 1): during
+    //     the build phase it ALSO admits `build-phase-fixture` (real pre-commencement
+    //     bank state — the anchor FX book), and admits ONLY `kind=production` at
+    //     commencement. This cross-check MUST mirror the same per-instance predicate
+    //     used in (3a); counting only kind=production here would falsely flag the
+    //     legitimately-admitted build-phase fixture book as a leak. (Structural
+    //     assertion that runs even when the open set is empty — non-vacuous coverage
+    //     of the read path.)
     asserted++;
-    const productionRawCount = [...rawByInstance.values()].filter(
-      (r) => r.provenanceKind === "production",
+    const admittedRawCount = [...rawByInstance.values()].filter(
+      (r) =>
+        r.provenanceKind === "production" ||
+        (r.provenanceKind === "build-phase-fixture" && phase === "build-phase"),
     ).length;
-    if (open.length > productionRawCount) {
+    if (open.length > admittedRawCount) {
       violations.push({
         subject: "production-only-read",
-        message: `FX PRODUCTION-VIEW LEAK: the production-only open-FX read surfaced ${open.length} instances, but only ${productionRawCount} FX create events carry kind="production". The read is admitting non-production instances — a provenance-filter leak.`,
+        message: `FX PRODUCTION-VIEW LEAK: the production-only open-FX read surfaced ${open.length} instances, but only ${admittedRawCount} FX create events are provenance-admitted (kind="production"${phase === "build-phase" ? ' or "build-phase-fixture" in build phase' : ""}). The read is admitting non-admitted instances — a provenance-filter leak.`,
         severity: "fail",
       });
     }
