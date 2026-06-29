@@ -149,10 +149,18 @@ describe("FX end-to-end independent proof — book one trade, prove the full cha
   test("LINK 1 — born-V2 FilInstrumentCreated with exact backdated dates + symmetric quad", async () => {
     const tradeId = await bookSpecimen();
 
-    // Born-V2: a FilInstrumentCreated exists; NO V1 FxTradeExecuted was emitted.
+    // Born-V2: a FilInstrumentCreated exists for THIS trade; the manual path emits
+    // NO V1 FxTradeExecuted for it (V1 booking path retired — no new V1 dependency).
+    // Scoped to this tradeId because the shared composition store persists across
+    // the whole suite (other files may emit unrelated FxTradeExecuted fixtures).
     const created = findCreated(tradeId);
-    const fxExecuted = [...eventStore.replay({ type: "FxTradeExecuted" })];
-    expect(fxExecuted.length).toBe(0); // V1 path retired (no new V1 dependency)
+    const fxExecutedForSpecimen = [...eventStore.replay({ type: "FxTradeExecuted" })].filter(
+      (e) => {
+        const p = e.payload as { tradeId?: string };
+        return p.tradeId === tradeId;
+      },
+    );
+    expect(fxExecutedForSpecimen.length).toBe(0);
 
     const t = created.economicTerms as FilEconomicTerms & {
       tradeDate?: string;
@@ -354,33 +362,106 @@ describe("FX end-to-end independent proof — book one trade, prove the full cha
 
   // ----- LINK 3: BA returns (SARB Reg 28/29 oracle) -----
   test("LINK 3 — BA-325 reg-29 auth-dealer×USD purchase cell + BA-320 NOP reconcile by construction", async () => {
-    const tradeId = await bookSpecimen();
-    void tradeId;
+    // Isolated store: BA-325 R0750 (residency-folded, DROPS unmappable) and BA-320
+    // (no residency classification, includes ALL positions) reconcile BY
+    // CONSTRUCTION only when every open position is residency-mappable. The shared
+    // composition store accumulates other suites' trades (incl. unmappable ones),
+    // which would break that exact equality — so this link books the specimen into
+    // a fresh store via the genuine SUT booking path and the onboarded counterparty,
+    // keeping the reconciliation deterministic.
+    const store = new EventStore(":memory:");
+    store.append(
+      makeClientOnboardingProspectRegistered({
+        eventId: `e2e-ba:onboarding:${ZA_BANK_CP}:prospect`,
+        asOf: "2026-01-02T08:00:00.000Z",
+        entity: ENTITY,
+        actor: { type: "service", id: "test:fx-e2e-ba" },
+        citations: ["D-FX-E2E-CORRECTNESS-V1"],
+        provenance: simulatedTag({ scenario: "test:fx-e2e-ba", sourceLineage: "test:fx-e2e-ba" }),
+        payload: {
+          counterpartyId: ZA_BANK_CP,
+          legalName: ZA_BANK_NAME,
+          jurisdiction: "ZA",
+          sector: "banking",
+          partyRef: "urn:party:counterparty:e2e-za-bank",
+          citations: [citationRefSchema.parse("D-FX-E2E-CORRECTNESS-V1")],
+        },
+      }),
+    );
+    const { makeTradeConfirmationSent, makeTradeAffirmed } = await import(
+      "../platform/event-store/event-types/fx-trade-confirmation"
+    );
+    const { bookAffirmedFxTrade } = await import(
+      "../platform/markets/products/book-affirmed-fx-trade"
+    );
+    const tradeId = "E2E-BA-USD-1";
+    const prov = simulatedTag({
+      scenario: "operator:manual-desk-booking",
+      sourceLineage: "operator:manual-trade-booking",
+      tags: ["manual", "fx"],
+    });
+    const asOf = `${SPECIMEN.tradeDate}T12:00:00.000Z`;
+    store.append(
+      makeTradeConfirmationSent({
+        asOf,
+        entity: ENTITY,
+        actor: { type: "human", id: "operator" },
+        citations: ["D-FX-E2E-CORRECTNESS-V1"],
+        payload: { tradeId, counterpartyId: ZA_BANK_CP, channel: "MT300" },
+        eventId: `e2e-ba:${tradeId}:conf-sent`,
+        provenance: prov,
+      }),
+    );
+    store.append(
+      makeTradeAffirmed({
+        asOf,
+        entity: ENTITY,
+        actor: { type: "human", id: "operator" },
+        citations: ["D-FX-E2E-CORRECTNESS-V1"],
+        payload: { tradeId, counterpartyId: ZA_BANK_CP, channel: "MT300" },
+        eventId: `e2e-ba:${tradeId}:affirmed`,
+        provenance: prov,
+      }),
+    );
+    bookAffirmedFxTrade({
+      store,
+      scenarioId: `e2e-ba:${tradeId}`,
+      asOf,
+      reporting: "ZAR",
+      trade: {
+        tradeId,
+        counterpartyId: ZA_BANK_CP,
+        productTaxonomy: "FX-spot",
+        pair: "USD/ZAR",
+        side: "buy",
+        baseNotionalMajor: SPECIMEN.notionalUsd,
+        rate: SPECIMEN.bookedRate,
+        settlementDate: SPECIMEN.settlementDate,
+        tradeDate: SPECIMEN.tradeDate,
+      },
+      provenance: prov,
+    });
 
-    // BA-325 reg-29(3) under the DEFAULT (operating-book) lens — exactly as the
-    // live return reads it. Oracle: SARB Reg 29(3); a long FX position is a
-    // commitment to PURCHASE foreign currency; the ZA bank is an Authorised Dealer.
+    // BA-325 reg-29(3) under the operating-book lens. Oracle: SARB Reg 29(3); a long
+    // FX position is a commitment to PURCHASE foreign currency; the ZA bank is an
+    // Authorised Dealer.
     const ba325 = computeBa325Reg29FxResidency({
-      eventStore,
+      eventStore: store,
       entity: ENTITY,
       asOf: SPECIMEN.asOf,
+      provenanceFilter: { mode: "operating-book" },
     });
-    expect(ba325.meta.provenanceMode).toBe("operating-book");
-    expect(ba325.meta.foldedInstanceCount).toBeGreaterThanOrEqual(1);
+    expect(ba325.meta.foldedInstanceCount).toBe(1);
     expect(ba325.unmappable.length).toBe(0);
-
     // The USD purchase commitment lands in the authorised-dealer residency cell.
-    const adUsdPurchase = ba325.purchase.byResidency["authorised-dealer"].USD;
-    expect(adUsdPurchase).toBeGreaterThanOrEqual(100_000_000); // ≥ USD 1,000,000 minor
+    expect(ba325.purchase.byResidency["authorised-dealer"].USD).toBe(100_000_000); // USD 1,000,000
     // R0750 effective net-open USD position (purchase − sell).
-    expect(ba325.effectiveNetOpenPosition.USD).toBe(
-      adUsdPurchase - ba325.sell.byResidency["authorised-dealer"].USD - 0,
-    );
+    expect(ba325.effectiveNetOpenPosition.USD).toBe(100_000_000);
 
-    // BA-320 reg-28(5) FX net-open-position under the combined lens with an explicit
-    // rate. Oracle: Reg 28(5) / BCBS D352 §718(xiii) — 8% open-position charge.
+    // BA-320 reg-28(5) FX net-open-position. Oracle: Reg 28(5) / BCBS D352
+    // §718(xiii) — 8% open-position charge.
     const ba320 = computeBA320V2({
-      eventStore,
+      eventStore: store,
       entity: ENTITY,
       asOf: SPECIMEN.asOf,
       zarRates: { USD: SPECIMEN.bookedRate },
@@ -391,12 +472,13 @@ describe("FX end-to-end independent proof — book one trade, prove the full cha
     if (!usdPos) throw new Error("no USD position in BA-320");
     expect(usdPos.rateAvailable).toBe(true);
 
-    // RECONCILIATION BY CONSTRUCTION: the BA-325 R0750 USD net-open position (in
-    // USD minor) equals the BA-320 USD net position in base-currency minor — same
-    // open instance, same long−short net.
+    // RECONCILIATION BY CONSTRUCTION: the BA-325 R0750 USD net-open position (USD
+    // minor) equals the BA-320 USD net position in base-currency minor — same open
+    // instance, same long−short net.
     expect(usdPos.netPositionBaseCurrencyMinor).toBe(ba325.effectiveNetOpenPosition.USD);
 
     // The Reg 28(5) open-position charge is present and positive (not zero-filled).
+    // 8% × R18,500,000 functional = R1,480,000 = 148,000,000 minor.
     expect(ba320.fx.openPositionChargeMinor).not.toBeNull();
     expect(ba320.fx.openPositionChargeMinor ?? 0).toBeGreaterThan(0);
   });
