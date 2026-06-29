@@ -29,6 +29,7 @@ import { randomBytes } from "node:crypto";
 import { clock, eventStore } from "../platform/composition";
 import { newEventId } from "../platform/core/types";
 import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-accounting";
+import { makeFxSimSettlementConfirmed } from "../platform/event-store/event-types/fx-settlement-lifecycle";
 import {
   makeTradeAffirmed,
   makeTradeConfirmationSent,
@@ -44,9 +45,12 @@ import type { EventStore } from "../platform/event-store/store";
 import { makeEquityTradeBooked } from "../platform/markets/cdm/equity";
 import { makeIrsTradeBooked } from "../platform/markets/cdm/ird";
 import { bookAffirmedFxTrade } from "../platform/markets/products/book-affirmed-fx-trade";
+import { type SettleFxResult, settleFxLeg } from "../platform/markets/settlement/settle-fx-leg";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
 import type { AgentRunContext } from "../runtime/types";
 import { decimalToString, divD, roundDecimal, toDecimal } from "../v2-core/fil-core/decimal";
+import { formatInstanceUrn } from "../v2-core/fil-core/urn";
+import type { FilInstrumentCreatedPayload } from "../v2-core/fil-instances/events";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -1330,6 +1334,251 @@ export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResul
 }
 
 // ---------------------------------------------------------------------------
+// SETTLE a manual born-V2 FX trade — drive the settlement lifecycle to
+// completion (D-FX-SETTLEMENT-REALISATION-V1, Lane 4a).
+//
+// THE GAP THIS CLOSES. `bookFxTrade` emits the born-V2 `FilInstrumentCreated`
+// (booking) but deliberately does NOT drive settlement — so a hand-booked trade
+// never reaches value-date settlement, never materialises settled cash, never
+// terminates, and the FX settlement clearing account (ACC-2100-027) never carries
+// the in-flight position it is designed to carry. This function is the manual
+// analogue of the live world-simulator's `settleTrade` (live-driver.ts): on/after
+// value date it drives the SAME proven SUT seam (`settleFxLeg`) the simulator
+// drives, so the manual path settles BYTE-IDENTICALLY to the generative one.
+//
+// THE TRIGGER. Settlement-of-record (`TradeSettlementExecuted`) is gated by
+// `settleFxLeg` on an EXTERNAL `FxSimSettlementConfirmed` — the correspondent
+// confirming both legs cleared (the bank's nostro reconciliation reads it; the
+// SUT never fabricates settlement out of thin air — fail-closed). The live
+// simulator emits that confirmation from `emitSettlementLifecycle`. For a manual
+// desk trade there is no simulator, so this function emits the correspondent
+// confirmation itself (modelling the funds movement the operator is asserting has
+// occurred), SOURCED from the booked instrument-of-record's own buy/sell
+// agreement quad — NOT re-derived from thin air — then calls `settleFxLeg`.
+//
+// VALUE-DATE GATE. A trade settles only once its value (settlement) date has been
+// REACHED or PASSED relative to the bank clock. A BACKDATED trade (value date
+// already in the past) settles immediately on the next settle run; a FUTURE-dated
+// trade is refused (fail-closed) until its value date arrives — settling before
+// value date would recognise cash that has not moved.
+//
+// PROVENANCE PARTITION (the cancel-reversal lesson). The settlement, cash, and
+// termination events MUST carry the SAME `simulated` / `operator:manual-desk-
+// booking` provenance as the booking they settle, so they fold in the SAME
+// partition under the operating-book lens — else the settlement legs are filtered
+// out and the GL does not square against the creation.
+//
+// CLEARING-ACCOUNT INVARIANT (the accounting truth — confirmed, not assumed).
+// Settlement is P&L-NEUTRAL (PR-FX-SETTLE-V2, D-FX-PNL-FCY-EXPOSURE-REVALUATION):
+// each settled cash leg posts `Dr/Cr Cash[ccy]` against the equal-and-opposite
+// `Cr/Dr FX-Settlement-Clearing[ccy]` in the SAME currency. So after settlement
+// the clearing account carries — per currency — exactly the negated settled-cash
+// position: a CREDIT in the bought currency and a DEBIT in the sold currency. It
+// does NOT square to zero at settlement; that two-currency in-flight position is
+// the legitimate, fully-attributable balance the clearing account exists to hold,
+// and it squares to zero only when the FCY is later converted back to ZAR
+// (PR-FX-CONVERT-V2 — the realisation point; there is no conversion event wired
+// today, so on the spot-settle path the clearing position stands as the in-flight
+// position by design). NO realised P&L is struck at settlement (a deliverable spot
+// settles at the contracted rate, settled == booked per currency; the rule fails
+// closed on any same-currency booked≠settled residual). Derecognition
+// (`FilInstrumentTerminated{settled}` → PR-FX-CLOSE-V2 + the state-driven
+// OBS-commitment release) closes the FX instrument and releases the trade-date
+// commitment.
+//
+// Authority: D-FX-SETTLEMENT-REALISATION-V1 (CEO-approved);
+//   D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL; D-FX-PNL-FCY-EXPOSURE-REVALUATION;
+//   D-CASH-ASSET-CLASS-V1; Engineering Charter (cmd 1 root-cause, cmd 2
+//   fail-closed, cmd 4 source-don't-duplicate). IAS 21 §23, §28.
+// Author: Kai (Trading systems engineer, engineering — Lane 4a).
+export interface SettleFxTradeBody {
+  /** The trade id minted by a prior `bookFxTrade` (e.g. `MAN-<ts>-<hex>`). */
+  readonly tradeId?: string;
+  /**
+   * OPTIONAL as-of instant the settlement runs at (ISO). Defaults to the bank
+   * clock now. The value-date gate compares this date against the trade's
+   * settlement date. Injectable so a test settles deterministically.
+   */
+  readonly asOf?: string;
+}
+
+export interface SettleFxTradeResult {
+  ok: boolean;
+  tradeId?: string;
+  /** Count of `TradeSettlementExecuted` settlement-of-record events emitted (spot ⇒ 2). */
+  settlementsExecuted?: number;
+  /** Count of NEW settled-cash `fil:type:cash` instruments materialised. */
+  cashInstancesMaterialised?: number;
+  /** Whether the FX instrument was terminated (settled, derecognised) this call. */
+  fxTerminated?: boolean;
+  error?: string;
+}
+
+/**
+ * Settle a manual born-V2 FX trade on/after its value date. Fail-closed: an
+ * unknown / unbooked trade, an already-terminated trade, or a trade whose value
+ * date has NOT yet arrived settles NOTHING and returns a loud error. Idempotent —
+ * re-settling a settled trade is a no-op (the underlying `settleFxLeg` keys on the
+ * deterministic settlement / cash / termination URNs).
+ */
+export function settleManualFxTrade(body: SettleFxTradeBody): SettleFxTradeResult {
+  const tradeId = typeof body.tradeId === "string" ? body.tradeId.trim() : "";
+  if (!tradeId) return { ok: false, error: "tradeId is required" };
+
+  const asOf = typeof body.asOf === "string" && body.asOf.trim() ? body.asOf.trim() : clock.now();
+  const runDate = asOf.slice(0, 10);
+
+  // Locate the booked instrument-of-record (the FilInstrumentCreated this trade
+  // booked) — the canonical source of the settlement legs (its buy/sell quad).
+  const instanceUrn = formatInstanceUrn({ tenant: "LE-ZA-HOZ-BANK", instanceId: tradeId });
+  const created = [...eventStore.replay({ type: "FilInstrumentCreated" })].find(
+    (e) => (e.payload as FilInstrumentCreatedPayload).instance === instanceUrn,
+  );
+  if (!created) {
+    return { ok: false, error: `no booked FX instrument found for trade ${tradeId}` };
+  }
+  const createdPayload = created.payload as FilInstrumentCreatedPayload;
+  const terms = createdPayload.economicTerms;
+  if (terms.assetClass !== "fx") {
+    return { ok: false, error: `trade ${tradeId} is not an FX instrument (${terms.assetClass})` };
+  }
+  const agreement = terms.fxAgreement;
+  if (!agreement) {
+    return {
+      ok: false,
+      error: `trade ${tradeId} carries no fxAgreement quad — cannot derive settlement legs`,
+    };
+  }
+
+  // Already terminated? Idempotent no-op (settle once).
+  const alreadyTerminated = [...eventStore.replay({ type: "FilInstrumentTerminated" })].some(
+    (e) => (e.payload as { instance?: string }).instance === instanceUrn,
+  );
+  if (alreadyTerminated) {
+    return {
+      ok: true,
+      tradeId,
+      settlementsExecuted: 0,
+      cashInstancesMaterialised: 0,
+      fxTerminated: false,
+    };
+  }
+
+  // VALUE-DATE GATE (fail-closed). Settle only once the settlement (value) date is
+  // reached or passed. A future-dated trade is refused — settling before value
+  // date would recognise cash that has not moved (Charter cmd 2).
+  const settlementDate = terms.settlementDate;
+  if (runDate < settlementDate) {
+    return {
+      ok: false,
+      error: `trade ${tradeId} settles on value date ${settlementDate}; cannot settle as-of ${runDate} (value date not yet reached)`,
+    };
+  }
+
+  // Reuse the SAME `simulated` / operator:manual-desk-booking provenance the
+  // booking carries (sourced from the booked event itself), so settlement folds in
+  // the SAME partition as the creation it settles (cancel-reversal lesson).
+  const bookingProvenance = created.provenance as ProvenanceTag | undefined;
+  if (!bookingProvenance) {
+    return { ok: false, error: `booked FX instrument for ${tradeId} carries no provenance` };
+  }
+
+  // The bank RECEIVES the buy leg, PAYS the sell leg (the quad is from the bank's
+  // perspective; events.ts fxAgreementSchema). Amounts are decimal-native MAJOR
+  // strings → MAJOR numbers for the confirmation payload.
+  const receiveCurrency = agreement.buy.currency;
+  const receiveAmountMajor = Number(decimalToString(toDecimal(agreement.buy.amount)));
+  const payCurrency = agreement.sell.currency;
+  const payAmountMajor = Number(decimalToString(toDecimal(agreement.sell.amount)));
+
+  // The settlement instant aligns to the value date (start-of-day-equivalent
+  // intra-day instant), so the settlement + termination + OBS-release legs fold
+  // into the VALUE-DATE period (the FX fold derives postingDate from `asOf`).
+  const settledAsOf = `${settlementDate}T12:00:00.000Z`;
+  const cpActor = { type: "human" as const, id: "operator" };
+  const settleCitations = ["D-FX-SETTLEMENT-REALISATION-V1", "D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL"];
+
+  // (1) Emit the EXTERNAL correspondent confirmation the SUT settlement gate reads
+  // (the operator asserts the funds cleared at the correspondent on value date).
+  // Idempotent: re-emitting the same deterministic event id is a UNIQUE-constraint
+  // no-op we guard by checking first.
+  const confirmedAlready = [...eventStore.replay({ type: "FxSimSettlementConfirmed" })].some(
+    (e) => (e.payload as { tradeId?: string }).tradeId === tradeId,
+  );
+  if (!confirmedAlready) {
+    eventStore.append(
+      makeFxSimSettlementConfirmed({
+        asOf: settledAsOf,
+        entity: "LE-ZA-HOZ-BANK",
+        actor: cpActor,
+        citations: settleCitations,
+        payload: {
+          tradeId,
+          counterpartyId: terms.counterpartyId,
+          settlementDate,
+          channel: "MT202",
+          attempt: 0,
+          payCurrency,
+          payAmountMajor,
+          receiveCurrency,
+          receiveAmountMajor,
+        },
+        eventId: `manual:${tradeId}:settle-confirmed`,
+        provenance: bookingProvenance,
+      }),
+    );
+  }
+
+  // (2) Drive the SUT settlement seam — the SAME entry point the live simulator
+  // drives. Emits `TradeSettlementExecuted` (×2 for a spot) → PR-FX-SETTLE-V2
+  // (cash ↔ clearing, P&L-neutral), materialises the settled cash holdings, and
+  // terminates the FX instrument (settled) → PR-FX-CLOSE-V2 + state-driven
+  // OBS-commitment release. Same provenance ⇒ same partition.
+  let result: SettleFxResult;
+  try {
+    result = settleFxLeg({
+      store: eventStore,
+      scenarioId: `manual:${tradeId}`,
+      reporting: payCurrency === "ZAR" ? "ZAR" : receiveCurrency === "ZAR" ? "ZAR" : payCurrency,
+      tradeId,
+      provenance: bookingProvenance,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: `FX settlement failed: ${msg}` };
+  }
+
+  if (!result.settled) {
+    return {
+      ok: false,
+      error: `settlement gate found no confirmation for ${tradeId} (fail-closed)`,
+    };
+  }
+
+  return {
+    ok: true,
+    tradeId,
+    settlementsExecuted: result.settlementsExecuted,
+    cashInstancesMaterialised: result.cashInstancesMaterialised,
+    fxTerminated: result.fxTerminated,
+  };
+}
+
+async function handleTradeSettle(req: Request): Promise<Response> {
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return jsonResponse({ ok: false, error: "invalid JSON body" }, 400);
+  }
+  if (typeof raw !== "object" || raw === null) {
+    return jsonResponse({ ok: false, error: "body must be a JSON object" }, 400);
+  }
+  const result = settleManualFxTrade(raw as SettleFxTradeBody);
+  return jsonResponse(result, result.ok ? 200 : 400);
+}
+
+// ---------------------------------------------------------------------------
 // registerTradeBookRoutes — called from server.ts
 // ---------------------------------------------------------------------------
 
@@ -1345,6 +1594,9 @@ export async function registerTradeBookRoutes(
 ): Promise<Response | null> {
   if (pathname === "/api/trades/book" && method === "POST") {
     return handleTradeBook(req, store);
+  }
+  if (pathname === "/api/trades/settle" && method === "POST") {
+    return handleTradeSettle(req);
   }
   return null;
 }
