@@ -493,6 +493,12 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // tagged) and asserts the computeGlEntriesV2 / computeGlAccountsV2 folds. Not a
   // production access path. T-01 carve-out.
   "platform/projections/gl-projection-v2-entries-accounts.test.ts",
+  // D-FX-REALISATION-COMPLETION-V1 (Item 3) — BA-320 NOP captures settled FCY cash.
+  // Same build-phase fixture pattern: raw EventStore(":memory:") seeds FIL FX
+  // contract + cash holdings (production-tagged) and asserts computeBA320V2 folds
+  // the FCY cash into the reg-28(5) net-open-position. Not a production access
+  // path. T-01 carve-out. F-031.
+  "platform/projections/ba320-fx-v2.test.ts",
   // D-ACCT-MODULAR-PRODUCT-COMPOSED-FOLD — FX trial-balance fold golden-equivalence
   // + in-test provenance cohort proof. Same build-phase fixture pattern as the V2
   // GL tests above: raw EventStore(":memory:") seeds FIL FX events + treatment

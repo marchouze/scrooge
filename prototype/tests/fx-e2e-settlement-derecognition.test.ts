@@ -338,17 +338,32 @@ describe("FX golden e2e THROUGH settlement — book → settle(value date) → d
     }
     for (const v of obsByCcy.values()) expect(v).toBeCloseTo(0, 2);
 
-    // BA-320 AFTER settlement: this trade's open FX instance is closed — its USD
-    // contribution drops out. (RESIDUAL, named in the report: the FCY cash position
-    // is NOT yet folded into BA-320 NOP — BA-320 v2 folds only assetClass==="fx".)
+    // BA-320 AFTER settlement: the FX CONTRACT is closed, but the FCY EXPOSURE is
+    // CONTINUOUS — it now lives as the settled USD cash position, which Item 3
+    // (D-FX-REALISATION-COMPLETION-V1) folds into the reg-28(5) NOP. (The earlier
+    // RESIDUAL "FCY cash NOT yet in BA-320 NOP" is now CLOSED.) So the open FX
+    // CONTRACT instance is gone from the open set, but the USD net-open position
+    // PERSISTS as cash (the charge does not vanish at settlement). The
+    // open-instance count holds (contract −1, cash +1) rather than dropping.
     const ba320After = computeBA320V2({
       eventStore,
       entity: ENTITY,
       asOf: SPEC.settleAsOf,
       provenanceFilter: { mode: "combined" },
     });
-    const openCountAfter = ba320After.meta.openFxInstanceCount;
-    expect(openCountAfter).toBeLessThan(openCountBefore);
+    // The USD net-open position is still present post-settlement — carried as the
+    // settled FCY cash (Item 3), not the closed contract.
+    const usdAfter = ba320After.fx.positions.find((p) => p.baseCurrency === "USD");
+    expect(usdAfter).toBeDefined();
+    expect(usdAfter?.openInstanceCount).toBeGreaterThan(0);
+    // The original open FX CONTRACT instance is no longer in the open set (it
+    // settled); the surviving open instance is the FCY cash holding.
+    const openContract = [...eventStore.replay({ type: "FilInstrumentTerminated" })]
+      .map((e) => e.payload as FilInstrumentTerminatedPayload)
+      .some((p) => p.instance?.endsWith(`:${tradeId}`));
+    expect(openContract).toBe(true);
+    // openCountBefore is referenced to anchor the pre-settlement open state.
+    expect(openCountBefore).toBeGreaterThan(0);
   });
 
   // ── S5: trial balance balances per currency across the cycle ─────────────

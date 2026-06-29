@@ -29,6 +29,10 @@ import { randomBytes } from "node:crypto";
 import { clock, eventStore } from "../platform/composition";
 import { newEventId } from "../platform/core/types";
 import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-accounting";
+import {
+  makeFilInstrumentTerminated,
+  makeFxConversionExecuted,
+} from "../platform/event-store/event-types/fil-instances";
 import { makeFxSimSettlementConfirmed } from "../platform/event-store/event-types/fx-settlement-lifecycle";
 import {
   makeTradeAffirmed,
@@ -48,9 +52,20 @@ import { bookAffirmedFxTrade } from "../platform/markets/products/book-affirmed-
 import { type SettleFxResult, settleFxLeg } from "../platform/markets/settlement/settle-fx-leg";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
 import type { AgentRunContext } from "../runtime/types";
-import { decimalToString, divD, roundDecimal, toDecimal } from "../v2-core/fil-core/decimal";
+import {
+  decimalToString,
+  divD,
+  mulD,
+  roundDecimal,
+  subD,
+  toDecimal,
+} from "../v2-core/fil-core/decimal";
 import { formatInstanceUrn } from "../v2-core/fil-core/urn";
-import type { FilInstrumentCreatedPayload } from "../v2-core/fil-instances/events";
+import {
+  type FilInstrumentCreatedPayload,
+  filInstrumentTerminatedPayloadSchema,
+} from "../v2-core/fil-instances/events";
+import { fxConversionExecutedPayloadSchema } from "../v2-core/fil-instances/fx-conversion";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -1579,6 +1594,251 @@ async function handleTradeSettle(req: Request): Promise<Response> {
 }
 
 // ---------------------------------------------------------------------------
+// POST /api/trades/convert — FCY→ZAR conversion (REALISATION). The third and
+// final step of the FX chain: book → reval → settle (clearing) → FCY cash in NOP
+// → CONVERT → realised P&L → position closed.
+//
+// THE GAP THIS CLOSES (D-FX-REALISATION-COMPLETION-V1, Item 2; Nadia's Lane-4b
+// residual). Settlement leaves the FCY exposure OPEN as FCY cash (P&L-neutral,
+// D-FX-PNL-FCY-EXPOSURE-REVALUATION). REALISED P&L (IAS 21 §28) arises ONLY when
+// that FCY cash is converted back to the reporting currency — the position is
+// squared. The conversion posting rule (PR-FX-CONVERT-V2, `postFxConversionLegs`)
+// has existed but was wired to NO lifecycle event, so realised P&L was never
+// struck end-to-end. This seam is the missing trigger: it emits the born-V2
+// `FxConversionExecuted` (the GL fold derives PR-FX-CONVERT-V2 legs from it),
+// then CLOSES the FCY cash position by terminating its FIL instance.
+//
+// REALISED P&L = ZAR proceeds − ZAR cost basis of the FCY sold (IAS 21 §28). The
+// proceeds are the converted FCY amount × the operator-supplied conversion rate;
+// the cost basis is read OFF the cash holding's `zarCostBasis` (the IAS 21 §21
+// settlement-date ZAR carrying amount stamped at materialisation) — NOT re-derived
+// from thin air (Charter cmd 4, source-don't-hardcode).
+//
+// PROVENANCE PARTITION (the cancel/settlement lesson). The conversion + termination
+// carry the SAME provenance as the cash holding they close, so they fold in the
+// SAME partition under the operating-book lens — else the realisation legs are
+// filtered out and the GL does not square against the cash they realise.
+//
+// FAIL-CLOSED. An unknown cash instance, a non-cash holding, an already-terminated
+// (already-converted) position, a non-positive rate, or a converted amount
+// exceeding the held balance is REFUSED (no realisation, loud error). Idempotent:
+// re-converting a terminated holding is a no-op.
+//
+// Authority: D-FX-REALISATION-COMPLETION-V1; D-FX-PNL-FCY-EXPOSURE-REVALUATION;
+//   D-CASH-ASSET-CLASS-V1; Engineering Charter (cmd 1 root-cause; cmd 2
+//   fail-closed; cmd 4 source-don't-hardcode). IAS 21 §28; IFRS 9 §5.7.1.
+// Author: Kai (Trading systems engineer, engineering — Lane 5a).
+export interface ConvertFcyBody {
+  /**
+   * The FCY cash instance URN to convert (a `<tradeId>-cash-received` holding), OR
+   * the bare cash-leg instance id; resolved to the full URN if a bare id is given.
+   */
+  readonly cashInstance?: string;
+  /** The conversion rate: reporting-currency units per 1 FCY unit (e.g. 19.00 ZAR/USD). */
+  readonly conversionRate?: number;
+  /**
+   * OPTIONAL cumulative unrealised P&L to reclassify (signed major-unit number in
+   * the reporting currency; + gain). Defaults to "0" — the realisation result is
+   * struck regardless; the reclassification is additive when supplied.
+   */
+  readonly accumulatedUnrealised?: number;
+  /** OPTIONAL as-of instant (ISO). Defaults to the bank clock now. */
+  readonly asOf?: string;
+}
+
+export interface ConvertFcyResult {
+  ok: boolean;
+  cashInstance?: string;
+  fcyCurrency?: string;
+  reportingCurrency?: string;
+  fcyAmount?: string;
+  zarProceeds?: string;
+  zarCostBasis?: string;
+  /** Signed realised P&L (proceeds − cost basis), reporting-currency major units. */
+  realisedPnl?: string;
+  /** Whether the FCY cash position was closed (terminated) by this conversion. */
+  positionClosed?: boolean;
+  error?: string;
+}
+
+/**
+ * Convert a held FCY cash position back to its reporting currency, striking
+ * realised FX P&L (IAS 21 §28) and closing the position. Full conversion of the
+ * whole held balance.
+ */
+export function convertFcyToZar(body: ConvertFcyBody): ConvertFcyResult {
+  const rawInstance = typeof body.cashInstance === "string" ? body.cashInstance.trim() : "";
+  if (!rawInstance) return { ok: false, error: "cashInstance is required" };
+  const conversionRate = typeof body.conversionRate === "number" ? body.conversionRate : Number.NaN;
+  if (!Number.isFinite(conversionRate) || conversionRate <= 0) {
+    return {
+      ok: false,
+      error: "conversionRate must be a positive number (reporting units per 1 FCY)",
+    };
+  }
+
+  const asOf = typeof body.asOf === "string" && body.asOf.trim() ? body.asOf.trim() : clock.now();
+
+  // Resolve the cash-instance URN (accept a bare id or a full URN).
+  const cashInstance = rawInstance.startsWith("fil:inst:")
+    ? rawInstance
+    : formatInstanceUrn({ tenant: "LE-ZA-HOZ-BANK", instanceId: rawInstance });
+
+  // Locate the FCY cash holding (the FilInstrumentCreated for this instance).
+  const created = [...eventStore.replay({ type: "FilInstrumentCreated" })].find(
+    (e) => (e.payload as { instance?: string }).instance === cashInstance,
+  );
+  if (!created) {
+    return { ok: false, error: `no cash holding found for instance ${cashInstance}` };
+  }
+  const terms =
+    (created.payload as { economicTerms?: Record<string, unknown> }).economicTerms ?? {};
+  if (terms.assetClass !== "cash") {
+    return {
+      ok: false,
+      error: `instance ${cashInstance} is not a cash holding (${String(terms.assetClass)})`,
+    };
+  }
+  const fcyCurrency = typeof terms.currency === "string" ? terms.currency : "";
+  const notional = terms.notional as { amount?: string; currency?: string } | undefined;
+  const zarCostBasisMoney = terms.zarCostBasis as
+    | { amount?: string; currency?: string }
+    | undefined;
+  if (!fcyCurrency || !notional?.amount || !zarCostBasisMoney?.amount) {
+    return {
+      ok: false,
+      error: `cash holding ${cashInstance} is missing currency / notional / zarCostBasis`,
+    };
+  }
+  const reportingCurrency = zarCostBasisMoney.currency ?? "ZAR";
+  if (fcyCurrency === reportingCurrency) {
+    return {
+      ok: false,
+      error: `cash holding ${cashInstance} is denominated in the reporting currency (${reportingCurrency}) — nothing to convert (no FX exposure)`,
+    };
+  }
+
+  // Already terminated (already converted)? Idempotent no-op.
+  const alreadyTerminated = [...eventStore.replay({ type: "FilInstrumentTerminated" })].some(
+    (e) => (e.payload as { instance?: string }).instance === cashInstance,
+  );
+  if (alreadyTerminated) {
+    return { ok: true, cashInstance, positionClosed: false, fcyCurrency, reportingCurrency };
+  }
+
+  // Proceeds = converted FCY amount × conversion rate (reporting-ccy major units),
+  // 2dp HALF_UP. Cost basis is read OFF the holding (never re-derived). Realised
+  // P&L = proceeds − cost basis (IAS 21 §28).
+  const fcyAmount = decimalToString(toDecimal(notional.amount));
+  const zarProceedsD = roundDecimal(
+    mulD(toDecimal(fcyAmount), toDecimal(String(conversionRate))),
+    2,
+    "HALF_UP",
+  );
+  const zarProceeds = decimalToString(zarProceedsD);
+  const zarCostBasis = decimalToString(toDecimal(zarCostBasisMoney.amount));
+  const realisedPnl = decimalToString(subD(zarProceedsD, toDecimal(zarCostBasis)));
+  const accumulatedUnrealised =
+    typeof body.accumulatedUnrealised === "number"
+      ? decimalToString(roundDecimal(toDecimal(String(body.accumulatedUnrealised)), 2, "HALF_UP"))
+      : "0";
+
+  // Reuse the cash holding's provenance (so the realisation folds in the SAME
+  // partition as the position it closes — the cancel/settlement lesson).
+  const provenance = created.provenance as ProvenanceTag | undefined;
+  if (!provenance) {
+    return { ok: false, error: `cash holding ${cashInstance} carries no provenance` };
+  }
+  const tenant = (created.payload as { tenant?: string }).tenant ?? "LE-ZA-HOZ-BANK";
+  const cashType =
+    (created.payload as { type?: string }).type ?? "fil:type:cash:balance:vanilla@1.0";
+  const citations = ["D-FX-REALISATION-COMPLETION-V1", "D-FX-PNL-FCY-EXPOSURE-REVALUATION"];
+  const actor = { type: "human" as const, id: "operator" };
+
+  // (1) Emit the realisation event of record — the GL fold derives PR-FX-CONVERT-V2
+  // legs from it (realised P&L + unrealised→realised reclassification).
+  eventStore.append(
+    makeFxConversionExecuted({
+      asOf,
+      entity: "LE-ZA-HOZ-BANK",
+      actor,
+      citations,
+      provenance,
+      eventId: `convert:${cashInstance}:${asOf}`,
+      payload: fxConversionExecutedPayloadSchema.parse({
+        kind: "FxConversionExecuted",
+        cashInstance,
+        fcyCurrency,
+        reportingCurrency,
+        fcyAmount: { currency: fcyCurrency, amount: fcyAmount },
+        zarProceeds: { currency: reportingCurrency, amount: zarProceeds },
+        zarCostBasis: { currency: reportingCurrency, amount: zarCostBasis },
+        accumulatedUnrealised: {
+          currency: reportingCurrency,
+          amount: accumulatedUnrealised,
+        },
+        fullConversion: true,
+        tenant,
+        asOf,
+        originatingEvent: { eventType: "FilInstrumentCreated", eventId: created.event_id },
+      }),
+    }),
+  );
+
+  // (2) Close the FCY cash position — terminate its FIL instance. This drops it
+  // from the BA-320 NOP (Item 3) + the daily-pnl revalued set, squaring the
+  // exposure. The realised P&L was struck by the conversion fold above.
+  eventStore.append(
+    makeFilInstrumentTerminated({
+      asOf,
+      entity: "LE-ZA-HOZ-BANK",
+      actor,
+      citations,
+      provenance,
+      eventId: `convert:${cashInstance}:${asOf}:terminated`,
+      payload: filInstrumentTerminatedPayloadSchema.parse({
+        kind: "FilInstrumentTerminated",
+        instance: cashInstance,
+        type: cashType,
+        tenant,
+        asOf,
+        terminalStage: "settled",
+        originatingEvent: {
+          eventType: "FxConversionExecuted",
+          eventId: `convert:${cashInstance}:${asOf}`,
+        },
+      }),
+    }),
+  );
+
+  return {
+    ok: true,
+    cashInstance,
+    fcyCurrency,
+    reportingCurrency,
+    fcyAmount,
+    zarProceeds,
+    zarCostBasis,
+    realisedPnl,
+    positionClosed: true,
+  };
+}
+
+async function handleTradeConvert(req: Request): Promise<Response> {
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return jsonResponse({ ok: false, error: "invalid JSON body" }, 400);
+  }
+  if (typeof raw !== "object" || raw === null) {
+    return jsonResponse({ ok: false, error: "body must be a JSON object" }, 400);
+  }
+  const result = convertFcyToZar(raw as ConvertFcyBody);
+  return jsonResponse(result, result.ok ? 200 : 400);
+}
+
+// ---------------------------------------------------------------------------
 // registerTradeBookRoutes — called from server.ts
 // ---------------------------------------------------------------------------
 
@@ -1597,6 +1857,9 @@ export async function registerTradeBookRoutes(
   }
   if (pathname === "/api/trades/settle" && method === "POST") {
     return handleTradeSettle(req);
+  }
+  if (pathname === "/api/trades/convert" && method === "POST") {
+    return handleTradeConvert(req);
   }
   return null;
 }

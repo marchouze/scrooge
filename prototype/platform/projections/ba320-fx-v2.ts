@@ -263,6 +263,21 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
   // -------------------------------------------------------------------------
 
   // Track open FX instances: instanceUrn → economicTerms snapshot.
+  //
+  // `isCash` discriminates a settled FCY CASH holding (assetClass === "cash",
+  // Step 1b) from an open FX CONTRACT (assetClass === "fx", Step 1). Both are
+  // reg-28(5) open foreign-currency positions and BOTH attract the net-open-
+  // position charge, but they have DIFFERENT lifecycle-closure semantics: an FX
+  // contract closes at its settlement date (Step 2b drops it then — the contract
+  // is extinguished, its exposure CHANGES FORM into FCY cash); a CASH holding has
+  // a settlement date IN THE PAST by construction (it was materialised AT
+  // settlement) and stays open until it is TERMINATED by the FCY→ZAR conversion
+  // (FxConversionExecuted → FilInstrumentTerminated). So `isCash` instances are
+  // EXEMPT from the Step-2b settlement-date drop — only an explicit termination
+  // (Step 2) closes them. Authority: D-FX-REALISATION-COMPLETION-V1 (Item 3);
+  // reg-28(5) (NOP covers all on-/off-balance-sheet FX positions, incl. spot FCY
+  // cash); D-FX-PNL-FCY-EXPOSURE-REVALUATION (the surviving exposure is the FCY
+  // cash). Mirrors the daily-pnl-v2 cash pass (one fold doctrine; Charter cmd 4).
   const openInstances = new Map<
     string,
     {
@@ -271,6 +286,7 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
       notionalMajor: string;
       hedgingSetTag: string | undefined;
       settlementDate: string | undefined;
+      isCash: boolean;
     }
   >();
 
@@ -312,6 +328,76 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
       notionalMajor: notional.amount,
       hedgingSetTag: p.economicTerms?.hedgingSetTag,
       settlementDate: p.economicTerms?.settlementDate,
+      isCash: false,
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // Step 1b: Fold settled FCY CASH holdings into the open net-open-position
+  // (D-FX-REALISATION-COMPLETION-V1, Item 3; reg-28(5)).
+  //
+  // A settled deliverable spot extinguishes the FX CONTRACT (dropped by Step 2/2b)
+  // but the FX EXPOSURE survives as FCY cash (D-FX-PNL-FCY-EXPOSURE-REVALUATION:
+  // settlement is a change of FORM, not of exposure). That settled FCY cash —
+  // e.g. a USD nostro long after a USD/ZAR spot — is a REAL reg-28(5) open foreign-
+  // currency position (the NOP covers ALL on-balance-sheet + off-balance-sheet FX
+  // positions, which includes spot FCY cash), so it MUST attract the net-open-
+  // position charge exactly as the open contract did. Before this fold the charge
+  // VANISHED at settlement (the contract dropped, the cash was invisible) —
+  // understating the reg-28(5) NOP. This fold makes the open FX exposure continuous
+  // across settlement: contract → (settle) → FCY cash, both folded into the SAME
+  // per-currency net position.
+  //
+  // SHAPE. A settled cash holding (cash-materialisation grammar) carries
+  // `assetClass: "cash"`, `notional` in its OWN (foreign) currency, `direction`
+  // (`long` = received/asset cash, `short` = paid/funding cash), and
+  // `hedgingSetTag` (e.g. "USD/ZAR"). A reporting-currency (functional) cash leg
+  // carries no FX risk and is excluded (handled by the `baseCurrency ===
+  // functionalCurrency` guard in Step 3). The notional is FOREIGN-denominated, so
+  // it flows through the legacy foreign-leg path in Step 3 (converted up to the
+  // functional figure via the production spot rate — fail-closed when absent).
+  // -------------------------------------------------------------------------
+  for (const ev of args.eventStore.replay({
+    entity,
+    type: "FilInstrumentCreated",
+    asOf: args.asOf,
+  })) {
+    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+
+    const p = ev.payload as {
+      instance?: string;
+      economicTerms?: {
+        assetClass?: string;
+        notional?: { currency?: string; amount?: string };
+        direction?: string;
+        currency?: string;
+        hedgingSetTag?: string;
+        settlementDate?: string;
+      };
+    };
+
+    // Guard: only CASH asset class (the settled FCY cash holding).
+    if (p.economicTerms?.assetClass !== "cash") continue;
+
+    const instanceUrn = p.instance;
+    const notional = p.economicTerms?.notional;
+    const direction = p.economicTerms?.direction as "long" | "short" | undefined;
+    const currency = p.economicTerms?.currency ?? notional?.currency;
+
+    if (!instanceUrn || !notional || !direction || !currency) continue;
+    if (!notional.amount || !notional.currency) continue;
+    // A reporting-currency (functional) cash leg carries no FX exposure — skip it
+    // (the Step-3 `baseCurrency === functionalCurrency` guard would drop it anyway,
+    // but skipping here keeps a domestic-cash holding out of the open-instance set).
+    if (currency === functionalCurrency) continue;
+
+    openInstances.set(instanceUrn, {
+      direction,
+      currency,
+      notionalMajor: notional.amount,
+      hedgingSetTag: p.economicTerms?.hedgingSetTag,
+      settlementDate: p.economicTerms?.settlementDate,
+      isCash: true,
     });
   }
 
@@ -343,9 +429,20 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
   // (fail-closed).
   // Compare on calendar DAY (not instant): a spot settling ON `asOf`'s day is
   // still open that day; it drops out once a LATER day's asOf passes it.
+  //
+  // CASH HOLDINGS ARE EXEMPT (D-FX-REALISATION-COMPLETION-V1, Item 3). A settled
+  // FCY cash holding has a settlement date IN THE PAST by construction (it was
+  // materialised AT settlement), so the contract-drop rule above would
+  // immediately delete it — exactly the bug Item 3 closes (the FCY exposure must
+  // SURVIVE settlement as the open cash position). A cash holding is closed ONLY
+  // by an explicit `FilInstrumentTerminated` (Step 2 — the FCY→ZAR conversion,
+  // FxConversionExecuted), never by a passing settlement date. The settlement-date
+  // drop is the right rule for an FX CONTRACT (it changes form at settlement) and
+  // the wrong rule for the CASH it becomes.
   const asOfDay = utcDayOf(args.asOf);
   if (asOfDay !== null) {
     for (const [urn, terms] of [...openInstances.entries()]) {
+      if (terms.isCash) continue; // cash survives settlement; only termination closes it
       const settlementDay =
         terms.settlementDate !== undefined ? utcDayOf(terms.settlementDate) : null;
       if (settlementDay === null || settlementDay < asOfDay) {
