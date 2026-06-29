@@ -42,6 +42,15 @@ interface Seed {
   direction: "long" | "short";
   /** ZAR notional, major-unit decimal string. */
   notionalZar: string;
+  /**
+   * Reporting-currency (ZAR) cost basis, major-unit decimal string. Unrealised
+   * MTM = ZAR market value − this cost basis (D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX
+   * defect #2). The fixtures value the ZAR leg at rate 1 (market value = ZAR
+   * notional), so MTM = notionalZar − costBasisZar. Omit ⇒ the instrument has NO
+   * cost basis and is correctly marked UNAVAILABLE (fail-closed — never revalued
+   * full-notional against a ~zero entry rate).
+   */
+  costBasisZar?: string;
 }
 
 /** Append one production FX FIL instrument — anchor-book shape (ZAR notional + pair tag). */
@@ -71,6 +80,9 @@ function appendFxInstrument(store: EventStore, s: Seed): void {
         currency: "ZAR",
         settlementDate: REPORT_DATE,
         hedgingSetTag: `${s.foreign}/ZAR`,
+        ...(s.costBasisZar !== undefined
+          ? { zarCostBasis: { currency: "ZAR", amount: s.costBasisZar } }
+          : {}),
       },
     }),
   });
@@ -95,10 +107,34 @@ describe("computeDailyPnLV2 — per-currency breakdown reconciles to the headlin
     const store = new EventStore(":memory:");
     const mds = new MarketDataStore(":memory:");
 
+    // Each carries a ZAR cost basis: unrealised MTM = ZAR market value (the ZAR
+    // leg at rate 1 = notionalZar) − costBasisZar (D-FX-LIVE-VIEW-PROVENANCE-
+    // LEAK-FIX defect #2). MTM is NOT the full notional.
+    //   USD long : market R1,000,000 − cost R900,000 = +R100,000 = +10,000,000 minor
+    //   EUR short: market −R500,000 − (−R450,000) = −R50,000 = −5,000,000 minor
+    //   GBP long : market R250,000 − cost R225,000 = +R25,000 = +2,500,000 minor
     const seeds: Seed[] = [
-      { id: "FX-USD-1", foreign: "USD", direction: "long", notionalZar: "1000000.00" },
-      { id: "FX-EUR-1", foreign: "EUR", direction: "short", notionalZar: "500000.00" },
-      { id: "FX-GBP-1", foreign: "GBP", direction: "long", notionalZar: "250000.00" },
+      {
+        id: "FX-USD-1",
+        foreign: "USD",
+        direction: "long",
+        notionalZar: "1000000.00",
+        costBasisZar: "900000.00",
+      },
+      {
+        id: "FX-EUR-1",
+        foreign: "EUR",
+        direction: "short",
+        notionalZar: "500000.00",
+        costBasisZar: "450000.00",
+      },
+      {
+        id: "FX-GBP-1",
+        foreign: "GBP",
+        direction: "long",
+        notionalZar: "250000.00",
+        costBasisZar: "225000.00",
+      },
     ];
     for (const s of seeds) appendFxInstrument(store, s);
     appendQuote(mds, "USD", 18.5);
@@ -107,14 +143,13 @@ describe("computeDailyPnLV2 — per-currency breakdown reconciles to the headlin
 
     const { payload } = computeDailyPnLV2(store, mds, REPORT_DATE, () => AS_OF);
 
-    // All three positions are open and markable.
+    // All three positions are open and markable (each has a cost basis).
     expect(payload.activePositions).toBe(3);
     expect(payload.unmarkableLivePositions).toBe(0);
 
-    // The headline is non-zero (long 1,000,000 − short 500,000 + long 250,000
-    // ZAR = 750,000.00 ZAR = 75,000,000 minor; the FCY-cash Valuable values the
-    // ZAR leg at rate 1, so the headline is the net ZAR notional).
-    expect(payload.totalUnrealisedPnlZarMinor).toBe(75_000_000);
+    // The headline is the net unrealised MTM (market − cost), NOT the net
+    // notional: +100,000 − 50,000 + 25,000 = +R75,000 = 7,500,000 minor.
+    expect(payload.totalUnrealisedPnlZarMinor).toBe(7_500_000);
 
     // REGRESSION: byCurrency must NOT be empty for an open multi-currency book.
     expect(payload.byCurrency.length).toBe(3);
@@ -128,29 +163,56 @@ describe("computeDailyPnLV2 — per-currency breakdown reconciles to the headlin
     const byCurrencySum = payload.byCurrency.reduce((acc, c) => acc + c.unrealisedPnlZarMinor, 0);
     expect(byCurrencySum).toBe(payload.totalUnrealisedPnlZarMinor);
 
-    // Each bucket carries its own position's signed ZAR value.
+    // Each bucket carries its own position's signed MTM (market − cost basis).
     const byCcy = new Map(payload.byCurrency.map((c) => [c.currency, c]));
-    expect(byCcy.get("USD")?.unrealisedPnlZarMinor).toBe(100_000_000);
-    expect(byCcy.get("EUR")?.unrealisedPnlZarMinor).toBe(-50_000_000);
-    expect(byCcy.get("GBP")?.unrealisedPnlZarMinor).toBe(25_000_000);
+    expect(byCcy.get("USD")?.unrealisedPnlZarMinor).toBe(10_000_000);
+    expect(byCcy.get("EUR")?.unrealisedPnlZarMinor).toBe(-5_000_000);
+    expect(byCcy.get("GBP")?.unrealisedPnlZarMinor).toBe(2_500_000);
     for (const row of payload.byCurrency) expect(row.tradeCount).toBe(1);
+  });
+
+  test("an FX position with NO cost basis is fail-closed UNAVAILABLE, never full-notional", () => {
+    const store = new EventStore(":memory:");
+    const mds = new MarketDataStore(":memory:");
+
+    // A rate exists, but the instrument carries no zarCostBasis / fxAgreement →
+    // it must NOT be revalued at full notional × spot (the prior overstatement).
+    appendFxInstrument(store, {
+      id: "FX-USD-NOCOST",
+      foreign: "USD",
+      direction: "long",
+      notionalZar: "1000000.00",
+    });
+    appendQuote(mds, "USD", 18.5);
+
+    const { payload } = computeDailyPnLV2(store, mds, REPORT_DATE, () => AS_OF);
+
+    expect(payload.activePositions).toBe(1);
+    expect(payload.unmarkableLivePositions).toBe(1);
+    expect(payload.unrealisedComplete).toBe(false);
+    // The headline excludes the unmarkable leg — never a full-notional reval.
+    expect(payload.totalUnrealisedPnlZarMinor).toBe(0);
   });
 
   test("an unmarkable position is excluded from BOTH the headline and its bucket", () => {
     const store = new EventStore(":memory:");
     const mds = new MarketDataStore(":memory:");
 
+    // USD is markable (rate + cost basis): MTM = market R1,000,000 − cost
+    // R900,000 = +R100,000 = 10,000,000 minor.
     appendFxInstrument(store, {
       id: "FX-USD-OK",
       foreign: "USD",
       direction: "long",
       notionalZar: "1000000.00",
+      costBasisZar: "900000.00",
     });
     appendFxInstrument(store, {
       id: "FX-JPY-NOMARK",
       foreign: "JPY",
       direction: "long",
       notionalZar: "300000.00",
+      costBasisZar: "270000.00",
     });
     // Only USD has a production quote — JPY is a feed gap (no-silent-zero).
     appendQuote(mds, "USD", 18.5);
@@ -161,16 +223,17 @@ describe("computeDailyPnLV2 — per-currency breakdown reconciles to the headlin
     expect(payload.unmarkableLivePositions).toBe(1);
     expect(payload.unrealisedComplete).toBe(false);
 
-    // Headline excludes the unmarkable JPY leg (never folded as a silent 0).
-    expect(payload.totalUnrealisedPnlZarMinor).toBe(100_000_000);
+    // Headline excludes the unmarkable JPY leg (never folded as a silent 0); the
+    // markable USD leg's MTM is market − cost, NOT the full notional.
+    expect(payload.totalUnrealisedPnlZarMinor).toBe(10_000_000);
 
     // byCurrency still reconciles: the JPY bucket exists with a 0 unrealised
-    // (its trade is counted, its P&L excluded), USD carries the full headline.
+    // (its trade is counted, its P&L excluded), USD carries the headline MTM.
     const byCurrencySum = payload.byCurrency.reduce((acc, c) => acc + c.unrealisedPnlZarMinor, 0);
     expect(byCurrencySum).toBe(payload.totalUnrealisedPnlZarMinor);
 
     const byCcy = new Map(payload.byCurrency.map((c) => [c.currency, c]));
-    expect(byCcy.get("USD")?.unrealisedPnlZarMinor).toBe(100_000_000);
+    expect(byCcy.get("USD")?.unrealisedPnlZarMinor).toBe(10_000_000);
     expect(byCcy.get("JPY")?.unrealisedPnlZarMinor).toBe(0);
     expect(byCcy.get("JPY")?.tradeCount).toBe(1);
   });

@@ -70,6 +70,17 @@ import {
 } from "./filter";
 
 // ---------------------------------------------------------------------------
+// Settlement-lifecycle helper (D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX defect #3).
+// ---------------------------------------------------------------------------
+
+/** UTC calendar day (`YYYY-MM-DD`) of an ISO date/instant; `null` if unparseable. */
+function utcDayOf(iso: string): string | null {
+  const ms = Date.parse(iso);
+  if (!Number.isFinite(ms)) return null;
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
+// ---------------------------------------------------------------------------
 // Output shapes
 // ---------------------------------------------------------------------------
 
@@ -259,6 +270,7 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
       currency: string;
       notionalMajor: string;
       hedgingSetTag: string | undefined;
+      settlementDate: string | undefined;
     }
   >();
 
@@ -279,6 +291,7 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
         direction?: string;
         currency?: string;
         hedgingSetTag?: string;
+        settlementDate?: string;
       };
     };
 
@@ -298,6 +311,7 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
       currency,
       notionalMajor: notional.amount,
       hedgingSetTag: p.economicTerms?.hedgingSetTag,
+      settlementDate: p.economicTerms?.settlementDate,
     });
   }
 
@@ -312,6 +326,31 @@ export function computeBA320V2(args: ComputeBA320V2Args): BA320ReturnV2 {
     const p = ev.payload as { instance?: string };
     if (p.instance) {
       openInstances.delete(p.instance);
+    }
+  }
+
+  // Step 2b: Remove POST-SETTLEMENT instances (D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX,
+  // defect #3). A spot whose settlement date is on/before `asOf` is no longer an
+  // OPEN net-open-position regardless of whether a `FilInstrumentTerminated` was
+  // emitted — settlement extinguishes the open FX contract (the FCY exposure that
+  // survives settlement is a CASH position, folded by the cash projection, not an
+  // open FX net-open-position line under Reg 28(5)). This is the fail-closed
+  // backstop for the simulated trades whose termination event was never emitted:
+  // they stayed `stage:active` and inflated the open-position charge for months
+  // after settling. A missing / unparseable settlement date is treated as NOT
+  // open (fail-closed) — an instance we cannot prove is still pre-settlement is
+  // excluded rather than silently counted. Charter cmd 1 (root-cause) + cmd 2
+  // (fail-closed).
+  // Compare on calendar DAY (not instant): a spot settling ON `asOf`'s day is
+  // still open that day; it drops out once a LATER day's asOf passes it.
+  const asOfDay = utcDayOf(args.asOf);
+  if (asOfDay !== null) {
+    for (const [urn, terms] of [...openInstances.entries()]) {
+      const settlementDay =
+        terms.settlementDate !== undefined ? utcDayOf(terms.settlementDate) : null;
+      if (settlementDay === null || settlementDay < asOfDay) {
+        openInstances.delete(urn);
+      }
     }
   }
 

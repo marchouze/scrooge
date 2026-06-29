@@ -60,6 +60,7 @@ import { EVENT_TYPE_REGISTRY } from "../event-store/registry/index";
 import { resolveMarketDataDbPath } from "../market-data/resolve-market-data-db";
 import { MarketDataStore } from "../market-data/store";
 import { computeDailyPnLV2 } from "../product-control/daily-pnl-v2";
+import type { ProvenanceFilter } from "../projections/filter";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
 const PIPELINE = "daily-pnl-v2-parity";
@@ -110,7 +111,28 @@ export function run(opts: RunOpts = {}): ReconResult {
     result.asserted += 1;
     try {
       const reportDate = clockNow().slice(0, 10);
-      const v2Probe = computeDailyPnLV2(eventStore, marketDataStore, reportDate, clockNow);
+      // EXPLICIT production-only lens (D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX):
+      // computeDailyPnLV2 now takes an explicit ProvenanceFilter (defect #1) and
+      // its DEFAULT is `operating-book`. The C2 sentinel must NOT use that default
+      // here. The bank's pre-commencement FX book is `build-phase-fixture` (real
+      // pre-licence bank state — opening positions), which `production-only`
+      // ADMITS during build phase but `operating-book` HOLDS OUT as seed
+      // scaffolding. Verified on the clean CI store: production-only → 4 active
+      // FIL positions; operating-book → 0. So the construction proof — "the V2
+      // production daily-P&L produces real output" — must be driven by the
+      // production-only book (the same book the production-only desk view folds),
+      // not the operating-book default that would make this sentinel vacuous
+      // post-leak-fix. This proves the V1-retirement (RBC) flip basis WITHOUT
+      // re-admitting simulated/sandbox data. Authority: D-PROVENANCE-BUILD-PHASE-
+      // CLASS Slice 1 (production-only admits build-phase-fixture in build phase).
+      const productionOnly: ProvenanceFilter = { mode: "production-only" };
+      const v2Probe = computeDailyPnLV2(
+        eventStore,
+        marketDataStore,
+        reportDate,
+        clockNow,
+        productionOnly,
+      );
       if (v2Probe.payload.activePositions <= 0) {
         violations.push({
           subject: "daily-pnl-v2-parity:construction-c2-vacuous-v2",

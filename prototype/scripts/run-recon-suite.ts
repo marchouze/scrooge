@@ -228,6 +228,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // shared standing-NOP fold (deriveNetFxPositionByCurrency), read-only /
     // parallel to v1. Authority: D-FIL-ATTRIBUTION-A1-BUILD (A2).
     "recon:fx-settlement-continuity",
+    // FX production-view ↔ GL leak gate (D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX):
+    // a `production-only` FX surface must reconcile to the GL (empty in build
+    // phase). Fails closed if the production-only open-FX read admits any
+    // simulated / post-settlement instance (the leak fixed 2026-06-29).
+    "recon:fx-production-view-gl-reconciliation",
     // Slice-3 fail-closed gate (D-CASH-ASSET-CLASS-V1): every `cash` FIL instance
     // carries an originatingInstrument back-ref (no orphan), and every settled FX
     // instance under a cash-materialising NPA has a matching cash instance (the
