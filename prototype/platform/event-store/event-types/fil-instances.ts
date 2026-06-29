@@ -40,8 +40,8 @@ import {
   filInstrumentTerminatedPayloadSchema,
   filNdfFixingObservedPayloadSchema,
 } from "../../../v2-core/fil-instances/events";
-import { tradeSettlementExecutedPayloadSchema } from "../../../v2-core/fil-instances/trade-settlement";
 import { fxConversionExecutedPayloadSchema } from "../../../v2-core/fil-instances/fx-conversion";
+import { tradeSettlementExecutedPayloadSchema } from "../../../v2-core/fil-instances/trade-settlement";
 import { newEventId } from "../../core/types";
 import { type ProvenanceTag, assertExplicitFilProvenance } from "../provenance";
 import { type Actor, type Event, eventSchema } from "../types";

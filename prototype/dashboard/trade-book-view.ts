@@ -29,6 +29,10 @@ import { randomBytes } from "node:crypto";
 import { clock, eventStore } from "../platform/composition";
 import { newEventId } from "../platform/core/types";
 import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-accounting";
+import {
+  makeFilInstrumentTerminated,
+  makeFxConversionExecuted,
+} from "../platform/event-store/event-types/fil-instances";
 import { makeFxSimSettlementConfirmed } from "../platform/event-store/event-types/fx-settlement-lifecycle";
 import {
   makeTradeAffirmed,
@@ -48,17 +52,20 @@ import { bookAffirmedFxTrade } from "../platform/markets/products/book-affirmed-
 import { type SettleFxResult, settleFxLeg } from "../platform/markets/settlement/settle-fx-leg";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
 import type { AgentRunContext } from "../runtime/types";
-import { decimalToString, divD, mulD, roundDecimal, subD, toDecimal } from "../v2-core/fil-core/decimal";
+import {
+  decimalToString,
+  divD,
+  mulD,
+  roundDecimal,
+  subD,
+  toDecimal,
+} from "../v2-core/fil-core/decimal";
 import { formatInstanceUrn } from "../v2-core/fil-core/urn";
 import {
   type FilInstrumentCreatedPayload,
   filInstrumentTerminatedPayloadSchema,
 } from "../v2-core/fil-instances/events";
 import { fxConversionExecutedPayloadSchema } from "../v2-core/fil-instances/fx-conversion";
-import {
-  makeFilInstrumentTerminated,
-  makeFxConversionExecuted,
-} from "../platform/event-store/event-types/fil-instances";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -1664,7 +1671,10 @@ export function convertFcyToZar(body: ConvertFcyBody): ConvertFcyResult {
   if (!rawInstance) return { ok: false, error: "cashInstance is required" };
   const conversionRate = typeof body.conversionRate === "number" ? body.conversionRate : Number.NaN;
   if (!Number.isFinite(conversionRate) || conversionRate <= 0) {
-    return { ok: false, error: "conversionRate must be a positive number (reporting units per 1 FCY)" };
+    return {
+      ok: false,
+      error: "conversionRate must be a positive number (reporting units per 1 FCY)",
+    };
   }
 
   const asOf = typeof body.asOf === "string" && body.asOf.trim() ? body.asOf.trim() : clock.now();
@@ -1681,15 +1691,24 @@ export function convertFcyToZar(body: ConvertFcyBody): ConvertFcyResult {
   if (!created) {
     return { ok: false, error: `no cash holding found for instance ${cashInstance}` };
   }
-  const terms = (created.payload as { economicTerms?: Record<string, unknown> }).economicTerms ?? {};
+  const terms =
+    (created.payload as { economicTerms?: Record<string, unknown> }).economicTerms ?? {};
   if (terms.assetClass !== "cash") {
-    return { ok: false, error: `instance ${cashInstance} is not a cash holding (${String(terms.assetClass)})` };
+    return {
+      ok: false,
+      error: `instance ${cashInstance} is not a cash holding (${String(terms.assetClass)})`,
+    };
   }
   const fcyCurrency = typeof terms.currency === "string" ? terms.currency : "";
   const notional = terms.notional as { amount?: string; currency?: string } | undefined;
-  const zarCostBasisMoney = terms.zarCostBasis as { amount?: string; currency?: string } | undefined;
+  const zarCostBasisMoney = terms.zarCostBasis as
+    | { amount?: string; currency?: string }
+    | undefined;
   if (!fcyCurrency || !notional?.amount || !zarCostBasisMoney?.amount) {
-    return { ok: false, error: `cash holding ${cashInstance} is missing currency / notional / zarCostBasis` };
+    return {
+      ok: false,
+      error: `cash holding ${cashInstance} is missing currency / notional / zarCostBasis`,
+    };
   }
   const reportingCurrency = zarCostBasisMoney.currency ?? "ZAR";
   if (fcyCurrency === reportingCurrency) {
@@ -1731,7 +1750,8 @@ export function convertFcyToZar(body: ConvertFcyBody): ConvertFcyResult {
     return { ok: false, error: `cash holding ${cashInstance} carries no provenance` };
   }
   const tenant = (created.payload as { tenant?: string }).tenant ?? "LE-ZA-HOZ-BANK";
-  const cashType = (created.payload as { type?: string }).type ?? "fil:type:cash:balance:vanilla@1.0";
+  const cashType =
+    (created.payload as { type?: string }).type ?? "fil:type:cash:balance:vanilla@1.0";
   const citations = ["D-FX-REALISATION-COMPLETION-V1", "D-FX-PNL-FCY-EXPOSURE-REVALUATION"];
   const actor = { type: "human" as const, id: "operator" };
 
@@ -1783,7 +1803,10 @@ export function convertFcyToZar(body: ConvertFcyBody): ConvertFcyResult {
         tenant,
         asOf,
         terminalStage: "settled",
-        originatingEvent: { eventType: "FxConversionExecuted", eventId: `convert:${cashInstance}:${asOf}` },
+        originatingEvent: {
+          eventType: "FxConversionExecuted",
+          eventId: `convert:${cashInstance}:${asOf}`,
+        },
       }),
     }),
   );

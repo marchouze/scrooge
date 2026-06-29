@@ -33,8 +33,6 @@ import { FX_TREATMENT_MODULES } from "../v2-core/reporting-treatments/fx-modules
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const FX_REALISED_PNL = "ACC-2100-006";
-const USD_NOSTRO = "ACC-1200-002";
-const ZAR_NOSTRO = "ACC-1200-001";
 const WINDOW = { periodStart: "2026-06-01", periodEnd: "2026-07-31" };
 
 const CP = "urn:counterparty:client:e2e-convert-za-bank";
@@ -85,7 +83,10 @@ function seedCounterparty(): void {
       entity: ENTITY,
       actor: { type: "service", id: "test:fx-e2e-convert" },
       citations: ["D-FX-REALISATION-COMPLETION-V1"],
-      provenance: simulatedTag({ scenario: "test:fx-e2e-convert", sourceLineage: "test:fx-e2e-convert" }),
+      provenance: simulatedTag({
+        scenario: "test:fx-e2e-convert",
+        sourceLineage: "test:fx-e2e-convert",
+      }),
       payload: {
         counterpartyId: CP,
         legalName: CP_NAME,
@@ -165,13 +166,15 @@ describe("FX realisation e2e — convert FCY→ZAR strikes realised P&L + closes
     // basis 18.5m, carried in ZAR) — both in the reporting currency, so they balance
     // in ZAR against the realised P&L leg.
     const conversionEntries = computeGlEntriesV2({ eventStore, entity: ENTITY, ...WINDOW }).filter(
-      (e) => e.postingRuleId === "PR-FX-CONVERT-V2" && (e.sourceEventId?.includes(tradeId) ?? false),
+      (e) =>
+        e.postingRuleId === "PR-FX-CONVERT-V2" && (e.sourceEventId?.includes(tradeId) ?? false),
     );
     expect(conversionEntries.length).toBeGreaterThan(0);
     // Every conversion leg is in the reporting currency (ZAR) — per-currency balanced.
     for (const e of conversionEntries) expect(e.currency).toBe("ZAR");
     const net = conversionEntries.reduce(
-      (acc, e) => acc + (e.debitCredit === "debit" ? Number(e.amount.amount) : -Number(e.amount.amount)),
+      (acc, e) =>
+        acc + (e.debitCredit === "debit" ? Number(e.amount.amount) : -Number(e.amount.amount)),
       0,
     );
     expect(net).toBeCloseTo(0, 2); // the conversion entry balances in ZAR
@@ -221,14 +224,26 @@ describe("FX realisation e2e — convert FCY→ZAR strikes realised P&L + closes
     const tradeId = await bookAndSettle();
     const cashInstance = `fil:inst:${ENTITY}:${tradeId}-cash-received`;
 
-    expect(convertFcyToZar({ cashInstance, conversionRate: 0, asOf: SPEC.convertAsOf }).ok).toBe(false);
-    expect(convertFcyToZar({ cashInstance, conversionRate: -1, asOf: SPEC.convertAsOf }).ok).toBe(false);
+    expect(convertFcyToZar({ cashInstance, conversionRate: 0, asOf: SPEC.convertAsOf }).ok).toBe(
+      false,
+    );
+    expect(convertFcyToZar({ cashInstance, conversionRate: -1, asOf: SPEC.convertAsOf }).ok).toBe(
+      false,
+    );
 
-    const first = convertFcyToZar({ cashInstance, conversionRate: SPEC.convertRate, asOf: SPEC.convertAsOf });
+    const first = convertFcyToZar({
+      cashInstance,
+      conversionRate: SPEC.convertRate,
+      asOf: SPEC.convertAsOf,
+    });
     expect(first.ok).toBe(true);
     expect(first.positionClosed).toBe(true);
     // Re-convert: idempotent no-op (already terminated).
-    const second = convertFcyToZar({ cashInstance, conversionRate: SPEC.convertRate, asOf: SPEC.convertAsOf });
+    const second = convertFcyToZar({
+      cashInstance,
+      conversionRate: SPEC.convertRate,
+      asOf: SPEC.convertAsOf,
+    });
     expect(second.ok).toBe(true);
     expect(second.positionClosed).toBe(false);
   });
