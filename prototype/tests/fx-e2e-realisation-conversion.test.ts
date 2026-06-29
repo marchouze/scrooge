@@ -162,22 +162,34 @@ describe("FX realisation e2e — convert FCY→ZAR strikes realised P&L + closes
     const cashInstance = `fil:inst:${ENTITY}:${tradeId}-cash-received`;
     convertFcyToZar({ cashInstance, conversionRate: SPEC.convertRate, asOf: SPEC.convertAsOf });
 
-    // The conversion legs: Dr ZAR nostro (proceeds 19.0m) + Cr USD nostro (cost
-    // basis 18.5m, carried in ZAR) — both in the reporting currency, so they balance
-    // in ZAR against the realised P&L leg.
+    // The conversion legs: Dr ZAR nostro (proceeds 19.0m) + Cr USD nostro (the USD
+    // FACE 1m drawn down, in USD — Item 3 designated-currency fix) + Cr realised P&L
+    // (0.5m ZAR). It does NOT balance in native minor units (USD ≠ ZAR); it balances
+    // in the FUNCTIONAL currency (IAS 21 §21/§28): the USD nostro's ZAR value is its
+    // cost basis 18.5m, so Dr 19.0m == Cr (18.5m + 0.5m).
     const conversionEntries = computeGlEntriesV2({ eventStore, entity: ENTITY, ...WINDOW }).filter(
       (e) =>
         e.postingRuleId === "PR-FX-CONVERT-V2" && (e.sourceEventId?.includes(tradeId) ?? false),
     );
     expect(conversionEntries.length).toBeGreaterThan(0);
-    // Every conversion leg is in the reporting currency (ZAR) — per-currency balanced.
-    for (const e of conversionEntries) expect(e.currency).toBe("ZAR");
-    const net = conversionEntries.reduce(
-      (acc, e) =>
-        acc + (e.debitCredit === "debit" ? Number(e.amount.amount) : -Number(e.amount.amount)),
-      0,
-    );
-    expect(net).toBeCloseTo(0, 2); // the conversion entry balances in ZAR
+    // The FCY nostro (ACC-1200-002, USD-designated) leg is in USD at the FACE amount
+    // (no ZAR contamination — Item 3 fix).
+    const usdNostroLeg = conversionEntries.find((e) => e.accountId === "ACC-1200-002");
+    expect(usdNostroLeg).toBeDefined();
+    expect(usdNostroLeg?.currency).toBe("USD");
+    expect(Number(usdNostroLeg?.amount.amount)).toBeCloseTo(SPEC.notionalUsd, 2);
+    expect(usdNostroLeg?.debitCredit).toBe("credit");
+    // Functional balance: value the USD leg at its ZAR cost basis (18.5m); the ZAR
+    // legs at face. ΣDr(ZAR) == ΣCr(ZAR).
+    let zarNet = 0;
+    for (const e of conversionEntries) {
+      const zarValue =
+        e.currency === "ZAR"
+          ? Number(e.amount.amount)
+          : SPEC.sellZar; // the USD leg's ZAR cost basis (1m USD @ 18.5)
+      zarNet += e.debitCredit === "debit" ? zarValue : -zarValue;
+    }
+    expect(zarNet).toBeCloseTo(0, 2); // the conversion balances in the functional ccy
   });
 
   test("the FCY cash position CLOSES — BA-320 NOP drops to zero after conversion", async () => {
