@@ -202,6 +202,34 @@ function netBucketMajor(
 }
 
 /**
+ * GROSS commitment magnitude for a bucket of legs (the larger debit-or-credit
+ * side per currency, then the dominant currency). BA-110 reports the OBS
+ * commitment NOTIONAL — which is the gross commitment, not the net of the
+ * balancing double-entry legs (the OBS memorandum legs net to zero by design).
+ */
+function grossBucketMajor(
+  legs: readonly FxTradeGlLeg[],
+): { amount: string; currency: string } | null {
+  const byCcy = new Map<string, { dr: number; cr: number }>();
+  for (const l of legs) {
+    const t = byCcy.get(l.currency) ?? { dr: 0, cr: 0 };
+    if (l.debitCredit === "debit") t.dr += Number(l.amount);
+    else t.cr += Number(l.amount);
+    byCcy.set(l.currency, t);
+  }
+  let pick: { amount: string; currency: string } | null = null;
+  let max = -1;
+  for (const [ccy, t] of byCcy) {
+    const gross = Math.max(t.dr, t.cr);
+    if (gross > max) {
+      max = gross;
+      pick = { amount: gross.toFixed(2), currency: ccy };
+    }
+  }
+  return pick;
+}
+
+/**
  * Link to the full return detail page. `formKey` is the CANONICAL no-space form
  * id from the return-contract registry (e.g. "BA320") — the key `return.html`
  * resolves against; the display `form` label ("BA 320") is separate.
@@ -321,10 +349,10 @@ export function buildV2FxTradeImpactView(args: BuildV2FxTradeImpactArgs): V2FxTr
       form: "BA 110",
       title: "Off-balance-sheet activities — commitment notional",
       cell: "FX forward/spot commitment (memorandum)",
-      contribution: netBucketMajor(obs),
+      contribution: grossBucketMajor(obs),
       note:
         obs.length > 0
-          ? "Net of this trade's OBS memorandum commitment legs (ACC-9100-*). The trade-date off-balance-sheet commitment, released on settlement/maturity."
+          ? "Gross OBS memorandum commitment notional (ACC-9100-*). The trade-date off-balance-sheet commitment, released on settlement/maturity. (The balancing memorandum double-entry nets to zero by design; BA-110 reports the gross commitment.)"
           : "No OBS memorandum legs in the read window (released on settlement/maturity, or out of window).",
       returnHref: returnHref("BA110"),
     },
@@ -379,7 +407,7 @@ export function buildV2FxTradeImpactView(args: BuildV2FxTradeImpactArgs): V2FxTr
         amount: (chargeBasis * RWA_PER_CAPITAL_CHARGE).toFixed(2),
         currency: baseCcy,
       },
-      note: `Market RWA = 12.5 × the BA-320 standardised FX charge (Reg 38 / Basel III). This trade's stand-alone RWA basis is 12.5 × 8% × |notional|; the book RWA derives from the greater-side max charge, so this is an indicative per-trade slice, not an additive book total.`,
+      note: `Market RWA = 12.5 × the BA-320 standardised FX charge (Reg 38 / Basel III). 12.5 × 8% = 1.0, so this trade's stand-alone RWA basis equals its |notional| (${Math.abs(signedNop).toFixed(2)} ${baseCcy}). The book RWA derives from the greater-side max charge, so this is an indicative per-trade slice, not an additive book total.`,
       returnHref: returnHref("BA700"),
     },
   ];
