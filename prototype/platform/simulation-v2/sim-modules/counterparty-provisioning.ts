@@ -89,69 +89,88 @@ export function emitCounterpartyProvisioning(args: {
   const provenance = simProvenance(scenarioId);
   const cpId = counterparty.counterpartyId;
 
+  // Idempotency (replay-safe, append-only — Engineering Charter cmd 9): the
+  // provisioning event ids are counterparty-keyed and TIME-INDEPENDENT, so a
+  // second driver run (a CONTROLLABLE live simulator clicked across sessions)
+  // would re-emit identical ids and throw `UNIQUE constraint failed`. Skip any
+  // phase already recorded for this counterparty — mirrors provisionCounterparty's
+  // `CounterpartyProvisioned` guard and the settlement cash-sink's `has*` checks.
+  const alreadyHas = (type: string): boolean =>
+    [...store.replay({ type })].some(
+      (e) => (e.payload as { counterpartyId?: string }).counterpartyId === cpId,
+    );
+
   // 1. Sounding — the counterparty expresses dealing interest (implies prospect).
-  store.append(
-    makeCounterpartySoundingMade({
-      asOf,
-      entity: ENTITY,
-      actor: SIM_ACTOR,
-      citations: CITATIONS,
-      payload: {
-        counterpartyId: cpId,
-        name: counterparty.name,
-        bic: counterparty.bic,
-        eligiblePairs: [...counterparty.eligiblePairs],
-      },
-      eventId: `${scenarioId}:${cpId}:sounding`,
-      provenance,
-    }),
-  );
-
-  // 2. KYC documents — the counterparty submits its KYC pack.
-  store.append(
-    makeCounterpartyKycDocumentsSubmitted({
-      asOf,
-      entity: ENTITY,
-      actor: SIM_ACTOR,
-      citations: CITATIONS,
-      payload: { counterpartyId: cpId, documents: [...KYC_DOCUMENT_PACK] },
-      eventId: `${scenarioId}:${cpId}:kyc-submitted`,
-      provenance,
-    }),
-  );
-
-  // 3. Mandate — the counterparty accepts the dealing mandate.
-  store.append(
-    makeCounterpartyMandateAccepted({
-      asOf,
-      entity: ENTITY,
-      actor: SIM_ACTOR,
-      citations: CITATIONS,
-      payload: { counterpartyId: cpId, baseCurrency: reporting },
-      eventId: `${scenarioId}:${cpId}:mandate-accepted`,
-      provenance,
-    }),
-  );
-
-  // 4. Agreement — the counterparty accepts the ISDA/CSA terms (when declared).
-  const agreement = counterparty.agreement;
-  if (agreement) {
+  if (!alreadyHas("CounterpartySoundingMade")) {
     store.append(
-      makeCounterpartyAgreementAccepted({
+      makeCounterpartySoundingMade({
         asOf,
         entity: ENTITY,
         actor: SIM_ACTOR,
         citations: CITATIONS,
         payload: {
           counterpartyId: cpId,
-          agreementType: agreement.agreementType,
-          csaInScope: agreement.csaInScope,
-          ...(agreement.csaInScope ? { csaCurrency: agreement.csaCurrency ?? reporting } : {}),
+          name: counterparty.name,
+          bic: counterparty.bic,
+          eligiblePairs: [...counterparty.eligiblePairs],
         },
-        eventId: `${scenarioId}:${cpId}:agreement-accepted`,
+        eventId: `${scenarioId}:${cpId}:sounding`,
         provenance,
       }),
     );
+  }
+
+  // 2. KYC documents — the counterparty submits its KYC pack.
+  if (!alreadyHas("CounterpartyKycDocumentsSubmitted")) {
+    store.append(
+      makeCounterpartyKycDocumentsSubmitted({
+        asOf,
+        entity: ENTITY,
+        actor: SIM_ACTOR,
+        citations: CITATIONS,
+        payload: { counterpartyId: cpId, documents: [...KYC_DOCUMENT_PACK] },
+        eventId: `${scenarioId}:${cpId}:kyc-submitted`,
+        provenance,
+      }),
+    );
+  }
+
+  // 3. Mandate — the counterparty accepts the dealing mandate.
+  if (!alreadyHas("CounterpartyMandateAccepted")) {
+    store.append(
+      makeCounterpartyMandateAccepted({
+        asOf,
+        entity: ENTITY,
+        actor: SIM_ACTOR,
+        citations: CITATIONS,
+        payload: { counterpartyId: cpId, baseCurrency: reporting },
+        eventId: `${scenarioId}:${cpId}:mandate-accepted`,
+        provenance,
+      }),
+    );
+  }
+
+  // 4. Agreement — the counterparty accepts the ISDA/CSA terms (when declared).
+  const agreement = counterparty.agreement;
+  if (agreement) {
+    if (!alreadyHas("CounterpartyAgreementAccepted")) {
+      store.append(
+        makeCounterpartyAgreementAccepted({
+          asOf,
+          entity: ENTITY,
+          actor: SIM_ACTOR,
+          citations: CITATIONS,
+          payload: {
+            counterpartyId: cpId,
+            agreementType: agreement.agreementType,
+            csaInScope: agreement.csaInScope,
+            ...(agreement.csaInScope ? { csaCurrency: agreement.csaCurrency ?? reporting } : {}),
+          },
+          eventId: `${scenarioId}:${cpId}:agreement-accepted`,
+          provenance,
+        }),
+      );
+    }
     return "CounterpartyAgreementAccepted";
   }
   return "CounterpartyMandateAccepted";
