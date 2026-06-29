@@ -46,6 +46,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { TrialBalance } from "../accounting/period-close";
+import { type RateMap, convertMinor } from "../accounting/fx-rate-projection";
 import { isCapitalSourcedGlPosting } from "../accounting/posting-rules-v2/capital-fold";
 import { deriveCapitalInstanceLegs } from "../accounting/posting-rules-v2/capital-instance-fold";
 import { deriveFxConversionLegs } from "../accounting/posting-rules-v2/fx-conversion-fold";
@@ -308,6 +309,82 @@ export function computeTrialBalanceV2Uncached(args: ComputeTrialBalanceV2Args): 
     .sort((a, b) => (a.currency < b.currency ? -1 : a.currency > b.currency ? 1 : 0));
 
   return { rows, perCurrencyTotals, uptoSequence };
+}
+
+// ---------------------------------------------------------------------------
+// Functional-currency (IAS 21) trial-balance balancing.
+//
+// IAS 21 §21 records a foreign-currency transaction in the FUNCTIONAL currency at
+// the transaction-date spot rate; the books balance in the FUNCTIONAL currency
+// (ZAR for LE-ZA-HOZ-BANK). Per-currency NATIVE balancing (ΣDr == ΣCr within each
+// currency's own minor units) is NOT an IFRS requirement — and is wrong for a
+// genuine cross-currency transaction: a deliverable FX spot is Dr USD-cash /
+// Cr ZAR-cash, which never balances in native minor units (USD cents ≠ ZAR cents;
+// Principle 5) yet balances exactly once each leg is translated to ZAR at the
+// transaction-date spot.
+//
+// `perCurrencyTotals` is RETAINED as a first-class Principle-5 sub-ledger DIMENSION
+// (one running pair per currency; never summed across currencies) — it just stops
+// being the BALANCING CONSTRAINT. The headline in-balance invariant is the
+// functional-currency one below, aligned with `recon:gl-currency-dimension-
+// integrity` (which already mandates asserting in-balance in the functional
+// currency via explicit conversion) and the production `buildGlView` (whose
+// `inBalance` flag is `zarTotalDebitMinor === zarTotalCreditMinor`).
+//
+// Rates are EVENT-SOURCED (Charter cmd 4 — source, don't hardcode): the caller
+// supplies a `RateMap` built from the canonical FxTradeExecuted projection
+// (`buildRateMap`), and conversion is exact via `convertMinor`. Honest on a missing
+// rate (Charter cmd 2 — fail-closed): a currency with no conversion path is
+// surfaced in `unconvertibleCurrencies` and the result is `balanced: false` (never
+// a fake balanced zero by silently dropping the leg).
+// Authority: D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1 (CEO-approved 2026-06-29).
+// ---------------------------------------------------------------------------
+
+export interface FunctionalCurrencyBalance {
+  /** True iff ΣDr(functional) == ΣCr(functional) AND every currency converted. */
+  readonly balanced: boolean;
+  /** Functional-currency (ZAR-equiv) total debits in minor units. */
+  readonly functionalDebitMinor: number;
+  /** Functional-currency (ZAR-equiv) total credits in minor units. */
+  readonly functionalCreditMinor: number;
+  /** Currencies whose totals could not be translated (no event-sourced rate path). */
+  readonly unconvertibleCurrencies: readonly string[];
+}
+
+/**
+ * Assert the trial balance is in balance in the FUNCTIONAL currency (IAS 21 §21).
+ *
+ * Converts each `perCurrencyTotals` entry to the functional currency via the
+ * event-sourced `rateMap` and sums. The functional currency itself (default ZAR)
+ * is the identity. Fail-closed: a currency with no conversion path makes the result
+ * unbalanced and is listed in `unconvertibleCurrencies` — never silently dropped.
+ *
+ * Per-currency NATIVE totals remain available on `tb.perCurrencyTotals` as a
+ * Principle-5 dimension; this function does NOT require them to self-balance.
+ */
+export function trialBalanceFunctionalCurrencyBalance(
+  tb: TrialBalance,
+  rateMap: RateMap,
+  functionalCurrency = "ZAR",
+): FunctionalCurrencyBalance {
+  let functionalDebitMinor = 0;
+  let functionalCreditMinor = 0;
+  const unconvertibleCurrencies: string[] = [];
+
+  for (const t of tb.perCurrencyTotals) {
+    const dr = convertMinor(t.debitMinor, t.currency, functionalCurrency, rateMap);
+    const cr = convertMinor(t.creditMinor, t.currency, functionalCurrency, rateMap);
+    if (dr === null || cr === null) {
+      unconvertibleCurrencies.push(t.currency);
+      continue;
+    }
+    functionalDebitMinor += dr;
+    functionalCreditMinor += cr;
+  }
+
+  const balanced =
+    unconvertibleCurrencies.length === 0 && functionalDebitMinor === functionalCreditMinor;
+  return { balanced, functionalDebitMinor, functionalCreditMinor, unconvertibleCurrencies };
 }
 
 // ---------------------------------------------------------------------------
