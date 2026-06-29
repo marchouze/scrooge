@@ -56,11 +56,7 @@
 
 import { describe, expect, test } from "bun:test";
 
-import {
-  bookFxTrade,
-  convertFcyToZar,
-  settleManualFxTrade,
-} from "../dashboard/trade-book-view";
+import { bookFxTrade, convertFcyToZar, settleManualFxTrade } from "../dashboard/trade-book-view";
 import { buildGlView } from "../dashboard/v2-finance-gl-view";
 import {
   deriveFxCashRevalLegs,
@@ -75,11 +71,11 @@ import { computeBA320V2 } from "../platform/projections/ba320-fx-v2";
 import { computeGlEntriesV2 } from "../platform/projections/gl-projection-v2";
 import { settledMultiTradeStores } from "../platform/recon/gl-per-entry-zar-balance";
 import { computeBa325Reg29FxResidency } from "../platform/reporting/ba-325-reg29-fx-residency-fold";
+import { decimalToString } from "../v2-core/fil-core/decimal";
 import { citationRefSchema } from "../v2-core/fil-core/primitives";
 import type {
   FilEconomicTerms,
   FilInstrumentCreatedPayload,
-  FilInstrumentTerminatedPayload,
 } from "../v2-core/fil-instances/events";
 import type { TradeSettlementExecutedPayload } from "../v2-core/fil-instances/trade-settlement";
 import { FX_TREATMENT_MODULES } from "../v2-core/reporting-treatments/fx-modules";
@@ -90,7 +86,6 @@ const FX_REALISED_PNL = "ACC-2100-006";
 const FX_UNREALISED_PNL = "ACC-2100-005";
 const FX_CASH_RETRANS = "ACC-1200-099";
 const USD_NOSTRO = "ACC-1200-002";
-const ZAR_NOSTRO = "ACC-1200-001";
 const WINDOW = { periodStart: "2026-06-01", periodEnd: "2026-07-31" };
 
 // A ZA banking-sector counterparty → Exchange-Control "authorised-dealer" residency
@@ -114,11 +109,47 @@ interface TradeSpec {
   readonly settlementDate: string;
 }
 const BOOK: readonly TradeSpec[] = [
-  { key: "T1", side: "buy", base: "USD", quote: "ZAR", notional: 1_000_000, rate: 18.5, tradeDate: "2026-06-15", settlementDate: "2026-06-17" },
-  { key: "T2", side: "sell", base: "EUR", quote: "ZAR", notional: 500_000, rate: 20.0, tradeDate: "2026-06-15", settlementDate: "2026-06-17" },
-  { key: "T3", side: "buy", base: "USD", quote: "ZAR", notional: 400_000, rate: 18.7, tradeDate: "2026-06-16", settlementDate: "2026-06-18" },
+  {
+    key: "T1",
+    side: "buy",
+    base: "USD",
+    quote: "ZAR",
+    notional: 1_000_000,
+    rate: 18.5,
+    tradeDate: "2026-06-15",
+    settlementDate: "2026-06-17",
+  },
+  {
+    key: "T2",
+    side: "sell",
+    base: "EUR",
+    quote: "ZAR",
+    notional: 500_000,
+    rate: 20.0,
+    tradeDate: "2026-06-15",
+    settlementDate: "2026-06-17",
+  },
+  {
+    key: "T3",
+    side: "buy",
+    base: "USD",
+    quote: "ZAR",
+    notional: 400_000,
+    rate: 18.7,
+    tradeDate: "2026-06-16",
+    settlementDate: "2026-06-18",
+  },
   // BACKDATED — trade + value date unmistakably in a past period.
-  { key: "T4", side: "buy", base: "USD", quote: "ZAR", notional: 250_000, rate: 18.4, tradeDate: "2026-06-10", settlementDate: "2026-06-12" },
+  {
+    key: "T4",
+    side: "buy",
+    base: "USD",
+    quote: "ZAR",
+    notional: 250_000,
+    rate: 18.4,
+    tradeDate: "2026-06-10",
+    settlementDate: "2026-06-12",
+  },
 ];
 const SETTLE_ASOF = "2026-06-20T12:00:00.000Z";
 
@@ -308,7 +339,10 @@ describe("CAPSTONE — whole settled-FX chain on a multi-trade book (Part A: pub
       const p = created.payload as FilInstrumentCreatedPayload;
       const t = p.economicTerms as FilEconomicTerms & {
         tradeDate?: string;
-        fxAgreement?: { buy: { currency: string; amount: string }; sell: { currency: string; amount: string } };
+        fxAgreement?: {
+          buy: { currency: string; amount: string };
+          sell: { currency: string; amount: string };
+        };
       };
       expect(t.assetClass).toBe("fx");
       expect(t.direction).toBe(spec.side === "buy" ? "long" : "short");
@@ -405,7 +439,11 @@ describe("CAPSTONE — whole settled-FX chain on a multi-trade book (Part A: pub
     const cashInstance = `fil:inst:${ENTITY}:${t1}-cash-received`;
     const convertRate = 19.25; // USD/ZAR move from booked 18.50
 
-    const r = convertFcyToZar({ cashInstance, conversionRate: convertRate, asOf: "2026-06-25T12:00:00.000Z" });
+    const r = convertFcyToZar({
+      cashInstance,
+      conversionRate: convertRate,
+      asOf: "2026-06-25T12:00:00.000Z",
+    });
     expect(r.ok).toBe(true);
     expect(r.fcyCurrency).toBe("USD");
     expect(r.positionClosed).toBe(true);
@@ -432,7 +470,8 @@ describe("CAPSTONE — whole settled-FX chain on a multi-trade book (Part A: pub
     // balance: USD leg @ cost basis 18.50 (its ZAR carrying value) vs the ZAR legs.
     let zarNet = 0;
     for (const e of convEntries) {
-      const zarValue = e.currency === "ZAR" ? e.amountMinor : Math.round((e.amountMinor / 100) * 18.5 * 100);
+      const zarValue =
+        e.currency === "ZAR" ? e.amountMinor : Math.round((e.amountMinor / 100) * 18.5 * 100);
       zarNet += e.debitCredit === "debit" ? zarValue : -zarValue;
     }
     expect(Math.abs(zarNet)).toBeLessThan(100); // balances in ZAR at the conversion entry's rate
@@ -479,7 +518,9 @@ describe("CAPSTONE — whole settled-FX chain on a multi-trade book (Part A: pub
     // Operating-book sees the settled USD nostro cash; production-only does not.
     const opBook = tradeEntries(t1).filter((e) => e.accountId === USD_NOSTRO);
     expect(opBook.length).toBeGreaterThan(0);
-    const prod = tradeEntries(t1, { mode: "production-only" }).filter((e) => e.accountId === USD_NOSTRO);
+    const prod = tradeEntries(t1, { mode: "production-only" }).filter(
+      (e) => e.accountId === USD_NOSTRO,
+    );
     expect(prod.length).toBe(0);
   });
 });
@@ -516,7 +557,11 @@ describe("CAPSTONE — multi-trade EOD-MTM TB balance (Part B: link 4, independe
   // ── LINK 4: the EOD-MTM reval actually RAN (§23 retranslation ↔ §28 P&L) ────
   test("LINK 4 — EOD-MTM posts a §23 retranslation (ACC-1200-099) equal-and-opposite to the §28 unrealised P&L (ACC-2100-005, FVTPL never OCI)", () => {
     const { eventStore: store, marketDataStore: md } = settledMultiTradeStores(true);
-    const view = buildGlView({ eventStore: store, marketDataStore: md, filter: { mode: "combined" } });
+    const view = buildGlView({
+      eventStore: store,
+      marketDataStore: md,
+      filter: { mode: "combined" },
+    });
     const retrans = view.rows.find((r) => r.accountId === FX_CASH_RETRANS);
     const unreal = view.rows.find((r) => r.accountId === FX_UNREALISED_PNL);
     expect(retrans).toBeDefined();
@@ -575,8 +620,8 @@ describe("CAPSTONE — multi-trade EOD-MTM TB balance (Part B: link 4, independe
     // Every position has a net FCY and a ZAR cost basis; cost rate = basis / net is
     // finite and positive (a coherent netted position, not a fabricated split).
     for (const [ccy, pos] of positions) {
-      const net = Number(pos.netFcy.toString?.() ?? pos.netFcy);
-      const basis = Number(pos.zarCostBasis.toString?.() ?? pos.zarCostBasis);
+      const net = Number(decimalToString(pos.netFcy));
+      const basis = Number(decimalToString(pos.zarCostBasis));
       if (net === 0) continue;
       const costRate = basis / net;
       expect(Number.isFinite(costRate)).toBe(true);
@@ -592,13 +637,11 @@ describe("CAPSTONE — multi-trade EOD-MTM TB balance (Part B: link 4, independe
       periodEnd: "2026-12-31",
       filter: { mode: "combined" },
     });
-    // Exactly two legs per revalued currency (Dr/Cr) — a per-trade gross reval would
-    // produce more. One retranslation entry per currency = net revaluation.
+    // Exactly ONE retranslation leg per revalued currency (Dr/Cr pair = 2 legs per
+    // currency total) — a per-trade gross reval would produce more legs. One
+    // retranslation entry per currency = the NET position was revalued once.
     const retransLegs = reval.legs.filter((l) => l.accountCode === FX_CASH_RETRANS);
-    const revaluedCurrencies = new Set(retransLegs.map((l) => l.amount.currency === "ZAR" ? l.description.split(" ")[2] : ""));
-    // Each revalued currency contributes exactly ONE retranslation leg (net, not gross).
     expect(retransLegs.length).toBe(reval.legs.length / 2);
-    void revaluedCurrencies;
   });
 
   // ── ADVERSARIAL: the independent settlement-entry residual is exactly zero ──
@@ -612,7 +655,7 @@ describe("CAPSTONE — multi-trade EOD-MTM TB balance (Part B: link 4, independe
     });
     expect(residuals.size).toBeGreaterThan(0);
     for (const [, residual] of residuals) {
-      const minor = Math.round(Number(residual.toString?.() ?? residual) * 100);
+      const minor = Math.round(Number(decimalToString(residual)) * 100);
       expect(Math.abs(minor)).toBeLessThanOrEqual(1); // PvP balances in ZAR by construction
     }
   });
