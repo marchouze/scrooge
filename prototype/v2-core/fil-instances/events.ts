@@ -466,6 +466,23 @@ const filEconomicTermsObjectSchema = z.object({
    * Remaining-maturity is derived from this at the query as_of — NOT stored.
    */
   settlementDate: z.string().min(1),
+  /**
+   * TRADE / DEAL date (ISO-8601 date or instant) — the economic-recognition date
+   * of the agreement (D-FX-E2E-CORRECTNESS-V1, Lane 1). This is the date the trade
+   * was struck, distinct from `settlementDate` (the value date). For an FX trade it
+   * drives the trade-date OBS-memorandum recognition (D-FX-TRADE-DATE-FVTPL-OBS);
+   * the contract's day-1 OBS posting is recognised AS-OF this date. The booking
+   * site sets it to the date the user/desk SPECIFIES — backdated, live, or future —
+   * and the event's `as_of` is aligned to it so a backdated trade folds into the
+   * correct period (no auto-increment, no forced T+2).
+   *
+   * OPTIONAL + additive: born-V2 going forward, but optional for replay-safety —
+   * every existing instance (which carries none) parses unchanged (Charter cmd 9).
+   * When ABSENT, consumers fall back to the event `as_of` (the prior implicit
+   * trade date), so the fold behaviour is behaviour-neutral for legacy events.
+   * Canonical render path: `economicTerms.tradeDate` (Lane 2 / Noa displays it).
+   */
+  tradeDate: z.string().min(1).optional(),
   /** Hedging-set tag (FX pair, e.g. `EUR/ZAR`; IR currency/bucket). */
   hedgingSetTag: z.string().min(1).optional(),
   /**

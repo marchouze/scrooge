@@ -1,22 +1,38 @@
 // dashboard/trade-book-view.ts
 //
-// POST /api/trades/book — manual FX spot trade booking entry point.
+// POST /api/trades/book — manual trade booking entry point.
 //
-// Validates the booking request, emits a `FxTradeExecuted` event with
-// `provenance.kind: "manual"`, then immediately runs the GL posting engine
-// so the trade-booking SubLedgerPostingEmitted is produced inline.
+// FX (D-FX-E2E-CORRECTNESS-V1, Lane 1): a manual FX booking is now BORN-V2. The
+// route validates the request, models the born-V2 confirmation flow
+// (TradeConfirmationSent → TradeAffirmed), then books a `FilInstrumentCreated`
+// via the SUT `bookAffirmedFxTrade` — the self-describing FIL instrument carrying
+// the BUY/SELL agreement quad + tradeDate + settlementDate exactly as the user
+// specifies (backdated, live, or future; no `< today` block, no forced T+2). The
+// born-V2 instrument flows end-to-end into V2 accounting (the pure FX trial-
+// balance fold over the FIL events — no inline GL engine), every BA-return fold,
+// and the V2 FX blotter. The legacy V1 `FxTradeExecuted` booking path for the
+// manual desk (+ inline beaGlPostingEngine / V1 MTM / V1 runPostTradeLifecycle)
+// is RETIRED (V1-retirement — flip what you touch). The non-FX product handlers
+// (repo / mmd / ibl / equity / bond / irs) remain on their existing paths.
 //
 // Authority:
+//   D-FX-E2E-CORRECTNESS-V1 (CEO-approved — born-V2 FX booking spine + dates)
+//   D-FX-INSTRUMENT-BUYSELL-QUAD (CEO-approved 2026-06-24 — the quad)
 //   D-MANUAL-TRADE-BOOKING (CEO-approved 2026-05-19)
 //   D-TRADE-LIFECYCLE-IFRS-CHAIN (CEO-approved 2026-05-18)
 //
-// Author: Devon (Chief Technology Officer, engineering)
+// Author: Devon (Chief Technology Officer, engineering);
+//         Kai (Trading systems engineer, engineering — Lane 1 born-V2 re-platform)
 
 import { randomBytes } from "node:crypto";
 
-import { clock, eventStore, logger } from "../platform/composition";
+import { clock, eventStore } from "../platform/composition";
 import { newEventId } from "../platform/core/types";
 import { makeBondTradeExecuted } from "../platform/event-store/event-types/bond-accounting";
+import {
+  makeTradeAffirmed,
+  makeTradeConfirmationSent,
+} from "../platform/event-store/event-types/fx-trade-confirmation";
 import {
   makeDepositTaken,
   makeInterbankLoanPlaced,
@@ -26,14 +42,11 @@ import { productionTag, simulatedTag } from "../platform/event-store/provenance"
 import type { ProvenanceTag } from "../platform/event-store/provenance";
 import type { EventStore } from "../platform/event-store/store";
 import { makeEquityTradeBooked } from "../platform/markets/cdm/equity";
-import { makeFxTradeExecuted } from "../platform/markets/cdm/fx";
-import type { FxTradeExecutedPayload } from "../platform/markets/cdm/fx";
 import { makeIrsTradeBooked } from "../platform/markets/cdm/ird";
-import { getActiveFxCounterparties } from "../platform/simulation/fx-counterparty-registry";
-import { runPostTradeLifecycle } from "../platform/simulation/post-trade-lifecycle";
+import { bookAffirmedFxTrade } from "../platform/markets/products/book-affirmed-fx-trade";
 import { beaGlPostingEngine } from "../runtime/agents/bea-gl-posting-engine";
-import { revalueTradeScoped } from "../runtime/agents/rohan-daily-mtm";
 import type { AgentRunContext } from "../runtime/types";
+import { decimalToString, divD, roundDecimal, toDecimal } from "../v2-core/fil-core/decimal";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -78,6 +91,8 @@ export interface TradeBookBody {
   notionalAmount?: unknown;
   notionalCurrency?: unknown;
   rate?: unknown;
+  /** FX trade / deal date (YYYY-MM-DD) — user-specified, unrestricted (D-FX-E2E-CORRECTNESS-V1). */
+  tradeDate?: unknown;
   settlementDate?: unknown;
   counterpartyName?: unknown;
   counterpartyLei?: unknown;
@@ -1088,10 +1103,24 @@ export interface BookFxTradeResult {
 }
 
 /**
- * Shared FX booking core. Used by the manual /api/trades/book route AND by the
- * 3rd-party simulator hub, so a simulated counterparty trade initiation books
- * exactly like a manual/real trade — same event, actor, provenance lineage, and
- * inline GL posting. Pass provenanceMode:"simulated" to tag it simulator-generated.
+ * Shared FX booking core — BORN-V2 (D-FX-E2E-CORRECTNESS-V1, Lane 1). Used by the
+ * manual /api/trades/book route AND by the 3rd-party simulator hub. A booked FX
+ * trade emits a born-V2 `FilInstrumentCreated` (the self-describing FIL instrument
+ * carrying the BUY/SELL agreement quad + tradeDate + settlementDate), so it flows
+ * end-to-end into V2 accounting (the pure FX trial-balance fold over the FIL
+ * events), every BA-return fold, and the V2 FX blotter — WITHOUT a stored
+ * GlPostingEmitted (the FX GL is a derived fold, D-DERIVED-EVENT-IRREDUCIBILITY-
+ * TEST). The legacy V1 `FxTradeExecuted` booking path (+ inline beaGlPostingEngine,
+ * V1 MTM, V1 runPostTradeLifecycle) is RETIRED here (V1-retirement — flip what you
+ * touch). Settlement is NOT triggered here (the confirmation-gated settleFxLeg seam
+ * is a separate extension point, out of Lane-1 scope) — booking + dates only.
+ *
+ * Provenance: pass provenanceMode:"simulated" (sim hub) to tag the FIL emit
+ * `simulated`; otherwise a manually-booked trade during the build phase is real
+ * bank state authored pre-commencement → tagged `build-phase-fixture` (NOT
+ * production: there is no live client / real custody yet, and NOT simulated: it is
+ * a genuine desk action). The tag is constructed at this call-site (Rule B — never
+ * inside the SUT) and threaded into bookAffirmedFxTrade's explicit `provenance`.
  */
 export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResult> {
   // ----- Validate FX fields -----
@@ -1134,28 +1163,33 @@ export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResul
     return { ok: false, error: "rate must be a positive number" };
   }
 
+  // ----- Resolve trade + settlement dates — UNRESTRICTED (Lane 1) -----
+  // Marc chose unrestricted: BOTH trade and settlement date may be ANY past,
+  // present, or future date the user types. There is NO `< today` backdating
+  // block and NO forced T+2 auto-increment. A T+2 prefill is a default the UI
+  // offers, freely overwritable — never forced here. Settlement ≥ trade is the
+  // normal convention; we apply a SOFT warning (returned in `glWarning`), never a
+  // hard reject (per the brief — do not break a deliberate backdated booking).
   const todayIso = clock.now().slice(0, 10);
 
-  // Resolve settlement mode early — accelerated sets value date = today so all
-  // lifecycle events (PrincipalPayment, SettlementConfirmed) naturally carry
-  // today's as_of rather than a future-dated as_of that is out of sync with the
-  // booking timestamp.
-  const resolvedSettlementMode: "realtime" | "accelerated" =
-    body.settlementMode === "realtime" ? "realtime" : "accelerated";
-
-  let settlementDate: string;
-  if (resolvedSettlementMode === "accelerated") {
-    settlementDate = todayIso;
-  } else {
-    const rawSettlementDate = typeof body.settlementDate === "string" ? body.settlementDate : "";
-    if (!isValidDate(rawSettlementDate)) {
-      return { ok: false, error: "settlementDate must be a valid YYYY-MM-DD date" };
-    }
-    if (rawSettlementDate < todayIso) {
-      return { ok: false, error: "settlementDate must be >= today" };
-    }
-    settlementDate = rawSettlementDate;
+  const rawTradeDate = typeof body.tradeDate === "string" ? body.tradeDate.trim() : "";
+  const tradeDate = rawTradeDate || todayIso;
+  if (!isValidDate(tradeDate)) {
+    return { ok: false, error: "tradeDate must be a valid YYYY-MM-DD date" };
   }
+
+  const rawSettlementDate =
+    typeof body.settlementDate === "string" ? body.settlementDate.trim() : "";
+  if (!isValidDate(rawSettlementDate)) {
+    return { ok: false, error: "settlementDate must be a valid YYYY-MM-DD date" };
+  }
+  const settlementDate = rawSettlementDate;
+
+  // SOFT coherence warning only (never a hard reject — unrestricted dates).
+  const dateWarning =
+    settlementDate < tradeDate
+      ? `settlementDate ${settlementDate} is before tradeDate ${tradeDate} (unusual — booked as specified)`
+      : undefined;
 
   const counterpartyName =
     typeof body.counterpartyName === "string" ? body.counterpartyName.trim() : "";
@@ -1168,178 +1202,131 @@ export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResul
       ? body.counterpartyLei.trim()
       : undefined;
 
-  const traderRef =
-    typeof body.traderRef === "string" && body.traderRef.trim()
-      ? body.traderRef.trim()
-      : "manual-desk";
+  // The SUT keys the netting set + affirmation gate on a stable counterparty id.
+  // Prefer the picked party id (LEI / party-register id); fall back to a derived
+  // id from the name so a hand-typed counterparty still books deterministically.
+  const counterpartyId =
+    counterpartyLei ??
+    `MANUAL-CPTY-${counterpartyName.replace(/[^A-Za-z0-9]+/g, "-").toUpperCase()}`;
 
-  // ----- Build trade -----
-
-  // Derive a monotonic timestamp suffix from clock.now() (Principle 1 — no raw Date.now())
+  // ----- Identity + as_of -----
+  // `as_of` is ALIGNED to the user-specified trade date (with a synthetic
+  // intra-day instant) so the trade-date OBS-memorandum posting folds into the
+  // CORRECT period — a backdated trade posts into the back period, a future trade
+  // into the forward period. The FX fold derives postingDate from `payload.asOf`
+  // (v2-core/posting-rules/fx.ts), so the as_of IS the economic recognition date.
   const tsMillis = Date.parse(clock.now());
   const tradeId = `MAN-${tsMillis}-${randomBytes(4).toString("hex").toUpperCase()}`;
+  const asOf = `${tradeDate}T12:00:00.000Z`;
 
-  // Convert major → minor units (× 1,000,000 per Principle 5 minor-unit convention)
-  const SCALE = 1_000_000;
-  const notionalAmountMinor = Math.round(notionalAmount * SCALE);
-  // rate = quote-per-base (D-FX-QUOTING-CONVENTION). Direction depends on notional currency:
-  //   notional in base  → counter (quote) = notional × rate
-  //   notional in quote → counter (base)  = notional / rate
-  const counterNotionalMinor =
+  // Derive the base-currency notional in MAJOR units for the SUT (which carries
+  // the symmetric quad from base + rate). The user may quote the notional in the
+  // base or the quote currency; convert to base when given in quote. The
+  // conversion uses the v2-core decimal engine (NOT a float `/`) — the SUT then
+  // re-derives the quad decimal-natively from this magnitude.
+  const baseNotionalMajor =
     notionalCurrency === base
-      ? Math.round(notionalAmountMinor * rate)
-      : Math.round(notionalAmountMinor / rate);
+      ? notionalAmount
+      : Number(
+          decimalToString(
+            roundDecimal(
+              divD(toDecimal(String(notionalAmount)), toDecimal(String(rate))),
+              8,
+              "HALF_UP",
+            ),
+          ),
+        );
 
-  // Determine pay/receive from the bank's perspective:
-  //   buy  → bank pays quote currency to receive base currency
-  //   sell → bank pays base currency to receive quote currency
-  let payCurrency: string;
-  let receiveCurrency: string;
-  if (side === "buy") {
-    payCurrency = quote;
-    receiveCurrency = base;
-  } else {
-    payCurrency = base;
-    receiveCurrency = quote;
-  }
-
-  // notional is in the pay currency; counterNotional in the receive currency
-  const notionalCurrencyForLeg = payCurrency;
-  const counterNotionalCurrencyForLeg = receiveCurrency;
-
-  const asOf = clock.now();
-  const today = asOf.slice(0, 10);
-
-  const eventId = newEventId();
-
-  const tradePayload: FxTradeExecutedPayload = {
-    tradeId: {
-      scheme: "internal-manual",
-      value: tradeId,
-    },
-    productTaxonomy: "FX-spot",
-    currencyPair: { base, quote },
-    side,
-    legs: [
-      {
-        legKind: "near",
-        payCurrency: notionalCurrencyForLeg,
-        receiveCurrency: counterNotionalCurrencyForLeg,
-        notional: {
-          currency: notionalCurrencyForLeg,
-          amountMinor: notionalAmountMinor,
-        },
-        counterNotional: {
-          currency: counterNotionalCurrencyForLeg,
-          amountMinor: counterNotionalMinor,
-        },
-        rate: {
-          currency: quote,
-          amount: rate,
-        },
-        settlementDate: {
-          iso: settlementDate,
-          calendar: "JIHCAL",
-        },
-      },
-    ],
-    tradeDate: {
-      iso: today,
-      calendar: "JIHCAL",
-    },
-    bookId: "BK-FX-MM-001",
-    bookType: "trading",
-    deskId: "urn:desk:trading-desk:trading-desk-1",
-    venue: "OTC",
-    settlementForm: "physical",
-    settlementPath: "correspondent",
-    trader: traderRef,
-    counterparty: {
-      partyId: counterpartyLei ?? "MANUAL-CPTY",
-      name: counterpartyName,
-      role: "counterparty",
-    },
-    clientFlowRef: `client-trade:manual-${tradeId}`,
-  };
-
-  const tradeEvent = makeFxTradeExecuted({
-    asOf,
-    entity: "LE-ZA-HOZ-BANK",
-    actor: { type: "human", id: "operator" },
-    citations: ["D-MANUAL-TRADE-BOOKING", "D-TRADE-LIFECYCLE-IFRS-CHAIN"],
-    eventId,
-    payload: tradePayload,
+  // ----- Provenance tag (Rule B — constructed at the call-site, never in the SUT) -----
+  // A build-phase manual desk booking is OPERATIONAL simulated data — part of the
+  // simulated operating book the bank is running on pre-commencement. It MUST be
+  // tagged `simulated` (NOT `build-phase-fixture`, NOT `production`):
+  //   - `simulated` flows through the operating-book + combined lenses (build
+  //     phase), so the trade FOLDS into BA-325 / BA-110 / BA-320, the operating-
+  //     book GL trial balance, and the V2 FX blotter — exactly what Marc must
+  //     SEE when he books a trade (D-FX-E2E-CORRECTNESS-V1 core requirement).
+  //   - `build-phase-fixture` is DROPPED by the operating-book/combined lenses
+  //     (platform/projections/filter.ts ~L251) — reserved for seed scaffolding,
+  //     not a trade booked to be observed. Tagging it there would make the trade
+  //     invisible in every BA return + accounting view (the regression this fixes).
+  //   - `production` would pollute the honest-empty pre-licence production-only
+  //     read (the R300m-painting class of error) — forbidden during build phase.
+  // The scenario MUST NOT match a sandbox prefix (rehearsal-/stress-/counterfactual-
+  // /what-if-/test-pollution per SANDBOX_SCENARIO_PREFIXES) or it would be held out
+  // of the operating book — `operator:manual-desk-booking` is deliberately not one.
+  const provenance: ProvenanceTag = simulatedTag({
+    scenario:
+      body.provenanceMode === "simulated"
+        ? "operator:manual-sim-booking"
+        : "operator:manual-desk-booking",
+    sourceLineage: "operator:manual-trade-booking",
+    tags: body.provenanceMode === "simulated" ? ["manual", "sim", "fx"] : ["manual", "fx"],
   });
 
-  // Attach manual provenance — resolved from provenanceMode in the request body.
-  (tradeEvent as Record<string, unknown>).provenance = resolveProvenance(body.provenanceMode, "fx");
-
-  eventStore.append(tradeEvent);
-
-  // ----- Run GL posting engine inline -----
-  const ctx: AgentRunContext = {
-    agent: "Bea",
-    trigger: { kind: "on-request", id: "manual-trade-booking" },
-    asOf,
-    repoRoot: process.cwd(),
-    ownerInboxDir: `${process.cwd()}/Owner Inbox`,
-    dryRun: false,
-  };
-
-  try {
-    // Scope GL posting to THIS trade's own event. Without this, the engine
-    // replays and reprocesses the whole store's posting backlog inline on the
-    // request thread — at production store size that blocks the single-threaded
-    // event loop for minutes per booking (the event-loop wedge). Backfill / cron
-    // runs still call beaGlPostingEngine(ctx) with no scope for full replay.
-    await beaGlPostingEngine(ctx, { scopeToEventIds: [eventId] });
-  } catch (err) {
-    // GL engine failure should not block the trade booking — the trade event is
-    // already appended and idempotency means a later run-posting-engine call
-    // will catch it.
-    const msg = err instanceof Error ? err.message : String(err);
-    return { ok: true, tradeId, eventId, glWarning: `Trade booked but GL engine error: ${msg}` };
-  }
-
-  // ----- Mark the freshly-booked position inline (MTM) -----
-  // Emit an FxPositionRevalued immediately, while the position is still open
-  // (before the lifecycle below may settle it), so it is not reported as
-  // "no mark" on the product-control dashboard until the next scheduled daily
-  // MTM run. Non-fatal: the daily 18:00 UTC run is the backstop.
-  // Authority: D-FX-MTM-REVAL-ON-BOOKING (CEO session-delegation 2026-06-02).
-  try {
-    await revalueTradeScoped(tradePayload, asOf);
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    logger.warn(
-      { tradeId, eventId, err: msg },
-      "inline MTM reval failed — daily MTM run is the backstop",
-    );
-  }
-
-  // ----- Post-trade lifecycle -----
-  const cpBic =
-    getActiveFxCounterparties(eventStore).find(
-      (c) => c.lei === counterpartyLei || c.name === counterpartyName,
-    )?.bic ?? "SBZAZAJJXXX";
-
-  try {
-    runPostTradeLifecycle(
-      eventStore,
-      tradePayload,
+  // ----- Born-V2 confirmation flow: model the affirm step the SUT gates on -----
+  // bookAffirmedFxTrade only books if a `TradeAffirmed` exists for the tradeId
+  // (settlement-on-affirmation discipline). A manual booking IS an already-agreed
+  // deal, so we emit the born-V2 confirmation sequence (sent → affirmed) for the
+  // trade, then book. This preserves a genuine RFQ→affirm shape born-V2 — no V1
+  // FxTradeExecuted is emitted (V1 path retired).
+  const cpActor = { type: "human" as const, id: "operator" };
+  const confCitations = ["D-FX-E2E-CORRECTNESS-V1", "D-FX-V2-SIMULATOR-FIRST"];
+  eventStore.append(
+    makeTradeConfirmationSent({
       asOf,
-      "BANKZAJJXXX",
-      cpBic,
-      undefined,
-      Math.random,
-      resolvedSettlementMode,
-    );
+      entity: "LE-ZA-HOZ-BANK",
+      actor: cpActor,
+      citations: confCitations,
+      payload: { tradeId, counterpartyId, channel: "MT300" },
+      eventId: `manual:${tradeId}:conf-sent`,
+      provenance,
+    }),
+  );
+  eventStore.append(
+    makeTradeAffirmed({
+      asOf,
+      entity: "LE-ZA-HOZ-BANK",
+      actor: cpActor,
+      citations: confCitations,
+      payload: { tradeId, counterpartyId, channel: "MT300" },
+      eventId: `manual:${tradeId}:affirmed`,
+      provenance,
+    }),
+  );
+
+  // ----- Book the born-V2 FIL instrument via the SUT -----
+  let booked = false;
+  try {
+    booked = bookAffirmedFxTrade({
+      store: eventStore,
+      scenarioId: `manual:${tradeId}`,
+      asOf,
+      reporting: quote,
+      trade: {
+        tradeId,
+        counterpartyId,
+        productTaxonomy: "FX-spot",
+        pair: `${base}/${quote}`,
+        side,
+        baseNotionalMajor,
+        rate,
+        settlementDate,
+        tradeDate,
+      },
+      provenance,
+    });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    return { ok: true, tradeId, eventId, glWarning: `Trade booked but lifecycle error: ${msg}` };
+    return { ok: false, error: `born-V2 FX booking failed: ${msg}` };
   }
 
-  return { ok: true, tradeId, eventId };
+  if (!booked) {
+    return { ok: false, error: "born-V2 FX booking emitted no instrument (affirmation gate)" };
+  }
+
+  // The FIL-created event id the SUT minted (deterministic from scenarioId+tradeId).
+  const eventId = `manual:${tradeId}:${tradeId}:fil-created`;
+  return { ok: true, tradeId, eventId, ...(dateWarning ? { glWarning: dateWarning } : {}) };
 }
 
 // ---------------------------------------------------------------------------

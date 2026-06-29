@@ -312,20 +312,13 @@
       </div>
 
       <div class="tb-field">
-        <label for="tb-settlement">Settlement date</label>
-        <input type="date" id="tb-settlement" name="settlementDate">
+        <label for="tb-trade-date">Trade date</label>
+        <input type="date" id="tb-trade-date" name="tradeDate">
       </div>
 
       <div class="tb-field">
-        <label>Settlement mode</label>
-        <div class="tb-side-group">
-          <label class="tb-side-label">
-            <input type="radio" name="settlementMode" value="accelerated" checked> Accelerated (T+0)
-          </label>
-          <label class="tb-side-label">
-            <input type="radio" name="settlementMode" value="realtime"> Real-time (T+2)
-          </label>
-        </div>
+        <label for="tb-settlement">Settlement date</label>
+        <input type="date" id="tb-settlement" name="settlementDate">
       </div>
 
       <!-- Counterparty -->
@@ -917,16 +910,24 @@ function showProductFields(type) {
 }
 
 (function () {
-  // Default settlement date = today + 2 business days (simplified: T+2)
+  // FX dates (D-FX-E2E-CORRECTNESS-V1, Lane 1): UNRESTRICTED. Trade date defaults
+  // to today; settlement date defaults to T+2. BOTH are freely overwritable to ANY
+  // past, present, or future date — there is NO `min` (no backdating block) and NO
+  // forced auto-increment once the user sets a value.
+  const tradeDateInput  = document.getElementById('tb-trade-date');
   const settlementInput = document.getElementById('tb-settlement');
-  const today = new Date();
-  today.setDate(today.getDate() + 2);
   const pad = (n) => String(n).padStart(2, '0');
-  const todayStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
-  if (settlementInput) {
-    settlementInput.value = todayStr;
-    settlementInput.min = new Date().toISOString().slice(0, 10);
-  }
+  const fxTodayStr = (function () {
+    const d = new Date();
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  })();
+  const fxT2Str = (function () {
+    const d = new Date();
+    d.setDate(d.getDate() + 2);
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  })();
+  if (tradeDateInput)  tradeDateInput.value  = fxTodayStr;
+  if (settlementInput) settlementInput.value = fxT2Str;
 
   // Default repo start and IB start/trade dates to today
   const repoStartInput  = document.getElementById('repo-start-date');
@@ -1006,7 +1007,6 @@ function showProductFields(type) {
       body = {
         productType: 'fx',
         provenanceMode,
-        settlementMode,
         currencyPair: {
           base: data.get('base'),
           quote: data.get('quote'),
@@ -1015,6 +1015,9 @@ function showProductFields(type) {
         notionalAmount: parseFloat(data.get('notionalAmount')),
         notionalCurrency: data.get('notionalCurrency'),
         rate: parseFloat(data.get('rate')),
+        // Unrestricted dates (Lane 1): user-specified trade + settlement dates,
+        // any past/present/future value — no client-side increment or clamp.
+        tradeDate: data.get('tradeDate'),
         settlementDate: data.get('settlementDate'),
         counterpartyName: data.get('counterpartyName'),
         counterpartyLei: data.get('counterpartyLei') || undefined,

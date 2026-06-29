@@ -47,22 +47,7 @@
     },
     {
       "file": "dashboard/trade-book-view.ts",
-      "line": 1184,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "dashboard/trade-book-view.ts",
-      "line": 1190,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "dashboard/trade-book-view.ts",
-      "line": 1191,
-      "pattern": "Math.round(money)"
-    },
-    {
-      "file": "dashboard/trade-book-view.ts",
-      "line": 789,
+      "line": 804,
       "pattern": "money-multiply/divide"
     },
     {
