@@ -62,6 +62,65 @@ function expectBalanced(legs: readonly FxPostingLeg[]): void {
   }
 }
 
+/**
+ * Assert a CROSS-currency leg set balances in the FUNCTIONAL currency (ZAR) — IAS 21
+ * §21. After D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1 a deliverable spot settles
+ * nostro-to-nostro (Dr FCY-cash / Cr ZAR-cash, no clearing contra) and the FCY→ZAR
+ * conversion draws the FCY nostro down in its OWN currency — neither balances in
+ * native minor units, but both balance once each currency's net is translated to ZAR
+ * at `zarPer` (ZAR per 1 unit; ZAR is the identity). This mirrors the trial-balance
+ * functional in-balance invariant (trialBalanceFunctionalCurrencyBalance).
+ */
+function expectFunctionalBalanced(
+  legs: readonly FxPostingLeg[],
+  zarPer: Readonly<Record<string, number>>,
+): void {
+  // Translate each currency's net to ZAR at `zarPer` and sum. The rate may be
+  // fractional (e.g. 18.5), so scale it to an integer numerator/denominator and do
+  // exact BigInt arithmetic — never float (Charter cmd 6).
+  let zarMicroNet = 0n; // ZAR net at an extra ×1e6 rate scale
+  for (const [currency, sum] of netByCurrency(legs)) {
+    const rate = currency === "ZAR" ? 1 : zarPer[currency];
+    if (rate === undefined) throw new Error(`no functional rate supplied for ${currency}`);
+    const rateMicro = BigInt(Math.round(rate * 1_000_000)); // exact for ≤6dp rates
+    zarMicroNet += sum * rateMicro;
+  }
+  expect(`ZAR-functional-net:${zarMicroNet}`).toBe("ZAR-functional-net:0");
+}
+
+/**
+ * Assert an FCY→ZAR conversion balances in the FUNCTIONAL currency. The FCY nostro
+ * leg is denominated in the FCY (face amount) but its functional (ZAR) value is its
+ * `zarCostBasis` by construction (the FCY cash is carried at its ZAR cost). So the
+ * ZAR-denominated legs (proceeds, realised, unrealised) plus the FCY nostro leg
+ * VALUED AT `zarCostBasis` must net to zero in ZAR. This avoids an inexact implied
+ * rate (zarCostBasis/fcyAmount may not be a clean decimal) by using the exact ZAR
+ * carrying value the rule itself uses.
+ */
+function expectConversionFunctionalBalanced(
+  legs: readonly FxPostingLeg[],
+  fcyCurrency: string,
+  zarCostBasis: string,
+): void {
+  let zarNet = 0n; // scale-12 ZAR minor, Dr +, Cr −
+  const costScaled = scaled(zarCostBasis);
+  const costNorm = costScaled.v * 10n ** BigInt(12 - costScaled.scale);
+  for (const leg of legs) {
+    const { v, scale } = scaled(leg.amount.amount);
+    const norm = v * 10n ** BigInt(12 - scale);
+    if (leg.amount.currency === fcyCurrency) {
+      // Value the FCY nostro leg at its ZAR cost basis (its functional carrying value).
+      const signed = leg.creditDebit === "debit" ? costNorm : -costNorm;
+      zarNet += signed;
+    } else {
+      // ZAR-denominated legs at face.
+      expect(leg.amount.currency).toBe("ZAR");
+      zarNet += leg.creditDebit === "debit" ? norm : -norm;
+    }
+  }
+  expect(`ZAR-conversion-functional-net:${zarNet}`).toBe("ZAR-conversion-functional-net:0");
+}
+
 const COMMON = {
   instanceId: "fil:inst:LE-ZA-HOZ-BANK:t1",
   tenantId: "LE-ZA-HOZ-BANK",
@@ -88,7 +147,9 @@ describe("PR-FX-SETTLE-V2 — P&L-neutral settlement (IAS 21 §23; D-FX-PNL-FCY-
     ).toThrow(/settled amount .* ≠ booked amount/);
   });
 
-  test("balances when both legs settle exactly at the booked rate", () => {
+  test("a deliverable PvP spot balances in the FUNCTIONAL currency (no clearing contra)", () => {
+    // EUR 500k bought @ rate 20 ⇒ ZAR 10m sold. Dr EUR-cash / Cr ZAR-cash: NOT
+    // balanced natively (EUR vs ZAR are incommensurable), balanced in ZAR at 20.
     const legs = postFxSettlementLegs({
       ...COMMON,
       boughtCurrency: "EUR",
@@ -98,15 +159,20 @@ describe("PR-FX-SETTLE-V2 — P&L-neutral settlement (IAS 21 §23; D-FX-PNL-FCY-
       soldBookedAmount: "10000000.00",
       soldSettledAmount: "10000000.00",
     });
-    expectBalanced(legs);
+    // PvP: two nostro legs only, NO clearing contra.
+    expect(legs.length).toBe(2);
+    expect(legs.some((l) => l.accountCode === FX_SETTLEMENT_CLEARING_ACCOUNT)).toBe(false);
+    expectFunctionalBalanced(legs, { EUR: 20 });
   });
 
-  // P&L-NEUTRAL settlement (D-FX-PNL-FCY-EXPOSURE-REVALUATION): settlement is a
-  // change of FORM, not a realisation. It NEVER touches an on-balance-sheet FX
-  // trading receivable/payable (trade-date is OBS-only) and NEVER posts realised
-  // P&L (ACC-2100-006) — it recognises cash (nostro) against the FX settlement
-  // clearing account (ACC-2100-027).
-  test("touches NO receivable/payable and NO realised P&L; cash vs settlement clearing only", () => {
+  // P&L-NEUTRAL PvP settlement (D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1; refines
+  // D-FX-PNL-FCY-EXPOSURE-REVALUATION): settlement is a change of FORM, not a
+  // realisation. It NEVER touches an on-balance-sheet FX trading receivable/payable
+  // (trade-date is OBS-only) and NEVER posts realised P&L (ACC-2100-006). A
+  // deliverable spot settles nostro-to-nostro with NO clearing contra (the trade
+  // balances in the functional currency); the clearing account is reserved for
+  // genuinely sequential-leg settlement (swap near/far).
+  test("touches NO receivable/payable and NO realised P&L; nostro-to-nostro only (no clearing)", () => {
     const legs = postFxSettlementLegs({
       ...COMMON,
       boughtCurrency: "USD",
@@ -120,17 +186,20 @@ describe("PR-FX-SETTLE-V2 — P&L-neutral settlement (IAS 21 §23; D-FX-PNL-FCY-
     for (const leg of legs) expect(recvPay.has(leg.accountCode)).toBe(false);
     // NO realised-P&L leg — settlement is P&L-neutral.
     for (const leg of legs) expect(leg.accountCode).not.toBe(FX_REALISED_PNL_ACCOUNT);
-    // Every leg is a cash (nostro, ACC-1200-*) or settlement-clearing leg.
-    const allowed = (code: string) =>
-      code.startsWith("ACC-1200-") || code === FX_SETTLEMENT_CLEARING_ACCOUNT;
-    for (const leg of legs) expect(allowed(leg.accountCode)).toBe(true);
-    // Both currencies recognise cash + clearing → four legs, balanced per ccy.
-    expect(legs.length).toBe(4);
-    expectBalanced(legs);
+    // NO clearing contra — a deliverable PvP spot settles nostro-to-nostro.
+    for (const leg of legs) expect(leg.accountCode).not.toBe(FX_SETTLEMENT_CLEARING_ACCOUNT);
+    // Every leg is a cash (nostro, ACC-1200-*) leg, one per settled currency.
+    for (const leg of legs) expect(leg.accountCode.startsWith("ACC-1200-")).toBe(true);
+    expect(legs.length).toBe(2);
+    expectFunctionalBalanced(legs, { USD: 18.5 });
   });
 
-  test("the settlement clearing account carries one leg per settled currency", () => {
-    const legs = postFxSettlementLegs({
+  test("a SEQUENTIAL swap leg (near/far) DOES use the clearing account (reserved for inter-leg windows)", () => {
+    // A swap near-leg settles BEFORE the far leg — a genuine inter-leg PvP window —
+    // so it bridges via the FX settlement clearing account (ACC-2100-027), which
+    // carries one balancing contra per settled currency and empties when the far
+    // leg lands. (Spot does NOT; only sequential legs do.)
+    const near = postFxSwapNearLegLegs({
       ...COMMON,
       boughtCurrency: "USD",
       boughtBookedAmount: "1000000.00",
@@ -139,14 +208,14 @@ describe("PR-FX-SETTLE-V2 — P&L-neutral settlement (IAS 21 §23; D-FX-PNL-FCY-
       soldBookedAmount: "18500000.00",
       soldSettledAmount: "18500000.00",
     });
-    const clearingLegs = legs.filter((l) => l.accountCode === FX_SETTLEMENT_CLEARING_ACCOUNT);
+    const clearingLegs = near.filter((l) => l.accountCode === FX_SETTLEMENT_CLEARING_ACCOUNT);
     const clearingCurrencies = new Set(clearingLegs.map((l) => l.amount.currency));
     expect(clearingCurrencies).toEqual(new Set(["USD", "ZAR"]));
     // The bought (received) leg credits clearing (Dr cash); the sold (paid) leg debits it.
-    const usd = clearingLegs.find((l) => l.amount.currency === "USD");
-    const zar = clearingLegs.find((l) => l.amount.currency === "ZAR");
-    expect(usd?.creditDebit).toBe("credit");
-    expect(zar?.creditDebit).toBe("debit");
+    expect(clearingLegs.find((l) => l.amount.currency === "USD")?.creditDebit).toBe("credit");
+    expect(clearingLegs.find((l) => l.amount.currency === "ZAR")?.creditDebit).toBe("debit");
+    // A sequential-clearing leg DOES balance natively per currency (cash vs clearing).
+    expectBalanced(near);
   });
 });
 
@@ -167,7 +236,16 @@ describe("PR-FX-CONVERT-V2 — FCY→ZAR conversion / realisation (D-FX-PNL-FCY-
       // +3,050,000) is reclassified into realised — total P&L unchanged.
       accumulatedUnrealised: "3050000.00",
     });
-    expectBalanced(legs);
+    // Balances in the FUNCTIONAL currency (the FCY nostro leg is in USD at face;
+    // its ZAR value is the cost basis). It does NOT balance natively (USD vs ZAR).
+    expectConversionFunctionalBalanced(legs, "USD", "129950000.00");
+    // Item 3 fix: the FCY nostro (ACC-1200-002, USD-designated) is credited in USD
+    // at the FCY FACE amount — NOT a ZAR amount (no cross-currency contamination).
+    const fcyNostro = legs.find((l) => l.accountCode === "ACC-1200-002");
+    expect(fcyNostro).toBeDefined();
+    expect(fcyNostro?.amount.currency).toBe("USD");
+    expect(fcyNostro?.amount.amount).toBe("7000000.00");
+    expect(fcyNostro?.creditDebit).toBe("credit");
     // Realised P&L (ACC-2100-006) net = realisation (+3.05m) + reclassified
     // unrealised (+3.05m) = +6.1m credit; the unrealised account is reversed by 3.05m.
     const realised = legs.filter((l) => l.accountCode === FX_REALISED_PNL_ACCOUNT);
@@ -190,7 +268,7 @@ describe("PR-FX-CONVERT-V2 — FCY→ZAR conversion / realisation (D-FX-PNL-FCY-
       zarCostBasis: "129950000.00",
       accumulatedUnrealised: "-2950000.00",
     });
-    expectBalanced(legs);
+    expectConversionFunctionalBalanced(legs, "USD", "129950000.00");
   });
 
   test("no legs when the converted amount is zero", () => {

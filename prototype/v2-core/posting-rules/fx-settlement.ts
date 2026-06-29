@@ -111,7 +111,7 @@ export const FX_UNREALISED_PNL_ACCOUNT = "ACC-2100-005";
 export const FX_SETTLEMENT_CLEARING_ACCOUNT = "ACC-2100-027";
 
 // ---------------------------------------------------------------------------
-// PR-FX-SETTLE-V2 (#5) — Settlement (spot & physical forward). IAS 21 §23.
+// PR-FX-SETTLE-V2 (#5) — Settlement (spot & physical forward). IAS 21 §21, §23.
 // P&L-NEUTRAL TREATMENT (D-FX-PNL-FCY-EXPOSURE-REVALUATION, REFINES
 // D-FX-TRADE-DATE-FVTPL-OBS, settlement side).
 //
@@ -131,18 +131,34 @@ export const FX_SETTLEMENT_CLEARING_ACCOUNT = "ACC-2100-027";
 // There is therefore NO on-balance-sheet FX trading receivable/payable for
 // settlement to extinguish — settlement NEVER touches that block.
 //
-// THE P&L-NEUTRAL SETTLEMENT ENTRY. At settlement the settled cash is recognised
-// against the FX SETTLEMENT CLEARING account (ACC-2100-027) — NOT realised P&L:
+// THE SETTLEMENT ENTRY — NOSTRO-TO-NOSTRO (PvP), no clearing contra.
+// -----------------------------------------------------------------
+// A DELIVERABLE spot settles PAYMENT-VS-PAYMENT: both legs settle on the SAME
+// value date, so there is NO inter-leg timing window to bridge and the settled
+// cash is recognised DIRECTLY in the nostro for each currency — NOT against a
+// standing clearing contra (D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1; Nadia's MEDIUM
+// finding finding:nadia:fx-settlement-clearing-account-standing-balance:2026-06-29):
 //
-//   Dr Cash (bought ccy) @ settled amount   ;  Cr FX Settlement Clearing (bought ccy)
-//   Cr Cash (sold ccy)   @ settled amount   ;  Dr FX Settlement Clearing (sold ccy)
+//   Dr Cash (bought ccy) @ settled amount    (the FCY cash received)
+//   Cr Cash (sold ccy)   @ settled amount     (the FCY cash paid)
 //
-// Each cash movement balances IN ITS OWN CURRENCY against the clearing leg — no
-// same-currency gross-up, no P&L footprint, and the receivable/payable block is
-// untouched. The clearing account carries the in-flight FX-settlement position the
-// cash legs convert (the FCY cash is then carried at its ZAR cost basis on the
-// cash FIL instance + revalued daily exactly like the open contract). The OBS
-// trade-date commitment is released separately (PR-FX-OBS-RELEASE-V2).
+// The two cash movements do NOT balance in NATIVE minor units (USD cents ≠ ZAR
+// cents — incommensurable; Principle 5); they balance in the FUNCTIONAL currency
+// (ZAR-equivalent at the settlement-date spot, IAS 21 §21) — exactly the basis the
+// trial-balance in-balance invariant is now asserted on (gl-currency-dimension-
+// integrity; computeTrialBalanceV2 functional-currency balancing). The FX exposure
+// then lives PURELY as the nostro cash (IAS 21 §23 monetary items, revalued daily),
+// with NO sign-flipped duplicate sitting in a clearing account. The OBS trade-date
+// commitment is released separately (PR-FX-OBS-RELEASE-V2).
+//
+// WHEN THE CLEARING ACCOUNT (ACC-2100-027) IS STILL USED. It is RESERVED for a
+// GENUINELY SEQUENTIAL-leg settlement — a real inter-leg PvP window where one leg
+// settles before the other (an FX SWAP near/far leg, or a non-PvP correspondent
+// gap). There the clearing account legitimately carries the in-flight position
+// BETWEEN the two settlement dates and EMPTIES when the second leg lands. A
+// movement selects this via `settlementMode: "sequential-clearing"`; a PvP spot
+// movement uses `"pvp"` (the default) and recognises cash only. The account is NOT
+// deleted — it is reserved for the sequential case (Item 2 of the brief).
 //
 // `bookedAmount` is the settlement-date §23 retranslation PRECONDITION operand
 // (F3): the settlement leg recognises cash at the SETTLED amount, and for a
@@ -150,8 +166,8 @@ export const FX_SETTLEMENT_CLEARING_ACCOUNT = "ACC-2100-027";
 // same currency. A same-currency booked≠settled difference is an IAS 21 §28/§29
 // exchange difference this P&L-neutral rule CANNOT represent (it would net to zero
 // and be silently dropped), so the rule FAILS CLOSED on it rather than absorbing it
-// (Charter cmd 2). With settled == booked the per-currency entry closes at zero
-// with NO realised P&L.
+// (Charter cmd 2). With settled == booked the cash leg recognises the settled
+// amount with NO realised P&L.
 // ---------------------------------------------------------------------------
 
 export interface FxSettlementInput {
@@ -234,6 +250,21 @@ export interface SettlementMovementInput {
   readonly bookedAmount: string;
   /** `receive` recognises bought-leg cash (Dr cash); `pay` recognises sold-leg cash (Cr cash). */
   readonly side: "receive" | "pay";
+  /**
+   * Settlement topology (D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1):
+   *   - "pvp" (DEFAULT): payment-vs-payment, both legs settle on the SAME value
+   *     date. Recognise the settled cash DIRECTLY in the nostro — NO clearing
+   *     contra. The trade's two movements (receive bought-ccy / pay sold-ccy)
+   *     balance in the FUNCTIONAL currency (IAS 21 §21), never natively. This is
+   *     the deliverable-spot path; the FX exposure lives purely as the nostro cash.
+   *   - "sequential-clearing": a GENUINELY sequential settlement with a real
+   *     inter-leg timing window (FX swap near/far, or a non-PvP correspondent gap)
+   *     where one leg settles before the other. Recognise the settled cash AND the
+   *     equal-and-opposite FX SETTLEMENT CLEARING contra (ACC-2100-027) in the SAME
+   *     currency; the clearing account carries the in-flight position BETWEEN the
+   *     two settlement dates and EMPTIES when the second leg lands.
+   */
+  readonly settlementMode?: "pvp" | "sequential-clearing";
 }
 
 type SettlementLegBase = Omit<
@@ -242,21 +273,30 @@ type SettlementLegBase = Omit<
 >;
 
 /**
- * Produce the TWO GL legs for ONE P&L-NEUTRAL settlement movement: the cash
- * recognition at the SETTLED amount and the equal-and-opposite FX SETTLEMENT
- * CLEARING leg in the SAME currency. NO realised P&L is struck and NO
- * on-balance-sheet receivable/payable is touched — trade-date is OBS-only
- * (PR-FX-001-V2) and settlement is a change of FORM, not a realisation
- * (D-FX-PNL-FCY-EXPOSURE-REVALUATION).
+ * Produce the GL leg(s) for ONE P&L-NEUTRAL settlement movement.
  *
+ * PvP (`settlementMode: "pvp"`, the DEFAULT) — a single nostro cash leg:
+ *   receive → Dr Cash[ccy] (settled)
+ *   pay     → Cr Cash[ccy] (settled)
+ * The movement does NOT self-balance natively; the trade's two movements
+ * (receive bought-ccy / pay sold-ccy) balance in the FUNCTIONAL currency at the
+ * settlement spot (IAS 21 §21) — never on a native cross-currency minor sum
+ * (USD cents ≠ ZAR cents; Principle 5). NO clearing contra is posted, so the FX
+ * exposure lives purely as the nostro cash (no sign-flipped duplicate).
+ *
+ * Sequential (`settlementMode: "sequential-clearing"`) — the cash leg PLUS the
+ * equal-and-opposite FX SETTLEMENT CLEARING contra (ACC-2100-027) in the SAME
+ * currency, for a genuine inter-leg PvP window (swap near/far, non-PvP gap):
  *   receive → Dr Cash[ccy] (settled) ; Cr FX Settlement Clearing[ccy] (settled)
  *   pay     → Cr Cash[ccy] (settled) ; Dr FX Settlement Clearing[ccy] (settled)
+ * The clearing account carries the in-flight position BETWEEN the two settlement
+ * dates and empties when the second leg lands.
  *
- * The entry closes at zero in the movement's own currency (no same-currency
- * gross-up, no P&L footprint). The clearing account carries the in-flight
- * FX-settlement position the cash legs convert; the FCY cash is then carried at its
- * ZAR cost basis on the cash FIL instance and revalued daily exactly like the open
- * contract. A zero settled amount yields no legs (nothing to recognise).
+ * In BOTH modes NO realised P&L is struck and NO on-balance-sheet receivable/
+ * payable is touched — trade-date is OBS-only (PR-FX-001-V2) and settlement is a
+ * change of FORM, not a realisation (D-FX-PNL-FCY-EXPOSURE-REVALUATION). The FCY
+ * cash is carried at its ZAR cost basis on the cash FIL instance and revalued daily
+ * exactly like the open contract. A zero settled amount yields no legs.
  */
 export function postSettlementMovementLegs(
   base: SettlementLegBase,
@@ -281,11 +321,6 @@ export function postSettlementMovementLegs(
     );
   }
   const cashSide: "debit" | "credit" = movement.side === "receive" ? "debit" : "credit";
-  // The clearing leg is the OPPOSITE side of the cash leg, in the SAME currency,
-  // for the SAME amount — so the movement balances in its own currency with no
-  // receivable/payable and NO realised P&L (settlement is a change of form, not a
-  // realisation; D-FX-PNL-FCY-EXPOSURE-REVALUATION).
-  const clearingSide: "debit" | "credit" = cashSide === "debit" ? "credit" : "debit";
   const cashLeg: FxPostingLeg = {
     ...base,
     creditDebit: cashSide,
@@ -296,17 +331,32 @@ export function postSettlementMovementLegs(
         ? `FX Settlement cash received ${movement.currency}`
         : `FX Settlement cash paid ${movement.currency}`,
   };
+  // PvP (default): recognise cash ONLY — the trade's two movements balance in the
+  // FUNCTIONAL currency (IAS 21 §21), so no clearing contra is needed and the FX
+  // exposure lives purely as the nostro cash (Nadia's MEDIUM finding remediation).
+  const mode = movement.settlementMode ?? "pvp";
+  if (mode === "pvp") return [cashLeg];
+
+  // Sequential-clearing: a genuine inter-leg PvP window. The clearing leg is the
+  // OPPOSITE side of the cash leg, in the SAME currency, for the SAME amount — so
+  // the in-flight position is carried in the clearing account BETWEEN the two
+  // settlement dates and empties when the second leg lands. NO realised P&L
+  // (settlement is a change of form; D-FX-PNL-FCY-EXPOSURE-REVALUATION).
+  const clearingSide: "debit" | "credit" = cashSide === "debit" ? "credit" : "debit";
   const clearingLeg: FxPostingLeg = {
     ...base,
     creditDebit: clearingSide,
     accountCode: FX_SETTLEMENT_CLEARING_ACCOUNT,
     amount: money(movement.currency, movement.settledAmount),
-    description: `FX Settlement clearing ${movement.currency} (P&L-neutral, ${movement.side === "receive" ? "bought" : "sold"} leg)`,
+    description: `FX Settlement clearing ${movement.currency} (sequential-leg PvP bridge, ${movement.side === "receive" ? "bought" : "sold"} leg)`,
   };
   return [cashLeg, clearingLeg];
 }
 
-export function postFxSettlementLegs(input: FxSettlementInput): FxPostingLeg[] {
+export function postFxSettlementLegs(
+  input: FxSettlementInput,
+  settlementMode: "pvp" | "sequential-clearing" = "pvp",
+): FxPostingLeg[] {
   const base = {
     postingDate: input.postingDate,
     tenantId: input.tenantId as FxPostingLeg["tenantId"],
@@ -319,22 +369,27 @@ export function postFxSettlementLegs(input: FxSettlementInput): FxPostingLeg[] {
   // the SAME per-movement primitive (`postSettlementMovementLegs`). Source, don't
   // duplicate (Engineering Charter cmd 4): one settlement math, so the two-leg FX
   // path and N single-asset `TradeSettlementExecuted` settlements net byte-identical
-  // per (account, currency) by construction. Each movement recognises cash at the
-  // settled amount and balances it with the FX settlement clearing leg in the SAME
-  // currency — NO realised P&L (settlement is a change of form); no on-balance-sheet
-  // receivable/payable is touched (trade-date is OBS-only).
+  // per (account, currency) by construction.
+  //
+  // A DELIVERABLE SPOT is PvP (default): each movement recognises cash directly in
+  // its nostro and the two movements balance in the FUNCTIONAL currency (IAS 21 §21)
+  // — NO clearing contra, so the clearing account is empty at settlement (Nadia's
+  // MEDIUM finding remediation). SWAP near/far legs settle sequentially and pass
+  // `"sequential-clearing"` so the clearing account bridges the inter-leg window.
   return [
     ...postSettlementMovementLegs(base, {
       currency: input.boughtCurrency,
       settledAmount: input.boughtSettledAmount,
       bookedAmount: input.boughtBookedAmount,
       side: "receive",
+      settlementMode,
     }),
     ...postSettlementMovementLegs(base, {
       currency: input.soldCurrency,
       settledAmount: input.soldSettledAmount,
       bookedAmount: input.soldBookedAmount,
       side: "pay",
+      settlementMode,
     }),
   ];
 }
@@ -411,10 +466,24 @@ export function postFxConversionLegs(input: FxConversionInput): FxPostingLeg[] {
   const reporting = input.reportingCurrency;
   const legs: FxPostingLeg[] = [];
 
-  // (a) Cash exchange: receive ZAR proceeds (Dr ZAR nostro), draw down the FCY cash
-  // sold at its ZAR COST BASIS (Cr FCY nostro, carried in ZAR cost), and recognise
-  // the difference as REALISED P&L. All three legs are in the reporting currency so
-  // the realisation result is the functional-currency figure directly.
+  // (a) Cash exchange. The ZAR nostro receives the ZAR proceeds; the FCY nostro is
+  // drawn down by the FCY face amount that physically leaves it; the difference
+  // (proceeds − ZAR cost basis of that FCY) is REALISED P&L.
+  //
+  // DESIGNATED-CURRENCY CORRECTNESS (D-ACCOUNT-DESIGNATED-CURRENCY-REBOOK; Kai's
+  // flag): the FCY nostro is designated in the FCY (e.g. ACC-1200-002 is USD-
+  // designated). It must therefore be credited in its OWN currency at the FCY FACE
+  // amount (`fcyAmount` `fcyCurrency`) — NOT a ZAR amount. The earlier code posted
+  // `money(reporting, zarCostBasis)` into the FCY nostro, contaminating a USD-
+  // designated account with a ZAR figure (the exact cross-currency-contamination
+  // class recon:account-designated-currency guards).
+  //
+  // The entry does NOT balance in NATIVE minor units (the ZAR legs vs the FCY leg
+  // are incommensurable; Principle 5) — it balances in the FUNCTIONAL currency
+  // (IAS 21 §21, §28): the FCY nostro's ZAR-equivalent IS its `zarCostBasis`, so
+  //   Dr ZAR proceeds  ==  Cr (FCY nostro @ ZAR cost basis) + realised P&L.
+  // That is precisely the functional-currency in-balance basis the trial balance
+  // now asserts on (D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1).
   legs.push({
     ...base,
     creditDebit: "debit",
@@ -426,8 +495,8 @@ export function postFxConversionLegs(input: FxConversionInput): FxPostingLeg[] {
     ...base,
     creditDebit: "credit",
     accountCode: nostroFor(input.fcyCurrency),
-    amount: money(reporting, input.zarCostBasis),
-    description: `FX Conversion ${input.fcyCurrency} cash drawn down at ZAR cost basis`,
+    amount: money(input.fcyCurrency, input.fcyAmount),
+    description: `FX Conversion ${input.fcyCurrency} cash drawn down (face ${input.fcyAmount} ${input.fcyCurrency}; ZAR cost basis ${input.zarCostBasis})`,
   });
   const realised = subtractDecimal(input.zarProceeds, input.zarCostBasis);
   if (!isZeroDecimal(realised)) {
@@ -550,16 +619,22 @@ export function postFxDerecognitionLegs(input: FxDerecognitionInput): FxPostingL
 // ---------------------------------------------------------------------------
 
 export function postFxSwapNearLegLegs(input: FxSettlementInput): FxPostingLeg[] {
+  // A swap near-leg settles on its OWN value date, BEFORE the far leg — a genuine
+  // inter-leg PvP window — so it uses the FX settlement clearing account to carry
+  // the in-flight position until the far leg lands (D-GL-FUNCTIONAL-CURRENCY-
+  // BALANCING-V1, Item 2: the clearing account is reserved for sequential legs).
   return rebrand(
-    postFxSettlementLegs(input),
+    postFxSettlementLegs(input, "sequential-clearing"),
     "PR-FX-SWAP-NEAR-V2",
     "IAS 21 §23 — swap near-leg settlement",
   );
 }
 
 export function postFxSwapFarLegLegs(input: FxSettlementInput): FxPostingLeg[] {
+  // The far leg closes the composite; it too settles via the clearing bridge so the
+  // near+far pair empties the clearing account when both legs have landed.
   return rebrand(
-    postFxSettlementLegs(input),
+    postFxSettlementLegs(input, "sequential-clearing"),
     "PR-FX-SWAP-FAR-V2",
     "IAS 21 §23 — swap far-leg settlement; closes composite",
   );

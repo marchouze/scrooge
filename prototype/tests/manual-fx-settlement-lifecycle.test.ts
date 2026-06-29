@@ -18,19 +18,17 @@
 //      carries ZERO from settlement — a deliverable spot settles at the contracted
 //      rate (settled == booked per currency), so no realised P&L arises at
 //      settlement; realisation is the LATER FCY→ZAR conversion (PR-FX-CONVERT-V2).
-//   3. CLEARING-ACCOUNT INVARIANT (the sharp question Marc asked). Settlement posts
-//      `Cash[ccy] ↔ FX-Settlement-Clearing[ccy]` per currency. So after settlement
-//      the clearing account carries — PER CURRENCY — exactly the negated settled
-//      cash: a CREDIT in the bought currency, a DEBIT in the sold currency. It does
-//      NOT square to zero at settlement; that two-currency in-flight position is the
-//      legitimate, fully-attributable balance the clearing account exists to hold,
-//      and would square only on the FCY→ZAR conversion (not wired on the spot path).
-//      The clearing balance MUST equal exactly the settled-cash legs — no silent
-//      residual (Charter cmd 2).
+//   3. CLEARING-ACCOUNT INVARIANT — REMEDIATED (D-GL-FUNCTIONAL-CURRENCY-BALANCING-
+//      V1; Nadia's MEDIUM finding). A deliverable spot settles PvP nostro-to-nostro
+//      (Dr Cash[bought] / Cr Cash[sold]) — NO clearing contra. So after settlement
+//      the FX settlement clearing account (ACC-2100-027) is EMPTY; the FX exposure
+//      lives purely as the nostro cash (IAS 21 §23 monetary items). The clearing
+//      account is reserved for genuinely sequential-leg settlement (swap near/far).
 //   4. Derecognition — the FX instrument is terminated (settled) and reaches
 //      register stage "settled"; the trade-date OBS commitment (ACC-9100-*) is
 //      released (state-driven). The position is CLOSED, not left dangling.
-//   5. GL trial balance stays BALANCED per currency across the whole cycle.
+//   5. GL trial balance stays BALANCED in the FUNCTIONAL currency (IAS 21 §21)
+//      across the whole cycle (re-based from per-currency-native).
 //   6. Provenance partition — the settlement/cash/termination events carry the SAME
 //      simulated / operator:manual-desk-booking provenance as the booking, so they
 //      FOLD in the SAME partition under the operating-book lens (the cancel-reversal
@@ -45,6 +43,7 @@
 import { describe, expect, test } from "bun:test";
 
 import { bookFxTrade, settleManualFxTrade } from "../dashboard/trade-book-view";
+import type { RateMap } from "../platform/accounting/fx-rate-projection";
 import { eventStore } from "../platform/composition";
 import { makeClientOnboardingProspectRegistered } from "../platform/event-store/event-types/client-onboarding";
 import { makeReportingTreatmentDeclared } from "../platform/event-store/event-types/reporting-treatments";
@@ -52,6 +51,7 @@ import { productionTag, simulatedTag } from "../platform/event-store/provenance"
 import {
   computeGlEntriesV2,
   computeTrialBalanceV2,
+  trialBalanceFunctionalCurrencyBalance,
 } from "../platform/projections/gl-projection-v2";
 import { citationRefSchema } from "../v2-core/fil-core/primitives";
 import type { FilInstrumentTerminatedPayload } from "../v2-core/fil-instances/events";
@@ -61,6 +61,7 @@ import { FX_TREATMENT_MODULES } from "../v2-core/reporting-treatments/fx-modules
 const ENTITY = "LE-ZA-HOZ-BANK";
 const FX_CLEARING = "ACC-2100-027";
 const FX_REALISED_PNL = "ACC-2100-006";
+const USD_NOSTRO = "ACC-1200-002";
 
 // Seed the canonical FX treatment modules (the SAME constants the production
 // anchor seed + the fx-v2-sim-oracle write — NOT a forked definition) so the FX
@@ -234,7 +235,7 @@ describe("manual FX settlement lifecycle — book → settle → derecognition (
     expect(term.terminalStage).toBe("settled");
   });
 
-  test("CLEARING-ACCOUNT INVARIANT: ACC-2100-027 carries the settled-cash position per currency (bought CREDIT, sold DEBIT) — NOT zero, NO residual", async () => {
+  test("CLEARING-ACCOUNT REMEDIATED: ACC-2100-027 is EMPTY at settlement; the FX exposure lives as the nostro cash", async () => {
     seedZaBankCounterparty();
     const tradeId = await bookSpecimen();
     settleManualFxTrade({ tradeId, asOf: SPEC.settleAsOf });
@@ -244,35 +245,23 @@ describe("manual FX settlement lifecycle — book → settle → derecognition (
       (e) => e.sourceEventId?.endsWith(`:${tradeId}`) ?? false,
     );
 
-    // Net the clearing account per currency: debit positive, credit negative.
-    const clearingByCcy = new Map<string, number>();
-    for (const e of entries) {
-      if (e.accountId !== FX_CLEARING) continue;
-      const signed = e.debitCredit === "debit" ? Number(e.amount.amount) : -Number(e.amount.amount);
-      clearingByCcy.set(e.currency, (clearingByCcy.get(e.currency) ?? 0) + signed);
-    }
+    // REMEDIATION (D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1): a deliverable spot settles
+    //   bought (USD) leg → Dr Cash[USD]   (no clearing contra)
+    //   sold   (ZAR) leg → Cr Cash[ZAR]   (no clearing contra)
+    // so the clearing account ACC-2100-027 carries NO legs — empty at settlement.
+    const clearingLegs = entries.filter((e) => e.accountId === FX_CLEARING);
+    expect(clearingLegs.length).toBe(0);
 
-    // INVARIANT (the accounting truth, confirmed against PR-FX-SETTLE-V2):
-    //   bought (USD) leg → Dr Cash[USD] / Cr Clearing[USD] ⇒ clearing USD = −settled (CREDIT)
-    //   sold   (ZAR) leg → Cr Cash[ZAR] / Dr Clearing[ZAR] ⇒ clearing ZAR = +settled (DEBIT)
-    // The clearing account is NOT zero — it carries the legitimate in-flight position.
-    expect(clearingByCcy.get("USD")).toBeCloseTo(-SPEC.notionalUsd, 2); // credit
-    expect(clearingByCcy.get("ZAR")).toBeCloseTo(SPEC.expectedSellZar, 2); // debit
-
-    // NO silent residual: the clearing balance equals EXACTLY the settled-cash legs
-    // (every clearing leg is matched by an equal cash leg in the same currency).
+    // The FX exposure lives PURELY as the nostro cash: Dr USD nostro +1m / Cr ZAR
+    // nostro −18.5m (no sign-flipped clearing duplicate to accumulate unbounded).
     const cashByCcy = new Map<string, number>();
     for (const e of entries) {
-      // Nostro cash accounts for settlement legs (ACC-1200-00X).
       if (!e.accountId.startsWith("ACC-1200-")) continue;
       const signed = e.debitCredit === "debit" ? Number(e.amount.amount) : -Number(e.amount.amount);
       cashByCcy.set(e.currency, (cashByCcy.get(e.currency) ?? 0) + signed);
     }
-    // Cash + clearing net to zero per currency (the P&L-neutral self-balancing pair).
-    for (const ccy of ["USD", "ZAR"]) {
-      const net = (cashByCcy.get(ccy) ?? 0) + (clearingByCcy.get(ccy) ?? 0);
-      expect(net).toBeCloseTo(0, 2);
-    }
+    expect(cashByCcy.get("USD")).toBeCloseTo(SPEC.notionalUsd, 2); // Dr USD nostro
+    expect(cashByCcy.get("ZAR")).toBeCloseTo(-SPEC.expectedSellZar, 2); // Cr ZAR nostro
   });
 
   test("settlement is P&L-NEUTRAL: ACC-2100-006 (realised P&L) carries ZERO from this trade", async () => {
@@ -291,15 +280,20 @@ describe("manual FX settlement lifecycle — book → settle → derecognition (
     expect(realisedNet).toBeCloseTo(0, 2); // settlement strikes NO realised P&L
   });
 
-  test("GL trial balance stays BALANCED per currency across the whole cycle", async () => {
+  test("GL trial balance stays BALANCED in the FUNCTIONAL currency (IAS 21 §21) across the whole cycle", async () => {
     seedZaBankCounterparty();
     const tradeId = await bookSpecimen();
     settleManualFxTrade({ tradeId, asOf: SPEC.settleAsOf });
 
+    // IAS 21 §21: the books balance in the FUNCTIONAL currency (ZAR), NOT per-currency
+    // native (a deliverable spot is Dr USD-cash / Cr ZAR-cash — incommensurable in
+    // native minor units; Principle 5). Re-based per D-GL-FUNCTIONAL-CURRENCY-
+    // BALANCING-V1. The rate is event-sourced from the settlement-of-record.
     const tb = computeTrialBalanceV2({ eventStore, entity: ENTITY, ...WINDOW });
-    for (const t of tb.perCurrencyTotals) {
-      expect(t.debitMinor).toBe(t.creditMinor);
-    }
+    const fb = trialBalanceFunctionalCurrencyBalance(tb, rateMapFromSettlement(tradeId));
+    expect(fb.unconvertibleCurrencies).toEqual([]);
+    expect(fb.functionalDebitMinor).toBe(fb.functionalCreditMinor);
+    expect(fb.balanced).toBe(true);
   });
 
   test("PROVENANCE PARTITION: settlement folds under operating-book, EXCLUDED from production-only", async () => {
@@ -307,9 +301,10 @@ describe("manual FX settlement lifecycle — book → settle → derecognition (
     const tradeId = await bookSpecimen();
     settleManualFxTrade({ tradeId, asOf: SPEC.settleAsOf });
 
-    // Operating-book lens (default) — the settled-cash + clearing legs are PRESENT.
+    // Operating-book lens (default) — the settled-cash nostro legs are PRESENT (the
+    // settled cash now lives in the nostro, not a clearing contra).
     const opBook = computeGlEntriesV2({ eventStore, entity: ENTITY, ...WINDOW }).filter(
-      (e) => (e.sourceEventId?.endsWith(`:${tradeId}`) ?? false) && e.accountId === FX_CLEARING,
+      (e) => (e.sourceEventId?.endsWith(`:${tradeId}`) ?? false) && e.accountId === USD_NOSTRO,
     );
     expect(opBook.length).toBeGreaterThan(0);
 
@@ -321,8 +316,31 @@ describe("manual FX settlement lifecycle — book → settle → derecognition (
       ...WINDOW,
       filter: { mode: "production-only" },
     }).filter(
-      (e) => (e.sourceEventId?.endsWith(`:${tradeId}`) ?? false) && e.accountId === FX_CLEARING,
+      (e) => (e.sourceEventId?.endsWith(`:${tradeId}`) ?? false) && e.accountId === USD_NOSTRO,
     );
     expect(prod.length).toBe(0);
   });
 });
+
+/**
+ * Build a USD↔ZAR RateMap from the EVENT-SOURCED settlement-of-record (the trade's
+ * two `TradeSettlementExecuted` movements). The implied transaction-date spot is
+ * |ZAR settled| / |USD settled| (IAS 21 §21) — derived from emitted events, never
+ * hardcoded. The functional-currency translation rate the in-balance invariant uses.
+ */
+function rateMapFromSettlement(tradeId: string): RateMap {
+  let usd = 0;
+  let zar = 0;
+  for (const e of eventStore.replay({ type: "TradeSettlementExecuted" })) {
+    const p = e.payload as TradeSettlementExecutedPayload;
+    if (!p.tradeInstance.endsWith(`:${tradeId}`)) continue;
+    if (p.movement.currency === "USD") usd = Math.abs(Number(p.movement.amount));
+    if (p.movement.currency === "ZAR") zar = Math.abs(Number(p.movement.amount));
+  }
+  if (usd === 0) throw new Error("no USD settlement movement to derive the rate from");
+  const usdZar = zar / usd;
+  const map: RateMap = new Map();
+  map.set("USD", new Map([["ZAR", usdZar]]));
+  map.set("ZAR", new Map([["USD", 1 / usdZar]]));
+  return map;
+}

@@ -763,6 +763,31 @@ function expectBalancedPerCurrency(
   }
 }
 
+/**
+ * Assert the legs balance in the FUNCTIONAL currency (ZAR) — IAS 21 §21. A cross-
+ * currency leg set (e.g. a deliverable spot: Dr USD-cash / Cr ZAR-cash) does NOT
+ * balance in native minor units but balances once each currency's net is translated
+ * to ZAR at `zarPer` (ZAR per 1 unit of that currency; ZAR is the identity). This
+ * is the basis the trial-balance in-balance invariant is now asserted on
+ * (D-GL-FUNCTIONAL-CURRENCY-BALANCING-V1). The clearing contra is GONE for a PvP
+ * spot, so native per-currency balancing no longer holds — functional does.
+ */
+function expectFunctionalBalanced(
+  legs: readonly {
+    amount: { amount: string; currency: string };
+    creditDebit: "debit" | "credit";
+  }[],
+  zarPer: Readonly<Record<string, number>>,
+): void {
+  let zarNet = 0n; // Dr +, Cr −, in ZAR minor units
+  for (const [cur, net] of perCurrencyBalance(legs)) {
+    const rate = cur === "ZAR" ? 1 : zarPer[cur];
+    if (rate === undefined) throw new Error(`no functional rate supplied for ${cur}`);
+    zarNet += BigInt(Math.round(Number(net) * rate));
+  }
+  expect(`ZAR-net=${zarNet}`).toBe("ZAR-net=0");
+}
+
 function settlementConfirmed(
   id: string,
   legRole: "spot" | "swap-near" | "swap-far",
@@ -850,7 +875,7 @@ function terminatedWith(
 }
 
 describe("WS-FIL-FX-SETTLEMENT-EVENTS — the five rules fire at fold time + balance", () => {
-  test("PR-FX-SETTLE-V2: P&L-neutral spot settlement fires (cash vs clearing) + balances per currency", () => {
+  test("PR-FX-SETTLE-V2: P&L-neutral PvP spot settlement fires nostro-to-nostro (NO clearing) + balances in the FUNCTIONAL currency", () => {
     const store = new EventStore(":memory:");
     seedTreatmentModules(store);
     // Deliverable spot: the contractual notional is exchanged, so settled == booked
@@ -867,7 +892,12 @@ describe("WS-FIL-FX-SETTLEMENT-EVENTS — the five rules fire at fold time + bal
     const legs = fold.legs.filter((l) => l.postingRuleId === "PR-FX-SETTLE-V2");
     expect(legs.length).toBeGreaterThan(0);
     expect(fold.skipped.length).toBe(0);
-    expectBalancedPerCurrency(legs);
+    // PvP nostro-to-nostro: NO clearing contra leg (D-GL-FUNCTIONAL-CURRENCY-
+    // BALANCING-V1; Nadia's MEDIUM finding remediation).
+    expect(legs.some((l) => l.accountCode === "ACC-2100-027")).toBe(false);
+    // It does NOT balance per native currency (USD-cash Dr vs ZAR-cash Cr) — it
+    // balances in the FUNCTIONAL currency at the settlement spot (1m USD = 18.5m ZAR).
+    expectFunctionalBalanced(legs, { USD: 18.5 });
   });
 
   test("PR-FX-SWAP-NEAR-V2 + PR-FX-SWAP-FAR-V2: both swap legs fire + balance", () => {
