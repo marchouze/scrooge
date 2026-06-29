@@ -49,6 +49,7 @@ import { type RateMap, convertMinor } from "../accounting/fx-rate-projection";
 import type { TrialBalance } from "../accounting/period-close";
 import { isCapitalSourcedGlPosting } from "../accounting/posting-rules-v2/capital-fold";
 import { deriveCapitalInstanceLegs } from "../accounting/posting-rules-v2/capital-instance-fold";
+import { deriveFxCashRevalLegs } from "../accounting/posting-rules-v2/fx-cash-reval-fold";
 import { deriveFxConversionLegs } from "../accounting/posting-rules-v2/fx-conversion-fold";
 import { deriveFxInstanceLegs } from "../accounting/posting-rules-v2/fx-instance-fold";
 import { type Money, amountToMinorUnits } from "../core/decimal-money";
@@ -88,6 +89,11 @@ const FX_V2_POSTING_RULE_ID_SET: ReadonlySet<string> = new Set([
   // avoid double-counting (belt-and-suspenders; the conversion emits no
   // GlPostingEmitted today).
   "PR-FX-CONVERT-V2",
+  // PR-FX-CASH-REVAL-V2 (EOD-MTM settled-FCY-cash retranslation, IAS 21 §23/§28)
+  // folds IN MEMORY via deriveFxCashRevalLegs (D-GL-PER-ENTRY-FUNCTIONAL-BALANCE-V1)
+  // — exclude any materialised GlPostingEmitted to avoid double-counting (the reval
+  // emits no GlPostingEmitted today; belt-and-suspenders).
+  "PR-FX-CASH-REVAL-V2",
 ]);
 
 /** True iff a GlPostingEmitted leg was produced by an FX V2 posting rule. */
@@ -235,6 +241,36 @@ export function computeTrialBalanceV2Uncached(args: ComputeTrialBalanceV2Args): 
     periodEnd: args.periodEnd,
     filter: provenanceFilter,
   })) {
+    const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
+    const legMinor = Number(amountToMinorUnits(legMoney));
+    const key = `${leg.accountCode}|${leg.amount.currency}`;
+    const row = balances.get(key) ?? {
+      account: leg.accountCode,
+      currency: leg.amount.currency,
+      amount: 0,
+    };
+    row.amount += leg.creditDebit === "debit" ? legMinor : -legMinor;
+    balances.set(key, row);
+    uptoSequence += 1;
+  }
+
+  // EOD-MTM SETTLED-FCY-CASH REVALUATION (IAS 21 §23/§28) — retranslates the
+  // settled FCY cash monetary balances to the closing official mark, posting a
+  // BALANCED ZAR entry per currency (Dr/Cr FX-cash retranslation adjustment ↔
+  // unrealised FX P&L). This is the missing daily reval of the settled FCY cash
+  // that left the functional TB unbalanced at closing marks on a multi-trade book
+  // (#1617 gap). The entry is ZAR-balanced by construction, so the TB balances both
+  // PRE-MTM (settlement entries balance at settle rate) and POST-MTM (this reval
+  // entry balances in ZAR). Event-sourced marks only; a held FCY balance with no
+  // closing mark is surfaced (unmarkedCurrencies) and NOT revalued to zero
+  // (fail-closed). Same provenance lens + posting-date window as the FX folds.
+  // Authority: D-GL-PER-ENTRY-FUNCTIONAL-BALANCE-V1.
+  for (const leg of deriveFxCashRevalLegs({
+    eventStore: args.eventStore,
+    periodStart: args.periodStart,
+    periodEnd: args.periodEnd,
+    filter: provenanceFilter,
+  }).legs) {
     const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
     const legMinor = Number(amountToMinorUnits(legMoney));
     const key = `${leg.accountCode}|${leg.amount.currency}`;
@@ -655,6 +691,38 @@ export function computeGlEntriesV2Uncached(args: ComputeTrialBalanceV2Args): GlL
     conversionLegSeq += 1;
   }
 
+  // EOD-MTM SETTLED-FCY-CASH REVALUATION entries (IAS 21 §23/§28). One ledger entry
+  // per balanced-ZAR reval leg; the `eventId` reuses the per-currency reval
+  // sourceEventId with a stable suffix (the reval is currency-derived, not a single
+  // source event). Authority: D-GL-PER-ENTRY-FUNCTIONAL-BALANCE-V1.
+  let cashRevalLegSeq = 0;
+  for (const leg of deriveFxCashRevalLegs({
+    eventStore: args.eventStore,
+    periodStart: args.periodStart,
+    periodEnd: args.periodEnd,
+    filter: provenanceFilter,
+  }).legs) {
+    const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
+    const legMinor = Number(amountToMinorUnits(legMoney));
+    const coa = getCoaEntryV2(leg.accountCode);
+    entries.push({
+      eventId: `${leg.sourceEventId}::fx-cash-reval-${cashRevalLegSeq}`,
+      source: "GlPostingEmitted",
+      postedAt: leg.postingDate,
+      description: leg.description,
+      accountId: leg.accountCode,
+      accountName: coa.name,
+      accountCategory: coa.category,
+      debitCredit: leg.creditDebit,
+      amountMinor: legMinor,
+      amount: legMoney,
+      currency: leg.amount.currency,
+      ...(typeof leg.sourceEventId === "string" ? { sourceEventId: leg.sourceEventId } : {}),
+      ...(typeof leg.postingRuleId === "string" ? { postingRuleId: leg.postingRuleId } : {}),
+    });
+    cashRevalLegSeq += 1;
+  }
+
   // Capital entries — STATE-DRIVEN derivation from the FIL instance register
   // (`deriveCapitalInstanceLegs`), byte-equivalent to the prior raw-event fold.
   // Each derived leg (the Dr settlement-cash + Cr own-funds pair) is an
@@ -841,6 +909,27 @@ export function computeGlAccountsV2Uncached(args: ComputeTrialBalanceV2Args): Gl
     periodEnd: args.periodEnd,
     filter: provenanceFilter,
   })) {
+    const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
+    const legMinor = Number(amountToMinorUnits(legMoney));
+    accumulateAccountLeg(
+      byAccount,
+      leg.accountCode,
+      leg.creditDebit,
+      legMinor,
+      leg.amount.currency,
+    );
+  }
+
+  // EOD-MTM SETTLED-FCY-CASH REVALUATION accounts (IAS 21 §23/§28) — the balanced
+  // ZAR reval legs (Dr/Cr ACC-1200-099 ↔ ACC-2100-005), so the retranslation
+  // adjustment + unrealised P&L appear in the account-master view too.
+  // Authority: D-GL-PER-ENTRY-FUNCTIONAL-BALANCE-V1.
+  for (const leg of deriveFxCashRevalLegs({
+    eventStore: args.eventStore,
+    periodStart: args.periodStart,
+    periodEnd: args.periodEnd,
+    filter: provenanceFilter,
+  }).legs) {
     const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
     const legMinor = Number(amountToMinorUnits(legMoney));
     accumulateAccountLeg(

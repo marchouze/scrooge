@@ -39,6 +39,7 @@
 //   D-V1-REMOVAL-PHASE-4; IFRS-9; Principle 1; Principle 6.
 // Author: Atlas (Core banking platform architect, engineering).
 
+import { foldSettledFcyCashCostRates } from "../platform/accounting/posting-rules-v2/fx-cash-reval-fold";
 import { fromMinorUnits, roundDecimal, toCanonicalString } from "../platform/core/decimal-engine";
 import type { EventStore } from "../platform/event-store/store";
 import { type MarketDataStore, lookupQuoteWithInverse } from "../platform/market-data/store";
@@ -242,20 +243,40 @@ export interface GlView {
 
 const FUNCTIONAL_CURRENCY = "ZAR";
 
+/** Settled-cash nostro accounts whose FCY balance is a §23 monetary item carried
+ *  at SETTLE-rate COST BASIS — the EOD-MTM reval (ACC-1200-099) carries it to the
+ *  closing mark, so the row is shown at cost and the reval-asset holds the delta
+ *  (no double-count). All other FCY rows keep the latest-spot translation. */
+const NOSTRO_ACCOUNT_PREFIX = "ACC-1200-";
+
 /**
- * Translate a NATIVE minor-unit amount to ZAR minor units at the latest PRODUCTION
- * spot (the same mark set V2 valuation/risk read). ZAR is the identity. Returns
- * `null` when no production rate is available (honest — never a silent 0). The
- * rate is a plain number and the locals carry no money-name token, so this follows
- * the established V2 reporting-conversion convention (eod-cohort-pnl-v2) and the
- * no-float-money gate does not flag it.
+ * Translate a NATIVE minor-unit amount to ZAR minor units. ZAR is the identity.
+ *
+ * For a SETTLED-FCY-CASH NOSTRO row (`costRate` supplied), the FCY balance is a
+ * foreign-currency MONETARY item carried at its SETTLE-rate COST BASIS (IAS 21
+ * §23): translate at `costRate`. The EOD-MTM reval (PR-FX-CASH-REVAL-V2) posts the
+ * carrying-value adjustment from cost basis to the closing mark into ACC-1200-099,
+ * so showing the nostro at cost + the reval-asset at the delta gives the §23
+ * closing carrying value WITHOUT double-counting — and makes every entry (the
+ * settlement entry @ settle rate, the reval entry in ZAR) balance per-entry in ZAR.
+ *
+ * For all other FCY rows (`costRate` undefined), translate at the latest PRODUCTION
+ * spot (the same mark set V2 valuation/risk read). Returns `null` when no rate is
+ * available (honest — never a silent 0). Rates are plain numbers with no money-name
+ * token (established V2 reporting-conversion convention; the no-float-money gate
+ * does not flag it).
  */
 function toZarEquivMinor(
   nativeNet: number,
   currency: string,
   marketDataStore: MarketDataStore,
+  costRate?: number,
 ): number | null {
   if (currency === FUNCTIONAL_CURRENCY) return nativeNet;
+  if (costRate !== undefined) {
+    if (costRate <= 0) return null;
+    return Math.round(nativeNet * costRate);
+  }
   const quote = lookupQuoteWithInverse(marketDataStore, `${currency}/${FUNCTIONAL_CURRENCY}`, {
     provenance: "production",
   });
@@ -307,6 +328,20 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
     metaByAccount.set(a.accountId, { name: a.name, category: a.category });
   }
 
+  // SETTLE-rate COST-BASIS rates for settled FCY cash (IAS 21 §23 monetary item).
+  // The FCY nostro rows are carried at their cost basis; the EOD-MTM reval
+  // (ACC-1200-099) holds the adjustment to the closing mark — so cost + reval-asset
+  // = the §23 closing carrying value WITHOUT double-counting, and every entry
+  // (settlement @ settle rate, reval @ ZAR) balances per-entry in ZAR. The reval
+  // contribution is already folded into `tb` (computeTrialBalanceV2).
+  // Authority: D-GL-PER-ENTRY-FUNCTIONAL-BALANCE-V1.
+  const cashCostRates = foldSettledFcyCashCostRates({
+    eventStore,
+    periodStart: V2_PERIOD_START,
+    periodEnd: V2_PERIOD_END,
+    filter,
+  });
+
   // ONE ROW PER (account, currency): emit the `computeTrialBalanceV2` per-(account,
   // currency) fold rows DIRECTLY — no per-account aggregation, no "multi" sentinel.
   // A shared account holding postings in two currencies (e.g. realised-FX-P&L USD +
@@ -350,8 +385,14 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
     const debitMinor = nativeNet >= 0 ? nativeNet : 0;
     const creditMinor = nativeNet < 0 ? -nativeNet : 0;
 
-    // ZAR-EQUIVALENT — translate this single currency leg (honest null on missing rate).
-    const zar = toZarEquivMinor(nativeNet, currency, marketDataStore);
+    // ZAR-EQUIVALENT — translate this single currency leg (honest null on missing
+    // rate). A settled-FCY-cash NOSTRO row is carried at its SETTLE-rate COST BASIS
+    // (IAS 21 §23 monetary item); the EOD-MTM reval-asset (ACC-1200-099) carries the
+    // adjustment to the closing mark. Every other FCY row uses the latest spot.
+    const costRate = accountId.startsWith(NOSTRO_ACCOUNT_PREFIX)
+      ? cashCostRates.get(currency)
+      : undefined;
+    const zar = toZarEquivMinor(nativeNet, currency, marketDataStore, costRate);
     const zarRateAvailable = zar !== null;
     const zarNet = zar ?? 0;
     const zarDebitMinor = zarNet >= 0 ? zarNet : 0;

@@ -445,6 +445,15 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // the fixture store is throwaway and never touches the canonical store.
   // Citation: D-V2-UI-VISIBILITY-REMEDIATION, Principle-5, P4-SECURITY-DESIGNED-IN.
   "platform/recon/gl-currency-dimension-integrity.ts",
+  // gl-per-entry-zar-balance — the PER-ENTRY functional-currency (ZAR) double-
+  // entry gate (D-GL-PER-ENTRY-FUNCTIONAL-BALANCE-V1, CEO 2026-06-29). Builds an
+  // in-memory throwaway EventStore + MarketDataStore(":memory:") fixture (the same
+  // multi-trade settled FX book the gl-view test uses) to drive buildGlView pre-
+  // and post-EOD-MTM and assert per-entry ZAR balance. Same carve-out rationale as
+  // the gl-currency-dimension gate above: no production access path — the fixture
+  // store is throwaway and never touches the canonical store.
+  // Citation: D-GL-PER-ENTRY-FUNCTIONAL-BALANCE-V1, IAS-21-§21, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/gl-per-entry-zar-balance.ts",
   // M2 Slice 2 — period-close handler unit tests. Co-located with the module
   // per the per-module test convention. Raw EventStore(":memory:") in tests is
   // a build-phase fixture, not a production access path. T-01 carve-out.

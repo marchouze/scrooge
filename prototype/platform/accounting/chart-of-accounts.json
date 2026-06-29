@@ -92,6 +92,13 @@
       "side": "debit"
     },
     {
+      "id": "ACC-1200-099",
+      "name": "FX Cash Monetary-Item Retranslation Adjustment (IAS 21 §23)",
+      "currency": "ZAR",
+      "category": "asset-cash",
+      "side": "debit"
+    },
+    {
       "id": "ACC-2100-001",
       "name": "FX Trading Receivable",
       "currency": "ZAR",

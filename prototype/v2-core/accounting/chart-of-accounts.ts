@@ -177,6 +177,24 @@ export const COA_ACCOUNTS: readonly CoaAccountEntry[] = [
   { id: "ACC-1200-006", name: "Nostro", category: "asset-cash", currency: "CHF", side: "debit" },
   { id: "ACC-1200-007", name: "Nostro", category: "asset-cash", currency: "AUD", side: "debit" },
 
+  // 1200-099 — FX Cash Monetary-Item Retranslation Adjustment (IAS 21 §23).
+  // D-GL-PER-ENTRY-FUNCTIONAL-BALANCE-V1 (CEO 2026-06-29): settled FCY cash is a
+  // foreign-currency MONETARY item — it must be retranslated to the functional
+  // currency (ZAR) at the CLOSING rate each reporting date (IAS 21 §23(a)), the
+  // exchange difference recognised in P&L (§28, FVTPL → ACC-2100-005). The PvP
+  // settlement carries the cash at its settle-date ZAR cost basis; THIS account
+  // holds the cumulative ZAR carrying-value adjustment from cost basis to the
+  // closing mark, sitting BESIDE the nostros it adjusts (asset-cash, ZAR-only —
+  // the adjustment is always expressed in the functional currency, so every
+  // posting is ZAR and the reval entry self-balances in ZAR by construction).
+  {
+    id: "ACC-1200-099",
+    name: "FX Cash Monetary-Item Retranslation Adjustment (IAS 21 §23)",
+    category: "asset-cash",
+    currency: "ZAR",
+    side: "debit",
+  },
+
   // 2100 — FX trading receivables / payables / P&L (ZAR + USD pool)
   {
     id: "ACC-2100-001",
