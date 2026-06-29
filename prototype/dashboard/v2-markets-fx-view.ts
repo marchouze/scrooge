@@ -39,6 +39,12 @@
 import type { EventStore } from "../platform/event-store/store";
 import { anchorFunctionalCurrency } from "../platform/identity/functional-currency";
 import type { MarketDataStore } from "../platform/market-data/store";
+import {
+  BA325_RESIDENCY_BUCKET_LABEL,
+  type Ba325ResidencyBucket,
+  type ResidencyOracle,
+  buildResidencyOracle,
+} from "../platform/markets/fx/counterparty-residency";
 import { computeDailyPnLV2 } from "../platform/product-control/daily-pnl-v2";
 import { computeBA320V2 } from "../platform/projections/ba320-fx-v2";
 import {
@@ -129,8 +135,35 @@ export interface V2FxBlotterRow {
   nettingSetId: string;
   /** Settlement / maturity date of the driving leg (ISO). */
   settlementDate: string;
+  /**
+   * Trade / deal date (ISO) — read DEFENSIVELY off `economicTerms.tradeDate`
+   * (Lane 1 / Kai adds this field born-V2). `null` for legacy instances that
+   * predate the field; the UI renders "—" rather than a fabricated date.
+   */
+  tradeDate: string | null;
   /** Current lifecycle stage. */
   stage: string;
+  /**
+   * Counterparty BA-325 reg-29(3) residency bucket
+   * (resident / non-resident / authorised-dealer / sarb) from the live
+   * counterparty-residency oracle. `null` when the counterparty is UNMAPPABLE —
+   * `residencyUnmapped` then flags it loudly (the trade would drop out of BA-325).
+   */
+  residencyBucket: Ba325ResidencyBucket | null;
+  /** Human-facing residency label (matches the BA-325 form row labels). */
+  residencyLabel: string | null;
+  /** Provenance lineage for the residency classification (Principle 2). */
+  residencyLineage: string | null;
+  /** TRUE when the counterparty could not be classified (fail-closed, loud). */
+  residencyUnmapped: boolean;
+  /** Why the residency classification failed (only when `residencyUnmapped`). */
+  residencyReason: string | null;
+  /** Counterparty legal/display name (counterparties are NOT name-free). */
+  counterpartyName: string | null;
+  /** Counterparty jurisdiction / domicile (tax-residency basis, else incorporation). */
+  counterpartyJurisdiction: string | null;
+  /** Counterparty business sector. */
+  counterpartySector: string | null;
 }
 
 export interface V2FxBlotterView extends PanelMeta {
@@ -138,10 +171,27 @@ export interface V2FxBlotterView extends PanelMeta {
   count: number;
 }
 
-function buildBlotter(store: Pick<EventStore, "replay">): V2FxBlotterView {
+/**
+ * Defensive read of `economicTerms.tradeDate` (Lane 1 / Kai adds this field
+ * born-V2). The typed `FilEconomicTerms` does not yet declare it, so this reads
+ * it off the runtime object without a hardcoded fallback: a non-empty string
+ * value, else `null` (the UI renders "—" — never a fabricated date).
+ */
+function readTradeDate(terms: unknown): string | null {
+  if (typeof terms !== "object" || terms === null) return null;
+  const v = (terms as Record<string, unknown>).tradeDate;
+  return typeof v === "string" && v.length > 0 ? v : null;
+}
+
+function buildBlotter(store: EventStore): V2FxBlotterView {
   const live = liveFxInstances(store);
+  // One oracle for the whole blotter build (folds party + onboarding registers
+  // once). Read-only; reused for every row's residency + descriptive detail.
+  const oracle: ResidencyOracle = buildResidencyOracle(store);
   const rows: V2FxBlotterRow[] = live.map((r) => {
     const t = r.economicTerms;
+    const detail = oracle.classifyDetail(t.counterpartyId);
+    const classified = detail.residency.classified ? detail.residency : null;
     return {
       instance: r.instance,
       tradeId: r.instance.split(":").pop() ?? r.instance,
@@ -152,7 +202,16 @@ function buildBlotter(store: Pick<EventStore, "replay">): V2FxBlotterView {
       counterpartyId: t.counterpartyId,
       nettingSetId: t.nettingSetId,
       settlementDate: t.settlementDate,
+      tradeDate: readTradeDate(t),
       stage: r.stage,
+      residencyBucket: classified ? classified.bucket : null,
+      residencyLabel: classified ? BA325_RESIDENCY_BUCKET_LABEL[classified.bucket] : null,
+      residencyLineage: classified ? classified.lineage : null,
+      residencyUnmapped: !detail.residency.classified,
+      residencyReason: detail.residency.classified ? null : detail.residency.reason,
+      counterpartyName: detail.legalName,
+      counterpartyJurisdiction: detail.jurisdiction,
+      counterpartySector: detail.sector,
     };
   });
   // Deterministic order: by pair then instance id.

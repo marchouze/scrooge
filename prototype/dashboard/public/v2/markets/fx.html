@@ -57,6 +57,7 @@
 
     const metricHref = (key) => `/v2/markets/fx-metric.html?metric=${encodeURIComponent(key)}`;
     const instrumentHref = (instance) => `/v2/markets/instrument.html?id=${encodeURIComponent(instance)}`;
+    const impactHref = (instance) => `/v2/markets/instrument.html?id=${encodeURIComponent(instance)}`;
 
     // Format functional-currency MINOR units (cents) → major-unit ZAR string.
     function fmtMinor(minor, ccy) {
@@ -156,22 +157,44 @@
         ],
       });
 
-      // --- Trade blotter — each row drills to instrument detail. ---
+      // --- Trade blotter — each row drills to per-trade BA-return impact. ---
+      // Surfaces the granularity an FX trade needs to land on a correct BA return:
+      // trade date, counterparty legal name / jurisdiction (domicile) / sector, and
+      // the BA-325 reg-29(3) residency bucket. An UNMAPPED residency is flagged
+      // loudly — that trade would drop out of BA-325 (fail-closed, never hidden).
+      function residencyCell(r) {
+        if (r.residencyUnmapped) {
+          return `<span class="v2-badge v2-badge-danger" title="${v2Esc(r.residencyReason || "unmappable")}">residency: unmapped</span>`;
+        }
+        if (!r.residencyLabel) return "—";
+        return `<span class="v2-badge v2-badge-info" title="${v2Esc(r.residencyLineage || "")}">${v2Esc(r.residencyLabel)}</span>`;
+      }
       const sb = section(blotterHost, `Trade blotter — live FX FIL instances (${blotter.count})`);
+      const blotterIntro = document.createElement("div");
+      blotterIntro.className = "v2-note";
+      blotterIntro.innerHTML =
+        "Each row drills to the trade's <strong>BA-return impact</strong> (GL footprint + per-return contribution). " +
+        "Counterparty <strong>residency</strong> is the BA-325 reg-29(3) row axis; an <strong>unmapped</strong> counterparty would drop out of BA-325.";
+      sb.appendChild(blotterIntro);
       if (!panelBanner(sb, blotter, "No live FX trades.")) {
         renderTable(sb, {
-          columns: ["Pair", "Dir", "Notional", "Counterparty", "Netting set", "Settlement", "Stage", "Type"],
+          columns: ["Pair", "Dir", "Notional", "Counterparty", "Domicile", "Sector", "Residency (BA-325)", "Trade date", "Settlement", "Stage", "Type"],
           emptyMsg: "No live FX FIL instruments on this store.",
           rows: blotter.rows.map((r) => ({
-            href: instrumentHref(r.instance),
+            href: impactHref(r.instance),
             cells: [
               `<strong>${v2Esc(r.pair)}</strong>`,
               r.direction === "long"
                 ? '<span class="v2-badge v2-badge-success">long</span>'
                 : '<span class="v2-badge v2-badge-warning">short</span>',
               `${v2Esc(r.notional.amount)} ${v2Esc(r.notional.currency)}`,
-              v2Esc(r.counterpartyId),
-              `<code>${v2Esc(r.nettingSetId)}</code>`,
+              r.counterpartyName
+                ? `${v2Esc(r.counterpartyName)}<br><code class="v2-note">${v2Esc(r.counterpartyId)}</code>`
+                : `<code>${v2Esc(r.counterpartyId)}</code>`,
+              r.counterpartyJurisdiction ? v2Esc(r.counterpartyJurisdiction) : "—",
+              r.counterpartySector ? v2Esc(r.counterpartySector) : "—",
+              residencyCell(r),
+              r.tradeDate ? v2Esc(r.tradeDate) : "—",
               v2Esc(r.settlementDate),
               v2Esc(r.stage),
               `<code>${v2Esc(r.type)}</code>`,

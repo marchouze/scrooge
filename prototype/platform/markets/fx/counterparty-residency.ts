@@ -123,6 +123,35 @@ export interface ResidencyUnmappable {
 export type ResidencyClassification = ResidencyClassified | ResidencyUnmappable;
 
 // ---------------------------------------------------------------------------
+// Counterparty descriptive detail — the human-facing granularity Marc asked be
+// VISIBLE on the FX blotter (legal name / jurisdiction-domicile / sector)
+// ALONGSIDE the BA-325 residency bucket. Sourced from the SAME two registers the
+// residency classifier reads (party register + onboarding register) — no new
+// capture, no hardcoding. The counterparty LEGAL NAME is surfaced (the
+// name-free policy is about AGENT/persona names, NOT counterparties — feedback
+// no-agent-names-in-ui / D-V2-UI-OVERSIGHT-STANDARD). Every field is OPTIONAL:
+// when a register carries no value the caller renders "—", never a fabricated
+// default (Engineering Charter cmd 2).
+// ---------------------------------------------------------------------------
+
+/**
+ * Descriptive counterparty detail for the FX surface, paired with the residency
+ * classification. The `residency` carries the fail-closed bucket-or-reason; the
+ * descriptive fields are best-effort lineage off the same registers.
+ */
+export interface CounterpartyDetail {
+  readonly counterpartyId: string;
+  /** Counterparty legal/display name (party register, else onboarding). */
+  readonly legalName: string | null;
+  /** Jurisdiction / domicile (tax-residency basis preferred, else incorporation). */
+  readonly jurisdiction: string | null;
+  /** Business sector (onboarding sector, else a party-classification-derived note). */
+  readonly sector: string | null;
+  /** The BA-325 residency classification (bucket + lineage, or unmappable reason). */
+  readonly residency: ResidencyClassification;
+}
+
+// ---------------------------------------------------------------------------
 // The residency oracle — wraps the two source registers behind one classifier.
 // ---------------------------------------------------------------------------
 
@@ -149,6 +178,14 @@ const AUTHORISED_DEALER_REGULATOR = "PA";
 export interface ResidencyOracle {
   /** Classify one counterparty id → residency bucket (fail-closed). */
   classify(counterpartyId: string): ResidencyClassification;
+  /**
+   * Resolve the full descriptive detail (legal name / jurisdiction / sector) for
+   * a counterparty, paired with its residency classification. Reads the SAME two
+   * registers as {@link classify}; descriptive fields are best-effort (null when
+   * a register carries no value — never fabricated). The residency field carries
+   * the fail-closed bucket-or-reason exactly as {@link classify} returns.
+   */
+  classifyDetail(counterpartyId: string): CounterpartyDetail;
 }
 
 /**
@@ -269,7 +306,14 @@ export function makeResidencyOracle(
   party: PartyProjection,
   onboarding: ClientOnboardingRegister,
 ): ResidencyOracle {
-  return {
+  // Shared register lookups so `classify` and `classifyDetail` read the SAME
+  // sources (no drift). The party register is keyed by `urn:party:*` URNs.
+  const partyRecordFor = (counterpartyId: string): PartyRecord | undefined =>
+    counterpartyId.startsWith("urn:party:")
+      ? party.parties.get(counterpartyId as PartyId)
+      : undefined;
+
+  const oracle: ResidencyOracle = {
     classify(counterpartyId: string): ResidencyClassification {
       if (!counterpartyId) {
         return {
@@ -279,11 +323,8 @@ export function makeResidencyOracle(
         };
       }
 
-      // Party register is the primary, oracle-aligned residency source. The
-      // register is keyed by `urn:party:*` URNs; only look up ids in that shape.
-      const partyRecord = counterpartyId.startsWith("urn:party:")
-        ? party.parties.get(counterpartyId as PartyId)
-        : undefined;
+      // Party register is the primary, oracle-aligned residency source.
+      const partyRecord = partyRecordFor(counterpartyId);
       if (partyRecord) {
         const fromParty = classifyFromParty(partyRecord);
         if (fromParty) {
@@ -325,7 +366,47 @@ export function makeResidencyOracle(
         reason: `counterparty '${counterpartyId}' could not be classified to a BA 325 residency bucket. Consulted: ${consulted}. Register the party with a jurisdiction/tax-residency (and primaryRegulator for an Authorised Dealer) before its FX positions can fold into the reg-29(3) residency detail.`,
       };
     },
+
+    classifyDetail(counterpartyId: string): CounterpartyDetail {
+      const residency = this.classify(counterpartyId);
+      const partyRecord = partyRecordFor(counterpartyId);
+      const onboardingRecord = onboarding.getClient(counterpartyId);
+
+      // Legal name — party register first (legalName, else displayName), then
+      // the onboarding register's legalName. Null when neither carries one.
+      const legalName =
+        partyRecord?.legalName ?? partyRecord?.displayName ?? onboardingRecord?.legalName ?? null;
+
+      // Jurisdiction / domicile — the Exchange-Control residency basis preferred
+      // (tax-residency), else jurisdiction of incorporation, else the onboarding
+      // jurisdiction. First entry only (the domicile axis is single-valued in the
+      // BA-325 sense).
+      const jurisdiction =
+        partyRecord?.taxResidencies?.[0] ??
+        partyRecord?.jurisdictions?.[0] ??
+        onboardingRecord?.jurisdiction ??
+        null;
+
+      // Sector — the onboarding sector is the closed-vocabulary business kind;
+      // absent that, derive a descriptive note from a party classification
+      // (e.g. central-bank) or the legal-entity primary regulator. Never guessed.
+      let sector: string | null = onboardingRecord?.sector ?? null;
+      if (sector === null && partyRecord) {
+        if (partyRecord.classifications.includes(CENTRAL_BANK_CLASSIFICATION)) {
+          sector = "central-bank";
+        } else if (
+          partyRecord.kindAttributes.kind === "legal-entity" &&
+          partyRecord.kindAttributes.primaryRegulator === AUTHORISED_DEALER_REGULATOR
+        ) {
+          sector = "banking";
+        }
+      }
+
+      return { counterpartyId, legalName, jurisdiction, sector, residency };
+    },
   };
+
+  return oracle;
 }
 
 /**
