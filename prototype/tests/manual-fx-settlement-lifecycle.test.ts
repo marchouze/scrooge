@@ -49,11 +49,14 @@ import { eventStore } from "../platform/composition";
 import { makeClientOnboardingProspectRegistered } from "../platform/event-store/event-types/client-onboarding";
 import { makeReportingTreatmentDeclared } from "../platform/event-store/event-types/reporting-treatments";
 import { productionTag, simulatedTag } from "../platform/event-store/provenance";
-import { computeGlEntriesV2, computeTrialBalanceV2 } from "../platform/projections/gl-projection-v2";
+import {
+  computeGlEntriesV2,
+  computeTrialBalanceV2,
+} from "../platform/projections/gl-projection-v2";
 import { citationRefSchema } from "../v2-core/fil-core/primitives";
 import type { FilInstrumentTerminatedPayload } from "../v2-core/fil-instances/events";
-import { FX_TREATMENT_MODULES } from "../v2-core/reporting-treatments/fx-modules";
 import type { TradeSettlementExecutedPayload } from "../v2-core/fil-instances/trade-settlement";
+import { FX_TREATMENT_MODULES } from "../v2-core/reporting-treatments/fx-modules";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const FX_CLEARING = "ACC-2100-027";
@@ -173,6 +176,7 @@ describe("manual FX settlement lifecycle — book → settle → derecognition (
       counterpartyLei: ZA_BANK_CP,
     });
     expect(r.ok).toBe(true);
+    if (!r.tradeId) throw new Error("booking returned no tradeId");
     const settle = settleManualFxTrade({ tradeId: r.tradeId, asOf: "2026-06-20T12:00:00.000Z" });
     expect(settle.ok).toBe(false);
     expect(settle.error).toContain("value date not yet reached");
@@ -211,8 +215,8 @@ describe("manual FX settlement lifecycle — book → settle → derecognition (
     expect(Number(zar.bookedCarrying.amount)).toBeCloseTo(SPEC.expectedSellZar, 2);
 
     // NO FilFxSettlementConfirmed (retired/oracle) for this trade on the manual path.
-    const legacy = [...eventStore.replay({ type: "FilFxSettlementConfirmed" })].filter(
-      (e) => (e.payload as { instance?: string }).instance?.endsWith(`:${tradeId}`),
+    const legacy = [...eventStore.replay({ type: "FilFxSettlementConfirmed" })].filter((e) =>
+      (e.payload as { instance?: string }).instance?.endsWith(`:${tradeId}`),
     );
     expect(legacy.length).toBe(0);
   });
@@ -316,7 +320,9 @@ describe("manual FX settlement lifecycle — book → settle → derecognition (
       entity: ENTITY,
       ...WINDOW,
       filter: { mode: "production-only" },
-    }).filter((e) => (e.sourceEventId?.endsWith(`:${tradeId}`) ?? false) && e.accountId === FX_CLEARING);
+    }).filter(
+      (e) => (e.sourceEventId?.endsWith(`:${tradeId}`) ?? false) && e.accountId === FX_CLEARING,
+    );
     expect(prod.length).toBe(0);
   });
 });
