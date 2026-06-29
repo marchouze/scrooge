@@ -48,6 +48,7 @@ import { join } from "node:path";
 import type { TrialBalance } from "../accounting/period-close";
 import { isCapitalSourcedGlPosting } from "../accounting/posting-rules-v2/capital-fold";
 import { deriveCapitalInstanceLegs } from "../accounting/posting-rules-v2/capital-instance-fold";
+import { deriveFxConversionLegs } from "../accounting/posting-rules-v2/fx-conversion-fold";
 import { deriveFxInstanceLegs } from "../accounting/posting-rules-v2/fx-instance-fold";
 import { type Money, amountToMinorUnits } from "../core/decimal-money";
 import { type MoneyWire, legAmountMoney } from "../core/money-codec";
@@ -81,6 +82,11 @@ const FX_V2_POSTING_RULE_ID_SET: ReadonlySet<string> = new Set([
   "PR-FX-001-V2",
   "PR-FX-REVAL-V2",
   "PR-FX-CLOSE-V2",
+  // PR-FX-CONVERT-V2 (realisation) folds IN MEMORY via deriveFxConversionLegs
+  // (D-FX-REALISATION-COMPLETION-V1) — exclude any materialised GlPostingEmitted to
+  // avoid double-counting (belt-and-suspenders; the conversion emits no
+  // GlPostingEmitted today).
+  "PR-FX-CONVERT-V2",
 ]);
 
 /** True iff a GlPostingEmitted leg was produced by an FX V2 posting rule. */
@@ -201,6 +207,33 @@ export function computeTrialBalanceV2Uncached(args: ComputeTrialBalanceV2Args): 
     filter: provenanceFilter,
   });
   for (const leg of fxFold.legs) {
+    const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
+    const legMinor = Number(amountToMinorUnits(legMoney));
+    const key = `${leg.accountCode}|${leg.amount.currency}`;
+    const row = balances.get(key) ?? {
+      account: leg.accountCode,
+      currency: leg.amount.currency,
+      amount: 0,
+    };
+    row.amount += leg.creditDebit === "debit" ? legMinor : -legMinor;
+    balances.set(key, row);
+    uptoSequence += 1;
+  }
+
+  // FX REALISATION contribution — the FCY→ZAR conversion legs (PR-FX-CONVERT-V2),
+  // folded from the born-V2 `FxConversionExecuted` events (D-FX-REALISATION-
+  // COMPLETION-V1, Item 2). These strike realised FX P&L (ACC-2100-006) +
+  // reclassify cumulative unrealised (ACC-2100-005) — every leg in the reporting
+  // currency, so the contribution self-balances per currency. Same provenance lens
+  // + posting-date window as the FX fold above; the conversion folds in the SAME
+  // partition as the FCY cash position it closes. This is the missing trigger
+  // wiring that strikes realised P&L end-to-end (Nadia's Lane-4b residual).
+  for (const leg of deriveFxConversionLegs({
+    eventStore: args.eventStore,
+    periodStart: args.periodStart,
+    periodEnd: args.periodEnd,
+    filter: provenanceFilter,
+  })) {
     const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
     const legMinor = Number(amountToMinorUnits(legMoney));
     const key = `${leg.accountCode}|${leg.amount.currency}`;
@@ -512,6 +545,39 @@ export function computeGlEntriesV2Uncached(args: ComputeTrialBalanceV2Args): GlL
     });
   }
 
+  // FX REALISATION entries — the FCY→ZAR conversion legs (PR-FX-CONVERT-V2), folded
+  // from the born-V2 `FxConversionExecuted` events (D-FX-REALISATION-COMPLETION-V1).
+  // Each leg's source event is the converted cash instance (`leg.sourceEventId`);
+  // there is no separate `filEventId`, so the ledger-entry `eventId` reuses the
+  // source-event addressing (one entry per conversion leg).
+  let conversionLegSeq = 0;
+  for (const leg of deriveFxConversionLegs({
+    eventStore: args.eventStore,
+    periodStart: args.periodStart,
+    periodEnd: args.periodEnd,
+    filter: provenanceFilter,
+  })) {
+    const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
+    const legMinor = Number(amountToMinorUnits(legMoney));
+    const coa = getCoaEntryV2(leg.accountCode);
+    entries.push({
+      eventId: `${leg.sourceEventId}::fx-conversion-${conversionLegSeq}`,
+      source: "GlPostingEmitted",
+      postedAt: leg.postingDate,
+      description: leg.description,
+      accountId: leg.accountCode,
+      accountName: coa.name,
+      accountCategory: coa.category,
+      debitCredit: leg.creditDebit,
+      amountMinor: legMinor,
+      amount: legMoney,
+      currency: leg.amount.currency,
+      ...(typeof leg.sourceEventId === "string" ? { sourceEventId: leg.sourceEventId } : {}),
+      ...(typeof leg.postingRuleId === "string" ? { postingRuleId: leg.postingRuleId } : {}),
+    });
+    conversionLegSeq += 1;
+  }
+
   // Capital entries — STATE-DRIVEN derivation from the FIL instance register
   // (`deriveCapitalInstanceLegs`), byte-equivalent to the prior raw-event fold.
   // Each derived leg (the Dr settlement-cash + Cr own-funds pair) is an
@@ -679,6 +745,25 @@ export function computeGlAccountsV2Uncached(args: ComputeTrialBalanceV2Args): Gl
     filter: provenanceFilter,
   });
   for (const leg of fxFold.legs) {
+    const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
+    const legMinor = Number(amountToMinorUnits(legMoney));
+    accumulateAccountLeg(
+      byAccount,
+      leg.accountCode,
+      leg.creditDebit,
+      legMinor,
+      leg.amount.currency,
+    );
+  }
+
+  // FX REALISATION accounts — the FCY→ZAR conversion legs (PR-FX-CONVERT-V2), folded
+  // from the born-V2 `FxConversionExecuted` events (D-FX-REALISATION-COMPLETION-V1).
+  for (const leg of deriveFxConversionLegs({
+    eventStore: args.eventStore,
+    periodStart: args.periodStart,
+    periodEnd: args.periodEnd,
+    filter: provenanceFilter,
+  })) {
     const legMoney = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
     const legMinor = Number(amountToMinorUnits(legMoney));
     accumulateAccountLeg(

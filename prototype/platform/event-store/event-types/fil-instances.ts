@@ -41,6 +41,7 @@ import {
   filNdfFixingObservedPayloadSchema,
 } from "../../../v2-core/fil-instances/events";
 import { tradeSettlementExecutedPayloadSchema } from "../../../v2-core/fil-instances/trade-settlement";
+import { fxConversionExecutedPayloadSchema } from "../../../v2-core/fil-instances/fx-conversion";
 import { newEventId } from "../../core/types";
 import { type ProvenanceTag, assertExplicitFilProvenance } from "../provenance";
 import { type Actor, type Event, eventSchema } from "../types";
@@ -53,6 +54,9 @@ export const filFxSettlementConfirmedPayload = filFxSettlementConfirmedPayloadSc
 export const filNdfFixingObservedPayload = filNdfFixingObservedPayloadSchema;
 // BORN-V2 generic single-asset settlement event (D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL).
 export const tradeSettlementExecutedPayload = tradeSettlementExecutedPayloadSchema;
+// BORN-V2 FX realisation event (D-FX-REALISATION-COMPLETION-V1) — the realisation
+// trigger that wires PR-FX-CONVERT-V2 (postFxConversionLegs) end-to-end.
+export const fxConversionExecutedPayload = fxConversionExecutedPayloadSchema;
 
 export type FilInstrumentCreatedEventPayload = ReturnType<
   typeof filInstrumentCreatedPayloadSchema.parse
@@ -71,6 +75,9 @@ export type FilNdfFixingObservedEventPayload = ReturnType<
 >;
 export type TradeSettlementExecutedEventPayload = ReturnType<
   typeof tradeSettlementExecutedPayloadSchema.parse
+>;
+export type FxConversionExecutedEventPayload = ReturnType<
+  typeof fxConversionExecutedPayloadSchema.parse
 >;
 
 export function makeFilInstrumentCreated(args: {
@@ -218,6 +225,29 @@ export function makeTradeSettlementExecuted(args: {
   });
 }
 
+export function makeFxConversionExecuted(args: {
+  asOf: string;
+  entity: string;
+  actor: Actor;
+  citations: string[];
+  payload: FxConversionExecutedEventPayload;
+  /** EXPLICIT provenance tag — REQUIRED (see makeFilInstrumentCreated). */
+  provenance: ProvenanceTag;
+  eventId?: string;
+}): Event {
+  assertExplicitFilProvenance("FxConversionExecuted", args.provenance);
+  return eventSchema.parse({
+    event_id: args.eventId ?? newEventId(),
+    type: "FxConversionExecuted",
+    as_of: args.asOf,
+    entity: args.entity,
+    actor: args.actor,
+    citations: args.citations,
+    payload: fxConversionExecutedPayloadSchema.parse(args.payload),
+    provenance: args.provenance,
+  });
+}
+
 export const FIL_INSTANCE_TYPED_EVENT_TYPES = [
   "FilInstrumentCreated",
   "FilInstrumentAmended",
@@ -225,5 +255,6 @@ export const FIL_INSTANCE_TYPED_EVENT_TYPES = [
   "FilFxSettlementConfirmed",
   "FilNdfFixingObserved",
   "TradeSettlementExecuted",
+  "FxConversionExecuted",
 ] as const;
 export type FilInstanceEventType = (typeof FIL_INSTANCE_TYPED_EVENT_TYPES)[number];

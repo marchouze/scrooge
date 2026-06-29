@@ -391,7 +391,7 @@ export function provenanceForEmit(
 //
 // THE PROBLEM (root cause). FIL-instance lifecycle / settlement event types
 // (FilInstrumentCreated/Amended/Terminated, FilFxSettlementConfirmed,
-// FilNdfFixingObserved, TradeSettlementExecuted) are POLYMORPHIC carriers: the
+// FilNdfFixingObserved, TradeSettlementExecuted, FxConversionExecuted) are POLYMORPHIC carriers: the
 // SAME type carries real anchor-book capital, real fixtures, and scenario
 // stimuli. They map to category `governance` → `production` under the default
 // policy, so an UNTAGGED FIL append soft-defaults to `production` —
@@ -423,6 +423,7 @@ export const FIL_PROVENANCE_REQUIRED_EVENT_TYPES = [
   "FilFxSettlementConfirmed",
   "FilNdfFixingObserved",
   "TradeSettlementExecuted",
+  "FxConversionExecuted",
 ] as const;
 
 export type FilProvenanceRequiredEventType = (typeof FIL_PROVENANCE_REQUIRED_EVENT_TYPES)[number];

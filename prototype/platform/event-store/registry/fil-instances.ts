@@ -26,6 +26,7 @@ import {
   filInstrumentCreatedPayload,
   filInstrumentTerminatedPayload,
   filNdfFixingObservedPayload,
+  fxConversionExecutedPayload,
   tradeSettlementExecutedPayload,
 } from "../event-types/fil-instances";
 import { RETENTION_GOVERNANCE_7Y } from "./types";
@@ -62,6 +63,17 @@ const TRADE_SETTLEMENT_CITATIONS = [
   "D-FX-TRADE-SETTLEMENT-PRODUCT-MODEL",
   "D-CASH-ASSET-CLASS-V1",
   "D-ACCT-FX-IFRS-POSTING-COMPLETENESS",
+  "P1-EVENTS-AS-TRUTH",
+  "P2-SINGLE-GRAPH-DISCIPLINE",
+] as const;
+
+// The born-V2 FX realisation event (D-FX-REALISATION-COMPLETION-V1) — the trigger
+// that wires PR-FX-CONVERT-V2 end-to-end so realised FX P&L (IAS 21 §28) is struck
+// when held FCY cash is converted back to the reporting currency.
+const FX_CONVERSION_CITATIONS = [
+  "D-FX-REALISATION-COMPLETION-V1",
+  "D-FX-PNL-FCY-EXPOSURE-REVALUATION",
+  "D-CASH-ASSET-CLASS-V1",
   "P1-EVENTS-AS-TRUTH",
   "P2-SINGLE-GRAPH-DISCIPLINE",
 ] as const;
@@ -140,5 +152,19 @@ export const FIL_INSTANCES_EVENT_TYPES_REGISTRY: readonly EventTypeMetadata[] = 
     // BORN-V2 — the uniform single-asset settlement model. v2-parallel in Slice 1
     // (dark: not yet emitted; FX vanilla still emits FilFxSettlementConfirmed).
     v2Status: "v2-parallel",
+  },
+  {
+    type: "FxConversionExecuted",
+    class: "governance",
+    issuer: "Atlas",
+    subscribers: [...SUBSCRIBERS],
+    replay: "append-only-audit",
+    retention: RETENTION_GOVERNANCE_7Y,
+    payloadSchema: fxConversionExecutedPayload as unknown as z.ZodType<Record<string, unknown>>,
+    citationsHint: FX_CONVERSION_CITATIONS,
+    source: "v2-core/fil-instances/fx-conversion.ts — FxConversionExecuted",
+    // BORN-V2 — the FX realisation trigger (closes Nadia's Lane-4b residual: the
+    // conversion rule PR-FX-CONVERT-V2 existed but was wired to no lifecycle event).
+    v2Status: "v2-replaced",
   },
 ];
