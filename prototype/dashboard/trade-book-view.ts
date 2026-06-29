@@ -38,11 +38,7 @@ import {
   makeInterbankLoanPlaced,
   makeRepoTradeOpened,
 } from "../platform/event-store/event-types/repo-mmd-ibl";
-import {
-  buildPhaseFixtureTag,
-  productionTag,
-  simulatedTag,
-} from "../platform/event-store/provenance";
+import { productionTag, simulatedTag } from "../platform/event-store/provenance";
 import type { ProvenanceTag } from "../platform/event-store/provenance";
 import type { EventStore } from "../platform/event-store/store";
 import { makeEquityTradeBooked } from "../platform/markets/cdm/equity";
@@ -1242,20 +1238,30 @@ export async function bookFxTrade(body: TradeBookBody): Promise<BookFxTradeResul
         );
 
   // ----- Provenance tag (Rule B — constructed at the call-site, never in the SUT) -----
-  // A manual desk booking in the build phase is real bank state authored pre-
-  // commencement → `build-phase-fixture`. The sim hub passes provenanceMode
-  // "simulated" → a scenario-bound simulated tag.
-  const provenance: ProvenanceTag =
-    body.provenanceMode === "simulated"
-      ? simulatedTag({
-          scenario: "operator:manual-sim-booking",
-          sourceLineage: "operator:manual-trade-booking",
-          tags: ["manual", "sim", "fx"],
-        })
-      : buildPhaseFixtureTag({
-          sourceLineage: "operator:manual-trade-booking",
-          tags: ["manual", "fx"],
-        });
+  // A build-phase manual desk booking is OPERATIONAL simulated data — part of the
+  // simulated operating book the bank is running on pre-commencement. It MUST be
+  // tagged `simulated` (NOT `build-phase-fixture`, NOT `production`):
+  //   - `simulated` flows through the operating-book + combined lenses (build
+  //     phase), so the trade FOLDS into BA-325 / BA-110 / BA-320, the operating-
+  //     book GL trial balance, and the V2 FX blotter — exactly what Marc must
+  //     SEE when he books a trade (D-FX-E2E-CORRECTNESS-V1 core requirement).
+  //   - `build-phase-fixture` is DROPPED by the operating-book/combined lenses
+  //     (platform/projections/filter.ts ~L251) — reserved for seed scaffolding,
+  //     not a trade booked to be observed. Tagging it there would make the trade
+  //     invisible in every BA return + accounting view (the regression this fixes).
+  //   - `production` would pollute the honest-empty pre-licence production-only
+  //     read (the R300m-painting class of error) — forbidden during build phase.
+  // The scenario MUST NOT match a sandbox prefix (rehearsal-/stress-/counterfactual-
+  // /what-if-/test-pollution per SANDBOX_SCENARIO_PREFIXES) or it would be held out
+  // of the operating book — `operator:manual-desk-booking` is deliberately not one.
+  const provenance: ProvenanceTag = simulatedTag({
+    scenario:
+      body.provenanceMode === "simulated"
+        ? "operator:manual-sim-booking"
+        : "operator:manual-desk-booking",
+    sourceLineage: "operator:manual-trade-booking",
+    tags: body.provenanceMode === "simulated" ? ["manual", "sim", "fx"] : ["manual", "fx"],
+  });
 
   // ----- Born-V2 confirmation flow: model the affirm step the SUT gates on -----
   // bookAffirmedFxTrade only books if a `TradeAffirmed` exists for the tradeId
