@@ -47,20 +47,20 @@ import { EventStore } from "../platform/event-store/store";
 import { resolveMarketDataDbPath } from "../platform/market-data/resolve-market-data-db";
 import { MarketDataStore } from "../platform/market-data/store";
 import { setDefaultProvenanceModeOverride } from "../platform/projections/filter";
+import { computeTrialBalanceV2Uncached } from "../platform/projections/gl-projection-v2";
+import { recordFiled } from "../platform/records";
 import {
-  isOffBalanceSheetAccountId,
-  generateBa100BalanceSheet,
   type Ba100LineClassification,
+  generateBa100BalanceSheet,
+  isOffBalanceSheetAccountId,
 } from "../platform/reporting/ba-100-balance-sheet";
 import { functionalNetFromRows } from "../platform/reporting/ba100-functional-net";
 import {
-  renderBa100Return,
   canonicaliseReturnRender,
+  renderBa100Return,
 } from "../platform/reporting/ba100-return-render";
-import { recordFiled } from "../platform/records";
 import { recordDecision } from "../runtime/decisions/record";
 import { COA_ACCOUNTS } from "../v2-core/accounting/chart-of-accounts";
-import { computeTrialBalanceV2Uncached } from "../platform/projections/gl-projection-v2";
 
 // ---------------------------------------------------------------------------
 // Constants — fixed so the render + decision are replay-safe and idempotent.
@@ -87,9 +87,7 @@ const DECISION_ID = "D-BA100-RETURN-ATTESTED-2026-06-30";
 // CoA section classifier (mirrors ba100-cell-values-reconcile.ts)
 // ---------------------------------------------------------------------------
 
-function ba100SectionForCategory(
-  category: string,
-): "assets" | "liabilities" | "equity" | null {
+function ba100SectionForCategory(category: string): "assets" | "liabilities" | "equity" | null {
   if (category.startsWith("asset")) return "assets";
   if (category.startsWith("liability")) return "liabilities";
   if (category.startsWith("equity")) return "equity";
@@ -163,6 +161,9 @@ function main(): void {
       periodEnd: PERIOD_END,
       functionalCurrency: FUNCTIONAL_CURRENCY,
       oracleSheet,
+      // Pass the per-account functional net so the equity recon uses the
+      // capital-exactness check (GL own-funds capital) not the netted section total.
+      functionalNetByAccount: functionalNet.netByAccount,
     });
 
     if (!render.verdict.reconPass) {
@@ -198,6 +199,9 @@ function main(): void {
         entity: ENTITY,
         metadata: {
           title: "BA 100 Return-of-Record — build-phase period (period:hoz-bank:build-phase)",
+          // path is required by the schema. For a synthetic return-of-record (no
+          // physical file), we use the record-id as a logical path.
+          path: `returns/BA100/${PERIOD_ID}/2026-06-30`,
           category: "sarb-prudential-return",
           author: "Bea (Accounting & financial reporting engineer, engineering)",
           date: "2026-06-30",

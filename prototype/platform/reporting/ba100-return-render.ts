@@ -33,15 +33,16 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering —
 //   reports to Camille (CFO); domain owner of SARB BA 100).
 
-import { computeDerivedCells } from "../../v2-core/regulatory-returns/cell-value/engine";
+import { COA_ACCOUNTS } from "../../v2-core/accounting/chart-of-accounts";
 import { ba100Contract } from "../../v2-core/regulatory-returns/ba100-contract";
+import { computeDerivedCells } from "../../v2-core/regulatory-returns/cell-value/engine";
 import type { EventStore } from "../event-store/store";
+import { buildPartyProjection } from "../identity/party-projection";
 import type { MarketDataStore } from "../market-data/store";
 import type { Ba100BalanceSheet } from "./ba-100-balance-sheet";
-import { buildBa100ReferenceData } from "./cell-value/ba100-reference-data";
 import { foldBa100LeafValues } from "./cell-value/ba100-leaf-fold";
+import { buildBa100ReferenceData } from "./cell-value/ba100-reference-data";
 import type { LeafFoldContext } from "./cell-value/leaf-fold-registry";
-import { buildPartyProjection } from "../identity/party-projection";
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -141,6 +142,15 @@ export interface RenderBa100ReturnInput {
   readonly functionalCurrency: string;
   /** Pre-built CoA oracle sheet (from generateBa100BalanceSheet). */
   readonly oracleSheet: Ba100BalanceSheet;
+  /**
+   * Per-account signed functional-ZAR net from `functionalNetFromRows`. Required
+   * for the equity capital-exactness reconciliation check (the recon gate uses
+   * GL own-funds capital — accounts carrying a `capitalTier` — NOT the netted
+   * oracle equity section total which includes P&L absorption). If omitted, the
+   * equity recon block compares against the oracle's netted section total (may
+   * produce a false reconciliation break when P&L loss has been absorbed).
+   */
+  readonly functionalNetByAccount?: ReadonlyMap<string, number>;
 }
 
 /**
@@ -234,20 +244,48 @@ export function renderBa100Return(input: RenderBa100ReturnInput): Ba100ReturnRen
     equity: input.oracleSheet.equity.totalMinor / MINOR_DIVISOR,
   };
 
-  const reconBlocks: Ba100ReturnReconBlock[] = (
-    ["assets", "liabilities", "equity"] as const
-  ).map((section) => {
-    const leafSum = leafBySection[section];
-    const oracleTotal = oracleBySection[section];
-    // Subset-soundness: leafSum must not exceed the oracle total.
-    const reconciled = leafSum <= oracleTotal + 1e-2; // 1-cent tolerance for float arithmetic
-    return {
-      section,
-      leafFoldSum: leafSum.toFixed(2),
-      oracleTotal: oracleTotal.toFixed(2),
-      reconciled,
-    };
-  });
+  // Equity capital-exactness: use GL own-funds capital (sum of accounts with
+  // a capitalTier — CET1 equity + AT1/T2 liabilities), credit-positive. This
+  // mirrors the recon gate's (3a) check. The oracle's NETTED equity section total
+  // absorbs P&L losses; the leaf fold places GROSS own-funds capital — comparing
+  // against the netted total produces a false reconciliation break.
+  let glOwnFundsCapital: number | undefined;
+  if (input.functionalNetByAccount !== undefined) {
+    let cap = 0;
+    for (const [accountId, signed] of input.functionalNetByAccount) {
+      if (signed === 0) continue;
+      const coa = COA_ACCOUNTS.find((a) => a.id === accountId);
+      if (coa === undefined || coa.capitalTier === undefined) continue;
+      cap += -signed; // credit-positive (capital is credit-natural)
+    }
+    glOwnFundsCapital = cap / MINOR_DIVISOR; // minor → major units
+  }
+
+  const reconBlocks: Ba100ReturnReconBlock[] = (["assets", "liabilities", "equity"] as const).map(
+    (section) => {
+      const leafSum = leafBySection[section];
+      let oracleTotal: number;
+      let reconciled: boolean;
+
+      if (section === "equity" && glOwnFundsCapital !== undefined) {
+        // Capital-exactness: leaf equity must equal GL own-funds capital (exact, not
+        // subset), because both folds cover the SAME capital posting legs.
+        oracleTotal = glOwnFundsCapital;
+        reconciled = Math.abs(leafSum - oracleTotal) < 0.01; // 1-cent tolerance
+      } else {
+        // Subset-soundness for assets + liabilities: leaf ≤ oracle (never exceeds GL).
+        oracleTotal = oracleBySection[section];
+        reconciled = leafSum <= oracleTotal + 0.01;
+      }
+
+      return {
+        section,
+        leafFoldSum: leafSum.toFixed(2),
+        oracleTotal: oracleTotal.toFixed(2),
+        reconciled,
+      };
+    },
+  );
 
   const reconPass = reconBlocks.every((b) => b.reconciled);
 
