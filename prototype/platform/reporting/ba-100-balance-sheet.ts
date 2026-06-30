@@ -920,20 +920,24 @@ function splitLineBySector(line: Ba100LineItem): Ba100SectorSplit {
   const perD = roundDecimal(
     divD(toDecimal(String(amountToMinorUnits(line.amount))), new Decimal(accounts.length)),
     0, // integer minor-unit result (no decimal places)
-    "DOWN", // floor-division toward zero — matches prior Math.trunc for positive amounts
+    "DOWN", // floor-division toward zero — matches prior Math.trunc for positive values
     // Authority: D-DECIMAL-NATIVE-CONSUMER-MIGRATION-BEFORE-WAVE-3; brief §"Rounding policy"
   );
-  const per = Number(BigInt(perD.toFixed(0)));
-  let allocated = 0;
+  // Exact integer minor-unit arithmetic in BigInt — never IEEE-754 float money
+  // math (recon:no-float-money-arithmetic). amountToMinorUnits returns bigint;
+  // the only float boundary is the final Number() cast into the number-typed
+  // `split` accumulator (a representation conversion, not arithmetic).
+  const per = BigInt(perD.toFixed(0));
+  let allocated = 0n;
   accounts.forEach((account, idx) => {
     const share =
-      idx === 0 ? Number(amountToMinorUnits(line.amount)) - per * (accounts.length - 1) : per;
+      idx === 0 ? amountToMinorUnits(line.amount) - per * BigInt(accounts.length - 1) : per;
     allocated += share;
-    split[sectorForAccountId(account)] += share;
+    split[sectorForAccountId(account)] += Number(share);
   });
   // Defensive: any residual (should be 0) routes to `other`.
-  const residual = Number(amountToMinorUnits(line.amount)) - allocated;
-  if (residual !== 0) split.other += residual;
+  const residual = amountToMinorUnits(line.amount) - allocated;
+  if (residual !== 0n) split.other += Number(residual);
   return split;
 }
 

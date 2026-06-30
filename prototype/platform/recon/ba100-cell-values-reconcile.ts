@@ -438,15 +438,18 @@ export function run(opts: RunOpts = {}): ReconResult {
   if (functionalNet.unconvertible.length === 0 && !oracleSheet.balanceCheck.balanced) {
     violations.push({
       subject: "balance-sheet-invariant",
-      message: `BA 100 does not balance: assets ${(oracleMinor.assets / 100).toFixed(
-        2,
-      )} != liabilities ${(oracleMinor.liabilities / 100).toFixed(2)} + equity ${(
-        oracleMinor.equity / 100
-      ).toFixed(2)} ${FUNCTIONAL_CURRENCY} (difference ${(
-        oracleSheet.balanceCheck.differenceMinor / 100
-      ).toFixed(
-        2,
-      )}). With no unconvertible legs the functional-currency books MUST balance (#1618/#1619 — TB balances per-entry in ZAR). Fail-closed.`,
+      message: `BA 100 does not balance: assets ${
+        moneyFromMinorUnits(BigInt(oracleMinor.assets), FUNCTIONAL_CURRENCY as Currency).amount
+      } != liabilities ${
+        moneyFromMinorUnits(BigInt(oracleMinor.liabilities), FUNCTIONAL_CURRENCY as Currency).amount
+      } + equity ${
+        moneyFromMinorUnits(BigInt(oracleMinor.equity), FUNCTIONAL_CURRENCY as Currency).amount
+      } ${FUNCTIONAL_CURRENCY} (difference ${
+        moneyFromMinorUnits(
+          BigInt(oracleSheet.balanceCheck.differenceMinor),
+          FUNCTIONAL_CURRENCY as Currency,
+        ).amount
+      }). With no unconvertible legs the functional-currency books MUST balance (#1618/#1619 — TB balances per-entry in ZAR). Fail-closed.`,
       severity: "fail",
     });
   }
@@ -460,7 +463,9 @@ export function run(opts: RunOpts = {}): ReconResult {
     result.asserted += 1;
     violations.push({
       subject: `unconvertible:${u.accountId}`,
-      message: `BA 100: GL account ${u.accountId} holds ${(u.nativeMinor / 100).toFixed(2)} ${
+      message: `BA 100: GL account ${u.accountId} holds ${
+        moneyFromMinorUnits(BigInt(u.nativeMinor), u.currency as Currency).amount
+      } ${
         u.currency
       } with no resolvable functional-${FUNCTIONAL_CURRENCY} rate — surfaced, not dropped. Source a settle-rate cost basis or a production spot for ${u.currency}/${FUNCTIONAL_CURRENCY}.`,
       severity: opts.requireNonVacuous ? "fail" : "info",
