@@ -259,6 +259,16 @@ const CONSTRUCTION_CARVE_OUT_FILES: ReadonlySet<string> = new Set([
   // D-CAPITAL-ASSET-CLASS-V1, P4-SECURITY-DESIGNED-IN.
   "platform/recon/ba100-cell-values-reconcile.ts",
   "platform/recon/ba100-cell-values-reconcile.test.ts",
+  // D-BA-RETURN-CELL-VALUE-ENGINE Phase 2 — BA 100 banking/trading book split
+  // coherence gate (recon:ba100-book-split-coherence). Self-contained: builds a
+  // mkdtempSync-isolated tmp store seeded with controlled trading/banking-treasury/
+  // residual cash legs, then opens it READ-ONLY (readonly: true) to assert
+  // C0040 ≥ Σ(C0010 + C0020). Tests also seed mkdtempSync stores. No production
+  // access path; wrapping read-only opens with the write-path policy gate is a
+  // no-op (the gate intercepts append, not replay). Citation:
+  // D-BA-RETURN-CELL-VALUE-ENGINE, D-FX-BOOK-BOUNDARY, P4-SECURITY-DESIGNED-IN.
+  "platform/recon/ba100-book-split-coherence.ts",
+  "platform/recon/ba100-book-split-coherence.test.ts",
   // FX production-view ↔ GL leak gate (D-FX-LIVE-VIEW-PROVENANCE-LEAK-FIX): opens
   // the resolved read-path event store READ-ONLY ({ readonly: true }) to fold the
   // production-only open-FX register and assert it reconciles to the empty GL. Pure

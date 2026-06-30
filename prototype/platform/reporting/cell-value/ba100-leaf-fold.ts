@@ -373,8 +373,10 @@ function addToCellCol(
 //   no-silent-deferral). Principle 1 (dimension from event).
 // ---------------------------------------------------------------------------
 
-/** Column for FX cash — trading book column (C0020). */
-const TRADING_BOOK_COLUMN = "C0020";
+// TRADING_BOOK_COLUMN removed (Phase 2 — D-BA-RETURN-CELL-VALUE-ENGINE). The
+// column is now derived from `cashTerms.bookType` at fold time: "trading" →
+// C0020, "banking-treasury" → C0010, absent → C0040 only + loud gap. No
+// hardcoded column constant (Charter cmd 4 source-don't-hardcode; D-FX-BOOK-BOUNDARY).
 
 interface CashRowMapping {
   readonly primary: string;
@@ -668,7 +670,11 @@ interface CashEconomicTerms {
   readonly assetClass?: string;
   readonly direction?: string;
   readonly zarCostBasis?: { readonly currency: string; readonly amount: string };
-  readonly cashTerms?: { readonly counterpartyClass?: string };
+  readonly cashTerms?: {
+    readonly counterpartyClass?: string;
+    /** FRTB book designation — drives BA 100 C0010/C0020 column split (Phase 2). */
+    readonly bookType?: "trading" | "banking-treasury";
+  };
   readonly originatingInstrument?: string;
 }
 
@@ -753,22 +759,52 @@ export interface ResidualCashPlacement {
 }
 
 /**
- * CASH fold pass (FAIL-SAFE rework, D-BA-RETURN-FAIL-SAFE-RESIDUAL-EXPOSURE) —
- * resolve each settled cash FIL instance and place its ZAR cost basis (the IAS 21
- * §21 functional-currency carrying amount) onto the BA 100 grid through the three
+ * One no-bookType settled-cash placement — surfaced as a loud capability flag
+ * when a settled cash instrument reaches the fold without a `cashTerms.bookType`
+ * (the settlement seam did not propagate the FRTB book designation). The ZAR
+ * headline amount IS placed on C0040 (Total bank — never dropped); only the
+ * C0010/C0020 banking/trading split is deferred. Charter cmd 5: gap flagged
+ * immediately, never silently deferred. Authority: D-FX-BOOK-BOUNDARY.
+ */
+export interface NoBookTypePlacement {
+  /** The settled-cash FIL instance URN. */
+  readonly instance: string;
+  /** The resolved (signed) ZAR carrying amount placed on C0040. */
+  readonly zarAmount: string;
+  /** The BA 100 row the amount was placed on (C0040 only). */
+  readonly placedRow: string;
+  /** Why the book split could not be performed (missing dimension + fix hint). */
+  readonly reason: string;
+}
+
+/**
+ * CASH fold pass (FAIL-SAFE rework, D-BA-RETURN-FAIL-SAFE-RESIDUAL-EXPOSURE;
+ * Phase 2 banking/trading book split, D-BA-RETURN-CELL-VALUE-ENGINE) — resolve
+ * each settled cash FIL instance and place its ZAR cost basis (the IAS 21 §21
+ * functional-currency carrying amount) onto the BA 100 grid through the three
  * fail-SAFE tiers: Tier 1 explicit class; Tier 2 derived FX-nostro "bank"; Tier 3
  * resolvable residual on R0120 + a loud flag. A settled, resolvable amount is
- * NEVER dropped (money on a balance sheet must not disappear). Trading-book column
- * C0020 is used because an FX spot cash balance is a trading-book position. No
- * posting-rule module is needed: the cash instrument IS a post-settlement balance;
- * its balance-sheet presence IS the fold. `residualSink`, when supplied, collects
- * the Tier-3 residuals for the capability flag.
+ * NEVER dropped (money on a balance sheet must not disappear).
+ *
+ * BANKING/TRADING BOOK SPLIT (Phase 2). The column (C0010 / C0020) is read from
+ * `cashTerms.bookType` propagated by the settlement seam from the originating FX
+ * trade's `bookType` (Approach A: source-don't-hardcode, Charter cmd 4):
+ *   "trading"          → C0020 (Trading book; rows R0010–R0530 asset section)
+ *   "banking-treasury" → C0010 (Banking book; same rows, same asset section)
+ *   absent/unknown     → C0040 only (Total bank; loud ResidualBookPlacement gap)
+ * C0040 ALWAYS receives the amount (it is the Total Bank column — the running sum
+ * regardless of book split). The C0010/C0020 split is ADDITIVE, not replacing.
+ *
+ * `residualSink`, when supplied, collects Tier-3 residuals (counterparty class)
+ * AND no-book-type gaps. `bookGapSink`, when supplied, collects the no-bookType
+ * cash instruments (present on C0040, not yet split). Both are capability flags.
  */
 function foldCashLegs(
   ctx: LeafFoldContext,
   provenanceFilter: ProvenanceFilter,
   byCell: Map<string, RowAccumulator>,
   residualSink?: ResidualCashPlacement[],
+  bookGapSink?: NoBookTypePlacement[],
 ): void {
   for (const ev of ctx.eventStore.replay({
     entity: ctx.entity,
@@ -795,14 +831,49 @@ function foldCashLegs(
     const placement = classifyCashPlacement(terms, originatingEventType);
     if (placement === null) continue; // not a cash instrument (already filtered).
 
+    // BANKING/TRADING BOOK SPLIT — read bookType from cashTerms (Phase 2).
+    // "trading" → C0020; "banking-treasury" → C0010; absent → no split column.
+    // C0040 ALWAYS receives the amount (Total Bank = Σ C0010 + Σ C0020).
+    const cashBookType = terms.cashTerms?.bookType;
+    const bookColumn: string | null =
+      cashBookType === "trading" ? "C0020" : cashBookType === "banking-treasury" ? "C0010" : null; // absent → C0040 only; loud gap emitted below (fail-closed, Charter cmd 2)
+
     // Primary row — in the 10–530 recon range: counted by the reconciliation
     // oracle (recon:ba100-cell-values-reconcile). CRITICAL placement. Tier 3
     // lands on R0120 too, so the detail reconciles to the oracle TOTAL ASSETS.
-    addToCellCol(byCell, placement.mapping.primary, TRADING_BOOK_COLUMN, signedAmount);
+    // C0040 is ALWAYS added (Total Bank column — the running Σ regardless of split).
+    addToCellCol(byCell, placement.mapping.primary, TOTAL_BANK_COLUMN, signedAmount);
+    // Add to the book-specific column when the book designation is known.
+    if (bookColumn !== null) {
+      addToCellCol(byCell, placement.mapping.primary, bookColumn, signedAmount);
+    } else {
+      // No book designation — loud gap. The headline amount IS placed on C0040
+      // (never dropped — fail-safe); only the C0010/C0020 sub-allocation is
+      // deferred. Record the gap for the capability flag (Charter cmd 5).
+      if (bookGapSink !== undefined) {
+        bookGapSink.push({
+          instance: payload.instance,
+          zarAmount: decimalToString(signedAmount),
+          placedRow: placement.mapping.primary,
+          reason:
+            "Settled cash instrument has no bookType on cashTerms — " +
+            "placed on C0040 (Total bank) only. Banking/trading book split deferred. " +
+            "Missing dimension: cashTerms.bookType (D-FX-BOOK-BOUNDARY). " +
+            "Ensure the settlement seam propagates bookType from FxTradeExecuted.",
+        });
+      }
+    }
 
     // Memo rows — outside the 10–530 range: NOT counted by the recon oracle.
+    // Memos mirror the same book split as the primary row: a trading-book nostro
+    // analysis row belongs in C0020 alongside the primary (the SARB form produces
+    // the same book-split schedule on both primary and memo lines). C0040 is
+    // always added (Total bank); the book column is added when known.
     for (const memoRow of placement.mapping.memos) {
-      addToCellCol(byCell, memoRow, TRADING_BOOK_COLUMN, signedAmount);
+      addToCellCol(byCell, memoRow, TOTAL_BANK_COLUMN, signedAmount);
+      if (bookColumn !== null) {
+        addToCellCol(byCell, memoRow, bookColumn, signedAmount);
+      }
     }
 
     // Tier-3 residual — record the loud flag (amount placed, sub-allocation deferred).
@@ -831,6 +902,19 @@ export function collectBa100ResidualCash(ctx: LeafFoldContext): readonly Residua
   // A throwaway accumulator — we only want the residual sink here, not the cells.
   foldCashLegs(ctx, provenanceFilter, new Map<string, RowAccumulator>(), residuals);
   return residuals;
+}
+
+/**
+ * Collect the NO-BOOK-TYPE settled-cash placements for the BA 100 capability
+ * flag (Phase 2, D-BA-RETURN-CELL-VALUE-ENGINE). Pure read — one grammar, no
+ * drift between the flag and the placed C0040 value. Returns instruments that
+ * were placed on C0040 (Total bank) only because `cashTerms.bookType` was absent.
+ */
+export function collectBa100BookGaps(ctx: LeafFoldContext): readonly NoBookTypePlacement[] {
+  const provenanceFilter = defaultProvenanceFilter();
+  const gaps: NoBookTypePlacement[] = [];
+  foldCashLegs(ctx, provenanceFilter, new Map<string, RowAccumulator>(), undefined, gaps);
+  return gaps;
 }
 
 /**

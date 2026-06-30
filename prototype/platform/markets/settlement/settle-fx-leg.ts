@@ -138,6 +138,20 @@ export function settleFxLeg(args: {
     });
   }
 
+  // Resolve the bookType from the originating FxTradeExecuted (Approach A:
+  // source-don't-hardcode, Charter cmd 4). The settled cash IS a trading- or
+  // banking-book position depending on the originating trade's desk. Fail-closed:
+  // if the FxTradeExecuted event is absent (should not happen for a settled trade)
+  // or carries no bookType (pre-M4 event), the field is omitted and the BA 100
+  // fold will place on C0040 only + emit a loud gap (never a guessed column).
+  // Authority: D-FX-BOOK-BOUNDARY; D-FRTB-TRADING-DESK-STRUCTURE.
+  const fxTrade = [...store.replay({ type: "FxTradeExecuted" })].find(
+    (e) => (e.payload as { tradeId?: string }).tradeId === tradeId,
+  );
+  const resolvedBookType = (
+    fxTrade?.payload as { bookType?: "trading" | "banking-treasury" } | undefined
+  )?.bookType;
+
   const materialisationInput = {
     tradeId,
     tenant: TENANT,
@@ -155,6 +169,11 @@ export function settleFxLeg(args: {
     // identity is ever resolved to SARB directly, upgrade to "central-bank".
     // Authority: D-BA-RETURN-CAPABILITY-FIRST; D-BA-RETURN-PER-PRODUCT-RICHNESS.
     counterpartyClass: "bank" as const,
+    // Propagate bookType from the FxTradeExecuted so the settled cash instrument
+    // carries the FRTB book designation and the BA 100 fold can split C0010/C0020.
+    // Omitted (undefined) when the trade event is absent or pre-dates M4 — the
+    // fold then places on C0040 only + flags (fail-closed, Charter cmd 2).
+    ...(resolvedBookType !== undefined ? { bookType: resolvedBookType } : {}),
   };
   const builtLegs = buildSettledCashPayloads(materialisationInput);
 

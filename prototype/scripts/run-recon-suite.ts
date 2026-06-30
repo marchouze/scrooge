@@ -467,6 +467,13 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // (resolves the store the dashboard reader reads, opened read-only). Authority:
     // D-BA-RETURN-CELL-VALUE-ENGINE; D-CAPITAL-ASSET-CLASS-V1; SARB BA 100.
     "recon:ba100-cell-values-reconcile",
+    // D-BA-RETURN-CELL-VALUE-ENGINE Phase 2 — ENFORCING: BA 100 banking/trading
+    // book column split coherence. For every BA 100 row with a non-zero C0040
+    // (Total bank) value: C0040 ≥ Σ(C0010) + Σ(C0020). Self-contained fixture
+    // (seeded trading + banking-treasury + residual cash legs). Harden-only;
+    // KNOWN_VIOLATIONS_SNAPSHOT = 0. Authority: D-BA-RETURN-CELL-VALUE-ENGINE
+    // Phase 2; D-FX-BOOK-BOUNDARY; SARB BA 100 D5/2025 §2.1.3.
+    "recon:ba100-book-split-coherence",
     // D-BA-RETURN-SIMULATOR-FIRST Phase 2a — ENFORCING: BA 325 (Selected Risk
     // Exposure — Trading & Treasury) ASSEMBLY gate. Builds a self-contained
     // in-memory simulated trading book and asserts (A) the BA 325 summary lines

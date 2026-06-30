@@ -868,6 +868,9 @@ function seedCashInstrument(
     zarCostBasisCurrency?: string;
     /** BA 100 counterparty class. */
     counterpartyClass?: FilCashCounterpartyClass;
+    /** BA 100 book type (trading or banking-treasury). Required to populate C0010/C0020;
+     *  absent → placed on C0040 only (gap flagged). */
+    bookType?: "trading" | "banking-treasury";
     /** When TRUE, omit the FX originatingInstrument + use a non-FX originatingEvent,
      *  so the Tier-2 FX-nostro derivation does NOT apply (exercises Tier 3 residual). */
     noFxOrigin?: boolean;
@@ -908,8 +911,15 @@ function seedCashInstrument(
             }),
           }),
       zarCostBasis: { currency: args.zarCostBasisCurrency ?? CCY, amount: args.zarCostBasisAmount },
-      ...(args.counterpartyClass !== undefined
-        ? { cashTerms: { counterpartyClass: args.counterpartyClass } }
+      ...(args.counterpartyClass !== undefined || args.bookType !== undefined
+        ? {
+            cashTerms: {
+              ...(args.counterpartyClass !== undefined
+                ? { counterpartyClass: args.counterpartyClass }
+                : {}),
+              ...(args.bookType !== undefined ? { bookType: args.bookType } : {}),
+            },
+          }
         : {}),
     },
   };
@@ -937,6 +947,7 @@ describe("BA 100 leaf fold — cash FIL (D-BA-RETURN-CAPABILITY-FIRST)", () => {
       currency: "USD",
       zarCostBasisAmount: zarBasis,
       counterpartyClass: "bank",
+      bookType: "trading",
     });
 
     const leaf = fold(store, "combined");
@@ -951,12 +962,16 @@ describe("BA 100 leaf fold — cash FIL (D-BA-RETURN-CAPABILITY-FIRST)", () => {
     expect(cashKeys.sort()).toEqual(["R0120 C0020", "R0910 C0020", "R1050 C0020"]);
   });
 
-  test("TIER 2 (fail-SAFE): cash WITHOUT cashTerms but a settled-FX-cash origin → DERIVED 'bank' nostro on R0120 (the ~R490m fix)", () => {
+  test("TIER 2 (fail-SAFE): cash WITHOUT cashTerms but a settled-FX-cash origin → DERIVED 'bank' nostro on R0120/C0040 (no bookType → total column only)", () => {
     // D-BA-RETURN-FAIL-SAFE-RESIDUAL-EXPOSURE: a settled FX cash leg lacking the
     // explicit counterpartyClass is NOT dropped (the #1620 fail-closed-to-blank
     // bug). It back-references an FX instance (originatingInstrument) and its
     // originatingEvent is an FX settlement confirmation, so for an indirect
     // participant the cash IS a correspondent-bank nostro → DERIVE class "bank".
+    //
+    // Phase 2 (book-split): no bookType on the instrument → amount goes to C0040
+    // only (the total-bank column). A book gap is flagged (Charter cmd 5) but the
+    // amount is NOT blanked (fail-safe). C0010/C0020 are absent — correct.
     const store = new EventStore();
     const zarBasis = "129954790";
     seedCashInstrument(store, {
@@ -965,14 +980,19 @@ describe("BA 100 leaf fold — cash FIL (D-BA-RETURN-CAPABILITY-FIRST)", () => {
       currency: "USD",
       zarCostBasisAmount: zarBasis,
       // counterpartyClass intentionally absent — derived as "bank" via Tier 2.
+      // bookType also absent — no propagation from FX event at fold time (Approach A:
+      // bookType must be on the cashTerms of the FilInstrumentCreated event itself).
     });
 
     const leaf = fold(store, "combined");
     // Placed as a "bank" nostro: R0120 primary (in recon range) + R0910/R1050 memos.
-    expect(leaf.get("R0120 C0020")).toBe(zarBasis);
-    expect(leaf.get("R0910 C0020")).toBe(zarBasis);
-    expect(leaf.get("R1050 C0020")).toBe(zarBasis);
-    // It is NOT a Tier-3 residual — the derivation is sound, so no residual flag.
+    // C0040 only — no bookType means no C0010/C0020 split.
+    expect(leaf.get("R0120 C0040")).toBe(zarBasis);
+    expect(leaf.get("R0910 C0040")).toBe(zarBasis);
+    expect(leaf.get("R1050 C0040")).toBe(zarBasis);
+    // C0020 absent — correct (no bookType, no guess).
+    expect(leaf.get("R0120 C0020")).toBeUndefined();
+    // It is NOT a Tier-3 residual — the counterpartyClass derivation is sound.
     const residuals = collectBa100ResidualCash({
       eventStore: store,
       marketData: undefined as never,
@@ -983,11 +1003,15 @@ describe("BA 100 leaf fold — cash FIL (D-BA-RETURN-CAPABILITY-FIRST)", () => {
     expect(residuals.length).toBe(0);
   });
 
-  test("TIER 3 (fail-SAFE residual): cash WITHOUT cashTerms AND WITHOUT FX origin → resolvable amount placed on R0120 + LOUD flag, never blanked", () => {
+  test("TIER 3 (fail-SAFE residual): cash WITHOUT cashTerms AND WITHOUT FX origin → resolvable amount placed on R0120/C0040 + LOUD flag, never blanked", () => {
     // A settled cash balance that is neither explicitly classified NOR a derivable
     // FX nostro (no originatingInstrument, no FX originatingEvent). Its resolvable
-    // ZAR value is NOT dropped — it lands on R0120 (in the recon-counted range so
-    // the detail reconciles) and the missing sub-allocation is flagged loudly.
+    // ZAR value is NOT dropped — it lands on R0120/C0040 (in the recon-counted range
+    // so the detail reconciles) and the missing sub-allocation is flagged loudly.
+    //
+    // Phase 2 (book-split): no bookType → C0040 only. Both the counterpartyClass gap
+    // (residual flag) and the bookType gap (book gap flag) fire — the amount still
+    // lands on R0120/C0040 (fail-safe: never blank a resolvable total).
     const store = new EventStore();
     const zarBasis = "42000000";
     seedCashInstrument(store, {
@@ -1001,11 +1025,14 @@ describe("BA 100 leaf fold — cash FIL (D-BA-RETURN-CAPABILITY-FIRST)", () => {
     });
 
     const leaf = fold(store, "combined");
-    // The resolvable amount IS placed on R0120 (in recon range) + R0910 provisional memo.
-    expect(leaf.get("R0120 C0020")).toBe(zarBasis);
-    expect(leaf.get("R0910 C0020")).toBe(zarBasis);
-    // R1050 (the inter-bank analysis memo) is NOT asserted for a residual.
-    expect(leaf.get("R1050 C0020")).toBeUndefined();
+    // The resolvable amount IS placed on R0120/C0040 (in recon range) + R0910 provisional memo.
+    // C0040 only — no counterpartyClass derivable, no bookType → total column only.
+    expect(leaf.get("R0120 C0040")).toBe(zarBasis);
+    expect(leaf.get("R0910 C0040")).toBe(zarBasis);
+    // R1050 (the inter-bank analysis memo) is NOT placed for a residual (no class derived).
+    expect(leaf.get("R1050 C0040")).toBeUndefined();
+    // C0020 absent — correct (no bookType, no guess).
+    expect(leaf.get("R0120 C0020")).toBeUndefined();
 
     // The LOUD flag carries the ZAR amount + the missing dimension.
     const residuals = collectBa100ResidualCash({
@@ -1048,6 +1075,7 @@ describe("BA 100 leaf fold — cash FIL (D-BA-RETURN-CAPABILITY-FIRST)", () => {
       currency: "ZAR",
       zarCostBasisAmount: "50000000",
       counterpartyClass: "central-bank",
+      bookType: "trading",
     });
 
     const leaf = fold(store, "combined");
@@ -1064,6 +1092,7 @@ describe("BA 100 leaf fold — cash FIL (D-BA-RETURN-CAPABILITY-FIRST)", () => {
       currency: "USD",
       zarCostBasisAmount: "97000000",
       counterpartyClass: "customer-non-bank",
+      bookType: "trading",
     });
 
     const leaf = fold(store, "combined");
@@ -1087,7 +1116,7 @@ describe("BA 100 leaf fold — cash FIL (D-BA-RETURN-CAPABILITY-FIRST)", () => {
       subCategory: "cet1.paid-up-ordinary-shares",
     });
 
-    // FX spot settled: USD nostro → R0120/C0020.
+    // FX spot settled: USD nostro → R0120/C0020 (trading-book FX cash).
     const cashBasis = "129954790";
     seedCashInstrument(store, {
       instanceId: "USD-FX-COMBINED",
@@ -1095,6 +1124,7 @@ describe("BA 100 leaf fold — cash FIL (D-BA-RETURN-CAPABILITY-FIRST)", () => {
       currency: "USD",
       zarCostBasisAmount: cashBasis,
       counterpartyClass: "bank",
+      bookType: "trading",
     });
 
     const leaf = fold(store, "combined");
@@ -1115,8 +1145,12 @@ describe("BA 100 leaf fold — cash FIL (D-BA-RETURN-CAPABILITY-FIRST)", () => {
     const folded040 = leaf.get("R0040 C0040");
     const foldedR0120C0020 = leaf.get("R0120 C0020");
     expect(folded040).toBe("300000000"); // capital nostro — C0040
-    expect(foldedR0120C0020).toBe(cashBasis); // FX cash — C0020, different column
-    // The two columns are independent — adding cash (C0020) does not mutate C0040.
-    expect(leaf.get("R0120 C0040")).toBeUndefined(); // no cross-column contamination
+    expect(foldedR0120C0020).toBe(cashBasis); // FX cash — C0020 (trading-book column)
+    // C0040 is the Total-Bank column — FX cash IS placed there too (C0040 = Σ C0010 + Σ C0020).
+    // The two primary rows (R0040 capital vs R0120 cash) are independent; the columns are
+    // additive, not exclusive.
+    expect(leaf.get("R0120 C0040")).toBe(cashBasis); // C0040 total mirrors C0020 trading-book
+    // Capital row must NOT have a C0020 cell (capital stays C0040 only).
+    expect(leaf.get("R0040 C0020")).toBeUndefined(); // no capital in trading-book column
   });
 });
