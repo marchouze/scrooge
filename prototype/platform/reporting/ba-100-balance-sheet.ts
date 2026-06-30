@@ -74,6 +74,7 @@
 import Decimal from "decimal.js";
 import { returnContractCitation } from "../../v2-core/regulatory-returns/return-contracts";
 import {
+  COA_ACCOUNTS,
   COA_BY_ID,
   COUNTERPARTY_SECTORS,
   type CounterpartySector,
@@ -173,6 +174,24 @@ export interface Ba100GeneratorInput {
    * emitted in that case).
    */
   readonly tolerateImbalanceMinor?: number;
+  /**
+   * Per-account signed FUNCTIONAL-currency (ZAR) net in minor units, summed across
+   * every currency the account holds (each leg translated leg-by-leg — never a
+   * currency sentinel). When SUPPLIED, the generator uses these signed nets as the
+   * account's balance INSTEAD of the per-currency `trialBalance` rows, and places
+   * each account onto its BA 100 section by category AND SIGN (a debit-natural cash
+   * account with a credit/negative net is short funding → a LIABILITY; a credit-
+   * natural account with a debit balance is an asset). This is the headline fix for
+   * the R790m bug: it (a) folds EUR/GBP/USD nostros in at their functional ZAR cost
+   * basis rather than dropping them, and (b) never sign-flips a negative cash
+   * account into a positive asset. Totals are SIGNED sums, so `assets ≡
+   * liabilities + equity` holds when the books balance. Authority:
+   * D-BA-RETURN-FAIL-SAFE-RESIDUAL-EXPOSURE; D-GL-PER-ENTRY-FUNCTIONAL-BALANCE-V1.
+   *
+   * When OMITTED, the legacy per-currency / abs-magnitude path runs unchanged
+   * (preserved for callers that pre-classify and present native magnitudes).
+   */
+  readonly functionalNetByAccount?: ReadonlyMap<string, number>;
 }
 
 // ---------------------------------------------------------------------------
@@ -398,6 +417,14 @@ export function generateBa100BalanceSheet(input: Ba100GeneratorInput): Ba100Bala
 
   const ccy = input.functionalCurrency as Currency;
 
+  // FUNCTIONAL-NET path (the R790m fix). When the caller supplies per-account
+  // signed functional-ZAR nets, place each account onto its BA 100 section by
+  // category AND SIGN, sum SIGNED, and assert A ≡ L + E. The legacy abs-magnitude /
+  // per-currency path runs only when this is omitted.
+  if (input.functionalNetByAccount !== undefined) {
+    return generateFromFunctionalNet(input, ccy, input.functionalNetByAccount, tolerance);
+  }
+
   // Index classifications by leafAccountId — duplicate detection.
   const classMap = new Map<string, Ba100LineClassification>();
   for (const c of input.classifications) {
@@ -578,6 +605,235 @@ export function generateBa100BalanceSheet(input: Ba100GeneratorInput): Ba100Bala
       "Banks Act 94 of 1990 §75",
       "Regulations Relating to Banks Reg 32",
       "IAS 1 — Presentation of Financial Statements",
+    ],
+    placeholders,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// FUNCTIONAL-NET generation path (the R790m fix).
+//
+// Place every balance-sheet account that holds a non-zero functional-ZAR net onto
+// a BA 100 section by category AND SIGN. A SARB BA 100 balance sheet presents a
+// credit balance on a debit-natural cash account (a nostro overdrawn = short FX
+// funding) as a LIABILITY (amounts owed to banks), NOT as a negative asset — and
+// never as a sign-flipped positive asset. Totals are SIGNED sums; with the books
+// in balance, assets ≡ liabilities + equity holds exactly.
+// ---------------------------------------------------------------------------
+
+/** The account's DECLARED on-balance-sheet section from its CoA category. */
+function declaredSectionForCategory(category: string): Ba100Section | undefined {
+  if (category.startsWith("asset")) return "assets";
+  if (category.startsWith("liability")) return "liabilities";
+  if (category === "equity") return "equity";
+  // Current-year P&L (income / expense) closes to retained earnings WITHIN equity —
+  // the current-year accumulated result. Presented in the equity section.
+  if (category.startsWith("income") || category.startsWith("expense")) return "equity";
+  return undefined; // memorandum / unknown — not a balance-sheet section.
+}
+
+/**
+ * Is this account DEBIT-natural (a positive signed net is its natural stock)?
+ * Assets + expenses are debit-natural; liabilities + equity + income are credit-
+ * natural. Sourced from the CoA category, not hand-keyed (Charter cmd 4).
+ */
+function isDebitNatural(category: string): boolean {
+  return category.startsWith("asset") || category.startsWith("expense");
+}
+
+/**
+ * Resolve the BA 100 section + presented (positive) magnitude for an account from
+ * its signed functional-ZAR net. The presented magnitude is always the absolute
+ * value; the section is the account's natural section when the balance is on its
+ * natural side, and the OPPOSITE section when the balance is contrary (a credit
+ * cash nostro → a funding liability; a debit liability → an asset receivable).
+ */
+function placeBySign(
+  category: string,
+  signedNetMinor: number,
+): { section: Ba100Section; magnitudeMinor: number; contrary: boolean } | undefined {
+  const declared = declaredSectionForCategory(category);
+  if (declared === undefined) return undefined;
+  const magnitudeMinor = Math.abs(signedNetMinor);
+
+  // EQUITY-section accounts (pure equity + income/expense closing to retained
+  // earnings) ALWAYS present within equity — a current-year LOSS is a debit P&L
+  // result inside equity, NEVER an asset. The asset↔liability sign-flip applies
+  // ONLY to asset / liability accounts (a credit nostro = funding owed → liability;
+  // a debit payable = receivable → asset). So we flip only when declared is a BS
+  // asset/liability section.
+  if (declared === "equity") {
+    return { section: "equity", magnitudeMinor, contrary: false };
+  }
+
+  const debitNatural = isDebitNatural(category);
+  // On natural side? debit-natural (asset) → positive net; credit-natural
+  // (liability) → negative net.
+  const onNaturalSide = debitNatural ? signedNetMinor >= 0 : signedNetMinor <= 0;
+  if (onNaturalSide) return { section: declared, magnitudeMinor, contrary: false };
+  // Contrary balance: an ASSET with a credit net presents as a LIABILITY (funding
+  // owed to banks); a LIABILITY with a debit net presents as an ASSET (receivable).
+  const opposite: Ba100Section = declared === "assets" ? "liabilities" : "assets";
+  return { section: opposite, magnitudeMinor, contrary: true };
+}
+
+function generateFromFunctionalNet(
+  input: Ba100GeneratorInput,
+  ccy: Currency,
+  netByAccount: ReadonlyMap<string, number>,
+  tolerance: number,
+): Ba100BalanceSheet {
+  const assetLines: Ba100LineItem[] = [];
+  const liabilityLines: Ba100LineItem[] = [];
+  const equityLines: Ba100LineItem[] = [];
+  let assetsTotal = 0;
+  let liabilitiesTotal = 0;
+  let equityTotal = 0;
+  const classificationGaps: Ba100ClassificationGap[] = [];
+
+  // Stable iteration over the accounts that carry a net, sorted by account id.
+  const accountIds = [...netByAccount.keys()].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+
+  for (const accountId of accountIds) {
+    const signed = netByAccount.get(accountId) ?? 0;
+    if (signed === 0) continue; // zero-net accounts contribute nothing.
+    // OFF-balance-sheet memorandum accounts are excluded from BA 100 entirely.
+    if (isOffBalanceSheetAccountId(accountId)) continue;
+    const coa = COA_BY_ID.get(accountId);
+    if (coa === undefined) {
+      // An account with a balance but NO CoA entry: never drop it silently. Surface
+      // it as a classification gap carrying its signed net (Charter cmd 2 / cmd 5).
+      classificationGaps.push({
+        leafAccountId: accountId,
+        currency: ccy,
+        amountMinor: signed,
+        amount: moneyFromMinorUnits(BigInt(signed), ccy),
+      });
+      continue;
+    }
+    const placement = placeBySign(coa.category, signed);
+    if (placement === undefined) {
+      // A balance-sheet-resolvable account whose category does not map to a section
+      // (should not happen for BS categories) — surfaced as a gap, never dropped.
+      classificationGaps.push({
+        leafAccountId: accountId,
+        currency: ccy,
+        amountMinor: signed,
+        amount: moneyFromMinorUnits(BigInt(signed), ccy),
+      });
+      continue;
+    }
+    const lineItem: Ba100LineItem = {
+      lineId: `${placement.section}.${accountId}`,
+      lineLabel: `${placement.section}.${coa.name}`,
+      amountMinor: placement.magnitudeMinor,
+      amount: moneyFromMinorUnits(BigInt(placement.magnitudeMinor), ccy),
+      currency: ccy,
+      contributingAccounts: [accountId],
+      ...(placement.contrary
+        ? {
+            note: `presented in ${placement.section} by sign — ${coa.category} account carries a contrary (${
+              isDebitNatural(coa.category) ? "credit" : "debit"
+            }) functional-ZAR balance (e.g. a short-funding nostro shown as amounts owed to banks)`,
+          }
+        : {}),
+    };
+    if (placement.section === "assets") {
+      assetLines.push(lineItem);
+      assetsTotal += placement.magnitudeMinor;
+    } else if (placement.section === "liabilities") {
+      liabilityLines.push(lineItem);
+      liabilitiesTotal += placement.magnitudeMinor;
+    } else {
+      equityLines.push(lineItem);
+      // Equity is accumulated in CREDIT-POSITIVE convention so that A ≡ L + E with
+      // A and L as positive natural-side magnitudes: paid-up capital (a credit)
+      // ADDS to equity; a trading LOSS (a debit P&L closing to retained earnings)
+      // SUBTRACTS. `signed` is the account's debit-positive net; equity in credit-
+      // positive terms is therefore the NEGATION of the debit-positive net.
+      // (capital ACC-5000-001 signed −300m → +300m equity; trading-P&L loss signed
+      // +279.3m → −279.3m equity; net equity +20.69m = total assets.)
+      equityTotal += -signed;
+    }
+  }
+
+  const liabilitiesPlusEquity = liabilitiesTotal + equityTotal;
+  const differenceMinor = assetsTotal - liabilitiesPlusEquity;
+  const balanced = Math.abs(differenceMinor) <= tolerance;
+
+  const placeholders: string[] = [];
+  if (!balanced && tolerance > 0) {
+    placeholders.push(
+      `[citation: TBC — BA 100: balance-sheet invariant violated by ${differenceMinor} ${ccy} (minor); tolerance ${tolerance}; functional-net path]`,
+    );
+  }
+  if (!balanced && tolerance === 0) {
+    throw new Ba100GeneratorError(
+      `BA 100 generator (functional-net): balance-sheet invariant violated — assets (${assetsTotal}) ≠ liabilities (${liabilitiesTotal}) + equity (${equityTotal}); difference ${differenceMinor} ${ccy} (minor). Set tolerateImbalanceMinor to surface as a placeholder instead.`,
+    );
+  }
+  if (classificationGaps.length > 0) {
+    placeholders.push(
+      `[GAP-BA100-FUNCTIONAL-NET-UNMAPPED recon:ba100-cell-values-reconcile — ${classificationGaps.length} account(s) with a functional-ZAR net could not be placed onto a section; surfaced, never dropped]`,
+    );
+  }
+  placeholders.push(returnContractCitation("BA600"));
+
+  const classificationsFingerprint = fingerprintClassifications(input.classifications);
+  const sectorBreakdown = computeSectorBreakdown(
+    { assets: assetLines, liabilities: liabilityLines, equity: equityLines },
+    { assets: assetsTotal, liabilities: liabilitiesTotal, equity: equityTotal },
+  );
+
+  // Per-currency totals: in the functional-net path every figure is already in the
+  // functional currency, so a single functional-currency bucket carries the totals.
+  const perCurrencyTotals: Ba100PerCurrencyTotal[] = [
+    {
+      currency: ccy,
+      assetsMinor: assetsTotal,
+      liabilitiesMinor: liabilitiesTotal,
+      equityMinor: equityTotal,
+    },
+  ];
+
+  return {
+    meta: {
+      form: "BA 100",
+      formVersion: "v0.1-rehearsal",
+      entity: input.entity,
+      asOf: input.asOf,
+      periodId: input.periodId,
+      functionalCurrency: ccy,
+      generatorVersion: "v0.1",
+      ...(input.trialBalanceSnapshotEventId
+        ? { trialBalanceSnapshotEventId: input.trialBalanceSnapshotEventId }
+        : {}),
+      classificationsFingerprint,
+    },
+    assets: { section: "assets", totalMinor: assetsTotal, lineItems: assetLines },
+    liabilities: {
+      section: "liabilities",
+      totalMinor: liabilitiesTotal,
+      lineItems: liabilityLines,
+    },
+    equity: { section: "equity", totalMinor: equityTotal, lineItems: equityLines },
+    sectorBreakdown,
+    perCurrencyTotals,
+    balanceCheck: {
+      assetsMinor: assetsTotal,
+      liabilitiesPlusEquityMinor: liabilitiesPlusEquity,
+      differenceMinor,
+      toleranceMinor: tolerance,
+      balanced,
+    },
+    classificationGaps,
+    citations: [
+      "D-BA-RETURN-FAIL-SAFE-RESIDUAL-EXPOSURE",
+      "D-GL-PER-ENTRY-FUNCTIONAL-BALANCE-V1",
+      "Banks Act 94 of 1990 §75",
+      "Regulations Relating to Banks Reg 32",
+      "IAS 1 — Presentation of Financial Statements",
+      "IAS 21 — The Effects of Changes in Foreign Exchange Rates",
     ],
     placeholders,
   };
