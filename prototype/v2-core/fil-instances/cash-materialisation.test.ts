@@ -96,3 +96,50 @@ describe("buildSettledCashPayloads — ZAR cost basis is ALWAYS stamped (never s
     ).toThrow(/USD paid/);
   });
 });
+
+// ---------------------------------------------------------------------------
+// cashTerms.counterpartyClass threading tests
+// (D-BA-RETURN-CAPABILITY-FIRST; D-BA-RETURN-PER-PRODUCT-RICHNESS)
+// ---------------------------------------------------------------------------
+describe("buildSettledCashPayloads — cashTerms.counterpartyClass (BA 100 row placement)", () => {
+  test("counterpartyClass:'bank' is stamped on each cash leg's economicTerms.cashTerms", () => {
+    const built = buildSettledCashPayloads({
+      ...BASE,
+      legs: [
+        { currency: "USD", signedMajor: 7_000_000, side: "received" },
+        { currency: "ZAR", signedMajor: -129_954_790, side: "paid" },
+      ],
+      counterpartyClass: "bank",
+    });
+    for (const leg of built) {
+      const ct = leg.payload.economicTerms.cashTerms;
+      expect(ct).toBeDefined();
+      expect(ct?.counterpartyClass).toBe("bank");
+    }
+  });
+
+  test("absent counterpartyClass → cashTerms is omitted entirely (fail-closed: fold will skip)", () => {
+    const built = buildSettledCashPayloads({
+      ...BASE,
+      legs: [
+        { currency: "USD", signedMajor: 7_000_000, side: "received" },
+        { currency: "ZAR", signedMajor: -129_954_790, side: "paid" },
+      ],
+      // counterpartyClass intentionally absent
+    });
+    for (const leg of built) {
+      // cashTerms must be absent — the BA 100 fold fails closed on instruments
+      // without it, rather than guessing a row.
+      expect(leg.payload.economicTerms.cashTerms).toBeUndefined();
+    }
+  });
+
+  test("counterpartyClass:'central-bank' is threaded correctly", () => {
+    const built = buildSettledCashPayloads({
+      ...BASE,
+      legs: [{ currency: "ZAR", signedMajor: 5_000_000, side: "received" }],
+      counterpartyClass: "central-bank",
+    });
+    expect(built[0]?.payload.economicTerms.cashTerms?.counterpartyClass).toBe("central-bank");
+  });
+});

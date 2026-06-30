@@ -148,6 +148,13 @@ export function settleFxLeg(args: {
     fxInstance,
     legs,
     originatingEvent,
+    // FX spot settlement is routed via a correspondent / sponsor bank (indirect-
+    // participant model — no direct CLS/SAMOS). The settled nostro cash balance
+    // is therefore a "bank" counterparty-class position (Reg 26), which places it
+    // on BA 100 R0120 (primary) + R0910 / R1050 (memo). If the settlement-agent
+    // identity is ever resolved to SARB directly, upgrade to "central-bank".
+    // Authority: D-BA-RETURN-CAPABILITY-FIRST; D-BA-RETURN-PER-PRODUCT-RICHNESS.
+    counterpartyClass: "bank" as const,
   };
   const builtLegs = buildSettledCashPayloads(materialisationInput);
 

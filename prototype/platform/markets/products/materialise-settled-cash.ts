@@ -380,6 +380,10 @@ export function materialiseSettledCash(
     // FX instance (carried in economicTerms.originatingInstrument for the graph).
     originatingEvent: { eventType: "SettlementConfirmed", eventId: fx.fxInstance },
     cashTypeUrn: rule.materialisesTypeUrn,
+    // FX spot settlement is routed via a correspondent / sponsor bank (indirect-
+    // participant model). The settled nostro cash is "bank" class (Reg 26) → BA 100
+    // R0120 + R0910/R1050 memos. Authority: D-BA-RETURN-CAPABILITY-FIRST.
+    counterpartyClass: "bank" as const,
   };
   const built = buildSettledCashPayloads(materialisationInput);
 

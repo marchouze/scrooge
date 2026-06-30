@@ -969,6 +969,11 @@ export const RECON_SUITES: Record<string, readonly string[]> = {
     // non-sourced cells are honestly tracked. Marc's "every cell fully
     // defined" guarantee, machine-checked.
     "recon:ba-return-cell-contract",
+    // ENFORCING (D-BA-RETURN-CAPABILITY-FIRST): the sourced-cell count per BA-
+    // return form may only INCREASE over time — capability hardens, never regresses.
+    // A cell de-sourced without a CEO-approved Decision is a failing violation.
+    // Modelled on the v1-removal-ratchet (inverted: counts increase not decrease).
+    "recon:ba-return-coverage-ratchet",
     // ENFORCING (D-FX-RETURN-CELL-CONTRACTS-AND-BA700-MR-WIRING): the FX→return-
     // cell inverse index (fx-product-return-cells.ts) names the SARB cells an FX
     // OTC vanilla trade feeds at verbatim XSD coordinates; this gate asserts each
