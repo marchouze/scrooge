@@ -28,6 +28,42 @@ import type { LeafCellValues } from "../../../v2-core/regulatory-returns/cell-va
 import type { EventStore } from "../../event-store/store";
 import type { MarketDataStore } from "../../market-data/store";
 
+/**
+ * Reference-data accessor for canonical-home joins in leaf folds. Each method
+ * is fail-closed: returns null (never a guessed default) when a key is unmapped.
+ * Callers must handle null and, per Charter cmd 5, surface a tracked gap.
+ *
+ * Phase 2 surfaces the desk-book-type lookup (getDeskBookType) for the BA 100
+ * banking/trading book split. Party residency + sector lookups (Phase 3) are
+ * declared here to fix the shape; the data is wired in a later dispatch.
+ *
+ * Authority: D-BA-RETURN-CELL-VALUE-ENGINE Phase 2; D-FX-BOOK-BOUNDARY;
+ *   D-ENGINEERING-INTEGRITY-CHARTER cmd 2 (fail-closed), cmd 4 (source-don't-
+ *   hardcode), cmd 5 (no-silent-deferral).
+ */
+export interface LeafFoldReferenceData {
+  /**
+   * Party register: look up a counterparty's residency classification, or null
+   * when the counterparty is not in the register. Fail-closed — never guesses.
+   * Phase 3 wires the party-register join; returns null until then.
+   */
+  getCounterpartyResidency(
+    counterpartyId: string,
+  ): "resident" | "non-resident" | "authorised-dealer" | "sarb" | null;
+  /**
+   * Party register: look up a counterparty's sector classification, or null.
+   * Fail-closed. Phase 3 wires the party-register join; returns null until then.
+   */
+  getCounterpartySector(counterpartyId: string): string | null;
+  /**
+   * Desk register: look up an active desk's bookType, or null when the deskId is
+   * not in the canonical roster. Fail-closed (unrecognised deskId → null, never
+   * a guessed "trading" default). Reads from CANONICAL_DESKS (v2-core/desk/roster.ts).
+   * Authority: D-FRTB-TRADING-DESK-STRUCTURE; D-FX-BOOK-BOUNDARY.
+   */
+  getDeskBookType(deskId: string): "trading" | "banking-treasury" | null;
+}
+
 /** Inputs a leaf fold reads — the event log (under the active provenance lens), plus context. */
 export interface LeafFoldContext {
   readonly eventStore: EventStore;
@@ -38,6 +74,15 @@ export interface LeafFoldContext {
   readonly asOf: string;
   /** ISO-4217 functional currency. */
   readonly functionalCurrency: string;
+  /**
+   * Optional reference-data accessor for canonical-home joins (party register,
+   * desk register). OPTIONAL now — no existing fold builds it yet; later phases
+   * will populate it. Fail-closed: each accessor returns null for unknown keys.
+   * Phase 2: `getDeskBookType` is the first populated method (BA 100 book split).
+   * Phase 3: `getCounterpartyResidency` + `getCounterpartySector` wired (party
+   * register join for BA 100 residency/sector slices).
+   */
+  readonly referenceData?: LeafFoldReferenceData;
 }
 
 /**

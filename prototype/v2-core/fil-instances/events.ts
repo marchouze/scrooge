@@ -218,6 +218,17 @@ export const filCashCounterpartyClassSchema = z.enum(["central-bank", "bank", "c
 export type FilCashCounterpartyClass = z.infer<typeof filCashCounterpartyClassSchema>;
 
 /**
+ * FRTB trading/banking-book discriminator for a settled cash FIL instance.
+ * Re-declared here (not imported from v2-core/desk/events.ts) to keep the
+ * events schema self-contained — structurally identical to `DeskBookType`.
+ * "trading" → C0020 (Trading book); "banking-treasury" → C0010 (Banking book).
+ * Authority: D-FX-BOOK-BOUNDARY; D-FRTB-TRADING-DESK-STRUCTURE.
+ */
+export const filCashBookTypeSchema = z.enum(["trading", "banking-treasury"]);
+
+export type FilCashBookType = z.infer<typeof filCashBookTypeSchema>;
+
+/**
  * Cash dimension block — OPTIONAL on settled `cash` FIL instances. The BA 100
  * leaf fold fails closed when absent (Charter cmd 2). Additive: existing
  * instruments parse unchanged (Charter cmd 9 replay-safe).
@@ -225,6 +236,14 @@ export type FilCashCounterpartyClass = z.infer<typeof filCashCounterpartyClassSc
 export const filCashTermsSchema = z.object({
   /** BA 100 counterparty class (Reg 26) — drives primary row + memo rows. */
   counterpartyClass: filCashCounterpartyClassSchema,
+  /**
+   * FRTB trading/banking-book book designation (D-FX-BOOK-BOUNDARY). Present
+   * when propagated from the originating FX trade's `bookType`. Drives the BA
+   * 100 C0010/C0020 column split. Absent → fold places on C0040 only + emits
+   * a loud gap (fail-closed; Charter cmd 2 / cmd 4 — never guess a column).
+   * Replay-safe: optional so pre-existing cash instruments parse unchanged.
+   */
+  bookType: filCashBookTypeSchema.optional(),
 });
 
 export type FilCashTerms = z.infer<typeof filCashTermsSchema>;

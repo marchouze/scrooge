@@ -41,6 +41,7 @@ import { type Money, moneyFromDecimal } from "../fil-core/primitives";
 import { formatInstanceUrn } from "../fil-core/urn";
 import { CASH_BALANCE_TYPE_URN } from "../fil-models/cash/types/cash-type-definitions";
 import {
+  type FilCashBookType,
   type FilCashCounterpartyClass,
   type FilInstrumentCreatedPayload,
   type FilInstrumentTerminatedPayload,
@@ -121,6 +122,15 @@ export interface CashMaterialisationInput {
    */
   readonly counterpartyClass?: FilCashCounterpartyClass;
   /**
+   * FRTB trading/banking-book book designation (D-FX-BOOK-BOUNDARY). Propagated
+   * from the originating FX trade's `bookType` by the settlement seam. Drives
+   * the BA 100 C0010/C0020 column split. OPTIONAL: when absent, the BA 100 fold
+   * places on C0040 only + emits a loud gap (fail-closed, Charter cmd 2 / cmd 4
+   * — never guess a column). New cash instruments MUST supply this; the field is
+   * optional only for additive replay-safety of pre-Phase-2 instruments.
+   */
+  readonly bookType?: FilCashBookType;
+  /**
    * EXPLICIT settlement-date ZAR (reporting-currency) carrying amount per leg side,
    * in positive MAJOR units — the IAS 21 §21 spot-rate ZAR value at the settlement
    * date. Supplied by the caller ONLY when a settled FCY leg has NO reporting-
@@ -196,8 +206,15 @@ export function buildSettledCashPayloads(input: CashMaterialisationInput): Built
         // Cash dimension — only stamped when counterpartyClass is supplied by the
         // caller (the settlement seam). Absent ⇒ omitted entirely; the BA 100 fold
         // fails closed on the instrument rather than guessing the row (Charter cmd 2).
+        // bookType is co-stamped when supplied (the FRTB book designation, from the
+        // originating FX trade, drives C0010/C0020 column split in the BA 100 fold).
         ...(input.counterpartyClass !== undefined
-          ? { cashTerms: { counterpartyClass: input.counterpartyClass } }
+          ? {
+              cashTerms: {
+                counterpartyClass: input.counterpartyClass,
+                ...(input.bookType !== undefined ? { bookType: input.bookType } : {}),
+              },
+            }
           : {}),
       },
     });
