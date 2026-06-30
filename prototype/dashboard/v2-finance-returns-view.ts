@@ -83,6 +83,10 @@ import {
   generateBa100BalanceSheet,
   isOffBalanceSheetAccountId,
 } from "../platform/reporting/ba-100-balance-sheet";
+import {
+  type ResidualCashPlacement,
+  collectBa100ResidualCash,
+} from "../platform/reporting/cell-value/ba100-leaf-fold";
 import { leafFoldFor } from "../platform/reporting/cell-value/leaf-fold-registry";
 import { getSubstrateGap } from "../platform/substrate/gap-register";
 // Side-effect import: registers every seat-authored per-form leaf fold so the
@@ -777,6 +781,18 @@ export interface FinanceReturnCell {
   /** Primary clause citation (P2 upward link). */
   readonly citation: string;
   /**
+   * The cell's data requirements — WHAT data populates (or would populate) it,
+   * by source kind + concrete ref (D-BA-RETURN-FAIL-SAFE-RESIDUAL-EXPOSURE Part 2,
+   * the formula/criteria toggle). Surfaced from the contract so formula mode can
+   * show HOW each cell is fed (sourceKind + ref + description) without re-keying.
+   */
+  readonly dataRequirements: readonly {
+    readonly sourceKind: string;
+    readonly ref: string;
+    readonly description: string;
+    readonly required: boolean;
+  }[];
+  /**
    * The cell's computed numeric value, where the substrate can source it SOUNDLY:
    * the form-level aggregate cells (HEADLINE_CELLS) always, PLUS the full per-line
    * value engine for any form whose owning seat has authored a line attribution
@@ -834,6 +850,16 @@ export interface FinanceReturnDetailView {
   /** Computed live figures, where a figure-producing route exists (else absent). */
   readonly figures?: FinanceReturnFigures;
   readonly cells: readonly FinanceReturnCell[];
+  /**
+   * TIER-3 RESIDUAL settled-cash placements (D-BA-RETURN-FAIL-SAFE-RESIDUAL-
+   * EXPOSURE) — settled cash whose resolvable ZAR amount IS placed on the balance
+   * sheet (R0120, so the detail reconciles to the oracle TOTAL ASSETS) but whose
+   * banks-vs-customers SUB-ALLOCATION is deferred. Surfaced as a LOUD flag so the
+   * overseer sees money is exposed, not hidden, and the missing dimension is
+   * flagged immediately for substrate development. Empty for forms without a
+   * residual-bearing fold (only BA 100 today). Never grounds to hide the money.
+   */
+  readonly residualCash: readonly ResidualCashPlacement[];
 }
 
 /**
@@ -872,6 +898,23 @@ function buildFinanceReturnDetailViewInner(
   const valueByXsd = new Map<string, FinanceReturnCellValue>(
     headlineValuesByXsd(formId, contract, figures),
   );
+  // TIER-3 RESIDUAL settled-cash flag (D-BA-RETURN-FAIL-SAFE-RESIDUAL-EXPOSURE).
+  // BA 100 only today: settled cash whose ZAR amount IS placed (R0120) but whose
+  // counterparty sub-allocation is deferred — surfaced loud, never hidden. Read
+  // under the SAME provenance lens (we are inside withProvenance) so the flag and
+  // the placed value cannot drift.
+  const residualCash: ResidualCashPlacement[] =
+    formId === "BA100"
+      ? [
+          ...collectBa100ResidualCash({
+            eventStore,
+            marketData,
+            entity: RETURNS_ENTITY,
+            asOf: RETURNS_AS_OF,
+            functionalCurrency,
+          }),
+        ]
+      : [];
   const leafFold = leafFoldFor(formId);
   if (leafFold !== undefined) {
     const leafValues = leafFold({
@@ -931,6 +974,12 @@ function buildFinanceReturnDetailViewInner(
       derivationKind: c.derivation.kind,
       derivationExpression: c.derivation.expression,
       citation: primary !== undefined ? primary.clause : "",
+      dataRequirements: c.dataRequirements.map((d) => ({
+        sourceKind: d.sourceKind,
+        ref: d.ref,
+        description: d.description,
+        required: d.required,
+      })),
       value: valueByXsd.get(c.cellRef.xsdElement) ?? null,
     };
   });
@@ -949,5 +998,6 @@ function buildFinanceReturnDetailViewInner(
     columns,
     ...(figures !== undefined ? { figures } : {}),
     cells,
+    residualCash,
   };
 }
