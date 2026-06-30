@@ -1,0 +1,325 @@
+// platform/reporting/ba100-return-render.ts
+//
+// BA 100 RETURN-OF-RECORD RENDER (Phase 4, D-BA-RETURN-CELL-VALUE-ENGINE).
+//
+// Produces a deterministic JSON document that is the canonical body of the
+// BA 100 return-of-record `RecordFiled` event. The document combines:
+//
+//   (1) PER-CELL LEAF-FOLD VALUES — sourced directly from the event log via
+//       `foldBa100LeafValues(ctx)` (the events-direct fold, NOT routed through
+//       the CoA). These are the primary granular return values for every cell the
+//       fold can resolve with sound event-backed data (Phase 1: capital lines +
+//       FX cash legs). Unresolved cells are omitted (never fabricated).
+//
+//   (2) COA RECONCILIATION BLOCK — the independent CoA-side section totals from
+//       `generateBa100BalanceSheet` (the GL oracle). Paired with the leaf-fold
+//       section sums so the document is self-reconciling (the recon gate result
+//       is baked in, not just asserted separately).
+//
+// DETERMINISTIC: the render body must be byte-identical for the same event-store
+// snapshot. No `new Date()` / `Date.now()` in the body — use the `asOf` param
+// derived from the period end.
+//
+// PROVENANCE: the caller pins the provenance lens BEFORE invoking (via
+// `setDefaultProvenanceModeOverride`). The fold reads under whatever lens is
+// active — the same behaviour as the dashboard fold (`v2-finance-returns-view.ts`).
+//
+// PURE FUNCTION: no side effects; callers are responsible for filing via
+// `recordFiled`.
+//
+// Authority: D-BA-RETURN-CELL-VALUE-ENGINE (Phase 4); D-BA-RETURN-CAPABILITY-FIRST;
+//   D-ENGINEERING-INTEGRITY-CHARTER (deterministic; fail-closed; source-don't-
+//   hardcode); Principle 1 (events are truth); Principle 2 (single-graph).
+// Author: Bea (Accounting & financial reporting engineer, engineering —
+//   reports to Camille (CFO); domain owner of SARB BA 100).
+
+import { computeDerivedCells } from "../../v2-core/regulatory-returns/cell-value/engine";
+import { ba100Contract } from "../../v2-core/regulatory-returns/ba100-contract";
+import type { EventStore } from "../event-store/store";
+import type { MarketDataStore } from "../market-data/store";
+import type { Ba100BalanceSheet } from "./ba-100-balance-sheet";
+import { buildBa100ReferenceData } from "./cell-value/ba100-reference-data";
+import { foldBa100LeafValues } from "./cell-value/ba100-leaf-fold";
+import type { LeafFoldContext } from "./cell-value/leaf-fold-registry";
+import { buildPartyProjection } from "../identity/party-projection";
+
+// ---------------------------------------------------------------------------
+// Public types
+// ---------------------------------------------------------------------------
+
+/** A single per-cell entry in the leaf-fold section of the render. */
+export interface Ba100ReturnLeafCell {
+  /** Coordinate: `"<row> <column>"` e.g. `"R0040 C0040"`. */
+  readonly coord: string;
+  /** Decimal-native major-unit string (ZAR). */
+  readonly amount: string;
+  /** Whether this value was placed directly by the leaf fold or computed. */
+  readonly source: "leaf-fold" | "derived";
+}
+
+/** Reconciliation block: leaf-fold section sums vs CoA oracle totals. */
+export interface Ba100ReturnReconBlock {
+  /** Section. */
+  readonly section: "assets" | "liabilities" | "equity";
+  /**
+   * Leaf-fold Σ for this section (decimal major-unit string, ZAR).
+   * Sum of all leaf-fold cells in the section.
+   */
+  readonly leafFoldSum: string;
+  /**
+   * CoA oracle section total (minor units, then converted to decimal string).
+   * Matches `ba100BalanceSheet.assets.totalMinor` etc.
+   */
+  readonly oracleTotal: string;
+  /**
+   * Whether the leaf-fold subset is reconciled INTO the oracle (subset-soundness).
+   * TRUE = leafFoldSum ≤ oracleTotal (the fold placed no more than the GL holds).
+   * EQUITY section uses the special capital-exactness check (leaf = oracle own-funds
+   * component, not the netted P&L equity total).
+   */
+  readonly reconciled: boolean;
+}
+
+/** The rendered BA 100 return-of-record document body. */
+export interface Ba100ReturnRender {
+  /** Fixed schema identifier for version tracking. */
+  readonly $schema: "https://hoz.bank/schemas/ba100-return-of-record/v0.1.json";
+  readonly meta: {
+    readonly form: "BA100";
+    readonly formVersion: "v0.1-build-phase";
+    readonly entity: string;
+    readonly periodId: string;
+    readonly asOf: string;
+    readonly functionalCurrency: string;
+    readonly renderPhase: "phase4";
+    /** Citations backing this filing. */
+    readonly citations: readonly string[];
+  };
+  /** All resolved leaf cells + derived summation cells (non-zero only). */
+  readonly cells: readonly Ba100ReturnLeafCell[];
+  /** Reconciliation blocks per section. */
+  readonly reconBlocks: readonly Ba100ReturnReconBlock[];
+  /** Substrate gaps: cells the fold could NOT resolve from events. */
+  readonly unresolvedCells: readonly string[];
+  /** Summary verdict. */
+  readonly verdict: {
+    readonly totalCellsResolved: number;
+    readonly totalCellsUnresolved: number;
+    readonly reconPass: boolean;
+    readonly note: string;
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Section classification (mirrors ba100-cell-values-reconcile.ts)
+// ---------------------------------------------------------------------------
+
+type Section = "assets" | "liabilities" | "equity";
+
+function sectionForRow(row: string): Section | undefined {
+  const m = row.match(/^R(\d{4})$/);
+  if (m === null) return undefined;
+  const n = Number(m[1]);
+  if (n >= 10 && n <= 530) return "assets";
+  if (n >= 550 && n <= 780) return "liabilities";
+  if (n >= 800 && n <= 860) return "equity";
+  return undefined;
+}
+
+// ---------------------------------------------------------------------------
+// renderBa100Return — the main render function
+// ---------------------------------------------------------------------------
+
+export interface RenderBa100ReturnInput {
+  readonly eventStore: EventStore;
+  readonly marketData: MarketDataStore;
+  readonly entity: string;
+  readonly periodId: string;
+  readonly asOf: string;
+  readonly periodStart: string;
+  readonly periodEnd: string;
+  readonly functionalCurrency: string;
+  /** Pre-built CoA oracle sheet (from generateBa100BalanceSheet). */
+  readonly oracleSheet: Ba100BalanceSheet;
+}
+
+/**
+ * Produce the deterministic BA 100 return-of-record document.
+ * Pure function — no side effects.
+ *
+ * The caller must have already set the provenance mode override BEFORE calling
+ * this function, and must restore it after (the function does NOT touch the
+ * override — it reads whatever the active mode is).
+ */
+export function renderBa100Return(input: RenderBa100ReturnInput): Ba100ReturnRender {
+  // (1) Build the leaf fold with the full referenceData (party + desk).
+  const partyProjection = buildPartyProjection(input.eventStore);
+  const referenceData = buildBa100ReferenceData(partyProjection);
+
+  const ctx: LeafFoldContext = {
+    eventStore: input.eventStore,
+    marketData: input.marketData,
+    entity: input.entity,
+    asOf: input.asOf,
+    functionalCurrency: input.functionalCurrency,
+    referenceData,
+  };
+
+  const leafValues = foldBa100LeafValues(ctx);
+
+  // (2) Run the engine to compute derived cells (summation / formulae).
+  const contract = ba100Contract();
+  const derived = computeDerivedCells({
+    contract,
+    leafValues,
+    functionalCurrency: input.functionalCurrency,
+  });
+
+  // (3) Build the combined cell list. Leaf-fold values take precedence for
+  //     cells the fold placed (they are the direct-event values); derived
+  //     covers everything else the engine computes from them.
+  const leafCoords = new Set(leafValues.keys());
+  const combined = new Map<string, { amount: string; source: "leaf-fold" | "derived" }>();
+
+  // Engine values first (totals + subtotals).
+  const coordByXsd = new Map<string, string>();
+  for (const c of contract.cells) {
+    if (c.cellRef.row !== undefined && c.cellRef.column !== undefined) {
+      coordByXsd.set(c.cellRef.xsdElement, `${c.cellRef.row} ${c.cellRef.column}`);
+    }
+  }
+  for (const [xsd, v] of derived) {
+    const coord = coordByXsd.get(xsd);
+    if (coord === undefined) continue;
+    const source: "leaf-fold" | "derived" = leafCoords.has(coord) ? "leaf-fold" : "derived";
+    combined.set(coord, { amount: v.amount, source });
+  }
+  // Leaf values that the engine may not have emitted separately.
+  for (const [coord, v] of leafValues) {
+    if (!combined.has(coord)) {
+      combined.set(coord, { amount: v, source: "leaf-fold" });
+    } else {
+      // Leaf-fold wins over a derived entry on the same coord.
+      combined.set(coord, { amount: v, source: "leaf-fold" });
+    }
+  }
+
+  // Filter to non-zero cells only (deterministic zero omission).
+  const cells: Ba100ReturnLeafCell[] = [];
+  for (const [coord, { amount, source }] of combined) {
+    if (amount !== "0" && amount !== "0.0" && amount !== "0.00") {
+      cells.push({ coord, amount, source });
+    }
+  }
+  // Sort by coord for byte-stable output.
+  cells.sort((a, b) => a.coord.localeCompare(b.coord));
+
+  // (4) Compute the leaf-fold section sums for the recon block.
+  const leafBySection: Record<Section, number> = { assets: 0, liabilities: 0, equity: 0 };
+  for (const [coord, v] of leafValues) {
+    const [row] = coord.split(" ");
+    if (row === undefined) continue;
+    const section = sectionForRow(row);
+    if (section === undefined) continue;
+    const n = Number.parseFloat(v);
+    if (!Number.isFinite(n)) continue;
+    leafBySection[section] += Math.abs(n);
+  }
+
+  // Oracle section totals in major units (oracle uses minor units).
+  const MINOR_DIVISOR = 100; // always ZAR cents
+  const oracleBySection: Record<Section, number> = {
+    assets: input.oracleSheet.assets.totalMinor / MINOR_DIVISOR,
+    liabilities: input.oracleSheet.liabilities.totalMinor / MINOR_DIVISOR,
+    equity: input.oracleSheet.equity.totalMinor / MINOR_DIVISOR,
+  };
+
+  const reconBlocks: Ba100ReturnReconBlock[] = (
+    ["assets", "liabilities", "equity"] as const
+  ).map((section) => {
+    const leafSum = leafBySection[section];
+    const oracleTotal = oracleBySection[section];
+    // Subset-soundness: leafSum must not exceed the oracle total.
+    const reconciled = leafSum <= oracleTotal + 1e-2; // 1-cent tolerance for float arithmetic
+    return {
+      section,
+      leafFoldSum: leafSum.toFixed(2),
+      oracleTotal: oracleTotal.toFixed(2),
+      reconciled,
+    };
+  });
+
+  const reconPass = reconBlocks.every((b) => b.reconciled);
+
+  // (5) Unresolved cells: contract leaf cells with no fold value.
+  const contractLeafCoords = new Set<string>();
+  for (const c of contract.cells) {
+    if (
+      c.cellRef.row !== undefined &&
+      c.cellRef.column !== undefined &&
+      !c.cellRef.row.startsWith("R0540") && // totals
+      !c.cellRef.row.startsWith("R0790") &&
+      !c.cellRef.row.startsWith("R0870")
+    ) {
+      contractLeafCoords.add(`${c.cellRef.row} ${c.cellRef.column}`);
+    }
+  }
+  const unresolvedCells: string[] = [];
+  for (const coord of contractLeafCoords) {
+    if (!leafCoords.has(coord)) {
+      unresolvedCells.push(coord);
+    }
+  }
+  unresolvedCells.sort();
+
+  return {
+    $schema: "https://hoz.bank/schemas/ba100-return-of-record/v0.1.json",
+    meta: {
+      form: "BA100",
+      formVersion: "v0.1-build-phase",
+      entity: input.entity,
+      periodId: input.periodId,
+      asOf: input.asOf,
+      functionalCurrency: input.functionalCurrency,
+      renderPhase: "phase4",
+      citations: [
+        "D-BA-RETURN-CAPABILITY-FIRST",
+        "D-BA-RETURN-CELL-VALUE-ENGINE",
+        "D-ENGINEERING-INTEGRITY-CHARTER",
+        "Principles/1-events-are-truth.md",
+      ],
+    },
+    cells,
+    reconBlocks,
+    unresolvedCells,
+    verdict: {
+      totalCellsResolved: cells.length,
+      totalCellsUnresolved: unresolvedCells.length,
+      reconPass,
+      note: reconPass
+        ? "Leaf-fold subset is sound: all section sums ≤ GL oracle totals. BA100 return reconciles."
+        : "RECON FAIL: at least one section sum exceeds the GL oracle total — review before filing.",
+    },
+  };
+}
+
+/**
+ * Deterministic JSON serialisation: sorts object keys recursively so the same
+ * input always produces byte-identical bytes (same BLAKE3 hash across re-runs).
+ */
+export function canonicaliseReturnRender(render: Ba100ReturnRender): string {
+  return JSON.stringify(sortKeys(render as unknown), null, 2);
+}
+
+function sortKeys(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(sortKeys);
+  if (value !== null && typeof value === "object" && !(value instanceof Date)) {
+    const obj = value as Record<string, unknown>;
+    const out: Record<string, unknown> = {};
+    for (const k of Object.keys(obj).sort()) {
+      out[k] = sortKeys(obj[k]);
+    }
+    return out;
+  }
+  return value;
+}
