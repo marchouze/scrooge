@@ -67,6 +67,15 @@
     .v2-disp-toggle button.active { background:var(--color-info-bg); color:var(--color-text); }
     .v2-disp-toggle button + button { border-left:1px solid var(--color-border); }
 
+    /* "Figures only" (default) — blank the UNSOURCED cells inside the value grid so
+       only the actual figures show. A cell with no sound value (NOT .has-val) drops
+       its "— not yet sourced" placeholder + derivation expression and renders as a
+       plain empty cell; figure cells (.has-val) are untouched. PURE display filter —
+       the cell content stays in the DOM (revealed by "Show unsourced"), the numbers
+       and reconciliation are unchanged. */
+    table.v2-form.hide-unsourced td.cell:not(.has-val) { background:transparent; }
+    table.v2-form.hide-unsourced td.cell:not(.has-val) > * { display:none; }
+
     /* Residual-cash LOUD flag (fail-safe exposure — money placed, sub-allocation deferred). */
     .v2-residual { margin:8px 0 14px; padding:11px 14px; border-radius:6px;
       background:var(--color-warning-bg, #5a4a1a); color:var(--color-text);
@@ -357,12 +366,26 @@
         section.appendChild(banner);
       }
 
+      // "Show unsourced cells" — third independent display switch (default OFF /
+      // HIDDEN). Persisted in localStorage like the provenance lens (the established
+      // durable-toggle pattern: localStorage key, default off). A cell is "unsourced"
+      // when it carries NO sound value (`!cell.value`): in value mode it shows the
+      // "— not yet sourced" placeholder + derivation expression, in formula mode the
+      // criteria row. Hidden by default so the grid shows only figure-bearing cells.
+      // PURE display filter — no change to derivation, values, or reconciliation.
+      const UNSOURCED_KEY = "v2.showUnsourcedCells";
+      let showUnsourced = localStorage.getItem(UNSOURCED_KEY) === "1";
+
       const toolbar = document.createElement("div");
       toolbar.className = "v2-ss-toolbar";
       toolbar.innerHTML =
         `<div class="v2-disp-toggle" role="group" aria-label="Display mode">` +
         `<button data-disp="value" class="active">Value</button>` +
         `<button data-disp="formula">Formula / criteria</button>` +
+        `</div>` +
+        `<div class="v2-disp-toggle" role="group" aria-label="Unsourced cells">` +
+        `<button data-unsourced="hide"${showUnsourced ? "" : ` class="active"`}>Figures only</button>` +
+        `<button data-unsourced="show"${showUnsourced ? ` class="active"` : ""}>Show unsourced</button>` +
         `</div>` +
         `<input class="v2-ss-search" type="search" placeholder="Filter — row heading, coordinate, definition" aria-label="Filter rows">` +
         `<span class="v2-ss-legend">` +
@@ -397,10 +420,14 @@
         const rowLabel = rowLabelOf.get(row) || "";
         const cells = cols.map((col) => cellHtml(cellAt.get(`${row} ${col.column}`))).join("");
         tr.innerHTML = `<td class="rowhead"><span class="rc">${v2Esc(row)}</span>${v2Esc(rowLabel)}</td>${cells}`;
-        const rowCells = cols.map((col) => cellAt.get(`${row} ${col.column}`)).filter(Boolean);
+        const rowCells = cols.map((col) => cellAt.get(`${row} ${col.column}`)).filter(Boolean);
+        // A row is "figure-bearing" if at least one of its cells carries a sound
+        // value. Rows with no sound value anywhere are unsourced and hidden when the
+        // "Figures only" default is active.
+        const hasFigure = rowCells.some((c) => c.value);
         const blob = [row, rowLabel, ...rowCells.map((c) => `${c.label} ${c.regulatoryDefinition} ${c.xsdElement}`)]
           .join(" ").toLowerCase();
-        return { tr, blob };
+        return { tr, blob, hasFigure };
       });
       for (const r of rowEls) tbody.appendChild(r.tr);
       table.appendChild(tbody);
@@ -440,7 +467,9 @@
           c.derivationExpression || "",
           (c.dataRequirements || []).map((d) => `${d.sourceKind} ${d.ref} ${d.description}`).join(" ")]
           .join(" ").toLowerCase();
-        return { tr, blob };
+        // Same "figure-bearing" test as the value grid: the cell's own sound value.
+        const hasFigure = Boolean(c.value);
+        return { tr, blob, hasFigure };
       });
       for (const r of fRowEls) fBody.appendChild(r.tr);
       fTable.appendChild(fBody);
@@ -458,23 +487,44 @@
       setCount(rowOrder.length);
       section.appendChild(countLine);
 
-      // Client-side filter — applies to whichever mode is active.
+      // Client-side filter — applies to whichever mode is active. Two independent
+      // predicates compose: (1) the search query, (2) the "Figures only" default
+      // (hide unsourced cells/rows unless `showUnsourced`). A row/cell shows only
+      // when BOTH pass.
       const search = toolbar.querySelector(".v2-ss-search");
       const applyFilter = () => {
+        // Value grid: when OFF, blank the unsourced cells inside otherwise-shown
+        // rows (CSS-driven) so only the figure cells read; when ON, reveal them.
+        table.classList.toggle("hide-unsourced", !showUnsourced);
         const q = search.value.trim().toLowerCase();
         let shown = 0;
         const set = dispMode === "value" ? rowEls : fRowEls;
         for (const r of set) {
-          const match = q === "" || r.blob.includes(q);
-          r.tr.style.display = match ? "" : "none";
-          if (match) shown += 1;
+          const matchSearch = q === "" || r.blob.includes(q);
+          const matchSourced = showUnsourced || r.hasFigure;
+          const visible = matchSearch && matchSourced;
+          r.tr.style.display = visible ? "" : "none";
+          if (visible) shown += 1;
         }
         setCount(shown);
       };
       search.addEventListener("input", applyFilter);
 
-      // Display-mode toggle (Value ⟷ Formula / criteria).
-      const dispButtons = toolbar.querySelectorAll(".v2-disp-toggle button");
+      // "Show unsourced cells" toggle — third independent switch, persisted in
+      // localStorage. Composes with the Value/Formula and provenance toggles.
+      const unsourcedButtons = toolbar.querySelectorAll(".v2-disp-toggle button[data-unsourced]");
+      unsourcedButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          showUnsourced = btn.getAttribute("data-unsourced") === "show";
+          localStorage.setItem(UNSOURCED_KEY, showUnsourced ? "1" : "0");
+          unsourcedButtons.forEach((b) => b.classList.toggle("active", b === btn));
+          applyFilter();
+        });
+      });
+
+      // Display-mode toggle (Value ⟷ Formula / criteria). Scoped to data-disp so it
+      // does not also catch the sibling "Show unsourced" buttons in the same toolbar.
+      const dispButtons = toolbar.querySelectorAll(".v2-disp-toggle button[data-disp]");
       dispButtons.forEach((btn) => {
         btn.addEventListener("click", () => {
           dispMode = btn.getAttribute("data-disp");
@@ -485,6 +535,10 @@
           applyFilter();
         });
       });
+
+      // Initial paint — apply the default-OFF (Figures only) filter so the first
+      // render already hides unsourced cells/rows, never flashes the full grid.
+      applyFilter();
 
       renderRefs(main, {
         refs: [
