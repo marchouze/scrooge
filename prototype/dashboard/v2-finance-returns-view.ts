@@ -83,6 +83,7 @@ import {
   generateBa100BalanceSheet,
   isOffBalanceSheetAccountId,
 } from "../platform/reporting/ba-100-balance-sheet";
+import { computeBa100FunctionalNet } from "../platform/reporting/ba100-functional-net";
 import {
   type ResidualCashPlacement,
   collectBa100ResidualCash,
@@ -461,12 +462,32 @@ function deriveBa100Classifications(): readonly Ba100LineClassification[] {
   return out;
 }
 
-function buildBa100PageFigures(eventStore: EventStore, ccy: string): Ba100PageFigures {
+function buildBa100PageFigures(
+  eventStore: EventStore,
+  marketData: MarketDataStore,
+  ccy: string,
+): Ba100PageFigures {
   const tb = computeTrialBalanceV2({
     eventStore,
     entity: RETURNS_ENTITY,
     periodStart: BA100_PERIOD_START,
     periodEnd: BA100_PERIOD_END,
+  });
+  // The R790m fix: fold the trial balance into per-account SIGNED functional-ZAR
+  // nets (EUR/GBP/USD nostros translated at their settle-rate cost basis, the SAME
+  // source the GL view uses), then place each account by category AND SIGN. This
+  // (a) folds the FCY nostros in rather than dropping them, and (b) never sign-flips
+  // a negative cash account into a positive asset. The active provenance lens is
+  // already pinned by the caller (withProvenance); we pass it explicitly so the
+  // cost-rate fold reads the same lens.
+  const functional = computeBa100FunctionalNet({
+    eventStore,
+    marketData,
+    entity: RETURNS_ENTITY,
+    periodStart: BA100_PERIOD_START,
+    periodEnd: BA100_PERIOD_END,
+    functionalCurrency: ccy,
+    filter: defaultProvenanceFilter(),
   });
   const sheet = generateBa100BalanceSheet({
     entity: RETURNS_ENTITY,
@@ -475,10 +496,12 @@ function buildBa100PageFigures(eventStore: EventStore, ccy: string): Ba100PageFi
     functionalCurrency: ccy,
     trialBalance: tb.rows,
     classifications: deriveBa100Classifications(),
-    // This read-path fold does NOT close P&L to retained earnings, so the strict
-    // `assets ≡ liabilities + equity` invariant can legitimately not hold. We
-    // tolerate the imbalance and surface `balanced` honestly rather than throwing
-    // (Charter cmd 2 — fail-closed becomes surface-honestly here, never fabricate).
+    functionalNetByAccount: functional.netByAccount,
+    // The functional-net path closes P&L to retained earnings within equity, so the
+    // strict `assets ≡ liabilities + equity` invariant DOES hold when the books
+    // balance. We still tolerate an imbalance and surface `balanced` honestly rather
+    // than throwing (Charter cmd 2 — surface-honestly, never fabricate), so an
+    // unconvertible-leg gap shows as unbalanced instead of crashing the page.
     tolerateImbalanceMinor: Number.MAX_SAFE_INTEGER,
   });
 
@@ -497,7 +520,10 @@ function buildBa100PageFigures(eventStore: EventStore, ccy: string): Ba100PageFi
     equity: liftMoney(sheet.equity.totalMinor, ccy),
     balanced: sheet.balanceCheck.balanced,
     lines,
-    classificationGapCount: sheet.classificationGaps.length,
+    // A gap is EITHER an account with a balance and no section mapping OR an account
+    // with a leg that had no resolvable functional-currency rate (fail-closed,
+    // surfaced not dropped — Charter cmd 2 / cmd 5).
+    classificationGapCount: sheet.classificationGaps.length + functional.unconvertible.length,
     coverageStatus: tb.rows.length === 0 ? "no-data" : "v2-trial-balance",
   };
 }
@@ -596,7 +622,7 @@ function buildFinanceReturnsViewInner(
 
   // BA 100 (Balance Sheet) — on-demand V2 read-path figures, folded from the V2
   // trial balance over the event log (pure; no event side-effects).
-  const ba100Figures = buildBa100PageFigures(eventStore, functionalCurrency);
+  const ba100Figures = buildBa100PageFigures(eventStore, marketData, functionalCurrency);
   const ba100Filing = foldFiling(eventStore, RETURNS_ENTITY, "BA100");
   liveByForm.set("BA100", {
     formId: "BA100",
@@ -656,7 +682,7 @@ export function liveFiguresForForm(
   const ccy = anchorFunctionalCurrency();
   if (formId === "BA700") return ba700PageFromV2(eventStore, marketData, ccy);
   if (formId === "BA320") return ba320PageFromV2(eventStore, marketData, ccy);
-  if (formId === "BA100") return buildBa100PageFigures(eventStore, ccy);
+  if (formId === "BA100") return buildBa100PageFigures(eventStore, marketData, ccy);
   return undefined;
 }
 

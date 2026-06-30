@@ -184,7 +184,9 @@ describe("recon:ba100-cell-values-reconcile", () => {
 
     const r = run({ eventDbPath: path, requireNonVacuous: true });
     expect(r.ok).toBe(true);
-    expect(r.asserted).toBe(3); // assets / liabilities / equity reconciled
+    // 3 leaf-vs-oracle section reconciliations + 2 account-completeness (cash +
+    // equity) + 3 GL-section reconciliations + 1 A=L+E invariant = 9 assertions.
+    expect(r.asserted).toBe(9);
     expect(r.violations.filter((v) => v.severity === "fail")).toHaveLength(0);
     // The fold placed at least one BA 100 line (R0040 + R0810).
     expect(r.asOf).toContain("folded BA 100 line");
