@@ -86,6 +86,43 @@ describe("cell-contract schema (L2 framework)", () => {
     };
     expect(() => ReturnCellContractSchema.parse(ok)).not.toThrow();
   });
+
+  it("accepts a leaf with a full slice-dimension contract", () => {
+    const ok = {
+      ...base,
+      sliceDimension: {
+        discriminator: "counterparty.sector='bank'",
+        canonicalHome: "party-register",
+        joinKey: "counterpartyId",
+      },
+    };
+    expect(() => ReturnCellContractSchema.parse(ok)).not.toThrow();
+  });
+
+  it("accepts a leaf with no slice-dimension block (additive / optional)", () => {
+    expect(() => ReturnCellContractSchema.parse(base)).not.toThrow();
+  });
+
+  it("rejects a discriminator with no canonicalHome (must name where the slice key is held)", () => {
+    const bad = { ...base, sliceDimension: { discriminator: "currency='foreign'" } };
+    expect(() => ReturnCellContractSchema.parse(bad)).toThrow();
+  });
+
+  it("rejects a discriminator whose canonicalHome is 'none-computed'", () => {
+    const bad = {
+      ...base,
+      sliceDimension: { discriminator: "currency='foreign'", canonicalHome: "none-computed" },
+    };
+    expect(() => ReturnCellContractSchema.parse(bad)).toThrow();
+  });
+
+  it("rejects an unknown canonicalHome enum value", () => {
+    const bad = {
+      ...base,
+      sliceDimension: { discriminator: "x='y'", canonicalHome: "not-a-real-home" },
+    };
+    expect(() => ReturnCellContractSchema.parse(bad)).toThrow();
+  });
 });
 
 describe("BA 100 contract (L2 pilot instance)", () => {

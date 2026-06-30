@@ -255,6 +255,108 @@ ROW_SOURCES = {
     "R1270": dict(section="analysis", gl=["equity"], pf=["equity"], note="Encumbered amount included in R0840."),
 }
 
+# ---------------------------------------------------------------------------
+# Slice-dimension contract (discriminator → canonical home → join key) for the
+# BA 100 leaves FX touches. WS-BA100-FX-DATA-REPORTING Phase 1; foundation
+# D-FX-BA110-NO-LINE.
+#
+# A summation's children are mutually-exclusive SLICES of the parent's criterion;
+# each leaf is reached by a discriminating dimension applied to an instrument
+# position. That dimension lives at its CANONICAL HOME (Party register, Security
+# master, Currency axis, the derivative valuation engine, or — when genuinely
+# intrinsic — the product/instrument itself), NOT all on the product. The leaf
+# fold (a LATER phase) is a JOIN of the position against that home on `joinKey`.
+# Here we only DECLARE the contract (P1: reference data, no value, no fold).
+#
+# Keyed by row. `canonicalHome` is one of the cell-contract.ts CanonicalHome enum
+# values; `joinKey` is omitted (None) when the home is the instrument itself
+# (`product-instrument` — the dimension is already on the position, no join).
+# ROW_SLICE_DIMENSION = { row -> dict(discriminator, canonicalHome, joinKey?) }
+ROW_SLICE_DIMENSION = {
+    # R0040 — Local and foreign currency holdings: sliced by the cash-leg currency.
+    "R0040": dict(
+        discriminator="currency in {local, foreign}",
+        canonicalHome="currency",
+        joinKey="currency",
+    ),
+    # R0120 — Loans and advances to customers (roll-up): its children (R0900 non-
+    # bank / R0910 bank) slice on the borrower's counterparty class, held in the
+    # Party register. Declared on the parent so the axis its slices use is explicit.
+    "R0120": dict(
+        discriminator="counterparty.class in {bank, non-bank}",
+        canonicalHome="party-register",
+        joinKey="counterpartyId",
+    ),
+    # R0900 — Loans and advances to customers OTHER THAN banks (the non-bank slice).
+    "R0900": dict(
+        discriminator="counterparty.class='non-bank'",
+        canonicalHome="party-register",
+        joinKey="counterpartyId",
+    ),
+    # R0910 — Loans and advances to BANKS (the bank slice).
+    "R0910": dict(
+        discriminator="counterparty.class='bank'",
+        canonicalHome="party-register",
+        joinKey="counterpartyId",
+    ),
+    # R0970 — Foreign-currency loans (memo, by-currency): sliced by currency.
+    # Cross-reference: the residency memos BA 325 already resolves run off the same
+    # Party-register counterpartyId join; this BA 100 memo is the currency slice.
+    "R0970": dict(
+        discriminator="currency='foreign'",
+        canonicalHome="currency",
+        joinKey="currency",
+    ),
+    # R0330 — Derivative financial instruments (positive fair value → ASSET): the
+    # derivative valuation engine classifies a position to the asset line by the
+    # sign of its fair value (FVTPL asset). Home = derivative-valuation; join on the
+    # instrument identity.
+    "R0330": dict(
+        discriminator="derivative.balanceSheetClassification='fvtpl-asset' (positive fair value)",
+        canonicalHome="derivative-valuation",
+        joinKey="instrumentId",
+    ),
+    # R0660 — Derivative financial instruments + other trading liabilities (roll-up).
+    "R0660": dict(
+        discriminator="derivative.balanceSheetClassification='fvtpl-liability' (negative fair value)",
+        canonicalHome="derivative-valuation",
+        joinKey="instrumentId",
+    ),
+    # R0670 — Derivative financial instruments (negative fair value → LIABILITY),
+    # the derivative-only constituent of R0660. Same valuation-sign discriminator.
+    "R0670": dict(
+        discriminator="derivative.balanceSheetClassification='fvtpl-liability' (negative fair value)",
+        canonicalHome="derivative-valuation",
+        joinKey="instrumentId",
+    ),
+    # R1140 — Encumbered amount included in R0330 (derivative asset): the encumbrance
+    # slice of the derivative-asset line. Home = Collateral register (pledge status);
+    # join on the instrument identity.
+    "R1140": dict(
+        discriminator="encumbrance.status='encumbered' (pledged) ∩ line=R0330",
+        canonicalHome="collateral-register",
+        joinKey="instrumentId",
+    ),
+    # R1220 — Encumbered amount included in R0660 (derivative liability): the
+    # encumbrance slice of the derivative-liability line. Home = Collateral register.
+    "R1220": dict(
+        discriminator="encumbrance.status='encumbered' (pledged) ∩ line=R0660",
+        canonicalHome="collateral-register",
+        joinKey="instrumentId",
+    ),
+    # R1010 sector-analysis block (R1020..R1090) — deposits BY COUNTERPARTY SECTOR,
+    # held in the Party register; each leaf is the sector slice. (Population is a
+    # later phase; only the contract is declared here.) joinKey counterpartyId.
+    "R1020": dict(discriminator="counterparty.sector='sovereign'", canonicalHome="party-register", joinKey="counterpartyId"),
+    "R1030": dict(discriminator="counterparty.sector='public-sector-entity'", canonicalHome="party-register", joinKey="counterpartyId"),
+    "R1040": dict(discriminator="counterparty.sector='local-authority'", canonicalHome="party-register", joinKey="counterpartyId"),
+    "R1050": dict(discriminator="counterparty.sector='bank'", canonicalHome="party-register", joinKey="counterpartyId"),
+    "R1060": dict(discriminator="counterparty.sector='securities-firm'", canonicalHome="party-register", joinKey="counterpartyId"),
+    "R1070": dict(discriminator="counterparty.sector='corporate'", canonicalHome="party-register", joinKey="counterpartyId"),
+    "R1080": dict(discriminator="counterparty.sector='retail'", canonicalHome="party-register", joinKey="counterpartyId"),
+    "R1090": dict(discriminator="counterparty.sector='other'", canonicalHome="party-register", joinKey="counterpartyId"),
+}
+
 # Product-family → existing APPROVED product ids (the canonical set is the
 # `ProductApproved` event stream — see the recon, which asserts every product
 # ref here is a real approved product). The 9 currently-approved products:
@@ -509,6 +611,17 @@ def build_cell(e):
     }
     if status_reason:
         cell["statusReason"] = status_reason
+    # Slice-dimension contract (discriminator → canonical home → join key) for the
+    # FX-touched leaves. Declared on the LEAF-INPUT columns only (C0010 Banking /
+    # C0020 Trading split + the single-column analysis/memo rows), not on the
+    # cross-column aggregation columns (C0030..C0070) which are pure roll-ups of
+    # the leaf split and carry no independent slice key.
+    sdim = ROW_SLICE_DIMENSION.get(row)
+    if sdim is not None and col not in ("C0030", "C0040", "C0050", "C0060", "C0070"):
+        slice_dim = {"discriminator": sdim["discriminator"], "canonicalHome": sdim["canonicalHome"]}
+        if sdim.get("joinKey") is not None:
+            slice_dim["joinKey"] = sdim["joinKey"]
+        cell["sliceDimension"] = slice_dim
     return cell
 
 cells = [build_cell(e) for e in els]

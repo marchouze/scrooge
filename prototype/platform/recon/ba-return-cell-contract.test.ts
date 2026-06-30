@@ -43,6 +43,7 @@ function ba100Entry(): ReturnContractRegistryEntry {
 import {
   assertCitationsResolve,
   assertCompleteness,
+  assertFxLeafSliceDimensions,
   assertSourcedCellsReal,
   readZipMember,
   run,
@@ -125,6 +126,57 @@ test("a sourced cell pointing at a non-existent GL category FAILS", () => {
   const v: ReconViolation[] = [];
   assertSourcedCellsReal(tampered, new Set(["asset-cash"]), new Set(), v);
   expect(v.some((x) => /not present in the chart of accounts/.test(x.message))).toBe(true);
+});
+
+// --- (5) FX-leaf slice-dimension contract (WS-BA100-FX-DATA-REPORTING) ------
+//
+// Every FX-sourced BA 100 leaf-input cell (Banking C0010 / Trading C0020 of a
+// row whose dataRequirements name an FX product) must carry a resolvable
+// discriminator + canonicalHome. Fail-closed; harden-only. Foundation:
+// D-FX-BA110-NO-LINE.
+
+test("the real BA 100 contract carries slice dimensions on every FX-sourced leaf", () => {
+  const contract = ba100Contract();
+  const v: ReconViolation[] = [];
+  const asserted = assertFxLeafSliceDimensions(contract, v);
+  expect(asserted).toBeGreaterThan(0); // FX leaves exist (R0330 / R0660 etc.)
+  expect(v.filter((x) => x.severity === "fail")).toEqual([]);
+});
+
+test("stripping the slice dimension off an FX leaf FAILS (fail-closed, harden-only)", () => {
+  const contract = ba100Contract();
+  // Remove sliceDimension from every cell — every FX-sourced leaf must now fail.
+  const stripped: ReturnContract = {
+    ...contract,
+    cells: contract.cells.map((c) => ({ ...c, sliceDimension: undefined })),
+  };
+  const v: ReconViolation[] = [];
+  const asserted = assertFxLeafSliceDimensions(stripped, v);
+  expect(asserted).toBeGreaterThan(0);
+  expect(v.length).toBe(asserted); // one fail per FX leaf
+  expect(v.every((x) => x.severity === "fail")).toBe(true);
+  expect(v.some((x) => /has no sliceDimension/.test(x.message))).toBe(true);
+});
+
+test("an FX leaf with discriminator but canonicalHome 'none-computed' FAILS", () => {
+  const contract = ba100Contract();
+  const cells = contract.cells.map((c) => {
+    if (
+      c.cellRef.column === "C0010" &&
+      c.dataRequirements.some(
+        (d) => d.sourceKind === "product-attribute" && d.ref.startsWith("prd:bank:fx:"),
+      )
+    ) {
+      return {
+        ...c,
+        sliceDimension: { discriminator: "x='y'", canonicalHome: "none-computed" as const },
+      };
+    }
+    return c;
+  });
+  const v: ReconViolation[] = [];
+  assertFxLeafSliceDimensions({ ...contract, cells }, v);
+  expect(v.some((x) => /'none-computed'/.test(x.message))).toBe(true);
 });
 
 // --- BA 501 xlsx-only oracle: in-process zip read is deterministic ---------
