@@ -34,8 +34,11 @@
 //   reports to Camille (CFO); domain owner of SARB BA 100).
 
 import { COA_ACCOUNTS } from "../../v2-core/accounting/chart-of-accounts";
+import { absD, addD, cmpD, decimalToString, eqD, toDecimal } from "../../v2-core/fil-core/decimal";
 import { ba100Contract } from "../../v2-core/regulatory-returns/ba100-contract";
 import { computeDerivedCells } from "../../v2-core/regulatory-returns/cell-value/engine";
+import { moneyFromMinorUnits } from "../core/decimal-money";
+import type { Currency } from "../core/types";
 import type { EventStore } from "../event-store/store";
 import { buildPartyProjection } from "../identity/party-projection";
 import type { MarketDataStore } from "../market-data/store";
@@ -225,23 +228,35 @@ export function renderBa100Return(input: RenderBa100ReturnInput): Ba100ReturnRen
   cells.sort((a, b) => a.coord.localeCompare(b.coord));
 
   // (4) Compute the leaf-fold section sums for the recon block.
-  const leafBySection: Record<Section, number> = { assets: 0, liabilities: 0, equity: 0 };
+  // Use decimal arithmetic throughout — float division of minor units is forbidden
+  // (Engineering Charter cmd 6; D-DECIMAL-NATIVE-MONEY-ARITHMETIC).
+  const FUNCTIONAL_CCY = input.functionalCurrency as Currency;
+  const leafBySectionD: Record<Section, ReturnType<typeof toDecimal>> = {
+    assets: toDecimal("0"),
+    liabilities: toDecimal("0"),
+    equity: toDecimal("0"),
+  };
   for (const [coord, v] of leafValues) {
     const [row] = coord.split(" ");
     if (row === undefined) continue;
     const section = sectionForRow(row);
     if (section === undefined) continue;
-    const n = Number.parseFloat(v);
-    if (!Number.isFinite(n)) continue;
-    leafBySection[section] += Math.abs(n);
+    leafBySectionD[section] = addD(leafBySectionD[section], absD(toDecimal(v)));
   }
 
-  // Oracle section totals in major units (oracle uses minor units).
-  const MINOR_DIVISOR = 100; // always ZAR cents
-  const oracleBySection: Record<Section, number> = {
-    assets: input.oracleSheet.assets.totalMinor / MINOR_DIVISOR,
-    liabilities: input.oracleSheet.liabilities.totalMinor / MINOR_DIVISOR,
-    equity: input.oracleSheet.equity.totalMinor / MINOR_DIVISOR,
+  // Oracle section totals: minor-unit integers → decimal-native major units via
+  // moneyFromMinorUnits (the only safe minor→major conversion, per D-DECIMAL-NATIVE-MONEY-
+  // ARITHMETIC; never divide by MINOR_DIVISOR with JS float arithmetic).
+  const oracleBySectionD: Record<Section, ReturnType<typeof toDecimal>> = {
+    assets: toDecimal(
+      moneyFromMinorUnits(BigInt(input.oracleSheet.assets.totalMinor), FUNCTIONAL_CCY).amount,
+    ),
+    liabilities: toDecimal(
+      moneyFromMinorUnits(BigInt(input.oracleSheet.liabilities.totalMinor), FUNCTIONAL_CCY).amount,
+    ),
+    equity: toDecimal(
+      moneyFromMinorUnits(BigInt(input.oracleSheet.equity.totalMinor), FUNCTIONAL_CCY).amount,
+    ),
   };
 
   // Equity capital-exactness: use GL own-funds capital (sum of accounts with
@@ -249,39 +264,41 @@ export function renderBa100Return(input: RenderBa100ReturnInput): Ba100ReturnRen
   // mirrors the recon gate's (3a) check. The oracle's NETTED equity section total
   // absorbs P&L losses; the leaf fold places GROSS own-funds capital — comparing
   // against the netted total produces a false reconciliation break.
-  let glOwnFundsCapital: number | undefined;
+  let glOwnFundsCapitalD: ReturnType<typeof toDecimal> | undefined;
   if (input.functionalNetByAccount !== undefined) {
-    let cap = 0;
+    let capMinor = 0;
     for (const [accountId, signed] of input.functionalNetByAccount) {
       if (signed === 0) continue;
       const coa = COA_ACCOUNTS.find((a) => a.id === accountId);
       if (coa === undefined || coa.capitalTier === undefined) continue;
-      cap += -signed; // credit-positive (capital is credit-natural)
+      capMinor += -signed; // credit-positive (capital is credit-natural, in minor units)
     }
-    glOwnFundsCapital = cap / MINOR_DIVISOR; // minor → major units
+    glOwnFundsCapitalD = toDecimal(
+      moneyFromMinorUnits(BigInt(Math.round(capMinor)), FUNCTIONAL_CCY).amount,
+    );
   }
 
   const reconBlocks: Ba100ReturnReconBlock[] = (["assets", "liabilities", "equity"] as const).map(
     (section) => {
-      const leafSum = leafBySection[section];
-      let oracleTotal: number;
+      const leafSumD = leafBySectionD[section];
+      let oracleTotalD: ReturnType<typeof toDecimal>;
       let reconciled: boolean;
 
-      if (section === "equity" && glOwnFundsCapital !== undefined) {
+      if (section === "equity" && glOwnFundsCapitalD !== undefined) {
         // Capital-exactness: leaf equity must equal GL own-funds capital (exact, not
         // subset), because both folds cover the SAME capital posting legs.
-        oracleTotal = glOwnFundsCapital;
-        reconciled = Math.abs(leafSum - oracleTotal) < 0.01; // 1-cent tolerance
+        oracleTotalD = glOwnFundsCapitalD;
+        reconciled = eqD(leafSumD, oracleTotalD);
       } else {
         // Subset-soundness for assets + liabilities: leaf ≤ oracle (never exceeds GL).
-        oracleTotal = oracleBySection[section];
-        reconciled = leafSum <= oracleTotal + 0.01;
+        oracleTotalD = oracleBySectionD[section];
+        reconciled = cmpD(absD(leafSumD), absD(oracleTotalD)) <= 0;
       }
 
       return {
         section,
-        leafFoldSum: leafSum.toFixed(2),
-        oracleTotal: oracleTotal.toFixed(2),
+        leafFoldSum: decimalToString(leafSumD),
+        oracleTotal: decimalToString(oracleTotalD),
         reconciled,
       };
     },
