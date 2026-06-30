@@ -46,8 +46,8 @@
 //   reports to Camille (CFO); domain owner of SARB BA 100).
 
 import { foldSettledFcyCashCostRates } from "../accounting/posting-rules-v2/fx-cash-reval-fold";
-import type { EventStore } from "../event-store/store";
 import type { TrialBalanceSnapshotRow } from "../event-store/event-types";
+import type { EventStore } from "../event-store/store";
 import { type MarketDataStore, lookupQuoteWithInverse } from "../market-data/store";
 import type { ProvenanceFilter } from "../projections/filter";
 import { computeTrialBalanceV2Uncached } from "../projections/gl-projection-v2";

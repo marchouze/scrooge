@@ -682,7 +682,7 @@ export function liveFiguresForForm(
   const ccy = anchorFunctionalCurrency();
   if (formId === "BA700") return ba700PageFromV2(eventStore, marketData, ccy);
   if (formId === "BA320") return ba320PageFromV2(eventStore, marketData, ccy);
-  if (formId === "BA100") return buildBa100PageFigures(eventStore, ccy);
+  if (formId === "BA100") return buildBa100PageFigures(eventStore, marketData, ccy);
   return undefined;
 }
 

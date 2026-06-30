@@ -52,13 +52,15 @@
 import { existsSync } from "node:fs";
 
 import { COA_ACCOUNTS } from "../../v2-core/accounting/chart-of-accounts";
-import { addD, decimalToString, eqD, toDecimal } from "../../v2-core/fil-core/decimal";
+import { absD, addD, cmpD, decimalToString, eqD, toDecimal } from "../../v2-core/fil-core/decimal";
 import { ba100Contract } from "../../v2-core/regulatory-returns/ba100-contract";
 import { computeDerivedCells } from "../../v2-core/regulatory-returns/cell-value/engine";
 import { moneyFromMinorUnits } from "../core/decimal-money";
 import type { Currency } from "../core/types";
 import { resolveEventDbPath } from "../event-store/resolve-event-db";
 import { EventStore } from "../event-store/store";
+import { resolveMarketDataDbPath } from "../market-data/resolve-market-data-db";
+import { MarketDataStore } from "../market-data/store";
 import { type ProvenanceFilter, setDefaultProvenanceModeOverride } from "../projections/filter";
 import { computeTrialBalanceV2Uncached } from "../projections/gl-projection-v2";
 import {
@@ -66,6 +68,7 @@ import {
   generateBa100BalanceSheet,
   isOffBalanceSheetAccountId,
 } from "../reporting/ba-100-balance-sheet";
+import { functionalNetFromRows } from "../reporting/ba100-functional-net";
 import { foldBa100LeafValues } from "../reporting/cell-value/ba100-leaf-fold";
 import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 
@@ -112,6 +115,67 @@ function ba100SectionForCategory(category: string): Section | null {
   if (category.startsWith("liability")) return "liabilities";
   if (category.startsWith("equity")) return "equity";
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Independent GL section totals from the per-account signed functional-ZAR net.
+// This re-derives the section placement DIRECTLY from the CoA category + sign — NOT
+// via generateBa100BalanceSheet — so it is a genuine independent oracle the gate
+// can hold the generator's section totals against (account-complete, sign-aware).
+//   - asset/expense are debit-natural; liability/equity/income are credit-natural.
+//   - pure equity + income/expense (current-year result) ALWAYS present in equity;
+//     equity is accumulated CREDIT-POSITIVE (= negation of the debit-positive net).
+//   - an asset with a CREDIT net (short-funding nostro) presents as a LIABILITY;
+//     a liability with a DEBIT net presents as an ASSET.
+// ---------------------------------------------------------------------------
+
+function glSectionTotalsFromFunctionalNet(
+  netByAccount: ReadonlyMap<string, number>,
+): Record<Section, number> {
+  const totals: Record<Section, number> = { assets: 0, liabilities: 0, equity: 0 };
+  for (const [accountId, signed] of netByAccount) {
+    if (signed === 0) continue;
+    if (isOffBalanceSheetAccountId(accountId)) continue;
+    const cat = COA_ACCOUNTS.find((a) => a.id === accountId)?.category;
+    if (cat === undefined) continue; // unmapped — a generator gap, not a section input.
+    const mag = Math.abs(signed);
+    if (cat === "equity" || cat.startsWith("income") || cat.startsWith("expense")) {
+      // Current-year result + capital, credit-positive: −signed (debit-positive net).
+      totals.equity += -signed;
+      continue;
+    }
+    if (cat.startsWith("asset")) {
+      // Debit-natural: positive net = asset; negative net = short-funding liability.
+      if (signed >= 0) totals.assets += mag;
+      else totals.liabilities += mag;
+      continue;
+    }
+    if (cat.startsWith("liability")) {
+      // Credit-natural: negative net = liability; positive net = asset (receivable).
+      if (signed <= 0) totals.liabilities += mag;
+      else totals.assets += mag;
+    }
+  }
+  return totals;
+}
+
+/**
+ * Credit-positive sum of the GL's OWN-FUNDS CAPITAL accounts (those carrying a
+ * `capitalTier` — CET1 equity + AT1/T2 capital liabilities) from the per-account
+ * signed functional-ZAR net. This is the portion the events-direct leaf fold ALSO
+ * covers (the capital posting legs), so the two must reconcile to the cent on it.
+ * Sign: capital is credit-natural; credit-positive = negation of the debit-positive
+ * net.
+ */
+function glOwnFundsCapitalFromFunctionalNet(netByAccount: ReadonlyMap<string, number>): number {
+  let total = 0;
+  for (const [accountId, signed] of netByAccount) {
+    if (signed === 0) continue;
+    const coa = COA_ACCOUNTS.find((a) => a.id === accountId);
+    if (coa === undefined || coa.capitalTier === undefined) continue;
+    total += -signed;
+  }
+  return total;
 }
 
 function deriveBa100Classifications(): readonly Ba100LineClassification[] {
@@ -161,12 +225,19 @@ export function run(opts: RunOpts = {}): ReconResult {
   }
 
   const store = new EventStore(dbPath, { readonly: true });
+  // Market-data store for the functional-ZAR conversion of any non-nostro FCY row.
+  // The live build-phase book translates every FCY nostro at its settle-rate cost
+  // basis (no market-data read needed for those); the store is opened so a non-
+  // nostro FCY row would translate at the latest production spot rather than fail.
+  const marketDataStore = new MarketDataStore(resolveMarketDataDbPath().path);
 
   // Pin the COMBINED provenance lens for the whole reconciliation: both folds read
   // it transparently via defaultProvenanceFilter(). No await runs between set/reset.
   setDefaultProvenanceModeOverride(COMBINED_FILTER.mode);
   let foldedBySection: Record<Section, ReturnType<typeof toDecimal>>;
   let oracleMinor: Record<Section, number>;
+  let oracleSheet: ReturnType<typeof generateBa100BalanceSheet>;
+  let functionalNet: ReturnType<typeof functionalNetFromRows>;
   let foldedRowCount = 0;
   try {
     // (1) The events-direct LEAF FOLD → engine-resolved per-cell values.
@@ -206,6 +277,18 @@ export function run(opts: RunOpts = {}): ReconResult {
       periodStart: PERIOD_START,
       periodEnd: PERIOD_END,
     });
+    // Per-account SIGNED functional-ZAR net (EUR/GBP/USD nostros at settle-rate cost
+    // basis — the SAME source the GL view uses). This is the headline-bearing oracle
+    // input; the sign-aware generator places each account by category + sign.
+    functionalNet = functionalNetFromRows(tb.rows, {
+      eventStore: store,
+      marketData: marketDataStore,
+      entity: ENTITY,
+      periodStart: PERIOD_START,
+      periodEnd: PERIOD_END,
+      functionalCurrency: FUNCTIONAL_CURRENCY,
+      filter: COMBINED_FILTER,
+    });
     const sheet = generateBa100BalanceSheet({
       entity: ENTITY,
       asOf: AS_OF,
@@ -213,12 +296,13 @@ export function run(opts: RunOpts = {}): ReconResult {
       functionalCurrency: FUNCTIONAL_CURRENCY,
       trialBalance: tb.rows,
       classifications: deriveBa100Classifications(),
-      // The read-path fold does not close P&L to retained earnings, so the strict
-      // assets ≡ liabilities + equity invariant can legitimately not hold here; we
-      // tolerate it and reconcile the per-section totals (Charter cmd 2 — surface
-      // honestly, never fabricate).
+      functionalNetByAccount: functionalNet.netByAccount,
+      // The functional-net path closes P&L to retained earnings within equity, so the
+      // strict assets ≡ liabilities + equity invariant DOES hold when the books
+      // balance; we still tolerate (surface honestly, never throw inside recon).
       tolerateImbalanceMinor: Number.MAX_SAFE_INTEGER,
     });
+    oracleSheet = sheet;
     oracleMinor = {
       assets: sheet.assets.totalMinor,
       liabilities: sheet.liabilities.totalMinor,
@@ -231,29 +315,156 @@ export function run(opts: RunOpts = {}): ReconResult {
   } finally {
     setDefaultProvenanceModeOverride(undefined);
     store.close();
+    marketDataStore.close();
   }
 
-  // (3) Reconcile each section: Σ(folded leaf values) == oracle section total.
-  // Compare in MAJOR units (decimal-native): the leaf fold sums major-unit Money;
-  // the oracle's `totalMinor` is lifted to the canonical major-unit Money via
-  // moneyFromMinorUnits (currency-correct scale, never a hardcoded /100).
-  for (const section of ["assets", "liabilities", "equity"] as const) {
+  // (3) SUBSET-SOUNDNESS — the events-direct leaf fold places a SOUND SUBSET of the
+  // GL: it sources exactly the lines it can derive granularly from events (capital
+  // own-funds + settled FX cash). Every OTHER GL balance-sheet account is the
+  // account-complete GL-oracle's job (blocks 3b–3d). So the leaf fold must never
+  // place MORE in a section than the GL holds (it cannot invent value the GL does
+  // not have), and its CAPITAL coverage must reconcile EXACTLY to the GL's own-funds
+  // capital. (Prior to the account-complete oracle this was a strict equality; the
+  // oracle now covers the full FCY book, so the sparse leaf fold reconciles as a
+  // subset — D-BA-RETURN-FAIL-SAFE-RESIDUAL-EXPOSURE; doctrine: GL trial balance is
+  // the completeness oracle the leaf fold reconciles INTO, not a mirror of.)
+  // Scoped to ASSETS + LIABILITIES (where the leaf fold's settled-FX-cash placement
+  // could land value). EQUITY is excluded here because the GL equity SECTION total
+  // is NET of the current-year P&L result (capital − loss), whereas the leaf fold
+  // places GROSS own-funds capital — the correct equity reconciliation is the
+  // capital-exactness check (3a), against GL GROSS own-funds, not the netted total.
+  for (const section of ["assets", "liabilities"] as const) {
     result.asserted += 1;
     const foldedMajor = foldedBySection[section];
     const oracleMajor = toDecimal(
       moneyFromMinorUnits(BigInt(oracleMinor[section]), FUNCTIONAL_CURRENCY as Currency).amount,
     );
-    if (!eqD(foldedMajor, oracleMajor)) {
+    // Leaf-fold section sum must not EXCEED the GL section total (a leaf value with
+    // no GL backing is fabricated value — fail-closed). Magnitudes compared.
+    const foldedAbs = absD(foldedMajor);
+    const oracleAbs = absD(oracleMajor);
+    if (cmpD(foldedAbs, oracleAbs) === 1) {
       violations.push({
-        subject: `reconcile:${section}`,
+        subject: `subset-soundness:${section}`,
         message: `BA 100 ${section}: events-direct leaf fold Σ=${decimalToString(
           foldedMajor,
-        )} ${FUNCTIONAL_CURRENCY} != CoA-oracle section total ${decimalToString(
+        )} ${FUNCTIONAL_CURRENCY} EXCEEDS the GL-oracle section total ${decimalToString(
           oracleMajor,
-        )} ${FUNCTIONAL_CURRENCY} (oracle minor ${oracleMinor[section]}). The two sibling folds disagree — a reconciliation break (fail-closed; D-BA-RETURN-CELL-VALUE-ENGINE).`,
+        )} ${FUNCTIONAL_CURRENCY} — the leaf fold placed value the GL does not hold (fabricated value, fail-closed; D-BA-RETURN-CELL-VALUE-ENGINE).`,
         severity: "fail",
       });
     }
+  }
+
+  // (3a) CAPITAL-EXACTNESS — the leaf fold's own-funds capital (R0810 share capital
+  // + R0820/R0830 reserves + R0700 AT1/T2) must reconcile EXACTLY to the GL's
+  // capital own-funds (the equity/own-funds accounts carrying a `capitalTier`),
+  // credit-positive. This is the portion BOTH folds cover, so they must agree to
+  // the cent (the original sibling-fold invariant, scoped to the shared coverage).
+  result.asserted += 1;
+  const leafEquityMajor = foldedBySection.equity;
+  const glCapitalMinor = glOwnFundsCapitalFromFunctionalNet(functionalNet.netByAccount);
+  const glCapitalMajor = toDecimal(
+    moneyFromMinorUnits(BigInt(glCapitalMinor), FUNCTIONAL_CURRENCY as Currency).amount,
+  );
+  if (!eqD(leafEquityMajor, glCapitalMajor)) {
+    violations.push({
+      subject: "capital-exactness",
+      message: `BA 100 equity: events-direct leaf fold own-funds Σ=${decimalToString(
+        leafEquityMajor,
+      )} ${FUNCTIONAL_CURRENCY} != GL own-funds capital ${decimalToString(
+        glCapitalMajor,
+      )} ${FUNCTIONAL_CURRENCY}. The two folds disagree on the SHARED capital coverage — a reconciliation break (fail-closed; D-BA-RETURN-CELL-VALUE-ENGINE).`,
+      severity: "fail",
+    });
+  }
+
+  // (3b) EXHAUSTIVE COMPLETENESS — every GL balance-sheet account with a non-zero
+  // functional-ZAR net MUST be reflected in a BA 100 cell (a section line item), OR
+  // surfaced as a classification gap. A resolvable balance that lands in NEITHER is
+  // a SILENTLY-DROPPED total — exactly the R790m-class bug (FCY nostros dropped,
+  // negative cash sign-flipped). Fail-closed: no account left behind.
+  const reflectedAccounts = new Set<string>();
+  for (const sec of [oracleSheet.assets, oracleSheet.liabilities, oracleSheet.equity] as const) {
+    for (const li of sec.lineItems) {
+      for (const acc of li.contributingAccounts) reflectedAccounts.add(acc);
+    }
+  }
+  for (const gap of oracleSheet.classificationGaps) reflectedAccounts.add(gap.leafAccountId);
+  for (const [accountId, signed] of functionalNet.netByAccount) {
+    if (signed === 0) continue;
+    result.asserted += 1;
+    if (!reflectedAccounts.has(accountId)) {
+      violations.push({
+        subject: `completeness:${accountId}`,
+        message: `BA 100 completeness: GL balance-sheet account ${accountId} holds a non-zero functional-ZAR net (${(
+          signed / 100
+        ).toFixed(
+          2,
+        )} ${FUNCTIONAL_CURRENCY}) but is reflected in NO BA 100 cell and is NOT a surfaced gap. A resolvable balance has been silently dropped (the R790m-class bug). Fail-closed (D-BA-RETURN-FAIL-SAFE-RESIDUAL-EXPOSURE).`,
+        severity: "fail",
+      });
+    }
+  }
+
+  // (3c) ACCOUNT-COMPLETE SECTION RECONCILIATION — the oracle section totals MUST
+  // equal the GL trial-balance section totals derived INDEPENDENTLY from the per-
+  // account functional-ZAR net by sign-aware placement (not via the generator). A
+  // mismatch means the generator placed an account into the wrong section or
+  // dropped/sign-flipped a balance.
+  const glSection = glSectionTotalsFromFunctionalNet(functionalNet.netByAccount);
+  for (const section of ["assets", "liabilities", "equity"] as const) {
+    result.asserted += 1;
+    if (oracleMinor[section] !== glSection[section]) {
+      violations.push({
+        subject: `gl-section-reconcile:${section}`,
+        message: `BA 100 ${section}: generator section total ${(oracleMinor[section] / 100).toFixed(
+          2,
+        )} ${FUNCTIONAL_CURRENCY} != GL trial-balance section total ${(
+          glSection[section] / 100
+        ).toFixed(
+          2,
+        )} ${FUNCTIONAL_CURRENCY} (account-complete, sign-aware). The BA 100 section does not reconcile to the GL account-for-account (fail-closed).`,
+        severity: "fail",
+      });
+    }
+  }
+
+  // (3d) BALANCE-SHEET INVARIANT — A = L + E on BA 100. Once every account is
+  // reflected with the correct sign, the books MUST balance in the functional
+  // currency (the GL trial balance balances per-entry in ZAR — #1618/#1619). A
+  // residual means an account is mis-signed or unconvertible (surfaced separately).
+  result.asserted += 1;
+  if (functionalNet.unconvertible.length === 0 && !oracleSheet.balanceCheck.balanced) {
+    violations.push({
+      subject: "balance-sheet-invariant",
+      message: `BA 100 does not balance: assets ${(oracleMinor.assets / 100).toFixed(
+        2,
+      )} != liabilities ${(oracleMinor.liabilities / 100).toFixed(2)} + equity ${(
+        oracleMinor.equity / 100
+      ).toFixed(2)} ${FUNCTIONAL_CURRENCY} (difference ${(
+        oracleSheet.balanceCheck.differenceMinor / 100
+      ).toFixed(
+        2,
+      )}). With no unconvertible legs the functional-currency books MUST balance (#1618/#1619 — TB balances per-entry in ZAR). Fail-closed.`,
+      severity: "fail",
+    });
+  }
+
+  // (3e) UNCONVERTIBLE — any balance-sheet account whose functional-ZAR net could
+  // not be struck is surfaced LOUDLY (never silently dropped — Charter cmd 2/5). On
+  // the live build-phase book every FCY nostro converts at cost basis, so this set
+  // is empty; a non-empty set is a real coverage gap to chase, reported as a fail
+  // on the on-anchor CLI path and an info on test fixtures.
+  for (const u of functionalNet.unconvertible) {
+    result.asserted += 1;
+    violations.push({
+      subject: `unconvertible:${u.accountId}`,
+      message: `BA 100: GL account ${u.accountId} holds ${(u.nativeMinor / 100).toFixed(2)} ${
+        u.currency
+      } with no resolvable functional-${FUNCTIONAL_CURRENCY} rate — surfaced, not dropped. Source a settle-rate cost basis or a production spot for ${u.currency}/${FUNCTIONAL_CURRENCY}.`,
+      severity: opts.requireNonVacuous ? "fail" : "info",
+    });
   }
 
   // (4) Non-vacuity guard — on the on-anchor CLI path the fold MUST place at least

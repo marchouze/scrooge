@@ -74,7 +74,6 @@
 import Decimal from "decimal.js";
 import { returnContractCitation } from "../../v2-core/regulatory-returns/return-contracts";
 import {
-  COA_ACCOUNTS,
   COA_BY_ID,
   COUNTERPARTY_SECTORS,
   type CounterpartySector,
