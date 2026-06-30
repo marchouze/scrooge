@@ -7,6 +7,7 @@
 
 export type {
   AgentAttrs,
+  Ba325ResidencyBucket,
   BeneficialOwnerChainAssertedPayload,
   Citation,
   KindAttributes,
@@ -28,7 +29,14 @@ export type {
   SarbSectorCode,
 } from "./types";
 
-export { PARTY_EVENT_TYPES, PARTY_KINDS, RELATIONSHIP_KINDS, SARB_SECTOR_CODES, partyId } from "./types";
+export {
+  BA325_RESIDENCY_BUCKETS,
+  PARTY_EVENT_TYPES,
+  PARTY_KINDS,
+  RELATIONSHIP_KINDS,
+  SARB_SECTOR_CODES,
+  partyId,
+} from "./types";
 
 export {
   RELATIONSHIP_KIND_CONSTRAINTS,

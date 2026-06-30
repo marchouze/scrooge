@@ -23,14 +23,15 @@
 // Author: Imani (Legal-as-code engineer; reports to Devon, Chief
 // Operating Officer, governance).
 
-import type { KindAttributes, PartyId, PartyKind, RelationshipKind, SarbSectorCode } from "../../domains/party";
+import type {
+  Ba325ResidencyBucket,
+  KindAttributes,
+  PartyId,
+  PartyKind,
+  RelationshipKind,
+  SarbSectorCode,
+} from "../../domains/party";
 import type { EventStore } from "../event-store/store";
-
-// `import type` for Ba325ResidencyBucket is safe despite the mutual-import
-// pattern: TypeScript erases type-only imports at runtime, so there is no
-// circular VALUE-level dependency. The canonical definition stays in
-// counterparty-residency.ts. Authority: D-BA-RETURN-CELL-VALUE-ENGINE Phase 3.
-import type { Ba325ResidencyBucket } from "../markets/fx/counterparty-residency";
 
 /** ISO-3166 alpha-2 code for the bank's home jurisdiction (the Exchange-Control residency anchor). */
 const HOME_JURISDICTION_CODE = "ZA";

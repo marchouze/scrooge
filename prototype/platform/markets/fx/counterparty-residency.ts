@@ -60,7 +60,7 @@
 // Author: Bea (Accounting & financial reporting engineer, engineering — reports
 //   to Camille CFO; BA-form line-mapping owner).
 
-import type { PartyId } from "../../../domains/party";
+import type { Ba325ResidencyBucket, PartyId } from "../../../domains/party";
 import {
   type ClientOnboardingRegister,
   foldClientOnboardingRegister,
@@ -81,15 +81,13 @@ import {
 /**
  * The SARB BA 325 reg-29(3) counterparty-residency buckets (Exchange Control /
  * Reg 29(3) categories). Each value names a form row group.
+ *
+ * Canonical definition lives in `domains/party/types.ts`.
+ * Re-exported here for backward compatibility — new code should import from
+ * `domains/party`. Authority: D-BA-RETURN-CELL-VALUE-ENGINE Phase 3.
  */
-export type Ba325ResidencyBucket = "resident" | "non-resident" | "authorised-dealer" | "sarb";
-
-export const BA325_RESIDENCY_BUCKETS: readonly Ba325ResidencyBucket[] = [
-  "resident",
-  "non-resident",
-  "authorised-dealer",
-  "sarb",
-] as const;
+export type { Ba325ResidencyBucket } from "../../../domains/party";
+export { BA325_RESIDENCY_BUCKETS } from "../../../domains/party";
 
 /** Human-facing label for each bucket (matches the BA 325 row labels). */
 export const BA325_RESIDENCY_BUCKET_LABEL: Readonly<Record<Ba325ResidencyBucket, string>> = {

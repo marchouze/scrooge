@@ -68,6 +68,7 @@ import { type Money, moneyFromMinorUnits } from "../platform/core/decimal-money"
 import type { Currency } from "../platform/core/types";
 import type { EventStore } from "../platform/event-store/store";
 import { anchorFunctionalCurrency } from "../platform/identity/functional-currency";
+import { buildPartyProjection } from "../platform/identity/party-projection";
 import type { MarketDataStore } from "../platform/market-data/store";
 import { computeBA320V2 } from "../platform/projections/ba320-fx-v2";
 import { computeBA700V2 } from "../platform/projections/ba700-v2";
@@ -90,7 +91,6 @@ import {
 } from "../platform/reporting/cell-value/ba100-leaf-fold";
 import { buildBa100ReferenceData } from "../platform/reporting/cell-value/ba100-reference-data";
 import { leafFoldFor } from "../platform/reporting/cell-value/leaf-fold-registry";
-import { buildPartyProjection } from "../platform/identity/party-projection";
 import { getSubstrateGap } from "../platform/substrate/gap-register";
 // Side-effect import: registers every seat-authored per-form leaf fold so the
 // cell-value engine can fill granular cells (D-BA-RETURN-CELL-VALUE-ENGINE).
