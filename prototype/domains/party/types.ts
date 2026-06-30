@@ -488,6 +488,46 @@ export interface PartyDeactivatedPayload {
 // PARTY_EVENT_TYPES — closed enumeration of the 10 event types
 // ===========================================================================
 
+// ===========================================================================
+// SarbSectorCode — BA 100 R1010 deposit-sector-analysis taxonomy
+// ===========================================================================
+
+/**
+ * SARB BA 100 R1010 counterparty-sector taxonomy — the eight mutually-exclusive
+ * sector buckets that drive the R1020–R1090 deposit-sector-analysis block.
+ *
+ * SOURCE: SARB PA Directive D5/2025 §2.1.3 (form BA 100, R1010–R1090 row labels,
+ * read VERBATIM). This is the AUTHORITATIVE enum; the deposit fold
+ * (`DEPOSIT_SECTOR_ANALYSIS_ROW` in `ba100-leaf-fold.ts`) maps the LCR retail/
+ * wholesale taxonomy onto this set. The party-register join (`getCounterpartySector`
+ * in `LeafFoldReferenceData`) resolves a counterparty's sector via this taxonomy.
+ *
+ * Canonical home: `domains/party/types.ts` (exported from `domains/party/index.ts`).
+ * Re-exported from `v2-core/` is NOT required — the domain boundary is `domains/party`.
+ * Authority: D-BA-RETURN-CELL-VALUE-ENGINE; D-BA-RETURN-CAPABILITY-FIRST; SARB BA 100.
+ */
+export type SarbSectorCode =
+  | "sovereign"          // R1020 — Sovereigns, including central banks
+  | "pse"                // R1030 — Public sector entities
+  | "local-authority"    // R1040 — Local authorities / municipalities
+  | "bank"               // R1050 — Banks (SARB-licensed + international banks)
+  | "securities-firm"    // R1060 — Securities firms / broker-dealers
+  | "corporate"          // R1070 — Corporate customers (non-bank, non-retail)
+  | "retail"             // R1080 — Retail customers (natural persons + SMEs per BCBS LCR)
+  | "other";             // R1090 — Other counterparties (residual)
+
+/** All BA 100 R1010 sector codes in row order (R1020–R1090). */
+export const SARB_SECTOR_CODES: readonly SarbSectorCode[] = [
+  "sovereign",
+  "pse",
+  "local-authority",
+  "bank",
+  "securities-firm",
+  "corporate",
+  "retail",
+  "other",
+] as const;
+
 export const PARTY_EVENT_TYPES = [
   "PartyRegistered",
   "PartyAttributeChanged",

@@ -88,7 +88,9 @@ import {
   type ResidualCashPlacement,
   collectBa100ResidualCash,
 } from "../platform/reporting/cell-value/ba100-leaf-fold";
+import { buildBa100ReferenceData } from "../platform/reporting/cell-value/ba100-reference-data";
 import { leafFoldFor } from "../platform/reporting/cell-value/leaf-fold-registry";
+import { buildPartyProjection } from "../platform/identity/party-projection";
 import { getSubstrateGap } from "../platform/substrate/gap-register";
 // Side-effect import: registers every seat-authored per-form leaf fold so the
 // cell-value engine can fill granular cells (D-BA-RETURN-CELL-VALUE-ENGINE).
@@ -943,12 +945,19 @@ function buildFinanceReturnDetailViewInner(
       : [];
   const leafFold = leafFoldFor(formId);
   if (leafFold !== undefined) {
+    // Phase 3 — build the party-register projection and wrap it in the
+    // LeafFoldReferenceData accessor (party residency + sector + desk bookType).
+    // Fail-closed: if the projection is empty, each accessor returns null →
+    // fold surfaces a gap, never a guessed default (Charter cmd 2 / cmd 5).
+    const partyProjection = buildPartyProjection(eventStore);
+    const referenceData = buildBa100ReferenceData(partyProjection);
     const leafValues = leafFold({
       eventStore,
       marketData,
       entity: RETURNS_ENTITY,
       asOf: RETURNS_AS_OF,
       functionalCurrency,
+      referenceData,
     });
     // The set of cell COORDINATES (`"<row> <column>"`) the leaf fold resolved
     // DIRECTLY from the events — these are the granular, event-sourced per-line

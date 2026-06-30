@@ -200,7 +200,7 @@ export interface ResidencyOracle {
  *   - `null`           when there is NO residency evidence at all (fail-closed —
  *                      the caller must not guess)
  */
-function residencyFromLists(
+export function residencyFromLists(
   taxResidencies: readonly string[] | undefined,
   jurisdictions: readonly string[] | undefined,
 ): "resident" | "non-resident" | null {
