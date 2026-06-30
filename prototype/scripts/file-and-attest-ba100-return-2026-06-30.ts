@@ -59,7 +59,7 @@ import {
   canonicaliseReturnRender,
   renderBa100Return,
 } from "../platform/reporting/ba100-return-render";
-import { recordDecision } from "../runtime/decisions/record";
+import { recordDecision, requestDecision } from "../runtime/decisions/record";
 import { COA_ACCOUNTS } from "../v2-core/accounting/chart-of-accounts";
 
 // ---------------------------------------------------------------------------
@@ -75,8 +75,15 @@ const PERIOD_ID = "period:hoz-bank:build-phase";
 const AS_OF = "2099-12-31";
 /** The fixed filing timestamp — deterministic, not wall-clock. */
 const FILING_AS_OF = "2026-06-30T00:00:00.000Z";
-/** The fixed attestation timestamp — deterministic. */
-const ATTESTATION_AS_OF = "2026-06-30T00:01:00.000Z";
+/**
+ * The fixed decision-requested timestamp — emitted BEFORE the approved phase
+ * so the decision-symmetry gate sees the required `requested → approved`
+ * lifecycle pair (applyBaselineToResult treats missing-requested as fail for
+ * decisions not in the baseline snapshot).
+ */
+const DECISION_REQUESTED_AS_OF = "2026-06-30T00:01:00.000Z";
+/** The fixed attestation (approved) timestamp — deterministic. */
+const ATTESTATION_AS_OF = "2026-06-30T00:02:00.000Z";
 
 const RECORD_ID = `return:BA100:${PERIOD_ID}:${AS_OF}`;
 
@@ -214,28 +221,39 @@ function main(): void {
       `[file-and-attest-ba100-return] RecordFiled: eventId=${filed.eventId} hash=${filed.documentHash} isNew=${filed.isNewDocument}`,
     );
 
-    // (4) CFO attestation Decision.
+    // (4) CFO attestation Decision — two-phase lifecycle (requested → approved).
+    //
+    //     The decision-symmetry gate (platform/recon/decision-symmetry.ts) requires
+    //     every Decision to have a `requested` event before any terminal phase.
+    //     Decisions not in the baseline snapshot are treated as `fail` severity
+    //     (applyBaselineToResult). Emitting `requested` first satisfies the gate
+    //     without touching the baseline.
     //
     //     PREMISE D CORRECTION: category must be "finance" (not "finance-close" —
     //     that value does not exist in DECISION_CATEGORIES). Authority is "CFO"
     //     (Decision authority routing: finance-close → CFO). Scrooge records on
     //     behalf of Camille (CFO) via session-delegation.
+    const decisionBase = {
+      decisionId: DECISION_ID,
+      authority: "CFO" as const,
+      authorityRef: "camille@hoz-bank.internal",
+      title: "BA100 return-of-record attested — build-phase period, 2026-06-30",
+      category: "finance" as const,
+      recommendation: `The BA100 return as filed (RecordFiled recordId=${RECORD_ID}, hash=${filed.documentHash}) is materially correct: GL-reconciling, FX fully reflected on C0010/C0020, recon gates pass on clean store.`,
+      rationale:
+        "Phase 0+1+2+3 deliverables complete; three recon gates green on clean store (ba100-cell-values-reconcile: 3 folded lines; ba-return-coverage-ratchet: pass; ba100-book-split-coherence: 3 rows / 5 assertions). RecordFiled event verified in SHARED store. Leaf-fold section sums reconcile to GL oracle totals (subset-soundness confirmed).",
+      sourceDocHashes: [filed.documentHash],
+      citations: ["D-BA-RETURN-CAPABILITY-FIRST", "D-ENGINEERING-INTEGRITY-CHARTER"],
+      recordedVia: "scrooge:session-delegation" as const,
+      actor: { type: "service" as const, id: "agent:bea" },
+    };
+
+    // Emit requested phase first (decision-symmetry gate invariant).
+    requestDecision(decisionBase, DECISION_REQUESTED_AS_OF);
+
+    // Then emit approved phase.
     const decisionResult = recordDecision(
-      {
-        decisionId: DECISION_ID,
-        phase: "approved",
-        authority: "CFO",
-        authorityRef: "camille@hoz-bank.internal",
-        title: "BA100 return-of-record attested — build-phase period, 2026-06-30",
-        category: "finance",
-        recommendation: `The BA100 return as filed (RecordFiled recordId=${RECORD_ID}, hash=${filed.documentHash}) is materially correct: GL-reconciling, FX fully reflected on C0010/C0020, recon gates pass on clean store.`,
-        rationale:
-          "Phase 0+1+2+3 deliverables complete; three recon gates green on clean store (ba100-cell-values-reconcile: 3 folded lines; ba-return-coverage-ratchet: pass; ba100-book-split-coherence: 3 rows / 5 assertions). RecordFiled event verified in SHARED store. Leaf-fold section sums reconcile to GL oracle totals (subset-soundness confirmed).",
-        sourceDocHashes: [filed.documentHash],
-        citations: ["D-BA-RETURN-CAPABILITY-FIRST", "D-ENGINEERING-INTEGRITY-CHARTER"],
-        recordedVia: "scrooge:session-delegation",
-        actor: { type: "service" as const, id: "agent:bea" },
-      },
+      { ...decisionBase, phase: "approved" },
       ATTESTATION_AS_OF,
     );
 
