@@ -193,6 +193,42 @@ export const filDepositCategorySchema = z.enum([
 
 export type FilDepositCategory = z.infer<typeof filDepositCategorySchema>;
 
+// ---------------------------------------------------------------------------
+// CASH TERMS (D-BA-RETURN-CAPABILITY-FIRST; D-BA-RETURN-PER-PRODUCT-RICHNESS).
+// The counterparty-class dimension carried on a settled CASH FIL instance.
+// Drives BA 100 row placement (Reg 26 counterparty-sector taxonomy).
+//
+//   "central-bank"     → R0010 primary + R0050 / R1020 memos.
+//   "bank"             → R0120 primary + R0910 / R1050 memos (FX nostro).
+//   "customer-non-bank"→ R0120 primary + R0900 memo.
+//
+// Authority: Banks Act Reg 26; SARB BA 100 (D5/2025 §2.1.3); D-BA-RETURN-
+//   CAPABILITY-FIRST; D-BA-RETURN-PER-PRODUCT-RICHNESS; D-ENGINEERING-
+//   INTEGRITY-CHARTER (cmd 2 fail-closed; cmd 5 no-silent-deferral; cmd 9
+//   replay-safe). Principle 1 (dimension on the event, not inferred from CoA).
+// ---------------------------------------------------------------------------
+
+/**
+ * BA 100 counterparty-class discriminator for a settled CASH FIL instance.
+ * "central-bank" → R0010 + R0050/R1020 memos; "bank" → R0120 + R0910/R1050;
+ * "customer-non-bank" → R0120 + R0900 memo.
+ */
+export const filCashCounterpartyClassSchema = z.enum(["central-bank", "bank", "customer-non-bank"]);
+
+export type FilCashCounterpartyClass = z.infer<typeof filCashCounterpartyClassSchema>;
+
+/**
+ * Cash dimension block — OPTIONAL on settled `cash` FIL instances. The BA 100
+ * leaf fold fails closed when absent (Charter cmd 2). Additive: existing
+ * instruments parse unchanged (Charter cmd 9 replay-safe).
+ */
+export const filCashTermsSchema = z.object({
+  /** BA 100 counterparty class (Reg 26) — drives primary row + memo rows. */
+  counterpartyClass: filCashCounterpartyClassSchema,
+});
+
+export type FilCashTerms = z.infer<typeof filCashTermsSchema>;
+
 /**
  * BCBS LCR (d238) / SARB Reg 26 deposit-source counterparty sector — byte-
  * identical to the ACC-6100-001..004 deposit-liability CoA sub-accounts. Drives
@@ -545,6 +581,18 @@ const filEconomicTermsObjectSchema = z.object({
    * (no silent default — Charter cmd 2).
    */
   loanTerms: filLoanTermsSchema.optional(),
+  /**
+   * Cash dimension (D-BA-RETURN-CAPABILITY-FIRST; D-BA-RETURN-PER-PRODUCT-
+   * RICHNESS). Carried on a settled `cash` asset-class FIL instance — the typed
+   * counterparty-class (Reg 26 taxonomy) the BA 100 leaf fold uses to place the
+   * cash balance onto its primary BA 100 row (R0010 or R0120) and memo rows.
+   * OPTIONAL + additive: only settled FX cash legs carry it where the settlement
+   * routing is known; every existing instance parses unchanged (replay-safe —
+   * Charter cmd 9). The BA 100 leaf fold fails closed on a cash instance lacking
+   * it — the position stays unresolved rather than guessing (Charter cmd 2;
+   * no silent default). Authority: D-BA-RETURN-CAPABILITY-FIRST.
+   */
+  cashTerms: filCashTermsSchema.optional(),
   /**
    * The symmetric BUY/SELL agreement quad (D-FX-INSTRUMENT-BUYSELL-QUAD). Carried
    * on an `fx` asset-class instance so the instrument is self-describing: it

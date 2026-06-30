@@ -41,6 +41,7 @@ import { type Money, moneyFromDecimal } from "../fil-core/primitives";
 import { formatInstanceUrn } from "../fil-core/urn";
 import { CASH_BALANCE_TYPE_URN } from "../fil-models/cash/types/cash-type-definitions";
 import {
+  type FilCashCounterpartyClass,
   type FilInstrumentCreatedPayload,
   type FilInstrumentTerminatedPayload,
   filInstrumentCreatedPayloadSchema,
@@ -109,6 +110,16 @@ export interface CashMaterialisationInput {
   readonly originatingEvent: { readonly eventType: string; readonly eventId: string };
   /** The FIL TYPE URN of the cash instances. Defaults to the canonical Cash type. */
   readonly cashTypeUrn?: string;
+  /**
+   * BA 100 counterparty class (Reg 26) of the settled cash balance — drives the
+   * BA 100 leaf fold row placement (R0010 for central-bank; R0120 for bank /
+   * customer-non-bank). OPTIONAL: when absent, `cashTerms` is omitted from the
+   * instrument's economicTerms and the BA 100 fold fails closed on the instrument
+   * (no silent default — Engineering Charter cmd 2). The FX settlement seam sets
+   * this to "bank" for FX spot nostro positions routed via a correspondent bank.
+   * Authority: D-BA-RETURN-CAPABILITY-FIRST.
+   */
+  readonly counterpartyClass?: FilCashCounterpartyClass;
   /**
    * EXPLICIT settlement-date ZAR (reporting-currency) carrying amount per leg side,
    * in positive MAJOR units — the IAS 21 §21 spot-rate ZAR value at the settlement
@@ -182,6 +193,12 @@ export function buildSettledCashPayloads(input: CashMaterialisationInput): Built
         hedgingSetTag: `${leg.currency}/${input.reporting}`,
         originatingInstrument: input.fxInstance,
         zarCostBasis: majorNumberToCashMoney(zarCostBasisMajor, input.reporting),
+        // Cash dimension — only stamped when counterpartyClass is supplied by the
+        // caller (the settlement seam). Absent ⇒ omitted entirely; the BA 100 fold
+        // fails closed on the instrument rather than guessing the row (Charter cmd 2).
+        ...(input.counterpartyClass !== undefined
+          ? { cashTerms: { counterpartyClass: input.counterpartyClass } }
+          : {}),
       },
     });
     out.push({ instance, payload });

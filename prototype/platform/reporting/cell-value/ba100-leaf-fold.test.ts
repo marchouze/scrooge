@@ -37,11 +37,13 @@ import type {
   FilDepositCounterpartySector,
 } from "../../../v2-core/fil-instances/events";
 import type {
+  FilCashCounterpartyClass,
   FilLoanExposureClass,
   FilLoanLtvBucket,
   FilLoanProductSubType,
 } from "../../../v2-core/fil-instances/events";
 import { CAPITAL_INSTRUMENT_TYPE_URN } from "../../../v2-core/fil-models/capital/types/capital-type-definitions";
+import { CASH_BALANCE_TYPE_URN } from "../../../v2-core/fil-models/cash/types/cash-type-definitions";
 import { LOAN_ADVANCE_TYPE_URN } from "../../../v2-core/fil-models/credit/types/loan-type-definitions";
 import { MM_DEPOSIT_TYPE_URN } from "../../../v2-core/fil-models/ir/money-market/types/mm-type-definitions";
 import { ba100Contract } from "../../../v2-core/regulatory-returns/ba100-contract";
@@ -844,5 +846,192 @@ describe("BA 100 leaf fold — loan FIL → BA 100 advances rows (L5-FTR sibling
         // ltvBucket deliberately omitted.
       }),
     ).toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BA 100 leaf fold — settled CASH FIL → R0120/R0910 (D-BA-RETURN-CAPABILITY-FIRST)
+// ---------------------------------------------------------------------------
+
+function seedCashInstrument(
+  store: EventStore,
+  args: {
+    instanceId: string;
+    /** FCY notional amount (positive). */
+    notional: string;
+    /** FCY currency (e.g. "USD"). */
+    currency: string;
+    /** ZAR (functional-currency) cost basis — the IAS 21 carrying amount. */
+    zarCostBasisAmount: string;
+    /** BA 100 counterparty class. */
+    counterpartyClass?: FilCashCounterpartyClass;
+    direction?: "long" | "short";
+    provenance?: typeof SIM | typeof PROD;
+  },
+): void {
+  const instance = formatInstanceUrn({ tenant: ENTITY, instanceId: args.instanceId });
+  const payload = {
+    kind: "FilInstrumentCreated" as const,
+    instance,
+    type: CASH_BALANCE_TYPE_URN,
+    tenant: ENTITY,
+    asOf: AS_OF,
+    originatingEvent: {
+      eventType: "FxSimSettlementConfirmed",
+      eventId: `CASH-${args.instanceId}`,
+    },
+    initialStage: "active" as const,
+    economicTerms: {
+      assetClass: "cash" as const,
+      notional: { currency: args.currency, amount: args.notional },
+      direction: args.direction ?? ("long" as const),
+      counterpartyId: "CP-TEST-001",
+      nettingSetId: "NS-CP-TEST-001-ZAR",
+      currency: args.currency,
+      settlementDate: AS_OF.slice(0, 10),
+      hedgingSetTag: `${args.currency}/ZAR`,
+      originatingInstrument: formatInstanceUrn({
+        tenant: ENTITY,
+        instanceId: `${args.instanceId}-fx`,
+      }),
+      zarCostBasis: { currency: CCY, amount: args.zarCostBasisAmount },
+      ...(args.counterpartyClass !== undefined
+        ? { cashTerms: { counterpartyClass: args.counterpartyClass } }
+        : {}),
+    },
+  };
+  store.append(
+    makeFilInstrumentCreated({
+      asOf: AS_OF,
+      entity: ENTITY,
+      actor: ACTOR,
+      citations: [...CITES, "D-BA-RETURN-CAPABILITY-FIRST"],
+      provenance: args.provenance ?? SIM,
+      payload: payload as unknown as FilInstrumentCreatedPayload as Parameters<
+        typeof makeFilInstrumentCreated
+      >[0]["payload"],
+    }),
+  );
+}
+
+describe("BA 100 leaf fold — cash FIL (D-BA-RETURN-CAPABILITY-FIRST)", () => {
+  test("cash with counterpartyClass:'bank' → R0120/C0020 (primary) + R0910/C0020 + R1050/C0020 (memos)", () => {
+    const store = new EventStore();
+    const zarBasis = "129954790"; // ZAR cost basis
+    seedCashInstrument(store, {
+      instanceId: "USD-NOSTRO-001",
+      notional: "7000000",
+      currency: "USD",
+      zarCostBasisAmount: zarBasis,
+      counterpartyClass: "bank",
+    });
+
+    const leaf = fold(store, "combined");
+
+    // Primary row R0120 (in 10–530 range — counted by recon oracle).
+    expect(leaf.get("R0120 C0020")).toBe(zarBasis);
+    // Memo rows (outside 10–530 range — NOT counted by recon oracle).
+    expect(leaf.get("R0910 C0020")).toBe(zarBasis);
+    expect(leaf.get("R1050 C0020")).toBe(zarBasis);
+    // Sanity: the folded keys are exactly the three cash rows (no other contamination).
+    const cashKeys = [...leaf.keys()].filter((k) => k.endsWith("C0020"));
+    expect(cashKeys.sort()).toEqual(["R0120 C0020", "R0910 C0020", "R1050 C0020"]);
+  });
+
+  test("FAIL-CLOSED: cash WITHOUT cashTerms → R0120 and R0910 stay blank (no silent guess)", () => {
+    const store = new EventStore();
+    seedCashInstrument(store, {
+      instanceId: "USD-NOSTRO-NO-TERMS",
+      notional: "7000000",
+      currency: "USD",
+      zarCostBasisAmount: "129954790",
+      // counterpartyClass intentionally absent
+    });
+
+    const leaf = fold(store, "combined");
+    // No cash row should be lit up — fail-closed on absent cashTerms.
+    expect(leaf.get("R0120 C0020")).toBeUndefined();
+    expect(leaf.get("R0910 C0020")).toBeUndefined();
+    expect(leaf.size).toBe(0);
+  });
+
+  test("cash with counterpartyClass:'central-bank' → R0010/C0020 primary + R0050/C0020 + R1020/C0020 memos", () => {
+    const store = new EventStore();
+    seedCashInstrument(store, {
+      instanceId: "ZAR-CB-001",
+      notional: "50000000",
+      currency: "ZAR",
+      zarCostBasisAmount: "50000000",
+      counterpartyClass: "central-bank",
+    });
+
+    const leaf = fold(store, "combined");
+    expect(leaf.get("R0010 C0020")).toBe("50000000");
+    expect(leaf.get("R0050 C0020")).toBe("50000000");
+    expect(leaf.get("R1020 C0020")).toBe("50000000");
+  });
+
+  test("cash with counterpartyClass:'customer-non-bank' → R0120/C0020 primary + R0900/C0020 memo", () => {
+    const store = new EventStore();
+    seedCashInstrument(store, {
+      instanceId: "USD-CUST-001",
+      notional: "5000000",
+      currency: "USD",
+      zarCostBasisAmount: "97000000",
+      counterpartyClass: "customer-non-bank",
+    });
+
+    const leaf = fold(store, "combined");
+    expect(leaf.get("R0120 C0020")).toBe("97000000");
+    expect(leaf.get("R0900 C0020")).toBe("97000000");
+    // R0910 (bank memo) must NOT be lit — wrong class.
+    expect(leaf.get("R0910 C0020")).toBeUndefined();
+  });
+
+  test("combined store: capital raise (C0040) AND settled FX cash (C0020) coexist without collision", () => {
+    // This is the load-bearing gate: Σ(folded assets) == oracle.assets must hold
+    // when BOTH capital (R0040/C0040) AND cash (R0120/C0020) are in the store.
+    // The recon:ba100-cell-values-reconcile gate is the live version of this assertion.
+    const store = new EventStore();
+
+    // Capital raise: CET1 R300m → R0040/C0040 (asset) + R0810/C0040 (equity).
+    seedCapitalCreated(store, {
+      instanceId: "CET1-COMBINED",
+      amount: "300000000",
+      tier: "cet1",
+      subCategory: "cet1.paid-up-ordinary-shares",
+    });
+
+    // FX spot settled: USD nostro → R0120/C0020.
+    const cashBasis = "129954790";
+    seedCashInstrument(store, {
+      instanceId: "USD-FX-COMBINED",
+      notional: "7000000",
+      currency: "USD",
+      zarCostBasisAmount: cashBasis,
+      counterpartyClass: "bank",
+    });
+
+    const leaf = fold(store, "combined");
+
+    // Capital rows at C0040.
+    expect(leaf.get("R0040 C0040")).toBe("300000000");
+    expect(leaf.get("R0810 C0040")).toBe("300000000");
+
+    // Cash rows at C0020 — separate column, no contamination.
+    expect(leaf.get("R0120 C0020")).toBe(cashBasis);
+    expect(leaf.get("R0910 C0020")).toBe(cashBasis);
+
+    // Verify coexistence: the two asset classes occupy DIFFERENT columns (C0040 vs
+    // C0020) and DIFFERENT primary rows (R0040 vs R0120) — no column/row collision.
+    // The recon:ba100-cell-values-reconcile gate (using the live event store with
+    // actual GL postings) is the load-bearing oracle gate for the reconciliation
+    // invariant. This test asserts the correct row/column placement only.
+    const folded040 = leaf.get("R0040 C0040");
+    const foldedR0120C0020 = leaf.get("R0120 C0020");
+    expect(folded040).toBe("300000000"); // capital nostro — C0040
+    expect(foldedR0120C0020).toBe(cashBasis); // FX cash — C0020, different column
+    // The two columns are independent — adding cash (C0020) does not mutate C0040.
+    expect(leaf.get("R0120 C0040")).toBeUndefined(); // no cross-column contamination
   });
 });

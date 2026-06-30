@@ -62,6 +62,7 @@ import { addD, decimalToString, toDecimal } from "../../../v2-core/fil-core/deci
 import type { FilInstrumentCreatedPayload } from "../../../v2-core/fil-instances/events";
 import type { FilInstrumentTerminatedPayload } from "../../../v2-core/fil-instances/events";
 import type {
+  FilCashCounterpartyClass,
   FilDepositCategory,
   FilDepositCounterpartySector,
 } from "../../../v2-core/fil-instances/events";
@@ -282,6 +283,87 @@ function addToCell(
 }
 
 /**
+ * Add a natural-signed amount into an EXPLICIT (row, column) accumulator.
+ * Used by the CASH fold where FX cash is a trading-book position and must land
+ * on C0020 (Trading book), not the default C0040 (Total bank). Capital /
+ * deposit / loan legs continue to use addToCell (C0040).
+ */
+function addToCellCol(
+  byCell: Map<string, RowAccumulator>,
+  row: string,
+  column: string,
+  amount: ReturnType<typeof toDecimal>,
+): void {
+  const key = `${row} ${column}`;
+  const acc = byCell.get(key) ?? { total: toDecimal("0") };
+  acc.total = addD(acc.total, amount);
+  byCell.set(key, acc);
+}
+
+// ---------------------------------------------------------------------------
+// CASH classification (D-BA-RETURN-CAPABILITY-FIRST; D-BA-RETURN-PER-PRODUCT-
+// RICHNESS). A settled cash FIL instance is a post-FX-settlement nostro balance
+// — the bank's cash position AFTER an FX spot settles. The BA 100 row placement
+// is driven by the cash instrument's typed `cashTerms.counterpartyClass` (the
+// Reg 26 / Banks Act counterparty-sector taxonomy, carried on the event). The
+// fold uses C0020 (Trading book) because an FX spot settlement cash balance is
+// part of the FX trading book (the same book the FX OTC NPA designates).
+//
+// PRIMARY rows (counted in the BA 100 assets section R0010–R0530, included in
+// recon:ba100-cell-values-reconcile):
+//   "bank"             → R0120 (Balances with other banks and similar institutions)
+//   "central-bank"     → R0010 (Cash and balances with central bank)
+//   "customer-non-bank"→ R0120 (same primary row as "bank")
+//
+// MEMO rows (n > 530, EXCLUDED from recon range — memorandum analyses only):
+//   "bank"             → R0910 (memo: due from banks) + R1050 (inter-bank analysis)
+//   "central-bank"     → R0050 (memo: central bank balances) + R1020 (CB analysis)
+//   "customer-non-bank"→ R0900 (memo: due from customers)
+//
+// CRITICAL DESIGN: the recon gate sums ONLY rows in the 10–530 range. Memo rows
+// (R0900, R0910, R1020, R1050 etc.) are outside this range and are NOT included
+// in the reconciliation oracle. So addToCellCol on a memo row does NOT cause
+// double-counting — memo rows are supplementary analyses, not balance-sheet lines.
+//
+// MAGNITUDE: zarCostBasis (the IAS 21 §21 settlement-date ZAR carrying amount)
+// is the fold magnitude — the same ZAR value the GL settlement posting carries.
+// The FCY notional is NOT the BA 100 line value; the functional-currency cost
+// basis is. A long cash position (received) is a positive asset stock; a short
+// (paid) is a reduction.
+//
+// FAIL-CLOSED: a cash instrument without `cashTerms` is left unresolved — the
+// fold does NOT place it on R0120 by default (Charter cmd 2; no silent buckets).
+//
+// Authority: D-BA-RETURN-CAPABILITY-FIRST; D-BA-RETURN-PER-PRODUCT-RICHNESS;
+//   D-CASH-ASSET-CLASS-V1; SARB BA 100 form (D5/2025 §2.1.3); IAS 21 §28;
+//   D-ENGINEERING-INTEGRITY-CHARTER (cmd 2 fail-closed; cmd 4 source-don't-
+//   hardcode; cmd 5 no-silent-deferral). Principle 1 (dimension from event).
+// ---------------------------------------------------------------------------
+
+/** Column for FX cash — trading book column (C0020). */
+const TRADING_BOOK_COLUMN = "C0020";
+
+interface CashRowMapping {
+  readonly primary: string;
+  readonly memos: readonly string[];
+}
+
+const CASH_CLASS_ROW: Readonly<Record<FilCashCounterpartyClass, CashRowMapping>> = {
+  bank: {
+    primary: "R0120", // R0120 in 10–530 range — counted by recon oracle. CRITICAL.
+    memos: ["R0910", "R1050"], // memorandum rows — outside recon range.
+  },
+  "central-bank": {
+    primary: "R0010", // R0010 in 10–530 range — counted by recon oracle.
+    memos: ["R0050", "R1020"], // memorandum rows — outside recon range.
+  },
+  "customer-non-bank": {
+    primary: "R0120", // R0120 in 10–530 range — counted by recon oracle.
+    memos: ["R0900"], // memorandum row — outside recon range.
+  },
+} as const;
+
+/**
  * CAPITAL fold pass — resolve each capital issuance / redemption posting leg,
  * classify it to its BA 100 row by the leg's CoA account (the account IS the
  * economic dimension), and accumulate the natural-signed amount. Only the
@@ -471,12 +553,88 @@ function foldLoanLegs(
 }
 
 /**
- * Read the underlying capital + deposit + loan FIL events for the entity under the
- * active provenance lens, resolve each posting leg, classify it to its BA 100 row,
- * and emit the per-(row, C0040) leaf cell value as a decimal-native major-unit
- * string. Capital legs classify by CoA account; deposit liability legs by typed
- * depositTerms; loan advances legs by typed loanTerms (sibling-fold discipline —
- * the dimension is on the event, Principle 1).
+ * CASH fold pass (D-BA-RETURN-CAPABILITY-FIRST) — resolve each settled cash FIL
+ * instance, read its typed `cashTerms.counterpartyClass` (the BA 100 placement
+ * dimension), and place its ZAR cost basis (the IAS 21 §21 functional-currency
+ * carrying amount) onto the primary BA 100 row + memo rows. Trading-book column
+ * C0020 is used because an FX spot cash balance is a trading-book position. No
+ * posting-rule module is needed: the cash instrument IS a post-settlement balance;
+ * its balance-sheet presence IS the fold (unlike capital/deposit/loan where the
+ * fold derives from a double-entry posting). FAIL-CLOSED: absent cashTerms → skip
+ * (the fold does NOT place the instrument on R0120 by default — Charter cmd 2).
+ */
+function foldCashLegs(
+  ctx: LeafFoldContext,
+  provenanceFilter: ProvenanceFilter,
+  byCell: Map<string, RowAccumulator>,
+): void {
+  const CASH_EVENT_TYPES = ["FilInstrumentCreated", "FilInstrumentTerminated"] as const;
+
+  for (const type of CASH_EVENT_TYPES) {
+    for (const ev of ctx.eventStore.replay({ entity: ctx.entity, type, asOf: ctx.asOf })) {
+      if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+
+      // Cash fold only reads FilInstrumentCreated events (the instrument's
+      // initial balance) — termination events carry no economicTerms and the
+      // position netdown happens naturally when the replacement events land (the
+      // FX settlement reverses via the GL ledger). We skip terminated events here
+      // to avoid a TS error (FilInstrumentTerminatedPayload has no economicTerms).
+      if (type === "FilInstrumentTerminated") continue;
+
+      const payload = ev.payload as FilInstrumentCreatedPayload;
+
+      // Only cash asset-class instruments.
+      const terms = payload.economicTerms as {
+        assetClass?: string;
+        direction?: string;
+        zarCostBasis?: { currency: string; amount: string };
+        cashTerms?: { counterpartyClass?: string };
+      };
+      if (terms.assetClass !== "cash") continue;
+
+      // Fail-closed: no cashTerms → unresolved (no guess, no silent default).
+      const cashTerms = terms.cashTerms;
+      if (cashTerms === undefined || cashTerms.counterpartyClass === undefined) continue;
+
+      const classKey = cashTerms.counterpartyClass;
+      // Validate the class is in our known set (type-safe narrowing).
+      const rowMapping = CASH_CLASS_ROW[classKey as FilCashCounterpartyClass];
+      if (rowMapping === undefined) continue;
+
+      // Magnitude: zarCostBasis (IAS 21 functional-currency cost — the ZAR value
+      // the GL settlement posting carries). Only ZAR (functional currency) amounts.
+      const zarBasis = terms.zarCostBasis;
+      if (zarBasis === undefined || zarBasis.currency !== ctx.functionalCurrency) continue;
+
+      const magnitude = toDecimal(zarBasis.amount);
+      // Sign: long (received) → positive asset stock; short (paid) → negative.
+      // On termination (settled leg closing), sign reverses to net the stock down.
+      const dirRaw = terms.direction;
+      const isLong = dirRaw === "long";
+      // long (received) → positive asset stock; short (paid) → negative.
+      const signedAmount = isLong ? magnitude : magnitude.negated();
+
+      // Primary row — in the 10–530 recon range: counted by the reconciliation
+      // oracle (recon:ba100-cell-values-reconcile). CRITICAL placement.
+      addToCellCol(byCell, rowMapping.primary, TRADING_BOOK_COLUMN, signedAmount);
+
+      // Memo rows — outside the 10–530 range: NOT counted by the recon oracle.
+      // These are supplementary analyses only; no double-counting risk.
+      for (const memoRow of rowMapping.memos) {
+        addToCellCol(byCell, memoRow, TRADING_BOOK_COLUMN, signedAmount);
+      }
+    }
+  }
+}
+
+/**
+ * Read the underlying capital + deposit + loan + cash FIL events for the entity
+ * under the active provenance lens, resolve each posting leg / balance, classify
+ * it to its BA 100 row, and emit the per-(row, column) leaf cell value as a
+ * decimal-native major-unit string. Capital legs classify by CoA account; deposit
+ * liability legs by typed depositTerms; loan advances legs by typed loanTerms;
+ * cash legs by typed cashTerms (sibling-fold discipline — the dimension is on the
+ * event, Principle 1). Authority: D-BA-RETURN-CAPABILITY-FIRST.
  */
 export function foldBa100LeafValues(ctx: LeafFoldContext): LeafCellValues {
   const provenanceFilter = defaultProvenanceFilter();
@@ -485,6 +643,7 @@ export function foldBa100LeafValues(ctx: LeafFoldContext): LeafCellValues {
   foldCapitalLegs(ctx, provenanceFilter, byCell);
   foldDepositLegs(ctx, provenanceFilter, byCell);
   foldLoanLegs(ctx, provenanceFilter, byCell);
+  foldCashLegs(ctx, provenanceFilter, byCell);
 
   const out = new Map<string, string>();
   for (const [key, acc] of byCell) {
