@@ -239,12 +239,12 @@ const FX_IAS_RULES = {
 //
 // A trading-book FX spot/forward is an IFRS 9 derivative. At trade date an
 // at-market trade has fair value ≈ 0 → NO on-balance-sheet gross-up at inception
-// (Policy A). The contractual buy/sell notionals are recorded in OFF-BALANCE-
-// SHEET memorandum accounts, self-balancing PER CURRENCY (a commitment leg + a
-// contra leg in EACH of the two trade currencies), so every currency balances and
-// the trial balance stays balanced. These accounts carry an off-balance-sheet COA
-// category and are EXCLUDED from on-balance-sheet asset/liability/equity totals,
-// the GL in-balance check, and BA-100 on-balance-sheet lines.
+// (Policy A). The contractual buy/sell notionals are recorded as TWO legs in
+// OFF-BALANCE-SHEET memorandum accounts: Dr bought-commitment (buy ccy) / Cr
+// sold-commitment (sell ccy). No same-currency contra account — the two legs are
+// inherently cross-currency and the OBS block is EXCLUDED from on-balance-sheet
+// asset/liability/equity totals, the GL in-balance check, and BA-100 on-balance-
+// sheet lines, so no per-currency self-balance invariant applies.
 //
 // SOURCED, NOT HARDCODED-IN-RULE: the ids/category live in the canonical chart of
 // accounts (`v2-core/accounting/chart-of-accounts.ts`, category
@@ -254,7 +254,6 @@ const FX_IAS_RULES = {
 
 export const FX_OBS_BOUGHT_COMMITMENT_ACCOUNT = "ACC-9100-001";
 export const FX_OBS_SOLD_COMMITMENT_ACCOUNT = "ACC-9100-002";
-export const FX_OBS_COMMITMENT_CONTRA_ACCOUNT = "ACC-9100-003";
 
 /**
  * OCI reserve account that, for an EQUITY instrument under a §5.7.5 election,
@@ -349,12 +348,11 @@ export function resolveFxElectionOverride(ifrsCategory: string | undefined): FxE
 //
 // The contractual buy/sell notionals — the two real legs in their two
 // currencies — are recorded OFF-BALANCE-SHEET from the instrument's `fxAgreement`
-// quad `{ buy: Money, sell: Money }` (D-FX-INSTRUMENT-BUYSELL-QUAD), self-
-// balancing PER CURRENCY:
-//   BUY  leg (ccy Cb, amount Ab): Dr bought-commitment[Cb] Ab ; Cr contra[Cb] Ab
-//   SELL leg (ccy Cs, amount As): Dr contra[Cs] As           ; Cr sold-commitment[Cs] As
-// Cb balances (Dr Ab == Cr Ab); Cs balances (Dr As == Cr As); the trial balance
-// stays in balance and EACH currency self-balances.
+// quad `{ buy: Money, sell: Money }` (D-FX-INSTRUMENT-BUYSELL-QUAD) as TWO legs:
+//   BUY  leg (ccy Cb, amount Ab): Dr bought-commitment[Cb] Ab
+//   SELL leg (ccy Cs, amount As): Cr sold-commitment[Cs]  As
+// The two legs are inherently cross-currency (Cb ≠ Cs). No same-currency contra
+// is required: the OBS block is excluded from the GL in-balance check entirely.
 //
 // FAIL-CLOSED on a missing quad: the `recon:fx-agreement-quad-integrity` gate
 // guarantees every LIVE fx-asset-class instance carries `fxAgreement`. If a quad
@@ -394,8 +392,8 @@ export function postFxInitialRecognitionLegs(payload: FilInstrumentCreatedPayloa
   const sellAmount = toMoneyWire({ currency: agreement.sell.currency, amount: sellMag });
   const description = `FX Trade-date OBS commitment ${agreement.buy.currency}/${agreement.sell.currency} ${t.direction} (V2 FVTPL)`;
 
-  // Off-balance-sheet memorandum, self-balancing per currency. No on-balance-sheet
-  // gross-up: an at-market trade has FV ≈ 0 at inception (IFRS 9 §5.1.1, B3.1.2).
+  // Off-balance-sheet memorandum: two legs, cross-currency. No on-balance-sheet
+  // gross-up — an at-market trade has FV ≈ 0 at inception (IFRS 9 §5.1.1, B3.1.2).
   const legs: FxPostingLeg[] = [
     // BUY leg — what the bank will RECEIVE on settlement.
     {
@@ -409,29 +407,7 @@ export function postFxInitialRecognitionLegs(payload: FilInstrumentCreatedPayloa
       postingRuleId,
       description,
     },
-    {
-      creditDebit: "credit",
-      accountCode: FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
-      amount: buyAmount,
-      postingDate,
-      tenantId,
-      sourceEventId,
-      iasRule,
-      postingRuleId,
-      description,
-    },
     // SELL leg — what the bank will DELIVER on settlement.
-    {
-      creditDebit: "debit",
-      accountCode: FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
-      amount: sellAmount,
-      postingDate,
-      tenantId,
-      sourceEventId,
-      iasRule,
-      postingRuleId,
-      description,
-    },
     {
       creditDebit: "credit",
       accountCode: FX_OBS_SOLD_COMMITMENT_ACCOUNT,
@@ -764,7 +740,6 @@ export const FX_OBS_RELEASE_RULE_ID = "PR-FX-OBS-RELEASE-V2";
 const FX_OBS_ACCOUNTS: ReadonlySet<string> = new Set([
   FX_OBS_BOUGHT_COMMITMENT_ACCOUNT,
   FX_OBS_SOLD_COMMITMENT_ACCOUNT,
-  FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
 ]);
 
 /** True iff a posting leg lands on the OBS FX-commitment memorandum block. */
@@ -776,8 +751,7 @@ export function isFxObsCommitmentLeg(leg: FxPostingLeg): boolean {
  * Produce the legs that RELEASE a settled/matured FX instance's trade-date OBS
  * commitment — the equal-and-opposite of the OBS subset of its accumulated opening
  * legs, re-stamped with the termination's posting date / tenant / source event.
- * Because the trade-date OBS legs self-balance per currency, the release is
- * balanced too. Only OBS legs (ACC-9100-*) are released; any non-OBS leg in the
+ * Only OBS legs (ACC-9100-*) are released; any non-OBS leg in the
  * input is ignored (the on-BS reval is reversed by PR-FX-CLOSE-V2). Empty / no-OBS
  * input yields no legs.
  */

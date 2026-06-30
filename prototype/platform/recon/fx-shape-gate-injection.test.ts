@@ -14,7 +14,6 @@ import { describe, expect, test } from "bun:test";
 
 import {
   FX_OBS_BOUGHT_COMMITMENT_ACCOUNT,
-  FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
   FX_OBS_SOLD_COMMITMENT_ACCOUNT,
   type FxPostingLeg,
 } from "../accounting/posting-rules-v2/fx";
@@ -67,12 +66,9 @@ function foldLeg(over: {
 }
 
 describe("INJECTION — recon:fx-trade-date-obs-memorandum (shape)", () => {
-  // The IFRS-correct at-market shape: four OBS legs spanning two currencies,
-  // self-balancing per currency, zero on-BS legs.
+  // The IFRS-correct at-market shape: two cross-currency OBS legs (Dr bought / Cr sold).
   const cleanAtMarket = (): FxPostingLeg[] => [
     obsLeg(FX_OBS_BOUGHT_COMMITMENT_ACCOUNT, "debit", "USD", "7000000.00"),
-    obsLeg(FX_OBS_COMMITMENT_CONTRA_ACCOUNT, "credit", "USD", "7000000.00"),
-    obsLeg(FX_OBS_COMMITMENT_CONTRA_ACCOUNT, "debit", "ZAR", "129955000.00"),
     obsLeg(FX_OBS_SOLD_COMMITMENT_ACCOUNT, "credit", "ZAR", "129955000.00"),
   ];
 
@@ -110,28 +106,27 @@ describe("INJECTION — recon:fx-trade-date-obs-memorandum (shape)", () => {
     ).toBe(true);
   });
 
-  test("FAILS an OBS shape that does not self-balance per currency", () => {
+  test("FAILS an OBS shape where bought-commitment is on the wrong side (credit instead of debit)", () => {
     const r = assertFxTradeDateObsShape(
-      "inst-imbalanced",
+      "inst-wrongside",
       [
-        obsLeg(FX_OBS_BOUGHT_COMMITMENT_ACCOUNT, "debit", "USD", "7000000.00"),
-        obsLeg(FX_OBS_COMMITMENT_CONTRA_ACCOUNT, "credit", "USD", "6000000.00"), // 1m short
-        obsLeg(FX_OBS_COMMITMENT_CONTRA_ACCOUNT, "debit", "ZAR", "129955000.00"),
+        obsLeg(FX_OBS_BOUGHT_COMMITMENT_ACCOUNT, "credit", "USD", "7000000.00"), // wrong side
         obsLeg(FX_OBS_SOLD_COMMITMENT_ACCOUNT, "credit", "ZAR", "129955000.00"),
       ],
       false,
     );
     expect(fails(r)).toBe(true);
-    expect(r.violations.some((v) => v.subject.includes("currency-imbalance"))).toBe(true);
+    expect(
+      r.violations.some(
+        (v) => v.subject.includes("obs-shape") || v.subject.includes("obs-wrong-side"),
+      ),
+    ).toBe(true);
   });
 
   test("FAILS an OBS shape spanning only ONE currency", () => {
     const r = assertFxTradeDateObsShape(
       "inst-onecurrency",
-      [
-        obsLeg(FX_OBS_BOUGHT_COMMITMENT_ACCOUNT, "debit", "USD", "7000000.00"),
-        obsLeg(FX_OBS_COMMITMENT_CONTRA_ACCOUNT, "credit", "USD", "7000000.00"),
-      ],
+      [obsLeg(FX_OBS_BOUGHT_COMMITMENT_ACCOUNT, "debit", "USD", "7000000.00")],
       false,
     );
     expect(fails(r)).toBe(true);

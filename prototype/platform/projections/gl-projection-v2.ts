@@ -333,8 +333,12 @@ export function computeTrialBalanceV2Uncached(args: ComputeTrialBalanceV2Args): 
   });
 
   // Derive per-currency totals from the post-drop rows (consistent with V1).
+  // Off-balance-sheet memorandum accounts (ACC-9100-*) carry cross-currency OBS
+  // commitments and are excluded from the per-currency balance invariant.
+  // D-FX-TRADE-DATE-FVTPL-OBS.
   const totalsByCurrency = new Map<string, { debit: number; credit: number }>();
   for (const row of rows) {
+    if (row.leafAccountId.startsWith("ACC-9100-")) continue;
     const t = totalsByCurrency.get(row.currency) ?? { debit: 0, credit: 0 };
     if (row.amountMinor >= 0) t.debit += row.amountMinor;
     else t.credit += -row.amountMinor;

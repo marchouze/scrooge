@@ -368,6 +368,10 @@ export function computeTrialBalanceUncached(args: ComputeTrialBalanceArgs): Tria
   // are dropped at the row level and contribute zero to the totals.
   const totalsByCurrency = new Map<string, { debit: number; credit: number }>();
   for (const row of rows) {
+    // Off-balance-sheet memorandum accounts (ACC-9100-*) carry cross-currency OBS
+    // commitments and are excluded from the per-currency balance invariant.
+    // D-FX-TRADE-DATE-FVTPL-OBS.
+    if (row.leafAccountId.startsWith("ACC-9100-")) continue;
     const t = totalsByCurrency.get(row.currency) ?? { debit: 0, credit: 0 };
     if (row.amountMinor >= 0) t.debit += row.amountMinor;
     else t.credit += -row.amountMinor;

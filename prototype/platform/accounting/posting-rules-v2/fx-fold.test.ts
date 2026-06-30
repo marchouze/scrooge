@@ -369,9 +369,9 @@ describe("FX trial balance — pure fold over FIL events == engine GlPostingEmit
       }),
     );
     const entries = computeGlEntriesV2Uncached(args(store));
-    // Four trade-date OBS legs: a commitment + contra leg in EACH of the two trade
-    // currencies (self-balancing per currency). (D-FX-TRADE-DATE-FVTPL-OBS.)
-    expect(entries.length).toBe(4);
+    // Two cross-currency trade-date OBS legs: Dr bought-commitment + Cr sold-commitment.
+    // (D-FX-TRADE-DATE-FVTPL-OBS.)
+    expect(entries.length).toBe(2);
     expect(entries.every((e) => e.postingRuleId === "PR-FX-001-V2")).toBe(true);
     expect(entries.every((e) => e.accountId.startsWith("ACC-9100-"))).toBe(true);
     const accounts = computeGlAccountsV2Uncached(args(store));
@@ -557,7 +557,6 @@ describe("FX fold — in-test provenance cohort + reversibility", () => {
         eventId: cohortTradeEventId,
       }),
     );
-
     // (a) Production operating-book TB unchanged — cohort excluded by default filter.
     const productionTbAfterCohort = computeTrialBalanceV2Uncached(args(store));
     expect(productionTbAfterCohort.rows).toEqual(productionTb.rows);
@@ -1098,10 +1097,10 @@ describe("FX cancellation reversal — a cancelled instance nets to ZERO (gap fi
     expect([...fxRows(store, "production-only").entries()]).toEqual([]);
     const fold = foldFxContributionLegs(args(store));
     const reversalLegs = fold.legs.filter((l) => l.postingRuleId === "PR-FX-CANCEL-REVERSAL-V2");
-    // The opening is FOUR trade-date OBS legs (commitment + contra in each of the
-    // two trade currencies, D-FX-TRADE-DATE-FVTPL-OBS). The reversal flips them
-    // exactly once — 4 legs, not 8 (idempotent despite two cancellation events).
-    expect(reversalLegs.length).toBe(4);
+    // The opening is TWO cross-currency OBS legs (D-FX-TRADE-DATE-FVTPL-OBS). The
+    // reversal flips them exactly once — 2 legs, not 4 (idempotent despite two
+    // cancellation events).
+    expect(reversalLegs.length).toBe(2);
   });
 
   test("a settled-with-reval (derecognition terms) trade is NOT cancellation-reversed", () => {
