@@ -68,6 +68,7 @@ import { type Money, moneyFromMinorUnits } from "../platform/core/decimal-money"
 import type { Currency } from "../platform/core/types";
 import type { EventStore } from "../platform/event-store/store";
 import { anchorFunctionalCurrency } from "../platform/identity/functional-currency";
+import { buildPartyProjection } from "../platform/identity/party-projection";
 import type { MarketDataStore } from "../platform/market-data/store";
 import { computeBA320V2 } from "../platform/projections/ba320-fx-v2";
 import { computeBA700V2 } from "../platform/projections/ba700-v2";
@@ -88,6 +89,7 @@ import {
   type ResidualCashPlacement,
   collectBa100ResidualCash,
 } from "../platform/reporting/cell-value/ba100-leaf-fold";
+import { buildBa100ReferenceData } from "../platform/reporting/cell-value/ba100-reference-data";
 import { leafFoldFor } from "../platform/reporting/cell-value/leaf-fold-registry";
 import { getSubstrateGap } from "../platform/substrate/gap-register";
 // Side-effect import: registers every seat-authored per-form leaf fold so the
@@ -943,12 +945,19 @@ function buildFinanceReturnDetailViewInner(
       : [];
   const leafFold = leafFoldFor(formId);
   if (leafFold !== undefined) {
+    // Phase 3 — build the party-register projection and wrap it in the
+    // LeafFoldReferenceData accessor (party residency + sector + desk bookType).
+    // Fail-closed: if the projection is empty, each accessor returns null →
+    // fold surfaces a gap, never a guessed default (Charter cmd 2 / cmd 5).
+    const partyProjection = buildPartyProjection(eventStore);
+    const referenceData = buildBa100ReferenceData(partyProjection);
     const leafValues = leafFold({
       eventStore,
       marketData,
       entity: RETURNS_ENTITY,
       asOf: RETURNS_AS_OF,
       functionalCurrency,
+      referenceData,
     });
     // The set of cell COORDINATES (`"<row> <column>"`) the leaf fold resolved
     // DIRECTLY from the events — these are the granular, event-sourced per-line

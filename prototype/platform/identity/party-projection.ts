@@ -23,8 +23,85 @@
 // Author: Imani (Legal-as-code engineer; reports to Devon, Chief
 // Operating Officer, governance).
 
-import type { KindAttributes, PartyId, PartyKind, RelationshipKind } from "../../domains/party";
+import type {
+  Ba325ResidencyBucket,
+  KindAttributes,
+  PartyId,
+  PartyKind,
+  RelationshipKind,
+  SarbSectorCode,
+} from "../../domains/party";
 import type { EventStore } from "../event-store/store";
+
+/** ISO-3166 alpha-2 code for the bank's home jurisdiction (the Exchange-Control residency anchor). */
+const HOME_JURISDICTION_CODE = "ZA";
+
+/**
+ * Decide whether a jurisdiction / tax-residency list marks the party as a
+ * SA resident. Mirrors the same logic as `residencyFromLists` in
+ * `counterparty-residency.ts` — kept here to avoid a circular import
+ * (counterparty-residency.ts imports PartyProjection from this file).
+ *
+ * Returns:
+ *   - `"resident"`     when ZA is present in the preferred basis
+ *   - `"non-resident"` when a non-empty list excludes ZA
+ *   - `null`           when there is NO residency evidence at all
+ */
+function computeResidencyFromLists(
+  taxResidencies: readonly string[] | undefined,
+  jurisdictions: readonly string[] | undefined,
+): "resident" | "non-resident" | null {
+  const primary = taxResidencies && taxResidencies.length > 0 ? taxResidencies : undefined;
+  const fallback = jurisdictions && jurisdictions.length > 0 ? jurisdictions : undefined;
+  const basis = primary ?? fallback;
+  if (!basis) return null;
+  return basis.includes(HOME_JURISDICTION_CODE) ? "resident" : "non-resident";
+}
+
+/**
+ * Derive the BA 100 R1010 SARB sector code for a party from its registration
+ * attributes. This is a STRUCTURAL DERIVATION — deterministic from the party's
+ * kind-attributes + jurisdictions that are already in the event log. The result
+ * is stored on `PartyRecord.counterpartySector` so the BA 100 fold can join
+ * without re-folding the party stream.
+ *
+ * Derivation rules (validated against SARB BA 100 R1010 row labels):
+ *   1. `classifications` includes "central-bank"             → "sovereign"
+ *      (SARB BA 100 R1020 includes "central banks"; SARB = sovereign bucket)
+ *   2. `kindAttributes.primaryRegulator === "PA"`            → "bank"
+ *      (a PA-regulated legal entity is a SARB-licensed bank)
+ *   3. `kindAttributes.primaryRegulator === "JSE"` or "FSCA" → "securities-firm"
+ *      (a JSE/FSCA-regulated entity is a securities firm / broker-dealer)
+ *   4. `kindAttributes.kind === "legal-entity"` (other)     → "corporate"
+ *      (default for institutional non-bank legal entities)
+ *   5. `kindAttributes.kind === "natural-person"`           → "retail"
+ *      (natural persons are retail counterparties per BCBS LCR §73)
+ *   6. `kindAttributes.kind === "agent"`                    → null
+ *      (internal agents are not external counterparties; no sector)
+ *
+ * Authority: SARB BA 100 R1010–R1090; BCBS d238 §71–74 (LCR retail/wholesale);
+ *   Reg 26 (Regulations Relating to Banks); D-BA-RETURN-CELL-VALUE-ENGINE.
+ */
+function deriveSarbSectorCode(
+  kindAttributes: KindAttributes,
+  classifications: ReadonlySet<string>,
+): SarbSectorCode | undefined {
+  // Rule 1 — central bank → sovereign bucket (BA 100 R1020 includes central banks).
+  if (classifications.has("central-bank")) return "sovereign";
+
+  if (kindAttributes.kind === "legal-entity") {
+    const reg = kindAttributes.primaryRegulator;
+    // Rule 2 — PA-licensed bank → bank bucket.
+    if (reg === "PA") return "bank";
+    // Rule 3 — JSE / FSCA regulated → securities firm.
+    if (reg === "JSE" || reg === "FSCA") return "securities-firm";
+    // Rule 4 — other institutional legal entity → corporate.
+    return "corporate";
+  }
+  if (kindAttributes.kind === "natural-person") return "retail";
+  // Rule 6 — agent: no sector (in-house or external automation, not a counterparty).
+  return undefined;
+}
 
 // ---------------------------------------------------------------------------
 // PartyRecord — the projected per-Party shape
@@ -50,6 +127,25 @@ export interface PartyRecord {
   readonly registeredAt: string;
   readonly deactivatedAt?: string;
   readonly deactivationReason?: string;
+  /**
+   * BA 325 / Exchange-Control residency bucket — computed at fold time from
+   * `taxResidencies` (preferred, the Exchange-Control residency basis) or
+   * `jurisdictions` (fallback). Present when at least one jurisdiction / tax-
+   * residency is registered; absent (undefined) when there is NO residency
+   * evidence at all (fail-closed: consumers must handle undefined and NOT guess).
+   * Mirrors the `Ba325ResidencyBucket` type from counterparty-residency.ts.
+   * Authority: D-BA-RETURN-CELL-VALUE-ENGINE Phase 3; SARB BA 325 reg-29(3).
+   */
+  readonly residency?: Ba325ResidencyBucket;
+  /**
+   * SARB BA 100 R1010 counterparty-sector code — derived at fold time from the
+   * party's `kindAttributes` + `classifications`. Present for `legal-entity` and
+   * `natural-person` kinds; absent for `agent` kind (in-house automation, not an
+   * external counterparty). Fail-closed: absent means the sector is unknown — the
+   * BA 100 fold must surface a gap, never guess a default.
+   * Authority: D-BA-RETURN-CELL-VALUE-ENGINE Phase 3; SARB BA 100 R1010–R1090.
+   */
+  readonly counterpartySector?: SarbSectorCode;
 }
 
 // ---------------------------------------------------------------------------
@@ -130,6 +226,10 @@ interface MutablePartyRecord {
   registeredAt: string;
   deactivatedAt?: string;
   deactivationReason?: string;
+  // Phase 3 — computed at freeze time from the final mutable state.
+  // Not set during event folding; populated in freezePartyRecord().
+  residency?: Ba325ResidencyBucket;
+  counterpartySector?: SarbSectorCode;
 }
 
 interface MutableRelationshipRecord {
@@ -144,6 +244,35 @@ interface MutableRelationshipRecord {
 }
 
 function freezePartyRecord(m: MutablePartyRecord): PartyRecord {
+  // Phase 3 — compute residency + sector from the FINAL mutable state (all
+  // PartyAttributeChanged patches have been applied) before freezing. This
+  // ensures the fold-time join in the BA 100 reference-data layer reads a
+  // consistent, final value without re-processing the event stream.
+
+  // RESIDENCY: prefer tax-residency (Exchange-Control basis); fall back to
+  // jurisdiction of incorporation. Returns null when NO evidence is present
+  // (fail-closed; the field is then omitted from the frozen record).
+  const rawResidency = computeResidencyFromLists(m.taxResidencies, m.jurisdictions);
+  // For legal-entity Parties, also derive the Authorised-Dealer bucket: a
+  // ZA-resident legal entity whose primaryRegulator is "PA" is a SA bank =
+  // an Exchange-Control Authorised Dealer (Currency & Exchanges Manual §A.1).
+  let residency: Ba325ResidencyBucket | undefined;
+  if (m.classifications.has("central-bank")) {
+    residency = "sarb";
+  } else if (
+    rawResidency === "resident" &&
+    m.kindAttributes.kind === "legal-entity" &&
+    m.kindAttributes.primaryRegulator === "PA"
+  ) {
+    residency = "authorised-dealer";
+  } else if (rawResidency !== null) {
+    residency = rawResidency;
+  }
+
+  // SECTOR: derive from kindAttributes + classifications (structural derivation
+  // from data already in the event log — no new event type required).
+  const counterpartySector = deriveSarbSectorCode(m.kindAttributes, m.classifications);
+
   const result: PartyRecord = {
     partyId: m.partyId,
     kind: m.kind,
@@ -157,6 +286,8 @@ function freezePartyRecord(m: MutablePartyRecord): PartyRecord {
     registeredAt: m.registeredAt,
     ...(m.deactivatedAt !== undefined ? { deactivatedAt: m.deactivatedAt } : {}),
     ...(m.deactivationReason !== undefined ? { deactivationReason: m.deactivationReason } : {}),
+    ...(residency !== undefined ? { residency } : {}),
+    ...(counterpartySector !== undefined ? { counterpartySector } : {}),
   };
   return result;
 }
