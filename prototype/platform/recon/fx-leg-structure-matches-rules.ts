@@ -198,7 +198,6 @@ const ALL_ROLES: readonly FxAccountRole[] = [
   "settlement-clearing",
   "obs-bought-commitment",
   "obs-sold-commitment",
-  "obs-commitment-contra",
 ];
 
 function buildCodeToRole(): ReadonlyMap<string, FxAccountRole> {

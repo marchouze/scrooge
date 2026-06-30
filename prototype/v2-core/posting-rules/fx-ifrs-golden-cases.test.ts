@@ -62,7 +62,6 @@ import {
 import { forwardMtmValue } from "../fil-models/fx-valuation/methodology";
 import {
   FX_OBS_BOUGHT_COMMITMENT_ACCOUNT,
-  FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
   FX_OBS_SOLD_COMMITMENT_ACCOUNT,
   type FxPostingLeg,
   postFxInitialRecognitionLegs,
@@ -101,7 +100,7 @@ function expectLeg(l: FxPostingLeg, side: "debit" | "credit", amount: string): v
 // there is NO on-balance-sheet gross-up; the contractual buy/sell notionals are
 // recorded OFF-balance-sheet as a memorandum commitment (Policy A,
 // D-FX-TRADE-DATE-FVTPL-OBS). The golden: BUY USD 7,000,000 / SELL ZAR
-// 129,955,000 (at 18.565) → four OBS legs only, self-balancing per currency,
+// 129,955,000 (at 18.565) → two cross-currency OBS legs only (Dr bought / Cr sold),
 // zero on-balance-sheet legs.
 // ===========================================================================
 
@@ -133,30 +132,24 @@ describe("CASE 1 — trade-date at-market forward FV≈0, OBS-only (IFRS 9 §5.1
 
   const legs = postFxInitialRecognitionLegs(created);
 
-  test("posts exactly four OFF-balance-sheet memorandum legs — no on-BS gross-up", () => {
-    expect(legs.length).toBe(4);
+  test("posts exactly two cross-currency OFF-balance-sheet memorandum legs — no on-BS gross-up", () => {
+    expect(legs.length).toBe(2);
     // EVERY leg lands on the OBS memorandum block (ACC-9100-*) — none on the
     // on-balance-sheet FX receivable/payable block (ACC-2100-*).
     for (const l of legs) {
       expect(l.accountCode.startsWith("ACC-2100-")).toBe(false);
       expect(
-        [
-          FX_OBS_BOUGHT_COMMITMENT_ACCOUNT,
-          FX_OBS_SOLD_COMMITMENT_ACCOUNT,
-          FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
-        ].includes(l.accountCode),
+        [FX_OBS_BOUGHT_COMMITMENT_ACCOUNT, FX_OBS_SOLD_COMMITMENT_ACCOUNT].includes(l.accountCode),
       ).toBe(true);
     }
   });
 
-  test("the BUY leg (USD 7,000,000) is a commitment Dr against the contra Cr", () => {
+  test("the BUY leg (USD 7,000,000) is a bought-commitment Dr", () => {
     expectLeg(leg(legs, FX_OBS_BOUGHT_COMMITMENT_ACCOUNT, "USD"), "debit", "7000000.00");
-    expectLeg(leg(legs, FX_OBS_COMMITMENT_CONTRA_ACCOUNT, "USD"), "credit", "7000000.00");
   });
 
-  test("the SELL leg (ZAR 129,955,000) is a sold-commitment Cr against the contra Dr", () => {
+  test("the SELL leg (ZAR 129,955,000) is a sold-commitment Cr", () => {
     expectLeg(leg(legs, FX_OBS_SOLD_COMMITMENT_ACCOUNT, "ZAR"), "credit", "129955000.00");
-    expectLeg(leg(legs, FX_OBS_COMMITMENT_CONTRA_ACCOUNT, "ZAR"), "debit", "129955000.00");
   });
 });
 
@@ -200,10 +193,10 @@ describe("CASE 1b — off-market forward recognises day-1 fair value on-BS (IFRS
   const legs = postFxInitialRecognitionLegs(created);
   const accounts = resolveFxAccountSet("ZAR");
 
-  test("posts the four OBS legs PLUS a balanced on-BS day-1 fair-value pair", () => {
-    expect(legs.length).toBe(6);
+  test("posts the two OBS legs PLUS a balanced on-BS day-1 fair-value pair", () => {
+    expect(legs.length).toBe(4); // 2 OBS + 2 on-BS (position + P&L)
     const obs = legs.filter((l) => l.accountCode.startsWith("ACC-9100-"));
-    expect(obs.length).toBe(4);
+    expect(obs.length).toBe(2);
     // A positive day-1 FV: Dr derivative position / Cr unrealised P&L, on-BS.
     expectLeg(leg(legs, accounts.receivable, "ZAR"), "debit", "250000.00");
     expectLeg(leg(legs, accounts.unrealisedPnl, "ZAR"), "credit", "250000.00");
@@ -216,7 +209,7 @@ describe("CASE 1b — off-market forward recognises day-1 fair value on-BS (IFRS
       economicTerms: { ...created.economicTerms, dayOneFairValue: undefined },
     });
     const atmLegs = postFxInitialRecognitionLegs(atMarket);
-    expect(atmLegs.length).toBe(4);
+    expect(atmLegs.length).toBe(2);
     for (const l of atmLegs) expect(l.accountCode.startsWith("ACC-2100-")).toBe(false);
   });
 });

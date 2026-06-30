@@ -257,7 +257,7 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "fx-fil-initial-recognition",
     condition: "always",
     conditionDetail:
-      "IFRS 9 §3.1.1, §5.1.1, B3.1.2 — FX trade-date FVTPL recognition (FIL fold). An at-market FX derivative has fair value ≈ 0 at inception → NIL on-balance-sheet gross-up (the old self-cancelling Dr-receivable/Cr-payable pair is REMOVED). The contractual buy/sell notionals are recorded OFF-balance-sheet in the FX-commitment memorandum block (ACC-9100-*), self-balancing per currency from the fxAgreement quad. The on-balance-sheet position is carried by daily revaluation (PR-FX-REVAL-V2). Authority: D-FX-TRADE-DATE-FVTPL-OBS.",
+      "IFRS 9 §3.1.1, §5.1.1, B3.1.2 — FX trade-date FVTPL recognition (FIL fold). An at-market FX derivative has fair value ≈ 0 at inception → NIL on-balance-sheet gross-up (the old self-cancelling Dr-receivable/Cr-payable pair is REMOVED). The contractual buy/sell notionals are recorded as two cross-currency OFF-balance-sheet legs in the FX-commitment memorandum block (Dr ACC-9100-001 / Cr ACC-9100-002) from the fxAgreement quad. The on-balance-sheet position is carried by daily revaluation (PR-FX-REVAL-V2). Authority: D-FX-TRADE-DATE-FVTPL-OBS.",
   },
   {
     triggerEventType: "FilInstrumentAmended",
@@ -369,7 +369,7 @@ export const POSTING_RULE_REGISTRY: readonly PostingRuleEntry[] = [
     postingType: "fx-fil-obs-commitment-release",
     condition: "always",
     conditionDetail:
-      "IAS 21 §23 — release the trade-date OFF-balance-sheet FX-commitment memorandum (ACC-9100-*) on settlement/maturity. The standing commitment to exchange the two currencies is discharged when the trade settles, so the OBS memorandum legs PR-FX-001-V2 booked are reversed (equal-and-opposite, self-balancing per currency). The on-balance-sheet reval is reclassified to realised P&L by PR-FX-CLOSE-V2 separately, so the two never double-reverse. Fires at fold time via fx.postFxObsCommitmentReleaseLegs. Authority: D-FX-TRADE-DATE-FVTPL-OBS.",
+      "IAS 21 §23 — release the trade-date OFF-balance-sheet FX-commitment memorandum (ACC-9100-*) on settlement/maturity. The standing commitment to exchange the two currencies is discharged when the trade settles, so the two OBS legs PR-FX-001-V2 booked are reversed (Cr bought-commitment / Dr sold-commitment). The on-balance-sheet reval is reclassified to realised P&L by PR-FX-CLOSE-V2 separately, so the two never double-reverse. Fires at fold time via fx.postFxObsCommitmentReleaseLegs. Authority: D-FX-TRADE-DATE-FVTPL-OBS.",
   },
   {
     triggerEventType: "FilFxSettlementConfirmed",

@@ -61,7 +61,6 @@ import type { FilInstrumentTerminatedPayload } from "../../v2-core/fil-instances
 import { FX_REALISED_PNL_ACCOUNT } from "../../v2-core/posting-rules/fx-settlement";
 import {
   FX_OBS_BOUGHT_COMMITMENT_ACCOUNT,
-  FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
   FX_OBS_SOLD_COMMITMENT_ACCOUNT,
   resolveFxAccountSet,
 } from "../accounting/posting-rules-v2/fx";
@@ -93,7 +92,6 @@ function fxReceivablePayableAccounts(): ReadonlySet<string> {
 const OBS_ACCOUNTS: ReadonlySet<string> = new Set([
   FX_OBS_BOUGHT_COMMITMENT_ACCOUNT,
   FX_OBS_SOLD_COMMITMENT_ACCOUNT,
-  FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
 ]);
 
 /** The SETTLEMENT posting-rule ids — settlement is P&L-neutral, so NONE of these

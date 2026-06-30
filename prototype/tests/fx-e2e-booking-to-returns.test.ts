@@ -19,7 +19,7 @@
 //                     backdated date, settlementDate EXACTLY as specified,
 //                     provenance simulated / operator:manual-desk-booking.
 //   2. Accounting   — trade-date posts ONLY OBS memorandum legs (ACC-9100-*),
-//                     self-balancing PER CURRENCY, ZERO on-balance-sheet legs
+//                     (Dr bought-commitment / Cr sold-commitment), ZERO on-balance-sheet legs
 //                     (IFRS 9 FVTPL, FV≈0 at inception); the cost-basis MTM moves
 //                     the fair-value DELTA (current ZAR value − zarCostBasis), NOT
 //                     full-notional × spot (the #1610 bug — proven it cannot recur).
@@ -203,7 +203,7 @@ describe("FX end-to-end independent proof — book one trade, prove the full cha
   });
 
   // ----- LINK 2: Accounting (IFRS 9 / IAS 21 oracle) -----
-  test("LINK 2 — trade-date posts ONLY self-balancing OBS legs, ZERO on-balance-sheet", async () => {
+  test("LINK 2 — trade-date posts ONLY two cross-currency OBS legs, ZERO on-balance-sheet", async () => {
     const tradeId = await bookSpecimen();
     const created = findCreated(tradeId);
 
@@ -211,27 +211,17 @@ describe("FX end-to-end independent proof — book one trade, prove the full cha
     // IFRS 9 §5.1.1/B3.1.2 — an at-market derivative has FV ≈ 0 at inception → NO
     // on-balance-sheet gross-up; the contractual notionals sit OFF-balance-sheet.
     const legs = postFxInitialRecognitionLegs(created);
-    expect(legs.length).toBe(4); // two legs per currency (commitment + contra)
+    expect(legs.length).toBe(2); // Dr bought-commitment (buy ccy) + Cr sold-commitment (sell ccy)
 
     // EVERY leg is an OFF-balance-sheet memorandum account (ACC-9100-*). ZERO
     // on-balance-sheet (asset/liability/P&L) legs at inception.
     const onBalanceSheet = legs.filter((l) => !l.accountCode.startsWith("ACC-9100-"));
     expect(onBalanceSheet.length).toBe(0);
 
-    // Self-balancing PER CURRENCY: debits == credits in EACH of USD and ZAR.
-    const net = new Map<string, number>();
-    for (const l of legs) {
-      const signed = Number(l.amount.amount) * (l.creditDebit === "debit" ? 1 : -1);
-      net.set(l.amount.currency, (net.get(l.amount.currency) ?? 0) + signed);
-    }
-    expect(net.get("USD")).toBe(0);
-    expect(net.get("ZAR")).toBe(0);
-
     // No leg carries a P&L-recognition intent at inception (FV ≈ 0; nothing in P&L).
     expect(legs.every((l) => l.pnlKind === undefined)).toBe(true);
 
-    // The specific OBS legs: BUY USD 1,000,000 (Dr bought-commitment / Cr contra),
-    // SELL ZAR 18,500,000 (Dr contra / Cr sold-commitment).
+    // BUY leg: Dr ACC-9100-001 USD 1,000,000. SELL leg: Cr ACC-9100-002 ZAR 18,500,000.
     const buyDebit = legs.find(
       (l) => l.accountCode === "ACC-9100-001" && l.creditDebit === "debit",
     );

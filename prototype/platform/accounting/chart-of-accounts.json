@@ -747,12 +747,6 @@
       "name": "FX Forward Sold Commitment (memorandum)",
       "category": "memorandum-off-balance-sheet-fx-commitment",
       "side": "credit"
-    },
-    {
-      "id": "ACC-9100-003",
-      "name": "FX Forward Commitment Contra (memorandum)",
-      "category": "memorandum-off-balance-sheet-fx-commitment",
-      "side": "credit"
     }
   ]
 }

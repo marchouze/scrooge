@@ -288,7 +288,7 @@ function assertPerEntryZarBalanced(tradeId: string): { entries: number; maxResid
   // group is one journal entry whose ZAR legs must net to zero.
   const byEntry = new Map<string, ReturnType<typeof computeGlEntriesV2>>();
   for (const e of entries) {
-    // OBS memorandum legs self-balance per currency at trade date (no on-BS ZAR
+    // OBS memorandum legs are two cross-currency legs at trade date (no on-BS ZAR
     // value); they are asserted separately. Here we prove the ZAR-equivalent of the
     // on-balance-sheet and OBS posting sets at the entry's own rate.
     const key = `${e.sourceEventId ?? e.eventId}|${e.postedAt}|${e.postingRuleId ?? "-"}`;
@@ -375,13 +375,15 @@ describe("CAPSTONE — whole settled-FX chain on a multi-trade book (Part A: pub
       const beforeSettle = tradeEntries(tradeId);
       const onBs = beforeSettle.filter((e) => !e.accountId.startsWith("ACC-9100-"));
       expect(onBs.length).toBe(0);
-      // OBS self-balances per currency at trade date.
-      const obs = new Map<string, number>();
-      for (const e of beforeSettle) {
-        const signed = e.debitCredit === "debit" ? e.amountMinor : -e.amountMinor;
-        obs.set(e.currency, (obs.get(e.currency) ?? 0) + signed);
-      }
-      for (const v of obs.values()) expect(v).toBe(0);
+      // Two cross-currency OBS legs: one Dr on 9100-001 (buy ccy) + one Cr on 9100-002 (sell ccy).
+      const boughtDr = beforeSettle.filter(
+        (e) => e.accountId === "ACC-9100-001" && e.debitCredit === "debit",
+      );
+      const soldCr = beforeSettle.filter(
+        (e) => e.accountId === "ACC-9100-002" && e.debitCredit === "credit",
+      );
+      expect(boughtDr.length).toBe(1);
+      expect(soldCr.length).toBe(1);
     }
   });
 

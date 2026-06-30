@@ -33,15 +33,15 @@
 //       dropped the counter-currency and inflated BA-100 gross assets/liabilities.
 //   (2) the contractual buy/sell notionals from the instrument's `fxAgreement`
 //       quad land in OFF-BALANCE-SHEET memorandum accounts (ACC-9100-*) spanning
-//       the TWO trade currencies, self-balancing per currency.
+//       the TWO trade currencies as two cross-currency legs (Dr bought / Cr sold).
 //
 // METHOD. Re-applies the lifted `postFxInitialRecognitionLegs` to the production
 // FX FilInstrumentCreated events (the SAME events the FX fold + the golden read),
 // exactly as `recon:gl-v2-fold-equivalence-fx` does, and asserts the leg SHAPE:
 //   - zero legs on the FX on-balance-sheet block (ACC-2100-*) at trade date;
 //   - every leg on an OBS memorandum account (ACC-9100-*);
-//   - the OBS legs span the two distinct quad currencies and self-balance per
-//     currency (ΣDr == ΣCr in each currency).
+//   - exactly one Dr on ACC-9100-001 (bought commitment) + one Cr on ACC-9100-002
+//     (sold commitment), spanning the two distinct quad currencies.
 //
 // This is the assertion `recon:gl-v2-fold-equivalence-fx` cannot make: that gate
 // proves the fold reproduces the rule byte-for-byte, but a consistent-but-wrong
@@ -65,7 +65,6 @@
 import type { FilInstrumentCreatedPayload } from "../../v2-core/fil-instances/events";
 import {
   FX_OBS_BOUGHT_COMMITMENT_ACCOUNT,
-  FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
   FX_OBS_SOLD_COMMITMENT_ACCOUNT,
   type FxPostingLeg,
   postFxInitialRecognitionLegs,
@@ -81,11 +80,7 @@ import { type ReconResult, type ReconViolation, emptyResult } from "./types";
 const PIPELINE = "fx-trade-date-obs-memorandum";
 
 const FX_ONBS_ACCOUNT_PREFIX = "ACC-2100-";
-const OBS_ACCOUNTS = new Set([
-  FX_OBS_BOUGHT_COMMITMENT_ACCOUNT,
-  FX_OBS_SOLD_COMMITMENT_ACCOUNT,
-  FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
-]);
+const OBS_ACCOUNTS = new Set([FX_OBS_BOUGHT_COMMITMENT_ACCOUNT, FX_OBS_SOLD_COMMITMENT_ACCOUNT]);
 
 function legMinor(leg: FxPostingLeg): number {
   const money = legAmountMoney({ amount: leg.amount, currency: leg.amount.currency });
@@ -183,32 +178,44 @@ export function assertFxTradeDateObsShape(
     }
   }
 
-  // (3) OBS legs span the two distinct quad currencies and self-balance per ccy.
+  // (3) OBS shape: exactly one Dr on ACC-9100-001 (bought commitment, buy ccy)
+  // and exactly one Cr on ACC-9100-002 (sold commitment, sell ccy), spanning two
+  // distinct currencies. No contra account (ACC-9100-003 is removed). The two legs
+  // are inherently cross-currency; the OBS block is excluded from the GL in-balance
+  // check so no per-currency self-balance invariant applies.
   asserted += 1;
-  const netByCcy = new Map<string, number>();
-  for (const leg of obsLegs) {
-    const m = legMinor(leg);
-    netByCcy.set(
-      leg.amount.currency,
-      (netByCcy.get(leg.amount.currency) ?? 0) + (leg.creditDebit === "debit" ? m : -m),
-    );
-  }
-  const currencies = [...netByCcy.keys()];
-  if (currencies.length !== 2) {
+  const boughtDrLegs = obsLegs.filter(
+    (l) => l.accountCode === FX_OBS_BOUGHT_COMMITMENT_ACCOUNT && l.creditDebit === "debit",
+  );
+  const soldCrLegs = obsLegs.filter(
+    (l) => l.accountCode === FX_OBS_SOLD_COMMITMENT_ACCOUNT && l.creditDebit === "credit",
+  );
+  const wrongSideLegs = obsLegs.filter(
+    (l) =>
+      (l.accountCode === FX_OBS_BOUGHT_COMMITMENT_ACCOUNT && l.creditDebit !== "debit") ||
+      (l.accountCode === FX_OBS_SOLD_COMMITMENT_ACCOUNT && l.creditDebit !== "credit"),
+  );
+  if (boughtDrLegs.length !== 1 || soldCrLegs.length !== 1) {
     violations.push({
-      subject: `${PIPELINE}:currency-span:${instance}`,
-      message: `Trade-date FX instance ${instance} OBS legs span ${currencies.length} currenc(ies) [${currencies.join(", ")}], expected exactly 2 (the buy + sell legs of the fxAgreement quad in their two distinct currencies). Authority: D-FX-TRADE-DATE-FVTPL-OBS; D-FX-INSTRUMENT-BUYSELL-QUAD.`,
+      subject: `${PIPELINE}:obs-shape:${instance}`,
+      message: `Trade-date FX instance ${instance} OBS legs do not match the expected shape (exactly one Dr on ACC-9100-001 + one Cr on ACC-9100-002). Found: ${boughtDrLegs.length} bought-Dr, ${soldCrLegs.length} sold-Cr, ${obsLegs.length} total OBS legs. Authority: D-FX-TRADE-DATE-FVTPL-OBS.`,
       severity: "fail",
     });
   }
-  for (const [ccy, net] of netByCcy) {
-    if (net !== 0) {
-      violations.push({
-        subject: `${PIPELINE}:currency-imbalance:${instance}:${ccy}`,
-        message: `Trade-date FX instance ${instance} OBS memorandum legs do not self-balance in ${ccy} (net ${net} minor, expected 0). Each currency must balance (a commitment leg + a contra leg of equal magnitude). Authority: D-FX-TRADE-DATE-FVTPL-OBS.`,
-        severity: "fail",
-      });
-    }
+  if (wrongSideLegs.length > 0) {
+    violations.push({
+      subject: `${PIPELINE}:obs-wrong-side:${instance}`,
+      message: `Trade-date FX instance ${instance} has OBS leg(s) on the wrong side: [${wrongSideLegs.map((l) => `${l.accountCode}:${l.creditDebit}`).join(", ")}]. Bought-commitment must be Dr; sold-commitment must be Cr. Authority: D-FX-TRADE-DATE-FVTPL-OBS.`,
+      severity: "fail",
+    });
+  }
+  const currencies = new Set(obsLegs.map((l) => l.amount.currency));
+  if (currencies.size !== 2) {
+    violations.push({
+      subject: `${PIPELINE}:currency-span:${instance}`,
+      message: `Trade-date FX instance ${instance} OBS legs span ${currencies.size} currenc(ies) [${[...currencies].join(", ")}], expected exactly 2 (the buy + sell legs of the fxAgreement quad in their two distinct currencies). Authority: D-FX-TRADE-DATE-FVTPL-OBS; D-FX-INSTRUMENT-BUYSELL-QUAD.`,
+      severity: "fail",
+    });
   }
 
   return { violations, asserted };

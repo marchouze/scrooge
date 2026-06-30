@@ -104,8 +104,7 @@ type GlClass =
 function glClassOf(category: string): GlClass {
   // Off-balance-sheet memorandum accounts (FX trade-date commitment quad,
   // regulatory NOP, …) are EXCLUDED from the on-balance-sheet asset/liability/
-  // equity tiles AND from the native in-balance check — they self-balance in
-  // their own segregated section. (D-FX-TRADE-DATE-FVTPL-OBS.)
+  // equity tiles AND from the native in-balance check. (D-FX-TRADE-DATE-FVTPL-OBS.)
   if (category.startsWith("memorandum") || category.startsWith("off-balance-sheet")) {
     return "off-balance-sheet";
   }
@@ -233,8 +232,6 @@ export interface GlView {
   /** Off-balance-sheet memorandum Σ credits (native minor). */
   readonly offBalanceSheetCreditMinor: number;
   readonly offBalanceSheetCreditFmt: string;
-  /** True iff the OBS section self-balances (ΣDr == ΣCr over memorandum rows). */
-  readonly offBalanceSheetInBalance: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -478,7 +475,6 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
   // on-BS totals — native minor units cannot be summed across currencies. The OBS
   // memorandum section self-balances on its own ZAR-equivalent totals.
   const inBalance = zarTotalDebitMinor === zarTotalCreditMinor;
-  const offBalanceSheetInBalance = obsDebitMinor === obsCreditMinor;
   // Equity stock is a credit balance (negative net); present as a positive figure.
   const assetsMinor = classTotals.asset;
   const liabilitiesMinor = -classTotals.liability;
@@ -542,7 +538,6 @@ export function buildGlView(args: BuildGlViewArgs): GlView {
     offBalanceSheetDebitFmt: fmtMinor(obsDebitMinor, FUNCTIONAL_CURRENCY),
     offBalanceSheetCreditMinor: obsCreditMinor,
     offBalanceSheetCreditFmt: fmtMinor(obsCreditMinor, FUNCTIONAL_CURRENCY),
-    offBalanceSheetInBalance,
   };
 }
 

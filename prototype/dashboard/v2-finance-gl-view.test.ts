@@ -410,10 +410,10 @@ describe("buildGlView — per-(account,currency) TB + CCY/ZAR-equivalent", () =>
     // OBS rows are per-currency real rows too — never "multi".
     expect(obsRows.every((r) => r.currency !== "multi")).toBe(true);
 
-    // The OBS section self-balances and is reported in its own totals (ZAR-equiv).
-    expect(view.offBalanceSheetInBalance).toBe(true);
+    // The OBS section is reported in its own totals (ZAR-equiv). With two
+    // cross-currency legs (Dr in buy-ccy / Cr in sell-ccy) the debit and credit
+    // minors are incommensurable (USD cents ≠ ZAR cents) — only check non-zero.
     expect(view.offBalanceSheetDebitMinor).toBeGreaterThan(0);
-    expect(view.offBalanceSheetDebitMinor).toBe(view.offBalanceSheetCreditMinor);
 
     // OBS rows are EXCLUDED from the on-balance-sheet in-balance check (the on-BS
     // book still balances on its own).

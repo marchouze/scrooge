@@ -55,7 +55,6 @@
 
 import {
   FX_OBS_BOUGHT_COMMITMENT_ACCOUNT,
-  FX_OBS_COMMITMENT_CONTRA_ACCOUNT,
   FX_OBS_SOLD_COMMITMENT_ACCOUNT,
   type FxAccountSet,
   resolveFxAccountSet,
@@ -83,8 +82,7 @@ export type FxAccountRole =
   | "nostro"
   | "settlement-clearing"
   | "obs-bought-commitment"
-  | "obs-sold-commitment"
-  | "obs-commitment-contra";
+  | "obs-sold-commitment";
 
 /** Human label per account role (small tag on the page). */
 export const FX_ACCOUNT_ROLE_LABEL: Readonly<Record<FxAccountRole, string>> = {
@@ -96,7 +94,6 @@ export const FX_ACCOUNT_ROLE_LABEL: Readonly<Record<FxAccountRole, string>> = {
   "settlement-clearing": "FX settlement clearing (P&L-neutral)",
   "obs-bought-commitment": "OBS FX bought-commitment (memorandum)",
   "obs-sold-commitment": "OBS FX sold-commitment (memorandum)",
-  "obs-commitment-contra": "OBS FX commitment contra (memorandum)",
 };
 
 /**
@@ -125,8 +122,6 @@ export function resolveFxAccountRole(role: FxAccountRole, currency: string): str
       return FX_OBS_BOUGHT_COMMITMENT_ACCOUNT;
     case "obs-sold-commitment":
       return FX_OBS_SOLD_COMMITMENT_ACCOUNT;
-    case "obs-commitment-contra":
-      return FX_OBS_COMMITMENT_CONTRA_ACCOUNT;
   }
 }
 
@@ -195,12 +190,12 @@ export const FX_RULE_STAGE_LEG_STRUCTURES: readonly FxRuleStageLegStructure[] = 
   // at-market FX trade has fair value ≈ 0 at inception → NIL on-balance-sheet
   // gross-up (the old self-cancelling Dr-receivable/Cr-payable pair is REMOVED —
   // it dropped the counter-currency and inflated BA-100). The contractual buy/sell
-  // notionals are recorded OFF-balance-sheet (ACC-9100-*) from the fxAgreement
-  // quad, self-balancing PER CURRENCY:
-  //   BUY  leg: Dr bought-commitment / Cr contra (bought-currency)
-  //   SELL leg: Dr contra            / Cr sold-commitment (sold-currency)
-  // Mirrors postFxInitialRecognitionLegs leg-for-leg. The on-balance-sheet position
-  // is carried by daily revaluation (PR-FX-REVAL-V2), not by a trade-date gross-up.
+  // notionals are recorded as TWO cross-currency OFF-balance-sheet legs:
+  //   BUY  leg: Dr bought-commitment (buy-currency)
+  //   SELL leg: Cr sold-commitment   (sell-currency)
+  // No same-currency contra — the OBS block is excluded from the GL in-balance
+  // check so no per-currency self-balance invariant applies. The on-balance-sheet
+  // position is carried by daily revaluation (PR-FX-REVAL-V2).
   {
     postingRuleId: "PR-FX-001-V2",
     stage: "a",
@@ -211,18 +206,6 @@ export const FX_RULE_STAGE_LEG_STRUCTURES: readonly FxRuleStageLegStructure[] = 
         drCr: "debit",
         iasCite: IAS.initial,
         note: "OFF-balance-sheet: the bought-leg notional the bank will RECEIVE on settlement (memorandum, bought currency). No on-BS gross-up — fair value ≈ 0 at inception.",
-      },
-      {
-        accountRole: "obs-commitment-contra",
-        drCr: "credit",
-        iasCite: IAS.initial,
-        note: "OFF-balance-sheet contra to the bought-leg commitment (same currency; the buy leg self-balances).",
-      },
-      {
-        accountRole: "obs-commitment-contra",
-        drCr: "debit",
-        iasCite: IAS.initial,
-        note: "OFF-balance-sheet contra to the sold-leg commitment (same currency; the sell leg self-balances).",
       },
       {
         accountRole: "obs-sold-commitment",
@@ -429,18 +412,6 @@ export const FX_RULE_STAGE_LEG_STRUCTURES: readonly FxRuleStageLegStructure[] = 
         note: "Release the bought-leg OBS commitment booked at trade date (reverses the Dr; settlement discharges it).",
       },
       {
-        accountRole: "obs-commitment-contra",
-        drCr: "debit",
-        iasCite: IAS.obsRelease,
-        note: "Release the bought-leg OBS contra (reverses the Cr; the buy leg release self-balances).",
-      },
-      {
-        accountRole: "obs-commitment-contra",
-        drCr: "credit",
-        iasCite: IAS.obsRelease,
-        note: "Release the sold-leg OBS contra (reverses the Dr; the sell leg release self-balances).",
-      },
-      {
         accountRole: "obs-sold-commitment",
         drCr: "debit",
         iasCite: IAS.obsRelease,
@@ -521,7 +492,7 @@ export const FX_GL_LIFECYCLE_STAGES: readonly FxLifecycleStageMeta[] = [
     id: "a",
     label: "Initiation",
     summary:
-      "Trade-date recognition — IFRS 9 FVTPL: NIL on-balance-sheet (fair value ≈ 0 at inception); the contractual buy/sell notionals are recorded OFF-balance-sheet in the FX-commitment memorandum (ACC-9100-*), self-balancing per currency. No receivable/payable gross-up.",
+      "Trade-date recognition — IFRS 9 FVTPL: NIL on-balance-sheet (fair value ≈ 0 at inception); the contractual buy/sell notionals are recorded as two cross-currency OFF-balance-sheet legs in the FX-commitment memorandum (Dr bought-commitment / Cr sold-commitment). No receivable/payable gross-up; no same-currency contra.",
   },
   {
     id: "revaluation",

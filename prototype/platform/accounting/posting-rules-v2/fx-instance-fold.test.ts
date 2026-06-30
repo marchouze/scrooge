@@ -267,7 +267,7 @@ describe("deriveFxInstanceLegs — state-driven net == event-fold net (byte-equi
     expect(stateNet.size).toBeGreaterThan(0);
     // FX-1 settled → its OBS commitment was released (PR-FX-OBS-RELEASE-V2).
     const release = stateFold.legs.filter((l) => l.postingRuleId === "PR-FX-OBS-RELEASE-V2");
-    expect(release.length).toBe(4); // the four FX-1 trade-date OBS legs reversed once
+    expect(release.length).toBe(2); // the two cross-currency OBS legs reversed once
     expect(release.every((l) => l.accountCode.startsWith("ACC-9100-"))).toBe(true);
     expect(release.every((l) => l.filEventId.endsWith("::obs-commitment-release"))).toBe(true);
   });
@@ -287,7 +287,7 @@ describe("deriveFxInstanceLegs — state-driven net == event-fold net (byte-equi
     expect(stateFold.legs.some((l) => recvPay.has(l.accountCode))).toBe(false);
     // The release fired (4 OBS legs reversed).
     const release = stateFold.legs.filter((l) => l.postingRuleId === "PR-FX-OBS-RELEASE-V2");
-    expect(release.length).toBe(4);
+    expect(release.length).toBe(2);
   });
 
   test("CANCELLED-PARENT (bare cancellation) nets the opening to ZERO — both folds", () => {
@@ -301,7 +301,7 @@ describe("deriveFxInstanceLegs — state-driven net == event-fold net (byte-equi
     expect(stateNet.size).toBe(0);
     // And the state derivation produced its reversal via the dedicated rule id.
     const reversal = stateFold.legs.filter((l) => l.postingRuleId === "PR-FX-CANCEL-REVERSAL-V2");
-    expect(reversal.length).toBe(4); // the four trade-date OBS opening legs reversed once
+    expect(reversal.length).toBe(2); // the two cross-currency OBS opening legs reversed once
     expect(reversal.every((l) => l.filEventId.endsWith("::cancellation-reversal"))).toBe(true);
   });
 
@@ -315,8 +315,8 @@ describe("deriveFxInstanceLegs — state-driven net == event-fold net (byte-equi
     const { stateNet, stateFold } = expectStateNetMatchesEventNet(store);
     expect(stateNet.size).toBe(0);
     const reversal = stateFold.legs.filter((l) => l.postingRuleId === "PR-FX-CANCEL-REVERSAL-V2");
-    // Reversed exactly once (4 trade-date OBS legs), not over-reversed.
-    expect(reversal.length).toBe(4);
+    // Reversed exactly once (2 cross-currency OBS legs), not over-reversed.
+    expect(reversal.length).toBe(2);
   });
 
   test("amended (revaluation) — full-pair accumulation reproduced from FLOW", () => {
