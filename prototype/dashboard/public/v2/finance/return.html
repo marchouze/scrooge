@@ -59,6 +59,42 @@
     table.v2-form td.cell.src-leaf-fold .src-tag { color:var(--color-success); }
     table.v2-form td.cell.src-derived .src-tag { color:var(--color-info); }
     table.v2-form td.cell.src-headline .src-tag { color:var(--color-text-secondary); }
+
+    /* Value ⟷ Formula/criteria display toggle. */
+    .v2-disp-toggle { display:inline-flex; border:1px solid var(--color-border); border-radius:6px; overflow:hidden; }
+    .v2-disp-toggle button { padding:6px 12px; background:var(--color-surface); color:var(--color-text-secondary);
+      border:none; font-size:0.85em; font-weight:600; cursor:pointer; }
+    .v2-disp-toggle button.active { background:var(--color-info-bg); color:var(--color-text); }
+    .v2-disp-toggle button + button { border-left:1px solid var(--color-border); }
+
+    /* Residual-cash LOUD flag (fail-safe exposure — money placed, sub-allocation deferred). */
+    .v2-residual { margin:8px 0 14px; padding:11px 14px; border-radius:6px;
+      background:var(--color-warning-bg, #5a4a1a); color:var(--color-text);
+      border-left:4px solid var(--color-warning, #e0b020); font-size:0.86em; line-height:1.5; }
+    .v2-residual h3 { margin:0 0 6px; font-size:0.95em; }
+    .v2-residual table { border-collapse:collapse; margin-top:6px; font-size:0.95em; width:100%; }
+    .v2-residual td, .v2-residual th { padding:3px 8px; text-align:left; vertical-align:top;
+      border-bottom:1px solid rgba(255,255,255,0.12); }
+    .v2-residual th { color:var(--color-text-secondary); font-weight:600; }
+    .v2-residual .amt { font-family:var(--font-mono, ui-monospace, monospace); text-align:right; white-space:nowrap; }
+
+    /* Formula/criteria ROW-ORIENTED layout (readable, wrapped — NOT crammed into the
+       narrow 7-column grid). One row per relevant cell, text wraps. */
+    .v2-formula-wrap { overflow:auto; max-height:76vh; border:1px solid var(--color-border); border-radius:6px; background:var(--color-surface); }
+    table.v2-formula { border-collapse:collapse; width:100%; font-size:0.82em; }
+    table.v2-formula thead th { position:sticky; top:0; z-index:2; background:var(--color-surface-raised);
+      text-align:left; font-weight:600; padding:7px 10px; border-bottom:1px solid var(--color-border); white-space:nowrap; }
+    table.v2-formula td { padding:8px 10px; border-bottom:1px solid var(--color-border); vertical-align:top; line-height:1.45; }
+    table.v2-formula td.c-ref { white-space:nowrap; font-family:var(--font-mono, ui-monospace, monospace); font-size:0.92em; color:var(--color-text-secondary); }
+    table.v2-formula td.c-item { min-width:180px; max-width:260px; }
+    table.v2-formula td.c-deriv { min-width:300px; max-width:480px; }
+    table.v2-formula td.c-cite { min-width:120px; max-width:220px; font-size:0.92em; color:var(--color-text-secondary); word-break:break-word; }
+    table.v2-formula td.c-status { white-space:nowrap; }
+    table.v2-formula tbody tr:hover { background:var(--color-surface-raised); }
+    table.v2-formula .req { display:block; margin-top:3px; color:var(--color-text-secondary); font-size:0.95em; }
+    table.v2-formula .req .sk { font-family:var(--font-mono, ui-monospace, monospace); color:var(--color-info); }
+    table.v2-formula .dv { font-family:var(--font-mono, ui-monospace, monospace); }
+    table.v2-formula .sr { display:block; margin-top:3px; color:var(--color-warning, #e0b020); }
   </style>
 </head>
 <body data-provenance-content="none">
@@ -101,6 +137,17 @@
       const frac = (fracRaw + "00").slice(0, 2);
       const grouped = intRaw.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
       return `${v2Esc(m.currency)} ${neg ? "-" : ""}${grouped}.${frac}`;
+    }
+
+    // Plain decimal-native amount → grouped string (no currency prefix). No float.
+    function fmtPlain(amount) {
+      if (amount === null || amount === undefined) return "—";
+      const s = String(amount);
+      const neg = s.startsWith("-");
+      const [intRaw, fracRaw = ""] = (neg ? s.slice(1) : s).split(".");
+      const frac = (fracRaw + "00").slice(0, 2);
+      const grouped = intRaw.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+      return `${neg ? "-" : ""}${grouped}.${frac}`;
     }
 
     function statusChip(status) {
@@ -286,10 +333,38 @@
       section.innerHTML = `<h2 class="v2-section-title">${v2Esc(data.form)} form — ${data.cellCount} cells, ${rowOrder.length} rows × ${data.columns.length} columns</h2>`;
       main.appendChild(section);
 
+      // ---- TIER-3 RESIDUAL settled-cash LOUD flag --------------------------
+      // Fail-SAFE exposure (D-BA-RETURN-FAIL-SAFE-RESIDUAL-EXPOSURE): settled cash
+      // whose ZAR value IS placed on the balance sheet but whose banks-vs-customers
+      // sub-allocation is deferred. Surface it prominently — money is exposed, not
+      // hidden; the missing dimension is flagged immediately.
+      const residuals = data.residualCash || [];
+      if (residuals.length > 0) {
+        let total = 0;
+        for (const r of residuals) total += Number(r.zarAmount) || 0;
+        const ccy = data.functionalCurrency || "ZAR";
+        const banner = document.createElement("div");
+        banner.className = "v2-residual";
+        const rrows = residuals.map((r) =>
+          `<tr><td class="v2-mono">${v2Esc(r.instance)}</td>` +
+          `<td class="amt">${v2Esc(ccy)} ${fmtPlain(r.zarAmount)}</td>` +
+          `<td class="v2-mono">${v2Esc(r.placedRow)}</td>` +
+          `<td>${v2Esc(r.reason)}</td></tr>`).join("");
+        banner.innerHTML =
+          `<h3>&#9888; Residual settled cash &mdash; placed, sub-allocation deferred (${residuals.length} instrument${residuals.length === 1 ? "" : "s"}, ${v2Esc(ccy)} ${fmtPlain(String(total))})</h3>` +
+          `<p style="margin:0 0 4px;">The resolvable ZAR value of this settled cash IS exposed on the balance sheet (placed in the recon-counted asset range, so the detail still reconciles to TOTAL ASSETS). Only the banks-vs-customers counterparty sub-allocation is deferred and flagged for substrate development &mdash; never hidden. Fail-SAFE, not fail-blank.</p>` +
+          `<table><thead><tr><th>Instrument</th><th class="amt">ZAR amount</th><th>Placed row</th><th>Missing dimension</th></tr></thead><tbody>${rrows}</tbody></table>`;
+        section.appendChild(banner);
+      }
+
       const toolbar = document.createElement("div");
       toolbar.className = "v2-ss-toolbar";
       toolbar.innerHTML =
-        `<input class="v2-ss-search" type="search" placeholder="Filter rows — row heading, coordinate, definition…" aria-label="Filter rows">` +
+        `<div class="v2-disp-toggle" role="group" aria-label="Display mode">` +
+        `<button data-disp="value" class="active">Value</button>` +
+        `<button data-disp="formula">Formula / criteria</button>` +
+        `</div>` +
+        `<input class="v2-ss-search" type="search" placeholder="Filter — row heading, coordinate, definition" aria-label="Filter rows">` +
         `<span class="v2-ss-legend">` +
         `<span><span class="sw" style="background:var(--color-success-bg);box-shadow:inset 3px 0 0 var(--color-success)"></span>folded (per-cell, from events)</span>` +
         `<span><span class="sw" style="background:var(--color-info-bg)"></span>subtotal (derived)</span>` +
@@ -332,23 +407,83 @@
       wrap.appendChild(table);
       section.appendChild(wrap);
 
+      // ---- FORMULA / CRITERIA mode: row-oriented, wrapped layout ----------
+      // One row PER relevant cell (a cell carrying a coordinate). Columns:
+      // Cell | Line item | Derivation/criteria | Citation | Status. Text wraps —
+      // NO prose crammed into the narrow 7-column grid (CEO readability
+      // constraint). Built once, toggled on demand. Generic over forms.
+      const formulaCells = gridCells;
+      const fWrap = document.createElement("div");
+      fWrap.className = "v2-formula-wrap";
+      fWrap.style.display = "none";
+      const fTable = document.createElement("table");
+      fTable.className = "v2-formula";
+      fTable.innerHTML =
+        `<thead><tr><th>Cell</th><th>Line item</th><th>Derivation / criteria</th><th>Citation</th><th>Status</th></tr></thead>`;
+      const fBody = document.createElement("tbody");
+      const fRowEls = formulaCells.map((c) => {
+        const tr = document.createElement("tr");
+        const ref = `${c.row || ""}${c.column ? " &middot; " + c.column : ""}`;
+        const reqs = (c.dataRequirements || []).map((d) =>
+          `<span class="req"><span class="sk">${v2Esc(d.sourceKind)}</span> ${v2Esc(d.ref)}${d.required ? "" : " (optional)"} &mdash; ${v2Esc(d.description)}</span>`).join("");
+        const deriv =
+          `<span class="dv">[${v2Esc(c.derivationKind)}]${c.derivationExpression ? " " + v2Esc(c.derivationExpression) : ""}</span>` +
+          (c.statusReason ? `<span class="sr">${v2Esc(c.statusReason)}</span>` : "") +
+          reqs;
+        tr.innerHTML =
+          `<td class="c-ref">${ref}<br><span style="opacity:0.7">${v2Esc(c.xsdElement)}</span></td>` +
+          `<td class="c-item">${v2Esc(c.label)}</td>` +
+          `<td class="c-deriv">${deriv}</td>` +
+          `<td class="c-cite">${v2Esc(c.citation || "—")}</td>` +
+          `<td class="c-status">${statusChip(c.status)}</td>`;
+        const blob = [c.row || "", c.column || "", c.xsdElement, c.label, c.regulatoryDefinition,
+          c.derivationExpression || "",
+          (c.dataRequirements || []).map((d) => `${d.sourceKind} ${d.ref} ${d.description}`).join(" ")]
+          .join(" ").toLowerCase();
+        return { tr, blob };
+      });
+      for (const r of fRowEls) fBody.appendChild(r.tr);
+      fTable.appendChild(fBody);
+      fWrap.appendChild(fTable);
+      section.appendChild(fWrap);
+
       const countLine = document.createElement("div");
       countLine.className = "v2-ss-rowcount";
-      const setCount = (n) => { countLine.textContent = `Showing ${n} of ${rowOrder.length} rows`; };
+      let dispMode = "value";
+      const setCount = (shown) => {
+        const tot = dispMode === "value" ? rowOrder.length : fRowEls.length;
+        const noun = dispMode === "value" ? "rows" : "cells";
+        countLine.textContent = `Showing ${shown} of ${tot} ${noun}`;
+      };
       setCount(rowOrder.length);
       section.appendChild(countLine);
 
-      // Client-side row filter.
+      // Client-side filter — applies to whichever mode is active.
       const search = toolbar.querySelector(".v2-ss-search");
-      search.addEventListener("input", () => {
+      const applyFilter = () => {
         const q = search.value.trim().toLowerCase();
         let shown = 0;
-        for (const r of rowEls) {
+        const set = dispMode === "value" ? rowEls : fRowEls;
+        for (const r of set) {
           const match = q === "" || r.blob.includes(q);
           r.tr.style.display = match ? "" : "none";
           if (match) shown += 1;
         }
         setCount(shown);
+      };
+      search.addEventListener("input", applyFilter);
+
+      // Display-mode toggle (Value ⟷ Formula / criteria).
+      const dispButtons = toolbar.querySelectorAll(".v2-disp-toggle button");
+      dispButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          dispMode = btn.getAttribute("data-disp");
+          dispButtons.forEach((b) => b.classList.toggle("active", b === btn));
+          const isValue = dispMode === "value";
+          wrap.style.display = isValue ? "" : "none";
+          fWrap.style.display = isValue ? "none" : "";
+          applyFilter();
+        });
       });
 
       renderRefs(main, {

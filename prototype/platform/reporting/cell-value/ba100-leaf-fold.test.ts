@@ -62,7 +62,7 @@ import {
   generateBa100BalanceSheet,
   isOffBalanceSheetAccountId,
 } from "../ba-100-balance-sheet";
-import { foldBa100LeafValues } from "./ba100-leaf-fold";
+import { collectBa100ResidualCash, foldBa100LeafValues } from "./ba100-leaf-fold";
 
 const ENTITY = "LE-ZA-HOZ-BANK";
 const ACTOR: Actor = { type: "system", id: "bea:ba100-leaf-fold-test" };
@@ -863,8 +863,14 @@ function seedCashInstrument(
     currency: string;
     /** ZAR (functional-currency) cost basis — the IAS 21 carrying amount. */
     zarCostBasisAmount: string;
+    /** Cost-basis currency (defaults to ZAR functional). Override to test the
+     *  genuine-absence skip (a non-functional basis yields no value to place). */
+    zarCostBasisCurrency?: string;
     /** BA 100 counterparty class. */
     counterpartyClass?: FilCashCounterpartyClass;
+    /** When TRUE, omit the FX originatingInstrument + use a non-FX originatingEvent,
+     *  so the Tier-2 FX-nostro derivation does NOT apply (exercises Tier 3 residual). */
+    noFxOrigin?: boolean;
     direction?: "long" | "short";
     provenance?: typeof SIM | typeof PROD;
   },
@@ -877,7 +883,9 @@ function seedCashInstrument(
     tenant: ENTITY,
     asOf: AS_OF,
     originatingEvent: {
-      eventType: "FxSimSettlementConfirmed",
+      // A non-FX originating event when noFxOrigin is set — so the cash leg is NOT
+      // a derivable FX nostro (Tier 2 does not apply → Tier 3 residual path).
+      eventType: args.noFxOrigin === true ? "ManualCashAdjustment" : "FxSimSettlementConfirmed",
       eventId: `CASH-${args.instanceId}`,
     },
     initialStage: "active" as const,
@@ -890,11 +898,16 @@ function seedCashInstrument(
       currency: args.currency,
       settlementDate: AS_OF.slice(0, 10),
       hedgingSetTag: `${args.currency}/ZAR`,
-      originatingInstrument: formatInstanceUrn({
-        tenant: ENTITY,
-        instanceId: `${args.instanceId}-fx`,
-      }),
-      zarCostBasis: { currency: CCY, amount: args.zarCostBasisAmount },
+      // The FX instance back-ref — present unless noFxOrigin strips it (Tier 3).
+      ...(args.noFxOrigin === true
+        ? {}
+        : {
+            originatingInstrument: formatInstanceUrn({
+              tenant: ENTITY,
+              instanceId: `${args.instanceId}-fx`,
+            }),
+          }),
+      zarCostBasis: { currency: args.zarCostBasisCurrency ?? CCY, amount: args.zarCostBasisAmount },
       ...(args.counterpartyClass !== undefined
         ? { cashTerms: { counterpartyClass: args.counterpartyClass } }
         : {}),
@@ -938,20 +951,92 @@ describe("BA 100 leaf fold — cash FIL (D-BA-RETURN-CAPABILITY-FIRST)", () => {
     expect(cashKeys.sort()).toEqual(["R0120 C0020", "R0910 C0020", "R1050 C0020"]);
   });
 
-  test("FAIL-CLOSED: cash WITHOUT cashTerms → R0120 and R0910 stay blank (no silent guess)", () => {
+  test("TIER 2 (fail-SAFE): cash WITHOUT cashTerms but a settled-FX-cash origin → DERIVED 'bank' nostro on R0120 (the ~R490m fix)", () => {
+    // D-BA-RETURN-FAIL-SAFE-RESIDUAL-EXPOSURE: a settled FX cash leg lacking the
+    // explicit counterpartyClass is NOT dropped (the #1620 fail-closed-to-blank
+    // bug). It back-references an FX instance (originatingInstrument) and its
+    // originatingEvent is an FX settlement confirmation, so for an indirect
+    // participant the cash IS a correspondent-bank nostro → DERIVE class "bank".
     const store = new EventStore();
+    const zarBasis = "129954790";
     seedCashInstrument(store, {
       instanceId: "USD-NOSTRO-NO-TERMS",
       notional: "7000000",
       currency: "USD",
-      zarCostBasisAmount: "129954790",
-      // counterpartyClass intentionally absent
+      zarCostBasisAmount: zarBasis,
+      // counterpartyClass intentionally absent — derived as "bank" via Tier 2.
     });
 
     const leaf = fold(store, "combined");
-    // No cash row should be lit up — fail-closed on absent cashTerms.
-    expect(leaf.get("R0120 C0020")).toBeUndefined();
-    expect(leaf.get("R0910 C0020")).toBeUndefined();
+    // Placed as a "bank" nostro: R0120 primary (in recon range) + R0910/R1050 memos.
+    expect(leaf.get("R0120 C0020")).toBe(zarBasis);
+    expect(leaf.get("R0910 C0020")).toBe(zarBasis);
+    expect(leaf.get("R1050 C0020")).toBe(zarBasis);
+    // It is NOT a Tier-3 residual — the derivation is sound, so no residual flag.
+    const residuals = collectBa100ResidualCash({
+      eventStore: store,
+      marketData: undefined as never,
+      entity: ENTITY,
+      asOf: QUERY_AS_OF,
+      functionalCurrency: CCY,
+    });
+    expect(residuals.length).toBe(0);
+  });
+
+  test("TIER 3 (fail-SAFE residual): cash WITHOUT cashTerms AND WITHOUT FX origin → resolvable amount placed on R0120 + LOUD flag, never blanked", () => {
+    // A settled cash balance that is neither explicitly classified NOR a derivable
+    // FX nostro (no originatingInstrument, no FX originatingEvent). Its resolvable
+    // ZAR value is NOT dropped — it lands on R0120 (in the recon-counted range so
+    // the detail reconciles) and the missing sub-allocation is flagged loudly.
+    const store = new EventStore();
+    const zarBasis = "42000000";
+    seedCashInstrument(store, {
+      instanceId: "ZAR-UNCLASSIFIED",
+      notional: zarBasis,
+      currency: "ZAR",
+      zarCostBasisAmount: zarBasis,
+      // no counterpartyClass; seedCashInstrument always sets an originatingInstrument
+      // + FxSimSettlementConfirmed origin, so override below to strip the FX origin.
+      noFxOrigin: true,
+    });
+
+    const leaf = fold(store, "combined");
+    // The resolvable amount IS placed on R0120 (in recon range) + R0910 provisional memo.
+    expect(leaf.get("R0120 C0020")).toBe(zarBasis);
+    expect(leaf.get("R0910 C0020")).toBe(zarBasis);
+    // R1050 (the inter-bank analysis memo) is NOT asserted for a residual.
+    expect(leaf.get("R1050 C0020")).toBeUndefined();
+
+    // The LOUD flag carries the ZAR amount + the missing dimension.
+    const residuals = collectBa100ResidualCash({
+      eventStore: store,
+      marketData: undefined as never,
+      entity: ENTITY,
+      asOf: QUERY_AS_OF,
+      functionalCurrency: CCY,
+    });
+    expect(residuals.length).toBe(1);
+    expect(residuals[0]?.zarAmount).toBe(zarBasis);
+    expect(residuals[0]?.placedRow).toBe("R0120");
+    expect(residuals[0]?.reason).toContain("counterpartyClass");
+  });
+
+  test("FAIL-CLOSED (genuine absence): cash with NO resolvable ZAR cost basis is skipped — no total to place", () => {
+    // A non-functional-currency cash leg with NO ZAR cost basis in the functional
+    // currency has no resolved amount to place. Skipping it is NOT dropping a
+    // resolvable total — it is the genuine absence of one (the IAS 21 materialisation
+    // fail-closed prevents an FCY monetary item from ever lacking a ZAR basis).
+    const store = new EventStore();
+    seedCashInstrument(store, {
+      instanceId: "USD-NO-BASIS",
+      notional: "7000000",
+      currency: "USD",
+      // a USD (non-functional) cost basis → not the functional currency → no value.
+      zarCostBasisAmount: "7000000",
+      zarCostBasisCurrency: "USD",
+    });
+
+    const leaf = fold(store, "combined");
     expect(leaf.size).toBe(0);
   });
 

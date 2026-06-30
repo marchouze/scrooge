@@ -302,23 +302,54 @@ function addToCellCol(
 
 // ---------------------------------------------------------------------------
 // CASH classification (D-BA-RETURN-CAPABILITY-FIRST; D-BA-RETURN-PER-PRODUCT-
-// RICHNESS). A settled cash FIL instance is a post-FX-settlement nostro balance
-// — the bank's cash position AFTER an FX spot settles. The BA 100 row placement
-// is driven by the cash instrument's typed `cashTerms.counterpartyClass` (the
-// Reg 26 / Banks Act counterparty-sector taxonomy, carried on the event). The
-// fold uses C0020 (Trading book) because an FX spot settlement cash balance is
-// part of the FX trading book (the same book the FX OTC NPA designates).
+// RICHNESS; FAIL-SAFE rework per D-BA-RETURN-FAIL-SAFE-RESIDUAL-EXPOSURE). A
+// settled cash FIL instance is a post-FX-settlement nostro balance — the bank's
+// cash position AFTER an FX spot settles. The BA 100 row placement is resolved
+// in THREE TIERS so a settled, resolvable cash amount is NEVER dropped from the
+// balance sheet (money on a balance sheet must never disappear). The fold uses
+// C0020 (Trading book) because an FX spot settlement cash balance is part of the
+// FX trading book (the same book the FX OTC NPA designates).
+//
+//   TIER 1 — GRANULAR (preferred). The cash instrument carries a typed
+//     `cashTerms.counterpartyClass` (Reg 26 / Banks Act counterparty-sector
+//     taxonomy, on the event). Place by that explicit class.
+//
+//   TIER 2 — DERIVED GRANULAR (the immediate ~R490m fix). `counterpartyClass`
+//     is ABSENT, but the instrument is a SETTLED FX cash leg — it back-references
+//     an FX instance-of-record (`economicTerms.originatingInstrument`) AND its
+//     `originatingEvent` is an FX settlement confirmation. The bank is an
+//     INDIRECT participant (no direct CLS/SAMOS — project_indirect_participant_
+//     posture), so every FX settlement clears through a correspondent / sponsor
+//     bank: the settled cash IS, BY THE BANK'S OPERATING STRUCTURE, a balance
+//     held AT A BANK (a nostro). We therefore DERIVE counterpartyClass="bank"
+//     from the trade structure + the posture — a genuine, CITED structural
+//     derivation, NOT a blanket "assume bank" (Charter cmd 2 / cmd 4). Place as
+//     a "bank" nostro (R0120 + R0910/R1050 memos).
+//
+//   TIER 3 — RESIDUAL HEADLINE + LOUD FLAG (the honest general fail-safe).
+//     Neither an explicit class NOR a derivable FX nostro, but the amount IS
+//     resolvable (a settled cash balance with a ZAR cost basis). DO NOT BLANK
+//     it. Place the resolved ZAR value on R0120 (a clearly-labelled balances-
+//     with-banks asset line — IN the recon-counted 10–530 range so the detail
+//     still reconciles to the oracle TOTAL ASSETS) AND emit a prominent
+//     `residual-cash-awaiting-counterparty-granularity` backlog item carrying
+//     the ZAR amount + the missing dimension. The headline value stands; only
+//     the banks-vs-customers SUB-ALLOCATION is deferred, flagged immediately.
+//     "Fail-closed" means never FABRICATE a granular allocation you cannot
+//     support — it does NOT license dropping a total you can.
 //
 // PRIMARY rows (counted in the BA 100 assets section R0010–R0530, included in
 // recon:ba100-cell-values-reconcile):
 //   "bank"             → R0120 (Balances with other banks and similar institutions)
 //   "central-bank"     → R0010 (Cash and balances with central bank)
 //   "customer-non-bank"→ R0120 (same primary row as "bank")
+//   residual (Tier 3)  → R0120 (resolvable headline placement, in-range)
 //
 // MEMO rows (n > 530, EXCLUDED from recon range — memorandum analyses only):
 //   "bank"             → R0910 (memo: due from banks) + R1050 (inter-bank analysis)
 //   "central-bank"     → R0050 (memo: central bank balances) + R1020 (CB analysis)
 //   "customer-non-bank"→ R0900 (memo: due from customers)
+//   residual (Tier 3)  → R0910 (memo: due from banks — provisional, flagged)
 //
 // CRITICAL DESIGN: the recon gate sums ONLY rows in the 10–530 range. Memo rows
 // (R0900, R0910, R1020, R1050 etc.) are outside this range and are NOT included
@@ -329,15 +360,17 @@ function addToCellCol(
 // is the fold magnitude — the same ZAR value the GL settlement posting carries.
 // The FCY notional is NOT the BA 100 line value; the functional-currency cost
 // basis is. A long cash position (received) is a positive asset stock; a short
-// (paid) is a reduction.
+// (paid) is a reduction. A cash instrument WITHOUT a resolvable ZAR cost basis
+// is still skipped — there is no resolved amount to place (that is not a dropped
+// total, it is the genuine absence of one; the IAS 21 cost-basis fail-closed at
+// materialisation prevents an FCY monetary item from ever lacking it).
 //
-// FAIL-CLOSED: a cash instrument without `cashTerms` is left unresolved — the
-// fold does NOT place it on R0120 by default (Charter cmd 2; no silent buckets).
-//
-// Authority: D-BA-RETURN-CAPABILITY-FIRST; D-BA-RETURN-PER-PRODUCT-RICHNESS;
+// Authority: D-BA-RETURN-FAIL-SAFE-RESIDUAL-EXPOSURE (CEO-approved 2026-06-30);
+//   D-BA-RETURN-CAPABILITY-FIRST; D-BA-RETURN-PER-PRODUCT-RICHNESS;
 //   D-CASH-ASSET-CLASS-V1; SARB BA 100 form (D5/2025 §2.1.3); IAS 21 §28;
-//   D-ENGINEERING-INTEGRITY-CHARTER (cmd 2 fail-closed; cmd 4 source-don't-
-//   hardcode; cmd 5 no-silent-deferral). Principle 1 (dimension from event).
+//   project_indirect_participant_posture; D-ENGINEERING-INTEGRITY-CHARTER
+//   (cmd 2 fail-closed-not-blank; cmd 4 source-don't-hardcode; cmd 5
+//   no-silent-deferral). Principle 1 (dimension from event).
 // ---------------------------------------------------------------------------
 
 /** Column for FX cash — trading book column (C0020). */
@@ -362,6 +395,60 @@ const CASH_CLASS_ROW: Readonly<Record<FilCashCounterpartyClass, CashRowMapping>>
     memos: ["R0900"], // memorandum row — outside recon range.
   },
 } as const;
+
+/**
+ * TIER-3 RESIDUAL placement — a resolvable settled-cash amount we cannot yet
+ * classify to a counterparty class (no explicit class, not a derivable FX
+ * nostro). The amount is placed on R0120 (IN the 10–530 recon range, so the
+ * detail still reconciles to the oracle TOTAL ASSETS) + the R0910 memo, and a
+ * loud capability-backlog item is emitted carrying the ZAR amount + the missing
+ * dimension. This is the honest fail-SAFE: the headline value stands; only the
+ * banks-vs-customers sub-allocation is deferred, flagged immediately.
+ */
+const CASH_RESIDUAL_ROW: CashRowMapping = {
+  primary: "R0120", // resolvable headline placement, in recon range.
+  memos: ["R0910"], // provisional memo (due-from-banks); flagged, not asserted.
+} as const;
+
+/**
+ * FX-settlement `originatingEvent.eventType` markers (Tier-2 detection). A
+ * settled cash FIL instance materialised by the FX settlement seam stamps one of
+ * these as its originating event:
+ *   - `FxSimSettlementConfirmed`  — the simulator settlement path
+ *     (platform/markets/settlement/settle-fx-leg.ts).
+ *   - `SettlementConfirmed`       — the production materialise-settled-cash path
+ *     (platform/markets/products/materialise-settled-cash.ts).
+ *   - `FilFxSettlementConfirmed`  — the born-V2 FIL FX settlement confirmation
+ *     (v2-core/fil-instances/events.ts) — included so the marker tracks the
+ *     canonical event family, not just the two current emit paths.
+ * Sourced from the settlement seams + the FIL event schema, not invented: a cash
+ * leg carrying one of these AND an `originatingInstrument` IS a settled FX nostro
+ * by construction. New FX settlement event types must be added here when the seam
+ * adds them (the gate's Tier-2 fixture guards the contract).
+ */
+const FX_SETTLEMENT_ORIGINATING_EVENT_TYPES: ReadonlySet<string> = new Set([
+  "FxSimSettlementConfirmed",
+  "SettlementConfirmed",
+  "FilFxSettlementConfirmed",
+]);
+
+/**
+ * Is this settled cash instrument a DERIVABLE FX nostro (Tier-2)? TRUE when it
+ * back-references an FX instance-of-record (`originatingInstrument` present) AND
+ * its `originatingEvent` is an FX settlement confirmation. For an indirect
+ * participant (no direct CLS/SAMOS), such a balance is held at a correspondent /
+ * sponsor bank → counterpartyClass "bank" by structural derivation. This is a
+ * genuine sourced derivation (from the trade structure + the posture), never a
+ * blanket assumption — a cash leg with neither marker is NOT auto-classed.
+ */
+function isDerivableFxNostro(
+  originatingInstrument: string | undefined,
+  originatingEventType: string | undefined,
+): boolean {
+  if (originatingInstrument === undefined || originatingInstrument === "") return false;
+  if (originatingEventType === undefined) return false;
+  return FX_SETTLEMENT_ORIGINATING_EVENT_TYPES.has(originatingEventType);
+}
 
 /**
  * CAPITAL fold pass — resolve each capital issuance / redemption posting leg,
@@ -553,78 +640,197 @@ function foldLoanLegs(
 }
 
 /**
- * CASH fold pass (D-BA-RETURN-CAPABILITY-FIRST) — resolve each settled cash FIL
- * instance, read its typed `cashTerms.counterpartyClass` (the BA 100 placement
- * dimension), and place its ZAR cost basis (the IAS 21 §21 functional-currency
- * carrying amount) onto the primary BA 100 row + memo rows. Trading-book column
+ * The placement tier a settled-cash leg resolved through — surfaced on the
+ * residual collector so the dashboard / recon can distinguish a derived "bank"
+ * nostro (Tier 2, sound) from an unclassified residual (Tier 3, flagged).
+ */
+export type CashPlacementTier =
+  | "tier1-explicit-class"
+  | "tier2-derived-fx-nostro"
+  | "tier3-residual";
+
+/**
+ * The classification of ONE settled-cash FIL instance for BA 100 placement —
+ * the shared resolution both the leaf fold and the residual collector use (one
+ * grammar, Charter cmd 4 source-don't-fork). `mapping` is the row placement;
+ * `tier` records HOW it resolved; `residualReason` is the loud-flag text when
+ * the placement is a Tier-3 residual.
+ */
+interface CashPlacement {
+  readonly mapping: CashRowMapping;
+  readonly tier: CashPlacementTier;
+  readonly derivedClass: FilCashCounterpartyClass | null;
+  readonly residualReason: string | null;
+}
+
+/** The economicTerms shape the cash fold reads (narrowed, never `any`). */
+interface CashEconomicTerms {
+  readonly assetClass?: string;
+  readonly direction?: string;
+  readonly zarCostBasis?: { readonly currency: string; readonly amount: string };
+  readonly cashTerms?: { readonly counterpartyClass?: string };
+  readonly originatingInstrument?: string;
+}
+
+/**
+ * Resolve the BA 100 placement of a settled-cash instrument through the three
+ * fail-SAFE tiers (D-BA-RETURN-FAIL-SAFE-RESIDUAL-EXPOSURE). Returns `null` ONLY
+ * when there is genuinely no resolved amount to place (not a cash instrument, or
+ * no resolvable ZAR cost basis) — never to drop a resolvable total.
+ */
+function classifyCashPlacement(
+  terms: CashEconomicTerms,
+  originatingEventType: string | undefined,
+): CashPlacement | null {
+  if (terms.assetClass !== "cash") return null;
+
+  // TIER 1 — explicit typed counterpartyClass.
+  const explicit = terms.cashTerms?.counterpartyClass;
+  if (explicit !== undefined) {
+    const mapping = CASH_CLASS_ROW[explicit as FilCashCounterpartyClass];
+    if (mapping !== undefined) {
+      return {
+        mapping,
+        tier: "tier1-explicit-class",
+        derivedClass: explicit as FilCashCounterpartyClass,
+        residualReason: null,
+      };
+    }
+    // An explicit but UNKNOWN class string — fall through to the residual tier
+    // (still resolvable as an amount; only the granular class is unrecognised).
+  }
+
+  // TIER 2 — DERIVED granular: a settled FX cash leg is a correspondent-bank
+  // nostro for an indirect participant. Genuine structural derivation, cited.
+  if (isDerivableFxNostro(terms.originatingInstrument, originatingEventType)) {
+    return {
+      mapping: CASH_CLASS_ROW.bank,
+      tier: "tier2-derived-fx-nostro",
+      derivedClass: "bank",
+      residualReason: null,
+    };
+  }
+
+  // TIER 3 — RESIDUAL headline + loud flag. Resolvable amount, unclassifiable
+  // counterparty. NEVER blank: place on R0120 (in recon range) + flag.
+  return {
+    mapping: CASH_RESIDUAL_ROW,
+    tier: "tier3-residual",
+    derivedClass: null,
+    residualReason:
+      "Settled cash with a resolvable ZAR value but no counterpartyClass and no derivable FX-settlement origin — placed at the resolvable headline (R0120) pending banks-vs-customers sub-allocation. Missing dimension: cashTerms.counterpartyClass (Reg 26).",
+  };
+}
+
+/** The resolved ZAR magnitude (signed asset stock) of a settled-cash leg, or null. */
+function resolveCashSignedAmount(
+  terms: CashEconomicTerms,
+  functionalCurrency: string,
+): ReturnType<typeof toDecimal> | null {
+  // Magnitude: zarCostBasis (IAS 21 functional-currency cost — the ZAR value the
+  // GL settlement posting carries). Only ZAR (functional currency) amounts.
+  const zarBasis = terms.zarCostBasis;
+  if (zarBasis === undefined || zarBasis.currency !== functionalCurrency) return null;
+  const magnitude = toDecimal(zarBasis.amount);
+  // long (received) → positive asset stock; short (paid) → negative.
+  return terms.direction === "long" ? magnitude : magnitude.negated();
+}
+
+/**
+ * One Tier-3 residual settled-cash placement — surfaced as a loud capability
+ * flag carrying the ZAR amount + the missing dimension. The headline value is
+ * already placed on R0120 by the fold; this records the deferred sub-allocation.
+ */
+export interface ResidualCashPlacement {
+  /** The settled-cash FIL instance URN. */
+  readonly instance: string;
+  /** The resolved (signed) ZAR carrying amount placed at the headline. */
+  readonly zarAmount: string;
+  /** The BA 100 row the residual was placed on (the resolvable headline). */
+  readonly placedRow: string;
+  /** The missing dimension + why it could not be classified granularly. */
+  readonly reason: string;
+}
+
+/**
+ * CASH fold pass (FAIL-SAFE rework, D-BA-RETURN-FAIL-SAFE-RESIDUAL-EXPOSURE) —
+ * resolve each settled cash FIL instance and place its ZAR cost basis (the IAS 21
+ * §21 functional-currency carrying amount) onto the BA 100 grid through the three
+ * fail-SAFE tiers: Tier 1 explicit class; Tier 2 derived FX-nostro "bank"; Tier 3
+ * resolvable residual on R0120 + a loud flag. A settled, resolvable amount is
+ * NEVER dropped (money on a balance sheet must not disappear). Trading-book column
  * C0020 is used because an FX spot cash balance is a trading-book position. No
  * posting-rule module is needed: the cash instrument IS a post-settlement balance;
- * its balance-sheet presence IS the fold (unlike capital/deposit/loan where the
- * fold derives from a double-entry posting). FAIL-CLOSED: absent cashTerms → skip
- * (the fold does NOT place the instrument on R0120 by default — Charter cmd 2).
+ * its balance-sheet presence IS the fold. `residualSink`, when supplied, collects
+ * the Tier-3 residuals for the capability flag.
  */
 function foldCashLegs(
   ctx: LeafFoldContext,
   provenanceFilter: ProvenanceFilter,
   byCell: Map<string, RowAccumulator>,
+  residualSink?: ResidualCashPlacement[],
 ): void {
-  const CASH_EVENT_TYPES = ["FilInstrumentCreated", "FilInstrumentTerminated"] as const;
+  for (const ev of ctx.eventStore.replay({
+    entity: ctx.entity,
+    type: "FilInstrumentCreated",
+    asOf: ctx.asOf,
+  })) {
+    if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
 
-  for (const type of CASH_EVENT_TYPES) {
-    for (const ev of ctx.eventStore.replay({ entity: ctx.entity, type, asOf: ctx.asOf })) {
-      if (!eventMatchesProvenanceFilter(ev, provenanceFilter)) continue;
+    // The cash fold reads FilInstrumentCreated events (the instrument's initial
+    // balance). Termination events carry no economicTerms; the position netdown
+    // happens when the replacement events land (the FX settlement reverses via
+    // the GL ledger).
+    const payload = ev.payload as FilInstrumentCreatedPayload;
+    const terms = payload.economicTerms as CashEconomicTerms;
+    if (terms.assetClass !== "cash") continue;
 
-      // Cash fold only reads FilInstrumentCreated events (the instrument's
-      // initial balance) — termination events carry no economicTerms and the
-      // position netdown happens naturally when the replacement events land (the
-      // FX settlement reverses via the GL ledger). We skip terminated events here
-      // to avoid a TS error (FilInstrumentTerminatedPayload has no economicTerms).
-      if (type === "FilInstrumentTerminated") continue;
+    // Resolve the amount FIRST: no resolvable ZAR cost basis ⇒ there is no total
+    // to place (this is the genuine absence of a value, not a dropped total —
+    // the IAS 21 materialisation fail-closed prevents an FCY item lacking it).
+    const signedAmount = resolveCashSignedAmount(terms, ctx.functionalCurrency);
+    if (signedAmount === null) continue;
 
-      const payload = ev.payload as FilInstrumentCreatedPayload;
+    const originatingEventType = payload.originatingEvent?.eventType;
+    const placement = classifyCashPlacement(terms, originatingEventType);
+    if (placement === null) continue; // not a cash instrument (already filtered).
 
-      // Only cash asset-class instruments.
-      const terms = payload.economicTerms as {
-        assetClass?: string;
-        direction?: string;
-        zarCostBasis?: { currency: string; amount: string };
-        cashTerms?: { counterpartyClass?: string };
-      };
-      if (terms.assetClass !== "cash") continue;
+    // Primary row — in the 10–530 recon range: counted by the reconciliation
+    // oracle (recon:ba100-cell-values-reconcile). CRITICAL placement. Tier 3
+    // lands on R0120 too, so the detail reconciles to the oracle TOTAL ASSETS.
+    addToCellCol(byCell, placement.mapping.primary, TRADING_BOOK_COLUMN, signedAmount);
 
-      // Fail-closed: no cashTerms → unresolved (no guess, no silent default).
-      const cashTerms = terms.cashTerms;
-      if (cashTerms === undefined || cashTerms.counterpartyClass === undefined) continue;
+    // Memo rows — outside the 10–530 range: NOT counted by the recon oracle.
+    for (const memoRow of placement.mapping.memos) {
+      addToCellCol(byCell, memoRow, TRADING_BOOK_COLUMN, signedAmount);
+    }
 
-      const classKey = cashTerms.counterpartyClass;
-      // Validate the class is in our known set (type-safe narrowing).
-      const rowMapping = CASH_CLASS_ROW[classKey as FilCashCounterpartyClass];
-      if (rowMapping === undefined) continue;
-
-      // Magnitude: zarCostBasis (IAS 21 functional-currency cost — the ZAR value
-      // the GL settlement posting carries). Only ZAR (functional currency) amounts.
-      const zarBasis = terms.zarCostBasis;
-      if (zarBasis === undefined || zarBasis.currency !== ctx.functionalCurrency) continue;
-
-      const magnitude = toDecimal(zarBasis.amount);
-      // Sign: long (received) → positive asset stock; short (paid) → negative.
-      // On termination (settled leg closing), sign reverses to net the stock down.
-      const dirRaw = terms.direction;
-      const isLong = dirRaw === "long";
-      // long (received) → positive asset stock; short (paid) → negative.
-      const signedAmount = isLong ? magnitude : magnitude.negated();
-
-      // Primary row — in the 10–530 recon range: counted by the reconciliation
-      // oracle (recon:ba100-cell-values-reconcile). CRITICAL placement.
-      addToCellCol(byCell, rowMapping.primary, TRADING_BOOK_COLUMN, signedAmount);
-
-      // Memo rows — outside the 10–530 range: NOT counted by the recon oracle.
-      // These are supplementary analyses only; no double-counting risk.
-      for (const memoRow of rowMapping.memos) {
-        addToCellCol(byCell, memoRow, TRADING_BOOK_COLUMN, signedAmount);
-      }
+    // Tier-3 residual — record the loud flag (amount placed, sub-allocation deferred).
+    if (placement.tier === "tier3-residual" && residualSink !== undefined) {
+      residualSink.push({
+        instance: payload.instance,
+        zarAmount: decimalToString(signedAmount),
+        placedRow: placement.mapping.primary,
+        reason: placement.residualReason ?? "unclassified settled cash",
+      });
     }
   }
+}
+
+/**
+ * Collect the Tier-3 RESIDUAL settled-cash placements for the BA 100 capability
+ * flag (D-BA-RETURN-FAIL-SAFE-RESIDUAL-EXPOSURE). Pure read over the same events
+ * the leaf fold reads, under the same provenance lens — so the loud flag and the
+ * placed headline value cannot drift. Returns the residuals whose amount was
+ * placed on the balance sheet but whose banks-vs-customers sub-allocation is
+ * deferred (flagged immediately, never hidden).
+ */
+export function collectBa100ResidualCash(ctx: LeafFoldContext): readonly ResidualCashPlacement[] {
+  const provenanceFilter = defaultProvenanceFilter();
+  const residuals: ResidualCashPlacement[] = [];
+  // A throwaway accumulator — we only want the residual sink here, not the cells.
+  foldCashLegs(ctx, provenanceFilter, new Map<string, RowAccumulator>(), residuals);
+  return residuals;
 }
 
 /**
