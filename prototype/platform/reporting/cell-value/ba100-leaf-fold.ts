@@ -836,11 +836,7 @@ function foldCashLegs(
     // C0040 ALWAYS receives the amount (Total Bank = Σ C0010 + Σ C0020).
     const cashBookType = terms.cashTerms?.bookType;
     const bookColumn: string | null =
-      cashBookType === "trading"
-        ? "C0020"
-        : cashBookType === "banking-treasury"
-          ? "C0010"
-          : null; // absent → C0040 only; loud gap emitted below (fail-closed, Charter cmd 2)
+      cashBookType === "trading" ? "C0020" : cashBookType === "banking-treasury" ? "C0010" : null; // absent → C0040 only; loud gap emitted below (fail-closed, Charter cmd 2)
 
     // Primary row — in the 10–530 recon range: counted by the reconciliation
     // oracle (recon:ba100-cell-values-reconcile). CRITICAL placement. Tier 3
@@ -869,10 +865,15 @@ function foldCashLegs(
     }
 
     // Memo rows — outside the 10–530 range: NOT counted by the recon oracle.
-    // Memo rows always go to TOTAL_BANK_COLUMN only (they are analyses, not
-    // split lines — the BA 100 form does not split memos by trading/banking book).
+    // Memos mirror the same book split as the primary row: a trading-book nostro
+    // analysis row belongs in C0020 alongside the primary (the SARB form produces
+    // the same book-split schedule on both primary and memo lines). C0040 is
+    // always added (Total bank); the book column is added when known.
     for (const memoRow of placement.mapping.memos) {
       addToCellCol(byCell, memoRow, TOTAL_BANK_COLUMN, signedAmount);
+      if (bookColumn !== null) {
+        addToCellCol(byCell, memoRow, bookColumn, signedAmount);
+      }
     }
 
     // Tier-3 residual — record the loud flag (amount placed, sub-allocation deferred).

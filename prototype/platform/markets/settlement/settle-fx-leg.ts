@@ -148,8 +148,9 @@ export function settleFxLeg(args: {
   const fxTrade = [...store.replay({ type: "FxTradeExecuted" })].find(
     (e) => (e.payload as { tradeId?: string }).tradeId === tradeId,
   );
-  const resolvedBookType = (fxTrade?.payload as { bookType?: "trading" | "banking-treasury" } | undefined)
-    ?.bookType;
+  const resolvedBookType = (
+    fxTrade?.payload as { bookType?: "trading" | "banking-treasury" } | undefined
+  )?.bookType;
 
   const materialisationInput = {
     tradeId,
