@@ -411,7 +411,7 @@
         const rowLabel = rowLabelOf.get(row) || "";
         const cells = cols.map((col) => cellHtml(cellAt.get(`${row} ${col.column}`))).join("");
         tr.innerHTML = `<td class="rowhead"><span class="rc">${v2Esc(row)}</span>${v2Esc(rowLabel)}</td>${cells}`;
-        const rowCells = cols.map((col) => cellAt.get(`${row} ${col.column}`)).filter(Boolean);
+        const rowCells = cols.map((col) => cellAt.get(`${row} ${col.column}`)).filter(Boolean);
         // A row is "figure-bearing" if at least one of its cells carries a sound
         // value. Rows with no sound value anywhere are unsourced and hidden when the
         // "Figures only" default is active.
