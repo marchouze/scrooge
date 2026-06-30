@@ -67,6 +67,15 @@
     .v2-disp-toggle button.active { background:var(--color-info-bg); color:var(--color-text); }
     .v2-disp-toggle button + button { border-left:1px solid var(--color-border); }
 
+    /* "Figures only" (default) — blank the UNSOURCED cells inside the value grid so
+       only the actual figures show. A cell with no sound value (NOT .has-val) drops
+       its "— not yet sourced" placeholder + derivation expression and renders as a
+       plain empty cell; figure cells (.has-val) are untouched. PURE display filter —
+       the cell content stays in the DOM (revealed by "Show unsourced"), the numbers
+       and reconciliation are unchanged. */
+    table.v2-form.hide-unsourced td.cell:not(.has-val) { background:transparent; }
+    table.v2-form.hide-unsourced td.cell:not(.has-val) > * { display:none; }
+
     /* Residual-cash LOUD flag (fail-safe exposure — money placed, sub-allocation deferred). */
     .v2-residual { margin:8px 0 14px; padding:11px 14px; border-radius:6px;
       background:var(--color-warning-bg, #5a4a1a); color:var(--color-text);
@@ -484,6 +493,9 @@
       // when BOTH pass.
       const search = toolbar.querySelector(".v2-ss-search");
       const applyFilter = () => {
+        // Value grid: when OFF, blank the unsourced cells inside otherwise-shown
+        // rows (CSS-driven) so only the figure cells read; when ON, reveal them.
+        table.classList.toggle("hide-unsourced", !showUnsourced);
         const q = search.value.trim().toLowerCase();
         let shown = 0;
         const set = dispMode === "value" ? rowEls : fRowEls;
