@@ -273,9 +273,12 @@ export function renderBa100Return(input: RenderBa100ReturnInput): Ba100ReturnRen
       if (coa === undefined || coa.capitalTier === undefined) continue;
       capMinor += -signed; // credit-positive (capital is credit-natural, in minor units)
     }
-    glOwnFundsCapitalD = toDecimal(
-      moneyFromMinorUnits(BigInt(Math.round(capMinor)), FUNCTIONAL_CCY).amount,
-    );
+    // The minor-unit accumulator is always an integer sum of integer inputs
+    // (functionalNetByAccount values are signed minor-unit integers). No
+    // rounding: cast directly to BigInt (mirrors glOwnFundsCapitalFromFunctionalNet
+    // in ba100-cell-values-reconcile.ts which does `BigInt(glCapitalMinor)` without
+    // rounding). BigInt() truncates — but the value is already integral.
+    glOwnFundsCapitalD = toDecimal(moneyFromMinorUnits(BigInt(capMinor), FUNCTIONAL_CCY).amount);
   }
 
   const reconBlocks: Ba100ReturnReconBlock[] = (["assets", "liabilities", "equity"] as const).map(
