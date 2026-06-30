@@ -233,6 +233,111 @@ export const DataRequirementSchema = z.object({
 export type DataRequirement = z.infer<typeof DataRequirementSchema>;
 
 // ---------------------------------------------------------------------------
+// Discriminator → canonical home (the slice-dimension contract).
+// ---------------------------------------------------------------------------
+//
+// WHY THIS EXISTS (D-FX-BA110-NO-LINE foundation; WS-BA100-FX-DATA-REPORTING).
+// A summation cell's children are mutually-exclusive SLICES of the parent's
+// criterion (e.g. R0550 deposits → R1020..R1090 by counterparty sector; R0120
+// loans → R0900 non-bank / R0910 bank). Each leaf is reached by a discriminating
+// dimension applied to an instrument position. That dimension is NOT all carried
+// on the product — it lives at its CANONICAL HOME (the Party register carries
+// counterparty residency/sector/class; the Security master carries instrument
+// type / listed-unlisted; the Legal-entity tree carries subsidiary/associate/JV;
+// the Collateral register carries encumbrance; the Impairment sub-ledger carries
+// ECL; the Currency dimension carries the cash-leg currency; only genuinely
+// intrinsic dimensions — deposit category, loan sub-type, capital tier, FX quad —
+// live on the product/instrument itself).
+//
+// The leaf FOLD is therefore a JOIN of an instrument position against these
+// reference homes (built in a LATER phase — see ba100-leaf-fold.ts; this file
+// only DECLARES the dimension contract, P1: reference data, never a value). A
+// leaf that names its discriminator + canonical home tells the fold exactly which
+// reference home to join to and on which key. The recon gate
+// (`recon:ba-return-cell-contract`) asserts every FX-sourced BA 100 leaf carries
+// a resolvable discriminator + canonical home (fail-closed; harden-only).
+//
+// These three fields are ADDITIVE + OPTIONAL — every pre-existing contract stays
+// valid. A leaf with no slice dimension (a single-criterion line) simply omits
+// them; a leaf that IS a mutually-exclusive slice of a parent declares them.
+
+/**
+ * The canonical home of a discriminating dimension — WHERE the slice key is
+ * authoritatively held. This is the join target the fold reads the dimension
+ * from. Each value names one reference axis of the bank's data model.
+ *   - product-instrument: the dimension is intrinsic to the product/instrument
+ *     itself (deposit category, loan sub-type, capital tier, FX buy/sell quad,
+ *     counterparty-class captured on the instrument's terms).
+ *   - party-register: the dimension is a property of the counterparty (its
+ *     residency, sector, class) held in the Party register.
+ *   - legal-entity-tree: the dimension is the consolidation relationship
+ *     (subsidiary / associate / joint venture) from the versioned LE tree.
+ *   - security-master: the dimension is a property of the instrument reference
+ *     (instrument type, listed / unlisted, issuer class) from the Security master.
+ *   - collateral-register: the dimension is encumbrance / pledge status held in
+ *     the Collateral register.
+ *   - impairment-subledger: the dimension is the ECL stage / impairment status
+ *     from the Impairment sub-ledger.
+ *   - currency: the dimension is the currency of the position / cash leg
+ *     (the P5 currency axis).
+ *   - nostro-cb-account: the dimension is the nostro / central-bank account the
+ *     cash balance sits in (the account-identity axis for cash placements).
+ *   - gl-subledger: the dimension is resolved from a GL sub-ledger account
+ *     classification (a chart-of-accounts categorisation, not an instrument or
+ *     party property).
+ *   - derivative-valuation: the dimension is the fair-value sign / valuation
+ *     classification of a derivative position (positive → asset R0330, negative
+ *     → liability R0660) from the derivative valuation engine.
+ *   - time-series: the dimension is a period-flow / daily-average derived over a
+ *     time-series (the BA 100 daily-average memo rows R1000 / R1100).
+ *   - none-computed: the cell carries NO slice discriminator — it is computed
+ *     purely from other cells (a summation / formula / total). Declared
+ *     explicitly so "no home" is an asserted choice, not a silent omission.
+ */
+export const CanonicalHomeSchema = z.enum([
+  "product-instrument",
+  "party-register",
+  "legal-entity-tree",
+  "security-master",
+  "collateral-register",
+  "impairment-subledger",
+  "currency",
+  "nostro-cb-account",
+  "gl-subledger",
+  "derivative-valuation",
+  "time-series",
+  "none-computed",
+]);
+export type CanonicalHome = z.infer<typeof CanonicalHomeSchema>;
+
+/**
+ * The slice-dimension contract for a cell — declared on a leaf that is a
+ * mutually-exclusive slice of a parent summation. All three fields are optional
+ * and additive (a non-sliced leaf omits the block entirely).
+ *
+ *   - discriminator: the slice key in `path=value` form — the predicate that
+ *     selects THIS leaf from its siblings (e.g. `counterparty.sector='banks'`,
+ *     `cashTerms.counterpartyClass='customer'`, `currency='foreign'`,
+ *     `derivative.balanceSheetClassification='fvtpl-asset'`). Free-form but
+ *     dotted-path conventional so the fold can resolve it.
+ *   - canonicalHome: WHERE the discriminator dimension is authoritatively held
+ *     (the join target — see CanonicalHomeSchema). When discriminator is set,
+ *     canonicalHome MUST be set too (and must not be `none-computed`); the recon
+ *     asserts this for FX-sourced leaves.
+ *   - joinKey: the field the instrument position joins to the canonical home ON
+ *     (e.g. `counterpartyId` for party-register, `currency` for currency,
+ *     `instrumentId` for security-master). Absent when the home is the
+ *     instrument itself (`product-instrument` — the dimension is already on the
+ *     position, no join).
+ */
+export const SliceDimensionSchema = z.object({
+  discriminator: z.string().min(1).optional(),
+  canonicalHome: CanonicalHomeSchema.optional(),
+  joinKey: z.string().min(1).optional(),
+});
+export type SliceDimension = z.infer<typeof SliceDimensionSchema>;
+
+// ---------------------------------------------------------------------------
 // Applicability — when is the cell in scope.
 // ---------------------------------------------------------------------------
 
@@ -302,6 +407,12 @@ export const ReturnCellContractSchema = z
     unit: z.string().min(1),
     derivation: DerivationSchema,
     dataRequirements: z.array(DataRequirementSchema), // may be empty for pure subtotals fed by other cells
+    /**
+     * Optional slice-dimension contract — the discriminator + canonical home +
+     * join key for a leaf that is a mutually-exclusive slice of a parent
+     * summation (additive; absent on non-sliced leaves). See SliceDimensionSchema.
+     */
+    sliceDimension: SliceDimensionSchema.optional(),
     applicability: ApplicabilitySchema,
     status: CellStatusSchema,
     /** Required when status !== "sourced". The honest reason for the gap. */
@@ -342,6 +453,26 @@ export const ReturnCellContractSchema = z
         message: `counsel-gated cell ${c.cellRef.xsdElement} must carry a counsel-TBC dataRequirement`,
         path: ["dataRequirements"],
       });
+    }
+    // Slice-dimension coupling: a declared discriminator MUST name its canonical
+    // home (the join target), and that home must not be `none-computed` (a
+    // discriminating dimension is, by definition, held somewhere). This is the
+    // schema-level half of the FX-leaf assertion the recon gate hardens.
+    const sd = c.sliceDimension;
+    if (sd?.discriminator !== undefined) {
+      if (sd.canonicalHome === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `cell ${c.cellRef.xsdElement} declares a discriminator but no canonicalHome (the slice key must name where it is held)`,
+          path: ["sliceDimension", "canonicalHome"],
+        });
+      } else if (sd.canonicalHome === "none-computed") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `cell ${c.cellRef.xsdElement} declares a discriminator with canonicalHome 'none-computed' (a slice dimension must have a real home)`,
+          path: ["sliceDimension", "canonicalHome"],
+        });
+      }
     }
   });
 export type ReturnCellContract = z.infer<typeof ReturnCellContractSchema>;

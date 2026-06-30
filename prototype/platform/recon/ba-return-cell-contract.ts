@@ -30,6 +30,10 @@
 //   (4) NON-SOURCED CELLS ARE TRACKED — every cell with status != sourced
 //       carries an honest `statusReason` (no silent gap; Charter cmd 5).
 //       counsel-gated-TBC additionally carries a counsel-TBC dataRequirement.
+//   (5) FX-LEAF SLICE-DIMENSION CONTRACT (BA 100) — every FX-sourced BA 100
+//       leaf-input cell names a resolvable discriminator + canonical home (the
+//       slice key + its join target). Foundation: D-FX-BA110-NO-LINE
+//       (WS-BA100-FX-DATA-REPORTING Phase 1). Fail-closed; harden-only.
 //
 // ENFORCING from landing: contracts are generated complete, so there is no
 // advisory-soak phase — a regression (a new XSD cell with no entry, a dangling
@@ -737,6 +741,92 @@ export function assertSourcedCellsReal(
   return asserted;
 }
 
+// ---------------------------------------------------------------------------
+// (5) FX-LEAF SLICE-DIMENSION CONTRACT — every FX-sourced BA 100 leaf names a
+//     resolvable discriminator + canonical home (WS-BA100-FX-DATA-REPORTING
+//     Phase 1; foundation D-FX-BA110-NO-LINE). Fail-closed; harden-only.
+//
+// Oracle for "FX-touched leaf": a BA 100 leaf-input cell (Banking C0010 / Trading
+// C0020 split — the cross-column aggregation columns C0030..C0070 are pure roll-
+// ups and carry no independent slice key) whose dataRequirements name an FX
+// product (`prd:bank:fx:` attribute ref). Derived INDEPENDENTLY of the slice-
+// dimension block from the contract's own data requirements, so a leaf cannot
+// self-exempt: adding an FX edge to a cell auto-requires its slice contract.
+//
+// A `canonicalHome` is "resolvable" iff it is a real CanonicalHome enum value
+// (Zod already guarantees this on parse) AND it is not `none-computed` (a slice
+// dimension must have a real home — `none-computed` means "no slice key", which
+// contradicts being a discriminated FX leaf).
+// ---------------------------------------------------------------------------
+
+const FX_PRODUCT_REF_PREFIX = "prd:bank:fx:";
+const BA100_LEAF_INPUT_COLUMNS = new Set(["C0010", "C0020"]);
+
+function isFxFedLeafInput(cell: ReturnContract["cells"][number]): boolean {
+  const col = cell.cellRef.column;
+  if (col === undefined || !BA100_LEAF_INPUT_COLUMNS.has(col)) return false;
+  return cell.dataRequirements.some(
+    (d) => d.sourceKind === "product-attribute" && d.ref.startsWith(FX_PRODUCT_REF_PREFIX),
+  );
+}
+
+export function assertFxLeafSliceDimensions(
+  contract: ReturnContract,
+  violations: ReconViolation[],
+): number {
+  if (contract.returnForm !== "BA100") return 0; // BA 100-scoped for this phase.
+  const form = contract.returnForm;
+  let asserted = 0;
+  let fxLeafCount = 0;
+  for (const cell of contract.cells) {
+    if (!isFxFedLeafInput(cell)) continue;
+    fxLeafCount++;
+    asserted++;
+    const where = `${form}.${cell.cellRef.xsdElement}`;
+    const sd = cell.sliceDimension;
+    if (sd === undefined) {
+      violations.push({
+        subject: where,
+        message: `FX-sourced BA 100 leaf (${cell.cellRef.row}/${cell.cellRef.column}) has no sliceDimension — an FX leaf must name its discriminator + canonical home (WS-BA100-FX-DATA-REPORTING; D-FX-BA110-NO-LINE)`,
+        severity: "fail",
+      });
+      continue;
+    }
+    if (sd.discriminator === undefined || sd.discriminator.trim() === "") {
+      violations.push({
+        subject: where,
+        message: `FX-sourced BA 100 leaf (${cell.cellRef.row}/${cell.cellRef.column}) has no sliceDimension.discriminator (the slice key that selects this leaf from its siblings)`,
+        severity: "fail",
+      });
+    }
+    if (sd.canonicalHome === undefined) {
+      violations.push({
+        subject: where,
+        message: `FX-sourced BA 100 leaf (${cell.cellRef.row}/${cell.cellRef.column}) names a discriminator but no canonicalHome (where the slice key is held / the join target)`,
+        severity: "fail",
+      });
+    } else if (sd.canonicalHome === "none-computed") {
+      violations.push({
+        subject: where,
+        message: `FX-sourced BA 100 leaf (${cell.cellRef.row}/${cell.cellRef.column}) declares canonicalHome 'none-computed' — a discriminated FX leaf must have a real canonical home`,
+        severity: "fail",
+      });
+    }
+  }
+  // A BA 100 contract with ZERO FX-fed leaves means the FX edges were dropped —
+  // the oracle itself regressed. Fail loudly rather than silently passing an
+  // empty assertion (Charter cmd 5 — no green by concealment).
+  if (fxLeafCount === 0) {
+    violations.push({
+      subject: `${form}.fx-leaves`,
+      message:
+        "no FX-sourced BA 100 leaf-input cells found — the FX→BA100 product edges (R0330 / R0660 derivative lines etc.) appear to have been dropped from the contract",
+      severity: "fail",
+    });
+  }
+  return asserted;
+}
+
 export function assertNonSourcedTracked(
   contract: ReturnContract,
   violations: ReconViolation[],
@@ -792,6 +882,7 @@ export function assertForm(
   asserted += assertCitationsResolve(contract, ctx.obIds, violations);
   asserted += assertSourcedCellsReal(contract, ctx.cats, ctx.approved, violations);
   asserted += assertNonSourcedTracked(contract, violations);
+  asserted += assertFxLeafSliceDimensions(contract, violations);
   return asserted;
 }
 
